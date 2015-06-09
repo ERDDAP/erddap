@@ -33,6 +33,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -223,7 +224,22 @@ public class String2 {
             return "";
         if (s.length() <= max)  
             return s;
-        return s.substring(0, max);
+        return s.substring(0, Math.max(0, max));
+    }
+
+    /**
+     * This is like noLongerThan, but if truncated, s.substring(0, max-3) + "..." is returned.
+     *
+     * @param s
+     * @param max
+     * @return s (if it is short) or the first max characters of s
+     */
+    public static String noLongerThanDots(String s, int max) {
+        if (s == null)
+            return "";
+        if (s.length() <= max)  
+            return s;
+        return s.substring(0, Math.max(0, max-3)) + "...";
     }
 
     /**
@@ -322,6 +338,40 @@ public class String2 {
     }
 
     /**
+     * This goes beyond indexOfIgnoreCase by looking after punctuation removed.
+     *
+     * @param s
+     * @param find
+     * @return true if find is loosely in s. Return false if s or find !isSomething.
+     */
+    public static boolean looselyContains(String s, String find) {
+        if (s == null || find == null) 
+            return false;
+
+        int sLength = s.length();
+        StringBuilder ssb = new StringBuilder();
+        for (int i = 0; i < sLength; i++) {
+            char ch = s.charAt(i);
+            if (Character.isLetterOrDigit(ch))
+                ssb.append(Character.toLowerCase(ch));
+        }
+        if (ssb.length() == 0)
+            return false;
+
+        int fLength = find.length();
+        StringBuilder fsb = new StringBuilder();
+        for (int i = 0; i < fLength; i++) {
+            char ch = find.charAt(i);
+            if (Character.isLetterOrDigit(ch))
+                fsb.append(Character.toLowerCase(ch));
+        }
+        if (fsb.length() == 0)
+            return false;
+
+        return ssb.indexOf(fsb.toString()) >= 0;
+    }
+
+    /**
      * Finds the first instance of s at or after fromIndex (0.. ) in sb.
      *
      * @param sb a StringBuilder
@@ -354,6 +404,56 @@ public class String2 {
 
         return -1;
     }
+
+    /**
+     * This finds (case-sensitive) the first whole word instance of 'word' in s.
+     * It will find 'word' at the start or end of s.
+     * I.e., the character before and after (if any) mustn't be a letter or digit or '_'.
+     *
+     * @param word must be a simple word (without regex special characters)
+     * @return -1 if not found (or trouble, e.g., find=null)
+     */
+    public static int findWholeWord(String s, String word) {
+        if (s == null || s.length() == 0 ||
+            word == null || word.length() == 0)
+            return -1;
+
+        if (s.equals(word) || 
+            s.matches(word + "\\b.*"))
+            return 0;
+        if (s.matches(".*\\b" + word))
+            return s.length() - word.length();
+        Pattern pattern = Pattern.compile("\\b(" + word + ")\\b");
+        Matcher matcher = pattern.matcher(s);
+        return matcher.find()? matcher.start(1) : -1;
+    }
+
+    /** 
+     * This creates a hashset of the unique acronyms in a string.
+     * An acronym here is defined by the regular expression:
+     * [^a-zA-Z0-9][A-Z]{2,}[^a-zA-Z0-9]
+     *
+     * @param text
+     * @return hashset of the unique acronyms in text.
+     */
+    public static HashSet<String> findAcronyms(String text) {
+        HashSet<String> hs = new HashSet();
+        if (text == null || text.length() < 2)
+            return hs;
+        Pattern pattern = Pattern.compile("[^a-zA-Z0-9]([A-Z]{2,})[^a-zA-Z0-9]");
+        Matcher matcher = pattern.matcher(text);
+        int po = 0;
+        while (po < text.length()) {
+            if (matcher.find(po)) {
+                hs.add(matcher.group(1));
+                po = matcher.end();
+            } else {
+                return hs;
+            }
+        }
+        return hs;
+    }
+
 
     /**
      * This returns the first section of s (starting at fromIndex) 
@@ -643,7 +743,7 @@ public class String2 {
      * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
      * @param maxAttempt e.g. 3   (the tries are 1 second apart)
      * @return String[] with the lines from the file
-     * @throws IOException if trouble
+     * @throws Exception if trouble
      */
     public static String[] readLinesFromFile(String fileName, String charset,
         int maxAttempt) throws Exception {
@@ -655,7 +755,7 @@ public class String2 {
                 isr = new InputStreamReader(new FileInputStream(fileName), 
                     charset == null || charset.length() == 0? "ISO-8859-1" : charset);
                 break; //success
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 if (i == maxAttempt - 1)
                     throw e;
                 Math2.sleep(1);
@@ -735,7 +835,7 @@ public class String2 {
     }
 
     /**
-     * This provides servies to writeToFile and appendFile. 
+     * This provides services to writeToFile and appendFile. 
      * If there is an error and !append, the partial file is deleted.
      *
      * @param fileName is the (usually canonical) path (dir+name) for the file
@@ -1495,6 +1595,7 @@ public class String2 {
      * Returns a string where all cases of more than one space are 
      * replaced by one space.  The string is also trim'd to remove
      * leading and trailing spaces.
+     * Also, spaces after { or ( and before ) or } will be removed.
      *
      * @param s 
      * @return s, but with the spaces combined
@@ -1505,21 +1606,56 @@ public class String2 {
             return null;
         s = s.trim();
         int sLength = s.length();
-        int po = s.indexOf("  ");
-        if (po < 0)
-            return s;
+        if (sLength <= 2) //first and last chars must be non-space
+            return s; 
         StringBuilder sb = new StringBuilder(sLength);
-        int base = 0;
-        while (po >= 0) {
-            //one beyond last space
-            int end = po + 2;
-            while (end < sLength && s.charAt(end) == ' ')
-                end++;
-            sb.append(s.substring(base, po+1));
-            base = end;
-            po = s.indexOf("  ", base);
+        sb.append(s.charAt(0));
+        for (int po = 1; po < sLength; po++) {
+            char ch = s.charAt(po);
+            if (ch == ' ') {
+                if ("{( ".indexOf(sb.charAt(sb.length() - 1)) < 0) //prev isn't {( or ' '
+                    sb.append(ch);
+            } else if (")}".indexOf(ch) >= 0 && sb.charAt(sb.length() - 1) == ' ') {
+                sb.setCharAt(sb.length() - 1, ch); // ) overwrite previous ' '
+            } else { 
+                sb.append(ch);
+            }
         }
-        sb.append(s.substring(base));
+        return sb.toString();
+    }
+
+    /**
+     * This is like combineSpaces, but converts any sequence of whitespace
+     * to be one space.  The string is also trim'd to remove
+     * leading and trailing whitespace.
+     * Also, spaces after { or ( and before ) or } will be removed.
+     *
+     * @param s 
+     * @return s, but with the spaces combined
+     *    (or null if s is null)
+     */
+    public static String whitespacesToSpace(String s) {
+        if (s == null)
+            return null;
+        s = s.trim(); //this removes whitespace, not just ' '
+        int sLength = s.length();
+        if (sLength <= 2) //first and last chars must be non-space
+            return s; 
+        StringBuilder sb = new StringBuilder(sLength);
+        sb.append(s.charAt(0));
+        for (int po = 1; po < sLength; po++) {
+            char ch = s.charAt(po);
+            if (Character.isWhitespace(ch)) {
+                char ch2 = sb.charAt(sb.length() - 1);
+                if (!(ch2 == '{' || ch2 =='(' || ch2 == ' ')) //prev isn't {( or ' '
+                    sb.append(' ');
+            } else if ((ch == ')' || ch == '}') && 
+                sb.charAt(sb.length() - 1) == ' ') {
+                sb.setCharAt(sb.length() - 1, ch); // ) overwrite previous ' '
+            } else { 
+                sb.append(ch);
+            }
+        }
         return sb.toString();
     }
 
@@ -2631,6 +2767,28 @@ public class String2 {
     }
 
     /**
+     * This finds the first element in Object[] (starting at element startAt)
+     * where the ar[i].toString value contains the substring s (ignoring
+     * the case of ar and s).
+     *
+     * @param ar the array of objects
+     * @param s the String to be found
+     * @param startAt the first element of ar to be checked.
+     *    If startAt < 0, this starts with startAt = 0.
+     * @return the element number of ar which is equal to s (or -1 if not found)
+     */
+    public static int lineContainingIgnoreCase(Object[] ar, String s, int startAt) {
+        if (ar == null || s == null)
+            return -1;
+        int n = ar.length;
+        s = s.toLowerCase();
+        for (int i = Math.max(0, startAt); i < n; i++)
+            if (ar[i] != null && ar[i].toString().toLowerCase().indexOf(s) >= 0) 
+                return i;
+        return -1;
+    }
+
+    /**
      * This returns the first element in Object[] (starting at element 0)
      * where the ar[i].toString value starts with s.
      *
@@ -2700,10 +2858,10 @@ public class String2 {
      * where the longerString starts with prefixes[i].
      *
      * @param prefixes the array of prefixes
-     * @param longerString the String to be found
+     * @param longerString the String that might start with one of the prefixes
      * @param startAt the first element of ar to be checked.
      *    If startAt < 0, this starts with startAt = 0.
-     * @return the element number of prefixes which starts with longerString (or -1 if not found)
+     * @return the element number of prefixes which longerString starts with (or -1 if not found)
      */
     public static int whichPrefix(String[] prefixes, String longerString, int startAt) {
         if (prefixes == null || longerString == null || longerString.length() == 0)
@@ -2719,14 +2877,34 @@ public class String2 {
      * This is like whichPrefix, but returns the found prefix (or null).
      *
      * @param prefixes the array of prefixes
-     * @param longerString the String to be found
+     * @param longerString the String that might start with one of the prefixes
      * @param startAt the first element of ar to be checked.
      *    If startAt < 0, this starts with startAt = 0.
-     * @return the prefixes[i] which starts with longerString (or null if not found)
+     * @return the prefixes[i] which longerString starts with (or null if not found)
      */
     public static String findPrefix(String[] prefixes, String longerString, int startAt) {
         int i = whichPrefix(prefixes, longerString, startAt);
         return i < 0? null : prefixes[i];
+    }
+
+    /**
+     * This finds the first element in suffixes (starting at element startAt)
+     * where the longerString ends with suffixes[i].
+     *
+     * @param suffixes the array of suffixes
+     * @param longerString the String that might end with one of the suffixes
+     * @param startAt the first element of ar to be checked.
+     *    If startAt < 0, this starts with startAt = 0.
+     * @return the element number of suffixes which longerString ends with (or -1 if not found)
+     */
+    public static int whichSuffix(String[] suffixes, String longerString, int startAt) {
+        if (suffixes == null || longerString == null || longerString.length() == 0)
+            return -1;
+        int n = suffixes.length;
+        for (int i = Math.max(0, startAt); i < n; i++)
+            if (suffixes[i] != null && longerString.endsWith(suffixes[i])) 
+                return i;
+        return -1;
     }
 
     /**
@@ -4198,6 +4376,28 @@ public class String2 {
         return inReader.readLine();
     }
 
+    /** 
+     * A variant of getStringFromSystemIn that adds "\nPress ^C to stop or Enter to continue..."
+     * to the prompt.
+     */
+    public static String pressEnterToContinue(String prompt) throws Exception {
+        if (prompt == null)
+            prompt = "";
+        return getStringFromSystemIn(prompt + 
+            (prompt.length() == 0 || prompt.endsWith("\n")? "" : "\n") +
+            "Press ^C to stop or Enter to continue...");
+    }
+     
+    /** 
+     * A variant of pressEnterToContinue with "Press ^C to stop or Enter to continue..."
+     * as the prompt.
+     */
+    public static String pressEnterToContinue() throws Exception {
+        return pressEnterToContinue("");
+    }
+     
+
+
     /**
      * On the command line, this prompts the user a String (which is
      * not echoed to the screen, so is suitable for passwords).
@@ -4891,7 +5091,7 @@ public class String2 {
     } */
 
     /** This changes the characters case to title case (only letters after non-letters are
-     * capitalized.  This is simplistic.
+     * capitalized).  This is simplistic.
      */
     public static String toTitleCase(String s) {
         if (s == null)
@@ -4985,6 +5185,23 @@ public class String2 {
      */
     public static String beep(int n) {
         return makeString('\u0007', n);
+    }
+
+    /**
+     * This cleverly concatenates the 2 strings (with "", ". ", or " ", as appropriate.
+     */
+    public static String periodSpaceConcat(String a, String b) {
+        if (!isSomething(a)) 
+            return isSomething(b)? b : "";
+        //we know 'a' isSomething
+        a = a.trim();
+        if (!isSomething(b)) 
+            return "";
+        //we know 'b' isSomething
+        b = b.trim();
+        return a + 
+            (".!?;,".indexOf(a.charAt(a.length() - 1)) >= 0? " " : ". ") +
+            b;
     }
 
 

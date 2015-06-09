@@ -84,7 +84,7 @@ public class GridCartesianRenderer extends CartesianRenderer {
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             if (JPane.debug) 
-                String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(); 
         }
     }
 
@@ -99,30 +99,46 @@ public class GridCartesianRenderer extends CartesianRenderer {
     double val;
     GeoDate[] tValues;
     //
+    if (JPane.debug) String2.log(">>drawRaster");
     if(grid_.isXTime()) {
-      if(grid_.getTimeArray().length <= 2) return;
+      if (JPane.debug) String2.log(">>isXTime xTimeArLen=" + grid_.getTimeArray().length);
+if(grid_.getTimeArray().length == 0) return; //2014-04-06 bob added this and similar below
+//      if(grid_.getTimeArray().length <= 2) return;
       if(grid_.hasXEdges()) {
+        if (JPane.debug) String2.log(">>hasXEdges");
         tValues = grid_.getTimeEdges();
+        if (JPane.debug) String2.log(">>timeEdges=" + String2.toCSSVString(tValues));
         xSize = tValues.length;
         xp = new int[xSize];
         for(count=0; count < xSize; count++) {
           xp[count] = cg_.getXUtoD(tValues[count]);
         }
+
       } else {
+        if (JPane.debug) String2.log(">>!hasXEdges");
         tValues = grid_.getTimeArray();
+        if (JPane.debug) String2.log(">>timeArray=" + String2.toCSSVString(tValues));
         xSize = tValues.length;
         xp = new int[xSize+1];
-        xp[0] = cg_.getXUtoD(tValues[0].subtract(
-                            (tValues[1].subtract(tValues[0])).divide(2.0)));
-        for(count=1; count < xSize; count++) {
-          xp[count] = cg_.getXUtoD(
-                    (tValues[count-1].add(tValues[count])).divide(2.0));
+        if (xSize == 1) { //2014-04-06 bob added this and similar below
+            xp[0] = cg_.getLayer().getXPtoD(0);
+            xp[1] = cg_.getLayer().getXPtoD(1);
+String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]); 
+        } else {
+            xp[0] = cg_.getXUtoD(tValues[0].subtract(
+                                (tValues[1].subtract(tValues[0])).divide(2.0)));
+            for(count=1; count < xSize; count++) {
+              xp[count] = cg_.getXUtoD(
+                        (tValues[count-1].add(tValues[count])).divide(2.0));
+            }
+            xp[xSize] = cg_.getXUtoD(tValues[xSize-1].add(
+                        (tValues[xSize-1].subtract(tValues[xSize-2])).divide(2.0)));
         }
-        xp[xSize] = cg_.getXUtoD(tValues[xSize-1].add(
-                    (tValues[xSize-1].subtract(tValues[xSize-2])).divide(2.0)));
       }
     } else {
-      if(grid_.getXArray().length <= 2) return;
+      if (JPane.debug) String2.log(">>!isXTime XArLen=" + grid_.getXArray().length);
+if(grid_.getXArray().length == 0) return;
+//      if(grid_.getXArray().length <= 2) return;
       if(grid_.hasXEdges()) {
         xValues = grid_.getXEdges();
         xSize = xValues.length;
@@ -134,17 +150,26 @@ public class GridCartesianRenderer extends CartesianRenderer {
         xValues = grid_.getXArray();
         xSize = xValues.length;
         xp = new int[xSize+1];
-        xp[0] = cg_.getXUtoD(xValues[0]-(xValues[1]-xValues[0])*0.5);
-        for(count=1; count < xSize; count++) {
-          xp[count] = cg_.getXUtoD((xValues[count-1]+xValues[count])*0.5);
+        if (xSize == 1) {
+            xp[0] = cg_.getLayer().getXPtoD(0);
+            xp[1] = cg_.getLayer().getXPtoD(1);
+String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]); 
+        } else {
+            xp[0] = cg_.getXUtoD(xValues[0]-(xValues[1]-xValues[0])*0.5);
+            for(count=1; count < xSize; count++) {
+              xp[count] = cg_.getXUtoD((xValues[count-1]+xValues[count])*0.5);
+            }
+            xp[xSize] = cg_.getXUtoD(xValues[xSize-1]+
+                                     (xValues[xSize-1]-xValues[xSize-2])*0.5);
         }
-        xp[xSize] = cg_.getXUtoD(xValues[xSize-1]+
-                                 (xValues[xSize-1]-xValues[xSize-2])*0.5);
       }
     }
     if(grid_.isYTime()) {
-      if(grid_.getTimeArray().length <= 2) return;
+      if (JPane.debug) String2.log(">>isYTime yTimeArLen=" + grid_.getTimeArray().length);
+if(grid_.getTimeArray().length == 0) return;
+//      if(grid_.getTimeArray().length <= 2) return;
       if(grid_.hasYEdges()) {
+        if (JPane.debug) String2.log(">>hasYEdges");
         tValues = grid_.getTimeEdges();
         ySize = tValues.length;
         yp = new int[ySize];
@@ -152,20 +177,29 @@ public class GridCartesianRenderer extends CartesianRenderer {
           yp[count] = cg_.getYUtoD(tValues[count]);
         }
       } else {
+        if (JPane.debug) String2.log(">>!hasYEdges");
         tValues = grid_.getTimeArray();
         ySize = tValues.length;
         yp = new int[ySize+1];
-        yp[0] = cg_.getYUtoD(tValues[0].subtract(
-                          (tValues[1].subtract(tValues[0])).divide(2.0)));
-        for(count=1; count < ySize; count++) {
-          yp[count] = cg_.getYUtoD((tValues[count-1].add(
-                               tValues[count])).divide(2.0));
+        if (ySize == 1) {
+            yp[0] = cg_.getLayer().getYPtoD(0);
+            yp[1] = cg_.getLayer().getYPtoD(1);
+String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]); 
+        } else {
+            yp[0] = cg_.getYUtoD(tValues[0].subtract(
+                              (tValues[1].subtract(tValues[0])).divide(2.0)));
+            for(count=1; count < ySize; count++) {
+              yp[count] = cg_.getYUtoD((tValues[count-1].add(
+                                   tValues[count])).divide(2.0));
+            }
+            yp[ySize] = cg_.getYUtoD(tValues[ySize-1].add(
+                         (tValues[ySize-1].subtract(tValues[ySize-2])).divide(2.0)));
         }
-        yp[ySize] = cg_.getYUtoD(tValues[ySize-1].add(
-                     (tValues[ySize-1].subtract(tValues[ySize-2])).divide(2.0)));
       }
     } else {
-      if(grid_.getYArray().length <= 2) return;
+      if (JPane.debug) String2.log(">>!isYTime YArLen=" + grid_.getYArray().length);
+if(grid_.getYArray().length == 0) return;
+//      if(grid_.getYArray().length <= 2) return;
       if(grid_.hasYEdges()) {
         yValues = grid_.getYEdges();
         ySize = yValues.length;
@@ -177,12 +211,18 @@ public class GridCartesianRenderer extends CartesianRenderer {
         yValues = grid_.getYArray();
         ySize = yValues.length;
         yp = new int[ySize+1];
-        yp[0] = cg_.getYUtoD(yValues[0]-(yValues[1]-yValues[0])*0.5);
-        for(count=1; count < ySize; count++) {
-          yp[count] = cg_.getYUtoD((yValues[count-1]+yValues[count])*0.5);
+        if (ySize == 1) {
+            yp[0] = cg_.getLayer().getYPtoD(0);
+            yp[1] = cg_.getLayer().getYPtoD(1);
+String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]); 
+        } else {
+            yp[0] = cg_.getYUtoD(yValues[0]-(yValues[1]-yValues[0])*0.5);
+            for(count=1; count < ySize; count++) {
+              yp[count] = cg_.getYUtoD((yValues[count-1]+yValues[count])*0.5);
+            }
+            yp[ySize] = cg_.getYUtoD(yValues[ySize-1]+
+                                     (yValues[ySize-1]-yValues[ySize-2])*0.5);
         }
-        yp[ySize] = cg_.getYUtoD(yValues[ySize-1]+
-                                 (yValues[ySize-1]-yValues[ySize-2])*0.5);
       }
     }
     //
@@ -190,15 +230,17 @@ public class GridCartesianRenderer extends CartesianRenderer {
     //
     gValues = grid_.getZArray();
     count=0;
+    if (JPane.debug) String2.log(">>xSize=" + xSize + " ySize=" + ySize + "\n" +
+        ">>xp[]=" + String2.toCSSVString(xp) + "\n" +
+        ">>yp[]=" + String2.toCSSVString(yp));
     for(i=0; i < xSize; i++) {
       for(j=0; j < ySize; j++) {
-        val = gValues[count];
+        val = gValues[count++];
         if(!Double.isNaN(val)) {
-          color = attr_.getColorMap().getColor(val);
-          g.setColor(color);
+          //if (count<20) String2.log(">>val=" + val + " color=0x" + Integer.toHexString(color.getRGB()));
+          g.setColor(attr_.getColorMap().getColor(val));
           drawRect(g, xp[i], yp[j], xp[i+1], yp[j+1]);
         }
-        count++;
       }
     }
   }

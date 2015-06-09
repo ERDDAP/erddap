@@ -1131,7 +1131,7 @@ String2.log("uniqueYear = " + uniqueYear);
                     //review the table
                     if (tsvI == 0 && (startRow == 0 || row == dataNRows)) {
                         String2.log(stationTable.toString("row", 100));
-                        String2.getStringFromSystemIn("Check if the file (above) is ok. Press Enter to continue ->");
+                        String2.pressEnterToContinue("Check if the file (above) is ok, then...");
                     }
                     String2.log("  startRow=" + startRow + " end=" + (row-1) + " island=" + island + " station=" + station); 
 
@@ -1495,7 +1495,7 @@ String2.log("uniqueYear = " + uniqueYear);
                     //review the table
                     if (tabI == 0 && (startRow == 0 || row == dataNRows)) {
                         String2.log(stationTable.toString("row", 100));
-                        String2.getStringFromSystemIn("Check if the file (above) is ok. Press Enter to continue ->");
+                        String2.pressEnterToContinue("Check if the file (above) is ok, then...");
                     }
                     String2.log("  startRow=" + startRow + " end=" + (row-1) + " island=" + island + " station=" + station); 
 
@@ -1808,7 +1808,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
                     //review the table
                     if (tabI == 0 && (startRow == 0 || row == dataNRows)) {
                         String2.log(stationTable.toString("row", 100));
-                        String2.getStringFromSystemIn("Check if the file (above) is ok. Press Enter to continue ->");
+                        String2.pressEnterToContinue("Check if the file (above) is ok, then...");
                     }
                     String2.log("  startRow=" + startRow + " end=" + (row-1) + " island=" + island + " station=" + station); 
 
@@ -2144,8 +2144,8 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                     stationTable.saveAsFlatNc(tFileName, "row"); 
                     //if (startRow == 0 || row == data.nRows()) {
                     //    String2.log("\n  table:" + tFileName + "\n" + stationTable);
-                    //    String2.getStringFromSystemIn(                            
-                    //        "Check if the file (above) is ok. Press Enter to continue ->");
+                    //    String2.pressEnterToContinue(                            
+                    //        "Check if the file (above) is ok, then...");
                     //}
 
                     startRow = row;
@@ -2448,8 +2448,8 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                     stationTable.saveAsFlatNc(tFileName, "row"); 
                     //if (startRow == 0 || row == data.nRows()) {
                     //    String2.log("\n  table:" + tFileName + "\n" + stationTable);
-                    //    String2.getStringFromSystemIn(                            
-                    //        "Check if the file (above) is ok. Press Enter to continue ->");
+                    //    String2.pressEnterToContinue(                            
+                    //        "Check if the file (above) is ok, then...");
                     //}
 
                     startRow = row;
@@ -3053,8 +3053,7 @@ variables:
                     "TOGA-TAO thermistor array, Soviet SECTIONS tropical program, " +
                     "and Satellite altimetry from Geosat, ERS/1 and TOPEX/Poseidon.");
                 gatts.add("contributor_role", "source data");
-                gatts.add("Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
-                gatts.add("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
+                gatts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
                 gatts.add("creator_email", "carton@umd.edu");
                 gatts.add("creator_name", "SODA");
                 gatts.add("creator_url", "http://www.atmos.umd.edu/~ocean/");
@@ -6769,9 +6768,7 @@ project)
                     "row", false);            
 
             } catch (Throwable t) {
-                String2.log(MustBe.throwableToString(t));
-                String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
-
+                String2.pressEnterToContinue(MustBe.throwableToString(t));                
             }
         }
 
@@ -7705,10 +7702,10 @@ towTypesDescription);
                     }
                 }
                 if (nErrors > 0)
-                    String2.getStringFromSystemIn(
+                    String2.pressEnterToContinue(
                         "Bob: check US daylight savings time rules. On/near these dates?\n" +
                         "http://en.wikipedia.org/wiki/History_of_time_in_the_United_States\n" +
-                        "nErrors=" + nErrors + " Press Enter to continue ->");
+                        "nErrors=" + nErrors);
             }
 
         }
@@ -7741,7 +7738,7 @@ towTypesDescription);
                     float f = //will be NaN if trouble
                         (pa.getFloat(row) + (pa1.getFloat(row) / 60)) *
                         (loc.equals("N")? 1 : loc.equals("S")? -1 : Float.NaN);
-                    fa.add(row, f);
+                    fa.atInsert(row, f);
                     if (combo.length() > 2 && //2 spaces
                         (f < -90 || f > 90 || Float.isNaN(f))) {
                         nErrors++;
@@ -7754,7 +7751,7 @@ towTypesDescription);
                 table.removeColumn(v + 1);
             }
             if (nErrors > 0) 
-                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+                String2.pressEnterToContinue("nErrors=" + nErrors);
 
             //longitude
             nErrors = 0;
@@ -7771,7 +7768,7 @@ towTypesDescription);
                     float f = //will be NaN if trouble
                         (pa.getFloat(row) + (pa1.getFloat(row) / 60)) *
                         (loc.equals("E")? 1 : loc.equals("W")? -1 : Float.NaN);
-                    fa.add(row, f);
+                    fa.atInsert(row, f);
                     if (combo.length() > 2 && //2 spaces
                         (f < -180 || f > 180 || Float.isNaN(f))) {
                         nErrors++;
@@ -7784,7 +7781,7 @@ towTypesDescription);
                 table.removeColumn(v + 1);
             }
             if (nErrors > 0) 
-                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+                String2.pressEnterToContinue("nErrors=" + nErrors);
 
             //yyMM  add century to cruiseYYMM
             nErrors = 0;
@@ -7806,7 +7803,7 @@ towTypesDescription);
                 atts.set("units", "");  //leave it as a String identifier
             }
             if (nErrors > 0) 
-                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+                String2.pressEnterToContinue("nErrors=" + nErrors);
 
             //yyMMdd
             nErrors = 0;
@@ -7860,7 +7857,7 @@ towTypesDescription);
                     table.removeColumn(v + 1);
             }
             if (nErrors > 0) 
-                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+                String2.pressEnterToContinue("nErrors=" + nErrors);
 
         }
         

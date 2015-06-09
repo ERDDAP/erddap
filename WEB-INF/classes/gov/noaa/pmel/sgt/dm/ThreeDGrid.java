@@ -90,7 +90,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             if (JPane.debug) 
-                String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(); 
         }
     }
 

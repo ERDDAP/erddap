@@ -1250,8 +1250,8 @@ Dataset {
                 doDotTestToo, doAsciiTestToo);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from oceanwatch failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue(
+                "\nRecover from oceanwatch failure?");
         }
     }
 
@@ -1270,8 +1270,8 @@ Dataset {
                 doDotTestToo, doAsciiTestToo);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from thredds1 8081 thredds failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue(
+                "\nRecover from thredds1 8081 thredds failure?");
         }
     }
 
@@ -1304,8 +1304,7 @@ Dataset {
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from erddap failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from erddap failure?");
         }
     }
 

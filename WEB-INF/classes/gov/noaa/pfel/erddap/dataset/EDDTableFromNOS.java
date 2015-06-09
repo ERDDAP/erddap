@@ -1004,7 +1004,7 @@ String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request,
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"TimeSeries\";[10]\n" +
 "    String cdm_timeseries_variables \"???\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";[10]\n" +
 "    Float64 Easternmost_Easting 167.7362;[10]\n" +    //these values change periodically
 "    Float64 geospatial_lat_max 71.3601;[10]\n" +
 "    Float64 geospatial_lat_min -14.28;[10]\n" +
@@ -1024,11 +1024,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a[10]\n" +
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 71.3601;[10]\n" +
 "    String sourceUrl \"http://opendap.co-ops.nos.noaa.gov/axis/services/Wind\";[10]\n" +
 "    Float64 Southernmost_Northing -14.28;[10]\n" +
-"    String standard_name_vocabulary \"CF-12\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
 "    String summary \"[Normally, the summary describes the dataset. Here, it describes[10]\n" +
 "the server.][10]\n" +
 "NOS CO-OPS has developed a web-based application that serves as an[10]\n" +
@@ -1153,9 +1152,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         try {
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nTHIS IS ALWAYS CHANGING A LITTLE.  IS IT CLOSE ENOUGH?\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nTHIS IS ALWAYS CHANGING A LITTLE.  IS IT CLOSE ENOUGH?"); 
         }
         
         //wimpy request (used because it works) suggested by 

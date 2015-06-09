@@ -296,12 +296,16 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
+        //make tables to hold variables
         NetcdfFile ncFile = NcHelper.openFile(sampleFileName); //may throw exception
         Table axisSourceTable = new Table();  
         Table dataSourceTable = new Table();  
         Table axisAddTable = new Table();
         Table dataAddTable = new Table();
         StringBuilder sb = new StringBuilder();
+
+        //get source global attributes
+        NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
 
         try {
             //look at all variables with dimensions, find ones which share same max nDim
@@ -341,6 +345,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                             sourceAtts); 
                         axisAddTable.addColumn(   avi, axisName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
+                                axisSourceTable.globalAttributes(),
                                 sourceAtts, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
@@ -370,17 +375,18 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, sourceAtts);
                 dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, pa, 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        axisSourceTable.globalAttributes(),
                         sourceAtts, varName, true, false)); //addColorBarMinMax, tryToFindLLAT
             }
 
             //after dataVariables known, add global attributes in the axisAddTable
-            NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
             axisAddTable.globalAttributes().set(
                 makeReadyToUseAddGlobalAttributesForDatasetsXml(
                     axisSourceTable.globalAttributes(), 
                     "Grid",  //another cdm type could be better; this is ok
                     tFileDir, externalAddGlobalAttributes, 
-                    suggestKeywords(dataSourceTable, dataAddTable)));
+                    EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
+                        suggestKeywords(dataSourceTable, dataAddTable)));
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
@@ -519,15 +525,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
 "        <att name=\"keywords\">atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
 "atmospheric, coastwatch, composite, day, global, meridional, modulus, noaa, ocean, oceans,\n" +
 "Oceans &gt; Ocean Winds &gt; Surface Winds,\n" +
 "quality, quikscat, science, science quality, surface, wcn, wind, winds, x_wind, y_wind, zonal</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -788,7 +792,7 @@ directionsForGenerateDatasetsXml() +
 "    String composite \"true\";\n" +
 "    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -822,7 +826,6 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.875;\n" +
 "    String origin \"Remote Sensing Systems, Inc\";\n" +
@@ -836,7 +839,7 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "    String source \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
 "    Float64 Southernmost_Northing -89.875;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
 "    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +

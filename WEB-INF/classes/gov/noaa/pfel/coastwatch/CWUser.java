@@ -1791,7 +1791,7 @@ public class CWUser extends User  {
                 graphGDLs,
                 g2D,
                 ulx, uly, areaWidth, areaHeight, 2, //graph width/height
-                fontScale); 
+                SgtGraph.DefaultBackgroundColor, fontScale); 
             return;
         }
 
@@ -1839,7 +1839,7 @@ public class CWUser extends User  {
                 tArrayList,
                 g2D,
                 ulx, tUly, areaWidth, tAreaHeight, 2, //graph width/height
-                fontScale); 
+                SgtGraph.DefaultBackgroundColor, fontScale); 
             tUly += tAreaHeight;
         }
 

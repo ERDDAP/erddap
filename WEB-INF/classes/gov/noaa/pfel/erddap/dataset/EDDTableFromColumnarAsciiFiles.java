@@ -278,6 +278,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                null, //no source global attributes
                 dataSourceTable.columnAttributes(col), colName, 
                 true, true); //addColorBarMinMax, tryToFindLLAT
             addAtts.add("startColumn", start.get(col));
@@ -438,17 +439,17 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
-"        <att name=\"keywords\">boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title</att>\n" +
+"        <att name=\"keywords\">aBoolean, aByte, aChar, aDouble, aFloat, aLong, anInt, aShort, aString, boolean, buoy, byte, center, char, data, double, float, int, long, national, ndbc, newer, noaa, short, string, title</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">The new summary!</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -570,7 +571,6 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
@@ -685,7 +685,7 @@ directionsForGenerateDatasetsXml() +
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"NOAA NDBC\";\n" +
 "    String creator_url \"http://www.ndbc.noaa.gov/\";\n" +
 "    String history \"" + today;
@@ -705,9 +705,8 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +

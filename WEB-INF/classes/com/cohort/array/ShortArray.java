@@ -230,12 +230,16 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
-     * This inserts an item into the array (increasing 'size' by 1).
+     * This inserts an item into the array at the specified index, 
+     * pushing subsequent items to oldIndex+1 and increasing 'size' by 1.
      *
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void add(int index, short value) {
+    public void atInsert(int index, short value) {
+        if (index < 0 || index > size)
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayAtInsert, getClass().getSimpleName(), "" + index, "" + size));
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
@@ -244,13 +248,14 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array at the specified index.
+     * This inserts an item into the array at the specified index, 
+     * pushing subsequent items to oldIndex+1 and increasing 'size' by 1.
      *
      * @param index 0..
      * @param value the value, as a String.
      */
-    public void addString(int index, String value) {
-        add(index, Math2.narrowToShort(String2.parseInt(value)));
+    public void atInsertString(int index, String value) {
+        atInsert(index, Math2.narrowToShort(String2.parseInt(value)));
     }
 
     /**
@@ -1233,18 +1238,66 @@ public class ShortArray extends PrimitiveArray {
         Test.ensureEqual(tArray, new short[]{(short)32000}, "");
 
         //intentional errors
-        try {anArray.get(1);              throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.set(1, (short)100);  throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getInt(1);           throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setInt(1, 100);      throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getLong(1);          throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setLong(1, 100);     throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getFloat(1);         throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setFloat(1, 100);    throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getDouble(1);        throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setDouble(1, 100);   throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getString(1);        throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setString(1, "100"); throw new Throwable("It should have failed.");} catch (Exception e) {}
+        try {anArray.get(1);              throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.set(1, (short)100);         throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getInt(1);           throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setInt(1, 100);      throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getLong(1);          throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setLong(1, 100);     throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getFloat(1);         throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setFloat(1, 100);    throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getDouble(1);        throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setDouble(1, 100);   throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getString(1);        throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setString(1, "100"); throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in ShortArray.set: index (1) >= size (1).", "");
+        }
 
         //set NaN returned as NaN
         anArray.setDouble(0, Double.NaN);   Test.ensureEqual(anArray.getDouble(0), Double.NaN, ""); 
@@ -1323,8 +1376,8 @@ public class ShortArray extends PrimitiveArray {
         Test.ensureEqual(anArray.get(1), 4, "");
         Test.ensureEqual(anArray.get(3), 8, "");
 
-        //test add(index, value)
-        anArray.add(1, (short)22);
+        //test atInsert(index, value)
+        anArray.atInsert(1, (short)22);
         Test.ensureEqual(anArray.size(), 5, "");
         Test.ensureEqual(anArray.get(0), 0, "");
         Test.ensureEqual(anArray.get(1),22, "");
@@ -1493,7 +1546,7 @@ public class ShortArray extends PrimitiveArray {
         String2.log("hashcode1=" + anArray.hashCode());
         anArray2 = (ShortArray)anArray.clone();
         Test.ensureEqual(anArray.hashCode(), anArray2.hashCode(), "");
-        anArray.add(0, (short)2);
+        anArray.atInsert(0, (short)2);
         Test.ensureTrue(anArray.hashCode() != anArray2.hashCode(), "");
 
         //justKeep

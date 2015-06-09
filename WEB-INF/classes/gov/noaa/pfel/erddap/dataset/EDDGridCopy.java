@@ -595,8 +595,7 @@ public class EDDGridCopy extends EDDGrid {
     "    String composite \"true\";\n" +
     "    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
     "    String contributor_role \"Source of level 2 data.\";\n" +
-    "    String Conventions \"CF-1.4\";\n" + //currently
-//    "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + //after next release
+    "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" + 
     "    String creator_email \"dave.foley@noaa.gov\";\n" +
     "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
     "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -631,7 +630,6 @@ expected =
     "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
     "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
     "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
-    "    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
     "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
     "    Float64 Northernmost_Northing 89.875;\n" +
     "    String origin \"Remote Sensing Systems, Inc\";\n" +
@@ -646,7 +644,7 @@ expected =
         //it's still a numeric ip because the source file was created long ago
     "    String sourceUrl \"http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
     "    Float64 Southernmost_Northing -89.875;\n" +
-    "    String standard_name_vocabulary \"CF-12\";\n" +
+    "    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
     "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
     "    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
     "    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +
@@ -748,10 +746,9 @@ expected =
             //  */
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nThis EDDGridCopy test only works on Bob's computer." +
-                "\n" + MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\n" + MustBe.throwableToString(t)); 
         }
 
         defaultCheckSourceData = true;

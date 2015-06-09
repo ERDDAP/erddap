@@ -18,6 +18,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.SimpleException;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.FileNameUtility;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
@@ -154,12 +155,25 @@ public class EDDTableFromSOS extends EDDTable{
     public final static String[] SosServerTypes = { //order not important
          SosServerTypeIoos52N, SosServerTypeIoosNdbc, SosServerTypeIoosNcSOS,
          SosServerTypeIoosNos, SosServerTypeOostethys, SosServerTypeWhoi};
+    public final static String slowSummaryWarning = 
+        "\n\nThe source SOS server for this dataset is very slow, so requests will " +
+        "take minutes to be fulfilled or will fail because of a timeout.";
     protected boolean ioos52NServer = false;  
     protected boolean ioosNdbcServer = false;  
     protected boolean ioosNcSOSServer = false;   
     protected boolean ioosNosServer = false;   
     protected boolean oostethysServer = false; 
     protected boolean whoiServer = false;       //one must be specified
+
+    public static String defaultResponseFormat(String tSosServerType) { 
+        tSosServerType = tSosServerType == null? "" : tSosServerType.toLowerCase();
+        if (SosServerTypeIoos52N.toLowerCase().equals(tSosServerType))
+            return "text/xml; subtype=\"om/1.0.0/profiles/ioos_sos/1.0\"";
+        if (SosServerTypeIoosNdbc.toLowerCase().equals(tSosServerType) ||
+             SosServerTypeIoosNos.toLowerCase().equals(tSosServerType))
+            return "text/csv";
+        return "text/xml; subtype=\"om/1.0.0\"";
+    }
 
     /**
      * This constructs an EDDTableFromSOS based on the information in an .xml file.
@@ -466,9 +480,9 @@ public class EDDTableFromSOS extends EDDTable{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         Test.ensureNotNothing(localSourceUrl, "sourceUrl wasn't specified.");
         requestObservedPropertiesSeparately = tRequestObservedPropertiesSeparately;
-        if (tResponseFormat == null)
-            tResponseFormat = "";
-        responseFormat = tResponseFormat.trim();
+        responseFormat = tResponseFormat == null? "" : tResponseFormat.trim();
+        if (responseFormat.length() == 0)
+            responseFormat = defaultResponseFormat(tSosServerType);
         sosVersion = tSosVersion;
 
         //bbox - set both or neither
@@ -625,20 +639,6 @@ public class EDDTableFromSOS extends EDDTable{
             sosPrefix + "Contents><" + 
             sosPrefix + "ObservationOfferingList></" + 
             sosPrefix + "ObservationOffering>";
-        /*if (ioos52NServer) {
-            offeringTag = 
-                "<sos:Capabilities>" + 
-                "<sos:contents>" + 
-                "<sos:Contents>" + 
-                "<swes:offering>" + 
-                "<sos:ObservationOffering>";
-            offeringEndTag =  
-                "<sos:Capabilities>" + 
-                "<sos:contents>" + 
-                "<sos:Contents>" + 
-                "<swes:offering>" + 
-                "</sos:ObservationOffering>";
-        }*/
 
         //default beginTime: a year ago      tamuSos needs this
         GregorianCalendar dbt = Calendar2.newGCalendarZulu();
@@ -1329,7 +1329,7 @@ public class EDDTableFromSOS extends EDDTable{
                 }
                 if (reallyVerbose) {
                     String2.log("\nobsProp=" + obsProp + " ttObsProp=" + tRequestObservedProperties);
-                    //String2.getStringFromSystemIn("Press Enter to continue or ^C to stop: ");
+                    //String2.pressEnterToContinue();
                 }
 
                 if (doBBoxQuery) { 
@@ -1372,9 +1372,7 @@ public class EDDTableFromSOS extends EDDTable{
                         "&offering=" + SSR.minimalPercentEncode(tStationID) + 
                         //"&observedProperty=" + tRequestObservedProperties.get(obsProp).substring(hashPo + 1) + 
                         "&observedProperty=" + tRequestObservedProperties.get(obsProp) + 
-                        "&responseFormat=" + 
-                            (responseFormat.length() == 0? "text/csv" :   //NDBC and NOS 
-                                SSR.minimalPercentEncode(responseFormat)) +  
+                        "&responseFormat=" + SSR.minimalPercentEncode(responseFormat) +  
                         "&eventTime=" +   //requestedDestination times are epochSeconds
                             Calendar2.epochSecondsToIsoStringT(requestedDestinationMin[3]) + "Z" + 
                         (requestedDestinationMin[3] == requestedDestinationMax[3]? "" : 
@@ -1386,7 +1384,7 @@ public class EDDTableFromSOS extends EDDTable{
                     }
 
                     //read IOOS response
-                    readFromIOOS(kvp, table, llatHash);
+                    readFromIoosNdbcNos(kvp, table, llatHash);
 
                 } else { //non-ioosServer    e.g., Oostethys
   
@@ -1396,10 +1394,7 @@ public class EDDTableFromSOS extends EDDTable{
                     StringBuilder getSB = new StringBuilder();
                     getSB.append("?service=SOS" +
                         "&version=" + sosVersion +  
-                        //"&resultFormat=application/com-xml"); //until 2010-04-20
-                        "&responseFormat=" +
-                            (responseFormat.length() == 0? "text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22" :   
-                                SSR.minimalPercentEncode(responseFormat)) +   
+                        "&responseFormat=" + SSR.minimalPercentEncode(responseFormat) +   
                         "&request=GetObservation" +
                         "&offering=" + SSR.minimalPercentEncode(tStationID) + 
                         "&observedProperty=" + SSR.minimalPercentEncode(
@@ -1484,17 +1479,18 @@ public class EDDTableFromSOS extends EDDTable{
      * @param llatHash lon+lat+alt+time+stationID goes to row#
 
      */
-    protected void readFromIOOS(String kvp, Table table, HashMap llatHash) 
+    protected void readFromIoosNdbcNos(String kvp, Table table, HashMap llatHash) 
         throws Throwable {
 
         //downloading data may take time
         //so write to file, then quickly read and process
         //also this simplifies catching/processing xml error
         String grabFileName = cacheDirectory() + 
-            "grabFile" + Math2.random(Integer.MAX_VALUE);
+            "grabFile" + String2.md5Hex12(kvp);
         long downloadTime = System.currentTimeMillis();
         try {
-            SSR.downloadFile(localSourceUrl + kvp, grabFileName, true);
+            if (EDStatic.developmentMode && File2.isFile(grabFileName)) {} 
+            else SSR.downloadFile(localSourceUrl + kvp, grabFileName, true);
             downloadTime = System.currentTimeMillis() - downloadTime;
         } catch (Throwable t) {
             //Normal error returns xml ExceptionReport.  So package anything else as WaitThenTryAgainException.
@@ -1715,7 +1711,8 @@ public class EDDTableFromSOS extends EDDTable{
             throw t;
 
         } finally {
-            File2.simpleDelete(grabFileName);  //don't keep in cache. SOS datasets change frequently.
+            if (!EDStatic.developmentMode) 
+                File2.simpleDelete(grabFileName);  //don't keep in cache. SOS datasets change frequently.
         }
     }
 
@@ -2108,121 +2105,6 @@ public class EDDTableFromSOS extends EDDTable{
 
             do {
                 //process the tags
-                //String2.log("tags=" + tags + xmlReader.content());
-                /* gomoos 2009-09-28
-<?xml version="1.0"?>
-<om:ObservationCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:om="http://
-schemas.opengis.net/om/1.0" xmlns:gml="http://schemas.opengis.net/gml" xmlns:swe="http://schemas.opengis.net/swe/1.0.1" xsi:schemaLocation="
-http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observation.xsd" gml:id="GoMOOS_sensor">
-
-<gml:description>SEA_WATER_SALINITY measurements from GoMOOS E01</gml:description>
-<gml:name>SEA_WATER_SALINITY measurements from GoMOOS E01</gml:name>
-<gml:boundedBy>
-<gml:Envelope srsName="urn:ogc:def:crs:EPSG:6.5:4326">
-<!-- overwrite these with your actual offering ROI -->
-<gml:lowerCorner>43.7148 -69.3578 0</gml:lowerCorner>
-<gml:upperCorner>43.7148 -69.3578 0</gml:upperCorner>
-</gml:Envelope>
-</gml:boundedBy>
-<om:member>
-<om:Observation gml:id="GoMOOS_E01">
-<gml:description>SEA_WATER_SALINITY measurements from GoMOOS E01</gml:description>
-<gml:name>SEA_WATER_SALINITY measurements from GoMOOS E01</gml:name>
-<gml:boundedBy>
-  <gml:Envelope srsName="urn:ogc:def:crs:EPSG:6.5:4326">
-      <!-- overwrite these with your actual offering  ROI -->
-      <gml:lowerCorner>43.7148 -69.3578 0</gml:lowerCorner>
-      <gml:upperCorner>43.7148 -69.3578 0</gml:upperCorner>
-  </gml:Envelope>
-</gml:boundedBy>
-<!-- Observation time -->
-<om:samplingTime><gml:TimePeriod><gml:beginPosition>2007-07-04T00:00:00Z</gml:beginPosition><gml:endPosition>2007-07-04T01:00:00Z<
-/gml:endPosition></gml:TimePeriod></om:samplingTime>
-<!-- Sensor description (SensorML) -->
-<om:procedure xlink:href="urn:gomoos.org:source.mooring#E01"/>
-<!-- Observed Property, can be multiple -->
-<om:observedProperty>
-<swe:CompositePhenomenon dimension="1" gml:id="BUOY_OBSERVABLES">
-   <gml:name>Buoy Observables</gml:name>
-<swe:component xlink:href="http://mmisw.org/cf#sea_water_salinity"/></swe:CompositePhenomenon>
-</om:observedProperty>
-<!-- Feature Of Interest -->
-<om:featureOfInterest xlink:href="urn:something:bodyOfWater"/>
-<!-- Result Structure, Encoding, and Data -->
-<om:result>
-   <swe:DataArray>
-       <swe:elementCount>
-           <swe:Count>
-                 <swe:value>7</swe:value>  <!-- Number of Records here -->
-             </swe:Count>
-         </swe:elementCount>
-         <swe:elementType name="E01Observations">
-             <swe:DataRecord>
-                <swe:field name="PlatformName">
-                    <swe:Quantity definition="urn:mmisw.org#platform"/>
-                </swe:field>
-                <!--  Time -->
-                <swe:field name="time">
-                    <swe:Time definition="urn:ogc:phenomenon:time:iso8601"/>
-                </swe:field>
-                <swe:field name="latitude">
-                    <swe:Quantity definition="urn:ogc:phenomenon:latitude:wgs84">
-                        <swe:uom code="deg"/>
-                    </swe:Quantity>
-                </swe:field>
-                <swe:field name="longitude">
-                    <swe:Quantity definition="urn:ogc:phenomenon:longitude:wgs84">
-                         <swe:uom code="deg"/>
-                    </swe:Quantity>
-                </swe:field>
-                <swe:field name="depth">
-                    <swe:Quantity definition="http://mmisw.org/cf#depth" referenceFrame="urn:ogc:def:crs:EPSG:6.15:5113">
-                         <swe:uom code="m"/>
-                     </swe:Quantity>
-                </swe:field>
-                <!--  Observable fields -->
-
-             <swe:field name="observedProperty1">
-                    <swe:Quantity definition="http://mmisw.org/cf#sea_water_salinity">
-                        <swe:uom code="psu"/>
-                    </swe:Quantity>
-                </swe:field></swe:DataRecord>
-         </swe:elementType>
-         <swe:encoding>
-             <!-- newline as block separator -->
-             <!-- swe:TextBlock blockSeparator="&#10;"  decimalSeparator="." tokenSeparator=","/ -->
-             <swe:TextBlock blockSeparator=" " decimalSeparator="." tokenSeparator=","/>
-         </swe:encoding>
-         <swe:values>E01,2007-07-04T00:00:00Z,43.7136993408203,-69.3549346923828,1,31.1920852661133 E01,2007-07-04T00:00:00Z,43.
-7136993408203,-69.3549346923828,20,31.8228702545166 E01,2007-07-04T00:00:00Z,43.7136993408203,-69.3549346923828,50,32.1141357421875 E01,2007
--07-04T00:30:00Z,43.7136993408203,-69.3549346923828,1,31.1868896484375 E01,2007-07-04T01:00:00Z,43.7136993408203,-69.3549346923828,1,31.1843
-872070312 E01,2007-07-04T01:00:00Z,43.7136993408203,-69.3549346923828,20,31.833927154541 E01,2007-07-04T01:00:00Z,43.7136993408203,-69.35493
-46923828,50,32.0988731384277</swe:values>
-     </swe:DataArray>
- </om:result>
-</om:Observation>
-</om:member>
-</om:ObservationCollection>
-
-            VAST has om:Observation wrapped in om:ObservationCollection:
-            <om:ObservationCollection gml:id="WEAttp://www.opengis.net/swe/1.0" xmlns: ...
-              <gml:name>Weather Data</gml:name>
-              <om:member>
-                <om:Observation ... similar to above
-
-            VAST has lat lon alt info right before resultDefinition:
-            <om:featureOfInterest>
-                <swe:GeoReferenceableFeature>
-                    <gml:name>NSSTC Weather Station</gml:name>
-                    <gml:location>
-                        <gml:Point srsName="urn:ogc:def:crs:EPSG:6.1:4329">
-                            <gml:coordinates>34.7 -86.6 15.0</gml:coordinates>
-                        </gml:Point>
-                    </gml:location>
-                </swe:GeoReferenceableFeature>
-            </om:featureOfInterest>
-            */
-
                 if (debugMode) String2.log(tags + xmlReader.content());
 
                 if (tags.startsWith(ofInterest)) { //i.e., within <om:Observation>
@@ -2773,7 +2655,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
@@ -2790,7 +2672,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 
 expected = 
 "    Float64 Southernmost_Northing -14.28;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
 "\n" +
@@ -2804,9 +2686,8 @@ expected =
             Test.ensureEqual(results.substring(po), expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error " + datasetIdPrefix + "nosSosATemp. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error " + datasetIdPrefix + "nosSosATemp. NOS SOS Server is in flux."); 
         }
     }
 
@@ -2852,9 +2733,8 @@ expected =
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error " + datasetIdPrefix + "nosSosATemp. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error " + datasetIdPrefix + "nosSosATemp. NOS SOS Server is in flux."); 
         }
     }
 
@@ -2891,9 +2771,8 @@ expected =
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error " + datasetIdPrefix + "nosSosATemp. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error " + datasetIdPrefix + "nosSosATemp. NOS SOS Server is in flux."); 
         }
     }
 
@@ -3023,7 +2902,7 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
@@ -3038,9 +2917,8 @@ expected =
 //+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error " + datasetIdPrefix + "nosSosPressure. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error " + datasetIdPrefix + "nosSosPressure. NOS SOS Server is in flux."); 
         }
     }
 
@@ -3107,7 +2985,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.48, 60.5583;\n" + //changes sometimes
+"    Float64 actual_range 29.3675, 60.5583;\n" + //changes sometimes
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -3155,11 +3033,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -71.1641;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 60.5583;\n" + //changes sometimes
-"    Float64 geospatial_lat_min 29.48;\n" + //2013-05-11 was 29.48  then 29.6817, then...
+"    Float64 geospatial_lat_min 29.3675;\n" + //2013-05-11 was 29.48  then 29.6817, then...
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max -71.1641;\n" +
 "    Float64 geospatial_lon_min -145.753;\n" + //changes sometimes
@@ -3170,9 +3048,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 //+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosCond. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosCond. NOS SOS Server is in flux."); 
         }
     }
 
@@ -3193,14 +3070,14 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
                 String tName = eddTable.makeNewFileForDapQuery(null, null, 
                     preQuery + stations[i] + postQuery, 
                     EDStatic.fullTestCacheDirectory, eddTable.className() + "_testFindValidStation", ".csv"); 
-                String2.getStringFromSystemIn("SUCCESS with station=" + stations[i]);
+                String2.pressEnterToContinue("SUCCESS with station=" + stations[i]);
                 break;
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             }
         }
         if (i >= stations.length)
-            String2.getStringFromSystemIn("FAILED to find a valid station.");
+            String2.pressEnterToContinue("FAILED to find a valid station.");
     }
 
     /**
@@ -3452,7 +3329,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String cdm_data_type \"TimeSeriesProfile\";\n" +
 "    String cdm_profile_variables \"time\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -66.9956;\n" +
 "    String featureType \"TimeSeriesProfile\";\n" +
 "    Float64 geospatial_lat_max 61.2782;\n" +
@@ -3468,9 +3345,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
-            String2.getStringFromSystemIn(msg + 
-                "\nThis started failing (no matching station) in ~Feb 2013. I don't understand why." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(msg + 
+                "\nThis started failing (no matching station) in ~Feb 2013. I don't understand why."); 
         }
     }
 
@@ -3496,7 +3372,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -145.753, -71.1641;\n" + //pre 2013-11-04 was -94.985, changed 2012-03-16
+"    Float64 actual_range -145.753, -71.1641;\n" + //..., pre 2013-11-04 was -94.985, changed 2012-03-16
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -3505,7 +3381,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.48, 60.5583;\n" + //pre 2013-11-04 was 41.7043, pre 2013-06-28 was 29.6817 pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
+"    Float64 actual_range 29.3675, 60.5583;\n" + //..., pre 2013-11-04 was 41.7043, pre 2013-06-28 was 29.6817 pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -3634,10 +3510,9 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected(?) error " + datasetIdPrefix + "nosSosSalinity." +
-                "\nNOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nNOS SOS Server is in flux."); 
         }
     }
 
@@ -3764,7 +3639,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
@@ -3779,10 +3654,9 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 //+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected error " + datasetIdPrefix + "nosSosWind." +
-                "\nNOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nNOS SOS Server is in flux."); 
         }
     }
 
@@ -3881,7 +3755,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
@@ -3948,9 +3822,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.491,urn:ioos:def:datum:noaa::MLLW,1.916\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NOS SOS Server is in flux."); 
         }
     }
 
@@ -4035,7 +3908,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
@@ -4091,9 +3964,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NOS SOS Server is in flux."); 
         }
     }
 
@@ -4367,7 +4239,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String cdm_data_type \"TimeSeriesProfile\";\n" +
 "    String cdm_profile_variables \"time\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -66.58;\n" +
 "    String featureType \"TimeSeriesProfile\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
@@ -4401,11 +4273,10 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf.ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.19;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have currents data.\n" +
 "\n" +
@@ -4585,9 +4456,8 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NDBC SOS Server is in flux."); 
         }
 
     }
@@ -4675,7 +4545,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -64.763;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
@@ -4708,11 +4578,10 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.86;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_salinity data.\n" +
 "\n" +
@@ -4763,9 +4632,8 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 //"-84.875,29.786,urn:ioos:station:wmo:apqf1,NaN,2010-05-27T00:15:00Z,urn:ioos:sensor:wmo:apqf1::ct1,2.2\n";
             Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NDBC SOS Server is in flux."); 
         }
     }
 
@@ -4818,7 +4686,7 @@ Error from http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0&req
   ERROR is from requestUrl=http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0&request=GetObservation&offering=urn:ioos:station:wmo:41012&observedProperty=http://mmisw.org/ont/cf/parameter/sea_water_temperature&responseFormat=text/csv&eventTime=2006-07-27T21:10:00Z/2012-04-25T19:07:11Z
 
 java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: No more than thirty days of data can be requested.".
- at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.readFromIOOS(EDDTableFromSOS.java:1392)
+ at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.readFromIoosNdbcNos(EDDTableFromSOS.java:1392)
  at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.getDataForDapQuery(EDDTableFromSOS.java:1231)
  at gov.noaa.pfel.erddap.dataset.EDDTable.respondToDapQuery(EDDTable.java:2266)
  at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2354)
@@ -4828,10 +4696,9 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:1417)    
 */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\n\nAs of 2012-04-09, this fails because requests again limited to 30 days." +
-                "\nNDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nNDBC SOS Server is in flux."); 
         }
     }
 
@@ -4916,7 +4783,7 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 178.27;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 57.5;\n" +
@@ -4950,11 +4817,10 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 57.5;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -46.92;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_floor_depth_below_sea_surface data.\n" +
 "\n" +
@@ -4986,9 +4852,8 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "160.56,-46.92,urn:ioos:station:wmo:55015,-4943.93,2008-08-01T15:00:00Z,urn:ioos:sensor:wmo:55015::tsunameter0,900\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NOS SOS Server is in flux."); 
         }
     }
 
@@ -5075,7 +4940,7 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 180.0;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.875;\n" +
@@ -5108,11 +4973,10 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 70.875;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -14.551;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_temperature data.\n" +
 "\n" +
@@ -5144,9 +5008,8 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T19:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.1\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NDBC SOS Server is in flux."); 
         }
     }
 
@@ -5184,9 +5047,8 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
                 EDStatic.fullTestCacheDirectory, name, ".csv"); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NDBC SOS Server is in flux."); 
         }
         timeParts = false;
     }
@@ -5418,7 +5280,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 179.0;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.872;\n" +
@@ -5457,11 +5319,10 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 70.872;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have waves data.\n" +
 "\n" +
@@ -5542,17 +5403,15 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
                     "InvalidParameterValue: eventTime: No more than 31 days of " +
                     "data can be requested.\".";
                 if (msg.indexOf(expected) < 0) {                    
-                    String2.getStringFromSystemIn("observed error=" + msg + 
+                    String2.pressEnterToContinue("observed error=" + msg + 
                         "\nexpected=" + expected +
-                        "\nUnexpected error ndbcSosWaves. NDBC SOS Server is in flux." +
-                        "\nPress ^C to stop or Enter to continue..."); 
+                        "\nUnexpected error ndbcSosWaves. NDBC SOS Server is in flux."); 
                 }
             }
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error ndbcSosWaves. NDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error ndbcSosWaves. NDBC SOS Server is in flux."); 
         }
 
 
@@ -5668,7 +5527,7 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 180.0;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 80.81;\n" +
@@ -5702,11 +5561,10 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 80.81;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have winds data.\n" +
 "\n" +
@@ -5736,9 +5594,8 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "-79.09,32.5,urn:ioos:station:wmo:41004,5.0,2008-08-01T03:50:00Z,urn:ioos:sensor:wmo:41004::anemometer1,236.0,8.0,9.3,NaN\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NDBC SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error. NDBC SOS Server is in flux."); 
         }
     }
 
@@ -6122,8 +5979,7 @@ So I will make ERDDAP able to read
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
         EDStatic.sosActive = oSosActive;
         debugMode = oDebugMode;
@@ -6672,18 +6528,20 @@ So I will make ERDDAP able to read
         Attributes sgAtts = new Attributes(); //source global atts
         sgAtts.add("infoUrl", infoUrl);
         sgAtts.add("institution", institution);
+        if (ioos52NServer)
+            summary += slowSummaryWarning;
         sgAtts.add("summary", summary);
         sgAtts.add("title", title);
         sgAtts.add("license", license);
         sgAtts.add("cdm_timeseries_variables", "station_id, longitude, latitude");
         sgAtts.add("subsetVariables",          "station_id, longitude, latitude");
 
-        Attributes gAtts = table.globalAttributes();
-        gAtts.add(makeReadyToUseAddGlobalAttributesForDatasetsXml(sgAtts, 
+        Attributes gAddAtts = makeReadyToUseAddGlobalAttributesForDatasetsXml(sgAtts, 
             "TimeSeries", tLocalSourceUrl, new Attributes(), //externalAtts
-            new HashSet())); //suggestedKeywords
-        gAtts.remove("original_institution");
+            new HashSet()); //suggestedKeywords
+        Attributes gAtts = table.globalAttributes();
         gAtts.add(sgAtts); //since only addAtts will be printed
+        gAtts.add(gAddAtts);
         for (int op = 0; op < uniqueObsProp.size(); op++) {
             String prop = uniqueObsProp.get(op);
             String dvName = prop;
@@ -6697,7 +6555,8 @@ So I will make ERDDAP able to read
             Attributes sourceAtts = new Attributes();
             sourceAtts.add("standard_name", dvName);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-               sourceAtts, dvName, true, false); //addColorBarMinMax, tryToFindLLAT
+                sgAtts, sourceAtts, dvName, 
+                true, false); //addColorBarMinMax, tryToFindLLAT
             //then add the sourceAtts to the addAtts (since addAtts is all that will be shown)
             addAtts.add("observedProperty", prop);
             addAtts.add("standard_name", dvName);
@@ -6723,7 +6582,9 @@ So I will make ERDDAP able to read
             "    <sosServerType>" + sosServerType + "</sosServerType>\n" +
             "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
             "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
-            "    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
+            "    <requestObservedPropertiesSeparately>" +
+                (ioos52NServer || ioosNdbcServer || ioosNosServer? "true" : "false") + 
+                "</requestObservedPropertiesSeparately>\n" +
             "    <longitudeSourceName>longitude</longitudeSourceName>\n" +
             "    <latitudeSourceName>latitude</latitudeSourceName>\n" +
             "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
@@ -6750,6 +6611,7 @@ So I will make ERDDAP able to read
      */
     public static void testGenerateDatasetsXml(boolean useCachedInfo) throws Throwable {
         testVerboseOn();
+        //debugMode = true;
         String2.log("\n*** EDDTableFromSOS.testGenerateDatasetsXml");
 
         try {
@@ -6824,7 +6686,7 @@ String expected2 =
 "    <sosServerType>IOOS_NDBC</sosServerType>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
-"    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
+"    <requestObservedPropertiesSeparately>true</requestObservedPropertiesSeparately>\n" +
 "    <longitudeSourceName>longitude</longitudeSourceName>\n" +
 "    <latitudeSourceName>latitude</latitudeSourceName>\n" +
 "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
@@ -6837,18 +6699,18 @@ String expected2 =
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
-"        <att name=\"creator_url\">http://sdf.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://sdf.ndbc.noaa.gov/</att>\n" +
-"        <att name=\"institution\">National Data Buoy Center</att>\n" +
-"        <att name=\"keywords\">buoy, center, data, national, ndbc, noaa, sos</att>\n" +
+"        <att name=\"institution\">NOAA NDBC</att>\n" +
+"        <att name=\"keywords\">buoy, center, data, national, ndbc, noaa, server.php, sos</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
-"        <att name=\"summary\">National Data Buoy Center SOS</att>\n" +
-"        <att name=\"title\">National Data Buoy Center SOS</att>\n" +
+"        <att name=\"summary\">National Data Buoy Center SOS. NOAA NDBC data from http://sdf.ndbc.noaa.gov/sos/server.php.das .</att>\n" +
+"        <att name=\"title\">National Data Buoy Center SOS (server.php)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>air_temperature</sourceName>\n" +
@@ -6988,9 +6850,8 @@ String expected2 =
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
 
     }
@@ -7303,15 +7164,16 @@ String expected2 =
         String time1 = Calendar2.safeEpochSecondsToIsoStringTZ(tEpochSeconds, "");
         tEpochSeconds += Calendar2.SECONDS_PER_DAY;
         String time2 = Calendar2.safeEpochSecondsToIsoStringTZ(tEpochSeconds, "");
+
         String pre  = tLocalSourceUrl + "?service=SOS&version=" + tSosVersion +
             "&request=GetObservation&offering=" + tOfferingAll +
             "&observedProperty=";
         String post =
-            "&responseFormat=" + 
-            (isIoos52N? "text/xml;+subtype=\"om/1.0.0/profiles/ioos_sos/1.0\"": "text/csv") + 
+            "&responseFormat=" + SSR.minimalPercentEncode(
+                defaultResponseFormat(sosServerType)) + 
             "&eventTime=" + time1 + "/" + time2 +
             (isIoos52N? "" : "&featureofinterest=BBOX:-180,-90,180,90");
-int nUniqueObsProp = 1; //uniqueObsProp.size();  // 1 for testing !!!
+        int nUniqueObsProp = uniqueObsProp.size();  //often set to 1 when testing !!!
         for (int op = 0; op < nUniqueObsProp; op++) {
             try {
                 sb.append(generateDatasetsXmlFromOneIOOS(useCachedInfo,
@@ -7486,17 +7348,18 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">" + tLicense + "</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  " +
 "The stations in this dataset have " + shortObservedProperty + " data.\n" +
 "\n" +
-"Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.</att>\n" +
+"Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables." +
+(isIoos52N? slowSummaryWarning : "") +
+            "</att>\n" +
 "        <att name=\"title\">" + tInstitution + " SOS - " + shortObservedProperty + "</att>\n" +
 "    </addAttributes>\n" +
 "    <longitudeSourceName>" + longitudeSourceName + "</longitudeSourceName>\n" +
@@ -7528,6 +7391,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
             Attributes addAtts = new Attributes();
             sourceAtts.add("standard_name", colNameNoParen);  //add now, remove later
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                sosTable.globalAttributes(), //but there are none
                 sourceAtts, colNameNoParen, true, true); //true=tryToAdd colorBarMinMax, tryToFindLLAT
             if (tUnits != null) 
                 addAtts.add("units", tUnits);
@@ -7575,11 +7439,14 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         String results = generateDatasetsXmlFromIOOS(useCachedInfo,
             "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC");
         String expected = expectedTestGenerateDatasetsXml(
-            "http://sdf.ndbc.noaa.gov/", "1.0.0", "IOOS_NDBC", "NOAA NDBC");
-        int po = results.indexOf(expected.substring(0, 80));
+            "http://sdf.ndbc.noaa.gov/", "1.0.0", "IOOS_NDBC", "NOAA NDBC", 
+            "sea_water_salinity");
+        String start = expected.substring(0, 80);
+        int po = results.indexOf(start);
         if (po < 0) {
             String2.log("\nRESULTS=\n" + results);
-            throw new SimpleException("'expected' string not found in 'results' string.");
+            throw new SimpleException(
+                "Start of 'expected' string not found in 'results' string:\n" + start);
         }
         String tResults = results.substring(po, 
             Math.min(results.length(), po + expected.length()));
@@ -7603,14 +7470,17 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             "&offering=urn:ioos:network:noaa.nws.ndbc:all" + 
             "&responseFormat=text/csv&eventTime=2010-05-27T00:00:00Z/2010-05-27T01:00:00Z" + 
             "&featureofinterest=BBOX:-180,-90,180,90", "1.0.0", "IOOS_NDBC", "", "", "");
+
         String expected = expectedTestGenerateDatasetsXml(
-            "http://sdf.ndbc.noaa.gov/sos/", "1.0.0", "IOOS_NDBC", "NOAA NDBC");
+            "http://sdf.ndbc.noaa.gov/sos/", "1.0.0", "IOOS_NDBC", "NOAA NDBC", 
+            "sea_water_salinity");
         Test.ensureEqual(results, expected, "results=\n" + results);
         
     }
 
     private static String expectedTestGenerateDatasetsXml(String tInfoUrl, 
-        String tSosVersion, String tSosServerType, String tInstitution) { 
+        String tSosVersion, String tSosServerType, String tInstitution,
+        String whichObsProp) { //air_temperature or sea_water_salinity
      
         tSosServerType = tSosServerType == null? "" : tSosServerType.trim();
         boolean isIoos52N = tSosServerType.toLowerCase().equals(
@@ -7630,17 +7500,16 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
-"        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air_temperature data.\n" +
+"        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have " + whichObsProp + " data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.</att>\n" +
-"        <att name=\"title\">NOAA NDBC SOS - air_temperature</att>\n" +
+"        <att name=\"title\">NOAA NDBC SOS - " + whichObsProp + "</att>\n" +
 "    </addAttributes>\n" +
 "    <longitudeSourceName>longitude (degree)</longitudeSourceName>\n" +
 "    <latitudeSourceName>latitude (degree)</latitudeSourceName>\n" +
@@ -7661,10 +7530,12 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Sensor Id</att>\n" +
-"            <att name=\"observedProperty\">air_temperature</att>\n" +
+"            <att name=\"observedProperty\">" + whichObsProp + "</att>\n" +
 "            <att name=\"standard_name\">sensor_id</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
+
+(whichObsProp.equals("air_temperature")?
 "    <dataVariable>\n" +
 "        <sourceName>air_temperature (C)</sourceName>\n" +
 "        <destinationName>air_temperature</destinationName>\n" +
@@ -7680,8 +7551,9 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "            <att name=\"standard_name\">air_temperature</att>\n" +
 "            <att name=\"units\">C</att>\n" +
 "        </addAttributes>\n" +
-"    </dataVariable>\n" +
-/*"    <dataVariable>\n" +
+"    </dataVariable>\n" :
+
+"    <dataVariable>\n" +
 "        <sourceName>sea_water_salinity (psu)</sourceName>\n" +
 "        <destinationName>sea_water_salinity</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
@@ -7696,8 +7568,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "            <att name=\"standard_name\">sea_water_salinity</att>\n" +
 "            <att name=\"units\">psu</att>\n" +
 "        </addAttributes>\n" +
-"    </dataVariable>\n" +
-*/
+"    </dataVariable>\n") +
+
 "</dataset>\n" +
 "\n";
     }
@@ -8104,9 +7976,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "166.62,19.29,27.9\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nTHIS TEST REQUIRES THAT SOS SERVICES BE TURNED ON IN LOCAL ERDDAP." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nTHIS TEST REQUIRES THAT SOS SERVICES BE TURNED ON IN LOCAL ERDDAP."); 
         }
 
     }
@@ -8206,9 +8077,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             String2.log(table.toCSSVString());
             String2.log("\n *** Done.  nRows=" + table.nRows());
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nExpected error.  NOS SOS Server is in flux." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nExpected error.  NOS SOS Server is in flux."); 
         }
 
     } */
@@ -8319,8 +8189,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
         EDStatic.sosActive = oSosActive;
         debugMode = oDebugMode;
@@ -8513,7 +8382,7 @@ testQuickRestart = true;
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -80.033;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 30.766;\n" +
@@ -8540,11 +8409,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 30.766;\n" +
 "    String sourceUrl \"http://data.gcoos.org:8080/52nSOS/sos/kvp\";\n" +
 "    Float64 Southernmost_Northing 16.834;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air_pressure data.\n" +
 "\n" +
@@ -8689,7 +8557,7 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
@@ -8706,7 +8574,7 @@ expected =
 
 expected = 
 "    Float64 Southernmost_Northing -14.28;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
 "\n" +
@@ -8721,9 +8589,8 @@ expected =
     /* */
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error gcoosSosAirPressure." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error gcoosSosAirPressure."); 
         }
 
         debugMode = oDebugMode;

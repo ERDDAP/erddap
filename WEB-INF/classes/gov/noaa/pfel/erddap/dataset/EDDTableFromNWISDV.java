@@ -1308,6 +1308,7 @@ public class EDDTableFromNWISDV extends EDDTable{
            //constructor won't read source atts
            //so put all atts in add atts
            Attributes tAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+               dataSourceTable.globalAttributes(), //but there aren't any
                addAtts, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
            addAtts.add(tAtts);  //tAtts have precedence
 
@@ -1542,7 +1543,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 //add col0= agencySiteCode
                 StringArray agencySiteCode = new StringArray(nRows, false);
                 for (int row = 0; row < nRows; row++) 
-                    agencySiteCode.add(row, agencyPA.get(row) + ":" + siteCodePA.get(row));
+                    agencySiteCode.atInsert(row, agencyPA.get(row) + ":" + siteCodePA.get(row));
                 stationTable.addColumn(0, "agencySiteCode", agencySiteCode, new Attributes());
                 int nCols = stationTable.nColumns();
 
@@ -2306,7 +2307,7 @@ directionsForGenerateDatasetsXml() +
             Calendar2.elapsedTimeString(System.currentTimeMillis() - totalTime));
         if (justAgency != null)
             String2.returnLoggingToSystemOut();
-        String2.getStringFromSystemIn("Press enter to continue..."); 
+        String2.pressEnterToContinue(); 
     }
 
     /** Bob used this to screen scrape NWIS waterML stations information
@@ -2744,7 +2745,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToCSVString());
             Calendar2.elapsedTimeString(System.currentTimeMillis() - totalTime) + 
             "\nDiagnostics are in logFile=" + logFile);
         String2.returnLoggingToSystemOut();
-        String2.getStringFromSystemIn("Press enter to continue..."); 
+        String2.pressEnterToContinue(); 
     }
 
     /** This runs some basic tests of a dataset from this class. */
@@ -3173,16 +3174,13 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
     public static void testAvoidStackOverflow() throws Throwable {
         try {
             EDD edd = EDD.oneFromDatasetXml("testAvoidStackOverflow");
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "You shouldn't have gotten here!\n" + 
-                "A specific exception should have been thrown.\n" +
-                "Press ^C to stop or Enter to continue..."); 
+                "A specific exception should have been thrown."); 
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf("(in danger of stack overflow)") < 0)
-                String2.getStringFromSystemIn(
-                    "Unexpected exception:\n" + msg +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue("Unexpected exception:\n" + msg); 
         }
     }
     

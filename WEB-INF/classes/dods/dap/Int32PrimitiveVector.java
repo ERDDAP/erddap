@@ -213,9 +213,9 @@ public class Int32PrimitiveVector extends PrimitiveVector implements Cloneable {
   /**
    * Create a new primitive vector using a subset of the data.
    *
-   * @param start: starting index (i=start)
-   * @param stop: ending index (i<=stop)
-   * @param stride: index stride (i+=stride)
+   * @param start  starting index (i=start)
+   * @param stop  ending index (i<=stop)
+   * @param stride  index stride (i+=stride)
    * @return new primitive vector, of type Int32PrimitiveVector.
    */
   public PrimitiveVector subset( int start, int stop, int stride) {

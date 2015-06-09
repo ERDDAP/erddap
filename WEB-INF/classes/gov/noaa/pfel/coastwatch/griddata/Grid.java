@@ -1825,7 +1825,7 @@ switch to finally clause
                     dfntType + ".");
             }
 
-            //String2.log("  count=" + count + " dar=" + String2.noLongerThan(String2.toCSSVString(dar), 300));
+            //String2.log("  count=" + count + " dar=" + String2.noLongerThanDots(String2.toCSSVString(dar), 300));
 
             if (count == 0) {
                 //save dar as data
@@ -2375,7 +2375,7 @@ try {
         double lonSpacing15 = 1.5 * lonSpacing;
         while (ti < tLonAD.size()) {
             if (tLonAD.get(ti) - tLonAD.get(ti - 1) > lonSpacing15) 
-                tLonAD.add(ti, tLonAD.get(ti - 1) + lonSpacing);
+                tLonAD.atInsert(ti, tLonAD.get(ti - 1) + lonSpacing);
             ti++;
         }
         //String2.log("  tLon after removeDuplicates: " + tLonAD.toString());
@@ -3950,7 +3950,6 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         int nLat = lat.length;
         int nLon = lon.length;
         globalAttributes.set("Conventions",               FileNameUtility.getConventions());
-        globalAttributes.set("Metadata_Conventions",      FileNameUtility.getMetadataConventions());
         globalAttributes.set("title",                     fileNameUtility.getBoldTitle(name));
         globalAttributes.set("summary",                   fileNameUtility.getAbstract(name));
         globalAttributes.set("keywords",                  fileNameUtility.getKeywords(name));
@@ -4392,8 +4391,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         int nLat = grid2.lat.length;
         int nLon = grid2.lon.length;
         Test.ensureTrue(grid1.equals(grid2), "TestNetCDF");//tests lat, lon, data
-        Test.ensureEqual(grid2.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
-        Test.ensureEqual(grid2.globalAttributes().get("Metadata_Conventions"),       new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Metadata_Conventions");
+        Test.ensureEqual(grid2.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.6, ACDD-1.3, CWHDF"}), "Conventions");
         Test.ensureEqual(grid2.globalAttributes().get("title"),                      new StringArray(new String[]{"SST, NOAA POES AVHRR, LAC, 0.0125 degrees, West US, Day and Night"}), "title");
         Test.ensureEqual(grid2.globalAttributes().get("summary"),                    new StringArray(new String[]{"NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (0.0125 degrees) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites."}), "summary");
         Test.ensureEqual(grid2.globalAttributes().get("keywords"),                   new StringArray(new String[]{"EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature"}), "keywords");
@@ -4424,7 +4422,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"2003-03-04T00:00:00Z"}), "time_coverage_start");
         Test.ensureEqual(grid2.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"2003-03-05T00:00:00Z"}), "time_coverage_end");
         //Test.ensureEqual(grid2.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
-        Test.ensureEqual(grid2.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF-12"}), "standard_name_vocabulary");
+        Test.ensureEqual(grid2.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF Standard Name Table v27"}), "standard_name_vocabulary");
         Test.ensureEqual(grid2.globalAttributes().get("license"),                    new StringArray(new String[]{"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information."}), "license");
         Test.ensureEqual(grid2.globalAttributes().get("contributor_name"),           new StringArray(new String[]{"NOAA NWS Monterey and NOAA CoastWatch"}), "contributor_name");
         Test.ensureEqual(grid2.globalAttributes().get("contributor_role"),           new StringArray(new String[]{"Source of level 2 data."}), "contributor_role");
@@ -5480,7 +5478,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         long increase = Math2.getMemoryInUse() - um;
         String2.log("Memory used change after MemoryLeak test: " + increase);
         if (increase > 50000) 
-            String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(); 
         else Math2.gc(5000); //in a test, a pause after message displayed
     }
 

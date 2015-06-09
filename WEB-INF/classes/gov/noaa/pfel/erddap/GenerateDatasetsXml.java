@@ -465,7 +465,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromSOS")) {
                     s1  = get(args,  1,  s1, "URL");
                     s2  = get(args,  2,  s2, "SOS version (e.g., 1.0.0)");
-                    s3  = get(args,  3,  s3, "SOS server type (52N, IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI)");
+                    s3  = get(args,  3,  s3, "SOS server type (IOOS_52N, IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI)");
                     String2.log("working...");
                     printToBoth(EDDTableFromSOS.generateDatasetsXml(
                         false, s1, s2, s3)); //use cached getCapabilities

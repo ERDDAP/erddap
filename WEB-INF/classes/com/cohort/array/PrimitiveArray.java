@@ -71,6 +71,8 @@ public abstract class PrimitiveArray {
     public static String ArrayAppendTables =
         String2.ERROR + " in PrimitiveArray.append:\n" +
         "the tables have a different number of columns ({0} != {1}).";
+    public static String ArrayAtInsert =
+        String2.ERROR + " in {0}.atInsert: index ({1}) is < 0 or > size ({2}).";
     public static String ArrayDiff =                      
         String2.ERROR + ": The PrimitiveArrays differ at [{0}] ({1} != {2}).";
     public static String ArrayDifferentSize =
@@ -611,12 +613,13 @@ public abstract class PrimitiveArray {
     abstract public int elementClassIndex();
 
     /**
-     * This adds an element to the array at the specified index.
+     * This inserts an item into the array at the specified index, 
+     * pushing subsequent items to oldIndex+1 and increasing 'size' by 1.
      *
      * @param index 0..
      * @param value the value, as a String.
      */
-    abstract public void addString(int index, String value);
+    abstract public void atInsertString(int index, String value);
 
     /**
      * This adds an element to the array.
@@ -3078,10 +3081,17 @@ public abstract class PrimitiveArray {
 
         pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", ""});
         pa = pa.simplify();
-        Test.ensureTrue(pa instanceof StringArray, "elementClass=" + pa.elementClass());
+        Test.ensureEqual(pa.elementClassString(), "String", "elementClass");
         Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
         Test.ensureEqual(pa.getString(1), "2000000000000000", "");
         Test.ensureEqual(pa.getString(2), "", "");
+
+        pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", "NaN"});
+        pa = pa.simplify();
+        Test.ensureEqual(pa.elementClassString(), "String", "elementClass");
+        Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
+        Test.ensureEqual(pa.getString(1), "2000000000000000", "");
+        Test.ensureEqual(pa.getString(2), "NaN", "");
 
         pa = new StringArray(new String[]{"-1e33", "1e33", "."});
         pa = pa.simplify();

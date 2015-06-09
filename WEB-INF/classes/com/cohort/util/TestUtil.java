@@ -1195,6 +1195,22 @@ public class TestUtil {
 "  fasl faslfkj(b) flkajf \n" +
 "  sflkj(b) adfsl;kj", s);
 
+        //findWholeWord
+        s = "aa)z (b) /cc/ d_z=ee";
+        Test.ensureEqual(String2.findWholeWord(s, "aa"),    0, "");
+        Test.ensureEqual(String2.findWholeWord(s, "b"),     6, "");
+        Test.ensureEqual(String2.findWholeWord(s, "cc"),   10, "");
+        Test.ensureEqual(String2.findWholeWord(s, "d"),    -1, "");
+        Test.ensureEqual(String2.findWholeWord(s, "ee"),   18, "");
+        Test.ensureEqual(String2.findWholeWord(s, "AA"),   -1, "");
+        Test.ensureEqual(String2.findWholeWord(s, ""),     -1, "");
+        Test.ensureEqual(String2.findWholeWord(s, null),   -1, "");
+        Test.ensureEqual(String2.findWholeWord("", "a"),   -1, "");
+        Test.ensureEqual(String2.findWholeWord(null, "a"), -1, "");
+        Test.ensureEqual(String2.findWholeWord("a", "a"),   0, "");
+        Test.ensureEqual(String2.findWholeWord("a ", "a"),  0, "");
+        Test.ensureEqual(String2.findWholeWord(" a", "a"),  1, "");
+
         //noLongLinesAtSpace
         s = "a abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlasdabc fakjasdfg(b)";
         s = String2.noLongLinesAtSpace(s, 15, "  "); 
@@ -1225,6 +1241,25 @@ public class TestUtil {
 "  jk;lk qwer\n" +
 "  abcdefghijklmnopqrstuvwxyzabcdef(b)\n" +
 "  a", s);
+
+        //noLongerThan
+        s = "123456789";
+        Test.ensureEqual(String2.noLongerThan(s, 10), "123456789", "");
+        Test.ensureEqual(String2.noLongerThan(s,  9), "123456789", "");
+        Test.ensureEqual(String2.noLongerThan(s,  8), "12345678", "");
+        Test.ensureEqual(String2.noLongerThan(s,  1), "1", "");
+        Test.ensureEqual(String2.noLongerThan(s,  0), "", "");
+        Test.ensureEqual(String2.noLongerThan(s, -1), "", "");
+
+        //noLongerThanDots
+        Test.ensureEqual(String2.noLongerThanDots(s, 10), "123456789", "");
+        Test.ensureEqual(String2.noLongerThanDots(s,  9), "123456789", "");
+        Test.ensureEqual(String2.noLongerThanDots(s,  8), "12345...", "");
+        Test.ensureEqual(String2.noLongerThanDots(s,  4), "1...", "");
+        Test.ensureEqual(String2.noLongerThanDots(s,  3), "...", "");
+        Test.ensureEqual(String2.noLongerThanDots(s,  1), "...", "");
+        Test.ensureEqual(String2.noLongerThanDots(s,  0), "...", "");
+        Test.ensureEqual(String2.noLongerThanDots(s, -1), "...", "");
 
         //test for infinite loop
         String2.log("test for infinite loop in String2.noLongLinesAtSpace");
@@ -1303,6 +1338,15 @@ public class TestUtil {
         Test.ensureTrue(i >= 1 && i <= 5, "");        
         Test.ensureEqual(String2.binaryFindClosest(dupSar, "ca"),   6, "");
         Test.ensureEqual(String2.binaryFindClosest(dupSar, "da"),   6, "");
+
+        //looselyContains
+        Test.ensureTrue(String2.looselyContains("(a b,C'D&5+e", "A&b[c]d 5%E"),  "");
+        Test.ensureTrue(String2.looselyContains("(a b,C'D&e", "dE!"),  "");
+        Test.ensureTrue(!String2.looselyContains("(a b,C'D&e[]", "E!4-"),  "");
+        Test.ensureTrue(!String2.looselyContains("(a b,C'D&e", "[]"),  "");
+        Test.ensureTrue(!String2.looselyContains("()", "e4"),  "");
+        Test.ensureTrue(!String2.looselyContains("(a b,C'D&e", null),  "");
+        Test.ensureTrue(!String2.looselyContains(null, "e4"),  "");
 
         //min
         Test.ensureEqual(String2.min("aab", "aac"),  "aab", "");
@@ -1721,8 +1765,14 @@ public class TestUtil {
         //combine spaces
         String2.log("test combineSpaces");
         Test.ensureEqual(String2.combineSpaces("abcdef"), "abcdef", "a");
-        Test.ensureEqual(String2.combineSpaces(" ab    c  d e f  "), "ab c d e f", "b");
+        Test.ensureEqual(String2.combineSpaces(" ab  (   c  {  d  e  f  )  g  }  "), 
+                                               "ab (c {d e f) g}", "b");
 
+        //whitespacesToSpace
+        String2.log("test whitespacesToSpace");
+        Test.ensureEqual(String2.whitespacesToSpace("abcdef"), "abcdef", "a");
+        Test.ensureEqual(String2.whitespacesToSpace("\tab\t\t(\t\t\tc\t\t{\t\td\t\te\t\tf\t\t)\t\tg\t\t}\t\t"), 
+                                               "ab (c {d e f) g}", "b");
         //zeroPad
         String2.log("test zeroPad");
         Test.ensureEqual(String2.zeroPad("a",    2), "0a",    "a");
@@ -2400,6 +2450,24 @@ public class TestUtil {
         Test.ensureEqual(String2.toVariableName("a"),   "a", "");
         Test.ensureEqual(String2.toVariableName("a"),   "a", "");
         Test.ensureEqual(String2.toVariableName("_"),   "a",  "");
+
+        //whichPrefix
+        sar = new String[]{"ab", "c", "d"};
+        Test.ensureEqual(String2.whichPrefix(sar, "ab", 0), 0, "");
+        Test.ensureEqual(String2.whichPrefix(sar, "cat", 0), 1, "");
+        Test.ensureEqual(String2.whichPrefix(sar, "dog", 0), 2, "");
+        Test.ensureEqual(String2.whichPrefix(sar, "zab", 0), -1, "");
+        Test.ensureEqual(String2.whichPrefix(sar, "", 0), -1, "");
+        Test.ensureEqual(String2.whichPrefix(sar, null, 0), -1, "");
+
+        //whichSuffix
+        Test.ensureEqual(String2.whichSuffix(sar, "ab", 0), 0, "");
+        Test.ensureEqual(String2.whichSuffix(sar, "atc", 0), 1, "");
+        Test.ensureEqual(String2.whichSuffix(sar, "ogd", 0), 2, "");
+        Test.ensureEqual(String2.whichSuffix(sar, "abz", 0), -1, "");
+        Test.ensureEqual(String2.whichSuffix(sar, "", 0), -1, "");
+        Test.ensureEqual(String2.whichSuffix(sar, null, 0), -1, "");
+
     }
 
     /**
@@ -2511,6 +2579,26 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 1985-01-02, Jan 2, 1985")),
             "", "");
 
+
+        //isTimeUnits
+        s = "mm-dd-yy";    Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "mm-dd-YY";    Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "d since 1-";  Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "d  since 1-"; Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "d since  1-"; Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = " hours since 1970-01-01T00:00:00Z "; Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "millis since 1970-01-01";            Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "d SiNCE 2001";                       Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+
+        s = null;               Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "";                 Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = " ";                Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "m-d-y";            Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "m-d-Y";            Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = " since 2001";      Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "d1 since 2001";    Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "d since analysis"; Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "d since2001";      Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
 
         //test that all of thos formats work
         DateTimeFormatter dtf; 
@@ -3878,7 +3966,7 @@ public class TestUtil {
             !s.equals("C:/Documents and Settings/Robert/Local Settings/Temp/")) {
             String2.log(
                 "getSystemTempDirectory        =" + s);
-                //+ "\nPress ^C to stop or Enter to continue..."); 
+                //+ "\n" + String2.Press_CtrlC_or_Enter); 
             Math2.gc(5000); //pause in test to display info
         }
         Test.ensurePrintable("test123\n\t ~¡ÿ", "ensurePrintable");
@@ -4175,10 +4263,9 @@ public class TestUtil {
                 "Is this a Java 1.7 thing?  Perhaps it is increase in memory allocated to the nursery."); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nUnexpected TestUtil.testString2canonical() error:\n" +
-                MustBe.throwableToString(t) + 
-                "Press ^C to stop or Enter to continue..."); 
+                MustBe.throwableToString(t)); 
         }
     }
 
@@ -4210,9 +4297,8 @@ public class TestUtil {
             Test.ensureTrue(cMem - oMem < 100000, 
                 "canonical(substring(s,,)) is storing references to the parent string!!!");       
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "Unexpected TestUtil.testString2canonical2() error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "Unexpected TestUtil.testString2canonical2() error:"); 
         }
     }
 

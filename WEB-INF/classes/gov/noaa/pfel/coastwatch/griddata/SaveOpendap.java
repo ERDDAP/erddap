@@ -432,9 +432,8 @@ public class SaveOpendap  {
             //File2.delete(dir + name);
             */
         } catch (Exception e) {
-
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nUnexpected error. Press Enter to Continue or ^C to quit? ");
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected error.");
         }
        
     } 

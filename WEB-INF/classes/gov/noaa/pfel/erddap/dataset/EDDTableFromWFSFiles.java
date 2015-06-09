@@ -204,19 +204,26 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         String tSortedColumnSourceName = "";
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
-            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                dataSourceTable.columnAttributes(col), colName, 
-                true, true); //addColorBarMinMax, tryToFindLLAT
+            Attributes sourceAtts = dataSourceTable.columnAttributes(col);
 
             //isDateTime?
             PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone();
-            boolean isDateTime = false;
+            String timeUnits = "";
             if (pa instanceof StringArray) {
-                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)pa);
-                if (dtFormat.length() > 0) { 
-                    isDateTime = true;
-                    addAtts.set("units", dtFormat);
-                }
+                timeUnits = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                if (timeUnits.length() > 0) 
+                    sourceAtts.set("units", timeUnits); //just temporarily to trick makeReadyToUse...
+            }
+
+            //make addAtts
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                timeUnits.length() == 0, true); //addColorBarMinMax, tryToFindLLAT
+
+            //put time units
+            if (timeUnits.length() > 0) {
+                sourceAtts.remove("units"); //undo above
+                addAtts.set("units", timeUnits); //correct place
             }
 
             //add to dataAddTable
@@ -224,7 +231,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
 
             //files are likely sorted by first date time variable
             //and no harm if files aren't sorted that way
-            if (tSortedColumnSourceName.length() == 0 && isDateTime) 
+            if (tSortedColumnSourceName.length() == 0 && timeUnits.length() > 0) 
                 tSortedColumnSourceName = colName;
         }
 
@@ -336,18 +343,17 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Kentucky Geological Survey</att>\n" +
 "        <att name=\"creator_url\">http://www.uky.edu/KGS/</att>\n" +
 "        <att name=\"infoUrl\">http://www.uky.edu/KGS/</att>\n" +
 "        <att name=\"institution\">Kentucky Geological Survey</att>\n" +
-"        <att name=\"keywords\">apino, bore, circulation, commodity, county, date, degree, depth, driller, drilling, elevation, ended, field, formation, function, geological, header, interest, interval, kentucky, label, lease, length, long, measured, measurement, name, notes, observation, operator, point, procedure, producing, production, quality, reference, related, resource, shape, since, source, spud, srs, state, statement, statistics, status, survey, temperature, time, title, total, true, type, uncertainty, units, URI, vertical, well</att>\n" +
+"        <att name=\"keywords\">aasg:BoreholeTemperature/aasg:APINo, aasg:BoreholeTemperature/aasg:CommodityOfInterest, aasg:BoreholeTemperature/aasg:County, aasg:BoreholeTemperature/aasg:DepthOfMeasurement, aasg:BoreholeTemperature/aasg:DepthReferencePoint, aasg:BoreholeTemperature/aasg:DrillerTotalDepth, aasg:BoreholeTemperature/aasg:ElevationGL, aasg:BoreholeTemperature/aasg:EndedDrillingDate, aasg:BoreholeTemperature/aasg:Field, aasg:BoreholeTemperature/aasg:FormationTD, aasg:BoreholeTemperature/aasg:Function, aasg:BoreholeTemperature/aasg:HeaderURI, aasg:BoreholeTemperature/aasg:Label, aasg:BoreholeTemperature/aasg:LatDegree, aasg:BoreholeTemperature/aasg:LeaseName, aasg:BoreholeTemperature/aasg:LengthUnits, aasg:BoreholeTemperature/aasg:LocationUncertaintyStatement, aasg:BoreholeTemperature/aasg:LongDegree, aasg:BoreholeTemperature/aasg:MeasuredTemperature, aasg:BoreholeTemperature/aasg:MeasurementFormation, aasg:BoreholeTemperature/aasg:MeasurementProcedure, aasg:BoreholeTemperature/aasg:MeasurementSource, aasg:BoreholeTemperature/aasg:Notes, aasg:BoreholeTemperature/aasg:ObservationURI, aasg:BoreholeTemperature/aasg:Operator, aasg:BoreholeTemperature/aasg:OtherName, aasg:BoreholeTemperature/aasg:ProducingInterval, aasg:BoreholeTemperature/aasg:Production, aasg:BoreholeTemperature/aasg:RelatedResource, aasg:BoreholeTemperature/aasg:Shape/gml:Point/latitude, aasg:BoreholeTemperature/aasg:Shape/gml:Point/longitude, aasg:BoreholeTemperature/aasg:SpudDate, aasg:BoreholeTemperature/aasg:SRS, aasg:BoreholeTemperature/aasg:State, aasg:BoreholeTemperature/aasg:Status, aasg:BoreholeTemperature/aasg:TemperatureUnits, aasg:BoreholeTemperature/aasg:TimeSinceCirculation, aasg:BoreholeTemperature/aasg:TrueVerticalDepth, aasg:BoreholeTemperature/aasg:WellBoreShape, aasg:BoreholeTemperature/aasg:WellName, aasg:BoreholeTemperature/aasg:WellType, apino, bore, circulation, commodity, county, data, date, degree, depth, driller, drilling, elevation, ended, field, formation, function, geological, header, interest, interval, kentucky, label, latitude, lease, length, long, longitude, measured, measurement, name, notes, observation, operator, point, procedure, producing, production, quality, reference, related, resource, shape, since, source, spud, srs, state, statement, status, survey, temperature, time, title, total, true, type, uncertainty, units, vertical, well</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"rowElementXPath\">/wfs:FeatureCollection/gml:featureMember</att>\n" +
 "        <att name=\"sourceUrl\">http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&amp;service=WFS&amp;typename=aasg:BoreholeTemperature&amp;format=&quot;text/xml;&#37;20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">The summary.</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">The summary. Kentucky Geological Survey data from a local source.</att>\n" +
 "        <att name=\"title\">The Title</att>\n" +
 "    </addAttributes>\n" +
 //removed.  It is an internal number in the WFS response.
@@ -358,7 +364,7 @@ directionsForGenerateDatasetsXml() +
 //"        <!-- sourceAttributes>\n" +
 //"        </sourceAttributes -->\n" +
 //"        <addAttributes>\n" +
-//"            <att name=\"ioos_category\">Unknown</att>\n" +
+//"            <att name=\"ioos_category\">Temperature</att>\n" +
 //"            <att name=\"long_name\">OBJECTID</att>\n" +
 //"        </addAttributes>\n" +
 //"    </dataVariable>\n" +
@@ -369,7 +375,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Observation URI</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -380,7 +386,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Well Name</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -391,7 +397,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">APINo</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -402,7 +408,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Header URI</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -413,7 +419,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Label</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -424,7 +430,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Operator</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -437,6 +443,7 @@ directionsForGenerateDatasetsXml() +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Spud Date</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -449,6 +456,7 @@ directionsForGenerateDatasetsXml() +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Ended Drilling Date</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -459,7 +467,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Well Type</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -470,7 +478,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Status</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -481,7 +489,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Commodity Of Interest</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -492,7 +500,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Function</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -503,7 +511,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Production</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -514,7 +522,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Producing Interval</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -525,7 +533,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Field</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -536,9 +544,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">County</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -549,7 +555,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">State</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -560,7 +566,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Lat Degree</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -571,7 +577,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Long Degree</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -582,7 +588,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">SRS</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -604,7 +610,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Driller Total Depth</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -615,7 +621,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Depth Reference Point</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -626,7 +632,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Length Units</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -637,7 +643,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Well Bore Shape</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -648,7 +654,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">True Vertical Depth</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -659,7 +665,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Elevation GL</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -670,7 +676,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Formation TD</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -703,7 +709,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Measurement Procedure</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -714,7 +720,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Depth Of Measurement</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -725,7 +731,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Measurement Formation</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -736,7 +742,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Measurement Source</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -747,7 +753,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Related Resource</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -788,7 +794,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Time Since Circulation</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -799,7 +805,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Other Name</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -810,7 +816,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Lease Name</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -821,7 +827,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Notes</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1042,7 +1048,7 @@ directionsForGenerateDatasetsXml() +
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"doug@uky.edu\";\n" +
 "    String creator_name \"Doug Curl\";\n" +
 "    String creator_url \"http://www.uky.edu/KGS/\";\n" +
@@ -1070,12 +1076,11 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 39.98267;\n" +
 "    String rowElementXPath \"/wfs:FeatureCollection/gml:featureMember\";\n" +
 "    String sourceUrl \"http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=\\\"text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0\\\"\";\n" +
 "    Float64 Southernmost_Northing 37.24673;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"WellName,APINo,Label,Operator,WellType,Field,County,State,FormationTD,OtherName\";\n" +
 "    String summary \"Borehole temperature measurements in West Virginia\";\n" +
 "    String time_coverage_end \"2012-08-05\";\n" +

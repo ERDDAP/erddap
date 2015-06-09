@@ -628,7 +628,7 @@ public class EDDTableFromDatabase extends EDDTable{
         //distinct?  orderBy?  databases can handle them
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
         //but orderBy may be slow/hard for database (faster to do it in erddap?)
-        String[] parts = getUserQueryParts(userDapQuery); //decoded.  
+        String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
         boolean distinct = false;
         boolean queryHasOrderBy = false;
         boolean queryHasOrderByMax = false;
@@ -1162,6 +1162,7 @@ public class EDDTableFromDatabase extends EDDTable{
             PrimitiveArray pa = PrimitiveArray.sqlFactory(sqlType);
             Attributes sourceAtts = new Attributes();
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                null, //no source global attributes
                 sourceAtts, sqlName, true, true); //sourceAtts, sourceName, addColorBarMinMax, tryToFindLLAT
             if (isTime) {
                 addAtts.add("ioos_category", "Time");
@@ -1351,7 +1352,7 @@ password = "MyPassword";
                 "", "myschema", "mytable",  //s4,5,6
                 "", //s7 orderBy csv
                 "99", //s8 reloadEveryNMinute
-                "http://swfsc.noaa.gov/erd.aspx", //s9  infoUrl
+                "http://www.pfeg.noaa.gov", //s9  infoUrl
                 "NOAA NMFS SWFSC ERD", //s10 institution
                 "", //s11 summary
                 ""}, //s12 title
@@ -1407,17 +1408,17 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
-"        <att name=\"creator_url\">http://swfsc.noaa.gov/erd.aspx</att>\n" +
-"        <att name=\"infoUrl\">http://swfsc.noaa.gov/erd.aspx</att>\n" +
+"        <att name=\"creator_url\">http://www.pfeg.noaa.gov</att>\n" +
+"        <att name=\"infoUrl\">http://www.pfeg.noaa.gov</att>\n" +
 "        <att name=\"institution\">NOAA NMFS SWFSC ERD</att>\n" +
-"        <att name=\"keywords\">birthdate, category, data, erd, first, height, local, nmfs, noaa, source, swfsc, time, weight</att>\n" +
+"        <att name=\"keywords\">birthdate, category, center, data, erd, first, fisheries, height, height_cm, identifier, local, marine, national, nmfs, noaa, science, service, source, southwest, swfsc, time, weight, weight_kg</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local database)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">NOAA NMFS SWFSC ERD data from a local source.</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
 "        <att name=\"title\">NOAA NMFS SWFSC ERD data from a local source.</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -1526,9 +1527,8 @@ expected =
             Test.ensureEqual(results, expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromDatabase.testGenerateDatasetsXml error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromDatabase.testGenerateDatasetsXml error."); 
         }
 
     }
@@ -1591,7 +1591,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"Other\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"" + today + "T.{8}Z \\(source database\\)\n" +
 today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das\";\n" +
 "    String infoUrl \"http://swfsc.noaa.gov/erd.aspx\";\n" +
@@ -1605,9 +1605,8 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"\\(source database\\)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"This is Bob's test for reading from a database table.\";\n" +
 "    String title \"mydatabase myschema mytable\";\n" +
 "  \\}\n" +
@@ -1689,7 +1688,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
                 String2.log(msg +
                     "  no matching data time=" + (System.currentTimeMillis() - eTime)); 
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
 
             //quick reject -> no matching data
@@ -1710,9 +1709,8 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
             }
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromDatabase.testTime error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromDatabase.testTime error."); 
         }
     }
 

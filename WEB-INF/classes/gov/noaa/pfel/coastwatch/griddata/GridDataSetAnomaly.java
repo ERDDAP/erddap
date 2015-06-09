@@ -426,8 +426,7 @@ data[28] gds=3.990844964981079 cli=1.5286099910736084 ano=2.4622349739074707 */
 
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
 

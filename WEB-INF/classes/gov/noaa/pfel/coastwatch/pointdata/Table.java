@@ -138,10 +138,10 @@ public class Table  {
     public static boolean reallyVerbose = false; 
 
     /**
-     * Set this to true (by calling debug=true in your program, not by changing the code here)
+     * Set this to true (by calling debugMode=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
-    public static boolean debug = false;    
+    public static boolean debugMode = false;    
 
     /**
      * If true, readASCII allows data lines to have varying numbers of 
@@ -171,6 +171,27 @@ public class Table  {
 
     public static String BGCOLOR = "#ffffcc"; 
 
+    //related to ERDDAP
+    /** 
+     * This is a list of all operator symbols 
+     * (for my convenience in Table.parseDapQuery and EDDTable.parseUserDapQuery): 
+     * 2 letter ops are first). 
+     * Note that all variables (numeric or String)
+     * can be constrained via a ERDDAP constraint using any of these
+     * operators.
+     * If the source can't support the operator (e.g., 
+     *    no source supports numeric =~ testing,
+     *    and no source supports string &lt; &lt;= &gt; &gt;= testing),
+     * ERDDAP will just get all the relevant data and do the test itself. 
+     */
+    public final static String OPERATORS[] = 
+        //EDDTableFromFiles.isOK relies on this order
+        {"!=", PrimitiveArray.REGEX_OP, "<=", ">=",   
+         "=", "<", ">"}; 
+    public final static String SEQUENCE_NAME = "s"; 
+    public static String QUERY_ERROR = "Query error: ";
+    public static String unitTestDataDir = "/erddapTest/";
+
     //Bob: see identical css in ERDDAP's setup.xml <startHeadHtml>
     public static String ERD_TABLE_CSS =
         "<style type=\"text/CSS\">\n" +
@@ -179,6 +200,10 @@ public class Table  {
         "  table.erd th, table.erd td {padding:2px; border:1px solid gray; }\n" +
         "-->" +
         "</style>\n"; 
+
+    //this is used to find out if all readNcCF code is tested: cc=code coverage
+    //Bits are set to true when chunk of code is tested.
+    public static BitSet ncCFcc = null;  //null=inactive, new BitSet() = active
 
     /** An arrayList to hold 0 or more PrimitiveArray's with data.  */
     private ArrayList columns = new ArrayList();  
@@ -217,7 +242,7 @@ public class Table  {
     /** 
      * Makes a table with the specified columnNames and dataTypes.
      *
-     * @param if dataType == null, the table will have all String columns
+     * @param dataType if dataType == null, the table will have all String columns
      *   Otherwise, it should be the same length as colName
      * @return a new table
      */
@@ -466,7 +491,7 @@ public class Table  {
                 ") is beyond size (" + size  + ").");
         if (name == null) 
             name = "Column" + position;
-        columnNames.add(position, name);
+        columnNames.atInsert(position, name);
         columns.add(position, pa);
         columnAttributes.add(position, attributes);
         return columns.size() - 1;
@@ -601,7 +626,7 @@ public class Table  {
     public String getColumnName(int col) {
         if (col < 0 || col >= nColumns())
             throw new IllegalArgumentException(
-                String2.ERROR + " in Table.getColumnName: col " + col + " is invalid.");
+                String2.ERROR + " in Table.getColumnName: nColumns=" + nColumns() + ". There is no col #" + col + ".");
         return columnNames.get(col);
     }
 
@@ -742,13 +767,13 @@ public class Table  {
             throw new Exception("index=" + index + " must be between 0 and " + nRows() + ".");
         int nCols = nColumns();
         for (int col = 0; col < nCols; col++) 
-            getColumn(col).addString(index, "");
+            getColumn(col).atInsertString(index, "");
     }
 
     /**
      * This removes 1 row.
      *
-     * @param row, 0 ... size-1. 
+     * @param row 0 ... size-1. 
      * @throws Exception if trouble
      */
     public void removeRow(int row) {
@@ -852,7 +877,7 @@ public class Table  {
                     }
                 }
             }
-            //if (debug)
+            //if (debugMode)
             //    String2.log("  rowsWithData after col#" + col + " keepN=" + keepN);
             if (keepN == tnRows)
                 return keep;
@@ -940,7 +965,7 @@ public class Table  {
                     }
                 }
             }
-            //if (debug)
+            //if (debugMode)
             //    String2.log("  lastRowWithData=" + lastRowWithData + " after col#" + col);
             if (lastRowWithData == tnRows - 1)
                 return lastRowWithData;
@@ -1577,10 +1602,7 @@ public class Table  {
         trySet(globalAttributes, "cdm_data_type", cdmDataType);
         trySet(globalAttributes, "contributor_name", courtesy);
         trySet(globalAttributes, "contributor_role", "Source of data."); 
-        trySet(globalAttributes, "Conventions",          
-            "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
-        trySet(globalAttributes, "Metadata_Conventions", 
-            "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
+        trySet(globalAttributes, "Conventions", "COARDS, CF-1.6, ACDD-1.3"); //unidata-related
         trySet(globalAttributes, "creator_email", creatorEmail);
         trySet(globalAttributes, "creator_name", creatorName);
         trySet(globalAttributes, "creator_url", creatorUrl);
@@ -1961,21 +1983,34 @@ public class Table  {
                 if (ensureColumnTypesEqual) 
                     Test.ensureEqual(array1.elementClassString(), array2.elementClassString(),
                         errorInMethod + "column=" + col + " types.");
-                boolean stringTest = array1 instanceof StringArray ||
-                    array2 instanceof StringArray;
+                boolean a1String = array1 instanceof StringArray;
+                boolean a2String = array2 instanceof StringArray;
+                boolean stringTest = a1String || a2String;
                 for (int row = 0; row < nRows; row++) {
                     if (stringTest) { 
                         //avoid generating error strings unless needed
-                        if (!array1.getString(row).equals(array2.getString(row))) {
-                            Test.ensureEqual(
-                                array1.getString(row), array2.getString(row),
-                                errorInMethod + "data(col=" + col + ", row=" + row + ").");
+                        String s1 = array1.getString(row);
+                        String s2 = array2.getString(row);
+                        if (!s1.equals(s2)) {
+                            //deal with NaN in long column not simplified to LongArray
+                            //so left as NaN in String column
+                            if (a1String && "NaN".equals(s1))
+                                s1 = "";
+                            if (a2String && "NaN".equals(s2))
+                                s2 = "";
+                            if (!s1.equals(s2))
+                                Test.ensureEqual(s1, s2,
+                                    errorInMethod + 
+                                        "data(col=" + col + " (" + array1.elementClassString() + 
+                                        " vs. " + array2.elementClassString() + "), row=" + row + ").");
                         }
                     } else {
                         if (array1.getDouble(row) != array2.getDouble(row))
                             //avoid generating error strings unless needed
                             Test.ensureEqual(array1.getDouble(row), array2.getDouble(row), 
-                                errorInMethod + "data(col=" + col + ", row=" + row + ").");
+                                errorInMethod + 
+                                "data(col=" + col + " (" + array1.elementClassString() + 
+                                " vs. " + array2.elementClassString() + "), row=" + row + ").");
                     }
                 }
             }
@@ -2615,10 +2650,10 @@ public class Table  {
 
         //get the data
         int row = 0;
-        if (debug) String2.log("expectedNItems=" + expectedNItems);
+        if (debugMode) String2.log("expectedNItems=" + expectedNItems);
         String canonicalEmptyString = String2.canonical("");
         while (row < nRows) {
-        if (debug) String2.log("row=" + row);
+        if (debugMode) String2.log("row=" + row);
             items = null;
             nItems = 0;
             while (nItems < expectedNItems) {
@@ -2629,7 +2664,7 @@ public class Table  {
                 //break the lines into items
                 String tItems[] = String2.split(oneLine, colSeparator);
                 int ntItems = tItems.length;
-                if (debug) String2.log("row=" + (row-1) + " ntItems=" + ntItems + " tItems=" + String2.toCSSVString(tItems));
+                if (debugMode) String2.log("row=" + (row-1) + " ntItems=" + ntItems + " tItems=" + String2.toCSSVString(tItems));
                 
                 if (items == null) {
                     items = tItems; 
@@ -4215,7 +4250,7 @@ Dataset {
         dos.flush(); //essential
 
         if (verbose)
-            String2.log("  Table.saveAsDDS done. TIME=" + 
+            String2.log("  Table.saveAsDODS done. TIME=" + 
                 (System.currentTimeMillis() - time));
     }
 
@@ -4467,7 +4502,7 @@ Dataset {
      * <li>Column Names are taken from first row.
      * <li>If secondRowHasUnits, data should start on 3rd row (else 2nd row).
      * <li>It is okay if a row has fewer columns or more columns than expected.
-     *    If table.debug = true, a message will be logged about this.
+     *    If table.debugMode = true, a message will be logged about this.
      * <li>nRows=0 and nColumns=0 is not an error.
      * <li>XML.decodeEntities is applied to data in String columns,
      *   so there may be HTML tags if the data is HTML.
@@ -4566,7 +4601,7 @@ Dataset {
                     }
                 } else {
                     //ignore this and subsequent columns on this row
-                    if (debug) String2.log("!!!Extra columns were found on row=" + nRows);
+                    if (debugMode) String2.log("!!!Extra columns were found on row=" + nRows);
                     break;
                 }
 
@@ -4576,7 +4611,7 @@ Dataset {
 
             //add blanks so all columns are same length
             if (tCol < nCols) {
-                if (debug) String2.log("!!!Too few columns were found on row=" + nRows);
+                if (debugMode) String2.log("!!!Too few columns were found on row=" + nRows);
                 makeColumnsSameSize();
             }
             nRows++;
@@ -5007,24 +5042,51 @@ Dataset {
 
             //load the variables
             Variable loadVariables[] = null;
+            Dimension loadDims[] = null;
             if (loadVariableNames.length == 0) {
                 loadVariables = NcHelper.findMaxDVariables(ncFile);
+                if (loadVariables == null || loadVariables.length == 0)
+                    throw new RuntimeException(errorInMethod + 
+                       "The file has no variables with dimensions.");
             } else {
-                ArrayList list = new ArrayList();
+                ArrayList varList = new ArrayList();
+                ArrayList dimList = new ArrayList(); //just dims that aren't also variables
                 for (int i = 0; i < loadVariableNames.length; i++) {
                     Variable variable = ncFile.findVariable(loadVariableNames[i]);
                     if (variable == null) {
-                        if (verbose) String2.log("  var=" + loadVariableNames[i] + " not found");
+                        Dimension dim = ncFile.findDimension(loadVariableNames[i]);
+                        if (dim == null) {
+                            if (verbose) String2.log("  var=" + loadVariableNames[i] + " not found");
+                        } else {
+                            dimList.add(dim);
+                        }
                     } else {
-                        list.add(variable);
+                        varList.add(variable);
                     }
                 }
-                loadVariables = NcHelper.variableListToArray(list);
-                if (loadVariables.length == 0)
-                    return; //empty table
+                loadVariables = NcHelper.variableListToArray(varList);
+                loadDims = NcHelper.dimensionListToArray(dimList);
+                if (loadVariables.length == 0) {
+                    int nDims = loadDims.length;
+                    if (nDims == 0)
+                        return; //empty table
+                    //just load dimensions that aren't variables
+                    int shape[] = new int[nDims];
+                    IntArray iaa[] = new IntArray[nDims];
+                    for (int i = 0; i < nDims; i++) {
+                        shape[i] = loadDims[i].getLength();
+                        iaa[i] = new IntArray();
+                        addColumn(loadDims[i].getShortName(), iaa[i]); //no variable metadata
+                    }
+                    NDimensionalIndex ndi = new NDimensionalIndex(shape);
+                    int current[] = ndi.getCurrent();
+                    while (ndi.increment()) {
+                        for (int i = 0; i < nDims; i++) 
+                            iaa[i].add(current[i]);
+                    }
+                    return;
+                } 
             }
-            Test.ensureTrue(loadVariables != null && loadVariables.length > 0, 
-                errorInMethod + "The file has no variables with dimensions.");
 
             //go through the variables
             int nAxes = -1;  //not set up yet
@@ -5033,19 +5095,19 @@ Dataset {
             for (int v = 0; v < loadVariables.length; v++) {
                 Variable variable = loadVariables[v];
                 boolean isChar = variable.getDataType() == DataType.CHAR;
-                if (debug) 
+                if (debugMode) 
                     String2.log("var#" + v + "=" + variable.getName());
 
                 //is it a 0D variable?    
                 if (variable.getRank() + (isChar? -1 : 0) == 0) { 
-                    if (debug) String2.log("  skipping 0D var");
+                    if (debugMode) String2.log("  skipping 0D var");
                     continue;
                 }
 
                 //is it an axis variable?    
                 if (!isChar && variable.getRank() == 1 &&
                     variable.getDimension(0).getName().equals(variable.getName())) { //varName = dimName
-                    if (debug) String2.log("  skipping axisVariable");
+                    if (debugMode) String2.log("  skipping axisVariable");
                     continue;
                 }
 
@@ -5063,7 +5125,7 @@ Dataset {
                         Dimension dimension = (Dimension)axisList.get(a);
                         String axisName = dimension.getName();
                         axisLengths[a] = dimension.getLength();
-                        if (debug) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
+                        if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
                         Attributes atts = new Attributes();
                         Variable axisVariable = ncFile.findVariable(axisName);
                         if (axisVariable == null) {
@@ -5097,7 +5159,7 @@ Dataset {
                                 constraintFirst = -1;
                             else constraintLast  = cpa.binaryFindLastLAE(constraintFirst, 
                                 cpa.size() - 1, constraintMax, 5);
-                            if (debug) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
+                            if (debugMode) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " is ascending.  first=" + constraintFirst + 
                                 " last(inclusive)=" + constraintLast);
                             if (constraintFirst >= 0 && constraintLast >= constraintFirst) {
@@ -5108,7 +5170,7 @@ Dataset {
                                 cpa.removeRange(0, constraintFirst);
                             }
                         } else {
-                            if (debug) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
+                            if (debugMode) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " isn't ascending: " + asc);
                         }
                     }
@@ -5197,7 +5259,7 @@ Dataset {
                         String axisName = dimension.getName();
                         Attributes atts = new Attributes();
                         axisLengths[a] = dimension.getLength();
-                        if (debug) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
+                        if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
                         Variable axisVariable = ncFile.findVariable(axisName);
                         if (axisVariable == null) {
                             //that's ok; set up dummy 0,1,2,3...
@@ -5230,7 +5292,7 @@ Dataset {
                                 constraintFirst = -1;
                             else constraintLast  = cpa.binaryFindLastLAE(constraintFirst, 
                                 cpa.size() - 1, constraintMax, 5);
-                            if (debug) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
+                            if (debugMode) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " is ascending.  first=" + constraintFirst + 
                                 " last(inclusive)=" + constraintLast);
                             if (constraintFirst >= 0 && constraintLast >= constraintFirst) {
@@ -5241,7 +5303,7 @@ Dataset {
                                 cpa.removeRange(0, constraintFirst);
                             }
                         } else {
-                            if (debug) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
+                            if (debugMode) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " isn't ascending: " + asc);
                         }
                     }
@@ -5592,9 +5654,8 @@ Dataset {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
         
     }
@@ -5819,12 +5880,18 @@ Dataset {
     /**
      * This reads and flattens all specified variables from a .nc CF into a table.
      * <br>This does not unpack the values or convert to standardMissingValues.
-     * <br>This doesn't han
      * 
      * @param fullName The full name of a local file.
      * @param loadVariableNames if null or length 0, all vars are read.
-     *    <br>If a specified var isn't in the file, there won't be a column in the results file for it.
-     *    <br>If loadVariableNames is specified, all conNames should be included.
+     *    <br>!!!!! conNames MUST be included in loadVariableNames.
+     *     This code is written to handle them if not included, but the number of tests
+     *     to verify is astronomical.
+     *     !!!!! If loadVariableNames lists var names, then an error will be thrown
+     *        if a conName isn't in loadVariableNames. Thankfully, ERDDAP specified loadVariableNames.
+     *     !!!!! But if loadVariableNames aren't listed, THIS METHOD DOESN'T CHECK!
+     *    <br>The results will only include loadVariableNames columns, in the specified order.
+     *    <br>If a loadVariableName var isn't in the file, 
+     *       there won't be a column in the results file for it.
      *    <br>Don't include the indexVar or rowSizeVar in loadVariableNames.
      * @param conNames  the source names for the e.g., profile_id, lon, lat, time variables that
      *     will be constrained.   (Or null or size()==0 if no constraints.)
@@ -5832,7 +5899,7 @@ Dataset {
      *     Remember that regex constraints will be tested on the source values!
      * @param conValues  The corresponding values.
      * @throws Exception if trouble.
-     *    No matching data is not an error and returns an empty table.
+     *    No matching data is not an error and returns an empty table (0 rows and 0 columns).
      */
     public void readNcCF(String fullName, StringArray loadVariableNames, 
         StringArray conNames, StringArray conOps, StringArray conValues) throws Exception {
@@ -5842,13 +5909,15 @@ Dataset {
 
         if (loadVariableNames == null) 
             loadVariableNames = new StringArray();
+        if (conNames == null) 
+            conNames = new StringArray();
         if (verbose) String2.log("Table.readNcCF " + fullName);
-        if (debug && loadVariableNames.size() > 0)
+        if (debugMode && loadVariableNames.size() > 0)
             String2.log("  loadVars: " + loadVariableNames.toString()); 
         //String2.log("DEBUG:\n" + NcHelper.dumpString(fullName, false));
         long time = System.currentTimeMillis();
         String errorInMethod = String2.ERROR + " in Table.readNcCF " + fullName + ":\n";
-        int nCon = conNames == null? 0 : conNames.size();
+        int nCon = conNames.size();
         if (nCon > 0) {
             if (conOps    == null || conOps.size()    != nCon ||
                 conValues == null || conValues.size() != nCon)
@@ -5857,16 +5926,29 @@ Dataset {
                     "conNames=("  + conNames + "), " +
                     "conOps=("    + conOps + "), " +
                     "conValues=(" + conValues + ").");
-            if (debug)
+            if (debugMode)
                 String2.log("  Debug: " + nCon + " constraints: " + conNames + " " + conOps + " " + conValues);
         } else {
-            if (debug)
+            if (debugMode)
                 String2.log("  Debug: 0 constraints");
         }
-
+        if (ncCFcc != null) ncCFcc.set(0);
+       
 
         //clear the table
         clear();
+
+        //if loadVariableNames was specified, 
+        //ENSURE all conNames are in loadVariableNames
+        if (loadVariableNames.size() > 0) {
+            HashSet loadVarHS = loadVariableNames.toHashSet();
+            for (int c = 0; c < conNames.size(); c++) {
+                if (!loadVarHS.contains(conNames.get(c)))
+                    throw new RuntimeException(String2.ERROR + 
+                        " in Table.readNcCF: All constraint varNames must be in loadVariableNames. " + 
+                        conNames.get(c) + " isn't in " + loadVariableNames.toString() + ".");
+            }
+        }
 
         NetcdfFile ncFile = NcHelper.openFile(fullName); 
         String readAs = null;
@@ -5926,21 +6008,25 @@ Dataset {
 
             //deal with pointType
             if (pointType) {
+                if (ncCFcc != null) ncCFcc.set(1);
                 ncFile.close();
                 ncFile = null;
-                readNDNc(fullName, loadVariableNames.toArray(), null, 0, 0, true);
-                if (conNames != null && conNames.size() > 0) {
-                    BitSet keep = new BitSet();
-                    keep.set(0, nRows());
-                    if (tryToApplyConstraints(-1, conNames, conOps, conValues, keep) == 0)
-                        removeAllColumns();
-                    else justKeep(keep);
-                }
-                reorderColumns(loadVariableNames, true); //discard others
+                StringArray loadCon = new StringArray(loadVariableNames);
+                if (loadCon.size() > 0) //if loadVars specified, then add conNames
+                    loadCon.append(conNames);
+                readNDNc(fullName, (loadCon.toHashSet()).toArray(new String[0]), 
+                    null, 0, 0, true);
+
+                //finish up
+                tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                if (nRows() == 0)
+                    removeAllColumns();
+                else if (loadVariableNames.size() > 0)
+                    reorderColumns(loadVariableNames, true); //discard others
                 if (verbose) String2.log("  readNcCF finished (nLevels=0, pointType)." +
                     " nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time));
-                if (debug) ensureValid();
+                if (debugMode) ensureValid();
                 return;
             }
 
@@ -5961,7 +6047,7 @@ Dataset {
             int nVars = varsList.size();
             Variable vars[] = new Variable[nVars];
             String varNames[] = new String[nVars];
-            boolean varInLoadVariables[] = new boolean[nVars];
+            boolean varInLoadOrConVariables[] = new boolean[nVars];
             boolean varIsChar[] = new boolean[nVars];
             int varNDims[] = new int[nVars];  //not counting nchars dimension
             boolean varUsesDim[][] = new boolean[nVars][nDims + 1];  //all are false  (+1 for scalarDim)
@@ -5972,51 +6058,70 @@ Dataset {
             int rowSizeVar = -1; //e.g., in level 1 contiguous and level 2 ragged files
             int indexVar   = -1; //e.g., in level 1 indexed and most level 2 ragged files
             boolean loadVariableNamesWasEmpty = loadVariableNames.size() == 0;
-            int nLoadVariablesInFile = 0;
+            int nLoadOrConVariablesInFile = 0;
             for (int v = 0; v < nVars; v++) {
                 //note, but temporarily reject non-multidimensional vars
+                if (ncCFcc != null) ncCFcc.set(2);
                 vars[v] = (Variable)varsList.get(v);                
                 varNames[v] = vars[v].getShortName();
                 varIsChar[v] = vars[v].getDataType() == DataType.CHAR;
                 int rank = vars[v].getRank();
                 varNDims[v] = rank - (varIsChar[v]? 1 : 0);
                 if (varNDims[v] <= 0) {
+                    if (ncCFcc != null) ncCFcc.set(3);
                     hasScalarVars = true;
                     varNDims[v] = 1;
                     varUsesDim[v][scalarDim] = true;
                     continue;
                 }
 
-                //add to nLoadVariablesInFile
+                //add to nLoadOrConVariablesInFile
                 //!!!Note that I don't detect vars with unexpected dimensions
                 //partly because file type isn't known at this point.
                 //But var dimensions are always checked when the var is read,
                 //so other vars will simply be skipped. (Better if warning/error.)
                 if (loadVariableNamesWasEmpty)
                     loadVariableNames.add(varNames[v]);
-                varInLoadVariables[v] = loadVariableNames.indexOf(varNames[v]) >= 0;
-                if (varInLoadVariables[v]) 
-                    nLoadVariablesInFile++;
+                varInLoadOrConVariables[v] = 
+                    loadVariableNames.indexOf(varNames[v]) >= 0 ||
+                    conNames.indexOf(varNames[v]) >= 0;
+                if (varInLoadOrConVariables[v]) 
+                    nLoadOrConVariablesInFile++;
 
                 //go through the dimensions
                 for (int d = 0; d < varNDims[v]; d++) {
+                    if (ncCFcc != null) ncCFcc.set(4);
                     int whichDim = dimsList.indexOf(vars[v].getDimension(d));
-                    if (whichDim >= 0) //a shared dim
+                    if (whichDim >= 0) {//a shared dim
+                        if (ncCFcc != null) ncCFcc.set(12);
                         varUsesDim[v][whichDim] = true;
+                    }
 
                     //detect multiDim dimensions
                     if (nLevels == 1 && varNDims[v] == 2) {
-                        if (d == 0) 
+                        if (ncCFcc != null) ncCFcc.set(10);
+                        if (d == 0) {
+                            if (ncCFcc != null) ncCFcc.set(5);
                             outerDim = checkConsistent(errorInMethod, varNames[v], outerDim, whichDim);
-                        if (d == 1) 
+                        }
+                        if (d == 1) {
+                            if (ncCFcc != null) ncCFcc.set(6);
                             obsDim   = checkConsistent(errorInMethod, varNames[v], obsDim,   whichDim);
+                        }
                     } else if (nLevels == 2 && varNDims[v] == 3) {
-                        if (d == 0) 
+                        if (ncCFcc != null) ncCFcc.set(11);
+                        if (d == 0) {
+                            if (ncCFcc != null) ncCFcc.set(7);
                             outerDim = checkConsistent(errorInMethod, varNames[v], outerDim, whichDim);
-                        if (d == 1) 
+                        }
+                        if (d == 1) {
+                            if (ncCFcc != null) ncCFcc.set(8);
                             innerDim = checkConsistent(errorInMethod, varNames[v], innerDim, whichDim);
-                        if (d == 2) 
+                        }
+                        if (d == 2) {
+                            if (ncCFcc != null) ncCFcc.set(9);
                             obsDim   = checkConsistent(errorInMethod, varNames[v], obsDim,   whichDim);
+                        }
                     }
                 }
 
@@ -6030,13 +6135,21 @@ Dataset {
                             "Invalid file: two variables (" + varNames[rowSizeVar] + 
                             " and " + varNames[v] + 
                             ") have a sample_dimension attribute.");
+                    if (ncCFcc != null) ncCFcc.set(13);
                     rowSizeVar = v;
-                    if (varInLoadVariables[v]) {
-                        varInLoadVariables[v] = false;
-                        nLoadVariablesInFile--;
+                    //this is an internal variable. Request can't include it or constrain it.
+                    if (varInLoadOrConVariables[v]) {
+                        varInLoadOrConVariables[v] = false;
+                        nLoadOrConVariablesInFile--;
                         int i = loadVariableNames.indexOf(varNames[v]);
                         if (i >= 0)
                             loadVariableNames.remove(i);
+                        i = conNames.indexOf(varNames[v]);
+                        if (i >= 0) {
+                            conNames.remove(i);
+                            conOps.remove(i);
+                            conValues.remove(i);
+                        }
                     }
 
                     //sample_dimension
@@ -6063,13 +6176,22 @@ Dataset {
                             "Invalid file: two variables (" + 
                             varNames[indexVar] + " and " + 
                             varNames[v] + ") have an instance_dimension attribute.");
+                    //this is an internal variable in the file. Request can't request it or constrain it.
+                    if (ncCFcc != null) ncCFcc.set(14);
                     indexVar = v;
-                    if (varInLoadVariables[v]) {
-                        varInLoadVariables[v] = false;
-                        nLoadVariablesInFile--;
+                    if (varInLoadOrConVariables[v]) {
+                        if (ncCFcc != null) ncCFcc.set(15);
+                        varInLoadOrConVariables[v] = false;
+                        nLoadOrConVariablesInFile--;
                         int i = loadVariableNames.indexOf(varNames[v]);
                         if (i >= 0)
                             loadVariableNames.remove(i);
+                        i = conNames.indexOf(varNames[v]);
+                        if (i >= 0) {
+                            conNames.remove(i);
+                            conOps.remove(i);
+                            conValues.remove(i);
+                        }
                     }
 
                     //intance_dimension
@@ -6103,18 +6225,23 @@ Dataset {
 
             //if outerDim not found, try using scalarDim (scalar vars)
             if (outerDim == -1 && hasScalarVars) {
+                if (ncCFcc != null) ncCFcc.set(16);
                 outerDim     = scalarDim;
                 outerDimName = scalarDimName;
                 outerDimSize = scalarDimSize;
                 for (int v = 0; v < nVars; v++) {
+                    if (ncCFcc != null) ncCFcc.set(17);
                     if (varUsesDim[v][scalarDim]) {
+                        if (ncCFcc != null) ncCFcc.set(18);
                         varAtts[v] = new Attributes();
                         NcHelper.getVariableAttributes(vars[v], varAtts[v]);
-                        if (loadVariableNamesWasEmpty) 
+                        if (loadVariableNamesWasEmpty && loadVariableNames.indexOf(varNames[v]) < 0) 
                             loadVariableNames.add(varNames[v]);
-                        varInLoadVariables[v] = loadVariableNames.indexOf(varNames[v]) >= 0;
-                        if (varInLoadVariables[v]) 
-                            nLoadVariablesInFile++;
+                        varInLoadOrConVariables[v] = 
+                            loadVariableNames.indexOf(varNames[v]) >= 0 ||
+                            conNames.indexOf(varNames[v]) >= 0;
+                        if (varInLoadOrConVariables[v]) 
+                            nLoadOrConVariablesInFile++;
                     }
                 }
             }
@@ -6125,38 +6252,49 @@ Dataset {
                 outerDim == scalarDim && innerDim < 0 && obsDim < 0) {
 
                 //if nLevels=1, read via readNDNc
+                if (ncCFcc != null) ncCFcc.set(19);
                 if (nLevels == 1) {
-                    if (debug) String2.log("  Debug: nLevels=1, outerDim=scalarDim, read via readNDNc");
+                    if (debugMode) String2.log("  Debug: nLevels=1, outerDim=scalarDim, read via readNDNc");
+                    if (ncCFcc != null) ncCFcc.set(20);
                     ncFile.close();
                     ncFile = null;
-                    readNDNc(fullName, loadVariableNames.toArray(), null, 0, 0, true);
-                    if (conNames != null && conNames.size() > 0) {
-                        BitSet keep = new BitSet();
-                        keep.set(0, nRows());
-                        if (tryToApplyConstraints(-1, conNames, conOps, conValues, keep) == 0)
-                            removeAllColumns();
-                        else justKeep(keep);
-                    }
-                    reorderColumns(loadVariableNames, true); //discard others
+                    StringArray loadCon = new StringArray(loadVariableNames);
+                    if (loadCon.size() > 0) //if loadVars specified, then add conNames
+                        loadCon.append(conNames);
+                    readNDNc(fullName, (loadCon.toHashSet()).toArray(new String[0]), 
+                        null, 0, 0, true);
+
+                    //finish up
+                    tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                    if (nRows() == 0)
+                        removeAllColumns();
+                    else reorderColumns(loadVariableNames, true); //discard others
                     if (verbose) String2.log("  readNcCF finished (nLevels=1, readNDNc)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
-                    if (debug) ensureValid();
+                    if (debugMode) ensureValid();
                     return;
                 }
 
                 //if nLevels == 2
-                if (debug) String2.log("  Debug: nLevels=2, outerDim=scalarDim");
+                if (debugMode) String2.log("  Debug: nLevels=2, outerDim=scalarDim");
                 for (int v = 0; v < nVars; v++) {
                     //first: go through the dimensions
+                    if (ncCFcc != null) ncCFcc.set(21);
                     for (int d = 0; d < varNDims[v]; d++) {
+                        if (ncCFcc != null) ncCFcc.set(22);
                         int whichDim = dimsList.indexOf(vars[v].getDimension(d));
                         if (whichDim >= 0) {  //not scalarDim
                             if (varNDims[v] == 2) { //var[innerDim][obsDim]
-                                if (d == 0) 
+                                if (ncCFcc != null) ncCFcc.set(23);
+                                if (d == 0) {
+                                    if (ncCFcc != null) ncCFcc.set(24);
                                     innerDim = checkConsistent(errorInMethod, varNames[v], innerDim, whichDim);
-                                if (d == 1) 
+                                }
+                                if (d == 1) {
+                                    if (ncCFcc != null) ncCFcc.set(25);
                                     obsDim   = checkConsistent(errorInMethod, varNames[v], obsDim,   whichDim);
+                                }
                             }
                         }
                     }
@@ -6164,6 +6302,7 @@ Dataset {
                     //second: trick code below into adding outerDim=scalarDim to all vars
                     //  (scalar vars already have it)(vars using other dims don't)
                     if (!varUsesDim[v][scalarDim]) {
+                        if (ncCFcc != null) ncCFcc.set(26);
                         varUsesDim[v][scalarDim] = true;
                         varNDims[v]++;
                     }
@@ -6182,18 +6321,19 @@ Dataset {
             }
 
 
-            if (debug) {
+            if (debugMode) {
                 if (loadVariableNamesWasEmpty) 
                     String2.log("  Debug: loadVars (was empty): " + loadVariableNames.toString());
                 String2.log(
-                    "  Debug: nLoadVarsInFile=" + nLoadVariablesInFile + 
+                    "  Debug: nLoadOrConVarsInFile=" + nLoadOrConVariablesInFile + 
                     " vars: rowSize=" + (rowSizeVar < 0? "" : varNames[rowSizeVar]) + 
                     " index="    + (indexVar   < 0? "" : varNames[indexVar]) +
                     "  dims: outer=" + outerDimName + "[" + outerDimSize + "]" +
                     " inner=" + innerDimName + "[" + innerDimSize + "]" +
                     " obs=" + obsDimName + "[" + obsDimSize + "]");
             }
-            if (nLoadVariablesInFile == 0) {
+            if (nLoadOrConVariablesInFile == 0) {
+                if (ncCFcc != null) ncCFcc.set(27);
                 if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                     " (no requested vars in the file)" + 
                     " time=" + (System.currentTimeMillis() - time));
@@ -6221,11 +6361,14 @@ Dataset {
             //  complicated because mv's are usually represented as finite values.
             //  so a missing var might get converted to all -999.
             for (int con = 0; con < nCon; con++) {
-                //if conVar is in the file, can't quick reject, so continue;
+                //if conName is in the file, can't quick reject, so continue;
+                if (ncCFcc != null) ncCFcc.set(28);
                 String tConName = conNames.get(con);
                 int v = String2.indexOf(varNames, tConName);
-                if (v >= 0)
+                if (v >= 0) {
+                    if (ncCFcc != null) ncCFcc.set(29);
                     continue;
+                }
 
                 //There is no way to tell if a var not in the file is String or numeric.
                 String tConOp = conOps.get(con);
@@ -6244,6 +6387,7 @@ Dataset {
                 }
 
                 if (rejectFile) {
+                    if (ncCFcc != null) ncCFcc.set(30);
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (var not in file: " + tConName + tConOp + tConValue + ")" + 
                         " time=" + (System.currentTimeMillis() - time));
@@ -6253,29 +6397,32 @@ Dataset {
             }
 
             //*** read outerDim variables into a table: all nLevels, all featureTypes
-            if (debug) String2.log("  Debug: read outerDim variables into a table: all nLevels, all featureTypes");
+            if (debugMode) String2.log("  Debug: read outerDim variables into a table: all nLevels, all featureTypes");
             Table outerTable = new Table(); 
-            int nLoadVariablesInOuterTable = 0;
+            int nLoadOrConVariablesInOuterTable = 0;
             StringArray cdmOuterVars = new StringArray();
             for (int v = 0; v < nVars; v++) {
-                //normally, get just varInLoadVariables vars
+                //normally, get just varInLoadOrConVariables vars
                 //but if multidimensional, get ALL outerDim vars !!!
-                //if (debug) String2.log("  Debug: read outerTable v=" + varNames[v] + 
-                //    " inLoadVars=" + varInLoadVariables[v] +
+                //if (debugMode) String2.log("  Debug: read outerTable v=" + varNames[v] + 
+                //    " inLoadOrConVars=" + varInLoadOrConVariables[v] +
                 //    " varNDims[v]=" + varNDims[v] + 
                 //    " varUsesDim[v][outerDim]=" + varUsesDim[v][outerDim]);
-                if ((varInLoadVariables[v] || multidimensional) && 
+                if (ncCFcc != null) ncCFcc.set(31);
+                if ((varInLoadOrConVariables[v] || multidimensional) && 
                     varNDims[v] == 1 && varUsesDim[v][outerDim]) { //ensure correct dim
-                    if (varInLoadVariables[v]) {
-                        nLoadVariablesInOuterTable++;
+                    if (ncCFcc != null) ncCFcc.set(32);
+                    if (varInLoadOrConVariables[v]) {
+                        if (ncCFcc != null) ncCFcc.set(33);
+                        nLoadOrConVariablesInOuterTable++;
                         cdmOuterVars.add(varNames[v]); //so in file's order; that's consistent; that's good
                     }
                     outerTable.addColumn(outerTable.nColumns(), varNames[v], 
                         NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                 }
             }
-            if (debug) String2.log("  Debug: outerTable(nRows=" + outerTable.nRows() + 
-                ") nLoadVariablesInOuterTable=" + nLoadVariablesInOuterTable + 
+            if (debugMode) String2.log("  Debug: outerTable(nRows=" + outerTable.nRows() + 
+                ") nLoadOrConVariablesInOuterTable=" + nLoadOrConVariablesInOuterTable + 
                 " First <=3 rows:\n" + outerTable.dataToCSVString(3));
             globalAttributes.set(cdmOuterName,      cdmOuterVars.toString()); //may be "", that's okay
             if (cdmInnerName != null)
@@ -6287,9 +6434,12 @@ Dataset {
             int outerNGood = -1; //implies not tested, so assume all are good
             if (outerTable.nColumns() > 0) { //it will be for multidimensional
 
+                if (ncCFcc != null) ncCFcc.set(34);
                 if (multidimensional) {
+                    if (ncCFcc != null) ncCFcc.set(35);
                     outerKeep = outerTable.rowsWithData();
                 } else {
+                    if (ncCFcc != null) ncCFcc.set(36);
                     outerKeep = new BitSet();
                     outerKeep.set(0, outerTable.nRows());
                 }
@@ -6298,6 +6448,7 @@ Dataset {
                 outerNGood = outerTable.tryToApplyConstraints(-1, 
                     conNames, conOps, conValues, outerKeep);
                 if (outerNGood == 0) {
+                    if (ncCFcc != null) ncCFcc.set(37);
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (outerNGood=0)" + 
                         " time=" + (System.currentTimeMillis() - time));
@@ -6307,27 +6458,32 @@ Dataset {
                 //order of rows is important, so *don't* justKeep(outerKeep)
 
                 //Are we done? Are those all the variables we need that are in the file?
-                if (nLoadVariablesInFile == nLoadVariablesInOuterTable) {
+                if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable) {
                     outerTable.justKeep(outerKeep);
                     //globalAttributes already set
-                    //copy outerTable to this table in correct order
-                    for (int lv = 0; lv < loadVariableNames.size(); lv++) {
-                        int col = outerTable.findColumnNumber(loadVariableNames.get(lv));
-                        if (col >= 0) 
-                            addColumn(nColumns(), outerTable.getColumnName(col), 
-                                outerTable.getColumn(col), outerTable.columnAttributes(col));
-                    }
+                    //copy outerTable to this table
+                    if (ncCFcc != null) ncCFcc.set(38);
+                    int noc = outerTable.nColumns();
+                    for (int c = 0; c < noc; c++) 
+                        addColumn(c, outerTable.getColumnName(c), 
+                            outerTable.getColumn(c), outerTable.columnAttributes(c));
+
+                    //finish up
+                    tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                    if (nRows() == 0)
+                        removeAllColumns();
+                    else reorderColumns(loadVariableNames, true); //discard others
                     if (verbose) String2.log("  readNcCF finished (nLevels=1, outerTable vars only)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
-                    if (debug) ensureValid();
+                    if (debugMode) ensureValid();
                     return;
                 }
             } //else if no outerTable columns, all outerTable features are considered good
             int outerTableNColumns = outerTable.nColumns();
             int outerTableNRows = outerTable.nRows();
 
-            if (debug)
+            if (debugMode)
                 String2.log(
                     "  Debug: outerTable has nCols=" + outerTableNColumns + 
                     " nRows=" + outerTableNRows + " nKeepRows=" + outerNGood + 
@@ -6337,21 +6493,24 @@ Dataset {
 
             //*** read nLevels=1 obs data
             if (nLevels == 1) {
-                if (debug) String2.log("  Debug: read nLevels=1 obs data");
+                if (debugMode) String2.log("  Debug: read nLevels=1 obs data");
 
                 //request is for obs vars only (not feature data), so read all of the data 
+                if (ncCFcc != null) ncCFcc.set(39);
                 if (outerTableNColumns == 0 && !multidimensional) { //and so outerKeep=null
-                    if (debug) String2.log("  Debug: obs vars only (not feature data), so read all of the data");
+                    if (debugMode) String2.log("  Debug: obs vars only (not feature data), so read all of the data");
                     readAs = "obs vars only";
+                    if (ncCFcc != null) ncCFcc.set(40);
                     for (int v = 0; v < nVars; v++) {       
-                        if (varInLoadVariables[v]) {
+                        if (varInLoadOrConVariables[v]) {
+                            if (ncCFcc != null) ncCFcc.set(41);
                             int dim0 = dimsList.indexOf(vars[v].getDimension(0));
                             if (dim0 == obsDim) {   //ensure correct dim.  obsDim can't be scalardim
                                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                                 addColumn(nColumns(), varNames[v], pa, varAtts[v]);
                             } else {
                                 if (reallyVerbose) 
-                                    String2.log("  !!! nLevels=1 " + readAs + 
+                                    String2.log("  !!! nLevels=1 readAs=" + readAs + 
                                         ": Unexpected dimension for " + varNames[v]);
                             }                               
                         }
@@ -6361,9 +6520,11 @@ Dataset {
                 } else {
 
                     //nLevels=1 indexed ragged array
+                    if (ncCFcc != null) ncCFcc.set(42);
                     if (indexVar >= 0) {
-                        if (debug) String2.log("  Debug: read nLevels=1 indexed ragged");
+                        if (debugMode) String2.log("  Debug: read nLevels=1 indexed ragged");
                         readAs = "indexed ragged";
+                        if (ncCFcc != null) ncCFcc.set(43);
 
                         //insert the indexVar (which is the keyColumn) at col=0
                         PrimitiveArray indexVarPA = NcHelper.getPrimitiveArray(vars[indexVar]);               
@@ -6397,12 +6558,12 @@ Dataset {
 
                         indexVarPA.justKeep(obsKeep);
                         indexVarPA.trimToSize();
-                        if (debug) String2.log("  Debug: nObsRows=" + tnRows + " nObsKeep=" + indexVarPA.size());
+                        if (debugMode) String2.log("  Debug: nObsRows=" + tnRows + " nObsKeep=" + indexVarPA.size());
 
                         //read all of requested variable[obs]
                         //With indexed, we have to read entire var then apply obsKeep.
                         for (int v = 0; v < nVars; v++) {       
-                            if (varInLoadVariables[v] &&
+                            if (varInLoadOrConVariables[v] &&
                                 varNDims[v] == 1 && varUsesDim[v][obsDim]) {  //ensure correct dim
                                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                                 pa.justKeep(obsKeep); //as each var read in, to save memory
@@ -6413,8 +6574,9 @@ Dataset {
 
                     //nLevels=1 contiguous ragged array     //read data for keep=true features
                     } else if (rowSizeVar >= 0) {
-                        if (debug) String2.log("  Debug: nLevels=1 contiguous ragged array"); 
+                        if (debugMode) String2.log("  Debug: nLevels=1 contiguous ragged array"); 
                         readAs = "contiguous ragged";
+                        if (ncCFcc != null) ncCFcc.set(44);
 
                         //read the rowSizesPA
                         PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
@@ -6488,7 +6650,7 @@ Dataset {
 
                         //read the keep rows of requested variable[obs]
                         for (int v = 0; v < nVars; v++) {       
-                            if (varInLoadVariables[v] &&
+                            if (varInLoadOrConVariables[v] &&
                                 varNDims[v] == 1 && varUsesDim[v][obsDim]) {  //ensure correct dim
                                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                                 pa.justKeep(obsKeep); //as each var read in, to save memory
@@ -6496,30 +6658,31 @@ Dataset {
                                 addColumn(nColumns(), varNames[v], pa, varAtts[v]);
                             }
                         }
-                        if (debug) {
+                        if (debugMode) {
                             String2.log("  Debug: keyColumnPA.size=" + keyColumnPA.size() + 
                                 " obsKeep.cardinality=" + obsKeep.cardinality());
                             ensureValid();
                         }
 
-                    //nLevels=1 multidimensional          //read data for keep=true features
+                    //nLevels=1 multidimensional       //read data for keep=true features
                     } else {
-                        if (debug) String2.log("  Debug: nLevels=1 multidimensional");
+                        if (debugMode) String2.log("  Debug: nLevels=1 multidimensional");
                         readAs = "multidim";
+                        if (ncCFcc != null) ncCFcc.set(45);
 
-                        //are there variables tied to just obsDim?  (essentially an innerTable)
-                        //see F:/git/CFPointConventions/timeSeries/
+                        //see unitTestDataDir/CFPointConventions/timeSeries/
                         //    timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1
-                        //  which has lat,lon,alt,stationName[station], time[time], 
-                        //  and temperature[time][station]
+                        //  which has outer=time[time],  
+                        //    inner=lat,lon,alt,stationName[station], and
+                        //    temperature[time][station]
                         Table innerTable = new Table();
-                        int nLoadVariablesInInnerTable = 0;
+                        int nLoadOrConVariablesInInnerTable = 0;
                         StringArray cdmInnerVars = new StringArray();
                         for (int v = 0; v < nVars; v++) {
                             //multidim: load all variable[obs]
                             if (varNDims[v] == 1 && varUsesDim[v][obsDim]) { //ensure correct dim
-                                if (varInLoadVariables[v]) {
-                                    nLoadVariablesInInnerTable++;
+                                if (varInLoadOrConVariables[v]) {
+                                    nLoadOrConVariablesInInnerTable++;
                                     cdmInnerVars.add(varNames[v]); //so in file's order; that's consistent; that's good
                                 }
                                 innerTable.addColumn(innerTable.nColumns(), varNames[v], 
@@ -6529,10 +6692,13 @@ Dataset {
                         int innerTableNColumns = innerTable.nColumns();
                         int innerTableNRows    = innerTable.nRows();               
                         BitSet innerKeep = null; //if null, assume all innerKeep are true
-                        if (debug) String2.log("  Debug: innerTable nLoadVarsInInnerTable=" + 
-                            nLoadVariablesInInnerTable + " nCols=" + innerTableNColumns + 
-                            " nRows=" + innerTableNRows);
+                        if (debugMode) String2.log("  Debug: innerTable nLoadOrConVarsInInnerTable=" + 
+                            nLoadOrConVariablesInInnerTable + 
+                            " nCols=" + innerTableNColumns + 
+                            " (" + innerTable.getColumnNamesCSVString() + 
+                            ") nRows=" + innerTableNRows);
                         if (innerTableNColumns > 0) {
+                            if (ncCFcc != null) ncCFcc.set(46);
 
                             //apply constraints to innerTable  (but keep all innerTable rows)
                             innerKeep = innerTable.rowsWithData(); 
@@ -6551,66 +6717,97 @@ Dataset {
                             innerTableNColumns = innerTable.nColumns();
 
                             //Are we done?  just outerTable + innerTable vars?
-                            if (debug) String2.log(  "  Debug: nLoadVariables InFile=" + nLoadVariablesInFile +
-                                " InOuter=" + nLoadVariablesInOuterTable +
-                                " InInner=" + nLoadVariablesInInnerTable);
-                            if (nLoadVariablesInFile == nLoadVariablesInOuterTable + 
-                                                        nLoadVariablesInInnerTable) {
+                            if (debugMode) String2.log(  "  Debug: nLoadOrConVariables InFile=" + nLoadOrConVariablesInFile +
+                                " InOuter=" + nLoadOrConVariablesInOuterTable +
+                                " InInner=" + nLoadOrConVariablesInInnerTable +
+                                "\n    innerTable nColumns=" + innerTable.nColumns() + ": " +
+                                    innerTable.getColumnNamesCSVString());
+                            if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable + 
+                                                             nLoadOrConVariablesInInnerTable) { 
+                                //user requested e.g., outer=station[10] and inner=time[810740], 
+                                //  but user didn't request observations[station][time]
+                                if (ncCFcc != null) ncCFcc.set(47);
 
                                 //justKeep good rows of innerTable
                                 innerTable.justKeep(innerKeep);
                                 innerTableNRows = innerTable.nRows();
 
-                                //make columns in this table paralleling innerTable, but initially 0 rows
-                                boolean justInnerTable = nLoadVariablesInFile == nLoadVariablesInInnerTable;
+                                //make columns in this table paralleling innerTable
+                                boolean justInnerTable = nLoadOrConVariablesInFile == nLoadOrConVariablesInInnerTable;
                                 for (int col = 0; col < innerTableNColumns; col++) {
                                     addColumn(nColumns(), innerTable.getColumnName(col), 
                                         justInnerTable?
-                                            innerTable.getColumn(col) :
-                                            PrimitiveArray.factory(innerTable.getColumn(col).elementClass(),
-                                                1024, false), 
+                                            innerTable.getColumn(col) :  //copy data
+                                            PrimitiveArray.factory(      //don't copy data
+                                                innerTable.getColumn(col).elementClass(), 1024, false), 
                                         innerTable.columnAttributes(col));
                                 }
 
                                 //just want vars in innerTable?
                                 if (justInnerTable) {
-                                    if (verbose) String2.log("  readNcCF finished (nLevels=1, " + readAs + 
+                                    //finish up
+                                    if (ncCFcc != null) ncCFcc.set(48);
+                                    tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                                    if (nRows() == 0)
+                                        removeAllColumns();
+                                    else reorderColumns(loadVariableNames, true); //discard others
+                                    if (verbose) String2.log("  readNcCF finished (nLevels=1, readAs=" + readAs + 
                                         ", just innerTable vars)." + 
                                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                                         " time=" + (System.currentTimeMillis() - time));
-                                    if (debug) ensureValid();
+                                    if (debugMode) ensureValid();
                                     return;
                                 }                               
 
-                                if (nLoadVariablesInOuterTable > 0) {
-                                    //join justKeep rows of outerTable
-                                    if (outerKeep != null)
+                                if (nLoadOrConVariablesInOuterTable > 0) { 
+                                    //join justKeep rows of outerTable (e.g., stations)
+                                    if (ncCFcc != null) ncCFcc.set(49);
+                                    if (outerKeep != null) {
+                                        if (ncCFcc != null) ncCFcc.set(50);
                                         outerTable.justKeep(outerKeep);
+                                    }
                                     outerTableNRows = outerTable.nRows();
+                                    if (debugMode) {
+                                        String2.log("  Debug: nRows outerTable=" + outerTableNRows +
+                                            " innerTable=" + innerTableNRows + " this=" + nRows() + "\n" +
+                                            "    cols outer=" + outerTable.getColumnNamesCSVString() +
+                                            " inner=" + innerTable.getColumnNamesCSVString() +
+                                            " this=" + getColumnNamesCSVString());
+                                        outerTable.ensureValid();
+                                        innerTable.ensureValid();
+                                        ensureValid();
+                                    }
 
-                                    //make outerTableNRows copies of innerTable  
+                                    //make outerTableNRows copies of innerTable (e.g., time)
                                     //and the index to outerTable
                                     IntArray outerIndexPA = new IntArray();
                                     for (int oRow = 0; oRow < outerTableNRows; oRow++) {
+                                        if (ncCFcc != null) ncCFcc.set(51);
                                         for (int iCol = 0; iCol < innerTableNColumns; iCol++) 
                                             getColumn(iCol).append(innerTable.getColumn(iCol));
-                                        outerIndexPA.add(innerTableNRows, oRow);
+                                        outerIndexPA.addN(innerTableNRows, oRow); //2015-05-26 add->addN !
                                     }
-                                    innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
+                                    addColumn(0, "outerIndex", outerIndexPA, new Attributes());
+                                    if (debugMode) ensureValid();
 
                                     //join with outerTable (all constraints already applied)
                                     //insert row number in outerTable (to be the key column)
                                     PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
                                     outerTable.addColumn(0, "keyCol", keyPA, new Attributes());                       
-                                    innerTable.join(1, 0, "", outerTable);  //outerTable is lookUpTable
-                                    innerTable.removeColumn(0);  //remove the outerIndex
-                                }
+                                    join(1, 0, "", outerTable);  //outerTable is lookUpTable
+                                    removeColumn(0);  //remove the outerIndex
+                                } //else no outer table columns needed
 
-                                if (verbose) String2.log("  readNcCF finished (nLevels=1, " + readAs + 
+                                //finish up
+                                tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                                if (nRows() == 0)
+                                    removeAllColumns();
+                                else reorderColumns(loadVariableNames, true); //discard others
+                                if (verbose) String2.log("  readNcCF finished (nLevels=1, readAs=" + readAs + 
                                     ", just outerTable+innerTable vars)." + 
                                     " nRows=" + nRows() + " nCols=" + nColumns() + 
                                     " time=" + (System.currentTimeMillis() - time));
-                                if (debug) ensureValid();
+                                if (debugMode) ensureValid();
                                 return;
                             }
                         }  //below, innerTable may have 0 or more columns
@@ -6618,6 +6815,7 @@ Dataset {
                         //make obsKeep (with outerKeep and innerKeep info) and
                         //make outerKeyColumn (with row#'s in outerTable) and 
                         //make innerKeyColumn (with row#'s in innerTable)
+                        if (ncCFcc != null) ncCFcc.set(52);
                         BitSet obsKeep = new BitSet(outerDimSize * obsDimSize);  //all are false
                         IntArray outerKeyColumnPA = new IntArray(outerDimSize * obsDimSize, false);  
                         IntArray innerKeyColumnPA = new IntArray(outerDimSize * obsDimSize, false); 
@@ -6632,62 +6830,66 @@ Dataset {
                                 obsRow++;
                             }
                         }
-                        if (debug) String2.log("  Debug: outerKeep=" + 
-                                                 String2.noLongerThan(outerKeep == null? "null" : outerKeep.toString(), 60) +
-                            "\n    innerKeep=" + String2.noLongerThan(innerKeep == null? "null" : innerKeep.toString(), 60) +
-                            "\n    obsKeep="   + String2.noLongerThan(  obsKeep.toString(), 60));
+                        if (debugMode) String2.log("  Debug: outerKeep=" + 
+                                                 String2.noLongerThanDots(outerKeep == null? "null" : outerKeep.toString(), 60) +
+                            "\n    innerKeep=" + String2.noLongerThanDots(innerKeep == null? "null" : innerKeep.toString(), 60) +
+                            "\n    obsKeep="   + String2.noLongerThanDots(  obsKeep.toString(), 60));
 
                         if (obsKeep.isEmpty()) {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                                " (nLevels=1, " + readAs + 
+                                " (nLevels=1, readAs=" + readAs + 
                                 ", no match outer+inner constraints)" + 
                                 " time=" + (System.currentTimeMillis() - time));
+                            removeAllColumns();
                             return;
                         }                               
 
                         //apply obsKeep to outerKeyColumnPA and innerKeyColumnPA
                         outerKeyColumnPA.justKeep(obsKeep);  outerKeyColumnPA.trimToSize();
                         innerKeyColumnPA.justKeep(obsKeep);  innerKeyColumnPA.trimToSize();
-                        if (debug) String2.log("  Debug: outerKeySize=" + outerKeyColumnPA.size() +
+                        if (debugMode) String2.log("  Debug: outerKeySize=" + outerKeyColumnPA.size() +
                             "  innerKeySize=" + innerKeyColumnPA.size());
                         //read the keep rows of requested variable[outer][obs]
                         for (int v = 0; v < nVars; v++) {       
-                            if (varInLoadVariables[v] && 
+                            if (ncCFcc != null) ncCFcc.set(53);
+                            if (varInLoadOrConVariables[v] && 
                                 varNDims[v] == 2 && 
                                 varUsesDim[v][outerDim] && varUsesDim[v][obsDim]) { //dim order checked above
+                                if (ncCFcc != null) ncCFcc.set(54);
                                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
-                                if (debug) String2.log("  Debug: read var=" + varNames[v] + " pa.size=" + pa.size());
+                                if (debugMode) String2.log("  Debug: read var=" + varNames[v] + " pa.size=" + pa.size());
                                 pa.justKeep(obsKeep); //as each var read in, to save memory
                                 pa.trimToSize();
-                                if (debug) String2.log("    trimmed pa.size=" + pa.size());
+                                if (debugMode) String2.log("    trimmed pa.size=" + pa.size());
                                 addColumn(nColumns(), varNames[v], pa, varAtts[v]);
                             }
                         }
 
                         //Remove rows where all obs data is MV
                         //Rows with only outerTable or innerTable MVs have been removed by obsKeep above.
-                        if (debug) String2.log("  Debug: before remove rows where all obs data is MV (nRows=" + 
+                        if (debugMode) String2.log("  Debug: before remove rows where all obs data is MV (nRows=" + 
                             nRows() + "):\n" + dataToCSVString(3));
                         obsKeep = rowsWithData();
                         addColumn(0, "outerKeyColumn", outerKeyColumnPA, new Attributes());
                         addColumn(1, "innerKeyColumn", innerKeyColumnPA, new Attributes());
                         justKeep(obsKeep);
                         //String2.log("after read vars\n" + dataToCSVString());
-                        if (debug) { 
+                        if (debugMode) { 
                             String2.log("  Debug: after removeRowsWithJustMVs nRows=" + nRows());
                             ensureValid();  //throws Exception if not
                         }
                         if (nRows() == 0) {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                                " (nLevels=1, " + readAs + ", after removeMVRows)"+ 
+                                " (nLevels=1, readAs=" + readAs + ", after removeMVRows)"+ 
                                 " time=" + (System.currentTimeMillis() - time));
                             removeAllColumns();
                             return;
                         }
 
-                        //if nLoadVariablesInInnerTable > 0, join it  (it has its original rows)
-                        if (nLoadVariablesInInnerTable > 0) {
+                        //if innerTable.nColumns > 0, join it  (it has its original rows)
+                        if (innerTable.nColumns() > 0) {
                             //insert row number in innerTable (to be the key column)
+                            if (ncCFcc != null) ncCFcc.set(55);
                             PrimitiveArray keyPA = new IntArray(0, innerTable.nRows() - 1);
                             innerTable.addColumn(0, "innerKeyColumn", keyPA, new Attributes());                       
                             join(1, 1, "", innerTable);  //innerTable is lookUpTable 
@@ -6700,11 +6902,13 @@ Dataset {
 
                     //join to add the outerTable columns
                     //rearrange the outerTable columns to the loadVariables order
+                    if (ncCFcc != null) ncCFcc.set(57);
                     outerTable.reorderColumns(loadVariableNames, true); //true, remove unrequested columns
                     outerTableNColumns = outerTable.nColumns();
                     outerTableNRows = outerTable.nRows();
                     if (outerTableNColumns > 0) {
                         //insert row number in outerTable (to be the key column)
+                        if (ncCFcc != null) ncCFcc.set(56);
                         PrimitiveArray keyPA = new IntArray(0, outerTable.nRows() - 1);
                         outerTable.addColumn(0, "keyColumn", keyPA, new Attributes());                       
                         join(1, 0, "", outerTable);  //outerTable is lookUpTable 
@@ -6715,55 +6919,40 @@ Dataset {
                 //finish up all nLevels=1 files
                 if (nColumns() == 0) {
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                        " (nLevels=1, " + readAs + ", nColumns=0)"+ 
+                        " (nLevels=1, readAs=" + readAs + ", nColumns=0)"+ 
                         " time=" + (System.currentTimeMillis() - time));
-                    removeAllColumns();
                     return;
                 }
 
-                //apply constraints to non-feature variables (since they were done earlier)
-                BitSet keep = new BitSet();
-                keep.set(0, nRows());
-                for (int con = 0; con < nCon; con++) {
-                    int v = String2.indexOf(varNames, conNames.get(con));
-                    if (v < 0 || 
-                        (varNDims[v] == 1 && varUsesDim[v][outerDim]))
-                        continue;
-                    int cardinality = tryToApplyConstraint(-1, 
-                        conNames.get(con), conOps.get(con), conValues.get(con), keep);
-                    if (cardinality == 0) {
-                        if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                            " (nLevels=1, " + readAs + ", after constraints applied) " + 
-                            "time=" + (System.currentTimeMillis() - time));
-                        removeAllColumns();
-                        return;
-                    }
-                }
-                justKeep(keep);
-
-                //rearrange the columns to the loadVariables order
-                reorderColumns(loadVariableNames, true); //true, remove unrequested columns
-                if (verbose) String2.log("  readNcCF finished (nLevels=1, " + readAs + 
-                    "). nRows=" + nRows() + " nCols=" + nColumns() + 
+                //finish up
+                if (ncCFcc != null) ncCFcc.set(58);
+                tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                if (nRows() == 0)
+                    removeAllColumns();
+                else reorderColumns(loadVariableNames, true); //discard others
+                if (verbose) String2.log("  readNcCF finished (nLevels=1, readAs=" + readAs + 
+                    ", all). nRows=" + nRows() + " nCols=" + nColumns() +
                     " time=" + (System.currentTimeMillis() - time));
-                if (debug) ensureValid();
+                if (debugMode) ensureValid();
                 return;
             }
 
             //*** nLevels=2 files
-            Table innerTable = new Table();  //only gets varInLoadVariables vars
+            Table innerTable = new Table();  //only gets varInLoadOrConVariables vars
             int innerTableNColumns, innerTableNRows; //may be 0
 
 
             //* read nLevels=2 ragged array files
             if ((indexVar >= 0 || outerDim == scalarDim) && rowSizeVar >= 0) {  
-                if (debug) String2.log("  Debug: nLevels=2 files, ragged");
+                if (debugMode) String2.log("  Debug: nLevels=2 files, ragged");
                 readAs = "ragged";
+                if (ncCFcc != null) ncCFcc.set(59);
 
                 //read variable[innerDim] into innerTable
                 StringArray cdmInnerVars = new StringArray();
                 for (int v = 0; v < nVars; v++) {
-                    if (varInLoadVariables[v] && 
+                    if (ncCFcc != null) ncCFcc.set(60);
+                    if (varInLoadOrConVariables[v] && 
                         varNDims[v] == 1 && varUsesDim[v][innerDim]) { //ensure correct dim
                         cdmInnerVars.add(varNames[v]); //so in file's order; that's consistent; that's good
                         innerTable.addColumn(innerTable.nColumns(), varNames[v], 
@@ -6783,12 +6972,14 @@ Dataset {
                 int indexFV = Integer.MAX_VALUE;
                 if (indexVar >= 0) {
                     //then replace if indexVar exists
+                    if (ncCFcc != null) ncCFcc.set(61);
                     outerIndexPA = NcHelper.getPrimitiveArray(vars[indexVar]);
                     indexMV = varAtts[indexVar].getInt("missing_value"); //MAX_VALUE if not defined
                     indexFV = varAtts[indexVar].getInt("_FillValue");    //MAX_VALUE if not defined
                 }
                 int outerIndexSize = outerIndexPA.size();
                 if (outerTableNRows > 0) {
+                    if (ncCFcc != null) ncCFcc.set(62);
                     for (int row = 0; row < outerIndexSize; row++) {
                         int index = outerIndexPA.getInt(row);
                         if (index >= 0 && index < outerTableNRows) {
@@ -6807,8 +6998,10 @@ Dataset {
                 //set up innerKeep with outerIndex info.
                 BitSet innerKeep = new BitSet(innerDimSize);  //includes outerKeep info
                 if (outerKeep == null) {
+                    if (ncCFcc != null) ncCFcc.set(63);
                     innerKeep.set(0, innerDimSize);
                 } else {
+                    if (ncCFcc != null) ncCFcc.set(64);
                     for (int i = 0; i < innerDimSize; i++) 
                         if (outerKeep.get(outerIndexPA.getInt(i)))
                             innerKeep.set(i);
@@ -6817,27 +7010,32 @@ Dataset {
                 //apply innerTable constraints  
                 int keepNInner = -1;
                 if (innerTableNColumns > 0) {
+                    if (ncCFcc != null) ncCFcc.set(65);
                     keepNInner = innerTable.tryToApplyConstraints(-1, 
                         conNames, conOps, conValues, innerKeep);
                     if (keepNInner == 0) {
+                        if (ncCFcc != null) ncCFcc.set(66);
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                            " (nLevels=2, " + readAs + ", keepNInner=0)" + 
+                            " (nLevels=2, readAs=" + readAs + ", keepNInner=0)" + 
                             " time=" + (System.currentTimeMillis() - time));
                         removeAllColumns();
                         return;
                     }
                     //order of rows is important, so *don't* justKeep(innerKeep)
                 } 
-                if (debug) 
+                if (debugMode) 
                     String2.log("  Debug: ragged innerTable has nCols=" + innerTableNColumns + 
                         " nRows=" + innerTableNRows + " nKeepRows=" + keepNInner + "\n" +
                         innerTable.dataToCSVString()); 
 
 
                 //Are we done? Are those all the variables we need that are in the file?
-                if (nLoadVariablesInFile == nLoadVariablesInOuterTable + innerTableNColumns) {
+                if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable + 
+                                                 innerTableNColumns) {
                     //join with outerTable 
+                    if (ncCFcc != null) ncCFcc.set(67);
                     if (outerTableNColumns > 0) {
+                        if (ncCFcc != null) ncCFcc.set(68);
                         innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
                         //insert row number in outerTable (to be the key column)
                         PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
@@ -6850,18 +7048,23 @@ Dataset {
                     innerTable.justKeep(innerKeep);  //includes outer and inner info
 
                     //globalAttributes already set
-                    //copy innerTable to this table in correct order
-                    for (int lv = 0; lv < loadVariableNames.size(); lv++) {
-                        int col = innerTable.findColumnNumber(loadVariableNames.get(lv));
-                        if (col >= 0)
-                            addColumn(nColumns(), innerTable.getColumnName(col), 
-                                innerTable.getColumn(col), innerTable.columnAttributes(col));
-                    }
-                    if (verbose) String2.log("  readNcCF finished (nLevels=2, " + readAs + 
+                    //copy innerTable to this table
+                    int nic = innerTable.nColumns();
+                    for (int c = 0; c < nic; c++) 
+                        addColumn(c, innerTable.getColumnName(c), 
+                            innerTable.getColumn(c), innerTable.columnAttributes(c));
+
+                    //finish up
+                    if (ncCFcc != null) ncCFcc.set(69);
+                    tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                    if (nRows() == 0)
+                        removeAllColumns();
+                    else reorderColumns(loadVariableNames, true); //discard others
+                    if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
                         ", just outerTable+innerTable vars)." + 
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
-                    if (debug) ensureValid();
+                    if (debugMode) ensureValid();
                     return;
                 }
                
@@ -6870,6 +7073,7 @@ Dataset {
                 //and make obsKeep.
                 //obsKeep Approach: optimize for situation that takes longest 
                 //  (outerKeep and innerKeep all true).  This is also a very simple approach.
+                if (ncCFcc != null) ncCFcc.set(70);
                 PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
                 IntArray outerIndexColumnPA = new IntArray();
                 IntArray innerIndexColumnPA = new IntArray();  
@@ -6892,13 +7096,14 @@ Dataset {
                         obsKeep.set(startRow, endRow);
                     }
                 }
-                if (debug) String2.log(
+                if (debugMode) String2.log(
                     "  Debug: outerIndexCol[obs]=" + outerIndexColumnPA.toString() + 
                     "\ninnerIndexCol[obs]=" + innerIndexColumnPA.toString());
 
                 //read the obsKeep rows of requested variable[obs]
                 for (int v = 0; v < nVars; v++) {       
-                    if (varInLoadVariables[v] &&
+                    if (ncCFcc != null) ncCFcc.set(71);
+                    if (varInLoadOrConVariables[v] &&
                         varNDims[v] == 1 && varUsesDim[v][obsDim]) { //ensure correct dim
                         PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                         pa.justKeep(obsKeep); //as each var read in, to save memory
@@ -6909,8 +7114,9 @@ Dataset {
                
             //*** read nLevels=2 multidimensional files
             } else if (multidimensional) {
-                if (debug) String2.log("  Debug: nLevels=2 files, multidimensional");
+                if (debugMode) String2.log("  Debug: nLevels=2 files, multidimensional");
                 readAs = "multidim";
+                if (ncCFcc != null) ncCFcc.set(72);
 
                 //create outerIndexPA and innerIndexPA, both [outerDim][innerDim]
                 int outerXInnerDimSize = outerDimSize * innerDimSize;
@@ -6925,32 +7131,36 @@ Dataset {
                 }
 
                 //read ALL variable[outerDim][innerDim] into innerTable
-                int nLoadVariablesInInnerTable = 0;
+                int nLoadOrConVariablesInInnerTable = 0;
                 StringArray cdmInnerVars = new StringArray();
                 for (int v = 0; v < nVars; v++) {
-                    //read ALL innerTable variables, not just varInLoadVariables
+                    //read ALL innerTable variables, not just varInLoadOrConVariables
                     //because their all-mv rows determine which chunks of obs table to ignore
+                    if (ncCFcc != null) ncCFcc.set(73);
                     if (varNDims[v] == 2 && 
                         varUsesDim[v][outerDim] && varUsesDim[v][innerDim]) {
                         //dim order not checked above, so check it here
                         //It's complicated if outerDim is scalarDim.
+                        if (ncCFcc != null) ncCFcc.set(74);
                         int dim0 = outerDim == scalarDim? scalarDim :
                                    dimsList.indexOf(vars[v].getDimension(0));
                         int dim1 = dimsList.indexOf(vars[v].getDimension(
                                    outerDim == scalarDim? 0 : 1));
                         if (dim0 == outerDim && dim1 == innerDim) { 
-                            if (varInLoadVariables[v]) {
-                                nLoadVariablesInInnerTable++;
+                            if (ncCFcc != null) ncCFcc.set(75);
+                            if (varInLoadOrConVariables[v]) {
+                                if (ncCFcc != null) ncCFcc.set(76);
+                                nLoadOrConVariablesInInnerTable++;
                                 cdmInnerVars.add(varNames[v]); //so in file's order; that's consistent; that's good
                             }
                             innerTable.addColumn(innerTable.nColumns(), varNames[v], 
                                 NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                         } else {
                             if (reallyVerbose) 
-                                String2.log("  !!! nLevels=2 " + readAs + 
+                                String2.log("  !!! nLevels=2 readAs=" + readAs + 
                                     ": Unexpected dimension order for " + varNames[v]);
                         }                               
-
+                        if (ncCFcc != null) ncCFcc.set(77); //duplicate of 74
                     }
                 }
                 innerTableNColumns = innerTable.nColumns();  //It has no index columns
@@ -6961,16 +7171,19 @@ Dataset {
 
                 //trouble?  look for truly orthogonal: just variable[innerDim] 
                 if (innerTableNColumns == 0) {
-                    if (debug) String2.log("  Debug: innerTableNColumns=0");
+                    if (debugMode) String2.log("  Debug: innerTableNColumns=0");
+                    if (ncCFcc != null) ncCFcc.set(78);
 
                     //read ALL variable[innerDim] into innerTable
-                    nLoadVariablesInInnerTable = 0;  //should be already
+                    nLoadOrConVariablesInInnerTable = 0;  //should be already
                     for (int v = 0; v < nVars; v++) {
-                        //read ALL innerTable variables, not just varInLoadVariables
+                        //read ALL innerTable variables, not just varInLoadVariables and varInConstraints
                         //because their all-mv rows determine which chunks of obs table to ignore
+                        if (ncCFcc != null) ncCFcc.set(79);
                         if (varNDims[v] == 1 && varUsesDim[v][innerDim]) { //ensure correct dim
-                            if (varInLoadVariables[v])
-                                nLoadVariablesInInnerTable++;
+                            if (ncCFcc != null) ncCFcc.set(80);
+                            if (varInLoadOrConVariables[v])
+                                nLoadOrConVariablesInInnerTable++;
                             innerTable.addColumn(innerTable.nColumns(), varNames[v], 
                                 NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                         }
@@ -6981,7 +7194,7 @@ Dataset {
 
                     if (innerTableNColumns == 0) {
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                            " (nLevels=2, " + readAs + 
+                            " (nLevels=2, readAs=" + readAs + 
                             ", no variable[" + outerDimName + "][" + innerDimName + "] " +
                             " or variable[" + innerDimName + "])" + 
                             " time=" + (System.currentTimeMillis() - time));
@@ -6992,6 +7205,7 @@ Dataset {
                     //make outerDimSize-1 duplicates of the rows of the innerTable
                     //so it becomes innerTable with variable[outerDim][innerDim]
                     for (int col = 0; col < innerTableNColumns; col++) {
+                        if (ncCFcc != null) ncCFcc.set(81);
                         PrimitiveArray pa = innerTable.getColumn(col);
                         PrimitiveArray clone = (PrimitiveArray)pa.clone();
                         for (int copy = 1; copy < outerDimSize; copy++) 
@@ -7011,27 +7225,31 @@ Dataset {
                 int nInnerGood = innerTable.tryToApplyConstraints(-1, 
                     conNames, conOps, conValues, innerKeep);
                 if (nInnerGood == 0) {
+                    if (ncCFcc != null) ncCFcc.set(82);
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                        " (nLevels=2, " + readAs + ", nInnerGood=0)" + 
+                        " (nLevels=2, readAs=" + readAs + ", nInnerGood=0)" + 
                         " time=" + (System.currentTimeMillis() - time));
                     removeAllColumns();
                     return;
                 }
                 //order of rows is important, so *don't* justKeep(innerKeep)
-                if (debug) 
+                if (debugMode) 
                     String2.log("  Debug: multidim innerTable has nCols=" + innerTableNColumns + 
                         " nRows=" + innerTableNRows + " nKeepRows=" + nInnerGood); 
 
                 //Are we done? Are those all the variables we need that are in the file?
-                if (nLoadVariablesInFile == nLoadVariablesInOuterTable + nLoadVariablesInInnerTable) {
+                if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable + 
+                                                 nLoadOrConVariablesInInnerTable) {
 
                     //join to add the outerTable columns
                     //rearrange the outerTable columns to the loadVariables order
+                    if (ncCFcc != null) ncCFcc.set(83);
                     outerTable.reorderColumns(loadVariableNames, true); //true, remove unrequested columns
                     outerTableNColumns = outerTable.nColumns();
                     outerTableNRows = outerTable.nRows();
                     if (outerTableNColumns > 0) {
                         //join with outerTable 
+                        if (ncCFcc != null) ncCFcc.set(84);
                         innerTable.addColumn(0, "outerIndex", outerIndexPA, new Attributes());
                         //insert row number in outerTable (to be the key column)
                         PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
@@ -7044,31 +7262,37 @@ Dataset {
                     innerTable.justKeep(innerKeep);  //includes outer info, inner info, mv info
 
                     //globalAttributes already set
-                    //copy innerTable to this table in correct order
-                    for (int lv = 0; lv < loadVariableNames.size(); lv++) {
-                        int col = innerTable.findColumnNumber(loadVariableNames.get(lv));
-                        if (col >= 0) 
-                            addColumn(nColumns(), innerTable.getColumnName(col), 
-                                innerTable.getColumn(col), innerTable.columnAttributes(col));
-                    }
-                    if (verbose) String2.log("  readNcCF finished (nLevels=2, " + readAs + 
+                    //copy innerTable to this table
+                    int nic = innerTable.nColumns();
+                    for (int c = 0; c < nic; c++) 
+                        addColumn(c, innerTable.getColumnName(c), 
+                            innerTable.getColumn(c), innerTable.columnAttributes(c));
+
+                    //finish up
+                    if (ncCFcc != null) ncCFcc.set(85);
+                    tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                    if (nRows() == 0)
+                        removeAllColumns();
+                    else reorderColumns(loadVariableNames, true); //discard others
+                    if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
                         ", just outerTable+innerTable vars)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
-                    if (debug) ensureValid();
+                    if (debugMode) ensureValid();
                     return;
                 }
 
                 //* Make interiorTable with variable[obs]?   some files have them
-                if (debug) String2.log("  Debug: make interiorTable with variable[obs]?");
+                if (debugMode) String2.log("  Debug: make interiorTable with variable[obs]?");
+                if (ncCFcc != null) ncCFcc.set(86);
                 Table interiorTable = new Table();
-                int nLoadVariablesInInteriorTable = 0; 
+                int nLoadOrConVariablesInInteriorTable = 0; 
                 for (int v = 0; v < nVars; v++) {
-                    //read ALL interiorTable variables, not just varInLoadVariables
+                    //read ALL interiorTable variables, not just varInLoadOrConVariables
                     //because their all-mv rows determine which chunks of obs table to ignore
                     if (varNDims[v] == 1 && varUsesDim[v][obsDim]) { //ensure correct dim
-                        if (varInLoadVariables[v])
-                            nLoadVariablesInInteriorTable++;
+                        if (varInLoadOrConVariables[v])
+                            nLoadOrConVariablesInInteriorTable++;
                         interiorTable.addColumn(interiorTable.nColumns(), varNames[v], 
                             NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                     }
@@ -7080,39 +7304,46 @@ Dataset {
                 BitSet interiorKeep = null; //will be null if no interiorTable columns
                 if (interiorTableNColumns > 0) {
                     //apply constraints (but keep all the rows)
-                    if (debug) String2.log("  Debug: interiorTable exists");
+                    if (ncCFcc != null) ncCFcc.set(87);
+                    if (debugMode) String2.log("  Debug: interiorTable exists");
                     interiorKeep = interiorTable.rowsWithData();
                     int interiorNKeep = interiorTable.tryToApplyConstraints(
                         -1, conNames, conOps, conValues, interiorKeep);
                     if (interiorNKeep == 0) {
+                        if (ncCFcc != null) ncCFcc.set(88);
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                            " (nLevels=2, " + readAs + 
+                            " (nLevels=2, readAs=" + readAs + 
                             ", interiorNKeep=0)" + 
                             " time=" + (System.currentTimeMillis() - time));
                         removeAllColumns();
                         return;
                     }
-                    if (debug) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString());
+                    if (debugMode) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString());
 
                     //are we done?
-                    if (nLoadVariablesInFile == nLoadVariablesInInteriorTable) {
+                    if (nLoadOrConVariablesInFile == nLoadOrConVariablesInInteriorTable) {
 
                         //justKeep
+                        if (ncCFcc != null) ncCFcc.set(89);
                         interiorTable.justKeep(interiorKeep);  //includes outer info, inner info, mv info
 
                         //globalAttributes already set
-                        //copy interiorTable to this table in correct order
-                        for (int lv = 0; lv < loadVariableNames.size(); lv++) {
-                            int col = interiorTable.findColumnNumber(loadVariableNames.get(lv));
-                            if (col >= 0) 
-                                addColumn(nColumns(), interiorTable.getColumnName(col), 
-                                    interiorTable.getColumn(col), interiorTable.columnAttributes(col));
-                        }
-                        if (verbose) String2.log("  readNcCF finished (nLevels=2, " + readAs + 
+                        //copy interiorTable to this table
+                        int nic = interiorTable.nColumns();
+                        for (int c = 0; c < nic; c++) 
+                            addColumn(c, interiorTable.getColumnName(c), 
+                                interiorTable.getColumn(c), interiorTable.columnAttributes(c));
+
+                        //finish up
+                        tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+                        if (nRows() == 0)
+                            removeAllColumns();
+                        else reorderColumns(loadVariableNames, true); //discard others
+                        if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
                             ", just interiorTable vars)." +
                             " nRows=" + nRows() + " nCols=" + nColumns() + 
                             " time=" + (System.currentTimeMillis() - time));
-                        if (debug) ensureValid();
+                        if (debugMode) ensureValid();
                         return;
                     }
                 }
@@ -7124,7 +7355,8 @@ Dataset {
                 //and make obsKeep
                 //obsKeep Approach: optimize for situation that takes longest 
                 //  (outerKeep and innerKeep all true).  This is also a very simple approach.
-                if (debug) String2.log("  Debug: read rowSizesPA and make many IndexColumnPAs");
+                if (debugMode) String2.log("  Debug: read rowSizesPA and make many IndexColumnPAs");
+                if (ncCFcc != null) ncCFcc.set(90);
                 IntArray outerIndexColumnPA    = new IntArray();
                 IntArray innerIndexColumnPA    = new IntArray();  
                 IntArray interiorIndexColumnPA = new IntArray();  
@@ -7153,11 +7385,13 @@ Dataset {
 
                 //read the obsKeep rows of requested variable[outerDim][innerDim][obs]
                 for (int v = 0; v < nVars; v++) {       
-                    if (varInLoadVariables[v] &&
+                    if (ncCFcc != null) ncCFcc.set(91);
+                    if (varInLoadOrConVariables[v] &&
                         varNDims[v] == 3 && 
                         varUsesDim[v][outerDim] && //dim order checked above when dims detected
                         varUsesDim[v][innerDim] && 
                         varUsesDim[v][obsDim]) {
+                        if (ncCFcc != null) ncCFcc.set(92);
                         PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
                         pa.justKeep(obsKeep); //as each var read in, to save memory
                         pa.trimToSize();
@@ -7172,34 +7406,35 @@ Dataset {
                 addColumn(2, "interiorIndexCol", interiorIndexColumnPA, new Attributes());
                 //String2.log("  obs before justKeep(obsKeep):\n" + dataToCSVString());
                 justKeep(obsKeep);
-                if (debug) { 
+                if (debugMode) { 
                     String2.log("  Debug: after removeRowsWithJustMVs nRows=" + nRows());
                     ensureValid();  //throws Exception if not
                 }
                 if (nRows() == 0) {
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
-                        " (nLevels=1, " + readAs + ", after removeMVRows)" + 
+                        " (nLevels=1, readAs=" + readAs + ", after removeMVRows)" + 
                         " time=" + (System.currentTimeMillis() - time));
                     removeAllColumns();
                     return;
                 }
 
                 //join interiorTable
-                if (nLoadVariablesInInteriorTable > 0) {
+                if (nLoadOrConVariablesInInteriorTable > 0) {
                     //insert row number in interiorTable (to be the key column)
+                    if (ncCFcc != null) ncCFcc.set(93);
                     PrimitiveArray keyPA = new IntArray(0, interiorTableNRows - 1);
                     interiorTable.addColumn(0, "keyColumn", keyPA, new Attributes());                       
                     join(1, 2, "", interiorTable);  
                 } 
                 removeColumn(2); //interiorIndexCol
 
-                //if nLoadVariablesInOuterTable == 0, no need to join it below
+                //if nLoadOrConVariablesInOuterTable == 0, no need to join it below
                 //rearrange the outerTable columns to the loadVariables order
                 outerTable.reorderColumns(loadVariableNames, true); //true, remove unrequested columns
                 outerTableNColumns = outerTable.nColumns();
                 outerTableNRows = outerTable.nRows();
 
-                //if nLoadVariablesInInnerTable == 0, no need to join it below
+                //if nLoadOrConVariablesInInnerTable == 0, no need to join it below
                 //rearrange the innerTable columns to the loadVariables order
                 innerTable.reorderColumns(loadVariableNames, true); //true, remove unrequested columns
                 innerTableNColumns = innerTable.nColumns();
@@ -7215,7 +7450,8 @@ Dataset {
               
             //*** finish up nLevels=2 files
             //first 2 cols of this table are outerTableIndex and innerTableIndex
-            if (debug) String2.log("  Debug: finish up nLevels=2 files");
+            if (debugMode) String2.log("  Debug: finish up nLevels=2 files");
+            if (ncCFcc != null) ncCFcc.set(94);
 
             //apply constraints to obs variables
             //(not outer and inner variables, since they were constrained earlier)
@@ -7223,25 +7459,29 @@ Dataset {
             keep.set(0, nRows());
             int cardinality = nRows();
             for (int con = 0; con < nCon; con++) {
+                if (ncCFcc != null) ncCFcc.set(95);
                 int v = findColumnNumber(conNames.get(con));
                 if (v >= 2) { //an obs variable
                     cardinality = tryToApplyConstraint(-1, 
                         conNames.get(con), conOps.get(con), conValues.get(con), keep);
                     if (cardinality == 0) {
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA +  
-                            " (nLevels=2, " + readAs + ", after constraints applied)" + 
+                            " (nLevels=2, readAs=" + readAs + ", after constraints applied)" + 
                             " time=" + (System.currentTimeMillis() - time));
                         removeAllColumns();
                         return;
                     }
                 }
             }
-            if (cardinality < nRows())
+            if (cardinality < nRows()) {
+                if (ncCFcc != null) ncCFcc.set(96);
                 justKeep(keep);
+            }
 
             //join to add the innerTable columns
             if (innerTableNColumns > 0) {
                 //insert row number in innerTable (to be the key column)
+                if (ncCFcc != null) ncCFcc.set(97);
                 PrimitiveArray keyPA = new IntArray(0, innerTable.nRows() - 1);
                 innerTable.addColumn(0, "keyColumn", keyPA, new Attributes());                       
                 join(1, 1, "", innerTable);  //innerTable is lookUpTable                       
@@ -7251,15 +7491,17 @@ Dataset {
             //join to add the outerTable columns
             if (outerTableNColumns > 0) {
                 //insert row number in outerTable (to be the key column)
+                if (ncCFcc != null) ncCFcc.set(98);
                 PrimitiveArray keyPA = new IntArray(0, outerTableNRows - 1);
                 outerTable.addColumn(0, "keyColumn", keyPA, new Attributes());                       
                 join(1, 0, "", outerTable);  //outerTable is lookUpTable
             }
             removeColumn(0);  //remove the keyColumn
 
-            //rearrange the columns to the loadVariables order
-            reorderColumns(loadVariableNames, true); //true, delete unwanted columns
-
+            //finish up
+            tryToApplyConstraintsAndKeep(-1, conNames, conOps, conValues); //may be 0 rows left
+            reorderColumns(loadVariableNames, true); //discard others
+            
         } finally {
             //make sure ncFile is explicitly closed
             if (ncFile != null) {
@@ -7270,22 +7512,197 @@ Dataset {
                 }
             }
         }
-        if (verbose) String2.log("  readNcCF finished (nLevels=2, " + readAs + 
+        if (ncCFcc != null) ncCFcc.set(99);
+        if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
             "). nRows=" + nRows() + " nCols=" + nColumns() + 
             " time=" + (System.currentTimeMillis() - time));
     }
 
+    /** This tests readNcCF reading point files. */
+    public static void testReadNcCFPoint(boolean pauseAfterEach) throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
+        String2.log("\n*** Table.testReadNcCFPoint");
+        String pauseMessage = "\nOK?";
+        Table table = new Table();
+        String results, expected;
+        String fileName = unitTestDataDir + "CFPointConventions/point/point-H.1/point-H.1.nc"; 
+        Attributes gatts;
+
+/* */
+        //***************  point
+        String2.log("\n\n** Testing " + fileName);
+        String2.log(NcHelper.dumpString(fileName, false));
+
+        table.readNcCF(fileName, null, null, null, null);
+        //String2.log(table.toCSVString());
+        results = table.dataToCSVString(5);
+        expected = 
+"row,obs,lat,lon,alt,time,temperature,humidity\n" +
+"0,0,41.0,112.0,7.745540487338979,573,26.225288,11.245576\n" +
+"1,1,179.0,68.0,3.0855444414144264,2248,12.695349,67.73824\n" +
+"2,2,10.0,11.0,3.254759157455159,71,21.193731,48.589462\n" +
+"3,3,106.0,22.0,4.549437636401848,1714,35.339344,39.594116\n" +
+"4,4,75.0,16.0,6.061720687265453,1209,22.593496,28.170149\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1a " + pauseMessage); 
+
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "row,obs,lat,lon,alt,time,temperature,humidity"), 
+            StringArray.fromCSV(""), 
+            StringArray.fromCSV(""),
+            StringArray.fromCSV(""));
+        results = table.dataToCSVString(5);
+        //expected is same
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1b " + pauseMessage); 
+
+
+        results = table.columnAttributes(6).toString();
+        expected = 
+"    coordinates=\"time lat lon alt\"\n" +
+"    long_name=\"Humidity\"\n" +
+"    missing_value=-999.9\n" +
+"    standard_name=\"specific_humidity\"\n" +
+"    units=\"Percent\"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = table.globalAttributes().toString();
+        expected = 
+"    Conventions=\"CF-1.6\"\n" +
+"    featureType=\"point\"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs,lat,time,temperature"), 
+            StringArray.fromCSV("obs"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("2"));
+        results = table.dataToCSVString();
+        expected = 
+"obs,lat,time,temperature\n" +
+"2,10.0,71,21.193731\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1c " + pauseMessage); 
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs,lat,time,temperature"), 
+            StringArray.fromCSV("time"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("71"));
+        results = table.dataToCSVString();
+        expected = 
+"obs,lat,time,temperature\n" +
+"2,10.0,71,21.193731\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1d " + pauseMessage); 
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs,lat,time,temperature"), 
+            StringArray.fromCSV("temperature"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("21.193731"));
+        results = table.dataToCSVString();
+        expected = 
+"obs,lat,time,temperature\n" +
+"2,10.0,71,21.193731\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1e " + pauseMessage); 
+
+        //this is important test of just getting dimension values 
+        //(when there is no corresponding variable)
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs"), 
+            StringArray.fromCSV("obs"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("2"));
+        results = table.dataToCSVString();
+        expected = 
+"obs\n" +
+"2\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //and test that it gets the global attributes from the file.
+        results = table.globalAttributes().toString();
+        expected = 
+"    Conventions=\"CF-1.6\"\n" +
+"    featureType=\"point\"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1f " + pauseMessage); 
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "temperature"), 
+            StringArray.fromCSV("temperature"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("21.193731"));
+        results = table.dataToCSVString();
+        expected = 
+"temperature\n" +
+"21.193731\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1g " + pauseMessage); 
+
+        //
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs,lat,time,temperature"), 
+            StringArray.fromCSV("obs"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs,lat,time,temperature"), 
+            StringArray.fromCSV("time"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs,lat,time,temperature"), 
+            StringArray.fromCSV("temperature"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "obs"), 
+            StringArray.fromCSV("obs"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "temperature"), 
+            StringArray.fromCSV("temperature"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+
+        String2.log("\n*** Table.testReadNcCFPoint finished successfully");
+    }
+
+    
+    
     /** This tests readNcCF nLevels=1. */
     public static void testReadNcCF1(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCF1");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected;
-        String profileFileName = "c:/data/nccf/Profile.nc";  //from 
+        String profileFileName = unitTestDataDir + "nccf/Profile.nc"; 
         Attributes gatts;
 
 /* */
@@ -7325,9 +7742,21 @@ Dataset {
         Test.ensureEqual(gatts.getString("subsetVariables"), 
             "id, longitude, latitude, time", gatts.toString());
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1a " + pauseMessage); 
+            String2.pressEnterToContinue("#1a " + pauseMessage); 
 
+        //
+        String2.log("\n\n** Test 1 non-existent loadVar test:ncCFcc.set(27)");
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "zztop"), 
+            StringArray.fromCSV(""), 
+            StringArray.fromCSV(""),
+            StringArray.fromCSV(""));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+        if (pauseAfterEach) 
+            String2.pressEnterToContinue("#1aa " + pauseMessage); 
 
+        //
         String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
             "many loadVars, constraints, NO_DATA");
         table.readNcCF(profileFileName, StringArray.fromCSV(
@@ -7338,22 +7767,42 @@ Dataset {
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1b " + pauseMessage); 
+            String2.pressEnterToContinue("#1b " + pauseMessage); 
 
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "id,longitude,latitude,time,altitude,salinity,salinity_qc,temperature"), 
+            StringArray.fromCSV("id"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("zztop"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
 
-        String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
-            "many loadVars, constraints, NO_DATA");
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "id,longitude,latitude,time,altitude,salinity,salinity_qc,temperature"), 
+            StringArray.fromCSV("longitude"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "id,longitude,latitude,time,altitude,salinity,salinity_qc,temperature"), 
+            StringArray.fromCSV("time"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
         table.readNcCF(profileFileName, StringArray.fromCSV(
             "id,longitude,latitude,time,altitude,salinity,salinity_qc,temperature"), 
             StringArray.fromCSV("temperature"), 
             StringArray.fromCSV("="),
-            StringArray.fromCSV("-195"));
+            StringArray.fromCSV("-12345"));
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
-        if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1c " + pauseMessage); 
 
 
+        //
         String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
             "just outerTable loadVars, no constraints");
         table.readNcCF(profileFileName, StringArray.fromCSV(
@@ -7375,9 +7824,34 @@ Dataset {
         Test.ensureEqual(gatts.getString("subsetVariables"), 
             "id, longitude, latitude, time", gatts.toString());
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1d " + pauseMessage); 
+            String2.pressEnterToContinue("#1d " + pauseMessage); 
+
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "longitude,latitude,time,zztop,id"), 
+            StringArray.fromCSV("id"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "longitude,latitude,time,zztop,id"), 
+            StringArray.fromCSV("latitude"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "longitude,latitude,time,zztop,id"), 
+            StringArray.fromCSV("time"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
 
 
+        //
         String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
             "just outerTable loadVars, constraints");
         table.readNcCF(profileFileName, StringArray.fromCSV(
@@ -7397,7 +7871,7 @@ Dataset {
         Test.ensureEqual(gatts.getString("subsetVariables"), 
             "id, longitude, latitude, time", gatts.toString());
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1e " + pauseMessage); 
+            String2.pressEnterToContinue("#1e " + pauseMessage); 
 
 
         String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
@@ -7410,7 +7884,7 @@ Dataset {
         Test.ensureEqual(table.nColumns(), 0, "");
         Test.ensureEqual(table.nRows(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1f " + pauseMessage); 
+            String2.pressEnterToContinue("#1f " + pauseMessage); 
 
 
         String2.log("\n\n** Test nLevels=1/contiguousRagged, specific loadVars, constraints");
@@ -7434,7 +7908,7 @@ Dataset {
         Test.ensureEqual(gatts.getString("subsetVariables"), 
             "id, longitude, latitude, time", gatts.toString());
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1g " + pauseMessage); 
+            String2.pressEnterToContinue("#1g " + pauseMessage); 
 
 
         String2.log("\n\n** Test nLevels=1/contiguousRagged  just obs loadVars, no constraints");
@@ -7461,9 +7935,18 @@ Dataset {
         Test.ensureEqual(gatts.getString("subsetVariables"), 
             null, gatts.toString());
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1h " + pauseMessage); 
+            String2.pressEnterToContinue("#1h " + pauseMessage); 
+
+        table.readNcCF(profileFileName, StringArray.fromCSV(
+            "salinity"), 
+            StringArray.fromCSV("salinity"), 
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("-12345"));
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
 
 
+        //
         String2.log("\n\n** Test nLevels=1/contiguousRagged  just obs loadVars, constraints");
         table.readNcCF(profileFileName, StringArray.fromCSV(
             "temperature,zztop"), 
@@ -7485,7 +7968,7 @@ Dataset {
         Test.ensureEqual(gatts.getString("subsetVariables"), 
             null, gatts.toString());
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1i " + pauseMessage); 
+            String2.pressEnterToContinue("#1i " + pauseMessage); 
 
 
         String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
@@ -7498,7 +7981,7 @@ Dataset {
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1j " + pauseMessage); 
+            String2.pressEnterToContinue("#1j " + pauseMessage); 
 
         //test quick reject 
         //if (constraintVar!=NaN or constraintVar=(finite)) and var not in file,
@@ -7511,7 +7994,7 @@ Dataset {
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1m " + pauseMessage); 
+            String2.pressEnterToContinue("#1m " + pauseMessage); 
 
         String2.log("\n\n** Test #1n quick reject var!=\"\" if var not in file: NO_DATA");
         table.readNcCF(profileFileName, StringArray.fromCSV(
@@ -7522,7 +8005,7 @@ Dataset {
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1n " + pauseMessage); 
+            String2.pressEnterToContinue("#1n " + pauseMessage); 
 
         //but this can't be quickly rejected
         String2.log("\n\n** Test #1o can't quick reject var=99 if var not in file\n" +
@@ -7535,7 +8018,7 @@ Dataset {
         Test.ensureEqual(table.nRows(), 118, "");
         Test.ensureEqual(table.nColumns(), 1, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#1o " + pauseMessage); 
+            String2.pressEnterToContinue("#1o " + pauseMessage); 
 
 
 /* */
@@ -7544,7 +8027,7 @@ Dataset {
             //ncCF1b and ncCFMA1b have same data, so tests are the same!
             String fileType = type == 0? "contiguous" : "multidimensional";
             //from EDDTableFromNcFiles.testNcCF1b() and testNcCFMA1b();
-            String fileName = "c:/data/nccf/" + (type == 0? "ncCF1b.nc" : "ncCFMA1b.nc");
+            String fileName = unitTestDataDir + "nccf/" + (type == 0? "ncCF1b.nc" : "ncCFMA1b.nc");
 
             String2.log("\n\n** Testing nLevels=1/" + fileType + "\n" +
                 "  " + fileName);
@@ -7577,9 +8060,42 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "line_station", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2a " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2a " + pauseMessage); 
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                ""), 
+                StringArray.fromCSV("line_station"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                ""), 
+                StringArray.fromCSV("longitude"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                ""), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                ""), 
+                StringArray.fromCSV("obsValue"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
 
+            //
             String2.log("\n\n** Test nLevels=1/" + fileType + "  " +
                 "just outerTable loadVars, no constraints");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -7598,9 +8114,18 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "line_station", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2b " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2b " + pauseMessage); 
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "line_station"), 
+                StringArray.fromCSV("line_station"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
 
+            //
             String2.log("\n\n** Test nLevels=1/" + fileType + "  " +
                 "just outerTable loadVars, constraints");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -7620,7 +8145,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "line_station", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2c " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2c " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=1/" + fileType + "  " +
@@ -7633,7 +8158,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2d " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2d " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=1/" + fileType + ", specific loadVars, constraints");
@@ -7657,7 +8182,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "line_station", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2e " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2e " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=1/" + fileType + 
@@ -7670,7 +8195,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2f " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2f " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=1/" + fileType + "  just obs loadVars, no constraints");
@@ -7710,9 +8235,18 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 null, gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2g " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2g " + pauseMessage); 
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "obsScientific"), 
+                StringArray.fromCSV("obsScientific"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
 
+            //  
             String2.log("\n\n** Test nLevels=1/" + fileType + "  just obs loadVars, constraints");
             table.readNcCF(fileName, StringArray.fromCSV(
                 "obsScientific,obsValue,obsUnits,zztop"), 
@@ -7733,7 +8267,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 null, gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2h " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2h " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=1/" + fileType + 
@@ -7746,7 +8280,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #2i " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #2i " + pauseMessage); 
 
         } //end nLevels=1 type loop
 
@@ -7754,7 +8288,7 @@ String2.log(table.toCSVString());
         //********* expected errors
         String2.log("\n** Expected errors");
         try {
-            table.readNcCF("c:/data/nccf/badIndexed1To6.nc", null, null, null, null);
+            table.readNcCF(unitTestDataDir + "nccf/badIndexed1To6.nc", null, null, null, null);
             throw new SimpleException("Shouldn't get here.");
         } catch (Exception e) {
             if (e.toString().indexOf(
@@ -7777,17 +8311,17 @@ String2.log(table.toCSVString());
         }
 
         /* */
-        debug = oDebug;        
+        debugMode = oDebug;        
     }
 
     /** This tests readNcCF nLevels=1. */
     public static void testReadNcCF1Kevin() throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCF1Kevin");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected;
         String fileName = "c:/data/kevin/interpolated_gld.20120620_045152_meta_2.nc";  //from Kevin O'Brien
@@ -7796,17 +8330,17 @@ String2.log(table.toCSVString());
         String2.log(NcHelper.dumpString(fileName, false));
         table.readNcCF(fileName, null, null, null, null);
         String2.log(table.toCSVString());
-        debug = oDebug;
+        debugMode = oDebug;
     }
 
     /** This tests readNcCF nLevels=2. */
     public static void testReadNcCF2(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCF2");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected;
         Attributes gatts;
@@ -7817,7 +8351,7 @@ String2.log(table.toCSVString());
             //ncCF2b and ncCFMA2b have same data, so tests are the same!
             String fileType = type == 0? "ragged" : "multidimensional";
             //from EDDTableFromNcFiles.testNcCF2b() and testNcCFMA2b();
-            String fileName = "c:/data/nccf/" + (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
+            String fileName = unitTestDataDir + "nccf/" + (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
 
             String2.log("\n\n** Testing nLevels=2/" + fileType + "\n" +
                 "  " + fileName);
@@ -7852,9 +8386,186 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "platform, cruise, org, type, station_id, longitude, latitude, time", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3a " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3a " + pauseMessage); 
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "cruise,latitude,depth,temperature"), 
+                    StringArray.fromCSV("cruise"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "cruise,latitude,depth,temperature"), 
+                    StringArray.fromCSV("latitude"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "cruise,latitude,depth,temperature"), 
+                    StringArray.fromCSV("depth"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "cruise,latitude,depth,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,depth,temperature"), 
+                    StringArray.fromCSV("latitude"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,depth,temperature"), 
+                    StringArray.fromCSV("depth"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,depth,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "depth,temperature"), 
+                    StringArray.fromCSV("depth"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "depth,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,temperature"), 
+                    StringArray.fromCSV("latitude"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,cruise"), 
+                    StringArray.fromCSV("latitude"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude,cruise"), 
+                    StringArray.fromCSV("cruise"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "depth,cruise"), 
+                    StringArray.fromCSV("depth"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "depth,cruise"), 
+                    StringArray.fromCSV("cruise"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,cruise"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,cruise"), 
+                    StringArray.fromCSV("cruise"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "cruise"), 
+                    StringArray.fromCSV("cruise"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "latitude"), 
+                    StringArray.fromCSV("latitude"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "depth"), 
+                    StringArray.fromCSV("depth"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
 
 
+            //
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
                 "just outerTable loadVars, constraints");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -7876,9 +8587,9 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "platform, cruise", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3b " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3b " + pauseMessage); 
 
-
+            //
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
                 "just outerTable loadVars, constraints, NO_DATA");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -7889,7 +8600,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3c " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3c " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -7912,9 +8623,10 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "type, station_id", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3d " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3d " + pauseMessage); 
 
 
+            //
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
                 "just innerTable loadVars, constraints");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -7936,7 +8648,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "type, station_id", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3e " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3e " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -7949,7 +8661,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3f " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3f " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -7973,7 +8685,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "platform, cruise, org, type, station_id, longitude, latitude, time", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3g " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3g " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -7997,9 +8709,9 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "platform, cruise, org, type, station_id, longitude, latitude, time", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3h " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3h " + pauseMessage); 
 
-
+            //
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
                 "just outerTable and innerTable loadVars, constraints, NO_DATA");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -8010,7 +8722,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3i " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3i " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -8036,7 +8748,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "platform, cruise", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3j " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3j " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -8049,7 +8761,7 @@ String2.log(table.toCSVString());
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3k " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3k " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " + 
@@ -8127,7 +8839,7 @@ if (fileType.equals("ragged"))
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "longitude, latitude, time", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3l " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3l " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
@@ -8151,9 +8863,10 @@ if (fileType.equals("ragged"))
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 "longitude, latitude, time", gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3m " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3m " + pauseMessage); 
 
 
+            //
             String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
                 "just innerTable and obs loadVars, constraints, NO_DATA");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -8164,7 +8877,7 @@ if (fileType.equals("ragged"))
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3n " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3n " + pauseMessage); 
 
 
             String2.log("\n\n** Test nLevels=2/" + fileType + "  just obs loadVars, constraints");
@@ -8188,9 +8901,10 @@ if (fileType.equals("ragged"))
             Test.ensureEqual(gatts.getString("subsetVariables"), 
                 null, gatts.toString());
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3o " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3o " + pauseMessage); 
 
 
+            // 
             String2.log("\n\n** Test nLevels=2/" + fileType + 
                 "  just obs loadVars, constraints, NO_DATA");
             table.readNcCF(fileName, StringArray.fromCSV(
@@ -8201,31 +8915,31 @@ if (fileType.equals("ragged"))
             Test.ensureEqual(table.nRows(), 0, "");
             Test.ensureEqual(table.nColumns(), 0, "");
             if (pauseAfterEach) 
-                String2.getStringFromSystemIn(fileType + " #3p " + pauseMessage); 
+                String2.pressEnterToContinue(fileType + " #3p " + pauseMessage); 
 
         } //end nLevels=2 type loop
 
-        debug = oDebug;        
+        debugMode = oDebug;        
     }
 
 
     /** This tests readNcCF profile files from ASA
      * via https://github.com/asascience-open/CFPointConventions
-     * stored in f:/git/CFPointConventions.
+     * stored in unitTestDataDir/CFPointConventions.
      */
     public static void testReadNcCFASAProfile(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCFASAProfile");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
 
 /* */
         //***************  profile contiguous
-        fileName = "c:/git/CFPointConventions/profile/" +
+        fileName = unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Contiguous-Ragged-MultipleProfiles-H.3.4/" +
             "profile-Contiguous-Ragged-MultipleProfiles-H.3.4.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -8262,6 +8976,7 @@ if (fileType.equals("ragged"))
 "16,176.0,17.0,2,7200,7.2918577,17.65049,66.33111\n" +
 "17,176.0,17.0,2,7200,3.270435,35.854877,17.296724\n";
 
+
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 58, "");
         results = table.columnAttributes(0).toString();
@@ -8271,11 +8986,228 @@ if (fileType.equals("ragged"))
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4a " + pauseMessage); 
+            String2.pressEnterToContinue("#4a " + pauseMessage); 
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,z,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,z,temperature"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,z,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,temperature"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,profile"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,profile"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,profile"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+
+        //test get outer+obs variables with outer constraint
+        table.readNcCF(fileName, StringArray.fromCSV("profile,lat,lon,temperature"),
+            StringArray.fromCSV("lat"), StringArray.fromCSV("="), StringArray.fromCSV("11"));
+        results = table.dataToCSVString();
+        expected = 
+"profile,lat,lon,temperature\n" +
+"1,11.0,95.0,1.193263\n" +
+"1,11.0,95.0,31.53037\n" +
+"1,11.0,95.0,11.956788\n" +
+"1,11.0,95.0,36.69692\n" +
+"1,11.0,95.0,21.065716\n" +
+"1,11.0,95.0,31.395382\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test get outer+obs variables with obs constraint
+        table.readNcCF(fileName, StringArray.fromCSV("profile,lat,lon,temperature"),
+            StringArray.fromCSV("temperature"), StringArray.fromCSV("="), StringArray.fromCSV("11.956788"));
+        results = table.dataToCSVString();
+        expected = 
+"profile,lat,lon,temperature\n" +
+"1,11.0,95.0,11.956788\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test get obs variables with outer constraint
+        table.readNcCF(fileName, StringArray.fromCSV("lat,temperature"),
+            StringArray.fromCSV("lat"), StringArray.fromCSV("="), StringArray.fromCSV("11"));
+        results = table.dataToCSVString();
+        expected = 
+"lat,temperature\n" +
+"11.0,1.193263\n" +
+"11.0,31.53037\n" +
+"11.0,11.956788\n" +
+"11.0,36.69692\n" +
+"11.0,21.065716\n" +
+"11.0,31.395382\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
 
 
         //***************  profile incomplete multidimensional --- 
-        fileName = "c:/git/CFPointConventions/profile/" +
+        fileName = unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2/" +
             "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2.nc";
         String2.log("\n\n** Testing incomplete\n" +
@@ -8340,12 +9272,190 @@ if (fileType.equals("ragged"))
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4b " + pauseMessage); 
+            String2.pressEnterToContinue("#4b " + pauseMessage); 
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,alt,temperature"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,alt,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,alt,temperature"), 
+                    StringArray.fromCSV("alt"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,alt,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,alt,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,alt,temperature"), 
+                    StringArray.fromCSV("alt"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,alt,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "alt,temperature"), 
+                    StringArray.fromCSV("alt"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "alt,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,profile"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "alt,profile"), 
+                    StringArray.fromCSV("alt"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "alt,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,profile"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "alt"), 
+                    StringArray.fromCSV("alt"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
 
 
         //***************  profile indexed        IMPORTANT - I didn't have sample of indexed
     try {
-        fileName = "c:/git/CFPointConventions/profile/" +
+        fileName = unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Indexed-Ragged-MultipleProfiles-H.3.5/" +
             "profile-Indexed-Ragged-MultipleProfiles-H.3.5.nc";
         String2.log("\n\n** Testing indexed file\n" +
@@ -8385,7 +9495,210 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4c " + pauseMessage); 
+            String2.pressEnterToContinue("#4c " + pauseMessage); 
+
+//"19,112.0,9.0,3,10800,0.013856917,13.634793,63.741573\n";
+        table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,temperature"), 
+                StringArray.fromCSV("profile,temperature"), 
+                StringArray.fromCSV("=,="),
+                StringArray.fromCSV("3,13.634793"));
+        results = table.dataToCSVString();
+        expected = 
+"profile,temperature\n" +
+"3,13.634793\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile,lat,z,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,z,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,z,temperature"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,z,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,temperature"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,temperature"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,profile"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,profile"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,profile"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature,profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                //
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "profile"), 
+                    StringArray.fromCSV("profile"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "lat"), 
+                    StringArray.fromCSV("lat"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "temperature"), 
+                    StringArray.fromCSV("temperature"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+                table.readNcCF(fileName, StringArray.fromCSV(
+                    "z"), 
+                    StringArray.fromCSV("z"), 
+                    StringArray.fromCSV("="),
+                    StringArray.fromCSV("-12345"));
+                Test.ensureEqual(table.nRows(), 0, "");
+                Test.ensureEqual(table.nColumns(), 0, "");
+
+
+
+        //"19,112.0,9.0,3,10800,0.013856917,13.634793,63.741573\n";
+        table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,z"), 
+                StringArray.fromCSV("profile,z"), 
+                StringArray.fromCSV("=,="),
+                StringArray.fromCSV("3,0.013856917"));
+        results = table.dataToCSVString();
+        expected = 
+"profile,z\n" +
+"3,0.013856917\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
 
         String2.log("\n\n** Testing indexed file NO_DATA - inner");
@@ -8397,7 +9710,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4d " + pauseMessage); 
+            String2.pressEnterToContinue("#4d " + pauseMessage); 
 
 
         String2.log("\n\n** Testing indexed file NO_DATA - odd combo"); 
@@ -8409,7 +9722,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4e " + pauseMessage); 
+            String2.pressEnterToContinue("#4e " + pauseMessage); 
 
 
         String2.log("\n\n** Testing indexed file NO_DATA - outer");
@@ -8421,17 +9734,16 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4f " + pauseMessage); 
+            String2.pressEnterToContinue("#4f " + pauseMessage); 
+
 
     } catch (Exception e) {
-        String2.getStringFromSystemIn("\n" +
-            MustBe.throwableToString(e) + 
-            "\nPress ^C to stop or Enter to continue..."); 
+        String2.pressEnterToContinue(MustBe.throwableToString(e)); 
     }
 
 
         //***************  profile orthogonal        
-        fileName = "c:/git/CFPointConventions/profile/" +
+        fileName = unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1/" +
             "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1.nc";
         String2.log("\n\n** Testing orthogonal file\n" +
@@ -8505,34 +9817,114 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#4g " + pauseMessage); 
+            String2.pressEnterToContinue("#4g " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,z,temperature"), 
+                StringArray.fromCSV("profile"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //  
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,temperature"), 
+                StringArray.fromCSV("profile"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "profile,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
 
         /* */
-        debug = oDebug;        
+        debugMode = oDebug;        
     }
        
     /** This tests readNcCF timeseries files from ASA
      * via https://github.com/asascience-open/CFPointConventions
-     * stored in f:/git/CFPointConventions.
+     * stored in unitTestDataDir/CFPointConventions.
      */
     public static void testReadNcCFASATimeSeries(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCFASATimeseries");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
 
-/* */
+ 
         //***************  timeseries orthogonal 
-        fileName = "c:/git/CFPointConventions/timeseries/" +
+        fileName = unitTestDataDir + "CFPointConventions/timeseries/" +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/" +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc";
         String2.log("\n\n** Testing orthogonal file\n" +
             "  " + fileName);
         String2.log(NcHelper.dumpString(fileName, true));
+//!!! obs vars are temperature[time=100][station=10]
+//so outer=time and inner is station!
         table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString(12);
         expected = 
@@ -8560,11 +9952,450 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#5a " + pauseMessage); 
+            String2.pressEnterToContinue("#5a " + pauseMessage); 
 
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time,temperature"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,time"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,time,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,time,temperature"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,time,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,time"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,time"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "time,temperature"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "time,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,time"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,time"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "time"), 
+                StringArray.fromCSV("time"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+
+        //read just inner [station] vars
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon"), null, null, null);
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon\n" +
+"Station-0,8.0,146.0\n" +
+"Station-1,4.0,53.0\n" +
+"Station-2,90.0,159.0\n" +
+"Station-3,55.0,25.0\n" +
+"Station-4,115.0,30.0\n" +
+"Station-5,165.0,125.0\n" +
+"Station-6,143.0,175.0\n" +
+"Station-7,157.0,175.0\n" +
+"Station-8,101.0,80.0\n" +
+"Station-9,167.0,57.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just inner [station] vars, with constraint
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon"), 
+            StringArray.fromCSV("lat"), StringArray.fromCSV(">"), StringArray.fromCSV("150"));
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon\n" +
+"Station-5,165.0,125.0\n" +
+"Station-7,157.0,175.0\n" +
+"Station-9,167.0,57.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just outer [time] vars
+        table.readNcCF(fileName, StringArray.fromCSV("time"), null, null, null);
+        results = table.dataToCSVString(5);
+        expected = 
+"row,time\n" +
+"0,0\n" +
+"1,3600\n" +
+"2,7200\n" +
+"3,10800\n" +
+"4,14400\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 100, "");
+
+        //read just outer [time] vars, with constraint
+        table.readNcCF(fileName, StringArray.fromCSV("time"), 
+            StringArray.fromCSV("time,time"), StringArray.fromCSV(">,<"), StringArray.fromCSV("7000,11000"));
+        results = table.dataToCSVString();
+        expected = 
+"time\n" +
+"7200\n" +
+"10800\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just outer+inner [time][station] vars
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon,time"), null, null, null);
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon,time\n" +
+"Station-0,8.0,146.0,0\n" +
+"Station-1,4.0,53.0,0\n" +
+"Station-2,90.0,159.0,0\n" +
+"Station-3,55.0,25.0,0\n" +
+"Station-4,115.0,30.0,0\n" +
+"Station-5,165.0,125.0,0\n" +
+"Station-6,143.0,175.0,0\n" +
+"Station-7,157.0,175.0,0\n" +
+"Station-8,101.0,80.0,0\n" +
+"Station-9,167.0,57.0,0\n" +
+"Station-0,8.0,146.0,3600\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 10*100, "");
+
+        expected = 
+"Station-0,8.0,146.0,345600\n" +
+"Station-1,4.0,53.0,345600\n" +
+"Station-2,90.0,159.0,345600\n" +
+"Station-3,55.0,25.0,345600\n" +
+"Station-4,115.0,30.0,345600\n" +
+"Station-5,165.0,125.0,345600\n" +
+"Station-6,143.0,175.0,345600\n" +
+"Station-7,157.0,175.0,345600\n" +
+"Station-8,101.0,80.0,345600\n" +
+"Station-9,167.0,57.0,345600\n";
+        int po = results.indexOf(expected);
+        Test.ensureTrue(po > 0, "po=" + po);
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+        //read just outer+inner [time][station] vars, with outer [time] constraint
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon,time"), 
+            StringArray.fromCSV("time"), StringArray.fromCSV("="), StringArray.fromCSV("345600"));
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon,time\n" +
+"Station-0,8.0,146.0,345600\n" +
+"Station-1,4.0,53.0,345600\n" +
+"Station-2,90.0,159.0,345600\n" +
+"Station-3,55.0,25.0,345600\n" +
+"Station-4,115.0,30.0,345600\n" +
+"Station-5,165.0,125.0,345600\n" +
+"Station-6,143.0,175.0,345600\n" +
+"Station-7,157.0,175.0,345600\n" +
+"Station-8,101.0,80.0,345600\n" +
+"Station-9,167.0,57.0,345600\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just outer+inner [time][station] vars, with inner [station] constraint
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon,time"), 
+            StringArray.fromCSV("lat"), StringArray.fromCSV("="), StringArray.fromCSV("165"));
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon,time\n" +
+"Station-5,165.0,125.0,0\n" +
+"Station-5,165.0,125.0,3600\n" +
+"Station-5,165.0,125.0,7200\n" +
+"Station-5,165.0,125.0,10800\n" +
+"Station-5,165.0,125.0,14400\n" +
+"Station-5,165.0,125.0,18000\n" +
+"Station-5,165.0,125.0,21600\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 100, "");
+
+        //read just outer+inner [time][station] vars, with outer and inner constraint
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon,time"), 
+            StringArray.fromCSV("time,lat"), StringArray.fromCSV("=,="), StringArray.fromCSV("345600,165"));
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon,time\n" +
+"Station-5,165.0,125.0,345600\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just outer+inner+obs vars, with outer and inner constraint
+        table.readNcCF(fileName, StringArray.fromCSV(""), 
+            StringArray.fromCSV("time,lat"), StringArray.fromCSV("=,="), StringArray.fromCSV("345600,165"));
+        results = table.dataToCSVString();
+        expected = 
+"lat,lon,station_name,alt,time,temperature,humidity\n" +
+"165.0,125.0,Station-5,0.17808062,345600,38.457962,28.075706\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just outer+obs vars, with outer and inner constraint
+        String2.log(NcHelper.dumpString(fileName, false));
+        table.readNcCF(fileName, StringArray.fromCSV("lat,time,temperature,humidity"), 
+            StringArray.fromCSV("time,lat"), StringArray.fromCSV("=,="), StringArray.fromCSV("345600,165"));
+        results = table.dataToCSVString();
+        expected = 
+"lat,time,temperature,humidity\n" +
+"165.0,345600,38.457962,28.075706\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just inner+obs vars, with outer and inner constraint
+        table.readNcCF(fileName, StringArray.fromCSV("lat,lon,station_name,time,temperature"), 
+            StringArray.fromCSV("time,lat"), StringArray.fromCSV("=,="), StringArray.fromCSV("345600,165"));
+        results = table.dataToCSVString();
+        expected = 
+"lat,lon,station_name,time,temperature\n" +
+"165.0,125.0,Station-5,345600,38.457962\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+     
+        //read just obs vars, with outer and inner constraint
+        table.readNcCF(fileName, StringArray.fromCSV("time,lat,temperature"), 
+            StringArray.fromCSV("time,lat"), StringArray.fromCSV("=,="), StringArray.fromCSV("345600,165"));
+        results = table.dataToCSVString();
+        expected = 
+"time,lat,temperature\n" +
+"345600,165.0,38.457962\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+     
 
         //***************  timeseries incomplete multidimensional --- 
-        fileName = "c:/git/CFPointConventions/timeseries/" +
+        fileName = unitTestDataDir + "CFPointConventions/timeseries/" +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/" +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc";
         String2.log("\n\n** Testing incomplete file\n" +
@@ -8609,29 +10440,257 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#5b " + pauseMessage); 
+            String2.pressEnterToContinue("#5b " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+
+        //read just outer [station] vars
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon"), null, null, null);
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon\n" +
+"Station-0,121.0,81.0\n" +
+"Station-1,150.0,73.0\n" +
+"Station-2,107.0,152.0\n" +
+"Station-3,117.0,143.0\n" +
+"Station-4,107.0,11.0\n" +
+"Station-5,161.0,100.0\n" +
+"Station-6,150.0,169.0\n" +
+"Station-7,176.0,85.0\n" +
+"Station-8,83.0,126.0\n" +
+"Station-9,84.0,170.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just outer [station] vars, with constraint
+        table.readNcCF(fileName, StringArray.fromCSV("station_name,lat,lon"), 
+            StringArray.fromCSV("lat"), StringArray.fromCSV(">"), StringArray.fromCSV("155"));
+        results = table.dataToCSVString();
+        expected = 
+"station_name,lat,lon\n" +
+"Station-5,161.0,100.0\n" +
+"Station-7,176.0,85.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //There are no just inner[obs] variables
+
+        //read just outer+obs vars, with outer constraint
+        table.readNcCF(fileName, StringArray.fromCSV("lat,time,temperature,humidity"), 
+            StringArray.fromCSV("lat"), StringArray.fromCSV("="), StringArray.fromCSV("150"));
+        results = table.dataToCSVString();
+        expected = 
+//metadata mv=-999.9 for temp and humidity, so 9e36 below are "valid" values
+"lat,time,temperature,humidity\n" +
+"150.0,0,25.0,73.0\n" +
+"150.0,3600,29.0,74.0\n" +
+"150.0,7200,33.0,88.0\n" +
+"150.0,10800,25.0,3.0\n" +
+"150.0,14400,2.0,70.0\n" +
+"150.0,18000,9.0,37.0\n" +
+"150.0,21600,10.0,45.0\n" +
+"150.0,25200,33.0,24.0\n" +
+"150.0,28800,1.0,43.0\n" +
+"150.0,32400,26.0,0.0\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,-2147483647,9.96921E36,9.96921E36\n" +
+"150.0,0,18.0,4.0\n" +
+"150.0,3600,18.0,83.0\n" +
+"150.0,7200,27.0,10.0\n" +
+"150.0,10800,33.0,43.0\n" +
+"150.0,14400,34.0,31.0\n" +
+"150.0,18000,0.0,69.0\n" +
+"150.0,21600,27.0,34.0\n" +
+"150.0,25200,3.0,41.0\n" +
+"150.0,28800,38.0,14.0\n" +
+"150.0,32400,20.0,5.0\n" +
+"150.0,36000,26.0,48.0\n" +
+"150.0,39600,11.0,29.0\n" +
+"150.0,43200,22.0,60.0\n" +
+"150.0,46800,39.0,63.0\n" +
+"150.0,50400,27.0,18.0\n" +
+"150.0,54000,26.0,84.0\n" +
+"150.0,57600,26.0,71.0\n" +
+"150.0,61200,33.0,25.0\n" +
+"150.0,64800,27.0,17.0\n" +
+"150.0,68400,17.0,79.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+    
+        //read just outer+obs vars, with outer + obs constraint
+        table.readNcCF(fileName, StringArray.fromCSV("lat,time,temperature,humidity"), 
+            StringArray.fromCSV("lat,humidity"), StringArray.fromCSV("=,="), StringArray.fromCSV("150,43"));
+        results = table.dataToCSVString();
+        expected = 
+"lat,time,temperature,humidity\n" +
+"150.0,28800,1.0,43.0\n" +
+"150.0,10800,33.0,43.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+    
+        //read just outer+obs vars, 
+        table.readNcCF(fileName, StringArray.fromCSV("time,temperature,humidity"), 
+            StringArray.fromCSV("time,temperature"), StringArray.fromCSV("=,="), StringArray.fromCSV("7200,33"));
+        results = table.dataToCSVString();
+        expected = 
+//"22,150.0,73.0,2.6002314,1,Station-1,4.052759,7200,33.0,88.0\n" + from above
+"time,temperature,humidity\n" +
+"7200,33.0,88.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //read just obs vars, with outer and obs constraint
+        table.readNcCF(fileName, StringArray.fromCSV("time,lon,alt,temperature"), 
+            StringArray.fromCSV("time,lon"), StringArray.fromCSV("=,="), StringArray.fromCSV("7200,73"));
+        results = table.dataToCSVString();
+        expected = 
+"time,lon,alt,temperature\n" +
+"7200,73.0,4.052759,33.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
         /* */
-        debug = oDebug;        
+        //read just obs vars, with outer and obs constraint
+        table.readNcCF(fileName, StringArray.fromCSV("time,lon,alt,temperature"), 
+            StringArray.fromCSV("lon,temperature"), StringArray.fromCSV("=,="), StringArray.fromCSV("73,33"));
+        results = table.dataToCSVString();
+        expected = 
+"time,lon,alt,temperature\n" +
+"7200,73.0,4.052759,33.0\n" +
+"25200,73.0,4.052759,33.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //read just obs vars, with outer and obs constraint
+        table.readNcCF(fileName, StringArray.fromCSV("time,lon,alt,temperature"), 
+            StringArray.fromCSV("time,temperature"), StringArray.fromCSV("=,="), StringArray.fromCSV("7200,33"));
+        results = table.dataToCSVString();
+        expected = 
+"time,lon,alt,temperature\n" +
+"7200,73.0,4.052759,33.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        debugMode = oDebug;        
     }
        
     /** This tests readNcCF trajectory files from ASA
      * via https://github.com/asascience-open/CFPointConventions
-     * stored in f:/git/CFPointConventions.
+     * stored in unitTestDataDir/CFPointConventions.
      */
     public static void testReadNcCFASATrajectory(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCFASATrajectory");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
 
 /* */
         //***************  trajectory contiguous 
-        fileName = "c:/git/CFPointConventions/trajectory/" +
+        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3/" +
             "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -8673,19 +10732,373 @@ String2.log(table.dataToCSVString());
 "    units=\"m\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#8a " + pauseMessage); 
+            String2.pressEnterToContinue("#8a " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
 
 
         //***************  trajectory multiple multidimensional --- 
    try {
 
-        fileName = "c:/git/CFPointConventions/trajectory/" +
+        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1.nc";
         String2.log("\n\n** Testing multiple multidimensional file\n" +
             "  " + fileName);
         String2.log(NcHelper.dumpString(fileName, false));
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+
         table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString(55);
         expected = 
@@ -8774,9 +11187,12 @@ String2.log(table.dataToCSVString());
 "    units=\"m\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#8b " + pauseMessage); 
+            String2.pressEnterToContinue("#8b " + pauseMessage); 
+
+
+    
     } catch (Exception e) {
-        //String2.getStringFromSystemIn(
+        //String2.pressEnterToContinue(
         Test.knownProblem(
             "KYLE WILCOX'S DSG TEST FILE.",
             MustBe.throwableToString(e) + 
@@ -8785,7 +11201,7 @@ String2.log(table.dataToCSVString());
     }
 
         //***************  trajectory single multidimensional --- 
-        fileName = "c:/git/CFPointConventions/trajectory/" +
+        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2/" +
             "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2.nc";
         String2.log("\n\n** Testing single multidimensional file\n" +
@@ -8811,10 +11227,186 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#8c " + pauseMessage); 
+            String2.pressEnterToContinue("#8c " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  trajectory indexed --- 
-        fileName = "c:/git/CFPointConventions/trajectory/" +
+        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4/" +
             "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4.nc";
         String2.log("\n\n** Testing indexed file\n" +
@@ -8840,35 +11432,212 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#8d " + pauseMessage); 
+            String2.pressEnterToContinue("#8d " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name,lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory_name"), 
+                StringArray.fromCSV("trajectory_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
 
         /* */
-        debug = oDebug;        
+        debugMode = oDebug;        
     }
        
     /** This tests readNcCF timeSeriesProfile files from ASA
      * via https://github.com/asascience-open/CFPointConventions
-     * stored in f:/git/CFPointConventions.
+     * stored in unitTestDataDir/CFPointConventions.
      */
     public static void testReadNcCFASATimeSeriesProfile(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCFASATimeSeriesProfile");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
-        String orthoMultiDimH51FileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
+        String orthoMultiDimH51FileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1/" +
             "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1.nc";
-        String raggedSingleStationFileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
+        String raggedSingleStationFileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Ragged-SingleStation-H.5.3/" +
             "timeSeriesProfile-Ragged-SingleStation-H.5.3.nc";
 
   
         //***************  timeSeriesProfile multidimensional --- 
-        fileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
+        fileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1/" +
             "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1.nc";
         String2.log("\n\n** Testing incomplete file\n" +
@@ -8892,11 +11661,204 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6a " + pauseMessage); 
+            String2.pressEnterToContinue("#6a " + pauseMessage); 
 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  timeSeriesProfile multidimensional single station
-        fileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
+        fileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Multidimensional-SingleStation-H.5.2/" +
             "timeSeriesProfile-Multidimensional-SingleStation-H.5.2.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -8935,16 +11897,209 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6b " + pauseMessage); 
+            String2.pressEnterToContinue("#6b " + pauseMessage); 
 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  timeSeriesProfile orthogonal multidimensional --- 
         //!!! IMPORTANT/ONLY test of file with variable[innerDim] for innerTable
         // and variable[time][z][station]  which is allowed, ordering
-        String2.log("\n\n** Testing incomplete file\n" +
-            "  " + orthoMultiDimH51FileName);
-        String2.log(NcHelper.dumpString(orthoMultiDimH51FileName, false));
-        table.readNcCF(orthoMultiDimH51FileName, null, null, null, null);
+        fileName = orthoMultiDimH51FileName;
+        String2.log("\n\n** Testing incomplete file\n" + "  " + fileName);
+        String2.log(NcHelper.dumpString(fileName, false));
+        table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString(12);
         expected = 
 "row,lat,lon,alt,station_info,station_name,time,temperature,humidity\n" +
@@ -8969,13 +12124,206 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6c " + pauseMessage); 
+            String2.pressEnterToContinue("#6c " + pauseMessage); 
 
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+        fileName = orthoMultiDimH51FileName;
         String2.log("\n\n** Testing incomplete file with constraints\n" +
-            "  " + orthoMultiDimH51FileName);
+            "  " + fileName);
         //String2.log(NcHelper.dumpString(orthoMultiDimH51FileName, false));
-        table.readNcCF(orthoMultiDimH51FileName, null, 
+        table.readNcCF(fileName, null, 
             StringArray.fromCSV("station_name"), 
             StringArray.fromCSV("="), 
             StringArray.fromCSV("Station1"));
@@ -9003,7 +12351,200 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6d " + pauseMessage); 
+            String2.pressEnterToContinue("#6d " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         //test just variable[obs]  (interiorTable) 
         String2.log("\n\n** Testing incomplete file\n" +
@@ -9025,7 +12566,7 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6e " + pauseMessage); 
+            String2.pressEnterToContinue("#6e " + pauseMessage); 
 
 
         //**********  NO_DATA
@@ -9040,7 +12581,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDa " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDa " + pauseMessage); 
 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just outerVar
@@ -9054,7 +12595,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDb " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDb " + pauseMessage); 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just innerVar
         String2.log("\n\n** Testing orthoMultiDimH51FileName just innerVar, NO_DATA\n" +
@@ -9067,7 +12608,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDc " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDc " + pauseMessage); 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just obsVar
         String2.log("\n\n** Testing orthoMultiDimH51File just obsVar, NO_DATA\n" +
@@ -9080,7 +12621,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDd " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDd " + pauseMessage); 
 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just outerVar* and innerVar
@@ -9094,7 +12635,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDe1 " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDe1 " + pauseMessage); 
 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just outerVar and innerVar*
@@ -9108,7 +12649,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDe2 " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDe2 " + pauseMessage); 
 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just outerVar* and obsVar
@@ -9122,7 +12663,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDf1 " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDf1 " + pauseMessage); 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just outerVar and obsVar*
         String2.log("\n\n** Testing orthoMultiDimH51File just outer/obsVar*, NO_DATA\n" +
@@ -9135,7 +12676,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDf2 " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDf2 " + pauseMessage); 
 
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just innerVar* and obsVar
         String2.log("\n\n** Testing orthoMultiDimH51File just inner*/obsVar, NO_DATA\n" +
@@ -9148,7 +12689,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDg1 " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDg1 " + pauseMessage); 
       
         //**********  timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just innerVar and obsVar*
         String2.log("\n\n** Testing orthoMultiDimH51File just inner/obsVar*, NO_DATA\n" +
@@ -9161,12 +12702,12 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6NDg2 " + pauseMessage); 
+            String2.pressEnterToContinue("#6NDg2 " + pauseMessage); 
 
 
         //*******
         //***************  timeSeriesProfile ragged --- 
-        fileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
+        fileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Ragged-MultipeStations-H.5.3/" +
             "timeSeriesProfile-Ragged-MultipeStations-H.5.3.nc";
         String2.log("\n\n** Testing timeSeriesProfile ragged file\n" +
@@ -9199,17 +12740,210 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6j " + pauseMessage); 
+            String2.pressEnterToContinue("#6j " + pauseMessage); 
 
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,height,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,height,temperature"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,height,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,temperature"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  timeSeriesProfile ragged single station --- 
         //This is ONLY TEST FILE of nLevels=2 single station (outerTable are scalar vars)!!!!!!!!
         //Note also the lack of a stationIndex var with instance_dimension="someDimension" 
         //  since there is no instance_dimension
+        fileName = raggedSingleStationFileName;
         String2.log("\n\n** Testing raggedSingleStationFile\n" +
-            "  " + raggedSingleStationFileName);
-        String2.log(NcHelper.dumpString(raggedSingleStationFileName, true));
-        table.readNcCF(raggedSingleStationFileName, null, null, null, null);
+            "  " + fileName);
+        String2.log(NcHelper.dumpString(fileName, true));
+        table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString();
         expected = 
 "profile,time,height,temperature,lat,lon,station_info,station_name\n" +
@@ -9230,7 +12964,201 @@ String2.log(table.dataToCSVString());
 "    cf_role=\"profile_id\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6m " + pauseMessage); 
+            String2.pressEnterToContinue("#6m " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name,lat,height,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,height,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,height,temperature"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,height,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,temperature"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "station_name"), 
+                StringArray.fromCSV("station_name"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "height"), 
+                StringArray.fromCSV("height"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
 
         //***************  timeSeriesProfile ragged single station ---  just outerVar
         String2.log("\n\n** Testing raggedSingleStationFile just outerVar\n" +
@@ -9251,7 +13179,7 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6n " + pauseMessage); 
+            String2.pressEnterToContinue("#6n " + pauseMessage); 
 
         //***************  timeSeriesProfile ragged single station ---  just innerVar
         String2.log("\n\n** Testing raggedSingleStationFile just innerVar\n" +
@@ -9276,7 +13204,7 @@ String2.log(table.dataToCSVString());
 "    units=\"seconds since 1990-01-01 00:00:00\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6o " + pauseMessage); 
+            String2.pressEnterToContinue("#6o " + pauseMessage); 
 
         //***************  timeSeriesProfile ragged single station ---  just outerVar and innerVar
         String2.log("\n\n** Testing raggedSingleStationFile just outerVar and innerVar\n" +
@@ -9298,7 +13226,7 @@ String2.log(table.dataToCSVString());
 "    long_name=\"station info\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6p " + pauseMessage); 
+            String2.pressEnterToContinue("#6p " + pauseMessage); 
 
         //***************  timeSeriesProfile ragged single station ---  just outerVar and obsVar
         String2.log("\n\n** Testing raggedSingleStationFile just outerVar and obsVar\n" +
@@ -9321,7 +13249,7 @@ String2.log(table.dataToCSVString());
 "    long_name=\"station info\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6q " + pauseMessage); 
+            String2.pressEnterToContinue("#6q " + pauseMessage); 
 
         //***************  timeSeriesProfile ragged single station ---  just innerVar and obsVar
         String2.log("\n\n** Testing raggedSingleStationFile just innerVar and obsVar\n" +
@@ -9348,7 +13276,7 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#6r " + pauseMessage); 
+            String2.pressEnterToContinue("#6r " + pauseMessage); 
 
 
         //**********  NO_DATA
@@ -9363,7 +13291,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7a " + pauseMessage); 
+            String2.pressEnterToContinue("#7a " + pauseMessage); 
 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just outerVar
@@ -9377,7 +13305,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7b " + pauseMessage); 
+            String2.pressEnterToContinue("#7b " + pauseMessage); 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just innerVar
         String2.log("\n\n** Testing raggedSingleStationFile just innerVar, NO_DATA\n" +
@@ -9390,7 +13318,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7c " + pauseMessage); 
+            String2.pressEnterToContinue("#7c " + pauseMessage); 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just obsVar
         String2.log("\n\n** Testing raggedSingleStationFile just obsVar, NO_DATA\n" +
@@ -9403,7 +13331,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7d " + pauseMessage); 
+            String2.pressEnterToContinue("#7d " + pauseMessage); 
 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just outerVar* and innerVar
@@ -9417,7 +13345,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7e1 " + pauseMessage); 
+            String2.pressEnterToContinue("#7e1 " + pauseMessage); 
 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just outerVar and innerVar*
@@ -9431,7 +13359,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7e2 " + pauseMessage); 
+            String2.pressEnterToContinue("#7e2 " + pauseMessage); 
 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just outerVar* and obsVar
@@ -9445,7 +13373,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7f1 " + pauseMessage); 
+            String2.pressEnterToContinue("#7f1 " + pauseMessage); 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just outerVar and obsVar*
         String2.log("\n\n** Testing raggedSingleStationFile just outer/obsVar*, NO_DATA\n" +
@@ -9458,7 +13386,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7f2 " + pauseMessage); 
+            String2.pressEnterToContinue("#7f2 " + pauseMessage); 
 
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just innerVar* and obsVar
         String2.log("\n\n** Testing raggedSingleStationFile just inner*/obsVar, NO_DATA\n" +
@@ -9471,7 +13399,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7g1 " + pauseMessage); 
+            String2.pressEnterToContinue("#7g1 " + pauseMessage); 
       
         //**********  timeSeriesProfile ragged single station --- NO_DATA, just innerVar and obsVar*
         String2.log("\n\n** Testing raggedSingleStationFile just inner/obsVar*, NO_DATA\n" +
@@ -9484,37 +13412,37 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#7g2 " + pauseMessage); 
+            String2.pressEnterToContinue("#7g2 " + pauseMessage); 
       
 
         /* */
-        debug = oDebug;        
+        debugMode = oDebug;        
     }
 
     /** This tests readNcCF trajectoryProfile files from ASA
      * via https://github.com/asascience-open/CFPointConventions
-     * stored in f:/git/CFPointConventions.
+     * stored in unitTestDataDir/CFPointConventions.
      */
     public static void testReadNcCFASATrajectoryProfile(boolean pauseAfterEach) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         String2.log("\n*** Table.testReadNcCFASATrajectoryProfile");
-        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
-        String orthoMultiDimH61FileName = "c:/git/CFPointConventions/trajectoryProfile/" +
+        String orthoMultiDimH61FileName = unitTestDataDir + "CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1/" +
             "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1.nc";
-        String raggedMultipleStationFileName = "c:/git/CFPointConventions/trajectoryProfile/" +
+        String raggedMultipleStationFileName = unitTestDataDir + "CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3/" +
             "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3.nc";
 
 /* */  
         //***************  trajectoryProfile multidimensional single station
         try {
-        fileName = "c:/git/CFPointConventions/trajectoryProfile/" +
+        fileName = unitTestDataDir + "CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2/" +
             "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -9552,22 +13480,214 @@ String2.log(table.dataToCSVString());
 "    units=\"m\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10a " + pauseMessage); 
+            String2.pressEnterToContinue("#10a " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn("\n" +
-                MustBe.throwableToString(e) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
 
 
         //***************  trajectoryProfile orthogonal multidimensional --- 
         try {
+        fileName = orthoMultiDimH61FileName;
         String2.log("\n\n** Testing orthogonal multidim file\n" +
-            "  " + orthoMultiDimH61FileName);
-        String2.log(NcHelper.dumpString(orthoMultiDimH61FileName, true));
-        table.readNcCF(orthoMultiDimH61FileName, null, null, null, null);
+            "  " + fileName);
+        String2.log(NcHelper.dumpString(fileName, true));
+        table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString(14);
         expected = 
 "row,lat,lon,trajectory,alt,time,temperature,salinity\n" +
@@ -9595,7 +13715,200 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10c " + pauseMessage); 
+            String2.pressEnterToContinue("#10c " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "alt"), 
+                StringArray.fromCSV("alt"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
 
         String2.log("\n\n** Testing incomplete file with constraints\n" +
@@ -9646,40 +13959,21 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10d " + pauseMessage); 
+            String2.pressEnterToContinue("#10d " + pauseMessage); 
 
         //test just variable[obs]  (interiorTable) 
         String2.log("\n\n** Testing incomplete file\n" +
             "  " + orthoMultiDimH61FileName);
         table.readNcCF(orthoMultiDimH61FileName, StringArray.fromCSV("lat,lon,trajectory,time,zztop"),
-            StringArray.fromCSV("profile"), 
+            StringArray.fromCSV("trajectory"), 
             StringArray.fromCSV("="), 
             StringArray.fromCSV("2"));
         results = table.dataToCSVString();
         expected = 
 "lat,lon,trajectory,time\n" +
-"18.736742,-28.520071,0,0\n" +
-"39.43245,-57.711514,1,0\n" +
-"25.034857,-62.39183,1,3600\n" +
-"27.619982,-46.87254,1,7200\n" +
-"16.401363,-38.747154,1,10800\n" +
 "22.20038,-74.5625,2,0\n" +
-"39.905518,-15.35749,2,3600\n" +
-"0.66807103,-49.334827,3,0\n" +
-"30.74647,-24.470423,3,3600\n" +
-"31.416609,-40.256725,3,7200\n" +
-"6.182371,-5.407914,4,0\n" +
-"7.0281234,-19.54943,5,0\n" +
-"24.434374,-59.00593,5,3600\n" +
-"7.448212,-34.15564,5,7200\n" +
-"5.7094088,-54.366154,5,10800\n" +
-"14.359673,-31.464516,5,14400\n" +
-"42.116615,-69.639465,5,18000\n" +
-"2.9567018,-52.975857,5,21600\n" +
-"1.7049083,-17.07688,5,25200\n" +
-"44.899364,-7.1246533,5,28800\n";
+"39.905518,-15.35749,2,3600\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        Test.ensureEqual(table.nRows(), 20, "");
         results = table.columnAttributes(0).toString();
         expected = 
 "    long_name=\"Latitude\"\n" +
@@ -9688,11 +13982,9 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10e " + pauseMessage); 
+            String2.pressEnterToContinue("#10e " + pauseMessage); 
         } catch (Exception e) {
-            String2.getStringFromSystemIn("\n" +
-                MustBe.throwableToString(e) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
 
@@ -9708,7 +14000,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDa " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDa " + pauseMessage); 
 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just outerVar
@@ -9722,7 +14014,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDb " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDb " + pauseMessage); 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just innerVar
         String2.log("\n\n** Testing orthoMultiDimH61FileName just innerVar, NO_DATA\n" +
@@ -9735,7 +14027,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDc " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDc " + pauseMessage); 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just obsVar
         String2.log("\n\n** Testing orthoMultiDimH51File just obsVar, NO_DATA\n" +
@@ -9748,7 +14040,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDd " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDd " + pauseMessage); 
 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just outerVar* and innerVar
@@ -9762,7 +14054,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDe1 " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDe1 " + pauseMessage); 
 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just outerVar and innerVar*
@@ -9776,7 +14068,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDe2 " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDe2 " + pauseMessage); 
 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just outerVar* and obsVar
@@ -9790,7 +14082,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDf1 " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDf1 " + pauseMessage); 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just outerVar and obsVar*
         String2.log("\n\n** Testing orthoMultiDimH51File just outer/obsVar*, NO_DATA\n" +
@@ -9803,7 +14095,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDf2 " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDf2 " + pauseMessage); 
 
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just innerVar* and obsVar
         String2.log("\n\n** Testing orthoMultiDimH51File just inner* /obsVar, NO_DATA\n" +
@@ -9816,7 +14108,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDg1 " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDg1 " + pauseMessage); 
       
         //**********  trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just innerVar and obsVar*
         String2.log("\n\n** Testing orthoMultiDimH51File just inner/obsVar*, NO_DATA\n" +
@@ -9829,16 +14121,17 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10NDg2 " + pauseMessage); 
+            String2.pressEnterToContinue("#10NDg2 " + pauseMessage); 
 
 
         //*******
         //***************  trajectoryProfile ragged multiple station --- 
         try {
+        fileName = raggedMultipleStationFileName;
         String2.log("\n\n** Testing raggedMultipleStationFile\n" +
-            "  " + raggedMultipleStationFileName);
-        String2.log(NcHelper.dumpString(raggedMultipleStationFileName, true));
-        table.readNcCF(raggedMultipleStationFileName, null, null, null, null);
+            "  " + fileName);
+        String2.log(NcHelper.dumpString(fileName, true));
+        table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString();
         expected = 
 "trajectory,lat,lon,time,z,temperature,humidity\n" +
@@ -9874,7 +14167,200 @@ String2.log(table.dataToCSVString());
 "    cf_role=\"trajectory_id\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10m " + pauseMessage); 
+            String2.pressEnterToContinue("#10m " + pauseMessage); 
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,z,temperature"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory,lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature,trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            //
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "trajectory"), 
+                StringArray.fromCSV("trajectory"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "lat"), 
+                StringArray.fromCSV("lat"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "temperature"), 
+                StringArray.fromCSV("temperature"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
+
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "z"), 
+                StringArray.fromCSV("z"), 
+                StringArray.fromCSV("="),
+                StringArray.fromCSV("-12345"));
+            Test.ensureEqual(table.nRows(), 0, "");
+            Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  trajectoryProfile ragged multiple station ---  just outerVar
         String2.log("\n\n** Testing raggedMultipleStationFile just outerVar\n" +
@@ -9897,7 +14383,7 @@ String2.log(table.dataToCSVString());
 "    cf_role=\"trajectory_id\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10n " + pauseMessage); 
+            String2.pressEnterToContinue("#10n " + pauseMessage); 
 
         //***************  trajectoryProfile ragged multiple station ---  just innerVar
         String2.log("\n\n** Testing raggedMultipleStationFile just innerVar\n" +
@@ -9938,7 +14424,7 @@ String2.log(table.dataToCSVString());
 "    units=\"seconds since 1990-01-01 00:00:00\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10o " + pauseMessage); 
+            String2.pressEnterToContinue("#10o " + pauseMessage); 
 
         //***************  trajectoryProfile ragged multiple station ---  just outerVar and innerVar
         String2.log("\n\n** Testing raggedMultipleStationFile just outerVar and innerVar\n" +
@@ -9978,7 +14464,7 @@ String2.log(table.dataToCSVString());
 "    units=\"degrees_east\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10p " + pauseMessage); 
+            String2.pressEnterToContinue("#10p " + pauseMessage); 
 
         //***************  trajectoryProfile ragged multiple station ---  just outerVar and obsVar
         String2.log("\n\n** Testing raggedMultipleStationFile just outerVar and obsVar\n" +
@@ -10019,7 +14505,7 @@ String2.log(table.dataToCSVString());
 "    cf_role=\"trajectory_id\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10q " + pauseMessage); 
+            String2.pressEnterToContinue("#10q " + pauseMessage); 
 
         //***************  trajectoryProfile ragged multiple station ---  just innerVar and obsVar
         String2.log("\n\n** Testing raggedMultipleStationFile just innerVar and obsVar\n" +
@@ -10064,7 +14550,7 @@ String2.log(table.dataToCSVString());
 "    units=\"Celsius\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#10r " + pauseMessage); 
+            String2.pressEnterToContinue("#10r " + pauseMessage); 
 
 
         //**********  NO_DATA
@@ -10079,7 +14565,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11a " + pauseMessage); 
+            String2.pressEnterToContinue("#11a " + pauseMessage); 
 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just outerVar
@@ -10093,7 +14579,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11b " + pauseMessage); 
+            String2.pressEnterToContinue("#11b " + pauseMessage); 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just innerVar
         String2.log("\n\n** Testing raggedMultipleStationFile just innerVar, NO_DATA\n" +
@@ -10106,7 +14592,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11c " + pauseMessage); 
+            String2.pressEnterToContinue("#11c " + pauseMessage); 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just obsVar
         String2.log("\n\n** Testing raggedMultipleStationFile just obsVar, NO_DATA\n" +
@@ -10119,7 +14605,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11d " + pauseMessage); 
+            String2.pressEnterToContinue("#11d " + pauseMessage); 
 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just outerVar* and innerVar
@@ -10133,7 +14619,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11e1 " + pauseMessage); 
+            String2.pressEnterToContinue("#11e1 " + pauseMessage); 
 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just outerVar and innerVar*
@@ -10147,7 +14633,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11e2 " + pauseMessage); 
+            String2.pressEnterToContinue("#11e2 " + pauseMessage); 
 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just outerVar* and obsVar
@@ -10161,7 +14647,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11f1 " + pauseMessage); 
+            String2.pressEnterToContinue("#11f1 " + pauseMessage); 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just outerVar and obsVar*
         String2.log("\n\n** Testing raggedMultipleStationFile just outer/obsVar*, NO_DATA\n" +
@@ -10174,7 +14660,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11f2 " + pauseMessage); 
+            String2.pressEnterToContinue("#11f2 " + pauseMessage); 
 
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just innerVar* and obsVar
         String2.log("\n\n** Testing raggedMultipleStationFile just inner*/obsVar, NO_DATA\n" +
@@ -10187,7 +14673,7 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11g1 " + pauseMessage); 
+            String2.pressEnterToContinue("#11g1 " + pauseMessage); 
       
         //**********  trajectoryProfile ragged multiple station --- NO_DATA, just innerVar and obsVar*
         String2.log("\n\n** Testing raggedMultipleStationFile just inner/obsVar*, NO_DATA\n" +
@@ -10200,15 +14686,13 @@ String2.log(table.dataToCSVString());
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
         if (pauseAfterEach) 
-            String2.getStringFromSystemIn("#11g2 " + pauseMessage); 
+            String2.pressEnterToContinue("#11g2 " + pauseMessage); 
       
         } catch (Exception e) {
-            String2.getStringFromSystemIn("\n" +
-                MustBe.throwableToString(e) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
         /* */
-        debug = oDebug;        
+        debugMode = oDebug;        
     }
 
 
@@ -10566,24 +15050,41 @@ String2.log(table.dataToCSVString());
      *   or lookUpTable is null
      */
     public int join(int nKeys, int keyCol, String mvKey, Table lookUpTable) {
-        if (debug) {
-            String2.log("  Debug: join(nKeys=" + nKeys + " keyCol=" + keyCol + " mvKey=" + mvKey + "\n" +
-                        "    this table:  " + getColumnNamesCSSVString());
+        if (debugMode) {
+            String2.log("  Debug: join(nKeys=" + nKeys + 
+                " keyCol=#" + keyCol + "=" + getColumnName(keyCol) +  
+                " mvKey=" + mvKey + "\n" +
+                "    this table:  nColumns=" + nColumns() + ": " + getColumnNamesCSSVString());
             ensureValid();
-            String2.log("    lookUpTable: " + lookUpTable.getColumnNamesCSSVString());
+            String2.log("    lookUpTable: nColumns=" + lookUpTable.nColumns() + 
+                ": " + lookUpTable.getColumnNamesCSSVString());
             lookUpTable.ensureValid();
         }
         if (nKeys < 1) 
             throw new RuntimeException(String2.ERROR + " in Table.join: nKeys=" +
                 nKeys + " must be at least 1.");
         if (keyCol < 0 || keyCol + nKeys > nColumns())
-            throw new RuntimeException(String2.ERROR + " in Table.join: keyCol=" + 
-                keyCol + " is invalid.");
+            throw new RuntimeException(String2.ERROR + " in Table.join, in this table: nColumns=" + 
+                nColumns() + 
+                ". keyCol=#" + keyCol + " + nKeys=" + nKeys + " refers to non-existent columns.");
+        if (nKeys == lookUpTable.nColumns()) {
+            String2.log("WARNING: in Table.join: nKeys=lookUpTable.nColumns=" + nKeys + ",\n" +
+                "  so there are no subsequent columns to be inserted in this table,\n" + 
+                "  so there is nothing to be done, so returning immediately.\n" + 
+                "  this table:  nColumns=" + nColumns() + ": " +getColumnNamesCSSVString() + "\n" +
+                "  lookUpTable: nColumns=" + lookUpTable.nColumns() + 
+                    ": " + lookUpTable.getColumnNamesCSSVString());
+            //for some tests: throw new RuntimeException("For testing, that Warning is upgraded to be an ERROR.");
+        }
+        if (nKeys > lookUpTable.nColumns()) 
+            throw new RuntimeException(String2.ERROR + " in Table.join, in lookUpTable: nColumns=" + 
+                lookUpTable.nColumns() + 
+                ". nKeys=" + nKeys + ", so lookUpTable has no related information.");
         if (mvKey == null)
             mvKey = "";
         long time = System.currentTimeMillis();
         Tally notMatchedTally = null;
-        if (debug)
+        if (debugMode)
             notMatchedTally = new Tally();
 
         //gather keyPA's
@@ -10611,13 +15112,14 @@ String2.log(table.dataToCSVString());
         PrimitiveArray lutPA[] = new PrimitiveArray[lutNCols]; //from the lut
         PrimitiveArray newPA[] = new PrimitiveArray[lutNCols]; //paralleling the lutPA
         String mvString[]      = new String[lutNCols];
+        StringArray insertedColumnNames = new StringArray();
         for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) {
             lutPA[lutCol] = lookUpTable.getColumn(lutCol);
             newPA[lutCol] = PrimitiveArray.factory(lutPA[lutCol].elementClass(), nRows, false);
+            String colName = lookUpTable.getColumnName(lutCol);
+            insertedColumnNames.add(colName);
             Attributes lutAtts = lookUpTable.columnAttributes(lutCol);
-            addColumn(keyCol + lutCol, 
-                lookUpTable.getColumnName(lutCol), 
-                newPA[lutCol],
+            addColumn(keyCol + lutCol, colName, newPA[lutCol],
                 (Attributes)(lutAtts.clone()));
             mvString[lutCol] = lutAtts.getString("missing_value"); //preferred
             if (mvString[lutCol] == null) {
@@ -10640,7 +15142,7 @@ String2.log(table.dataToCSVString());
             Object obj = hashMap.get(s);
             if (obj == null) {
                 //add missing values
-                if (debug) notMatchedTally.add("NotMatched", s);
+                if (debugMode) notMatchedTally.add("NotMatched", s);
                 for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) 
                     newPA[lutCol].addString(mvString[lutCol]);
             } else {
@@ -10652,11 +15154,12 @@ String2.log(table.dataToCSVString());
             }
         }
         if (reallyVerbose) 
-            String2.log("  Table.join(nKeys=" + nKeys + " keyCol=" + keyCol + 
-                "=" + getColumnName(keyCol) + " lutInsertCol=" + lookUpTable.getColumnName(nKeys) +
+            String2.log("  Table.join(nKeys=" + nKeys + 
+                " keyCol=#" + keyCol + "=" + getColumnName(keyCol) + 
+                " insertedColumns=" + insertedColumnNames.toString() +
                 ") nMatched=" + nMatched + " nNotMatched=" + (nRows - nMatched) + 
                 " time=" + (System.currentTimeMillis() - time));
-        if (debug) {
+        if (debugMode) {
             if (nRows - nMatched > 0)        
                 String2.log("  Debug: NotMatched tally:\n" + notMatchedTally.toString(50));
             ensureValid();
@@ -11445,17 +15948,51 @@ String2.log(table.dataToCSVString());
     }
 
     /**
+     * This is like tryToApplyConstraints, but just keeps the constraints=true rows (which may be 0).
+     *
+     * @param conNames may be null or size 0
+     * @param idCol  For reallyVerbose only: rejected rows will log the value 
+     *    in this column (e.g., stationID) (or row= if idCol < 0). 
+     * @return the number of rows remaining in the table (may be 0)
+     */
+    public int tryToApplyConstraintsAndKeep(int idCol,
+        StringArray conNames, StringArray conOps, StringArray conVals) {
+
+        //no constraints 
+        if (conNames == null || conNames.size() == 0)
+            return nRows();
+
+        //try to apply constraints
+        BitSet keep = new BitSet();
+        keep.set(0, nRows());
+        int cardinality = tryToApplyConstraints(idCol, conNames, conOps, conVals, keep);
+        if (cardinality == 0)
+            removeAllRows();
+        else justKeep(keep);
+
+        return cardinality;
+    }
+
+    /**
      * This is like tryToApplyConstraint, but works on multiple constraints.
+     * The table won't be changed.
+     *
+     * @param idCol  For reallyVerbose only: rejected rows will log the value 
+     *    in this column (e.g., stationID) (or row= if idCol < 0). 
+     * @return the number of keep=true rows (may be 0).  No rows are actually removed.
      */
     public int tryToApplyConstraints(int idCol,
-        StringArray conVars, StringArray conOps, StringArray conVals, BitSet keep) {
+        StringArray conNames, StringArray conOps, StringArray conVals, BitSet keep) {
 
-        if (conVars == null || conVars.size() == 0)
+        //no constraints
+        if (conNames == null || conNames.size() == 0)
             return keep.cardinality();
+
+        //try to apply constraints
         int cardinality = -1;  //it will be set below
-        for (int i = 0; i < conVars.size(); i++) {
+        for (int i = 0; i < conNames.size(); i++) {
             cardinality = lowApplyConstraint(false, idCol, 
-                conVars.get(i), conOps.get(i), conVals.get(i), keep);
+                conNames.get(i), conOps.get(i), conVals.get(i), keep);
             if (cardinality == 0) 
                 return 0;
         }
@@ -11468,7 +16005,7 @@ String2.log(table.dataToCSVString());
      *
      * @param idCol  For reallyVerbose only: rejected rows will log the value 
      *    in this column (e.g., stationID) (or row= if idCol < 0). 
-     * @param conVar perhaps a column name in the table.   If not, this constraint is ignored.
+     * @param conName perhaps a column name in the table.   If not, this constraint is ignored.
      *    This correctly deals with float, double, and other data types.
      * @param conOp    an EDDTable-operator, e.g., "="
      * @param conVal  
@@ -11477,9 +16014,9 @@ String2.log(table.dataToCSVString());
      * @return keep.cardinality()
      */
     public int tryToApplyConstraint(int idCol,
-        String conVar, String conOp, String conVal, BitSet keep) {
+        String conName, String conOp, String conVal, BitSet keep) {
 
-        return lowApplyConstraint(false, idCol, conVar, conOp, conVal, keep);
+        return lowApplyConstraint(false, idCol, conName, conOp, conVal, keep);
     }
 
 
@@ -11490,42 +16027,45 @@ String2.log(table.dataToCSVString());
      * @return keep.cardinality()
      */
     public int applyConstraint(int idCol,
-        String conVar, String conOp, String conVal, BitSet keep) {
+        String conName, String conOp, String conVal, BitSet keep) {
 
-        return lowApplyConstraint(true, idCol, conVar, conOp, conVal, keep);
+        return lowApplyConstraint(true, idCol, conName, conOp, conVal, keep);
     }
 
-    /** The low level method for tryToApplyConstraint and applyConstraint */
-    public int lowApplyConstraint(boolean requireConVar, int idCol,
-        String conVar, String conOp, String conVal, BitSet keep) {
+    /** The low level method for tryToApplyConstraint and applyConstraint 
+     *
+     * @return keep.cardinality()
+     */
+    public int lowApplyConstraint(boolean requireConName, int idCol,
+        String conName, String conOp, String conVal, BitSet keep) {
 
         if (keep.isEmpty())
             return 0;
 
-        //if (debug) String2.log("\n    tryToApplyConstraint " + conVar + conOp + conVal);
+        //if (debugMode) String2.log("\n    tryToApplyConstraint " + conName + conOp + conVal);
 
         //PrimitiveArray idPa = idCol >= 0? getColumn(idCol) : null;
 
-        //is conVar in the table?
-        int conVarCol = findColumnNumber(conVar);
-        if (conVarCol < 0) {
-            if (requireConVar || reallyVerbose) {
-                String msg = (requireConVar? String2.ERROR + ": " : "") +
-                     "applyConstraint: constraintVariable=" + conVar + 
+        //is conName in the table?
+        int conNameCol = findColumnNumber(conName);
+        if (conNameCol < 0) {
+            if (requireConName || reallyVerbose) {
+                String msg = (requireConName? String2.ERROR + ": " : "") +
+                     "applyConstraint: constraintVariable=" + conName + 
                      " isn't in the table (" + getColumnNamesCSVString() + ").";
-                if (requireConVar)
+                if (requireConName)
                     throw new RuntimeException(msg);
-                if (debug) String2.log("    " + msg);
+                if (debugMode) String2.log("    " + msg);
             }
             return keep.cardinality(); //unfortunate that time is perhaps wasted to calculate this
         }
 
         //test the keep=true rows for this constraint
-        PrimitiveArray conPa = getColumn(conVarCol);
+        PrimitiveArray conPa = getColumn(conNameCol);
         int nKeep = conPa.applyConstraint(false, keep, conOp, conVal);
 
         if (reallyVerbose) 
-            String2.log("    applyConstraint: after " + conVar + conOp + "\"" + conVal + "\", " +
+            String2.log("    applyConstraint: after " + conName + conOp + "\"" + conVal + "\", " +
                 nKeep + " rows remain");
         return nKeep;
     }
@@ -11538,16 +16078,14 @@ String2.log(table.dataToCSVString());
      * @return table.nRows()
      */
     public int oneStepApplyConstraint(int idCol,
-        String conVar, String conOp, String conVal) {
+        String conName, String conOp, String conVal) {
 
         BitSet keep = new BitSet();
         keep.set(0, nRows());
-        lowApplyConstraint(true, idCol, conVar, conOp, conVal, keep);
+        lowApplyConstraint(true, idCol, conName, conOp, conVal, keep);
         justKeep(keep);
         return nRows();
     }
-
-
 
 
     /**
@@ -11559,6 +16097,886 @@ String2.log(table.dataToCSVString());
         int nColumns = nColumns();
         for (int col = 0; col < nColumns; col++)
             getColumn(col).justKeep(keep);
+    }
+
+
+    /**
+     * This returns list of &amp;-separated parts, in their original order, from a percent encoded dapQuery.
+     * This is like split(,'&amp;'), but smarter.
+     * This accepts:
+     * <ul>
+     * <li>connecting &amp;'s already visible (within a part, 
+     *     &amp;'s must be percent-encoded (should be) or within double quotes)
+     * <li>connecting &amp;'s are percent encoded (they shouldn't be!) (within a part, 
+     *     &amp;'s must be within double quotes).
+     * </ul>
+     *
+     * @param dapQuery the part after the '?', still percentEncoded, may be null.
+     * @return a String[] with the percentDecoded parts, in their original order,
+     *   without the connecting &amp;'s.
+     *   This part#0 is always the varnames (or "" if none).
+     *   A null or "" dapQuery will return String[1] with #0=""
+     * @throws Throwable if trouble (e.g., invalid percentEncoding)
+     */
+    public static String[] getDapQueryParts(String dapQuery) throws Exception {
+        if (dapQuery == null || dapQuery.length() == 0)
+            return new String[]{""};
+
+        boolean stillEncoded = true;
+        if (dapQuery.indexOf('&') < 0) {
+            //perhaps user percentEncoded everything, even the connecting &'s, so decode everything right away
+            dapQuery = SSR.percentDecode(dapQuery);
+            stillEncoded = false;
+        }
+        //String2.log("dapQuery=" + dapQuery);
+
+        //one way or another, connecting &'s should now be visible
+        dapQuery += "&"; //& triggers grabbing final part
+        int dapQueryLength = dapQuery.length();
+        int start = 0;
+        boolean inQuotes = false;
+        StringArray parts = new StringArray(); 
+        for (int po = 0; po < dapQueryLength; po++) {
+            char ch = dapQuery.charAt(po);
+            //String2.log("ch=" + ch);
+            if (ch == '"') {             //what about \" within "..."?
+                inQuotes = !inQuotes;
+            } else if (ch == '&' && !inQuotes) {
+                String part = dapQuery.substring(start, po);
+                parts.add(stillEncoded? SSR.percentDecode(part) : part);
+                //String2.log("part=" + parts.get(parts.size() - 1));
+                start = po + 1;
+            }
+        }
+        if (inQuotes)
+            throw new SimpleException(QUERY_ERROR + "A closing doublequote is missing.");
+        return parts.toArray();
+    }
+
+    /** This tests getDapQueryParts. */
+    public static void testGetDapQueryParts() throws Exception {
+        String2.log("\n*** testGetDapQueryParts");
+
+        //test Table.getDapQueryParts   
+        Test.ensureEqual(getDapQueryParts(null), new String[]{""}, "");
+        Test.ensureEqual(getDapQueryParts(""), new String[]{""}, "");
+        Test.ensureEqual(getDapQueryParts("  "), new String[]{"  "}, "");
+        Test.ensureEqual(getDapQueryParts("ab%3dc"), new String[]{"ab=c"}, "");  
+        Test.ensureEqual(getDapQueryParts("a&b&c"), new String[]{"a", "b", "c"}, "");
+        Test.ensureEqual(getDapQueryParts("&&"), new String[]{"", "", ""}, "");
+        Test.ensureEqual(getDapQueryParts("a&b=R%26D"), new String[]{"a", "b=R&D"}, "");  //& visible
+        Test.ensureEqual(getDapQueryParts("a%26b=\"R%26D\""), new String[]{"a", "b=\"R&D\""}, ""); //& encoded
+        Test.ensureEqual(getDapQueryParts("a%26b=\"R%26D\"%26c"), new String[]{"a", "b=\"R&D\"", "c"}, ""); //& encoded
+        Test.ensureEqual(getDapQueryParts("a%26b%3dR-D"), new String[]{"a", "b=R-D"}, ""); 
+
+        //*** test getDapQueryParts (decoded) with invalid queries
+        String error = "";
+        try {
+            getDapQueryParts("a%26b=\"R%26D");  //decoded.  unclosed "
+        } catch (Throwable t) {
+            error = MustBe.throwableToString(t);
+        }
+        Test.ensureEqual(String2.split(error, '\n')[0],
+            "SimpleException: Query error: A closing doublequote is missing.", 
+            "error=" + error);
+
+        String2.log("\n*** testGetDapQueryParts succeeded");
+    }
+
+
+    /**
+     * This parses a PERCENT ENCODED OPeNDAP DAP-style query intended to subset this table.
+     * This checks the validity of the resultsVariable and constraintVariable names.
+     *
+     * <p>Unofficially (e.g., for testing) the query can be already percent decoded
+     * if there are no %dd in the query.
+     *
+     * <p>There can be a constraints on variables that
+     * aren't in the user-specified results variables.
+     * This procedure adds those variables to the returned resultsVariables.
+     *
+     * <p>If the constraintVariable is time, the value
+     * can be numeric ("seconds since 1970-01-01") 
+     * or String (ISO format, e.g., "1996-01-31T12:40:00", at least YYYY-MM)
+     * or now(+|-)(seconds|minutes|hours|days|months|years).
+     * All variants are converted to epochSeconds.
+     *
+     * <p>Different from ERDDAP: To work as expected, timestamp columns are assumed
+     * to have double epoch seconds values and have Calendar2.isTimeUnits(units) metadata.
+     *
+     * @param dapQuery is the opendap DAP-style query, 
+     *      after the '?', still percentEncoded (shouldn't be null), e.g.,
+     *      <tt>var1,var2,var3&amp;var4=value4&amp;var5%3E=value5</tt> .
+     *    <br>Values for String variable constraints should be in double quotes.
+     *    <br>A more specific example is 
+     *      <tt>genus,species&amp;genus="Macrocystis"&amp;LAT%3C=53&amp;LAT%3C=54</tt> .
+     *    <br>If no results variables are specified, all will be returned.
+     *      See OPeNDAP specification, section 6.1.1.
+     *    <br>Note that each constraint's left hand side must be a variable
+     *      and its right hand side must be a value.
+     *    <br>The valid operators (for numeric and String variables) are "=", "!=", "&lt;", "&lt;=",  
+     *      "&gt;", "&gt;=", and "=~" (REGEX_OP, which looks for data values
+     *      matching the regular expression on the right hand side),
+     *      but in percent encoded form. 
+     *      (see http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
+     *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", 
+     *      "orderByMax("...")", "orderByMin("...")", "orderByMinMax("...")", "units("...")", 
+     *      it is ignored.
+     *    <br>If an &amp;-separated part starts with ".", it is ignored.
+     *      It can't be a variable name.
+     *      &amp;.[param]=value is used to pass special values (e.g., &amp;.colorBar=...).
+     * @param resultsVariables to be appended with the results variables' 
+     *    destinationNames, e.g., {var1,var2,var3}.
+     *    <br>If a variable is needed for constraint testing in standardizeResultsTable
+     *      but is not among the user-requested resultsVariables, it won't be added 
+     *      to resultsVariables.
+     * @param constraintVariables to be appended with the constraint variables' 
+     *    destinationNames, e.g., {var4,var5}.
+     *    This method makes sure they are valid.
+     *    These will not be percent encoded.
+     * @param constraintOps to be appended with the constraint operators, e.g., {"=", "&gt;="}.
+     *    These will not be percent encoded.
+     * @param constraintValues to be appended with the constraint values, e.g., {value4,value5}.
+     *    These will not be percent encoded.
+     *    Non-regex EDVTimeStamp constraintValues will be returned as epochSeconds.
+     * @param repair if true, this method tries to do its best repair problems (guess at intent), 
+     *     not to throw exceptions 
+     * @throws Throwable if invalid query
+     *     (0 resultsVariables is a valid query)
+     */
+    public void parseDapQuery(String dapQuery, 
+        StringArray resultsVariables,
+        StringArray constraintVariables, StringArray constraintOps, StringArray constraintValues,
+        boolean repair) throws Exception {
+        //!!! Table.parseDapQuery and EDDTable.parseUserDapQuery ARE ALMOST IDENTICAL!!!
+        //IF YOU MAKE CHANGES TO ONE, MAKE CHANGES TO THE OTHER.
+
+        //parse dapQuery into parts
+        String parts[] = getDapQueryParts(dapQuery); //decoded.  always at least 1 part (may be "")
+        resultsVariables.clear();
+        constraintVariables.clear(); 
+        constraintOps.clear(); 
+        constraintValues.clear();
+
+        //expand no resultsVariables (or entire sequence) into all results variables
+        //look at part0 with comma-separated vars 
+        int nCols = nColumns();
+        if (parts[0].length() == 0 || parts[0].equals(SEQUENCE_NAME)) {
+            if (debugMode) String2.log("  dapQuery parts[0]=\"" + parts[0] + 
+                "\" is expanded to request all variables.");
+            for (int v = 0; v < nCols; v++) {
+                resultsVariables.add(columnNames.get(v));
+            }
+        } else {
+            String cParts[] = String2.split(parts[0], ',');
+            for (int cp = 0; cp < cParts.length; cp++) {
+
+                //request uses sequence.dataVarName notation?
+                String tVar = cParts[cp].trim();
+                int period = tVar.indexOf('.');
+                if (period > 0 && tVar.substring(0, period).equals(SEQUENCE_NAME)) 
+                    tVar = tVar.substring(period + 1);
+
+                //is it a valid destinationName?
+                int po = columnNames.indexOf(tVar);
+                if (po < 0) {
+                    if (!repair) {
+                        if (tVar.equals(SEQUENCE_NAME))
+                            throw new SimpleException(QUERY_ERROR +
+                                 "If " + SEQUENCE_NAME + " is requested, it must be the only requested variable.");
+                        for (int op = 0; op < OPERATORS.length; op++) {
+                            int opPo = tVar.indexOf(OPERATORS[op]);
+                            if (opPo >= 0)
+                                throw new SimpleException(
+                                    QUERY_ERROR + "All constraints (including \"" +
+                                    tVar.substring(0, opPo + OPERATORS[op].length()) + 
+                                    "...\") must be preceded by '&'.");
+                        }
+                        throw new SimpleException(QUERY_ERROR +
+                             "Unrecognized variable=\"" + tVar + "\"");
+                    }
+                } else {
+                    //it's valid; is it a duplicate?
+                    if (resultsVariables.indexOf(tVar) >= 0) {
+                        if (!repair) 
+                            throw new SimpleException(QUERY_ERROR +
+                                "variable=" + tVar + " is listed twice in the results variables list.");
+                    } else {
+                        resultsVariables.add(tVar);
+                    }
+                }
+            }
+        }
+        //String2.log("resultsVariables=" + resultsVariables);
+
+        //get the constraints 
+        for (int p = 1; p < parts.length; p++) {
+            //deal with one constraint at a time
+            String constraint = parts[p]; 
+            int constraintLength = constraint.length();
+            //String2.log("constraint=" + constraint); 
+            int quotePo = constraint.indexOf('"');
+            String constraintBeforeQuotes = quotePo >= 0? constraint.substring(0, quotePo) : constraint;            
+            
+            //special case: ignore constraint starting with "." 
+            //(can't be a variable name)
+            //use for e.g., .colorBar=...
+            if (constraint.startsWith("."))
+                continue;
+
+            //special case: server-side functions
+            if (constraint.equals("distinct()") ||
+                (constraint.endsWith("\")") &&
+                 (constraint.startsWith("orderBy(\"") ||
+                  constraint.startsWith("orderByMax(\"") ||
+                  constraint.startsWith("orderByMin(\"") ||
+                  constraint.startsWith("orderByMinMax(\"") ||
+                  constraint.startsWith("units(\""))))
+                continue;
+
+            //look for == (common mistake, but not allowed)
+            int eepo = constraintBeforeQuotes.indexOf("==");
+            if (eepo >= 0) {
+                if (repair) {
+                    constraint = constraint.substring(0, eepo) + constraint.substring(eepo + 1);
+                    quotePo = constraint.indexOf('"');
+                    constraintBeforeQuotes = quotePo >= 0? constraint.substring(0, quotePo) : constraint;            
+                } else {
+                    throw new SimpleException(QUERY_ERROR +
+                        "Use '=' instead of '==' in constraints.");
+                }
+            }
+
+            //look for ~= (common mistake, but not allowed)
+            if (constraintBeforeQuotes.indexOf("~=") >= 0) {
+                if (repair) {
+                    constraint = String2.replaceAll(constraint, "~=", "=~");
+                    quotePo = constraint.indexOf('"');
+                    constraintBeforeQuotes = quotePo >= 0? constraint.substring(0, quotePo) : constraint;            
+                } else {
+                    throw new SimpleException(QUERY_ERROR +
+                        "Use '=~' instead of '~=' in constraints.");
+                }
+            }
+
+            //find the valid op within constraintBeforeQuotes
+            int op = 0;
+            int opPo = -1;
+            while (op < OPERATORS.length && 
+                (opPo = constraintBeforeQuotes.indexOf(OPERATORS[op])) < 0)
+                op++;
+            if (opPo < 0) {
+                if (repair) continue; //was IllegalArgumentException
+                else throw new SimpleException(QUERY_ERROR +
+                    "No operator found in constraint=\"" + constraint + "\".");
+            }
+
+            //request uses sequenceName.dataVarName notation?
+            String tName = constraint.substring(0, opPo);
+            int period = tName.indexOf('.');
+            if (period > 0 && tName.substring(0, period).equals(SEQUENCE_NAME)) 
+                tName = tName.substring(period + 1);
+
+            //is it a valid destinationName?
+            int dvi = columnNames.indexOf(tName);
+            if (dvi < 0) {
+                if (repair) continue;
+                else throw new SimpleException(QUERY_ERROR +
+                    "Unrecognized constraint variable=\"" + tName + "\""
+                    //+ "\nValid=" + String2.toCSSVString(dataVariableDestionNames())
+                    );
+            }
+
+            constraintVariables.add(tName);
+            constraintOps.add(OPERATORS[op]);
+            String tValue = constraint.substring(opPo + OPERATORS[op].length());
+            constraintValues.add(tValue);
+            double conValueD = Double.NaN;
+
+            if (debugMode) String2.log(">>constraint: " + tName + OPERATORS[op] + tValue);
+
+            //convert <time><op><isoString> to <time><op><epochSeconds>   
+            boolean constrainTimeStamp = Calendar2.isTimeUnits(
+                columnAttributes(dvi).getString("units"));
+            if (constrainTimeStamp) {
+                //this isn't precise!!!   should it be required??? or forbidden???
+                if (debugMode) String2.log(">>isTimeStamp=true");
+                if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
+                    tValue = String2.fromJson(tValue);
+                    constraintValues.set(constraintValues.size() - 1, tValue);
+                }                
+
+                //if not for regex, convert isoString to epochSeconds 
+                if (OPERATORS[op] != PrimitiveArray.REGEX_OP) {
+                    if (Calendar2.isIsoDate(tValue)) {
+                        conValueD = repair? Calendar2.safeIsoStringToEpochSeconds(tValue) :
+                            Calendar2.isoStringToEpochSeconds(tValue);
+                        constraintValues.set(constraintValues.size() - 1,
+                            "" + conValueD);
+                        if (debugMode) String2.log(">> TIME CONSTRAINT converted in parseDapQuery: " + 
+                            tValue + " -> " + conValueD);
+
+                    } else if (tValue.startsWith("now")) {
+                        if (repair)
+                             conValueD = Calendar2.safeNowStringToEpochSeconds(tValue, 
+                                 (double)Math2.hiDiv(System.currentTimeMillis(), 1000));
+                        else conValueD = Calendar2.nowStringToEpochSeconds(tValue);
+                        constraintValues.set(constraintValues.size() - 1, "" + conValueD);
+
+
+                    } else {
+                        //it must be a number (epochSeconds)
+                        //test that value=NaN must use NaN or "", not just an invalidly formatted number
+                        conValueD = String2.parseDouble(tValue);
+                        if (!Math2.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
+                            if (repair) {
+                                tValue = "NaN";
+                                conValueD = Double.NaN;
+                                constraintValues.set(constraintValues.size() - 1, tValue);
+                            } else {
+                                throw new SimpleException(QUERY_ERROR +
+                                    "Test for missing time values must use \"NaN\" or \"\", not value=\"" + tValue + "\".");
+                            }
+                        }
+                    }
+                }
+
+            } else if (getColumn(dvi) instanceof StringArray) {
+
+                //String variables must have " around constraintValues
+                if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
+                    //repair if needed
+                    if (!tValue.startsWith("\""))
+                        tValue = "\"" + tValue;
+                    if (!tValue.endsWith("\""))
+                        tValue = tValue + "\"";
+
+                    //decode
+                    tValue = String2.fromJson(tValue);
+                    constraintValues.set(constraintValues.size() - 1, tValue);
+
+                } else {
+                    throw new SimpleException(QUERY_ERROR +
+                        "For constraints of String variables, " +
+                        "the right-hand-side value must be surrounded by double quotes.\n" +
+                        "Bad constraint: " + constraint);
+                }
+
+            } else {
+                //numeric variables
+
+                //if op=regex, value must have "'s around it
+                if (OPERATORS[op] == PrimitiveArray.REGEX_OP) {
+                    if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
+                        //repair if needed
+                        if (!tValue.startsWith("\""))
+                            tValue = "\"" + tValue;
+                        if (!tValue.endsWith("\""))
+                            tValue = tValue + "\"";
+
+                        //decode
+                        tValue = String2.fromJson(tValue);
+                        constraintValues.set(constraintValues.size() - 1, tValue);
+                    } else {
+                        throw new SimpleException(QUERY_ERROR +
+                            "For =~ constraints of numeric variables, " +
+                            "the right-hand-side value must be surrounded by double quotes.\n" +
+                            "Bad constraint: " + constraint);
+                    }
+
+                } else {
+                    //if op!=regex, numbers must NOT have "'s around them
+                    if (tValue.startsWith("\"") || tValue.endsWith("\"")) {
+                        if (repair) {
+                            if (tValue.startsWith("\""))
+                                tValue = tValue.substring(1);
+                            if (tValue.endsWith("\""))
+                                tValue = tValue.substring(0, tValue.length() - 1);
+                            constraintValues.set(constraintValues.size() - 1, tValue);
+                        } else {
+                            throw new SimpleException(QUERY_ERROR +
+                                "For non =~ constraints of numeric variables, " +
+                                "the right-hand-side value must not be surrounded by double quotes.\n" +
+                                "Bad constraint: " + constraint);
+                        }
+                    }
+
+                    //test of value=NaN must use "NaN", not somthing just a badly formatted number
+                    conValueD = String2.parseDouble(tValue);
+                    if (!Math2.isFinite(conValueD) && !tValue.equals("NaN")) {
+                        if (repair) {
+                            conValueD = Double.NaN;
+                            tValue = "NaN";
+                            constraintValues.set(constraintValues.size() - 1, tValue);
+                        } else {
+                            throw new SimpleException(QUERY_ERROR +
+                                "Numeric tests of NaN must use \"NaN\", not value=\"" + tValue + "\".");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (debugMode) {
+            String2.log("  Output from parseDapQuery:" +
+                "\n    resultsVariables=" + resultsVariables +
+                "\n    constraintVariables=" + constraintVariables +
+                "\n    constraintOps=" + constraintOps +
+                "\n    constraintValues=" + constraintValues);
+        }
+    }
+
+
+    /**
+     * This tests parseDapQuery.
+     */
+    public static void testParseDapQuery() throws Exception {
+        String2.log("\n*** Table.testParseDapQuery");
+ 
+        Table table = makeEmptyTable(
+            new String[]{"myDouble","myString","time","myInt"}, 
+            new String[]{"double","String","double","int"});
+        table.columnAttributes("time").add("units", Calendar2.SECONDS_SINCE_1970);
+        StringArray rVar = new StringArray();
+        StringArray cVar = new StringArray();
+        StringArray cOp  = new StringArray();
+        StringArray cVal = new StringArray();
+        String results;        
+
+        //*** test valid queries
+        table.parseDapQuery("", rVar, cVar, cOp, cVal, false);  //fix
+        Test.ensureEqual(rVar.toString(), "myDouble, myString, time, myInt", "");
+        Test.ensureEqual(cVar.toString(), "", "");
+        Test.ensureEqual(cOp.toString(),  "", "");
+        Test.ensureEqual(cVal.toString(), "", "");
+
+        table.parseDapQuery("myString,myDouble", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myString, myDouble", "");
+        Test.ensureEqual(cVar.toString(), "", "");
+        Test.ensureEqual(cOp.toString(),  "", "");
+        Test.ensureEqual(cVal.toString(), "", "");
+
+        table.parseDapQuery("myDouble&myString=\"something\"", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble", "");
+        Test.ensureEqual(cVar.toString(), "myString", "");
+        Test.ensureEqual(cOp.toString(),  "=", "");
+        Test.ensureEqual(cVal.toString(), "something", "");
+
+        table.parseDapQuery("myDouble&myInt=~\"regex\"", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble", "");
+        Test.ensureEqual(cVar.toString(), "myInt", "");
+        Test.ensureEqual(cOp.toString(),  "=~", "");
+        Test.ensureEqual(cVal.toString(), "regex", "");
+
+        table.parseDapQuery("myDouble&time>=1.4229216E9", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble", "");
+        Test.ensureEqual(cVar.toString(), "time", "");
+        Test.ensureEqual(cOp.toString(),  ">=", "");
+        Test.ensureEqual(cVal.toString(), "1.4229216E9", "");
+
+        table.parseDapQuery("myDouble&time>=2015-02-03", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble", "");
+        Test.ensureEqual(cVar.toString(), "time", "");
+        Test.ensureEqual(cOp.toString(),  ">=", "");
+        Test.ensureEqual(cVal.toString(), "1.4229216E9", "");
+
+        table.parseDapQuery("myDouble&myInt=NaN", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble", "");
+        Test.ensureEqual(cVar.toString(), "myInt", "");
+        Test.ensureEqual(cOp.toString(),  "=", "");
+        Test.ensureEqual(cVal.toString(), "NaN", "");
+
+        table.parseDapQuery(
+            "&time!=2015-02-03&myInt<5.1&myString=\"Nate\"&orderBy(\"myString,myInt\")&distinct()", 
+            rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble, myString, time, myInt", "");
+        Test.ensureEqual(cVar.toString(), "time, myInt, myString", "");
+        Test.ensureEqual(cOp.toString(),  "!=, <, =", "");
+        Test.ensureEqual(cVal.toString(), "1.4229216E9, 5.1, Nate", "");
+
+        //s
+        table.parseDapQuery("s", rVar, cVar, cOp, cVal, false);  //fix
+        Test.ensureEqual(rVar.toString(), "myDouble, myString, time, myInt", "");
+        Test.ensureEqual(cVar.toString(), "", "");
+        Test.ensureEqual(cOp.toString(),  "", "");
+        Test.ensureEqual(cVal.toString(), "", "");
+
+        table.parseDapQuery("s.myDouble&s.time>=2015-02-03", rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble", "");
+        Test.ensureEqual(cVar.toString(), "time", "");
+        Test.ensureEqual(cOp.toString(),  ">=", "");
+        Test.ensureEqual(cVal.toString(), "1.4229216E9", "");
+
+        table.parseDapQuery(
+            "&s.time!=2015-02-03&s.myInt<5.1&s.myString=\"Nate\"&orderBy(\"s.myString,s.myInt\")&distinct()", 
+            rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "myDouble, myString, time, myInt", "");
+        Test.ensureEqual(cVar.toString(), "time, myInt, myString", "");
+        Test.ensureEqual(cOp.toString(),  "!=, <, =", "");
+        Test.ensureEqual(cVal.toString(), "1.4229216E9, 5.1, Nate", "");
+
+        //Tests of time related to "now"
+        double now = System.currentTimeMillis() / 1000.0;
+        String2.log("epochSecondsNow=" + now);
+        table.parseDapQuery("time&time>now&time>now%2Bsecond&time>now-minute&time>now-44days", 
+            rVar, cVar, cOp, cVal, false);  
+        Test.ensureEqual(rVar.toString(), "time", "");
+        Test.ensureEqual(cVar.toString(), "time, time, time, time", "");
+        Test.ensureEqual(cOp.toString(),  ">, >, >, >", "");
+        Test.ensureTrue(Math.abs(cVal.getDouble(0) - (now)        ) < 20, cVal.get(0));
+        Test.ensureTrue(Math.abs(cVal.getDouble(1) - (now+1 )     ) < 20, cVal.get(1));
+        Test.ensureTrue(Math.abs(cVal.getDouble(2) - (now-60)     ) < 20, cVal.get(2));
+        Test.ensureTrue(Math.abs(cVal.getDouble(3) - (now-44*86400)) < 20, cVal.get(3));
+
+  
+        //********* tests that fail
+        results = "invalid request var";
+        try {
+            table.parseDapQuery("time,MyInt", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Unrecognized variable=\"MyInt\"", "");
+
+        results = "listed twice";
+        try {
+            table.parseDapQuery("time,myInt,time", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: variable=time is listed twice in the results variables list.", "");
+
+        results = "invalid constraint var";
+        try {
+            table.parseDapQuery("time&MyDouble>5", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Unrecognized constraint variable=\"MyDouble\"", "");
+
+        results = "missing &";
+        try {
+            table.parseDapQuery("myInt>5", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: All constraints (including \"myInt>...\") must be preceded by '&'.", "");
+
+        results = "missing & with date with double col";
+        try {
+            table.parseDapQuery("myDouble>2014-01-01T00:00:00Z", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: All constraints (including \"myDouble>...\") must be preceded by '&'.", "");
+
+        results = "invalid op";
+        try {
+            table.parseDapQuery("&myInt==5", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Use '=' instead of '==' in constraints.", "");
+
+        results = "invalid NAN value";
+        try {
+            table.parseDapQuery("&myInt=NAN", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Numeric tests of NaN must use \"NaN\", not value=\"NAN\".", "");
+
+        results = "invalid NaN value, something";
+        try {
+            table.parseDapQuery("&myInt=something", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Numeric tests of NaN must use \"NaN\", not value=\"something\".", "");
+
+        results = "invalid NaN value";
+        try {
+            table.parseDapQuery("&myInt=1e1000", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Numeric tests of NaN must use \"NaN\", not value=\"1e1000\".", "");
+
+        results = "invalid regex op";
+        try {
+            table.parseDapQuery("&myInt~=\"regex\"", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Use '=~' instead of '~=' in constraints.", "");
+
+        results = "missing \"\" for string";
+        try {
+            table.parseDapQuery("&myString=something", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: For constraints of String variables, the right-hand-side value must be surrounded by double quotes.\n" +
+            "Bad constraint: myString=something", 
+            "results=" + results);
+
+        results = "missing \"\" for regex";
+        try {
+            table.parseDapQuery("&myInt=~something", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: For =~ constraints of numeric variables, the right-hand-side value must be surrounded by double quotes.\n" +
+            "Bad constraint: myInt=~something", 
+            "results=" + results);
+
+        results = "invalid now units";
+        try {
+            table.parseDapQuery("&time>now-2dayss", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now-2dayss\" is invalid.", 
+            "results=" + results);
+
+        results = "invalid now option -";
+        try {
+            table.parseDapQuery("&time>now-", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now-\" is invalid.", 
+            "results=" + results);
+
+        results = "invalid now option -+";
+        try {
+            table.parseDapQuery("&time>now-%2B4seconds", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now-+4seconds\" is invalid.", 
+            "results=" + results);
+
+        results = "invalid now option +-";
+        try {
+            table.parseDapQuery("&time>now%2B-4seconds", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now+-4seconds\" is invalid.", 
+            "results=" + results);
+
+        results = "invalid now option";
+        try {
+            table.parseDapQuery("&time>now=2days", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: Unrecognized constraint variable=\"time>now\"", 
+            "results=" + results);
+
+        results = "unknown filter";
+        try {
+            table.parseDapQuery("&Distinct()", rVar, cVar, cOp, cVal, false);  
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, 
+            "com.cohort.util.SimpleException: Query error: No operator found in constraint=\"Distinct()\".", "");
+
+        String2.log("\n*** Table.testParseDapQuery finished successfully.");
+    }
+
+    /**
+     * Reduce the table to a subset via a PERCENT-ENCODED DAP query.
+     * A variable may be needed only for a constraint; if so, it won't be in the results.
+     *
+     * @param dapQuery A PERCENT-ENCODED DAP query.
+     *   Unofficially (e.g., for testing) the query can be already percent decoded
+     *     if there are no %dd in the decoded query.
+     *   This supports filters: distinct(), orderBy(), orderByMin(), orderByMax(), 
+     *     orderByMinMax(), but not units().
+     * @return the number of rows remaining (may be 0!).
+     */
+    public int subsetViaDapQuery(String dapQuery) throws Exception {
+        String[] parts = getDapQueryParts(dapQuery); //always at least 1: ""
+        int nParts = parts.length; 
+        BitSet keep = null;
+        //make SAs to catch results
+        StringArray resultsVariables    = new StringArray();
+        StringArray constraintVariables = new StringArray();
+        StringArray constraintOps       = new StringArray();
+        StringArray constraintValues    = new StringArray();
+
+        parseDapQuery(dapQuery, resultsVariables, constraintVariables, 
+            constraintOps, constraintValues, false); //repair
+        int nCon = constraintVariables.size();
+        if (nCon > 0) {
+            keep = new BitSet();
+            keep.set(0, nRows());
+            for (int con = 0; con < nCon; con++) {
+                String conName = constraintVariables.get(con);
+                String conOp  = constraintOps.get(con);
+                String conVal = constraintValues.get(con);
+                int idCol = findColumnNumber(conName);
+                int nRemain = lowApplyConstraint(true, idCol, 
+                    conName, conOp, conVal, keep);
+                if (debugMode)
+                    String2.log(">> nRemain=" + nRemain + " after " + conName + conOp + conVal);
+                if (nRemain == 0) {
+                    removeAllRows();
+                    keep = null;
+                    break;
+                }
+            }
+        }
+
+        //prune to just requested columns in requested order
+        reorderColumns(resultsVariables, true); //discardOthers
+
+        //finally remove unwanted rows
+        if (keep != null)
+            justKeep(keep);
+        if (nRows() == 0)
+            return 0;
+
+        //deal with filters (e.g., orderBy()) the same way the TableWriters do
+        for (int parti = 1; parti < nParts; parti++) {
+            String part = parts[parti];
+            int partL = part.length();
+            if (part.equals("distinct()")) {
+                leftToRightSort(nColumns());
+                removeDuplicates();
+            } else if (part.startsWith("orderBy(\"") && part.endsWith("\")")) {
+                ascendingSort(StringArray.arrayFromCSV(part.substring(9, partL-2)));
+            } else if (part.equals("orderByMin(\"") && part.endsWith("\")")) {
+                orderByMin(StringArray.arrayFromCSV(part.substring(12, partL-2)));
+            } else if (part.equals("orderByMax(\"") && part.endsWith("\")")) {
+                orderByMax(StringArray.arrayFromCSV(part.substring(12, partL-2)));
+            } else if (part.equals("orderByMinMax(\"") && part.endsWith("\")")) {
+                orderByMinMax(StringArray.arrayFromCSV(part.substring(15, partL-2)));
+            }// else it's a constraint. If error, parseDapQuery would have caught it.
+             // units() is ignored here 
+        }
+
+        return nRows();
+    }
+
+    /**
+     * This tests subsetViaDapQuery.
+     */
+    public static void testSubsetViaDapQuery() throws Exception {
+        String2.log("\n*** Table.testSubsetViaDapQuery");
+        String results, expected;
+        Table table;
+
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("");
+        results = table.dataToCSVString();
+        expected =
+"Time,Longitude,Latitude,Double Data,Int Data,Short Data,Byte Data,String Data\n" +
+"0.0,-3,1.0,-1.0E300,-2000000000,-32000,-120,a\n" +
+"1.125504062E9,-2,1.5,3.123,2,7,8,bb\n" +
+"1.130954649E9,-1,2.0,1.0E300,2000000000,32000,120,ccc\n" +
+",,,,,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        // !=NaN
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("&Latitude!=NaN");
+        results = table.dataToCSVString();
+        expected =
+"Time,Longitude,Latitude,Double Data,Int Data,Short Data,Byte Data,String Data\n" +
+"0.0,-3,1.0,-1.0E300,-2000000000,-32000,-120,a\n" +
+"1.125504062E9,-2,1.5,3.123,2,7,8,bb\n" +
+"1.130954649E9,-1,2.0,1.0E300,2000000000,32000,120,ccc\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        // =NaN
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("&Latitude=NaN");
+        results = table.dataToCSVString();
+        expected =
+"Time,Longitude,Latitude,Double Data,Int Data,Short Data,Byte Data,String Data\n" +
+",,,,,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //1125504062 seconds since 1970-01-01T00:00:00Z = 2005-08-31T16:01:02Z
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("&Time>2005-08-31T16:01:02Z"); 
+        results = table.dataToCSVString();
+        expected =
+"Time,Longitude,Latitude,Double Data,Int Data,Short Data,Byte Data,String Data\n" +
+"1.130954649E9,-1,2.0,1.0E300,2000000000,32000,120,ccc\n";
+//mv row removed because tests related to NaN (except NaN=NaN) return false.
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //1125504062 seconds since 1970-01-01T00:00:00Z = 2005-08-31T16:01:02Z
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("String Data,Time&Time>=2005-08-31T16:01:02Z"); 
+        results = table.dataToCSVString();
+        expected =
+"String Data,Time\n" +
+"bb,1.125504062E9\n" +
+"ccc,1.130954649E9\n";
+//mv row removed because tests related to NaN (except NaN=NaN) return false.
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //constraint var needn't be in resultsVars
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("String Data&Time>=2005-08-31T16:01:02Z"); 
+        results = table.dataToCSVString();
+        expected =
+"String Data\n" +
+"bb\n" +
+"ccc\n";
+//mv row removed because tests related to NaN (except NaN=NaN) return false.
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //return 0 rows
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("Longitude,Time&Time=2005-08-31");
+        results = table.dataToCSVString();
+        expected =
+"Longitude,Time\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //string
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("String Data,Time&Time>1970-01-01&String Data=\"bb\"");
+        results = table.dataToCSVString();
+        expected =
+"String Data,Time\n" +
+"bb,1.125504062E9\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //regex
+        table = getTestTable(false, true);  //includeLongs, Strings
+        table.subsetViaDapQuery("String Data,Time&String Data=~\"b{1,5}\"");
+        results = table.dataToCSVString();
+        expected =
+"String Data,Time\n" +
+"bb,1.125504062E9\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        String2.log("\n*** Table.testSubsetViaDapQuery finished successfully");
     }
 
     /**
@@ -11749,8 +17167,13 @@ String2.log(table.dataToCSVString());
     /** Like ascendingSort, but based on key column's names. */
     public void ascendingSort(String keyNames[]) {
         int keyColumns[] = new int[keyNames.length];
-        for (int k = 0; k < keyNames.length; k++)
+        for (int k = 0; k < keyNames.length; k++) {
             keyColumns[k] = findColumnNumber(keyNames[k]);
+            if (keyColumns[k] < 0)
+                throw new SimpleException(QUERY_ERROR + 
+                    "Sort column name=" + keyNames[k] + 
+                    " isn't in the results table.");
+        }
         boolean ascending[] = new boolean[keyColumns.length];
         Arrays.fill(ascending, true);
         PrimitiveArray.sort(columns, keyColumns, ascending);
@@ -11774,8 +17197,12 @@ String2.log(table.dataToCSVString());
     /** Like ascendingSortIgnoreCase, but based on key column's names. */
     public void ascendingSortIgnoreCase(String keyNames[]) {
         int keyColumns[] = new int[keyNames.length];
-        for (int k = 0; k < keyNames.length; k++)
+        for (int k = 0; k < keyNames.length; k++) {
             keyColumns[k] = findColumnNumber(keyNames[k]);
+            if (keyColumns[k] < 0)
+                throw new SimpleException("One of the sort column names (" + 
+                    keyNames[k] + " isn't in the table.");
+        }
         boolean ascending[] = new boolean[keyColumns.length];
         Arrays.fill(ascending, true);
         PrimitiveArray.sortIgnoreCase(columns, keyColumns, ascending);
@@ -11995,7 +17422,7 @@ String2.log(table.dataToCSVString());
         int nKeyColumns = keyColumns.length;
         if (nKeyColumns == 0) 
             throw new IllegalArgumentException(
-                String2.ERROR + " in Table.orderByMin: You must specify at least one keyColumn."); 
+                QUERY_ERROR + "in Table.orderByMin: You must specify at least one keyColumn."); 
 
         //sort based on keys
         ascendingSort(keyColumns);
@@ -12053,7 +17480,7 @@ String2.log(table.dataToCSVString());
         int nKeyColumns = keyColumns.length;
         if (nKeyColumns == 0) 
             throw new IllegalArgumentException(
-                String2.ERROR + " in Table.orderByMinMax: You must specify at least one keyColumn."); 
+                QUERY_ERROR + "in Table.orderByMinMax: You must specify at least one keyColumn."); 
 
         //sort based on keys
         ascendingSort(keyColumns);
@@ -12072,7 +17499,7 @@ String2.log(table.dataToCSVString());
         if (nKeyColumns > 1) {
             PrimitiveArray keyCols[] = new PrimitiveArray[nKeyColumns - 1];
             for (int kc = 0; kc < nKeyColumns - 1; kc++)
-                keyCols[kc] = getColumn(keyColumns[kc]);
+                keyCols[kc] = getColumn(keyColumns[kc]); //throws exception if not found
             int lastDifferentRow = 0;
             for (int row = 1; row < nRows; row++) { //1 because I'm looking backwards
 
@@ -12143,7 +17570,7 @@ String2.log(table.dataToCSVString());
         for (int kc = 0; kc < keyColumnNames.length; kc++) {
             keys[kc] = findColumnNumber(keyColumnNames[kc]);
             if (keys[kc] < 0)
-                throw new SimpleException("Query error: " +
+                throw new SimpleException(QUERY_ERROR +
                     "'orderByMax' column=" + keyColumnNames[kc] + " isn't in the results table.");
         }
         orderByMax(keys);
@@ -12162,7 +17589,7 @@ String2.log(table.dataToCSVString());
         for (int kc = 0; kc < keyColumnNames.length; kc++) {
             keys[kc] = findColumnNumber(keyColumnNames[kc]);
             if (keys[kc] < 0)
-                throw new SimpleException("Query error: " +
+                throw new SimpleException(QUERY_ERROR +
                     "'orderByMin' column=" + keyColumnNames[kc] + " isn't in the results table.");
         }
         orderByMin(keys);
@@ -12181,7 +17608,7 @@ String2.log(table.dataToCSVString());
         for (int kc = 0; kc < keyColumnNames.length; kc++) {
             keys[kc] = findColumnNumber(keyColumnNames[kc]);
             if (keys[kc] < 0)
-                throw new SimpleException("Query error: " +
+                throw new SimpleException(QUERY_ERROR +
                     "'orderByMinMax' column=" + keyColumnNames[kc] + " isn't in the results table.");
         }
         orderByMinMax(keys);
@@ -12533,7 +17960,7 @@ String2.log(table.dataToCSVString());
         String nulls = String2.makeString('\u0000', 32);
         for (int col = 0; col < nCols; col++) 
             stream.write(String2.toByteArray(
-                String2.noLongerThan(getColumnName(col), 31) + nulls), 0, 32);
+                String2.noLongerThan(getColumnName(col), 31) + nulls), 0, 32); //EEEK! better not be longer!!!
 
         //write the structure's elements (one for each col)
         for (int col = 0; col < nCols; col++) 
@@ -13082,7 +18509,7 @@ String2.log(table.dataToCSVString());
             //        "\n  unique Y " + uniqueY.statsString() + 
             //        "\n  unique Z " + uniqueZ.statsString() + 
             //        "\n  unique T " + uniqueT.statsString()); 
-            //    //String2.getStringFromSystemIn("continue?");
+            //    //String2.pressEnterToContinue();
             //}
 
             int nX = uniqueX.size();
@@ -15211,9 +20638,9 @@ touble: because table is JsonObject, info may not be in expected order
                 dirDescriptions.reverse();
         }
         if (addParentDir && dirNames.indexOf("..") < 0) { //.. always at top
-            dirNames.add(0, "..");
+            dirNames.atInsert(0, "..");
             if (dirDescriptions != null)
-                dirDescriptions.add(0, "");
+                dirDescriptions.atInsert(0, "");
         }
         int nDir = dirNames.size();
         for (int row = 0; row < nDir; row++) {
@@ -15380,7 +20807,8 @@ touble: because table is JsonObject, info may not be in expected order
 "    \"rows\": [\n" +
 "      [\"1970-01-01T00:00:00Z\", -3, 1.0, -1.0E300, -2000000000000000, -2000000000, -32000, -120, \"a\"],\n" +
 "      [\"2005-08-31T16:01:02Z\", -2, 1.5, 3.123, 2, 2, 7, 8, \"bb\"],\n" +
-"      [\"2005-11-02T18:04:09Z\", -1, 2.0, 1.0E300, 2000000000000000, 2000000000, 32000, 120, \"ccc\"]\n" +
+"      [\"2005-11-02T18:04:09Z\", -1, 2.0, 1.0E300, 2000000000000000, 2000000000, 32000, 120, \"ccc\"],\n" +
+"      [null, null, null, null, null, null, null, null, \"\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n", 
@@ -15426,9 +20854,8 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.columnAttributes(t25Col).getString("units"), "degree_C", ncHeader);
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nERROR while testing " + tUrl + ".  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "\nERROR while testing " + tUrl); 
 
         }
     }
@@ -15997,7 +21424,7 @@ touble: because table is JsonObject, info may not be in expected order
      */
     public static Table getTestTable(boolean includeLongs, boolean includeStrings) {
 
-        String testTimes[] = {"1970-01-01T00:00:00", "2005-08-31T16:01:02", "2005-11-02T18:04:09"};
+        String testTimes[] = {"1970-01-01T00:00:00", "2005-08-31T16:01:02", "2005-11-02T18:04:09", ""};
         Table table = new Table();
         int nRows = testTimes.length;
 
@@ -16011,58 +21438,58 @@ touble: because table is JsonObject, info may not be in expected order
         //0=seconds
         double[] ad = new double[nRows];
         for (int i = 0; i < nRows; i++)
-            ad[i] = Calendar2.isoStringToEpochSeconds(testTimes[i]);
+            ad[i] = Calendar2.safeIsoStringToEpochSeconds(testTimes[i]);
         int col = table.addColumn("Time", new DoubleArray(ad));
         table.columnAttributes(col).set("units", Calendar2.SECONDS_SINCE_1970);
         table.columnAttributes(col).set("time_att2", new DoubleArray(new double[]{-1e300, 1e300}));
 
         //1=lon
-        int[] ai = {-3, -2, -1};
+        int[] ai = {-3, -2, -1, Integer.MAX_VALUE};
         col = table.addColumn("Longitude", new IntArray(ai));
         table.columnAttributes(col).set("units", "degrees_east");
         table.columnAttributes(col).set("lon_att2", new IntArray(new int[]{-2000000000, 2000000000}));
 
         //2=lat
-        float[] af = {1, 1.5f, 2};
+        float[] af = {1, 1.5f, 2, Float.NaN};
         col = table.addColumn("Latitude", new FloatArray(af));
         table.columnAttributes(col).set("units", "degrees_north");
         table.columnAttributes(col).set("lat_att2", new FloatArray(new float[]{-1e30f, 1e30f}));
 
         //3=double
-        ad = new double[]{-1e300, 3.123, 1e300};
+        ad = new double[]{-1e300, 3.123, 1e300, Double.NaN};
         col = table.addColumn("Double Data", new DoubleArray(ad));
         table.columnAttributes(col).set("units", "doubles");
         table.columnAttributes(col).set("double_att2", new DoubleArray(new double[]{-1e300, 1e300}));
 
         //4=long  
         if (includeLongs) {
-            long[] al = {-2000000000000000L, 2, 2000000000000000L};
+            long[] al = {-2000000000000000L, 2, 2000000000000000L, Long.MAX_VALUE};
             col = table.addColumn("Long Data", new LongArray(al));
             table.columnAttributes(col).set("units", new StringArray(new String[]{"longs"}));
             table.columnAttributes(col).set("long_att2", new LongArray(new long[]{-2000000000000000L, 2000000000000000L}));
         }
 
         //5=int
-        ai = new int[]{-2000000000, 2, 2000000000};
+        ai = new int[]{-2000000000, 2, 2000000000, Integer.MAX_VALUE};
         col = table.addColumn("Int Data", new IntArray(ai));
         table.columnAttributes(col).set("units", new StringArray(new String[]{"ints"}));
         table.columnAttributes(col).set("int_att2", new IntArray(new int[]{-2000000000, 2000000000}));
 
         //6=short
-        short[] as = {(short)-32000, (short)7, (short)32000};
+        short[] as = {(short)-32000, (short)7, (short)32000, Short.MAX_VALUE};
         col = table.addColumn("Short Data", new ShortArray(as));
         table.columnAttributes(col).set("units", new StringArray(new String[]{"shorts"}));
         table.columnAttributes(col).set("short_att2", new ShortArray(new short[]{(short)-30000, (short)30000}));
 
         //7=byte
-        byte[] ab = {(byte)-120, (byte)8, (byte)120};
+        byte[] ab = {(byte)-120, (byte)8, (byte)120, Byte.MAX_VALUE};
         col = table.addColumn("Byte Data", new ByteArray(ab));
         table.columnAttributes(col).set("units", "bytes");
         table.columnAttributes(col).set("byte_att2", new ByteArray(new byte[]{(byte)-120, (byte)120}));
 
         //8=String
         if (includeStrings) {
-            String[] aS = {"a", "bb", "ccc"};
+            String[] aS = {"a", "bb", "ccc", ""};
             col = table.addColumn("String Data", new StringArray(aS));
             table.columnAttributes(col).set("units", "Strings");
             table.columnAttributes(col).set("String_att2", new StringArray(new String[]{"a string"}));
@@ -16089,7 +21516,7 @@ touble: because table is JsonObject, info may not be in expected order
         //write it to a file
         String fileName = testDir + "tempTable.asc";
         table.saveAsTabbedASCII(fileName);
-        //String2.log(fileName + "=\n" + String2.readFromFile(fileName)[1]);
+        String2.log(fileName + "=\n" + String2.readFromFile(fileName)[1]);
 
         //read it from the file
         Table table2 = new Table();
@@ -16105,7 +21532,7 @@ touble: because table is JsonObject, info may not be in expected order
 
         //are they the same (but column types may be different)?
         Test.ensureTrue(table.equals(table2, false), 
-            "\ntable=" + table + "\ntable2=" + table2);
+            "\ntable=" + table.toCSVString() + "\ntable2=" + table2.toCSVString());
 
         //test simplification: see if column types are the same as original table
         int n = table.nColumns();
@@ -16305,6 +21732,17 @@ touble: because table is JsonObject, info may not be in expected order
 "<td nowrap>120\n" +
 "<td nowrap>ccc\n" +
 "</tr>\n" +
+"<tr>\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"<td nowrap>&nbsp;\n" +
+"</tr>\n" +
 "</table>\n" +
 "postTextHtml\n" +
 "<br></body>\n" +
@@ -16313,25 +21751,31 @@ touble: because table is JsonObject, info may not be in expected order
 
         //test readHtml - treat 2nd row as data
         Table table2 = new Table();
-        table2.readHtml(fileName, results[1], 0, false, true);
-        String csv = table2.dataToCSVString();
-        Test.ensureEqual(csv, 
-"Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
-"UTC,degrees_east,degrees_north,doubles,longs,ints,shorts,bytes,Strings\n" +
-"1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
-"2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,bb\n" +
-"2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
+        table2.readHtml(fileName, results[1], 0, 
+            false, true); //secondRowHasUnits, simplify
+        String csv = String2.annotatedString(table2.dataToCSVString());
+        Test.ensureEqual(csv, //so units appear here as a row of data
+"Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data[10]\n" +
+"UTC,degrees_east,degrees_north,doubles,longs,ints,shorts,bytes,Strings[10]\n" +
+"1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a[10]\n" +
+"2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,bb[10]\n" +
+"2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc[10]\n" +
+"[160],[160],[160],[160],[160],[160],[160],[160],[160][10]\n" +
+"[end]",
             csv);
 
         //test readHtml - treat 2nd row as units
         table2 = new Table();
-        table2.readHtml(fileName, results[1], 0, true, true);
-        csv = table2.dataToCSVString();
-        Test.ensureEqual(csv, 
-"Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
-"1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
-"2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,bb\n" +
-"2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
+        table2.readHtml(fileName, results[1], 0, 
+            true, true); //secondRowHasUnits, simplify
+        csv = String2.annotatedString(table2.dataToCSVString());
+        Test.ensureEqual(csv, //so units correctly stored as units
+"Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data[10]\n" +
+"1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a[10]\n" +
+"2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,bb[10]\n" +
+"2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc[10]\n" +
+"[160],[160],[160],[160],[160],[160],[160],[160],[160][10]\n" +
+"[end]",
             csv);
         Test.ensureEqual(table2.columnAttributes(0).getString("units"), "UTC", "");
         Test.ensureEqual(table2.columnAttributes(1).getString("units"), "degrees_east", "");
@@ -16625,7 +22069,7 @@ touble: because table is JsonObject, info may not be in expected order
 "// global attributes:\n" +
 "\t\t:cdm_data_type = \"Trajectory\" ;\n" +
 "\t\t:cdm_trajectory_variables = \"cruise_id\" ;\n" +
-"\t\t:Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\" ;\n" +
+"\t\t:Conventions = \"COARDS, CF-1.6, ACDD-1.3\" ;\n" +
 "\t\t:Easternmost_Easting = -124.175 ;\n" +
 "\t\t:featureType = \"Trajectory\" ;\n" +
 "\t\t:geospatial_lat_max = 44.6517 ;\n" +
@@ -16679,8 +22123,7 @@ touble: because table is JsonObject, info may not be in expected order
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -16697,8 +22140,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.getStringData(0, 1), "BO02", "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -16715,8 +22157,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.getFloatData(0, 1), 74.720001f, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -16733,8 +22174,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.getStringData(0, 1), "w0205", "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -16761,8 +22201,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
         try {
@@ -16791,8 +22230,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -16823,8 +22261,7 @@ touble: because table is JsonObject, info may not be in expected order
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -16898,8 +22335,7 @@ touble: because table is JsonObject, info may not be in expected order
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }    
         */
 
@@ -16990,8 +22426,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.getFloatData(5, 30), 198.899994f, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 
@@ -17013,8 +22448,7 @@ touble: because table is JsonObject, info may not be in expected order
             String2.log(table.toString());
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "Recover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
         */
 
@@ -17083,8 +22517,7 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.getFloatData(4, 97), 4, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
         }
 
 /* */
@@ -17179,9 +22612,8 @@ touble: because table is JsonObject, info may not be in expected order
             if (time > 200)
                 throw new SimpleException("readASCII took too long.");
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nUnexpected " + String2.ERROR + ".  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "\nUnexpected " + String2.ERROR); 
         }
     }
 
@@ -17227,9 +22659,8 @@ touble: because table is JsonObject, info may not be in expected order
             if (time > 400)
                 throw new SimpleException("readJson took too long.");
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nUnexpected ERROR.  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "\nUnexpected ERROR."); 
         }
     }
 
@@ -17273,9 +22704,8 @@ touble: because table is JsonObject, info may not be in expected order
             if (time > 400)
                 throw new SimpleException("readNDNc took too long.");
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nUnexpected ERROR.  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "\nUnexpected ERROR."); 
         }
     }
 
@@ -17315,9 +22745,8 @@ touble: because table is JsonObject, info may not be in expected order
             if (time > 900)
                 throw new SimpleException("readOpendapSequence took too long.");
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nUnexpected ERROR.  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "\nUnexpected ERROR."); 
         }
     }
 
@@ -17389,9 +22818,8 @@ touble: because table is JsonObject, info may not be in expected order
             
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nUnexpected ERROR.  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                "\nUnexpected ERROR."); 
         }
     }
 
@@ -17536,9 +22964,9 @@ touble: because table is JsonObject, info may not be in expected order
         table = getTestTable(true, true);
         PrimitiveArray lonAr = table.getColumn(1);
         forceLonPM180(lonAr, false);
-        Test.ensureEqual(lonAr.toString(), "357, 358, 359", "forceLonPM180f"); 
+        Test.ensureEqual(lonAr.toString(), "357, 358, 359, 2147483647", "forceLonPM180f"); 
         Table.forceLonPM180(lonAr, true);
-        Test.ensureEqual(lonAr.toString(), "-3, -2, -1", "forceLonPM180t"); 
+        Test.ensureEqual(lonAr.toString(), "-3, -2, -1, 2147483647", "forceLonPM180t"); 
 
         //clear
         table = getTestTable(true, true);
@@ -17569,27 +22997,27 @@ touble: because table is JsonObject, info may not be in expected order
 
         //sort
         table.sort(new int[]{3}, new boolean[]{false});
-        Test.ensureEqual(table.getColumn(2).toString(), "2.0, 1.5, 1.0", "");
-        Test.ensureEqual(table.getColumn(3).toString(), "1.0E300, 3.123, -1.0E300", "");
+        Test.ensureEqual(table.getColumn(2).toString(), "NaN, 2.0, 1.5, 1.0", "");
+        Test.ensureEqual(table.getColumn(3).toString(), "NaN, 1.0E300, 3.123, -1.0E300", "");
 
         //removeColumn
         table.removeColumn(3);
-        Test.ensureEqual(table.getColumn(3).toString(), "2000000000000000, 2, -2000000000000000", "");
+        Test.ensureEqual(table.getColumn(3).toString(), "9223372036854775807, 2000000000000000, 2, -2000000000000000", "");
         Test.ensureEqual(table.getColumnName(3), "Long Data", "");
         Test.ensureEqual(table.columnAttributes(3).getString("units"), "longs", "");
 
         //addColumn
-        table.addColumn(3, "test3", new IntArray(new int[]{10,20,30}));
-        Test.ensureEqual(table.getColumn(3).toString(), "10, 20, 30", "");
+        table.addColumn(3, "test3", new IntArray(new int[]{10,20,30,Integer.MAX_VALUE}));
+        Test.ensureEqual(table.getColumn(3).toString(), "10, 20, 30, 2147483647", "");
         Test.ensureEqual(table.getColumnName(3), "test3", "");        
-        Test.ensureEqual(table.getColumn(4).toString(), "2000000000000000, 2, -2000000000000000", "");
+        Test.ensureEqual(table.getColumn(4).toString(), "9223372036854775807, 2000000000000000, 2, -2000000000000000", "");
         Test.ensureEqual(table.getColumnName(4), "Long Data", "");
         Test.ensureEqual(table.columnAttributes(4).getString("units"), "longs", "");
 
         //append
         table.append(table);
         Test.ensureEqual(table.getColumn(4).toString(), 
-            "2000000000000000, 2, -2000000000000000, 2000000000000000, 2, -2000000000000000", "");
+            "9223372036854775807, 2000000000000000, 2, -2000000000000000, 9223372036854775807, 2000000000000000, 2, -2000000000000000", "");
         Test.ensureEqual(table.getColumnName(4), "Long Data", "");
         Test.ensureEqual(table.columnAttributes(4).getString("units"), "longs", "");
 
@@ -17798,8 +23226,8 @@ touble: because table is JsonObject, info may not be in expected order
 
     public static void testLastRowWithData() throws Exception {
         String2.log("\n*** testLastRowWithData");
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         Table table = new Table();
         String results, expected;
         Attributes iAtts = new Attributes(); iAtts.add("missing_value", 99); 
@@ -17875,7 +23303,7 @@ expected =
 "999,-99.0,-99.0,there\n";
         Test.ensureEqual(results, expected, "results=" + results);
 
-        debug = oDebug;
+        debugMode = oDebug;
 
     }
 
@@ -17886,8 +23314,8 @@ expected =
     public static void testReadNcCFMATimeSeriesReversed() throws Exception {
         String2.log("\n*** testReadNcCFMATimeSeriesReversed");
         //time is days since 2006-01-01 00:00:00.  file has  2007-10-01T04 through 2013-11-14T17:06
-        boolean oDebug = debug;
-        debug = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
         Table table = new Table();
         String results, expected;
         long time; 
@@ -18076,9 +23504,10 @@ expected =
 "1463500.0,40.22166667,-74.7780556,2076.604166666628,5436.834624\n" +
 "1463500.0,40.22166667,-74.7780556,2076.6145833332557,5408.517777\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        debug = oDebug;
+        debugMode = oDebug;
 
     }
+
 
     /**
      * This tests the methods in this class.
@@ -18096,6 +23525,9 @@ expected =
         testSortColumnsByName();
         testLastRowWithData();
         testOrderByMinMax();
+        testGetDapQueryParts();
+        testParseDapQuery();
+        testSubsetViaDapQuery();
         
         //readWrite tests
         testASCII();
@@ -18113,6 +23545,10 @@ expected =
         testReadNDNc2();
         testJoin();
         testReadStandardTabbedASCII();
+
+        //readNcCF tests
+        ncCFcc = new BitSet();  //turn on test of readNcCF code coverage
+        testReadNcCFPoint(false);  //pauseAfterEachTest
         testReadNcCF1(false);  //pauseAfterEachTest
         testReadNcCF2(false);
         testReadNcCFASAProfile(false);
@@ -18121,6 +23557,11 @@ expected =
         testReadNcCFASATimeSeriesProfile(false);
         testReadNcCFASATrajectoryProfile(false);
         testReadNcCFMATimeSeriesReversed();
+        if (ncCFcc != null) {
+            ncCFcc.flip(0, 100);  //there are currently 99 code coverage tests
+            String2.pressEnterToContinue("\nTable.readNcCF code coverage: notTested=" + ncCFcc.toString());
+            ncCFcc = null; //turn off test of readNcCF code coverage
+        }
 
         testReadASCIISpeed();
         testReadJsonSpeed();
@@ -18134,8 +23575,7 @@ expected =
             //testConvert(); //2013-04-03 this test needs to be updated to test a new source DAP server
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from failure?");
         }
 
         try {
@@ -18143,8 +23583,7 @@ expected =
            //testSql();
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from testSql failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from testSql failure?");
         }
         
         testXml();
@@ -18155,9 +23594,8 @@ expected =
             //testIobis();
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from testIobis failure (1007-09-10: it needs work to deal with sessions)?\n" +
-                "Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue(
+                "\nRecover from testIobis failure (1007-09-10: it needs work to deal with sessions)?");
         }
         /* */
 

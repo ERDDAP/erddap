@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -389,12 +390,16 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This inserts an item into the array (increasing 'size' by 1).
+     * This inserts an item into the array at the specified index, 
+     * pushing subsequent items to oldIndex+1 and increasing 'size' by 1.
      *
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void add(int index, String value) {
+    public void atInsert(int index, String value) {
+        if (index < 0 || index > size)
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayAtInsert, getClass().getSimpleName(), "" + index, "" + size));
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
         System.arraycopy(array, index, array, index + 1, size - index);
@@ -403,13 +408,14 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This adds an element to the array at the specified index.
+     * This inserts an item into the array at the specified index, 
+     * pushing subsequent items to oldIndex+1 and increasing 'size' by 1.
      *
      * @param index 0..
      * @param value the value, as a String.
      */
-    public void addString(int index, String value) {
-        add(index, String2.canonical(value));
+    public void atInsertString(int index, String value) {
+        atInsert(index, value);
     }
 
     /**
@@ -1861,6 +1867,25 @@ public class StringArray extends PrimitiveArray {
         }
     }
 
+    /** 
+     * This returns the values in this StringArray in a HashSet.
+     */
+    public HashSet<String> toHashSet() {
+        HashSet<String> hs = new HashSet(Math.max(8, size * 4 / 3));
+        for (int i = 0; i < size; i++)
+            hs.add(array[i]);
+        return hs;
+    }
+
+    /** 
+     * This adds the values in hs to this StringArray and returns this StringArray for convenience.
+     * The order of the elements in this StringArray is not specified.
+     */
+    public StringArray addHashSet(HashSet hs) {
+        for (Object o : hs)
+            add(o.toString());
+        return this;
+    }
 
 
     /**
@@ -1886,18 +1911,66 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(tArray, new String[]{"1234.5"}, "");
 
         //intentional errors
-        try {anArray.get(1);              throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.set(1, "100");       throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getInt(1);           throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setInt(1, 100);      throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getLong(1);          throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setLong(1, 100);     throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getFloat(1);         throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setFloat(1, 100);    throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getDouble(1);        throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setDouble(1, 100);   throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.getString(1);        throw new Throwable("It should have failed.");} catch (Exception e) {}
-        try {anArray.setString(1, "100"); throw new Throwable("It should have failed.");} catch (Exception e) {}
+        try {anArray.get(1);              throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.set(1, "100");         throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getInt(1);           throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setInt(1, 100);      throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getLong(1);          throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setLong(1, 100);     throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getFloat(1);         throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setFloat(1, 100);    throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getDouble(1);        throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setDouble(1, 100);   throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.set: index (1) >= size (1).", "");
+        }
+        try {anArray.getString(1);        throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.get: index (1) >= size (1).", "");
+        }
+        try {anArray.setString(1, "100"); throw new Throwable("It should have failed.");
+        } catch (Exception e) {
+            Test.ensureEqual(e.toString(), 
+                "java.lang.IllegalArgumentException: ERROR in StringArray.set: index (1) >= size (1).", "");
+        }
 
         //set NaN returned as NaN
         anArray.setDouble(0, Double.NaN);   Test.ensureEqual(anArray.getDouble(0), Double.NaN, ""); 
@@ -1986,8 +2059,8 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.get(3), "8", "");
         Test.ensureEqual(anArray.array[4], null, ""); //can't use get()
 
-        //test add(index, value)    and maxStringLength
-        anArray.add(1, "22");
+        //test atInsert(index, value)    and maxStringLength
+        anArray.atInsertString(1, "22");
         Test.ensureEqual(anArray.size(), 5, "");
         Test.ensureEqual(anArray.get(0), "0", "");
         Test.ensureEqual(anArray.get(1),"22", "");
@@ -2232,7 +2305,7 @@ public class StringArray extends PrimitiveArray {
         String2.log("hashcode1=" + anArray.hashCode());
         anArray2 = (StringArray)anArray.clone();
         Test.ensureEqual(anArray.hashCode(), anArray2.hashCode(), "");
-        anArray.add(0, "2");
+        anArray.atInsertString(0, "2");
         Test.ensureTrue(anArray.hashCode() != anArray2.hashCode(), "");
 
         //justKeep
@@ -2296,7 +2369,14 @@ public class StringArray extends PrimitiveArray {
         //fromCSVNoBlanks
         anArray  = fromCSVNoBlanks(", b, ,d,,");
         Test.ensureEqual(anArray.toString(), "b, d", "");
-       
+
+        //toHashSet   addHashSet
+        anArray = fromCSV("a, e, i, o, uu");
+        HashSet hs = anArray.toHashSet();
+        anArray2 = (new StringArray()).addHashSet(hs);
+        anArray2.sort();
+        Test.ensureEqual(anArray.toArray(), anArray2.toArray(), "");
+
     }
 
 }

@@ -645,7 +645,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 dataSourceTable.getColumn(c),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
@@ -731,7 +732,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
-
         try {
             String results = generateDatasetsXml(
                 //I could do wcos/catalog.xml but very slow because lots of files
@@ -786,23 +786,23 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">NODC.Webmaster@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NODC</att>\n" +
-"        <att name=\"creator_url\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
+"        <att name=\"creator_url\">http://www.nodc.noaa.gov/</att>\n" +
 "        <att name=\"History\">null</att>\n" +                            //date below changes
 "        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
-"        <att name=\"keywords\">altitudes, catalog, data, data.nodc.noaa.gov, day, depth, expressed, flag, negative, nmsp, noaa, nodc, ocean, oceans,\n" +
+"        <att name=\"keywords\">altitudes, catalo, center, data, data.nodc.noaa.gov, day, depth, expressed, flag, identifier, latitude, longitude, national, ncei, negative, noaa, nodc, ocean, oceanographic, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, status, temperature, thredds, time, water, wcos, wes0, year, yearday</att>\n" +
+"quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, stationID, status, temperature, Temperature_flag, thredds, time, water, year, yearday, yearday_flag</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">NOAA NODC data from http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
-"        <att name=\"title\">NOAA NODC data from http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES0 ...</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">NOAA National Oceanographic Data Center (NODC) data from http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
+"        <att name=\"title\">NOAA NODC data from http://data.nodc.noaa.gov/thredds/catalo ...</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -958,9 +958,8 @@ directionsForGenerateDatasetsXml() +
             */
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
 
     }
@@ -1070,7 +1069,7 @@ directionsForGenerateDatasetsXml() +
 "    String cdm_data_type \"TimeSeriesProfile\";\n" +
 "    String cdm_profile_variables \"time\";\n" +
 "    String cdm_timeseries_variables \"station, longitude, latitude\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -119.66934;\n" +
 "    String featureType \"TimeSeriesProfile\";\n" +
 "    Float64 geospatial_lat_max 48.325001;\n" +
@@ -1103,11 +1102,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 48.325001;\n" +
 "    String sourceUrl \"http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 33.89511;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station, longitude, latitude\";\n" +
 "    String summary \"The West Coast Observing System (WCOS) project provides access to temperature and currents data collected at four of the five National Marine Sanctuary sites, including Olympic Coast, Gulf of the Farallones, Monterey Bay, and Channel Islands. A semi-automated end-to-end data management system transports and transforms the data from source to archive, making the data acessible for discovery, access and analysis from multiple Internet points of entry.\n" +
 "\n" +
@@ -1125,8 +1123,8 @@ expected =
                 results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //*** test getting dds for entire dataset
@@ -1149,8 +1147,8 @@ expected =
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //*** test make data files
@@ -1203,8 +1201,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //.csv    for one lat,lon,time, many depths (from different files)      via lon > <
@@ -1225,8 +1223,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         /* */
@@ -1713,7 +1711,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String cdm_data_type \"Point\";\n" +
 "    String contact_email \"samos@coaps.fsu.edu\";\n" +
 "    String contact_info \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System \\(SAMOS\\)\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
@@ -1760,13 +1758,12 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String Metadata_modification_date \".{19} E.T\";\n" + //changes
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
 "    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data " +
     "\\(delayed ~10 days for quality control\\) are from the Shipboard " +
@@ -1798,8 +1795,8 @@ expected =
             Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //*** test getting dds for entire dataset
@@ -1840,8 +1837,8 @@ expected =
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //*** test make data files
@@ -1861,8 +1858,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //.csv    
@@ -1882,8 +1879,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
     }

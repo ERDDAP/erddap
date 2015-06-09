@@ -75,6 +75,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
   <li><a rel="help" href="#projections">Projected Gridded Data</a>
   <li><a rel="help" href="#NcML">NcML</a>
   <li><a rel="help" href="#include">No &lt;include&gt; Option</a> 
+  <li><a rel="help" href="#switchToACDD13">Switch to ACDD-1.3</a> 
     <br>&nbsp;
   </ul>
 <li><a rel="help" href="#datasetTypes"><b>List of Dataset Types</b></a> (Read as needed)
@@ -648,6 +649,71 @@ by pasting the XML text into an XML checker like
   <li>Then, whenever you make a change to one of the sub-files,
     rerun the script to regenerate the complete datasets.xml file.
   </ol>
+
+
+<li><b><a name="switchToACDD13">Switch to ACDD-1.3</a></b> -  
+  We (notably GenerateDatasetsXml) currently recommend
+  <a rel="bookmark" 
+  href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD version 1.3</a>,
+  which was ratified in early 2015 
+  and which is referred to as "ACDD-1.3" in the global Conventions attribute.
+  Prior to ERDDAP version 1.62 (released in June 2015),
+  ERDDAP used/recommended the original, version 1.0,
+  of the <a rel="bookmark" 
+  href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html">NetCDF Attribute Convention for Dataset Discovery</a>
+  which was referred to as "Unidata Dataset Discovery v1.0" in the
+  global Conventions and Metadata_Conventions attributes.
+  
+  <p>If your datasets use earlier versions of ACDD, we RECOMMEND that you 
+  switch to ACDD-1.3. 
+  It isn't hard. ACDD-1.3 is highly backward compatibly with version 1.0.
+  To switch, for all
+  datasets (except EDDGridFromErddap and EDDTableFromErddap datasets):
+  <ol>
+  <li>Remove the newly deprecated global <tt>Metadata_Conventions</tt> 
+    attribute by adding (or by changing the existing <tt>Metadata_Conventions</tt> attribute) 
+    <br><tt>&lt;att name="Metadata_Conventions"&gt;null&lt;/att&gt;</tt>
+    <br>to the dataset's global &lt;addAttributes&gt;.
+    <br>&nbsp;
+
+  <li>If the dataset has a <tt>Conventions</tt> attribute in the global &lt;addAttributes&gt;,
+    change all "Unidata Dataset Discovery v1.0" references to "ACDD-1.3".
+    <br>If the dataset doesn't have a <tt>Conventions</tt> attribute in the 
+    global &lt;addAttributes&gt;, then add one that refers to ACDD-1.3.
+    For example,
+    <br><tt>&lt;att name="Conventions"&gt;COARDS, CF-1.6, ACDD-1.3&lt;/att&gt;</tt>    
+    <br>&nbsp;
+
+  <li>If the dataset has a global <tt>standard_name_vocabulary</tt> attribute,
+    please change the format of the value to, for example, 
+    <br><tt>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v27&lt;/att&gt;</tt>
+    <br>If the reference is to an older version of the CF Standard Name Table, 
+    it is probably a good idea to switch to v27, the current version 
+    (as we write this),
+    since new standard names are added to that table with subsequent versions,
+    but old standard names are rarely deprecated and never removed.
+    <br>&nbsp;
+
+  <li>Although ACDD-1.0 included global attributes for 
+    <tt>creator_name, creator_email, creator_url</tt>, GenerateDatasetsXml
+    didn't automatically add them until sometime around ERDDAP v1.50. 
+    This is important information:
+    <ul>
+    <li>creator_name lets users know/cite the creator of the dataset.
+    <li>creator_email tells users the preferred email address for contacting
+      the creator of the dataset, for example if they have questions about the dataset.
+    <li>creator_url gives users a way to find out more about the creator.
+    <li>ERDDAP uses all of this information when generating FGDC and ISO 19115-2/19139
+      metadata documents for each dataset. Those documents are often used
+      by external search services.
+    </ul>
+    Please add these attributes to the dataset's global &lt;addAttributes&lt;.
+    <br><tt>&lt;att name="creator_name"&gt;NOAA NMFS SWFSC ERD&lt;/att&gt;
+    <br>&lt;att name="creator_email"&gt;erd.data@noaa.gov&lt;/att&gt;
+    <br>&lt;att name="creator_url"&gt;http://www.pfeg.noaa.gov&lt;/att&gt;</tt>
+    <br>&nbsp;
+  </ol>     
+  That's it. I hope that wasn't too hard.
 
 </ul>
 
@@ -1425,25 +1491,61 @@ allows fast random access to the data, and is already supported by ERDDAP.
 
 <p><a name="EDDGridFromMergeIRFiles"><b>EDDGridFromMergeIRFiles</b></a> aggregates data 
   from local, <a rel="help"
-  href="http://www.cpc.ncep.noaa.gov/products/global_precip/html/README">MergeIR .gz<img
+  href="http://www.cpc.ncep.noaa.gov/products/global_precip/html/README">MergeIR<img
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
-  files.
-
-  EDDGridFromMergeIRFiles.java was written and contributed to the ERDDAP project by
+  files, which are from the 
+  <a rel="bookmark"
+  href="http://trmm.gsfc.nasa.gov/">Tropical Rainfall Measuring Mission (TRMM)<img
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>,
+  which is a joint mission between NASA and the Japan Aerospace Exploration Agency (JAXA).
+  MergeIR files can be downloaded from   
+  <a rel="bookmark"
+  href="ftp://disc2.nascom.nasa.gov/data/s4pa/TRMM_ANCILLARY/MERG/">NASA<img
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>. 
+  
+<p>EDDGridFromMergeIRFiles.java was written and contributed to the ERDDAP project by
   Jonathan Lafite and Philippe Makowski of 
    <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
    (license: copyrighted open source).
 
-<p>See this class' superclass, <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a>, for information
-on how this class works and how to use this class.
+<p>EDDGridFromMergeIRFiles is a little unusual:
+<ul>
+<li>EDDGridFromMergeIRFiles supports compressed or uncompressed
+  source data files, in any combination, in the same dataset. This allow you, for example,
+  to compress older files that are rarely accessed, but uncompress new files that
+  are often accessed. Or, you can change the type of compression from the original
+  .Z to e.g., .gz. 
+<li>If you have compressed and uncompressed versions of the same data files
+  in the same directory, please make sure the &lt;fileNameRegex&gt; for your dataset 
+  matches the file names that you want it to match and doesn't match file names that
+  you don't want it to match.
+<li>Uncompressed source data files must have no file extension 
+  (i.e., no "." in the file name).
+<li>Compressed source data files must have a file extension, but ERDDAP determines 
+  the type of compression by inspecting the contents of the file, not by looking at 
+  the file's file extension (e.g., ".Z"). The supported compression types include
+  "gz", "bzip2", "xz", "lzma", "snappy-raw", "snappy-framed", "pack200", and "z".
+  When ERDDAP reads compressed files, it decompresses on-the-fly, without writing
+  to a temporary file.
+<li>All source data files must use the original file naming system: 
+  i.e., merg_<i>YYYYMMDDHH</i>_4km-pixel (where <i>YYYYMMDDHH</i> indicates the 
+  time associated with the data in the file),
+  plus a file extension if the file is compressed.
+</ul>
+
+<p>See this class' superclass, <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a>, 
+for general information on how this class works and how to use this class.
 
 <p>We strongly recommend using the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
+<br>&nbsp;
 
 
 <p><a name="EDDGridFromNcFiles"><b>EDDGridFromNcFiles</b></a> aggregates data from local, gridded, 
@@ -4053,6 +4155,15 @@ Sensor Observation Service
   sourceUrl+"?service=SOS&amp;request=GetCapabilities" in a browser; 
   look at the XML; make a GetObservation request by hand; 
   and look at the XML response to the request.
+<li>With the occasional addition of new types of SOS servers
+  and changes to the old servers, it is getting harder for ERDDAP to 
+  automatically detect the server type from the server's responses. 
+  The use of &lt;sosServerType&gt; (with a value of 
+  IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI) is now STRONGLY RECOMMENDED. 
+  If you have problems with any datasets of this type,
+  try re-running GenerateDatasetsXml for the SOS server.
+  GenerateDatasetsXml will let you try out the different &lt;sosServerType&gt; options
+  until you find the right one for a given server.
 <li>SOS overview:
     <ul>
     <li>SWE (Sensor Web Enablement) and SOS (Sensor Observation Service) are
@@ -4112,9 +4223,11 @@ Sensor Observation Service
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  &lt;sosServerType&gt;...&lt;/sosServerType&gt; &lt;!-- 0 or 1, but strongly recommended.
+  &lt;sosServerType&gt;...&lt;/sosServerType&gt; &lt;!-- 0 or 1, but STRONGLY RECOMMENDED.
     This lets you specify the type of SOS server (so ERDDAP doesn't have to figure it out).
     Valid values are: IOOS_NDBC, IOOS_NOS, OOSTethys, and WHOI. --&gt;
+  &lt;responseFormat&gt;...&lt;/responseFormat&gt; &lt;!-- 0 or 1. Use this only if you need to override the default
+    responseFormat for the specified sosServerType.  --&gt;
   &lt;stationIdSourceName&gt;...&lt;/stationIdSourceName&gt; &lt;!-- 0 or 1. 
     Default="station_id". --&gt;
   &lt;longitudeSourceName&gt;...&lt;/longitudeSourceName&gt;
@@ -4973,8 +5086,8 @@ for more information.
       consistently) with the error message:
       "IOException: User limit of inotify instances reached or too many open files".
       If so, you can fix this problem by calling (as root):<tt>
-      <br>echo 10000 > /proc/sys/fs/inotify/max_user_watches
-      <br>echo 10000 > /proc/sys/fs/inotify/max_user_instances</tt>
+      <br>echo 20000 > /proc/sys/fs/inotify/max_user_watches
+      <br>echo 500 > /proc/sys/fs/inotify/max_user_instances</tt>
       <br>Or, use higher numbers if the problem persists.
       The default for watches is 8192. The default for instances is 128.
     </ul>
@@ -5188,7 +5301,7 @@ for more information.
        improving your datasets' metadata (which is a good thing to do anyway).</b>
        Most of the dataset metadata attributes which are used generate the ISO 19115 
        and FGDC metadata are from the 
-       <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD metadata standard<img 
+       <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD metadata standard<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> and are so noted below. 
 
@@ -5201,7 +5314,7 @@ for more information.
        generated or updated.
      <li>A simple sample global <tt>&lt;addAttributes&gt;</tt> is:<pre>
 &lt;addAttributes&gt; 
-  &lt;att name="Conventions"&gt;COARDS, CF-1.6, Unidata Dataset Discovery v1.0&lt;/att&gt;
+  &lt;att name="Conventions"&gt;COARDS, CF-1.6, ACDD-1.3&lt;/att&gt;
   &lt;att name="infoUrl"&gt;http://coastwatch.pfeg.noaa.gov/infog/PH_ssta_las.html&lt;/att&gt;
   &lt;att name="institution"&gt;NOAA CoastWatch, West Coast Node&lt;/att&gt;
   &lt;att name="title"&gt;SST, Pathfinder Ver 5.0, Day and Night, Global&lt;/att&gt;
@@ -5223,7 +5336,7 @@ for more information.
 
       <li><a name="acknowledgment"><b>acknowledgment</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5245,7 +5358,7 @@ for more information.
 
       <li><a name="cdm_data_type"><b>cdm_data_type</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5394,7 +5507,7 @@ for more information.
 
       <li><a name="contributor_name"><b>contributor_name</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5408,7 +5521,7 @@ for more information.
 
       <li><a name="contributor_role"><b>contributor_role</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5416,6 +5529,47 @@ for more information.
         <a rel="help" href="#creator_name">contributor_name</a>.  For example,
         <br><tt>&lt;att name="contributor_role"&gt;Source of Level 2b data&lt;/att&gt;</tt>
         <br>If "contributor" doesn't really apply to a dataset, omit this attribute.
+
+      <li><a name="Conventions"><b>Conventions</b></a> 
+        (from the
+        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+        metadata standard) 
+        is STRONGLY RECOMMENDED. (It may be REQUIRED in the future.) 
+        The value is a comma-separated list of metadata standards that this dataset follows.
+        For example:
+        <br>&lt;att name="Conventions"&gt;COARDS, CF-1.6, ACDD-1.3&lt;/att&gt;
+        <br>The common metadata conventions used in ERDDAP are:
+        <ul>
+        <li><a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">COARDS Conventions<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+        is the precursor to CF. 
+
+        <li><a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">Climate and Forecast (CF) Conventions<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+        is the source of many of the recommended and required attributes in ERDDAP. 
+        The current version of CF is identified as "CF-1.6".
+
+        <li>The NetCDF Attribute Convention for Dataset Discovery (ACDD)
+        is the source of many of the recommended and required attributes in ERDDAP. 
+        The original 1.0 version of ACDD (a brilliant piece of work by Ethan Davis), was identified as
+        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">Unidata Dataset Discovery v1.0<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+        The current (starting in 2015) 1.3 version of ACDD is identified as 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD-1.3<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>.
+        If your datasets have been using <tt>Unidata Dataset Discovery v1.0</tt>,
+        we encourage you to 
+        <a rel="help" href="#switchToACDD13">switch your datasets to use ACDD-1.3</a>.
+
+        </ul>        
+        If your dataset follows some additional metadata standard, please add the name
+        to the CSV list in the Conventions attribute.
 
       <li><a name="coverage_content_type"><b>coverage_content_type</b></a> 
         (from the
@@ -5433,7 +5587,7 @@ for more information.
 
       <li><a name="creator_name"><b>creator_name</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5441,7 +5595,7 @@ for more information.
         (if not a specific person or organization), 
         most responsible for the creation (or most recent reprocessing) of this data.
         For example,
-        <br><tt>&lt;att name="creator_name"&gt;NASA/GSFC OBPG&lt;/att&gt;</tt>
+        <br><tt>&lt;att name="creator_name"&gt;NOAA NMFS SWFSC ERD&lt;/att&gt;</tt>
         <br>If the data was extensively reprocessed (for example, satellite data from level 2 to level 3 or 4),
         then usually the reprocessor is listed as the creator and
         the original creator is listed via <a rel="help" href="#contributor_name">contributor_name</a>.
@@ -5450,18 +5604,18 @@ for more information.
 
       <li><a name="creator_email"><b>creator_email</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
         is the RECOMMENDED way to identify an email address 
         (correctly formatted) that provides a way to contact the creator.   For example,
-        <br><tt>&lt;att name="creator_email"&gt;john_smith@great.org&lt;/att&gt;</tt>
+        <br><tt>&lt;att name="creator_email"&gt;erd.data@noaa.gov&lt;/att&gt;</tt>
         
 
       <li><a name="creator_url"><b>creator_url</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5469,12 +5623,12 @@ for more information.
         or a URL with 
         the creator's information about this dataset (but that is more the purpose of
         <a rel="help" href="#infoUrl">infoUrl</a>).   For example,
-        <br><tt>&lt;att name="creator_url"&gt;http://oceancolor.gsfc.nasa.gov/&lt;/att&gt;</tt>
+        <br><tt>&lt;att name="creator_url"&gt;http://www.pfeg.noaa.gov&lt;/att&gt;</tt>
         
         
       <li><a name="date_created"><b>date_created</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5487,7 +5641,7 @@ for more information.
 
       <li><a name="date_modified"><b>date_modified</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5498,7 +5652,7 @@ for more information.
         
 
       <li><a name="date_issued"><b>date_issued</b></a> (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5553,7 +5707,7 @@ for more information.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         and
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standards) 
@@ -5605,7 +5759,7 @@ for more information.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
         and
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standards) 
@@ -5632,7 +5786,7 @@ for more information.
 
       <li><a name="keywords"><b>keywords</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5649,7 +5803,7 @@ for more information.
 
       <li><a name="keywords_vocabulary"><b>keywords_vocabulary</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5661,7 +5815,7 @@ for more information.
 
       <li><a name="license"><b>license</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5674,9 +5828,25 @@ for more information.
            <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#messages.xml">messages.xml</a>.
         </ul>
 
+      <li><a name="Metadata_Conventions"><b>Metadata_Conventions</b></a> 
+        is from the outdated 
+        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD 1.0<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> (which was identified in Metadata_Conventions as
+        "Unidata Dataset Discovery v1.0")
+        metadata standard. The attribute value was a comma-separated list
+        of metadata conventions used by this dataset.  
+        <br>If a dataset uses ACDD 1.0, this attribute is a STRONGLY RECOMMENDED, for example,
+        <br><tt>&lt;att name="Metadata_Conventions"&gt;COARDS, CF-1.6, Unidata Dataset Discovery v1.0&lt;/att&gt;</tt>
+        <br>But ERDDAP how recommends ACDD-1.3. 
+        If you have 
+        <a rel="help" href="#switchToACDD13">switched your datasets to use ACDD-1.3</a>, 
+        use of <tt>Metadata_Conventions</tt> is STRONGLY DISCOURAGED: just use 
+        <a rel="help" href="#Conventions"><tt>&lt;Conventions&gt;</tt></a> instead.
+
       <li><a name="processing_level"><b>processing_level</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5691,7 +5861,7 @@ for more information.
 
       <li><a name="project"><b>project</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5704,7 +5874,7 @@ for more information.
 
       <li><a name="publisher_name"><b>publisher_name</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5720,7 +5890,7 @@ for more information.
 
       <li><a name="publisher_email"><b>publisher_email</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5732,7 +5902,7 @@ for more information.
 
       <li><a name="publisher_url"><b>publisher_url</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5760,7 +5930,7 @@ for more information.
 
       <li><a name="standard_name_vocabulary"><b>standard_name_vocabulary</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -5768,13 +5938,13 @@ for more information.
         the name of the controlled vocabulary 
         from which variable 
         <a rel="help" href="#standard_name">standard_name</a>s 
-        are taken (for example, <tt>CF-19</tt> for version 19 of the 
+        are taken.
+        For example,
+        <br><tt>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v27&lt;/att&gt;</tt>
+        <br>for version 27 of the 
         <a rel="help" href="http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html">CF standard name table<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>).
-        For example,
-        <br><tt>&lt;att name="standard_name_vocabulary"&gt;CF-19&lt;/att&gt;</tt>
-        <br>
+        title="This link to an external web site does not constitute an endorsement."/></a>.
 
       <li><a name="subsetVariables"><b>subsetVariables</b></a> (for EDDTable datasets only) 
         is a RECOMMENDED global attribute that lets you specify
@@ -5856,7 +6026,7 @@ for more information.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
         and 
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standards) 
@@ -5888,7 +6058,7 @@ for more information.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
         and
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standards) 
@@ -6409,7 +6579,7 @@ for more information.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         and
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standards) 
@@ -6491,7 +6661,7 @@ for more information.
 
       <li><a name="standard_name"><b>standard_name</b></a> 
         (from the
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -6586,7 +6756,7 @@ for more information.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
          and
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD<img 
+        <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -6725,6 +6895,46 @@ for more information.
           <br>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
             ERDDAP Deals with Time</a>.
         </ul>
+
+      <li><a name="valid_range"><b>valid_range</b>, or <b>valid_min</b> and <b>valid_max</b></a> - 
+        These are OPTIONAL variable attributes 
+        defined in the 
+        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+        metadata conventions.  For example,
+        <br><tt>&lt;att name="valid_range" 
+          <a rel="help" href="#attributeType">type="floatList"</a>&gt;0.0 40.0&lt;/att&gt;</tt>
+        <br>or
+        <br><tt>&lt;att name="valid_min" 
+          <a rel="help" href="#attributeType">type="float"</a>&gt;0.0&lt;/att&gt;</tt>
+        <br><tt>&lt;att name="valid_max" 
+          <a rel="help" href="#attributeType">type="float"</a>&gt;40.0&lt;/att&gt;</tt>
+        <ul>
+        <li>If present, they should be of the same data type as the variable, 
+          and specify the valid minimum and maximum values of the data for that variable.
+          Users should consider values outside this range to be invalid.
+        <li>ERDDAP does not apply the valid_range. Said another way: ERDDAP does
+          not convert data values outside the valid_range to the _FillValue or 
+          missing_value. ERDDAP just passes on this metadata and leaves the
+          application up to you. 
+          <br>Why? That's what this metadata is for. If the data 
+          provider had wanted to, the data provider could have converted 
+          the data values outside of the valid_range to be _FillValues. 
+          ERDDAP doesn't second guess the data provider. 
+          This approach is safer: if it is later shown that the valid_range 
+          was too narrow or otherwise incorrect, ERDDAP won't have obliterated the data.
+        <li>If the data is packed with 
+          <a rel="help" href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
+          valid_range, valid_min and valid_max should be the packed data type and values.
+          Since ERDDAP applies scale_factor and add_offset when it loads the dataset, 
+          ERDDAP will unpack the valid_range, valid_min and valid_max
+          values so that the destination metadata (shown to users) will indicate
+          the unpacked data type and range.
+          <br>Or, if an <tt>unpacked_valid_range</tt> attribute is present, 
+          it will be renamed <tt>valid_range</tt> when ERDDAP loads the dataset.
+        </ul>
+
       </ul> <!-- end of variable attributes -->
   </ul>
 </ul>
@@ -6739,7 +6949,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.60
+<p>ERDDAP, Version 1.62
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

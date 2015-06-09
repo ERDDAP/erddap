@@ -339,7 +339,6 @@ public class RegexFilenameFilter implements FilenameFilter {
     /**
      * This tests the methods of RegexFilenameFilter.
      *
-     * @param args is ignored
      * @throws Exception if trouble
      */
     public static void test() throws Exception {

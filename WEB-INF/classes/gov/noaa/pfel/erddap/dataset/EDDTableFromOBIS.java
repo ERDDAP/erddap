@@ -393,9 +393,7 @@ public class EDDTableFromOBIS extends EDDTable{
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         if (tAddGlobalAttributes.getString("Conventions") == null) 
-            tAddGlobalAttributes.add("Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
-        if (tAddGlobalAttributes.getString("Metadata_Conventions") == null) 
-            tAddGlobalAttributes.add("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
+            tAddGlobalAttributes.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
         if (tAddGlobalAttributes.getString("infoUrl") == null) 
             tAddGlobalAttributes.add("infoUrl", STANDARD_INFO_URL);
         String tSummary = tAddGlobalAttributes.getString("summary");
@@ -408,7 +406,7 @@ public class EDDTableFromOBIS extends EDDTable{
             "publications that use the data in order to comply with license. " + 
             "A suitable email address can be found by reading the XML response from the sourceURL.");
         tAddGlobalAttributes.add("cdm_data_type", CDM_POINT);
-        tAddGlobalAttributes.add("standard_name_vocabulary", "CF-12");
+        tAddGlobalAttributes.add("standard_name_vocabulary", "CF Standard Name Table v27");
         addGlobalAttributes = tAddGlobalAttributes;
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
@@ -795,20 +793,19 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">dhyrenbach@duke.edu</att>\n" +
-"        <att name=\"creator_name\">DUKE</att>\n" +
-"        <att name=\"creator_url\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
+"        <att name=\"creator_name\">DHYRENBACH</att>\n" +
+"        <att name=\"creator_url\">http://marine.rutgers.edu/main/</att>\n" +
 "        <att name=\"infoUrl\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
 "        <att name=\"institution\">DUKE</att>\n" +
-"        <att name=\"keywords\">data, duke, obis, obis-seamap, rutgers, seamap, server</att>\n" +
+"        <att name=\"keywords\">area, assessment, biogeographic, data, digir.php, duke, information, monitoring, obis, obis-seamap, ocean, program, rutgers, seamap, server, southeast, system</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS.\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">Ocean Biogeographic Information System (OBIS)-Southeast Area Monitoring &amp; Assessment Program (SEAMAP) Data from the OBIS Server at RUTGERS.\n" +
 "\n" +
 "[OBIS_SUMMARY]</att>\n" +
-"        <att name=\"title\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS</att>\n" +
+"        <att name=\"title\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS (DiGIR.php)</att>\n" +
 "    </addAttributes>\n" +
 "</dataset>\n" +
 "\n\n";
@@ -817,7 +814,7 @@ directionsForGenerateDatasetsXml() +
             //ensure it is ready-to-use by making a dataset from it
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "rutgers_6cb4_a970_1d67", "");
-            Test.ensureEqual(edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS", "");
+            Test.ensureEqual(edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS (DiGIR.php)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, latitude, altitude, time, ID, BasisOfRecord, BoundingBox, " +
                 "CatalogNumber, Citation, Class, CollectionCode, Collector, " +
@@ -839,9 +836,8 @@ directionsForGenerateDatasetsXml() +
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromOBIS.testGenerateDatasetsXml error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromOBIS.testGenerateDatasetsXml error."); 
         }
 
     }
@@ -903,7 +899,7 @@ directionsForGenerateDatasetsXml() +
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"Point\";[10]\n" +
 "    String citation \"Living marine legacy of Gwaii Haanas. I: Marine plant baseline to 1999 and plant-related management issues.\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";[10]\n" +
 "    String creator_email \"SloanNormPCA@DFO-MPO.GC.CA\";[10]\n" +
 "    Float64 Easternmost_Easting 180.0;[10]\n" +
 "    Float64 geospatial_lat_max 90.0;[10]\n" +
@@ -1051,11 +1047,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "carrying out field surveys and taxonomic studies designed to fill[10]\n" +
 "geographic and taxonomic gaps in knowledge.[10]\n" +
 "\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 90.0;[10]\n" +
 "    String sourceUrl \"http://iobis.marine.rutgers.edu/digir2/DiGIR.php\";[10]\n" +
 "    Float64 Southernmost_Northing -90.0;[10]\n" +
-"    String standard_name_vocabulary \"CF-12\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
 "    String subsetVariables \"ScientificName\";[10]\n" +
 "    String summary \"The database covers the Haida Gwaii archipelago on the West Coast of Canada, including all species of the Haida Gwaii region from any published source, accessible collection and unpublished observations from scientists.Lists all marine plant species and maps their distributions from the first records (1911) to 1999 and includes 348 seaweed and 4 seagrass species from 456 intertidal to shallow subtidal locations. This inventory had detailed regional starting points (Hawkes et al. 1978; Scagel et al. 1993) and >90% of the plant species are represented by specimens in the Phycological Herbarium of the University of British Columbia Botany Department. OBIS Schema concepts implemented in this data set are:DateLastModified, InstitutionCode, CollectionCode, CatalogNumber, ScientificName, Phylum, Class, Order, Family, Genus, Species, Subspecies, ScientificNameAuthor, YearCollected, MonthCollected, DayCollected, Country, Locality, Longitude, Latitude, Citation, DepthRange. For OBIS Schema concept details see http://www.iobis.org/tech/provider/[10]\n" +
 "[10]\n" +
@@ -1227,10 +1222,9 @@ so standardize results table removes all but 1 record.
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
                 //2010-07-27 to 2011-01 failed with\n" +
                 //"  java.net.ConnectException: Connection refused: connect\n" +
-                "Unexpected error. Press ^C to stop or Enter to continue..."); 
         }
     }
 
@@ -1296,15 +1290,13 @@ so standardize results table removes all but 1 record.
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
         //expected error didn't occur!
-        String2.getStringFromSystemIn("\n" + 
-            MustBe.getStackTrace() + 
-            "An expected error didn't occur at the above location.\n" + 
-            "Press ^C to stop or Enter to continue..."); 
+        String2.pressEnterToContinue("\n" + MustBe.getStackTrace() + 
+            "An expected error didn't occur at the above location."); 
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nExpected obis fishbase error (since ~2009-01-20): Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nExpected obis fishbase error (since ~2009-01-20)."); 
         }
     }
 
@@ -1410,8 +1402,8 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected dukeSeamap error: Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected dukeSeamap error."); 
         }
 
     }

@@ -313,12 +313,20 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
+        String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
+        String2.log(NcHelper.dumpString(sampleFileName, false));
+
         NetcdfFile ncFile = NcHelper.openFile(sampleFileName); //may throw exception
+
+        //make table to hold info
         Table axisSourceTable = new Table();  
         Table dataSourceTable = new Table();  
         Table axisAddTable = new Table();
         Table dataAddTable = new Table();
         StringBuilder sb = new StringBuilder();
+
+        //get source global Attributes
+        NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
 
         try {
             //look at all variables with dimensions, find ones which share same max nDim
@@ -368,6 +376,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                         String destName = String2.modifyToBeVariableNameSafe(axisName);
                         axisAddTable.addColumn(   avi, destName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
+                                axisSourceTable.globalAttributes(),
                                 sourceAtts, destName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
@@ -399,17 +408,18 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 String destName = String2.modifyToBeVariableNameSafe(varName);
                 dataAddTable.addColumn(   dataAddTable.nColumns(),   destName, pa, 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        axisSourceTable.globalAttributes(),
                         sourceAtts, destName, true, false)); //addColorBarMinMax, tryToFindLLAT
             }
 
             //after dataVariables known, add global attributes in the axisAddTable
-            NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
             axisAddTable.globalAttributes().set(
                 makeReadyToUseAddGlobalAttributesForDatasetsXml(
                     axisSourceTable.globalAttributes(), 
                     "Grid",  //another cdm type could be better; this is ok
                     tFileDir, externalAddGlobalAttributes, 
-                    suggestKeywords(dataSourceTable, dataAddTable)));
+                    EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
+                        suggestKeywords(dataSourceTable, dataAddTable))));
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
@@ -556,15 +566,14 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">atmosphere,\n" +
+"        <att name=\"keywords\">altitude, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, coastwatch, composite, day, global, meridional, modulus, noaa, ocean, oceans,\n" +
+"atmospheric, coast, coastwatch, composite, data, day, global, latitude, longitude, meridional, mod, modulus, noaa, node, ocean, oceans,\n" +
 "Oceans &gt; Ocean Winds &gt; Surface Winds,\n" +
-"quality, quikscat, science, science quality, surface, wcn, wind, winds, x_wind, y_wind, zonal</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
+"quality, quikscat, science, science quality, surface, time, wcn, west, wind, winds, x_wind, y_wind, zonal</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -752,20 +761,20 @@ directionsForGenerateDatasetsXml() +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">NCEP</att>\n" +
-"        <att name=\"infoUrl\">???</att>\n" +
+"        <att name=\"creator_url\">http://www.ncep.noaa.gov/</att>\n" + 
+"        <att name=\"infoUrl\">http://www.ncep.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NCEP</att>\n" +
-"        <att name=\"keywords\">data, direction, height, local, mean, ncep, ocean, oceans,\n" +
+"        <att name=\"keywords\">centers, data, direction, Direction_of_swell_waves_ordered_sequence_of_data, environmental, height, local, mean, Mean_period_of_swell_waves_ordered_sequence_of_data, national, ncep, ocean, oceans,\n" +
 "Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" +
 "Oceans &gt; Ocean Waves &gt; Swells,\n" +
 "Oceans &gt; Ocean Waves &gt; Wave Period,\n" +
-"ordered, period, sea, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sequence, significant, source, surface, surface waves, swell, swells, wave, waves</att>\n" +
+"ordered, ordered_sequence_of_data, period, prediction, sea, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sequence, significant, Significant_height_of_swell_waves_ordered_sequence_of_data, source, surface, surface waves, swell, swells, time, wave, waves</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">NCEP data from a local source.</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">National Centers for Environmental Prediction (NCEP) data from a local source.</att>\n" +
 "        <att name=\"title\">NCEP data from a local source.</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -1017,7 +1026,7 @@ directionsForGenerateDatasetsXml() +
 "    String composite \"true\";\n" +
 "    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -1051,7 +1060,6 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.875;\n" +
 "    String origin \"Remote Sensing Systems, Inc\";\n" +
@@ -1066,7 +1074,7 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
                      //numeric IP because these are files captured long ago
 "    String sourceUrl \"http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
 "    Float64 Southernmost_Northing -89.875;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
 "    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +
@@ -1352,7 +1360,7 @@ tsvExpected;
 "    String _CoordinateModelRunDate \"1981-01-01T12:00:00Z\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String CF:feature_type \"GRID\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 //"    String creator_name \"UK Meteorological Office Bracknell (RSMC) subcenter = 0\";\n" +
 "    Float64 Easternmost_Easting 356.25;\n" +
 "    String file_format \"GRIB-1\";\n" +
@@ -1387,14 +1395,13 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +    
 "    String location \"" + EDStatic.unitTestDataDir + "grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75;\n" +
 "    String Originating_center \"U.K. Met Office - Exeter (RSMC) (74)\";\n" +
 "    String Product_Type \"Initialized analysis product\";\n" +
 "    String source \"Initialized analysis product\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -88.75;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"This is a test of EDDGridFromNcFiles with GRIB files.\";\n" +
 "    String time_coverage_end \"1990-12-01T12:00:00Z\";\n" +
 "    String time_coverage_start \"1981-01-01T12:00:00Z\";\n" +
@@ -1457,8 +1464,7 @@ expected =
 
         //  */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
     }
 
@@ -1775,7 +1781,7 @@ expected =
 "    String _CoordinateModelRunDate \"2009-06-01T06:00:00Z\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String CF:feature_type \"GRID\";\n" +  //Eeeek!
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 359.5;\n" +
 "    String file_format \"GRIB-2\";\n" +
 "    String Generating_Model \"Global Multi-Grid Wave Model\";\n" +
@@ -1810,7 +1816,6 @@ expected=
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String location \"/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_center \"US National Weather Service - NCEP(WMC) (7)\";\n" +
 "    String Product_Status \"Operational products\";\n" +
@@ -1818,7 +1823,7 @@ expected=
 "    String source \"Type: Forecast products Status: Operational products\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -77.5;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"???\";\n" +
 "    String time_coverage_end \"2009-06-08T18:00:00Z\";\n" +
 "    String time_coverage_start \"2009-06-01T06:00:00Z\";\n" +
@@ -1979,8 +1984,7 @@ expected=
 
         //  */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
     }
 
@@ -2073,7 +2077,7 @@ expected=
 "  NC_GLOBAL {\n" +
 "    String _CoordinateModelRunDate \"1981-01-01T12:00:00Z\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 356.25;\n" +
 "    String file_format \"GRIB-1\";\n" +
 "    Float64 geospatial_lat_max 88.75001;\n" +
@@ -2106,14 +2110,13 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String location \"" + EDStatic.unitTestDataDir + "grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75001;\n" +
 "    String Originating_or_generating_Center \"UK Meteorological Office ­ Exeter (RSMC)\";\n" + //- is #173!
 "    String Originating_or_generating_Subcenter \"0\";\n" +
 "    String Product_Type \"Initialized analysis product\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -88.74999;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"This is a test of EDDGridFromNcFiles with GRIB files.\";\n" +
 "    String time_coverage_end \"1990-12-01T12:00:00Z\";\n" +
 "    String time_coverage_start \"1981-01-01T12:00:00Z\";\n" +
@@ -2127,8 +2130,7 @@ expected =
                 results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
         
         //*** test getting dds for entire dataset
@@ -2181,8 +2183,7 @@ expected =
 
         //  */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
     }
 
@@ -2423,7 +2424,7 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String Analysis_or_forecast_generating_process_identifier_defined_by_originating_centre \"Global Multi-Grid Wave Model (Static Grids)\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 359.5;\n" +
 "    String file_format \"GRIB-2\";\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
@@ -2459,7 +2460,6 @@ expected=
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String location \"/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_generating_Center \"US National Weather Service, National Centres for Environmental Prediction (NCEP)\";\n" +
 "    String Originating_generating_Subcenter \"0\";\n" +
@@ -2467,7 +2467,7 @@ expected=
 "    String Originating_or_generating_Subcenter \"0\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -77.5;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"???\";\n" +
 "    String time_coverage_end \"2009-06-08T18:00:00Z\";\n" +
 "    String time_coverage_start \"2009-06-01T06:00:00Z\";\n" +
@@ -2630,7 +2630,7 @@ expected=
 
         //  */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
 "\n2012-07-12 with change to Java 4.3.8, this doesn't pass because of\n" +
 "spaces and parens in attribute names. John Caron says he will fix.\n" +
 "2013-02-20 better but not all fixed.\n" +
@@ -2640,8 +2640,7 @@ expected=
 "composed of letters, digits, and underscores.\"\n" +
 "BUT NOTHING HAS CHANGED!\n" +
 "So now generatedDatasetsXml suggests setting original to null, \n" +
-"and adds a variant with a valid CF attribute name.\n" +
-"Press ^C to stop or Enter to continue..."); 
+"and adds a variant with a valid CF attribute name."); 
         }
     }
 
@@ -2725,7 +2724,7 @@ expected=
 "    String autonav_performed \"true\";\n" +
 "    Int32 autonav_quality 2;\n" +
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"Direct read of HDF4 file through CDM library\n" +
 today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -2747,7 +2746,6 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String origin \"USDOC/NOAA/NESDIS CoastWatch\";\n" +
 "    String pass_type \"day\";\n" +
 "    String projection \"Mercator\";\n" +
@@ -2755,7 +2753,7 @@ expected =
 "    String satellite \"noaa-18\";\n" +
 "    String sensor \"avhrr\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"???\";\n" +
 "    String title \"Test of CoastWatch HDF files\";\n" +
 "  }\n" +
@@ -2935,10 +2933,8 @@ expected =
                         "Faster than expected! observed=" + time + 
                         " expected=~" + expectedMs[ext] + " ms.");
             } catch (Exception e) {
-                String2.getStringFromSystemIn(
-                    MustBe.throwableToString(e) +
-                    "\nUnexpected ERROR for Test#" + ext + ": " + extensions[ext]+ 
-                    ".  Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(e) +
+                    "\nUnexpected ERROR for Test#" + ext + ": " + extensions[ext] + "."); 
             }
         }
         reallyVerbose = oReallyVerbose;
@@ -3597,7 +3593,7 @@ expected =
 "\n" +
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Grid\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :history = \"";  //2014-10-22T16:16:21Z (local files)\n";
         ts = results.substring(0, expected.length()); 
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
@@ -3616,9 +3612,8 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :title = \"My Title\";\n" +
 " data:\n" +
@@ -3902,7 +3897,7 @@ expected =
 "\n" +
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Grid\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :history = \""; //2014-10-22T16:16:21Z (local files)\n";
         ts = results.substring(0, expected.length()); 
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
@@ -3921,9 +3916,8 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :title = \"My Title\";\n" +
 " data:\n" +
@@ -4250,9 +4244,9 @@ directionsForGenerateDatasetsXml() +
             cumTime += (System.currentTimeMillis() - time);
             Math2.sleep(2); //updateEveryNMillis=1, so always a valid new update()
         }
-        String2.getStringFromSystemIn("time/update() = " + (cumTime/1000.0) +
+        String2.pressEnterToContinue("time/update() = " + (cumTime/1000.0) +
             "ms (diverse results 0.001 - 11.08ms on Bob's M4700)" +
-            "\nNot an error, just FYI. Press ^C to stop or Enter to continue..."); 
+            "\nNot an error, just FYI."); 
     }
 
 
