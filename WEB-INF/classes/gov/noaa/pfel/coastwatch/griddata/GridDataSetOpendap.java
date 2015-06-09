@@ -922,7 +922,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             Test.ensureEqual(dataPA.getFloat(row), 18.75f, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn("\nRecover from thredds failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from thredds failure?");
         }
     }
 
@@ -966,8 +966,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //see if it has the expected values
             int nLat = grid.lat.length;
             int nLon = grid.lon.length;
-            Test.ensureEqual(grid.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
-            Test.ensureEqual(grid.globalAttributes().get("Metadata_Conventions"),       new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Metadata_Conventions");
+            Test.ensureEqual(grid.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.6, ACDD-1.3, CWHDF"}), "Conventions");
             Test.ensureEqual(grid.globalAttributes().get("title"),                      new StringArray(new String[]{"Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal"}), "title");
             Test.ensureEqual(grid.globalAttributes().get("summary"),                    new StringArray(new String[]{"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters."}), "summary");  
             Test.ensureEqual(grid.globalAttributes().get("keywords"),                   new StringArray(new String[]{"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds"}), "keywords");
@@ -996,7 +995,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             Test.ensureEqual(grid.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"2006-06-10T00:00:00Z"}), "time_coverage_start");
             Test.ensureEqual(grid.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"2006-06-11T00:00:00Z"}), "time_coverage_end");
             //Test.ensureEqual(grid.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
-            Test.ensureEqual(grid.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF-12"}), "standard_name_vocabulary");
+            Test.ensureEqual(grid.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF Standard Name Table v27"}), "standard_name_vocabulary");
             Test.ensureEqual(grid.globalAttributes().get("license"),                    new StringArray(new String[]{"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information."}), "license");
             Test.ensureEqual(grid.globalAttributes().get("contributor_name"),           new StringArray(new String[]{"Remote Sensing Systems, Inc."}), "contributor_name");
             Test.ensureEqual(grid.globalAttributes().get("contributor_role"),           new StringArray(new String[]{"Source of level 2 data."}), "contributor_role");
@@ -1077,8 +1076,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from thredds failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from thredds failure?");
         }
 
    }

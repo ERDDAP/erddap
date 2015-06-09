@@ -4938,7 +4938,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             graphDataLayers,
             g2D,
             0, 0, imageWidth, imageHeight, 2, //graph width/height
-            1); //fontScale
+            SgtGraph.DefaultBackgroundColor, 1); //fontScale
 
         //saveAsPng
         //nLon and nLat are in name, so .png extension works for all whichImage
@@ -5086,7 +5086,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 graphDataLayers,
                 g2D,
                 0, 0, imageWidth, imageHeight, 2, //graph width/height
-                1); //fontScale
+                SgtGraph.DefaultBackgroundColor, 1); //fontScale
 
             //saveAsPng
             //nLon and nLat are in name, so .png extension works for all whichImage
@@ -5235,7 +5235,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 graphDataLayers,
                 g2D,
                 0, 0, imageWidth, imageHeight, 2, //graph width/height
-                1); //fontScale 
+                SgtGraph.DefaultBackgroundColor, 1); //fontScale 
 
             //saveAsPng
             //nLon and nLat are in name, so .png extension works for all whichImage
@@ -5401,8 +5401,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "&maxLat=50&minLon=220&maxLon=250&minLat=20&fileType=GoogleEarth",
                 testDir + tName, true);
             SSR.displayInBrowser("file://" + testDir + tName);
-            String2.getStringFromSystemIn("Is GoogleEarth showing a coverage? \n" +
-                "Close it, then press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("Is GoogleEarth showing a coverage? \n" +
+                "Close it, then..."); 
         } catch (Exception e) {
             Test.knownProblem(
                 "THIS TEST REQUIRES cwexperimental CWBrowserWW360, so I usually skip it.",
@@ -5419,8 +5419,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "&minDepth=0&maxDepth=0&fileType=GoogleEarth",
                 testDir + tName, true);
             SSR.displayInBrowser("file://" + testDir + tName);
-            String2.getStringFromSystemIn("Is GoogleEarth showing stations? \n" +
-                "Close it, then press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("Is GoogleEarth showing stations? \n" +
+                "Close it, then..."); 
         } catch (Exception e) {
             Test.knownProblem(
                 "THIS TEST REQUIRES cwexperimental CWBrowserWW360, so I usually skip it.",

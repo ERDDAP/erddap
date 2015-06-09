@@ -1068,10 +1068,9 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag";
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t) +
-                 "Press ^C to stop or Enter to continue..."); 
+                MustBe.throwableToString(t)); 
         }
 
 
@@ -1168,10 +1167,9 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag, history";
             Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t) +
-                 "Press ^C to stop or Enter to continue..."); 
+                MustBe.throwableToString(t)); 
         }
 
 
@@ -2111,10 +2109,9 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "    Z=\"Good data\"\n";
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t) +
-                 "Press ^C to stop or Enter to continue..."); 
+                MustBe.throwableToString(t)); 
         }
     }
 
@@ -2256,10 +2253,9 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             Test.ensureEqual(results, expected, "results=" + results);
             File2.delete(fileName);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nUnexpected error (server timed out 2013-10-24):\n" +
-                MustBe.throwableToString(t) +
-                 "Press ^C to stop or Enter to continue..."); 
+                MustBe.throwableToString(t)); 
         }
 
         //test subset
@@ -2383,11 +2379,10 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
 //        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
 //        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected error." +
                 "\nOutOfMememoryError from TDS bug was expected." + 
-                "\n(server timed out 2013-10-24)\n" +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\n(server timed out 2013-10-24)"); 
         }
 
 
@@ -2407,10 +2402,9 @@ expected =
 "  file=C:/programs/tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
 "var=history has different dimensions than previous vars.";
             if (results.indexOf("java.net.ConnectException: Connection timed out: connect") >= 0)
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                     "\nurl=" + dArrayUrl +
-                    "\n(The server timed out 2013-10-24.)" +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                    "\n(The server timed out 2013-10-24.)"); 
             else Test.ensureEqual(results, expected, "results=" + results);
         }
 
@@ -2516,7 +2510,7 @@ expected =
 "  :composite = \"true\";\n" +
 "  :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
 "  :contributor_role = \"Source of level 2 data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"dave.foley@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -2554,7 +2548,6 @@ String expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
 "  :Northernmost_Northing = 75.0; // double\n" +
 "  :origin = \"Remote Sensing Systems, Inc.\";\n" +
@@ -2568,7 +2561,7 @@ String expected2 =
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
@@ -2729,7 +2722,7 @@ y_wind.y_wind[1][1][7][15]
 "  :composite = \"true\";\n" +
 "  :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
 "  :contributor_role = \"Source of level 2 data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"dave.foley@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -2767,7 +2760,6 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
 "  :Northernmost_Northing = 75.0; // double\n" +
 "  :origin = \"Remote Sensing Systems, Inc.\";\n" +
@@ -2781,7 +2773,7 @@ expected2 =
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +

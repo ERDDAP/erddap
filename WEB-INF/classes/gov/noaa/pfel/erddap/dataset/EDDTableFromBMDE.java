@@ -528,8 +528,8 @@ public class EDDTableFromBMDE extends EDDTable{
             bmde.getEmpiricalMinMax(null, startDate, stopDate, false, true);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected testAllVariables error: Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected testAllVariables error."); 
         }
     }
 
@@ -661,7 +661,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Northernmost_Northing 38.5;\n" +
 "    String sourceUrl \"http://digir.prbo.org/digir/DiGIR.php\";\n" +
 "    Float64 Southernmost_Northing 36.5;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"Shorebird observation data from the Southeast Farallon Island from the PRBO Conservation Service.\n" +
 "\n" +
 "DiGIR is an engine which takes XML requests for data and returns a data\n" +
@@ -765,14 +765,12 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //expected error didn't occur!
-        String2.getStringFromSystemIn("\n" + 
-            MustBe.getStackTrace() + 
-            "An expected error didn't occur at the above location.\n" + 
-            "Press ^C to stop or Enter to continue..."); 
+        String2.pressEnterToContinue("\n" + MustBe.getStackTrace() + 
+            "An expected error didn't occur at the above location."); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nprbo05Bmde STOPPED WORKING ~JAN 2009. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nprbo05Bmde STOPPED WORKING ~JAN 2009."); 
         }
     }
 

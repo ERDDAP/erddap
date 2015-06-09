@@ -45,6 +45,7 @@ import java.io.Writer;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
@@ -133,8 +134,9 @@ public class EDStatic {
      * <br>1.56 released on 2014-12-16
      * <br>1.58 released on 2015-02-25
      * <br>1.60 released on 2015-03-12
+     * <br>1.62 released on 2015-05-08
      */   
-    public static String erddapVersion = "1.60";  
+    public static String erddapVersion = "1.62";  
 
     /** 
      * This is almost always false.  
@@ -556,6 +558,14 @@ public static boolean developmentMode = false;
         clickERDDAP,
         clickInfo,
         clickToSubmit,
+        convertOceanicAtmosphericAcronyms,        
+        convertOceanicAtmosphericAcronymsIntro,
+        convertOceanicAtmosphericAcronymsNotes,
+        convertOceanicAtmosphericAcronymsService,
+        convertOceanicAtmosphericVariableNames,        
+        convertOceanicAtmosphericVariableNamesIntro,
+        convertOceanicAtmosphericVariableNamesNotes,
+        convertOceanicAtmosphericVariableNamesService,
         convertFipsCounty,        
         convertFipsCountyIntro,
         convertFipsCountyNotes,
@@ -1151,7 +1161,12 @@ public static boolean developmentMode = false;
     private static String        
         theShortDescriptionHtml, theLongDescriptionHtml; //see the xxx() methods
     public static String errorFromDataSource = String2.ERROR + " from data source: ";
-
+    
+    /** These are only created/used by GenerateDatasetsXml threads. 
+     *  See the related methods below that create them.
+     */
+    private static Table gdxAcronymsTable; 
+    private static HashMap<String,String> gdxAcronymsHashMap, gdxVariableNamesHashMap; 
 
     /** This static block reads this class's static String values from
      * contentDirectory, which must contain setup.xml and datasets.xml 
@@ -1260,6 +1275,8 @@ public static boolean developmentMode = false;
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
         unitTestDataDir = setup.getString("unitTestDataDir", "[specify <unitTestDataDir> in setup.xml]"); 
+        unitTestDataDir = File2.addSlash(unitTestDataDir);
+        Table.unitTestDataDir = unitTestDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = setup.getString("emailSmtpHost",  null);
@@ -1697,6 +1714,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         blacklistMsg               = messages.getNotNothingString("blacklistMsg",               "");
         PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          "");
         PrimitiveArray.ArrayAppendTables   = messages.getNotNothingString("ArrayAppendTables",  "");
+        PrimitiveArray.ArrayAtInsert       = messages.getNotNothingString("ArrayAtInsert",      "");
         PrimitiveArray.ArrayDiff           = messages.getNotNothingString("ArrayDiff",          "");
         PrimitiveArray.ArrayDifferentSize  = messages.getNotNothingString("ArrayDifferentSize", "");
         PrimitiveArray.ArrayDifferentValue = messages.getNotNothingString("ArrayDifferentValue","");
@@ -1723,6 +1741,14 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         clickERDDAP                = messages.getNotNothingString("clickERDDAP",                "");
         clickInfo                  = messages.getNotNothingString("clickInfo",                  "");
         clickToSubmit              = messages.getNotNothingString("clickToSubmit",              "");
+        convertOceanicAtmosphericAcronyms             = messages.getNotNothingString("convertOceanicAtmosphericAcronyms",             "");
+        convertOceanicAtmosphericAcronymsIntro        = messages.getNotNothingString("convertOceanicAtmosphericAcronymsIntro",        "");
+        convertOceanicAtmosphericAcronymsNotes        = messages.getNotNothingString("convertOceanicAtmosphericAcronymsNotes",        "");
+        convertOceanicAtmosphericAcronymsService      = messages.getNotNothingString("convertOceanicAtmosphericAcronymsService",      "");
+        convertOceanicAtmosphericVariableNames        = messages.getNotNothingString("convertOceanicAtmosphericVariableNames",        "");
+        convertOceanicAtmosphericVariableNamesIntro   = messages.getNotNothingString("convertOceanicAtmosphericVariableNamesIntro",   "");
+        convertOceanicAtmosphericVariableNamesNotes   = messages.getNotNothingString("convertOceanicAtmosphericVariableNamesNotes",   "");
+        convertOceanicAtmosphericVariableNamesService = messages.getNotNothingString("convertOceanicAtmosphericVariableNamesService", "");
         convertFipsCounty          = messages.getNotNothingString("convertFipsCounty",          "");
         convertFipsCountyIntro     = messages.getNotNothingString("convertFipsCountyIntro",     "");
         convertFipsCountyNotes     = messages.getNotNothingString("convertFipsCountyNotes",     "");
@@ -2150,6 +2176,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         protocolClick              = messages.getNotNothingString("protocolClick",              "");
         queryError                 = messages.getNotNothingString("queryError",                 "") + 
                                      " ";
+        Table.QUERY_ERROR = queryError;
         queryError180              = messages.getNotNothingString("queryError180",              "");
         queryError1Value           = messages.getNotNothingString("queryError1Value",           "");
         queryError1Var             = messages.getNotNothingString("queryError1Var",             "");
@@ -2350,6 +2377,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         advancedSearchDirections = String2.replaceAll(advancedSearchDirections, "&searchButton;", searchButton);
 
         //always non-https: url
+        convertOceanicAtmosphericAcronymsService      = MessageFormat.format(convertOceanicAtmosphericAcronymsService, erddapUrl) + "\n";
+        convertOceanicAtmosphericVariableNamesService = MessageFormat.format(convertOceanicAtmosphericVariableNamesService, erddapUrl) + "\n";
         convertFipsCountyService = MessageFormat.format(convertFipsCountyService, erddapUrl) + "\n";
         convertKeywordsService   = MessageFormat.format(convertKeywordsService,   erddapUrl) + "\n";
         convertTimeNotes         = MessageFormat.format(convertTimeNotes,         erddapUrl, convertTimeUnitsHelp) + "\n";
@@ -3600,6 +3629,149 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
     }
 
     /**
+     * This returns the Oceanic/Atmospheric Acronyms table: col 0=acronym 1=fullName.
+     * <br>Acronyms are case-sensitive, sometimes with common variants included.
+     * <br>The table is basically sorted by acronym, but with longer acronyms
+     *  (e.g., AMSRE) before shorter siblings (e.g., AMSR).
+     * <br>Many of these are from
+     * https://www.nodc.noaa.gov/General/mhdj_acronyms3.html
+     * and http://www.psmsl.org/train_and_info/training/manuals/acronyms.html
+     *
+     * @return the oceanic/atmospheric acronyms table
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static Table oceanicAtmosphericAcronymsTable() throws Exception {
+        Table table = new Table();
+        StringArray col1 = new StringArray();
+        StringArray col2 = new StringArray();
+        table.addColumn("acronym", col1);
+        table.addColumn("fullName", col2);
+        String lines[] = String2.readLinesFromFile(
+            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
+            "ISO-8859-1", 1);
+        int nLines = lines.length;
+        for (int i = 1; i < nLines; i++) { //1 because skip colNames
+            String s = lines[i].trim();
+            if (s.length() == 0 || s.startsWith("//"))
+                continue;
+            int po = s.indexOf('\t');
+            if (po < 0) 
+                po = s.length();
+            col1.add(s.substring(0, po).trim());
+            col2.add(s.substring(po + 1).trim());
+        }
+        return table;
+    }
+    
+    /**
+     * This returns the Oceanic/Atmospheric Variable Names table: col 0=variableName 1=fullName.
+     * <br>varNames are all lower-case.  long_names are mostly first letter of each word capitalized.
+     * <br>The table is basically sorted by varName.
+     * <br>Many of these are from
+     * http://www.esrl.noaa.gov/psd/data/gridded/conventions/variable_abbreviations.html
+     *
+     * @return the oceanic/atmospheric variable names table
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static Table oceanicAtmosphericVariableNamesTable() throws Exception {
+        Table table = new Table();
+        StringArray col1 = new StringArray();
+        StringArray col2 = new StringArray();
+        table.addColumn("variableName", col1);
+        table.addColumn("fullName", col2);
+        String lines[] = String2.readLinesFromFile(
+            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
+            "ISO-8859-1", 1);
+        int nLines = lines.length;
+        for (int i = 1; i < nLines; i++) {
+            String s = lines[i].trim();
+            if (s.length() == 0 || s.startsWith("//"))
+                continue;
+            int po = s.indexOf('\t');
+            if (po < 0) 
+                po = s.length();
+            col1.add(s.substring(0, po).trim());
+            col2.add(s.substring(po + 1).trim());
+        }
+        return table;
+    }
+
+    /**
+     * This returns the Oceanic/Atmospheric Acronyms table as a Table:
+     * col0=acronym, col1=fullName.
+     * THIS IS ONLY FOR GenerateDatasetsXml THREADS -- a few common acronyms are removed.
+     *
+     * @return the oceanic/atmospheric variable names table with some common acronyms removed
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static Table gdxAcronymsTable() throws Exception {
+        if (gdxAcronymsTable == null) {
+            Table table = oceanicAtmosphericAcronymsTable();
+            StringArray acronymSA  = (StringArray)(table.getColumn(0));
+            StringArray fullNameSA = (StringArray)(table.getColumn(1));
+
+            //remove some really common acronyms I don't want to expand
+            BitSet keep = new BitSet();
+            keep.set(0, acronymSA.size());
+            String common[] = {//"DOC", "DOD", "DOE", "USDOC", "USDOD", "USDOE", 
+                "NOAA", "NASA", "US"};
+            for (int c = 0; c < common.length; c++) {
+                int po = acronymSA.indexOf(common[c]); 
+                if (po >= 0) 
+                    keep.clear(po);
+            }
+            table.justKeep(keep);
+
+            gdxAcronymsTable = table; //swap into place
+        }
+        return gdxAcronymsTable;
+    }
+
+    /**
+     * This returns the Oceanic/Atmospheric Acronyms table as a HashMap:
+     * key=acronym, value=fullName.
+     * THIS IS ONLY FOR GenerateDatasetsXml THREADS -- a few common acronyms are removed.
+     *
+     * @return the oceanic/atmospheric variable names table as a HashMap
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static HashMap<String,String> gdxAcronymsHashMap() throws Exception {
+        if (gdxAcronymsHashMap == null) {
+            Table table = gdxAcronymsTable();
+            StringArray acronymSA  = (StringArray)(table.getColumn(0));
+            StringArray fullNameSA = (StringArray)(table.getColumn(1));
+            int n = table.nRows();
+            HashMap<String,String> hm = new HashMap();
+            for (int i = 1; i < n; i++)
+                hm.put(acronymSA.get(i), fullNameSA.get(i));
+            gdxAcronymsHashMap = hm; //swap into place
+        }
+        return gdxAcronymsHashMap;
+    }
+
+    /**
+     * This returns the Oceanic/Atmospheric Variable Names table as a HashMap:
+     * key=variableName, value=fullName.
+     * THIS IS ONLY FOR GenerateDatasetsXml THREADS.
+     *
+     * @return the oceanic/atmospheric variable names table as a HashMap
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static HashMap<String,String> gdxVariableNamesHashMap() throws Exception {
+        if (gdxVariableNamesHashMap == null) {
+            Table table = oceanicAtmosphericVariableNamesTable();
+            StringArray varNameSA  = (StringArray)(table.getColumn(0));
+            StringArray fullNameSA = (StringArray)(table.getColumn(1));
+            int n = table.nRows();
+            HashMap<String,String> hm = new HashMap();
+            for (int i = 1; i < n; i++)
+                hm.put(varNameSA.get(i), fullNameSA.get(i));
+            gdxVariableNamesHashMap = hm; //swap into place
+        }
+        return gdxVariableNamesHashMap;
+    }
+
+    /**
      * This returns the FIPS county table: col 0=FIPS (5-digit-FIPS), 1=Name (ST, County Name).
      * <br>States are included (their last 3 digits are 000).
      * <br>The table is sorted (case insensitive) by the county column.
@@ -3885,7 +4057,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
     public static String passThroughJsonpQuery(HttpServletRequest request) {
         String jsonp = "";
         try {
-            String parts[] = EDD.getUserQueryParts(request.getQueryString()); //decoded.  Does some validity checking.
+            String parts[] = Table.getDapQueryParts(request.getQueryString()); //decoded.  Does some validity checking.
             jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
             if (jsonp == null)
                 return "";

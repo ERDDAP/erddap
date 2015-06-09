@@ -100,9 +100,13 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         //see mime type list at http://www.webmaster-toolkit.com/mime-types.shtml
         // or http://html.megalink.com/programmer/pltut/plMimeTypes.html
         // or http://www.freeformatter.com/mime-types-list.html#mime-types-list
+        String extensionLC = extension.toLowerCase();
+        boolean genericCompressed = false;  //true for generic compressed files, e.g., .zip
+        boolean otherCompressed = false;    //true for app specific compressed (but not audio/ image/ video)
 
         if (extension.equals(".7z")) {
             response.setContentType("application/x-7z-compressed"); 
+            genericCompressed = true;
 
         } else if (extension.equals(".ai")) {
             response.setContentType("application/postscript"); 
@@ -125,9 +129,11 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".bz")) {
             response.setContentType("application/x-bzip"); 
+            genericCompressed = true;
 
         } else if (extension.equals(".bz2")) {
             response.setContentType("application/x-bzip2"); 
+            genericCompressed = true;
 
         } else if (extension.equals(".chm")) {
             response.setContentType("application/vnd.ms-htmlhelp"); 
@@ -154,6 +160,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".docx")) {
             response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"); 
+            otherCompressed = true;
 
         } else if (extension.equals(".dods")) {
             //see dods.servlet.DODSServlet.doGetDODS for example
@@ -174,12 +181,15 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".gtar")) {
             response.setContentType("application/x-gtar");                                 
+            genericCompressed = true;
 
         } else if (extension.equals(".gz")) {
             response.setContentType("application/x-gzip");                                 
+            genericCompressed = true;
 
         } else if (extension.equals(".gzip")) {
             response.setContentType("application/x-gzip");                                 
+            genericCompressed = true;
 
         } else if (extension.equals(".h261")) {
             response.setContentType("video/h261");                                 
@@ -201,6 +211,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".jar")) { 
             response.setContentType("application/java-archive");  
+            otherCompressed = true;
 
         } else if (extension.equals(".jpg") ||
                    extension.equals(".jpeg")) {
@@ -228,18 +239,26 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".kmz")) {
             response.setContentType("application/vnd.google-earth.kmz"); 
+            otherCompressed = true;
 
         } else if (extension.equals(".latex")) {
             response.setContentType("application/x-latex"); 
 
         } else if (extension.equals(".lha")) {
             response.setContentType("application/lha"); 
+            genericCompressed = true;
 
         } else if (extension.equals(".lzh")) {
             response.setContentType("application/x-lzh"); 
+            genericCompressed = true;
+
+        } else if (extension.equals(".lzma")) {
+            response.setContentType("application/x-lzma"); 
+            genericCompressed = true;
 
         } else if (extension.equals(".lzx")) {
             response.setContentType("application/x-lzx"); 
+            genericCompressed = true;
 
         } else if (extension.equals(".log")) {
             response.setContentType("text/plain"); 
@@ -319,6 +338,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".ogx")) {
             response.setContentType("application/ogg"); 
+            otherCompressed = true;
 
         } else if (extension.equals(".onetoc")) {
             response.setContentType("application/onenote"); 
@@ -419,12 +439,14 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".rar")) {
             response.setContentType("application/x-rar-compressed"); 
+            otherCompressed = true;
 
         } else if (extension.equals(".rgb")) {
             response.setContentType("image/x-rgb"); 
 
         } else if (extension.equals(".rm")) {
             response.setContentType("application/vnd.rn-realmedia"); 
+            otherCompressed = true;
 
         } else if (extension.equals(".rq")) {
             response.setContentType("application/sparql-query"); 
@@ -497,6 +519,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         } else if (extension.equals(".tar")) {
             response.setContentType("application/x-tar"); 
+            genericCompressed = true;
          
         } else if (extension.equals(".tcl")) {
             response.setContentType("application/x-tcl"); 
@@ -545,6 +568,10 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         } else if (extension.equals(".vxml")) {
             response.setContentType("application/voicexml+xml"); 
          
+        } else if (extension.equals(".war")) {
+            response.setContentType("application/zip.war"); 
+            genericCompressed = true;
+            
         } else if (extension.equals(".wav")) {
             response.setContentType("audio/x-wav"); 
          
@@ -646,10 +673,15 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         } else if (extension.equals(".xwd")) {
             response.setContentType("image/x-xwindowdump"); 
          
+        } else if (extensionLC.equals(".z")) { 
+            response.setContentType("application/x-compress");  
+            genericCompressed = true;
+
         } else if (extension.equals(".zip")) { 
             response.setContentType("application/zip");  
+            genericCompressed = true;
 
-        } else { //.mat, .war
+        } else { //.mat
             response.setContentType("application/x-download");  //or "application/octet" ?
             //how specify file name in popup window that user is shown? see below
             //see http://forum.java.sun.com/thread.jspa?threadID=696263&messageID=4043287
@@ -669,8 +701,9 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 //        }
 
         //specify the file's name  (this may force show File Save As dialog box in user's browser)
-        if (extension.equals(".csv")  || 
-            extension.equals(".jar")  || 
+        
+        if (genericCompressed ||         //include all genericCompressed types
+            extension.equals(".csv")  || 
             extension.equals(".js")   || 
              fileType.equals(".json") || //not .jsonText
             extension.equals(".kml")  || 
@@ -680,9 +713,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             extension.equals(".pdf")  ||
             extension.equals(".tif")  ||
             extension.equals(".tsv")  ||
-            extension.equals(".war")  ||
-            extension.equals(".xml")  ||
-            extension.equals(".zip")) {
+            extension.equals(".xml")) {
             response.setHeader("Content-Disposition","attachment;filename=" + 
                 fileName + extension);
         }
@@ -704,28 +735,18 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             tContentType = "";
         //???does out need to be in BufferedOutputStream; or just buffered if not compressed???
         String usingEncoding = "";
-        if (//compressed files
-            extension.equals(".7z") || 
-            extension.equals(".bz2") || 
-            extension.equals(".gz") || 
-            extension.equals(".jar") ||
-            extension.equals(".lha") || extension.equals(".lzma") || 
-            extension.equals(".lzh") || extension.equals(".lzx") || 
-            extension.equals(".rar") ||
-            extension.equals(".tar") ||
-            extension.equals(".tbz2") || 
-            extension.equals(".tgz") ||
-            extension.equals(".war") || 
-            extension.equals(".Z") ||
-            extension.equals(".zip") ||
+
+        if (genericCompressed || //include all genericCompressed types
+            otherCompressed ||   //include all otherCompressed types
             //already compressed audio, image, video files
             tContentType.indexOf("audio/") >= 0 ||
             tContentType.indexOf("image/") >= 0 ||
             tContentType.indexOf("video/") >= 0) {
+
             //no compression  (since already compressed)
             //DODSServlet says:
             // This should probably be set to "plain" but this works, the
-            // C++ slients don't barf as they would if I sent "plain" AND
+            // C++ clients don't barf as they would if I sent "plain" AND
             // the C++ don't expect compressed data if I do this...
             response.setHeader("Content-Encoding", "");
             outputStream = response.getOutputStream(); //after all setHeader

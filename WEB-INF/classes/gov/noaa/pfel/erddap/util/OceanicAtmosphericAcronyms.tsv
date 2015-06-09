@@ -1,0 +1,574 @@
+acronym	fullName
+//THESE MUST BE QUITE RELIABLY UNAMBIGUOUS!   (98% confidence?)
+//Lines starting with // are ignored
+//Sources: https://www.nodc.noaa.gov/General/mhdj_acronyms3.html
+// and http://www.psmsl.org/train_and_info/training/manuals/acronyms.html
+AATSR	Advanced Along Track Scanning Radiometer
+ABOM	Australia Bureau of Meteorology
+ACCLAIM	Antarctic Circumpolar Currents Levels by Altimetry and Island Measurement
+ADCP	Acoustic Doppler Current Profiler
+ADCIRC	ADvanced CIRCulation
+adcirc	ADvanced CIRCulation
+AIMS	Australian Institute of Marine Science
+ALACE	Autonomous Lagrangian Circulation Explorer
+AMIP	Atmosphere Model Intercomparison Project
+AMSR-2	Advanced Microwave Scanning Radiometer on JAXA's GCOM-W1
+AMSRE	Advanced Microwave Scanning Radiometer on EOS
+AMSR-E	Advanced Microwave Scanning Radiometer on EOS
+AMSR	Advanced Microwave Scanning Radiometer
+ANDAS	Automated Near-real-time Data Acquiring System
+AOD	Aerosol Optical Depth
+AODC	Australian Oceanographic Data Center
+AOML	Atlantic Oceanographic & Meteorological Laboratory
+AOOS	Alaska Ocean Observing System
+AOU	Apparent Oxygen Utilization
+APDRC	Asia-Pacific Data-Research Center
+ARGO	Array for Real-time Geostrophic Oceanography
+AR3	Third Assessment Report
+AR4	Fourth Assessment Report
+AR5	Fifth Assessment Report
+AR6	Sixth Assessment Report
+ARL	Air Resources Laboratory
+ARRM	Asynchronous Regional Regression Model
+ARSLOE	Atlantic Remote Sensing Land/Ocean Experiment
+ARW	Advanced Research Weather Research and Forecasting Model
+ASCAT	Advanced SCATterometer
+ASMD	Atlas of Surface Marine Data
+ATDB	Accession Tracking Data Base
+ATES	Alcatel Espace Systems
+AVHRR	Advanced Very High Resolution Radiometer
+AVISO	Archiving, Validation and Interpretation of Satellite Data in Oceanography
+AVNIR	Advanced Visible & Near-Infrared Radiometer
+AWIPS	Automated Weather Interactive Processing System
+AXBT	Airborne eXpendable BathyThermograph
+BCO-DMO	Biological and Chemical Oceanography Data Management Office
+BIRS	Biological Information Retrieval System
+BODC	British Oceanographic Data Centre
+BOEM	Bureau of Ocean Energy Management
+BoM	Bureau of Meteorology
+BOM	Bureau of Meteorology
+CalCOFI	California Cooperative Oceanic Fisheries Investigations
+CAMMP	Coastal and Marine Management Program
+CAMS	Climate Anomaly Monitoring System
+CaRA	Caribbean Regional Association
+CariCOOS	Caribbean Coastal Ocean Observing System
+CARDEEP	CARbon dioxide and DEEPwater formation
+CARDS	Comprehensive Aerological Reference Data Set
+CBMP	Chesapeake Bay Monitoring Program
+CCMA	Center for Coastal Monitoring and Assessment
+CCRS	Canadian Center for Remote Sensing
+CCSP	Climate Change Science Program
+CDAS	Climate Data Assimilation System
+CDOM	Colored Dissolved Organic Matter
+CDRI	Climate Data Research Institute
+CEMES	Centre d'Etudes de la Meteorologie Spatiale
+CeNCOOS	Central and Northern California Ocean Observing System
+CEONet	Canadian Earth Observation Network
+CERSAT	Centre ERS d'Archivage et de Traitment
+CF	Climate and Forecast
+CFC	ChloroFlouroCarbon
+CGDI	Canadian Geospatial Data Infrastructure
+CHLA	Chlorophyll-a
+CIGAR	Cooperative Investigations of the Caribbean & Adjacent Regions
+CIMT	Center for Integrated Marine Technology
+CINECA	Cooperative Investigations of the Northern part of the Eastern Central Atlantic
+CIOSS	Cooperative Institute for Oceanographic Satellite Studies
+CIRA	Cooperative Institute for Research the Atmosphere
+CIRES	Cooperative Institute for Research in Environmental Sciences
+CLASS	Comprehensive Large Array-data Stewardship System
+CLIMAP	Climate: Long-range Investigation Mapping and Prediction
+CLIVAR	Climate Variability and Predictability programme
+CLS	Collecte Localisation Satellites
+C-MAN	Coastal Marine Automated Networks
+CMAN	Coastal Marine Automated Networks
+CMC	Canadian Meteorological Centre
+CMD	Continuously Managed Database
+CMIP	Climate Model Intercomparison Project
+CMIP4	Climate Model Intercomparison Project 4
+CMIP5	Climate Model Intercomparison Project 5
+CMIP6	Climate Model Intercomparison Project 6
+CMOR	Climate Model Output Rewriter
+CNES	Centre National d'Etudes Spatiales
+CNMI	Commonwealth of the Northen Mariana Islands
+CNR	National Research Council
+COADS	Comprehensive Ocean Atmosphere Data Set
+COADS1	Comprehensive Ocean Atmosphere Data Set 1
+COAP	Center for Ocean Analysis and Prediction
+COAPS	Center for Ocean-Atmospheric Prediction Studies
+COAS	College of Oceanic and Atmospheric Sciences
+COAWST	Coupled Ocean-Atmosphere-Wave-Sediment Transport
+//COBE	sst from jp via esrl psd
+COCMP	Coastal Ocean Currents Monitoring Program
+CODAR	Coastal Ocean Dynamics Applications Radar
+CODAS	Common Oceanographic Data Analysis System
+COGOW	Climatology of Global Ocean Winds
+CONUS	Contiguous United States
+CPC	Climate Prediction Center
+CPR	Continuous Plankton Recorder
+CRM	Coastal Relief Model
+CRMN	Coral Reef Monitoring Network
+CRU	Climatic Research Unit
+CRW	Coral Reef Watch
+CTD	Conductivity, Temperature, Depth
+CWCGOM	CoastWatch Caribbean and Gulf of Mexico
+CW	CoastWatch
+DATARING	Data Acquisition for Tidal Applications for the Remote Interrogation of Network Gauges
+DCDB	Data Center for Digital Bathymetry
+DOC	Department of Commerce
+DOD	Department of Defense
+DOE	Department of Energy
+DFO	Department of Fisheries and Oceans
+DMI	Danish Meteorological Institute
+DMSP	Defense Meteorological Satellite Program
+DWD	Deutscher Wetterdienst
+DORIS	Doppler Orbitography and Radiopositioning Integrated by Satellite
+ECDA	Ensemble Coupled Data Assimilation
+ECDC	European Centre for Disease Prevention and Control
+//ECFWF	 typo: ECMWF?
+ECMWF	European Centre for Medium-Range Weather Forecasts
+ECOMSED	Estuarine and Coastal Ocean Model with Sediment Transport
+EGMEX	Eastern Gulf of Mexico
+ENSO	El Nino - Southern Oscillation
+ENVISAT	ENVironmental SATellite
+ERS	European Remote Sensing Satellite
+ESDIM	Environmental Science Data and Information Management
+ESPRESSO	Experimental System for Predicting Shelf and Slope Optics
+ESPreSSO	Experimental System for Predicting Shelf and Slope Optics
+Espresso	Experimental System for Predicting Shelf and Slope Optics
+ESRL	Earth System Research Laboratory
+EU	European Union
+EUMETSAT	European Organisation for the Exploitation of Meteorological Satellites
+EUREF	European REference Frame
+FAGS	Federation of Astronomical and Geophysical Data Analysis Services
+FLH	Fluorescence Line Height
+FCCC	Framework Convention on Climate Change
+FMRC	Forecast Model Run Collection
+FNMOC	Fleet Numerical Meteorology and Oceanography Center
+FOCI	Fisheries-Oceanography Cooperative Investigations
+FSM	Free Surface Mask
+FWS	Fish & Wildlife Service
+GAC	Global Area Coverage
+GADR	Global Argo Data Repository
+GAMSSA	Global Australian Multi-Sensor SST Analysis
+GCOS	Global Climate Observing System
+GCOOS	Gulf of Mexico Coastal Observing System
+GDAC	Regional Data Assembly Centres
+GEOS	Geodetic Satellite
+GEOSAT	GEodetic and Oceanographic SATellite
+GES DAAC	Goddard Earth Sciences Distributed Active Archive Center
+GEWEX	Global Energy and Water Cycle Experiment
+GFDL	Geophysical Fluid Dynamics Laboratory
+GFO	Geosat Follow-On
+GHCN	Global Historical Climatology Network
+GHRSST	Global High-Resolution Sea Surface Temperature
+GISS	Goddard Institute for Space Studies
+GLCFS	Great Lakes Coastal Forecasting System
+GLERL	Great Lakes Environmental Research Laboratory
+GLOBEC	GLOBal Ocean ECosystems Dynamics
+GLOSS-ALT	Global Sea Level Observing System subset used for ALTimetry calibrations
+GLOSS-LTT	Global Sea Level Observing System subset used for Long Term Trends studies
+GLOSS-OC	Global Sea Level Observing System subset used for ongoing Ocean Circulation monitoring
+//GLOSS after other GLOSS-...
+GLOSS	Global Sea Level Observing System
+GLOS	Great Lakes Observing System
+GMS	Geostationary Meteorology Satellite
+GOCE	Gravity field and steady-state Ocean Circulation Explorer
+GODAE	Global Ocean Data Assimilation Experiment
+GODAR	Global Oceanographic Data Archaeology and Rescue
+GODAS	Global Ocean Data Assimilation System
+GOES	Geostationary Operational Environmental Satellite
+GOFS	Global Ocean Flux Study
+GoMOOS	Gulf of Maine Ocean Observing System
+//GOM sometimes Gulf of Maine!
+GOM	Gulf of Mexico
+GOOS	Global Ocean Observing System
+GOSAMOR	Global Ocean SAlinity MonitORing
+GOTS	Global Ocean Temperature & Salinity
+GPCC	Global Precipitation Climatology Centre
+GPCP	Global Precipitation Climatology Project
+GPI	GOES Precipitation Index
+GPS	Global Positioning System
+GRCTellus	Gravity Recovery and Climate Experiment Tellus
+GRACE	Gravity Recovery and Climate Experiment
+GSFC	Goddard Space Flight Center
+GSHHS	Global Self-consistent, Hierarchical, High-resolution Shorelines
+GTOS	Global Terrestrial Observing System
+GTS	Global Telecommunications System
+GTSPP	Global Temperature-Salinity Profile Program
+HAB	Harmful Algal Bloom
+HadISST	Hadley Centre Sea Ice and Sea Surface Temperature
+HadISST1	Hadley Centre Sea Ice and Sea Surface Temperature 1
+HadISST1.1	Hadley Centre Sea Ice and Sea Surface Temperature 1.1
+//guess for future
+HadISST1.2	Hadley Centre Sea Ice and Sea Surface Temperature 1.2
+HFRadar	High Frequency Radar
+HFR	High Frequency Radar
+//HF after HFRadar and HFR
+HF	High Frequency
+HIRAM	HIgh Resolution Atmospheric Model
+HOTO	Health Of The Oceans
+HOTS	Hawaiian Ocean Time Series
+HRPT	High Resolution Picture Transmission
+HSSTD	Historical Sea Surface Temperature Data project
+HURL	Hawai'i Undersea Research Laboratory
+HYCOM	HYbrid Coordinate Ocean Model
+IASNFS	Intra-Americas Sea Nowcast/Forecast System
+IATTC	Inter-American Tropical Tuna Commission
+ICOADS	International Comprehensive Ocean Atmosphere Data Set
+ICRAN	International Coral Reef Action Network
+IFREMER	Institut Francais de Recherche pour l'Exploitation de la Mer
+IGOS	Integrated Global Observing Strategy
+IGOSS	Integrated Global Ocean Services System
+IHB	International Hydrographic Bureau
+IHO	International Hydrographic Organisation
+ILP	International Lithosphere Programme
+IMI	Irish Marine Institute
+INMARSAT	International Maritime Satellite Organisation
+INODC	Indian National Oceanographic Data Center
+INQUA	International Union for Quaternary Research
+INSAT	Indian National Satellite
+IOC	Intergovernmental Oceanographic Commission
+IODE	International Oceanographic Data Exchange
+IOCCG	International Ocean Colour Coordinating Group
+IOOS	Integrated Ocean Observing System
+IPCC	Intergovernmental Panel on Climate Change
+IPRC	International Pacific Research Center
+IR	InfraRed
+ISOS	International Southern Ocean Studies
+ITCZ	InterTropical Convergence Zone
+ITF	Indonesian Through Flow
+IWP	Ice Water Path
+JASL	Joint Archive for Sea Level
+JAXA	Japan Aerospace Exploration Agency
+JCDAS	JMA Climate Data Assimilation System
+JCLI	Journal of Climate
+JCOMM	Joint WMO/IOC technical Commission for Oceanography and Marine Meteorology
+JGOFS	Joint Global Ocean Flux Study
+JGR	Journal of Geophysical Research
+JISAO	Joint Institue for the Study of Atmoshere and Ocean
+JMA	Japanese Meteorological Agency
+JPL	Jet Propulsion Laboratory
+JPO	Journal of Physical Oceanography
+JRA	Japanese Reanalysis
+KFM	Kelp Forest Monitoring
+LAC	Local Area Coverage
+LTM	Long Term Mean
+LWP	Liquid Water Path
+MAO	Marine and Aviation Operations
+MARACOOS	Mid-Atlantic Regional Association Coastal Ocean Observing System
+MCI	Maximum Chlorophyll Index
+MEaSUREs	Making Earth System Data Records for Use in Research Environments
+//MED	Mediterranean?
+MEDAR	Mediterranean Data Archeology and Rescue
+MEDS	Marine Environmental Data Service
+//MEDSPIRATION
+MERSEA	Marine EnviRonment and Security for the European Area
+METEOSAT	Geostationary Meteorological Satellite
+METOFFICE	Meteorological Office
+//METOP	a polar orbiting meteorological satellite
+//METOPA
+MHI	Main Hawaiian Islands
+MMRP	Marine Mammal Research Program
+MOBS	Marine Optical Buoy System
+MOBY	MArine Optical BouY
+MOCE	Marine Optical Characterization Experiment
+MOCNESS	Multiple Opening/Closing Net & Environmental Sensing System
+MODAS	Modular Ocean Data Assimilation System
+MODB	Mediterranean Oceanic Data Base
+MODISA	Moderate Resolution Imaging Spectroradiometer on Aqua
+MODIS	Moderate Resolution Imaging Spectroradiometer
+MOHSST	Meteorological Office Historical Sea Surface Temperature
+MOODS	Master Oceanographic Observations Data Set
+MOP	Meteosat Operational Programme
+MOPITT	Measurements of Pollution in the Troposphere
+MPA	Marine Protected Area
+MPSOC	Multi-Purpose Stellite Operations Center
+MSAS	Marine Spill Analysis System
+MSFC	Marshall Space Flight Center
+MSFCMA	Magnuson-Stevens Fishery Conservation and Management Act
+MSG	Meteosat Second Generation
+MSL	Mean Sea Level
+MSR	Microwave Scanning Radiometer
+MSS	MultiSpectral Scanner
+MSU	Microwave Sounding Unit
+MTPE	Mission to Planet Earth
+//MTS	Microwave Temperature Sounder, Marine Temperature Sounder , ...
+MUR	Multi-scale Ultra-high Resolution
+NAAPS	Navy Aerosol Analysis and Prediction System
+NABE	North Atlantic Bloom Experiment
+NAMDI	National Marine Data Inventory
+NANOOS	Northwest Association of Networked Ocean Observing Systems
+NAM	North Americal Model
+NAO	North Atlantic Oscillation
+//NAR	NOAA AVHRR
+NASA	National Aeronautics and Space Administratio
+NAVGEM	Navy Global Environmental Model
+NAVOCEANO	Naval Oceanographic Office
+NAVO	Naval Oceanography
+NCEP	National Centers for Environmental Prediction
+NCAR	National Center for Atmospheric Research
+NCCCS	Northern California Coastal Circulation Study
+NCCOS	National Centers for Coastal Ocean Science
+NCDC	National Climatic Data Center
+NCDDC	National Coastal Data Development Center
+NCDS	NASA Climate Data System
+NCEP	National Centers for Environmental Prediction
+NCODA	Navy Coupled Ocean Data Assimilation
+NCOM	Navy Coastal Ocean Model
+NCRI	National Coral Reef Institute
+NDBC	National Data Buoy Center
+NDBO	National Data Buoy Office
+NDMC	National Drought Mitigation Center
+NDSI	Normalized Difference Snow Index
+NDVI	Normalized Difference Vegetation Index
+NECC	North Equatorial CounterCurrent
+NEFS	Northeast Fisheries Science Center
+NEGOA	NorthEast Gulf of Alaska
+NEP	North East Pacific
+NERACOOS	Northeastern Regional Association Ocean Observing Systems
+NERC	Natural Environment Research Council
+NERRS	National Estuarine Reserve Research System
+NESDIS	National Environmental Satellite, Data, and Information Service
+NetCDF	Network Common Data Format
+NEXRAD	NEXt Generation Weather RADar
+NGDC	National Geophysical Data Center
+NGWLMS	Next Generation Water Level Measurement System
+NHC	National Hurricane Center
+NIST	National Institute of Standards and Technology
+NJSOS	New Jersey Shelf Observing System
+NMAO	NOAA Marine and Aviation Operations
+NMC	National Meteorological Center
+NMFS	National Marine Fisheries Service
+NMS	National Marine Sanctuaries
+NOAA	National Oceanic and Atmospheric Administration
+NODC	National Oceanographic Data Center
+NOGAPS	Navy Operational Global Atmospheric Prediction System
+NOMAD	Navy Oceanographic Meteorological Automatic Device
+NOP	National Oceanic Program
+NOPP	National Ocean Partnership Program
+NOS	National Ocean Service
+NPOESS	National Polar-orbiting Operational Environmental Satellite System
+NPOES	National Polar-orbiting Operational Environmental Satellite
+NPP	National Polar-orbiting Partnership
+NPS	Naval Postgraduate School
+NRL	Naval Research Laboratory
+NROSS	Navy Remote Oceanographic Sensing System
+NRT	Near Real Time
+NSDI	National Spatial Data Infrastructure
+NSF	National Science Foundation
+NTF	National Tidal Facility
+NSIDC	National Snow and Ice Data Center
+NSP	Neurotoxic Shellfish Poisoning
+NSSDAC	NOAA Shipboard Sensor Data Acquisition
+NSSDC	National Space Science Data Center
+NSSL	National Severe Storms Laboratory
+NSTS	Nearshore Sediment Transport Study
+NTON	National Tide Observation Network
+NTU	Nephelometric Turbidity Units
+//NWP	Nearshore Wave Prediction,  Numerical Weather Prediction
+NWS	National Weather Service
+NVI	Normalized Vegetation Index
+NVODS	National Virtual Ocean Data System
+NWFSC	Northwest Fisheries Science Center
+NYHOPS	New York Harbor Observing and Prediction System
+OAR	Office of Oceanic and Atmospheric Research
+OBIS	Ocean Biogeographic Information System
+OBPG	Ocean Biology Processing Group
+Obs4MIPs	Observations for Model Intercomparisons
+obs4MIPs	Observations for Model Intercomparisons
+OCDD	Ocean Current Drifter Data
+OCL	Ocean Climate Laboratory
+OCMP	Ocean-Coastal Management Program
+OCRM	Office of Ocean and Coastal Resource Management
+OCTS	Ocean Color and Temperature Scanner
+ODP	Ocean Drilling Program
+ODV	Ocean Data View
+//ODYSSEA	a GHRSST dataset from Ifremer/CERSAT
+OGCM	Oceanic General Circulation Model
+OIA	Office of International Affairs
+OISST	Optimum Interpolation Sea Surface Temperature
+OI	Optimum Interpolation
+OLR	Outgoing Longwave Radiation
+ONR	Office of Naval Research
+OOPC	Ocean Observation Panel for Climate
+OOSDP	Ocean Observing System Development Panel
+//OPBG	[sic] for OBPG?
+OPDB	Oceanographic Profile DataBase
+ORNL	Oak Ridge National Laboratory
+OSDPD	Office of Satellite Data Processing and Distribution
+OSI SAF	Ocean and Sea Ice Satellite Application Facility
+OSISAF	Ocean and Sea Ice Satellite Application Facility
+OSI	Ocean and Sea Ice
+OSMC	Observing System Monitoring Center
+OSO	Office of Satellite Operations
+OSPO	Office of Satellite and Product Operations
+OSTI	Office of Science and Technology Infrastructure
+OSTIA	Operational Sea Surface Temperature and Sea Ice Analysis
+OSU	Oregon State University
+//OUROCEAN
+OWG	Open Working Group
+PACHAB	Pacific Region Harmful Algal Blooom
+PacIOOS	Pacific Islands Ocean Observing System
+//PAR: A=Available or Active
+PAR	Photosynthetically Available Radiation
+PCMDI	Program for Climate Model Diagnosis and Intercomparison
+PDO	Pacific Decadal Oscillation
+PDSI	Palmer Drought Severity Index
+PEQUOD	Pacific Equatorial Ocean Dynamics
+PFEG	Pacific Fisheries Environmental Group
+PFEL	Pacific Fisheries Environmental Laboratory
+PHOD	Physical Oceanography Division
+PhOD	Physical Oceanography Division
+PIRATA	Pilot Research Moored Array in the Tropical Atlantic
+PMEL	Pacific Marine Environmental Laboratory
+PODAAC	Physical Oceanography Distributed Active Archive Center
+PODG	Physical Ocean Data Group
+POES	Polar Orbiting Environmental Satellite
+POL	Proudman Oceanographic Laboratory
+POM	Princeton Ocean Model
+POMSS	Polar Orbiting Meteorological Satellite System
+POO	Platforms of Opportunity
+PORTS	Physical Oceanographic Real-Time Systems
+//PSB
+PSD	Physical Sciences Division
+PSS	Practical Salinity Scale
+PSMSL	Permanent Service for Mean Sea Level
+PSU	Practical Salinity Unit
+PTWC	Pacific Tsunami Warning Centre
+QA	Quality Assurance
+QC	Quality Control
+RAMA	Research Moored Array for African-Asian-Australian Monsoon Analysis and Prediction
+RAMSSA	Regional Australian Multi-Sensor SST Analysis
+RDAC	Regional Data Assembly Centres
+REMSS	Remote Sensing Systems
+RF	Radio Frequency
+ROMS	Regional Ocean Modeling System
+Roms	Regional Ocean Modeling System
+ROV	Remotely Operated Vessel
+RQDS	Research Quality Data Set
+RSL	Relative Sea Level
+RSMAS	Rosenstiel School of Marine & Atmospheric Science
+RTOFS	Real-Time Ocean Forecast System
+SAFT	Synthetic Aperture Focusing Technique
+//SAF	Synthetic Aperture Focusing or Satellite Application Facility
+SAIC	Science Applications International Corporation
+SAL	Satellite Altimetry Laboratory
+SAR	Synthetic Aperture Radar
+SCAR	Scientific Committee on Antarctic Research
+scPDSI	Self-calibrated Palmer Drought Severity Index
+SCS	South China Sea
+SCUD	Surface CUrrents from a Diagnostic model
+SCCOOS	Southern California Coastal Ocean Observing System
+SCOR	Scientific Committee on Oceanic Research
+SEAMAP	Southeast Area Monitoring & Assessment Program
+SeaWiFS	Sea-Wide Field-of-View Sensor
+SECOORA	Southeast Coastal Ocean Observing Regional Association
+SEFSC	Southeast Fisheries Science Center
+SEVIRI	Spinning Enhanced Visible and Infrared Imager
+SFERPM	South Florida Ecosystem Restoration, Prediction, and Modeling Program
+SFSU	San Francisco State University
+SIO	Scripps Institution of Oceanography
+SLAR	Side-Looking Airborne Radar
+SLOSH	Sea, Lake & Overland Surge from Hurricanes
+SLP	Sea Level Pressure
+SLR	Satellite Laser Ranging
+SMI	Standard Mapped Image
+SODA	Simple Ocean Data Assimilation
+SOEST	School of Ocean and Earth Science and Technology
+SOFAR	Sound Fixing and Ranging
+SOLO	Sounding Oceanographic Lagrangian Observer
+SOSLC	Southern Ocean Sea Level Centre
+SPCZ	South Pacific Convergence Zone
+SPURS	Salinity Processes in the Upper Ocean Regional Study
+SSES	Single Sensor Error Statistics
+SSFC	Severe Storms Forecast Center
+SSH	Sea Surface Height
+SSP	Sub-Surface Pressure
+SST	Sea Surface Temperature
+SSTA	Sea Surface Temperature Anomaly
+SSTOP	Sea Surface Topography
+STD	Salinity-Temperature-Depth profiler
+STWS	Storm Tide Warning Service
+SWAN	Simulating WAves Nearshore model
+SWFSC	Southwest Fisheries Science Center
+SWH	Significant Wave Height
+TAO	Tropical Atmosphere/Ocean
+//TCLM
+TGBM	Tide Gauge Bench Mark
+TIROS	Television Infrared Observation Satellite
+TMI	TRMM Microwave Imager
+TOGA	Tropical Ocean Global Atmosphere
+TOPEX	Topography Experiment
+TOVS	TIROS Operational Vertical Sounder
+//TPFO now called JASON
+TPFO	TOPEX/POSEIDON Follow-On
+TRMM	Tropical Rainfall Measuring Mission
+TUD	Technische Universiteit Delft
+UAF	Unified Access Framework
+UCAR	University Corporation for Atmospheric Research
+UCONN	University of Connecticut
+UCSD	University of California, San Deigo
+UH	University of Hawaii
+UHF	Ultra High Frequency
+UHSLC	University of Hawaii Sea Level Center
+UKMO	United Kingdom Meteorology Office
+UNCED	United Nations Conference on Environment and Development
+UNDP	United Nations Development Programme
+UNEP	United Nations Environment Programme
+UNESCO	United Nations Educational, Scientific and Cultural Organisation
+UNOLS	University-National Oceanographic Laboratory System
+US	United States
+USCRN	United States Climate Reference Network
+USDOC	United States Department of Commerce
+USDOD	United States Department of Defense
+USDOE	United States Department of Energy
+USF	University of South Florida
+USFWS	United States Fish & Wildlife Service
+USGS	United States Geological Survey
+USHCN	United States Historical Climatological Network
+USTEC	United States Total Electron Content
+USWC	United States West Coast
+UUC	Unmanned Underwater Vehicle
+UV	UltraViolet
+VHF	Very High Frequency
+VHRR	Very High Resolution Radiometer
+VI	Vegetation Index
+VIRR	Visible and Infrared Radiometer
+VIRS	Visible InfraRed Scanner
+VIRSR	Visible InfraRed Scanning Radiometer
+WCN	West Coast Node
+WCRN	West Coast Regional Node
+WMC	World Meteorological Center
+WOD	World Ocean Database
+WRF	Weather Research and Forecasting Model
+//VIBRIO	bacterial infection from eating undercooked seafood
+VIIRSN	Visible and Infrared Imager/Radiometer Suite/Suomi-NPP
+VIIRS-N	Visible and Infrared Imager/Radiometer Suite/Suomi-NPP
+//VIIRS after VIIRS...
+VIIRS	Visible and Infrared Imager/Radiometer Suite
+VOS	Voluntary Observing Ships
+VLBI	Very Long Baseline Interferometry
+VPR	Video Plankton Recorder
+WCRP	World Climate Research Programme
+WDC	World Data Centre
+WEPOCS	Western Equatorial Pacific Ocean Circulation Study
+WESTRAX	Western Tropical Atlantic Experiment
+WFO	Weather Forecast Office
+WHOI	Woods Hole Oceanographic Institution
+WMO	World Meteorological Organisation
+WOA05	World Ocean Atlas 2005
+WOA09	World Ocean Atlas 2009
+WOA13	World Ocean Atlas 2013
+//WOA17 is a guess for the future
+WOA17	World Ocean Atlas 2017
+//WOA goes after WOA...
+WOA	World Ocean Atlas
+WOCE	World Ocean Circulation Experiment
+WOD	World Ocean Database
+WPO	West Pacific Oscillation
+WRCC	Western Regional Climate Center
+WRRC	Water Resources Research Center
+XBT	Expendible Bathythermograph
+XCTD	eXpendable Conductivity-Temperature-Depth profiler
+X-SAR	X-Band Synthetic Aperture Radar
+YOTO	Year Of The Ocean

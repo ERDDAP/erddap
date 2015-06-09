@@ -369,7 +369,7 @@ public class Boundaries  {
             if (debug) {
                 if (polyMinLon < minLon ||
                     polyMaxLon > maxLon) 
-                    String2.getStringFromSystemIn(
+                    String2.pressEnterToContinue(
 //                    String2.log(
                         "> Trouble: promisedLon=" + minLon + " " + maxLon + 
                         " actualLon=" + polyMinLon + " " + polyMaxLon);

@@ -822,7 +822,7 @@ public class EDDTableCopy extends EDDTable{
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"cast, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -124.1;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
@@ -861,11 +861,10 @@ public class EDDTableCopy extends EDDTable{
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -1045,10 +1044,9 @@ public class EDDTableCopy extends EDDTable{
                 Test.ensureEqual(tTable.getStringData(3, 0), "New_Horizon", "");
                 String2.log("  .dods test succeeded");
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                     "\nError accessing " + EDStatic.erddapUrl + //in tests, always use non-https url
-                    " and reading erddap as a data source." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                    " and reading erddap as a data source."); 
             }
 
             //test .png
@@ -1057,9 +1055,8 @@ public class EDDTableCopy extends EDDTable{
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\n*** This EDDTableCopy test requires testTableCopy" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\n*** This EDDTableCopy test requires testTableCopy"); 
         }
 
     } //end of testBasic
@@ -1251,14 +1248,13 @@ reallyVerbose=false;
 
 
             //done
-            String2.getStringFromSystemIn("EDDTableCopy.testRepPostDet done. Press Enter -> ");
+            String2.pressEnterToContinue("EDDTableCopy.testRepPostDet done.");
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\nThis EDDTableCopy test only works on Bob's computer." +
                 "\n" + MustBe.throwableToString(t) + 
-                "\nTHIS IS BROKEN as of 2009-08-24  Fix it when Jose recreates the table." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nTHIS IS BROKEN as of 2009-08-24  Fix it when Jose recreates the table."); 
         }
         defaultCheckSourceData = true;
 

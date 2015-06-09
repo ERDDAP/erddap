@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -131,8 +132,22 @@ public class TestAll  {
 //    double td = tl;
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
+//    Table.testReadNcCFASAProfile(false);
 
-//    Table.debug = true; DasDds.main(new String[]{"testQuotes", "-verbose"});
+//    Table.debugMode = true; //DasDds.main(new String[]{"LRHB2015AISyGRecords", "-verbose"});
+//      String2.log(NcHelper.dumpString("c:/data/rutgers/NOAA_COOPS_WIND_STATIONS_SUBSET.nc", false));
+//    Table table = new Table();
+////    table.readNDNc("c:/data/rutgers/NOAA_COOPS_WIND_STATIONS_SUBSET.nc", 
+////        new String[]{"longitude","latitude","station","time"}, //loadVars
+////        "", Double.NaN, Double.NaN, true);
+//    table.readNcCF("c:/data/rutgers/NOAA_COOPS_WIND_STATIONS_SUBSET.nc", 
+//       StringArray.fromCSV("longitude,latitude,station,time"), //loadVars
+//       StringArray.fromCSV(""),  //names
+//       StringArray.fromCSV(""),  //ops
+//       StringArray.fromCSV(""));  //values
+//    table.saveAsDAS(System.out, "s");
+//    table.saveAsDDS(System.out, "s");
+
 //    String2.log(DigirHelper.getObisInventoryString(
 //        "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
 //        "OBIS-SEAMAP", 
@@ -171,7 +186,7 @@ public class TestAll  {
         SSR.displayInBrowser("file://" + dirName);
     }*/
 
-//    EDDGridAggregateExistingDimension.testGetDodsIndexUrls();
+//    EDDGridAggregateExistingDimension.testUnpackedValidRange();
 //    EDDGridAggregateExistingDimension.testGenerateDatasetsXml();
 //      CCMP 
 //      String2.log(EDDGridAggregateExistingDimension.generateDatasetsXml("hyrax",
@@ -188,39 +203,53 @@ public class TestAll  {
 //      "month.*flk\\.nc\\.gz"));
 //    EDDGridAggregateExistingDimension.testRtofs();
 //    EDDGridCopy.testBasic(true); //  defaultCheckSourceData 
-
-//    String2.log("\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
-//        "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PPMW/1day",
-//        null, null, null, -1, null));
-
-//    EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(
-//        "c:/temp/fromThreddsCatalog.xml",
+//
+//    String ftcName = EDStatic.fullLogsDirectory + "fromThreddsCatalog" + 
+//        Calendar2.getCompactCurrentISODateTimeStringLocal() + ".xml";
+//    EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(ftcName,
 //        //one catalog.xml URL:
 //          "http://oceanwatch.pfeg.noaa.gov/thredds/catalog/catalog.xml",
 //          "http://thredds.jpl.nasa.gov/thredds/podaac_catalogs/AQUARIUS_L3_SMI_V20_catalog.xml", 
-//          "http://osmc.noaa.gov/thredds/catalog/catalog.xml",
+//          "http://opendap-uat.jpl.nasa.gov/thredds/catalog.xml",
+//           "http://ferret.pmel.noaa.gov/geoide/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog/ncom/ncom_reg1_agg/catalog.xml",
 //        ".*", -1);
-//    String2.toNewlineString(EDDGridFromDap.getUrlsFromThreddsCatalog(
-//        "http://osmc.noaa.gov/thredds/catalog/catalog.xml", 
-//        ".*", true));
-        
+//    String2.log(String2.readFromFile(ftcName)[1]);
+//
+//    String2.writeToFile("/temp/urlsFromUAF.txt", 
+//        String2.toNewlineString(EDDGridFromDap.getUrlsFromThreddsCatalog(
+//            "http://ferret.pmel.noaa.gov/geoide/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog/ncom/ncom_reg1_agg/catalog.html?dataset=ncom.ncom_reg1_agg.NCOM_Region_1_Aggregation_best.ncd", 
+////            "http://opendap-uat.jpl.nasa.gov/thredds/catalog.xml", 
+//            ".*", true)));
+//
+//    EDD.debugMode = true;
+//    String2.log("\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
+//        "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PPMW/3day",
+////         String2.readLinesFromFile("/temp/urlsFromUAF.txt", "", 1)[2342], //one URL
+////         String2.readLinesFromFile("/temp/urlsFromPodaac.txt", "", 1)[161], //one URL
+//        null, null, null, -1, null));
+//        
 //    crawl UAF clean catalog      
+//      done 2012-10-17, 2012-12-09 new catalog, 2013-11-06, 2014-03-31, 2014-12-18
 //      Results file is /temp/datasetsUAF{uafi}_{dateTime}.xml          
-//      Log file is     log.txt  
-//        Look at problems. Make improvements.
-//        Look for "error", "unable to get axis", "unsorted", "no colorBarMin/Max", 
+//      Log file is     /u00/cwatch/erddap2/logs/TestAll.log  /
+//        Look at problems, creator_, title, .... Make improvements.
+//        Look for "error", "unable to get axis", "unsorted axis", "no colorBarMin/Max", 
 //            "ioos_category=Unknown for"
 //        Sort it. 
-//    2012-10-17  pfeg (crashes us?)  ecowatch down
-//    2013-11-06, 2012-12-09 new catalog, 2014-03-31, 2014-12-18
 //    EDDGridFromDap.testUAFSubThreddsCatalog(0); //entire official clean catalog  ~4hrs
 //    EDDGridFromDap.testUAFSubThreddsCatalog(17);  //test one sub catalog
 //    for (int uafi = 6; uafi < EDDGridFromDap.UAFSubThreddsCatalogs.length; uafi++) {
 //        String2.log("\n\n************************************* UAFI=" + uafi);
 //        EDDGridFromDap.testUAFSubThreddsCatalog(uafi);  //test one sub catalog
 //    }
+//    extract acronyms from a text file
+//      Object ar[] = String2.findAcronyms(
+//          String2.readFromFile("/Temp/datasetsUAF0_20150505161356.xml")[1]).toArray();
+//      Arrays.sort(ar);
+//      String2.log(String2.toNewlineString(ar)); 
 
 //    EDDGridFromDap.testGetUrlsFromHyraxCatalog();
+//    EDDGridFromDap.testValidMinMax();
 //    EDDGridFromErddap.testDataVarOrder(); 
 //    String2.log(EDDGridFromErddap.generateDatasetsXml("http://coastwatch.pfeg.noaa.gov/erddap", 
 //        true)); //keepOriginalID   (true for generating UAF datasets)
@@ -244,8 +273,9 @@ public class TestAll  {
 //    *** Daily
 //    Projects.viirsLatLon(true); //create
     
-//    String2.log(NcHelper.dumpString("C:/data/roy/viirsTemplateWS.nc", true));
-//    String2.log(String2.noLongLines(NcHelper.dumpString("/u00/data/points/gtsppNcCF/199001a.nc", "depth"), 80, ""));
+//    String2.log(NcHelper.dumpString("c:/data/rutgers/NOAA_COOPS_WIND_STATIONS_SUBSET.nc", false));
+//    String2.log(NcHelper.dumpString("/u00/data/points/eb/TrinidadHeadLine_CoralSea_CS120921.nc", false));
+//    String2.log(String2.noLongLines(NcHelper.dumpString("/data/tao/sst0n147e_dy.cdf", "time"), 80, ""));
 //Table table = new Table();
 //table.readNDNc("/u00/data/points/taoOriginal/realtime/airt0n110w_dy.cdf",
                //"/u00/data/points/taoOriginal/daily/airt0n110w_dy.cdf", 
@@ -414,8 +444,8 @@ public class TestAll  {
 //EDDTableCopyPost.run(-1); //-1=allTests, 0..6
 
 //    String2.log(EDDTableFromAsciiFiles.generateDatasetsXml(
-//        "/data/austin/", "ADB.csv",
-//        "/data/austin/ADB.csv",
+//        "/u00/data/points/LiquidR_HBG3_2015/", "weather.csv",
+//        "/u00/data/points/LiquidR_HBG3_2015/weather.csv",
 //        "", 1, 2, -1,
 //        "", "", "", "", "",
 //        "", // tSortFilesBySourceNames, 
@@ -455,18 +485,23 @@ public class TestAll  {
 //        "time", //String tSortedColumnSourceName,
 //        "time", //tSortFilesBySourceNames,
 //        null)); //externalAddAttributes) 
+//        EDDTableFromHyraxFiles.testJpl(false);
 
 //    String2.log(EDDTableFromNcCFFiles.generateDatasetsXml(
-//        "/data/kerfoot/", "unit.*\\.nc", 
-//        "/data/kerfoot/unit_236-20121005T2349.ncCF.nc3.nc", 360, 
+//        "/u00/data/points/eb/", "TrinidadHeadLine_CoralSea_.*\\.nc", 
+//        "/u00/data/points/eb/TrinidadHeadLine_CoralSea_CS0610.nc", 1440, 
 //        "", "", "", 
 //        "", "", 
 //        "", "", "", "", new Attributes()));
 //    EDDTableFromNcCFFiles.testNoAttName(); 
 //
-//Table tTable = new Table();
-//tTable.readNDNc("C:/u00/cwatch/erddap2/copy/ioosGliderNCSUSalacia/salacia-20130916T160356_rt0.nc", 
-//    null, "", Double.NaN, Double.NaN, true);
+//    Table.debugMode = true;
+//    Table tTable = new Table();
+//        tTable.readNDNc(fileDir + fileName, sourceDataNames.toArray(),
+//            sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
+//                minSorted, maxSorted, 
+//            getMetadata);
+
 //String2.log(tTable.toCSVString());
 //
 //    EDDTableFromNcFiles.testBigRequest(); 
@@ -484,8 +519,9 @@ public class TestAll  {
 //            "PL_WDIR3", "SPD3", "PL_WSPD3", "DIR3", "P3", "T3", "TS3", "RH3", "PRECIP3", "RRATE3"},
 //        "long_name");
 //    String2.log(EDDTableFromNcFiles.generateDatasetsXml(
-//        "/erddapTest/miniNdbc/", ".*\\.nc", 
-//        "/erddapTest/miniNdbc/NDBC_41024_met.nc", null, 1440, 
+//        "/u00/data/points/eb/", "TrinidadHeadLine_CoralSea.*\\.nc", 
+//        "/u00/data/points/eb/TrinidadHeadLine_CoralSea_CS0610.nc", 
+//        "", 1440, 
 //        "", "", "", 
 //        "", "", 
 //        "", 
@@ -511,16 +547,16 @@ public class TestAll  {
 //         Temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //           On Access Scanner : All Processes
 //             Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1970,  1, 1970, 1, false);  //first/last year(1990..)/month(1..), testMode
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2005,  4, 2005, 4, false);  //first/last year(1990..)/month(1..), testMode
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2012,  2, 2015, 2, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2015,  2, 2015, 4, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is c:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun
 //       [was Melanie Hamilton, now retired]
 //       [start in 2011? but not longer valid 2012-10-19 Meilin.Chen@noaa.gov]
 //      2c) Undo changes to McAfee scanner
-//    3) Update the dates (2 in history, 1 in summary) for erdGtsppBestNc in datasets2.xml 
+//    3) Update the dates 
+//       (2 in defaultGraphQuery, 2 in history, 1 in summary) for erdGtsppBestNc in datasets2.xml 
 //       and the 2 history dates for erdGtsppBest in datasets2.xml and datasetsFEDCW.xml
+//       to the date I started processing in step 2 above. (If in chunks, date of start of last chunk.)
 //    4) * In [tomcat]/content/erddap/subset/
 //          delete erdGtsppBestNc.json and erdGtsppBest.json
 //       * Load erdGtsppBestNc in localHost ERDDAP.  (long time if lots of files changed)
@@ -534,7 +570,7 @@ public class TestAll  {
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBestNc");
 //    6) Create ncCF files with the same date range as 2a) above: 
 //       !!!! HIDE THE WINDOW !!! IT WILL RUN MUCH FASTER!!!  takes ~2 minutes per month processed
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2014, 11, 2015, 1); //e.g., first/last year(1990..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2015,  2, 2015, 4); //e.g., first/last year(1990..)/month(1..)
 //       String2.log(NcHelper.dumpString("/u00/data/points/gtsppNcCF/201406a.nc", false));
 //    7) * Load erdGtsppBest in localHost ERDDAP.  (long time if lots of files changed)
 //       * Generate .json file from
@@ -543,15 +579,16 @@ public class TestAll  {
 //       * Reload ERDDAP to ensure it loads quickly.
 //    8) Test the .ncCF dataset:
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBest");
-//    8) If copying all to coastwatch, temporarily rename dir to /u00/data/points/gtsppNcCFtemp/
+//    9) If copying all to coastwatch, temporarily rename dir to /u00/data/points/gtsppNcCFtemp/
 //       * Copy the newly consolidated .ncCF files
 //         from laptop   /u00/data/points/gtsppNcCF/
 //         to coastwatch /u00/data/points/gtsppNcCF/
 //       * Copy from local     [tomcat]/content/erddap/subset/erdGtsppBest.json
 //              to coastwatch  [tomcat]/content/erddap/subset/erdGtsppBest.json
 //              to   upwell [UAFtomcat]/content/erddap/subset/erdGtsppBest.json
-//    8) Update rtofs, then copy datasetsFEDCW.xml to coastwatch and rename to datasets.xml
-//    9) Ping the gtspp flag url on ERDDAP (it is in "flag" bookmarks)
+//    10) Update rtofs (Python/ #2=updateDatasetsXml.py), 
+//        then copy datasetsFEDCW.xml to coastwatch and rename to datasets.xml
+//    11) Ping the gtspp flag url on ERDDAP (it is in "flag" bookmarks)
 //       http://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=erdGtsppBest&flagKey=2369414249
 //       and make sure the new data and metadata are visible (hence, new dataset has loaded)
 
@@ -596,23 +633,34 @@ public class TestAll  {
 
       //Run the GenerateDatasetsXml program in interactive mode:
 //    GenerateDatasetsXml.main(null);
-/* 
-         EDDGridFromDap.testGenerateDatasetsXml();
+/*
          EDDGridAggregateExistingDimension.testGenerateDatasetsXml();  //after EDDGridFromDap
+         EDDGridFromDap.testGenerateDatasetsXml();
+         EDDGridFromDap.testGenerateDatasetsXml2(); 
+         //EDDGridFromDap.testGenerateDatasetsXml3(); //source is gone
+         EDDGridFromEDDTable.testGenerateDatasetsXml();  
          EDDGridFromErddap.testGenerateDatasetsXml();  
+         EDDGridFromMergeIRFiles.testGenerateDatasetsXml();  
          EDDGridFromNcFiles.testGenerateDatasetsXml();
+         EDDGridFromNcFiles.testGenerateDatasetsXml2();
          EDDTableFromAsciiFiles.testGenerateDatasetsXml();
+         EDDTableFromAwsXmlFiles.testGenerateDatasetsXml();
          EDDTableFromCassandra.testGenerateDatasetsXml();
          EDDTableFromColumnarAsciiFiles.testGenerateDatasetsXml();
          EDDTableFromDapSequence.testGenerateDatasetsXml();
          EDDTableFromDatabase.testGenerateDatasetsXml();
          EDDTableFromErddap.testGenerateDatasetsXml(); 
+         EDDTableFromFileNames.testGenerateDatasetsXml(); 
          EDDTableFromHyraxFiles.testGenerateDatasetsXml(); 
+         //EDDTableFromHyraxFiles.testGenerateDatasetsXml2(); //not yet working
+         EDDTableFromNcCFFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml();
+         EDDTableFromNcFiles.testGenerateDatasetsXml2();
+         //EDDTableFromNWISDV.testGenerateDatasetsXml(); //inactive
          EDDTableFromOBIS.testGenerateDatasetsXml();
-         EDDTableFromSOS.testGenerateDatasetsXml(true);
-         EDDTableFromSOS.testGenerateDatasetsXmlFromOneIOOS();
-         EDDTableFromSOS.testGenerateDatasetsXmlFromIOOS();
+         EDDTableFromSOS.testGenerateDatasetsXml(true); //useCachedInfo); 
+         EDDTableFromSOS.testGenerateDatasetsXmlFromOneIOOS(true); //useCachedInfo); 
+         EDDTableFromSOS.testGenerateDatasetsXmlFromIOOS(true); //useCachedInfo); 
          EDDTableFromThreddsFiles.testGenerateDatasetsXml();
          EDDTableFromWFSFiles.testGenerateDatasetsXml();
 /* */
@@ -669,13 +717,12 @@ public class TestAll  {
 //    NcHelper.test();
 //    NcHelper.testJplG1SST();
 //    String2.log(NcHelper.dds("c:/data/nodcTemplates/pointKachemakBay.nc"));
-//    NetcdfDataset in = NetcdfDataset.openDataset(
-//        //"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/HadleyCenter/HadISST");
-//        "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdHadISST");
-//    System.out.println("netcdfDataset=" + in.toString());
-//    FeatureType featureType = FeatureDatasetFactoryManager.findFeatureType(in);
-//    System.out.println(featureType.toString());
-
+//    test validity of a file:
+//        NetcdfDataset ncd = NetcdfDataset.openDataset( //file or DAP baseUrl
+//            "/data/VH2/par/1day/V2014131.L3m_DAY_NPP_PAR_par_4km.nc");
+//        System.out.println("netcdfDataset=" + ncd.toString());
+//        System.out.println("featureType=" + FeatureDatasetFactoryManager.findFeatureType(ncd).toString());
+//        ncd.close();
 //    NetCheck.verbose = true;
 //    NetCheck nc = new NetCheck("c:/content/bat/NetCheck.xml", true); //testmode
 //    OpendapHelper.testDapToNcDArray();
@@ -685,7 +732,7 @@ public class TestAll  {
 //        else String2.log("didn't match");
 //    post.TestJdbc.test();
 //    PrimitiveArray.testTestValueOpValue();
-//    DasDds.main(new String[]{"nodcWOD", "-verbose"});
+//    DasDds.main(new String[]{"erdMWpp3day", "-verbose"});
 //    Projects.dapToNc("http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAsstamday", 
 //        new String[]{"sst"}, "[112:112][0:0][750:760][1800:1820]",
 //        "c:/downloads/test.nc");
@@ -834,6 +881,8 @@ public class TestAll  {
 //    for (int i = 0; i < touchThese.length; i++)
 //        SSR.touchUrl(touchThese[i], 60000);
 //
+//    String2.log(String2.annotatedString(SSR.getFileString(
+//        "/u00/data/points/LiquidR_HBG3_2015/ais.csv")));
 //    SSR.zipEach("c:/temp/codarsf/");
 //    String.matches dddd_ddd_dddd_add
 //        String regex="[0-9]{4}_[0-9]{3}_[0-9]{4}_[a-zA-Z][0-9]{2}";
@@ -865,11 +914,13 @@ public class TestAll  {
 //          null, null, null);
 //      table.leftToRightSort(5);
 //      String2.log(table.toCSVString(10));
-//    Table.testXml();
+//    Table.testParseDapQuery();
+//    Table.testSubsetViaDapQuery();
 //    TestListFiles.main(new String[]{"c:/"});
 //    TestNCDump.main(new String[]{"c:/temp/CM2006171_230000h_u25h.nc"});
 //    TestSSR.testEmail();
 //    TestSSR.testEmail("bob.simons@noaa.gov", "");  //remove password after testing!!!
+//    TestUtil.testString2();
 //    TestUtil.testCalendar2();
 //    Touch.getPiscoUrls();
 //    XML.prettyXml("c:/programs/mapserver/WVBoreholeResponse.xml", 
@@ -1132,9 +1183,7 @@ WaitThenTryAgainException wttae;
             Opendap.doOceanWatchSpeedTests(false, false); //dotTest, asciiTest
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
         Math2.gcAndWait();  //in a test
 
@@ -1149,8 +1198,7 @@ WaitThenTryAgainException wttae;
         try {
             ValidateDataSetProperties.main(null);
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
         //ensure all of the datasets used in each browser are in DataSet.properties validDataSets.
@@ -1189,8 +1237,8 @@ WaitThenTryAgainException wttae;
             //this fails if opendap server is down
             Opendap.main(null); 
         } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn("\nRecover from opendap failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "Recover from opendap failure?");
         }
         //need tests of data.Grid2DDataSet classes
         //hdf.SdsWriter.main(null); //needs work
@@ -1249,7 +1297,6 @@ WaitThenTryAgainException wttae;
         SgtMap.testMakeCleanMap(0, 5); //all
         CartesianProjection.test();
         SgtGraph.test();  
-        // SgtGraph.testSurface();  //not finished!
         NDimensionalIndex.test();
 
         //ERDDAP
@@ -1275,7 +1322,7 @@ WaitThenTryAgainException wttae;
         //EDDGridAggregateExistingDimension.test();  //don't usually run...very slow
         EDDGridAggregateExistingDimension.testGenerateDatasetsXml();
         EDDGridFromNcFiles.test(true);
-//        EDDGridFromMergeIRFiles.test();
+        EDDGridFromMergeIRFiles.test();
         EDDGridFromEDDTable.test();
         EDDGridCopy.test();
         EDDGridSideBySide.test(true); //doGraphicsTests);  //the best grid graphics tests are here
@@ -1289,9 +1336,11 @@ WaitThenTryAgainException wttae;
         EDDTableFromDapSequence.test(); 
         //EDDTableFromDapSequence.testMemory(); //don't usually run...very slow
         EDDTableFromDatabase.test();     
-        EDDTableFromCassandra.test();     
         //EDDTableFromPostDatabase.test(); //INACTIVE.    very slow?        
-        EDDTableFromAsciiServiceNOS.test(false);  //every 3 months, makeSubsetFiles=true and copy /subset/nosCoops*.json files to coastwatch
+        EDDTableFromCassandra.test();     
+        //UPDATE nosCoops every 3 months: true, true, 
+        //  then copy /subset/nosCoops*.json files to coastwatch and UAF 
+        EDDTableFromAsciiServiceNOS.test(false, false);  //makeSubsetFiles, reloadStationFiles
         EDDTableFromErddap.test(); 
         EDDTableFromAsciiFiles.test(false); //rarely: true=delete cached info
         EDDTableFromColumnarAsciiFiles.test(); 
@@ -1323,16 +1372,15 @@ WaitThenTryAgainException wttae;
                 Opendap.doOceanWatchSpeedTests(false, false); //dotTest, asciiTest 
                 time9 = System.currentTimeMillis() - time9;
                 if (i > 0 && time9 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
-                    String2.getStringFromSystemIn("OceanWatch Thredds too slow: " + time9 +
-                        "\nPress ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("OceanWatch Thredds too slow: " + time9); 
             }
             //don't run often
             Opendap.threddsTunnelTest(200, 
                 "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/CM/usfc/hday",
                 "CMusfc"); 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nUnexpected oceanwatch error: Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected oceanwatch error."); 
         }
         
         //INACTIVE: a test of thredds1 THREDDS 8081
@@ -1342,16 +1390,15 @@ WaitThenTryAgainException wttae;
         //        Opendap.doThredds1_8081SpeedTests(false, true); //dotTest, asciiTest
         //        time9 = System.currentTimeMillis() - time9;
         //        if (i > 0 && time9 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
-        //            String2.getStringFromSystemIn("Thredds1 8081 Thredds too slow: " + time9 +
-        //                "\nPress ^C to stop or Enter to continue..."); 
+        //            String2.pressEnterToContinue("Thredds1 8081 Thredds too slow: " + time9); 
         //    }
         //    //don't run often
         //    Opendap.threddsTunnelTest(200, 
         //        "http://thredds1.pfeg.noaa.gov:8081/thredds/dodsC/satellite/CM/usfc/hday",
         //        "CMusfc"); 
         //} catch (Exception e) {
-        //    String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-        //        "\nUnexpected THREDD1 8081 ERROR. Press ^C to stop or Enter to continue..."); 
+        //    String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+        //        "\nUnexpected THREDD1 8081 ERROR."); 
         //}
 
         //INACTIVE: a test of otter THREDDS 8081  (should run great)
@@ -1361,16 +1408,15 @@ WaitThenTryAgainException wttae;
         //        Opendap.doOtterSpeedTests(false, false, 8081); //dotTest, asciiTest
         //        time8 = System.currentTimeMillis() - time8;
         //        if (i > 0 && time8 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
-        //            String2.getStringFromSystemIn("Otter Thredds 8081 too slow: " + time8 +
-        //                "\nPress ^C to stop or Enter to continue..."); 
+        //            String2.pressEnterToContinue("Otter Thredds 8081 too slow: " + time8); 
         //    }
         //    //don't run often
         //    Opendap.threddsTunnelTest(200, 
         //        "http://161.55.17.243:8081/thredds/dodsC/satellite/CM/usfc/hday", //otter
         //        "CMusfc"); 
         //} catch (Exception e) {
-        //    String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-        //        "\nUnexpected otter 8081 error: Press ^C to stop or Enter to continue..."); 
+        //    String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+        //        "\nUnexpected otter 8081 error."); 
         //}
 
         //INACTIVE:  a test of otter THREDDS 8087
@@ -1381,17 +1427,16 @@ WaitThenTryAgainException wttae;
         //        if (true) throw new Exception("SHOULDN'T GET HERE.");
         //        time8 = System.currentTimeMillis() - time8;
         //        if (i > 0 && time8 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
-        //            String2.getStringFromSystemIn("Otter Thredds 8087 too slow: " + time8 +
-        //                "\nPress ^C to stop or Enter to continue..."); 
+        //            String2.pressEnterToContinue("Otter Thredds 8087 too slow: " + time8); 
         //    }
         //    //don't run often
         //    Opendap.threddsTunnelTest(200, 
         //        "http://161.55.17.243:8087/thredds/dodsC/satellite/CM/usfc/hday", //otter
         //        "CMusfc"); 
         //} catch (Exception e) {
-        //    String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
+        //    String2.pressEnterToContinue(MustBe.throwableToString(e) + 
         //        "\nOTTER 8081 STARTED CAN'T CONNECT ERROR TO AGssta3day ON 2009-09-10" +
-        //        "\nUnexpected otter 8087 error: Press ^C to stop or Enter to continue..."); 
+        //        "\nUnexpected otter 8087 error:"); 
         //}
 
         //a test of erddap
@@ -1401,16 +1446,15 @@ WaitThenTryAgainException wttae;
                 Opendap.doErddapSpeedTests(false, false); //dotTest, asciiTest 
                 time9 = System.currentTimeMillis() - time9;
                 if (i > 0 && time9 > 3000) //2014-08 was 1000 in ERD building. Now 3000 from outside
-                    String2.getStringFromSystemIn("Erddap too slow: " + time9 +
-                        "\nPress ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Erddap too slow: " + time9); 
             }
             //don't run often
             Opendap.threddsTunnelTest(200, 
                 "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdCMsfc",
                 "eastCurrent"); 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nUnexpected erddap error: Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected erddap error."); 
         }
 
         //Touch.thredds();  //run as needed to tell thredds to cache PISCO datasets?   or usually runs really fast?

@@ -10,6 +10,7 @@ import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
@@ -909,10 +910,18 @@ public class Erddap extends HttpServlet {
                     "name=\"converters\">" + EDStatic.indexConverters + "</a></b>\n" +
                 "<br>" + EDStatic.indexDescribeConverters + "\n" +
                 "  <ul>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\">" + EDStatic.convertFipsCounty + "</a>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\">" + EDStatic.convertKeywords + "</a>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">" + EDStatic.convertTime + "</a>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">" + EDStatic.convertUnits + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html\"><b>Acronyms</b></a> - " + 
+                EDStatic.convertOceanicAtmosphericAcronyms + "\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\"><b>FIPS County Codes</b></a> - " + 
+                EDStatic.convertFipsCounty + "\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\"><b>Keywords</b></a> - " + 
+                EDStatic.convertKeywords + "\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\"><b>Time</b></a> - " + 
+                EDStatic.convertTime + "\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\"><b>Units</b></a> - " + 
+                EDStatic.convertUnits + "\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html\"><b>Variable Names</b></a> - " + 
+                EDStatic.convertOceanicAtmosphericVariableNames + "\n" +
                 "  </ul>\n" +
                 "\n");
 
@@ -1914,6 +1923,8 @@ public class Erddap extends HttpServlet {
                 "<li>ERDDAP offers several converters as web pages and as web services:\n" +
                 (EDStatic.convertersActive?
                   "  <ul>\n" +
+                  "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html#computerProgram\">" + EDStatic.convertOceanicAtmosphericAcronyms + "</a>\n" +
+                  "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html#computerProgram\">" + EDStatic.convertOceanicAtmosphericVariableNames + "</a>\n" +
                   "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">" + EDStatic.convertFipsCounty + "</a>\n" +
                   "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html#computerProgram\">" + EDStatic.convertKeywords + "</a>\n" +
                   "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">" + EDStatic.convertTime + "</a>\n" +
@@ -2013,11 +2024,13 @@ public class Erddap extends HttpServlet {
         //don't include setDatasetFlag.txt, setup.html, setupDatasetsXml.html, status.html, 
         writer.write(pre); writer.write("categorize/index.html");             writer.write(postMed);
         if (EDStatic.convertersActive) {
-            writer.write(pre); writer.write("convert/index.html");            writer.write(postMed);
-            writer.write(pre); writer.write("convert/fipscounty.html");       writer.write(postHigh);
-            writer.write(pre); writer.write("convert/keywords.html");         writer.write(postHigh);
-            writer.write(pre); writer.write("convert/time.html");             writer.write(postHigh);
-            writer.write(pre); writer.write("convert/units.html");            writer.write(postHigh);
+            writer.write(pre); writer.write("convert/index.html");                    writer.write(postMed);
+            writer.write(pre); writer.write("convert/oceanicAtmosphericAcronyms.html");     writer.write(postHigh);
+            writer.write(pre); writer.write("convert/oceanicAtmosphericVariableNames.html");writer.write(postHigh);
+            writer.write(pre); writer.write("convert/fipscounty.html");               writer.write(postHigh);
+            writer.write(pre); writer.write("convert/keywords.html");                 writer.write(postHigh);
+            writer.write(pre); writer.write("convert/time.html");                     writer.write(postHigh);
+            writer.write(pre); writer.write("convert/units.html");                    writer.write(postHigh);
         }
         //Don't include /files. We don't want search engines downloading all the files.
         writer.write(pre); writer.write("griddap/documentation.html");        writer.write(postHigh);
@@ -2543,12 +2556,12 @@ public class Erddap extends HttpServlet {
         //String2.log(">>fullRequestUrl=" + fullRequestUrl);
 
         if (datasetIDStartsAt >= requestUrl.length()) {
+            //dir of accessibleViaFiles datasets
             if (!fullRequestUrl.endsWith("/")) { //required for table.directoryListing below
                 sendRedirect(response, fullRequestUrl + "/");  
                 return;               
             }
 
-            //show dir of EDDTableFromFileNames directories
             StringArray subDirNames = new StringArray();
             StringArray subDirDes = new StringArray();
             StringArray ids = gridDatasetIDs();
@@ -2672,8 +2685,24 @@ public class Erddap extends HttpServlet {
             return;
         }
 
-        //if localFullName is a file, return it
+        //catch psuedo filename that is just an extension 
+        //  (hence RESTful request for filenames)
         String localFullName = fileDir + nextPath;
+        String justExtension = File2.getNameAndExtension(localFullName);
+        int tWhich = String2.indexOf(plainFileTypes, justExtension);
+        if (tWhich >= 0) {
+            //The "fileName" is just one of the plainFileType extensions, e.g., .csv.
+            //Remove justExtension from localFullName and nextPath.
+            localFullName = localFullName.substring(0, localFullName.length() - justExtension.length());
+            nextPath = nextPath.substring(0, nextPath.length() - justExtension.length());
+            //request will be handled below
+
+ //if (EDStatic.filesActive) ...
+        } else {
+            justExtension = "";
+        }
+
+        //if localFullName is a file, return it
         //String2.log(">>localFullName=" + localFullName + "\nfullRequestUrl=" + fullRequestUrl);
         if (nextPath.length() > 0 && 
             !localFullName.endsWith("/") && File2.isFile(localFullName)) {
@@ -2707,6 +2736,29 @@ public class Erddap extends HttpServlet {
             sendRedirect(response, fullRequestUrl + "/");  
             return;               
         }
+
+        //handle justExtension request  e.g., datasetID/.csv[?constraintExpression]
+        if (justExtension.length() > 0) {
+            //tally it
+
+            //make a EDDTableFromAccessibleViaFiles
+
+            //tell it to handle the request
+
+            //make the list of file info
+            Table table = FileVisitorDNLS.oneStep(localFullName, fileRegex, 
+                edd.accessibleViaFilesRecursive(), true); //dirsToo
+            Test.ensureEqual(table.getColumnNamesCSVString(), 
+                "directory,name,lastModified,size", 
+                "Unexpected columnNames");
+            //apply constraints
+
+            //return results as justExtension fileType
+
+
+            return;
+        }
+
         //get list of dirs and files in that dir
         Table table = FileVisitorDNLS.oneStep(localFullName, fileRegex, 
             false, true); //not recursive, dirsToo
@@ -4396,7 +4448,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         //change request's layers=mainDatasetID:var,mainDatasetID:var 
                         //              to layers=rDatasetID:var,rDatasetID:var
                         if (userQuery != null) {    
-                            String qParts[] = EDD.getUserQueryParts(userQuery); //decoded.  always at least 1 part (may be "")
+                            String qParts[] = Table.getDapQueryParts(userQuery); //decoded.  always at least 1 part (may be "")
                             for (int qpi = 0; qpi < qParts.length; qpi++) {
                                 if (qpi > 0) etUrl.append('&');
 
@@ -8054,7 +8106,7 @@ XML.encodeAsXML(EDStatic.adminInstitution.length() <= 38? " at " + EDStatic.admi
 "  <Query role=\"example\" searchTerms=\"" + XML.encodeAsXML(exampleSearchTerm) + "\" />\n" +
 "  <Developer>Bob Simons (bob.simons at noaa.gov)</Developer>\n" + //<=64 chars
 "  <Attribution>" +  //credit for search results    <=256 chars
-XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attribution>\n" +
+XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</Attribution>\n" +
 "  <SyndicationRight>" + (loggedInAs == null? "open" : "private") + "</SyndicationRight>\n" +
 "  <AdultContent>false</AdultContent>\n" +
 "  <Language>en-us</Language>\n" +  //language could change if messages.xml is translated
@@ -8400,7 +8452,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         for (int ca = 0; ca < nCatAtts; ca++) {
             //get user cat params and validate them (so items on form match items used for search)
             StringArray tsa = categoryInfo(catAtts[ca]);
-            tsa.add(0, ANY);
+            tsa.atInsert(0, ANY);
             catSAs[ca] = tsa.toArray();    
             String tParam = request.getParameter(catAttsInURLs[ca]);
             whichCatSAIndex[ca] = 
@@ -10648,6 +10700,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
         if (endOfRequestUrl.equals("index.html")) {
             //fall through
+
+        //FIPS County
         } else if (endOfRequestUrl.equals("fipscounty.html") ||
                    endOfRequestUrl.equals("fipscounty.txt")) {
             doConvertFipsCounty(request, response, loggedInAs, endOfRequestUrl, userQuery);
@@ -10662,6 +10716,39 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 throw new SimpleException("The FIPS county service is not available on this ERDDAP.");
             }
             return;
+
+        //OceanicAtmospheric Acronyms
+        } else if (endOfRequestUrl.equals("oceanicAtmosphericAcronyms.html") ||
+                   endOfRequestUrl.equals("oceanicAtmosphericAcronyms.txt")) {
+            doConvertOceanicAtmosphericAcronyms(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            return;
+        } else if (endOfRequestUrl.startsWith("oceanicAtmosphericAcronyms.") && pft >= 0) {
+            try {
+                sendPlainTable(loggedInAs, request, response, 
+                    EDStatic.oceanicAtmosphericAcronymsTable(), "OceanicAtmosphericAcronyms", fileTypeName);
+            } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+                String2.log(MustBe.throwableToString(t));
+                throw new SimpleException("The oceanic/atmospheric acronyms service is not available on this ERDDAP.");
+            }
+            return;
+
+        //OceanicAtmospheric VariableNames
+        } else if (endOfRequestUrl.equals("oceanicAtmosphericVariableNames.html") ||
+                   endOfRequestUrl.equals("oceanicAtmosphericVariableNames.txt")) {
+            doConvertOceanicAtmosphericVariableNames(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            return;
+        } else if (endOfRequestUrl.startsWith("oceanicAtmosphericVariableNames.") && pft >= 0) {
+            try {
+                sendPlainTable(loggedInAs, request, response, 
+                    EDStatic.oceanicAtmosphericVariableNamesTable(), "OceanicAtmosphericVariableNames", fileTypeName);
+            } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+                String2.log(MustBe.throwableToString(t));
+                throw new SimpleException("The oceanic/atmospheric variable names service is not available on this ERDDAP.");
+            }
+            return;
+
         } else if (endOfRequestUrl.equals("keywords.html") ||
                    endOfRequestUrl.equals("keywords.txt")) {
             doConvertKeywords(request, response, loggedInAs, endOfRequestUrl, userQuery);
@@ -10702,6 +10789,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 EDStatic.convertHtml + "\n" +
                 //"<p>Options:\n" +
                 "<ul>\n" +
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html\"><b>Acronyms</b></a> - " + 
+                    EDStatic.convertOceanicAtmosphericAcronyms + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\"><b>FIPS County Codes</b></a> - " + 
                     EDStatic.convertFipsCounty + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\"><b>Keywords</b></a> - " + 
@@ -10710,6 +10799,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     EDStatic.convertTime + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\"><b>Units</b></a> - " + 
                     EDStatic.convertUnits + "\n" +
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html\"><b>Variable Names</b></a> - " + 
+                    EDStatic.convertOceanicAtmosphericVariableNames + "\n" +
                 "</ul>\n");
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -10806,7 +10897,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertTime", ".txt", ".txt")).outputStream("UTF-8");
+                "ConvertFipsCounty", ".txt", ".txt")).outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
 
             if (toCode) 
@@ -10896,7 +10987,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + 
                     "/convert/fipscounty.html\">" + EDStatic.resetTheForm + "</a>\n" +
                 "<p>Or, <a rel=\"help\" href=\"#computerProgram\">bypass this web page</a>\n" +
-                "  and do FIPS county conversions from within a computer program.\n");
+                "  and do FIPS county conversions from within a computer program, script, or web page.\n");
 
             //get the entire list
             writer.write(
@@ -10918,6 +11009,410 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         endHtmlWriter(out, writer, tErddapUrl, false);
     }
 
+    /**
+     * Process erddap/convert/oceanicAtmosphericAcronyms.html and oceanicAtmosphericAcronyms.txt.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param endOfRequestUrl   time.html or time.txt
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     * @throws Throwable if trouble
+     */
+    public void doConvertOceanicAtmosphericAcronyms(HttpServletRequest request, HttpServletResponse response, 
+        String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
+
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
+
+        //parse the userQuery
+        HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
+        String defaultAcronym   = "NOAA";
+        String defaultFullName = "National Oceanic and Atmospheric Administration";
+        String queryAcronym     = queryMap.get("acronym"); 
+        String queryFullName   = queryMap.get("fullName");
+        if (queryAcronym   == null) queryAcronym = "";
+        if (queryFullName == null) queryFullName = "";
+        String answerAcronym    = "";
+        String answerFullName  = "";
+        String acronymTooltip   = "The acronym, for example, \"" + defaultAcronym + "\".";
+        //String fullNameTooltip = "The full name, for example, \"" + defaultFullName + "\".";
+        String fullNameTooltip = "Select a full name.";
+
+        //only 0 or 1 of toAcronym,toFullName will be true (not both)
+        boolean toFullName = queryAcronym.length() > 0; 
+        boolean toAcronym = !toFullName && queryFullName.length() > 0;
+
+        //a query either succeeds (and sets all answer...) 
+        //  or fails (doesn't change answer... and sets tError)
+
+        //process queryFullName
+        String tError = null;
+        Table oaTable = null;
+        try {
+            oaTable = EDStatic.oceanicAtmosphericAcronymsTable();
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            String2.log(MustBe.throwableToString(t));
+            throw new SimpleException("The oceanic/atmospheric acronym service is not available on this ERDDAP.");
+        }
+        StringArray acronymSA  = (StringArray)(oaTable.getColumn(0));
+        StringArray fullNameSA = (StringArray)(oaTable.getColumn(1));
+        if (toAcronym) {
+            //process acronym=,   a toAcronym query
+            int po = fullNameSA.indexOf(queryFullName);
+            if (po < 0) {
+                tError = "fullName=\"" + queryFullName + 
+                    "\" isn't an exact match of an oceanic/atmospheric acronym.";
+            } else {
+                //success
+                answerFullName = queryFullName;
+                answerAcronym  = acronymSA.get(po);
+            }
+
+        } else if (toFullName) {        
+            //process fullName=,   a toFullName query            
+            int po = acronymSA.indexOf(queryAcronym);
+            if (po < 0) {
+                tError = "acronym=\"" + queryAcronym + 
+                    "\" isn't an exact match of an oceanic/atmospheric full name.";
+            } else {
+                //success
+                answerAcronym   = queryAcronym;
+                answerFullName = fullNameSA.get(po);
+            }
+
+        } else {
+            //no query. use the default values...
+        }
+
+        //do the .txt response
+        if (endOfRequestUrl.equals("oceanicAtmosphericAcronyms.txt")) {
+
+            //throw exception?
+            if (tError == null && !toAcronym && !toFullName)
+                tError = "You must specify a acronym= or fullName= parameter (for example \"?acronym=" + 
+                defaultAcronym + "\") at the end of the URL.";
+            if (tError != null) 
+                throw new SimpleException(tError);
+
+            //respond to a valid request
+            OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
+                "ConvertOceanicAtmosphericAcronym", ".txt", ".txt")).outputStream("UTF-8");
+            Writer writer = new OutputStreamWriter(out, "UTF-8");
+
+            if (toAcronym) 
+                writer.write(answerAcronym);
+            else if (toFullName) 
+                writer.write(answerFullName);            
+            
+            writer.flush(); //essential
+            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            out.close(); 
+            return;
+        }
+
+        //do the .html response
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
+        widgets.enterTextSubmitsForm = true; 
+        OutputStream out = getHtmlOutputStream(request, response);
+        Writer writer = getHtmlWriter(loggedInAs, "Convert Oceanic/Atmospheric Acronyms", out); 
+        try {
+            writer.write(
+                EDStatic.youAreHere(loggedInAs, "convert", "Oceanic/Atmospheric Acronyms") +
+                "<h2>" + EDStatic.convertOceanicAtmosphericAcronyms + "</h2>\n" +
+                EDStatic.convertOceanicAtmosphericAcronymsIntro + "\n");
+
+     
+            //Convert from Acronym to FullName
+            writer.write(
+                HtmlWidgets.ifJavaScriptDisabled + "\n" +
+                widgets.beginForm("getFullName", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "") +
+                "<b>Convert from</b>\n" + 
+                widgets.textField("acronym", acronymTooltip, 20, 20, 
+                    answerAcronym.length() > 0? answerAcronym :
+                    queryAcronym.length()  > 0? queryAcronym  : defaultAcronym, 
+                    "") + 
+                "\n<b> to a full name. </b>&nbsp;&nbsp;" +
+                widgets.button("submit", null, "", 
+                    "Convert",
+                    "") + 
+                "\n");
+
+            if (toFullName) {
+                writer.write(tError == null?
+                    "<br><font class=\"successColor\">" + 
+                        XML.encodeAsHTML(answerAcronym) + " = " + 
+                        XML.encodeAsHTML(answerFullName) + "</font>\n" :
+                    "<br><font class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</font>\n");                
+            } else {
+                writer.write("<br>&nbsp;\n");
+            }
+
+            writer.write(widgets.endForm() + "\n");
+
+            //Convert from FullName to Acronym
+            String selectedFullName = 
+                answerFullName.length() > 0? answerFullName :
+                queryFullName.length()  > 0? queryFullName  : defaultFullName;
+            String options[] = fullNameSA.toStringArray();
+            Arrays.sort(options, new StringComparatorIgnoreCase());
+            writer.write(
+                "<br>&nbsp;\n" +  //necessary for the blank line before start of form (not <p>)
+                widgets.beginForm("getAcronym", "GET", tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html", "") +
+                "<b>Convert from</b>\n" + 
+                //widgets.textField("fullName", fullNameTooltip, 35, 50, selectedFullName, "") + 
+                widgets.select("fullName", fullNameTooltip, 1, options,
+                    String2.indexOf(options, selectedFullName), 
+                    "onchange=\"this.form.submit();\"") +
+                "\n<b> to a full name. </b>&nbsp;&nbsp;" +
+                //widgets.button("submit", null, "", 
+                //    "Convert",
+                //    "") + 
+                "\n");
+
+            if (toAcronym) {
+                writer.write(tError == null?
+                    "<br><font class=\"successColor\">" + 
+                        XML.encodeAsHTML(answerFullName) + " = " + 
+                        XML.encodeAsHTML(answerAcronym) + "</font>\n" :
+                    "<br><font class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</font>\n");                
+            } else {
+                writer.write("<br>&nbsp;\n");
+            }
+
+            writer.write(widgets.endForm() + "\n");
+
+            //reset the form
+            writer.write(
+                "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + 
+                    "/convert/oceanicAtmosphericAcronyms.html\">" + EDStatic.resetTheForm + "</a>\n" +
+                "<p>Or, <a rel=\"help\" href=\"#computerProgram\">bypass this web page</a>\n" +
+                "  and do oceanic/atmospheric acronym conversions from within a computer program, script, or web page.\n");
+
+            //get the entire list
+            writer.write(
+                "<p>Or, view/download the entire oceanic/atmospheric acronyms list in these file types: " +
+                plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericAcronyms", ""));
+
+            //notes  (always non-https urls)
+            writer.write(EDStatic.convertOceanicAtmosphericAcronymsNotes);
+
+            //Info about .txt fips service option   (always non-https urls)
+            writer.write(EDStatic.convertOceanicAtmosphericAcronymsService);
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(t));
+        }
+
+        //end of document
+        endHtmlWriter(out, writer, tErddapUrl, false);
+    }
+
+    /**
+     * Process erddap/convert/oceanicAtmosphericVariableNames.html and oceanicAtmosphericVariableNames.txt.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param endOfRequestUrl   time.html or time.txt
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     * @throws Throwable if trouble
+     */
+    public void doConvertOceanicAtmosphericVariableNames(HttpServletRequest request, HttpServletResponse response, 
+        String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
+
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
+
+        //parse the userQuery
+        HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
+        String defaultVariableName   = "sst";
+        String defaultFullName = "Sea Surface Temperature";
+        String queryVariableName     = queryMap.get("variableName"); 
+        String queryFullName   = queryMap.get("fullName");
+        if (queryVariableName   == null) queryVariableName = "";
+        if (queryFullName == null) queryFullName = "";
+        String answerVariableName    = "";
+        String answerFullName  = "";
+        String variableNameTooltip   = "The oceanic/atmospheric variable name, for example, \"" + defaultVariableName + "\".";
+        //String fullNameTooltip = "The full name, for example, \"" + defaultFullName + "\".";
+        String fullNameTooltip = "Select a full name.";
+
+        //only 0 or 1 of toVariableName,toFullName will be true (not both)
+        boolean toFullName = queryVariableName.length() > 0; 
+        boolean toVariableName = !toFullName && queryFullName.length() > 0;
+
+        //a query either succeeds (and sets all answer...) 
+        //  or fails (doesn't change answer... and sets tError)
+
+        //process queryFullName
+        String tError = null;
+        Table oaTable = null;
+        try {
+            oaTable = EDStatic.oceanicAtmosphericVariableNamesTable();
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            String2.log(MustBe.throwableToString(t));
+            throw new SimpleException("The oceanic/atmospheric variable name service is not available on this ERDDAP.");
+        }
+        StringArray variableNameSA  = (StringArray)(oaTable.getColumn(0));
+        StringArray fullNameSA      = (StringArray)(oaTable.getColumn(1));
+        if (toVariableName) {
+            //process variableName=,   a toVariableName query
+            int po = fullNameSA.indexOf(queryFullName);
+            if (po < 0) {
+                tError = "fullName=\"" + queryFullName + 
+                    "\" isn't an exact match of an oceanic/atmospheric full name.";
+            } else {
+                //success
+                answerFullName = queryFullName;
+                answerVariableName = variableNameSA.get(po);
+            }
+
+        } else if (toFullName) {        
+            //process fullName=,   a toFullName query            
+            int po = variableNameSA.indexOf(queryVariableName);
+            if (po < 0) {
+                tError = "variableName=\"" + queryVariableName + 
+                    "\" isn't an exact match of an oceanic/atmospheric variable name.";
+            } else {
+                //success
+                answerVariableName   = queryVariableName;
+                answerFullName = fullNameSA.get(po);
+            }
+
+        } else {
+            //no query. use the default values...
+        }
+
+        //do the .txt response
+        if (endOfRequestUrl.equals("oceanicAtmosphericVariableNames.txt")) {
+
+            //throw exception?
+            if (tError == null && !toVariableName && !toFullName)
+                tError = "You must specify a variableName= or fullName= parameter (for example \"?variableName=" + 
+                defaultVariableName + "\") at the end of the URL.";
+            if (tError != null) 
+                throw new SimpleException(tError);
+
+            //respond to a valid request
+            OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
+                "ConvertOceanicAtmosphericVariableName", ".txt", ".txt")).outputStream("UTF-8");
+            Writer writer = new OutputStreamWriter(out, "UTF-8");
+
+            if (toVariableName) 
+                writer.write(answerVariableName);
+            else if (toFullName) 
+                writer.write(answerFullName);            
+            
+            writer.flush(); //essential
+            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            out.close(); 
+            return;
+        }
+
+        //do the .html response
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
+        widgets.enterTextSubmitsForm = true; 
+        OutputStream out = getHtmlOutputStream(request, response);
+        Writer writer = getHtmlWriter(loggedInAs, "Convert Oceanic/Atmospheric Variable Names", out); 
+        try {
+            writer.write(
+                EDStatic.youAreHere(loggedInAs, "convert", "Oceanic/Atmospheric Variable Names") +
+                "<h2>" + EDStatic.convertOceanicAtmosphericVariableNames + "</h2>\n" +
+                EDStatic.convertOceanicAtmosphericVariableNamesIntro + "\n");
+
+     
+            //Convert from VariableName to FullName
+            writer.write(
+                HtmlWidgets.ifJavaScriptDisabled + "\n" +
+                widgets.beginForm("getFullName", "GET", tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html", "") +
+                "<b>Convert from</b>\n" + 
+                widgets.textField("variableName", variableNameTooltip, 20, 20, 
+                    answerVariableName.length() > 0? answerVariableName :
+                    queryVariableName.length()  > 0? queryVariableName  : defaultVariableName, 
+                    "") + 
+                "\n<b> to a fullName name. </b>&nbsp;&nbsp;" +
+                widgets.button("submit", null, "", 
+                    "Convert",
+                    "") + 
+                "\n");
+
+            if (toFullName) {
+                writer.write(tError == null?
+                    "<br><font class=\"successColor\">" + 
+                        XML.encodeAsHTML(answerVariableName) + " = " + 
+                        XML.encodeAsHTML(answerFullName) + "</font>\n" :
+                    "<br><font class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</font>\n");                
+            } else {
+                writer.write("<br>&nbsp;\n");
+            }
+
+            writer.write(widgets.endForm() + "\n");
+
+            //Convert from FullName to VariableName
+            String selectedFullName = 
+                answerFullName.length() > 0? answerFullName :
+                queryFullName.length()  > 0? queryFullName  : defaultFullName;
+            String options[] = fullNameSA.toStringArray();
+            Arrays.sort(options, new StringComparatorIgnoreCase());
+            writer.write(
+                "<br>&nbsp;\n" +  //necessary for the blank line before start of form (not <p>)
+                widgets.beginForm("getVariableName", "GET", tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html", "") +
+                "<b>Convert from</b>\n" + 
+                //widgets.textField("fullName", fullNameTooltip, 35, 50, selectedFullName, "") + 
+                widgets.select("fullName", fullNameTooltip, 1, options,
+                    String2.indexOf(options, selectedFullName), 
+                    "onchange=\"this.form.submit();\"") +
+                "\n<b> to a variable name. </b>&nbsp;&nbsp;" +
+                //widgets.button("submit", null, "", 
+                //    "Convert",
+                //    "") + 
+                "\n");
+
+            if (toVariableName) {
+                writer.write(tError == null?
+                    "<br><font class=\"successColor\">" + 
+                        XML.encodeAsHTML(answerFullName) + " = " + 
+                        XML.encodeAsHTML(answerVariableName) + "</font>\n" :
+                    "<br><font class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</font>\n");                
+            } else {
+                writer.write("<br>&nbsp;\n");
+            }
+
+            writer.write(widgets.endForm() + "\n");
+
+            //reset the form
+            writer.write(
+                "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + 
+                    "/convert/oceanicAtmosphericVariableNames.html\">" + EDStatic.resetTheForm + "</a>\n" +
+                "<p>Or, <a rel=\"help\" href=\"#computerProgram\">bypass this web page</a>\n" +
+                "  and do oceanic/atmospheric variable name conversions from within a computer program, script, or web page.\n");
+
+            //get the entire list
+            writer.write(
+                "<p>Or, view/download the entire oceanic/atmospheric variable names list in these file types: " +
+                plainLinkExamples(tErddapUrl, "/convert/oceanicAtmosphericVariableNames", ""));
+
+            //notes  (always non-https urls)
+            writer.write(EDStatic.convertOceanicAtmosphericVariableNamesNotes);
+
+            //Info about .txt service option   (always non-https urls)
+            writer.write(EDStatic.convertOceanicAtmosphericVariableNamesService);
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(t));
+        }
+
+        //end of document
+        endHtmlWriter(out, writer, tErddapUrl, false);
+    }
+
+
+    
     /**
      * Process erddap/convert/keywords.html [and ???.txt].
      *
@@ -10993,7 +11488,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertTime", ".txt", ".txt")).outputStream("UTF-8");
+                "ConvertKeywords", ".txt", ".txt")).outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
 
             if (toCF) 
@@ -11086,7 +11581,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "  <br>&nbsp;\n" +
 
                 "<li><a rel=\"help\" href=\"#computerProgram\">Bypass this web page</a>\n" +
-                "  and do keyword conversions from within a computer program.\n" +
+                "  and do keyword conversions from within a computer program, script, or web page.\n" +
                 "  <br>&nbsp;\n" +
 
                 //get the entire CF or GCMD list
@@ -11339,7 +11834,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + 
                     "/convert/time.html\">" + EDStatic.resetTheForm + "</a>\n" +
                 "<p>Or, <a rel=\"help\" href=\"#computerProgram\">bypass this web page</a>\n" +
-                "  and do time conversions from within a computer program.\n");
+                "  and do time conversions from within a computer program, script, or web page.\n");
 
             //notes  (always non-https urls)
             writer.write(EDStatic.convertTimeNotes);
@@ -11927,7 +12422,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 //int nBefore = sa.size();
                 sa.removeDuplicates();
                 //String2.log(pName + " nBefore=" + nBefore + " nAfter=" + sa.size());
-                sa.addString(0, ANY);
+                sa.atInsert(0, ANY);
                 String saa[] = sa.toStringArray();
                 int which = param[p] == null? 0 : String2.indexOf(saa, param[p]);
                 if (which < 0)
@@ -13279,7 +13774,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
         } else if (fileTypeName.equals(".json")) {
             //did query include &.jsonp= ?
-            String parts[] = EDD.getUserQueryParts(request.getQueryString()); //decoded
+            String parts[] = Table.getDapQueryParts(request.getQueryString()); //decoded
             String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
             if (jsonp != null) {
                 jsonp = jsonp.substring(7);
@@ -14249,10 +14744,9 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nSome of these tests don't work if the localhost erddap is configured to look like POST." +
-                "\nError accessing " + EDStatic.erddapUrl +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nError accessing " + EDStatic.erddapUrl); 
         }
     }
 

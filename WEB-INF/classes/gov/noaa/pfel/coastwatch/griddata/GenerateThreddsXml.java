@@ -355,9 +355,9 @@ public class GenerateThreddsXml {
 
                     //add hday and mday back in 
                     if (hdayIndex >= 0)
-                        timePeriodsSA.add(0, "hday");
+                        timePeriodsSA.atInsert(0, "hday");
                     if (mdayIndex >= 0)
-                        timePeriodsSA.add(timePeriodsSA.size(), "mday");
+                        timePeriodsSA.atInsert(timePeriodsSA.size(), "mday");
                     //String2.log("final sorted timePeriodsSA: " + timePeriodsSA);
                     timePeriods = timePeriodsSA.toArray();
                 }

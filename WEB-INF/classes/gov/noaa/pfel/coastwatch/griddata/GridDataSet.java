@@ -571,7 +571,7 @@ public abstract class GridDataSet {
      *
      * <p>!!!LIMITATION: this method cleans up the attributes from the
      * metadata standards that I am familiar with 
-     * (COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF).
+     * (COARDS, CF-1.6, ACDD-1.3, CWHDF).
      * But there is no way it can clean up other metadata from other standards
      * that I don't know about.
      * Hence, metadata that is passed through may be incorrect (e.g., the 
@@ -607,7 +607,6 @@ public abstract class GridDataSet {
         //assemble the global metadata attributes
         //!!! In general, set attributes that haven't already been set.
         gridGlobalAttributes.set("Conventions",               FileNameUtility.getConventions());
-        gridGlobalAttributes.set("Metadata_Conventions",      FileNameUtility.getMetadataConventions());
         gridGlobalAttributes.set("standard_name_vocabulary",  FileNameUtility.getStandardNameVocabulary());
         gridGlobalAttributes.set("title",                     boldTitle);
         if (gridGlobalAttributes.get("keywords") == null && keywords != null) {

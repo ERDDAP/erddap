@@ -17,6 +17,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -160,6 +161,9 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
+        String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
+        String2.log(NcHelper.dumpString(sampleFileName, false));
+
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
@@ -171,7 +175,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 dataSourceTable.getColumn(c),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    true, true)); //addColorBarMinMax, tryToFindLLAT
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
         //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -249,6 +254,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
+        //debugMode = true;
 
         try {
             //public static String generateDatasetsXml(
@@ -261,8 +267,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             //    Attributes externalAddGlobalAttributes) throws Throwable {
 
             String results = generateDatasetsXml(
-                "c:/data/nccf/", "ncCF1b\\.nc",
-                "c:/data/nccf/ncCF1b.nc",
+                EDStatic.unitTestDataDir + "nccf/", "ncCF1b\\.nc",
+                EDStatic.unitTestDataDir + "nccf/ncCF1b.nc",
                 1440,
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "line_station time", 
@@ -271,8 +277,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromNcCFFiles",
-                "c:/data/nccf/", "ncCF1b\\.nc",
-                "c:/data/nccf/ncCF1b.nc",
+                EDStatic.unitTestDataDir + "nccf/", "ncCF1b\\.nc",
+                EDStatic.unitTestDataDir + "nccf/ncCF1b.nc",
                 "1440",
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "line_station time", 
@@ -284,10 +290,10 @@ String expected =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"nccf_3492_0c4f_44b3\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"nccf_8867_6a37_8e8f\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>c:/data/nccf/</fileDir>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "nccf/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>ncCF1b\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -349,6 +355,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-124.32333</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">CalCOFI</att>\n" +
 "        <att name=\"creator_url\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
 "        <att name=\"keywords\">1984-2004, altitude, animals, aquatic, atmosphere,\n" +
@@ -358,9 +365,11 @@ directionsForGenerateDatasetsXml() +
 "biology, biosphere,\n" +
 "Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat,\n" +
 "Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat,\n" +
-"calcofi, classification, coastal, code, common, count, cruise, ecosystems, fish, fisheries, habitat, height, larvae, line, marine, name, number, observed, occupancy, oceans,\n" +
+"calcofi, california, classification, coastal, code, common, cooperative, count, cruise, data, ecosystems, fish, fisheries, habitat, height, identifier, investigations, larvae, latitude, line, line_station, longitude, marine, name, number, observed, obsScientific, obsUnits, obsValue, occupancy, ocean, oceanic, oceans,\n" +
 "Oceans &gt; Aquatic Sciences &gt; Fisheries,\n" +
 "order, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n" +
+"        <att name=\"Metadata_Conventions\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>line_station</sourceName>\n" +
@@ -498,16 +507,15 @@ directionsForGenerateDatasetsXml() +
             //    expected, "");
 
             EDD edd = oneFromXmlFragment(results);
-            Test.ensureEqual(edd.datasetID(), "nccf_3492_0c4f_44b3", "");
+            Test.ensureEqual(edd.datasetID(), "nccf_8867_6a37_8e8f", "");
             Test.ensureEqual(edd.title(), "CalCOFI Fish Larvae Count, 1984-2004", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "line_station, longitude, latitude, altitude, time, obsScientific, obsValue, obsUnits", 
                 "");
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
 
     }
@@ -573,8 +581,8 @@ directionsForGenerateDatasetsXml() +
     public static void testKevin20130109() throws Throwable {
         String2.log("\n****************** EDDTableFromNcCFFiles.testKevin20130109() *****************\n");
         testVerboseOn();
-        boolean oDebugMode = debugMode;  debugMode = true;
-        boolean oDebug = Table.debug;    Table.debug = true;
+        boolean oDebugMode = debugMode; debugMode = true;
+        boolean oTableDebug = Table.debugMode; Table.debugMode = true;
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -615,7 +623,7 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         debugMode = oDebugMode;
-        Table.debug = oDebug;
+        Table.debugMode = oTableDebug;
 
     }
 
@@ -823,7 +831,7 @@ directionsForGenerateDatasetsXml() +
     "    String short_name \"SWHQC\";\n" +
     "    String standard_name \"significant_height_of_wind_and_swell_waves data_quality\";\n" +
     "    String units \"1\";\n" +
-    "    Int16 valid_range -127, 127;\n" +
+    "    Byte valid_range -127, 127;\n" +
     "  \\}\n" +
     "  dominant_wave_period \\{\n" +
     "    Int32 _ChunkSize 1;\n" +
@@ -861,7 +869,7 @@ directionsForGenerateDatasetsXml() +
     "    String short_name \"DWPQ\";\n" +
     "    String standard_name \"period data_quality\";\n" +
     "    String units \"1\";\n" +
-    "    Int16 valid_range -127, 127;\n" +
+    "    Byte valid_range -127, 127;\n" +
     "  \\}\n" +
     " \\}\n" +
     "  NC_GLOBAL \\{\n" +
@@ -876,7 +884,7 @@ directionsForGenerateDatasetsXml() +
     "    String clock_time \"Center of period\";\n" +
     "    String contact \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n" +
     "    String control_box_serial_number \"UMECB124\";\n" +
-    "    String Conventions \"CF-1.6, COARDS, Unidata Dataset Discovery v1.0\";\n" +
+    "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
     "    String creator_email \"nealp@maine.edu,ljm@umeoce.maine.edu,bfleming@umeoce.maine.edu\";\n" +
     "    String creator_name \"Neal Pettigrew\";\n" +
     "    String creator_url \"http://gyre.umeoce.maine.edu\";\n" +
@@ -933,7 +941,6 @@ directionsForGenerateDatasetsXml() +
     "    String long_name \"B01\";\n" +
     "    Float64 longitude -70.42778651970477;\n" +
     "    Float64 magnetic_variation -16.3;\n" +
-    "    String Metadata_Conventions \"CF-1.6, COARDS, Unidata Dataset Discovery v1.0\";\n" +
     "    String mooring_site_desc \"Western Maine Shelf\";\n" +
     "    String mooring_site_id \"B0125\";\n" +
     "    String mooring_type \"Slack\";\n" +
@@ -991,8 +998,7 @@ directionsForGenerateDatasetsXml() +
     "B01,-70.42755,43.18044,0.0,2002-03-28T22:00:00Z,,,1.720958,0,10.66667,0\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
 
         try {    
@@ -1022,8 +1028,7 @@ directionsForGenerateDatasetsXml() +
     "B01\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
 
 

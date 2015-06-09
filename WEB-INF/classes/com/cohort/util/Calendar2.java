@@ -151,6 +151,19 @@ public class Calendar2 {
     }
 
     /**
+     * This determines if a variable is a TimeStamp variable by looking
+     * for "[a-zA-Z]+ +since +[0-9].*" (used for UDUNITS numeric times) or 
+     * "yy" or "YY" (a formatting string which has the year designator) in the units attribute.
+     */
+    public static boolean isTimeUnits(String tUnits) {
+        if (tUnits == null)
+            return false;
+        tUnits = tUnits.toLowerCase();
+        return tUnits.indexOf("yy") >= 0 ||
+               tUnits.matches(" *[a-z]+ +since +[0-9].+");
+    }
+
+    /**
      * This converts a string "[units] since [isoDate]" 
      * (e.g., "minutes since 1985-01-01") into 
      * a baseSeconds (seconds since 1970-01-01) and a factor ("minutes" returns 60).
@@ -356,7 +369,7 @@ public class Calendar2 {
         gc.set(MILLISECOND, 0); 
         String tError = 
             "Query error: Timestamp constraints with \"now\" must be in the form " +
-            "\"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\".  " +
+            "\"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  " +
             "\"" + nowString + "\" is invalid.";
         if (nowString == null || !nowString.startsWith("now"))
             throw new SimpleException(tError);
@@ -370,12 +383,13 @@ public class Calendar2 {
             else throw new SimpleException(tError);
 
             //keep going?  parse the number
-            int n = 0;
+            int n = 1;
             if (start > 0) {
                 int end = 4;
                 while (nowString.length() > end && String2.isDigit(nowString.charAt(end)))
                     end++;
-                n = String2.parseInt(nowString.substring(start, end));
+                n = String2.parseInt(nowString.substring(start, end) + 
+                    (end==4? "1" : ""));
                 if (n == Integer.MAX_VALUE) {
                     throw new SimpleException(tError);
                 } else { 

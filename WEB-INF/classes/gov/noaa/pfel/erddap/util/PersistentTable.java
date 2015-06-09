@@ -718,8 +718,7 @@ public class PersistentTable {
 
             pt.close();
         }
-        //String2.getStringFromSystemIn("\n(considerable variation) Okay?\n" +
-        //    "Press ^C to stop or Enter to continue..."); 
+        //String2.pressEnterToContinue("\n(considerable variation) Okay?"); 
     }
 
 

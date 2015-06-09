@@ -346,7 +346,7 @@ String2.log("!!!Category=" + category);
                         tActiveVectorTimePeriodTimes.add(String2.toStringArray(commonDates.toArray()));
                     //if (oneOf.verbose()) String2.log("vectorI=" + vectorI + 
                     //    " activeVectorTimeOption=" + xATPO
-                    //    //+ " dates=" + String2.noLongerThan(
+                    //    //+ " dates=" + String2.noLongerThanDots(
                     //    //    String2.toCSSVString(String2.toStringArray(commonDates.toArray())), 200)
                     //    );
                     }
@@ -1025,7 +1025,7 @@ String2.log("!!!Category=" + category);
         String[] options = shared.activeGridDataSetOptions(); 
         String[] name7s  = shared.activeGridDataSet7Names();
         for (int i = 0; i < options.length; i++)
-            String2.log(name7s[i] + " = " + String2.noLongerThan(options[i], 68));
+            String2.log(name7s[i] + " = " + String2.noLongerThanDots(options[i], 68));
         Math2.gcAndWait(); Math2.gcAndWait(); //part of a test 
         String2.log(Math2.memoryString() +  //~45 MB for CWBrowser
             "\nShared.test done. TIME=" + 

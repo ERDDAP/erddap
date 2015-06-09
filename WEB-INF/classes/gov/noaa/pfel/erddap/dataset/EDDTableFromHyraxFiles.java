@@ -375,6 +375,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);;
         DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
 
+        //get source global attributes
+        OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
+
         //variables
         Enumeration en = dds.getVariables();
         while (en.hasMoreElements()) {
@@ -400,6 +403,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 dataAddTable.addColumn(dataAddTable.nColumns(), varName, 
                     PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false),
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        dataSourceTable.globalAttributes(),
                         sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
                 //if a variable has timeUnits, files are likely sorted by time
@@ -421,7 +425,6 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         }
 
         //global attributes
-        OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
         if (externalAddGlobalAttributes == null)
             externalAddGlobalAttributes = new Attributes();
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
@@ -523,7 +526,7 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
 "        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
@@ -532,12 +535,11 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atmospheric, component, derived, downward, eastward, eastward_wind, flk, gsfc, level, meters, nasa, noaa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
+"atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -726,9 +728,8 @@ directionsForGenerateDatasetsXml() +
             */
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
 
     }
@@ -786,9 +787,8 @@ directionsForGenerateDatasetsXml() +
             */
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
     }
 
@@ -796,6 +796,8 @@ directionsForGenerateDatasetsXml() +
      * This tests the methods in this class.
      * This is a bizarre test since it is really gridded data. But no alternatives currently. 
      * Actually, this is useful, because it tests serving gridded data via tabledap.
+     *
+     * <p>Also, this is a test of ERDDAP adjusting valid_range by scale_factor add_offset
      *
      * @throws Throwable if trouble
      */
@@ -869,7 +871,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 missing_value -50.001526;\n" +
 "    String standard_name \"eastward_wind\";\n" +
 "    String units \"m/s\";\n" +
-"    Float32 valid_range -50.0, 50.0;\n" +
+"    Float32 valid_range -50.0, 50.0;\n" + //this is a test of ERDDAP adjusting valid_range by scale_factor add_offset
 "  }\n" +
 "  vwnd {\n" +
 "    Float32 actual_range -17.49374, 19.36153;\n" +
@@ -929,7 +931,7 @@ directionsForGenerateDatasetsXml() +
 "  NC_GLOBAL {\n" +
 "    Int16 base_date 1987, 9, 28;\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String description \"Time average of level3.0 products for the period: 1987-09-28 to 1987-10-02\";\n" +
 "    Float64 Easternmost_Easting 359.875;\n" +
 "    String featureType \"Point\";\n" +
@@ -962,11 +964,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 78.375;\n" +
 "    String sourceUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\";\n" +
 "    Float64 Southernmost_Northing -78.375;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"Time average of level3.0 products for the period: 1987-09-08 to 1987-09-12\";\n" +
 "    String time_coverage_end \"1987-09-28T00:00:00Z\";\n" +
 "    String time_coverage_start \"1987-09-03T00:00:00Z\";\n" +
@@ -981,8 +982,8 @@ expected =
                 expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //*** test getting dds for entire dataset
@@ -1007,8 +1008,8 @@ expected =
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //*** test make data files
@@ -1051,8 +1052,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //.csv    few variables,  for small lat,lon range,  one time
@@ -1082,14 +1083,13 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         /* */
     }
-
-
+  
 
     /**
      * This tests the methods in this class.

@@ -17,6 +17,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EDUnits;
 
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 
 /** 
@@ -113,7 +114,7 @@ public class EDV {
         "Ice Distribution", "Identifier", 
         LOCATION_CATEGORY,  //bob added
         "Meteorology", //bob added; use if not Temperature or Wind
-        "Ocean Color", "Optical Properties",  //what is dividing line?
+        "Ocean Color", "Optical Properties",  //what is dividing line?  OptProp is for atmosphere, too
         "Other", //bob added
         "Pathogens", 
         "Physical Oceanography", //Bob added 2011-10-11
@@ -163,6 +164,7 @@ public class EDV {
      * It is smaller than SLIDER_PIXELS because 2 pixels/value makes it easier for users to pick a value.
      */
     public final static int SLIDER_MAX_NVALUES = SLIDER_PIXELS / 2;
+
 
 
     //*************** END OF STATIC VARIABLES ***********************
@@ -319,7 +321,7 @@ public class EDV {
             destinationMin = tSourceMin;  
             destinationMax = tSourceMax;
         }
-        //String2.getStringFromSystemIn("!!!sourceName=" + sourceName + " type=" + sourceDataType + " min=" + destinationMin);
+        //String2.pressEnterToContinue("!!!sourceName=" + sourceName + " type=" + sourceDataType + " min=" + destinationMin);
 
         //makeCombinedAttributes
         makeCombinedAttributes(); 
@@ -364,7 +366,42 @@ public class EDV {
         }
         safeDestinationMissingValue = Double.isNaN(destinationFillValue)? //fill has precedence
             destinationMissingValue : destinationFillValue;
+
+        //after extractScaleAddOffset, adjust valid_range
+        PrimitiveArray vr = combinedAttributes.get("unpacked_valid_range"); 
+        if (vr == null) {
+            vr = combinedAttributes.get("valid_range"); 
+            if (vr != null) {
+                //adjust valid_range
+                if (vr.size() == 2) {
+                    vr = PrimitiveArray.factory(destinationDataTypeClass, vr); 
+                    vr.scaleAddOffset(scaleFactor, addOffset);
+                    combinedAttributes.set("valid_range", vr);
+                } else {
+                    combinedAttributes.remove("valid_range");
+                }
+            }
+        } else {
+            //save unpacked_valid_range as valid_range (overwriting any previous version)
+            combinedAttributes.set("valid_range", vr);
+            combinedAttributes.remove("unpacked_valid_range");
+        }
+        //adjust valid_min and valid_max?
+        PrimitiveArray vMin = combinedAttributes.get("valid_min"); 
+        if (vMin != null) {
+            vMin = PrimitiveArray.factory(destinationDataTypeClass, vMin); 
+            vMin.scaleAddOffset(scaleFactor, addOffset);
+            combinedAttributes.set("valid_min", vMin);
+        }
+        PrimitiveArray vMax = combinedAttributes.get("valid_max"); 
+        if (vMax != null) {
+            vMax = PrimitiveArray.factory(destinationDataTypeClass, vMax); 
+            vMax.scaleAddOffset(scaleFactor, addOffset);
+            combinedAttributes.set("valid_max", vMax);
+        }
+
     }
+
 
     /** 
      * This variant constructor is only used for non-Lon,Lat,Alt,Time
@@ -628,25 +665,47 @@ public class EDV {
 
     /** 
      * This is used by generateDatasetsXml to suggests a long_name 
-     * (based on the destinationName or standard_name) if the long_name wasn't provided.
+     * (based on the sourceame or standard_name) if the long_name wasn't provided.
      * 
      * @param oLongName the original long_name (may be null or "");
-     * @param destinationName must be valid
-     * @param standardName  preferred starting point, but may be null or ""
+     * @param tSourceName must be valid
+     * @param tStandardName  preferred starting point, but may be null or ""
      * @return the suggested longName
+     * @throws Exception if trouble
      */
-    public static String suggestLongName(String oLongName, String destinationName, String standardName) {
-        //prefer standardName
+    public static String suggestLongName(String oLongName, String tSourceName, 
+        String tStandardName) throws Exception {
+        if (oLongName == null)
+            oLongName = "";
+        if (tSourceName == null)
+            tSourceName = "";
+        if (tStandardName == null)
+            tStandardName = "";
+        String fromAbbrev = EDStatic.gdxVariableNamesHashMap().get( //may be null
+            tSourceName.toLowerCase()); 
+        if (fromAbbrev == null) {
+            //handle e.g., SOG (knots)
+            int po = tSourceName.indexOf(" (");
+            if (po > 0)
+                fromAbbrev = EDStatic.gdxVariableNamesHashMap().get(
+                    tSourceName.substring(0, po).toLowerCase());
+        }
         String ttName = 
+            //prefer tStandardName
             //standard names are great, but not always better than oLongName; tough call
-            standardName != null && standardName.length() > 0? standardName : 
-            oLongName    != null && oLongName.length()    > 0? oLongName :
-            destinationName;
+            tStandardName.equals("time") && oLongName.length() > 0? oLongName :
+            tStandardName.equals("time") && tSourceName.length() > 0? tSourceName :
+            tStandardName.length() > 0? tStandardName : 
+            oLongName.length()     > 0? oLongName :
+            fromAbbrev    != null? fromAbbrev :
+            tSourceName;
+        if ("pH".equals(ttName))
+            return ttName;
         StringBuilder tName = new StringBuilder(ttName.trim());
-
         String2.replaceAll(tName, "_", " ");
-
-        String result = tName.toString();  //default
+        while (tName.length() > 0 && "*_".indexOf("" + tName.charAt(tName.length() - 1)) >= 0)
+            tName.setLength(tName.length() - 1);
+        String result = tName.toString().trim();  //default
 
         String tNameLC = result.toLowerCase();
         if (tNameLC.startsWith("eta ") ||
@@ -662,11 +721,13 @@ public class EDV {
 
             //change "camelCase" to spaced "camel Case"
             //  but don't space out an acronym, e.g., E T O P O
+            //  and don't split hyphenated words, e.g.,   Real- Time
             for (int i = tName.length() - 1; i > 0; i--) {
                 char chi  = tName.charAt(i);
                 char chi1 = tName.charAt(i - 1);
                 if (chi  != Character.toLowerCase(chi)  &&
-                    chi1 == Character.toLowerCase(chi1) && chi1 != ' ') {
+                    chi1 == Character.toLowerCase(chi1) && 
+                    Character.isLetterOrDigit(chi1)) {
                     tName.insert(i, ' ');
                 }
             }
@@ -689,9 +750,22 @@ public class EDV {
             }
         }
 
+        //shorten the name?
+        String seek = "aasg:"; //special case
+        int po = -1;
+        if (result.length() > 6)
+            po = result.substring(0, result.length() - 1).lastIndexOf(seek);
+        //NOT YET. Most sourceNames aren't too long. aasg is the only known exception.
+        //look for last '/', but not at very end
+        //  and avoid e.g., several something_quality -> quality
+        //if (po < 0 && result.length() > 60) 
+        //    po = result.substring(0, result.length() - 30).lastIndexOf(seek = "/");
+        if (po >= 0)
+            result = result.substring(po + seek.length());
+
         //return
-        //String2.log("suggestLongName o=" + oLongName + " destName=" + destinationName + 
-        //    " stdName=" + standardName + " result=" + result);
+        //String2.log(">> suggestLongName o=" + oLongName + " sourceName=" + tSourceName + 
+        //    " stdName=" + tStandardName + " result=" + result);
         return result;
 
     }
@@ -1307,6 +1381,7 @@ public class EDV {
      * @throws Throwable if trouble.
      */
     public static void test() throws Throwable {
+        String2.log("\n*** EDV.test()");
         Test.ensureEqual(toDecimalDegrees("1.1W"), -1.1, "");
         Test.ensureEqual(toDecimalDegrees("2.2E"), 2.2, "");
         Test.ensureEqual(toDecimalDegrees("3.3S"), -3.3, "");
@@ -1315,5 +1390,11 @@ public class EDV {
         Test.ensureEqual(toDecimalDegrees("4°5.6'"),    4 + 5.6/60.0, "");
         Test.ensureEqual(toDecimalDegrees("1°2'3.4\"S"), -(1 + 2/60.0 + 3.4/3600.0), "");
         Test.ensureEqual(toDecimalDegrees("4°5'6.7\""),    4 + 5/60.0 + 6.7/3600.0, "");
+
+        Test.ensureEqual(suggestLongName("real-time temp", "rt", null), "Real-time Temp", "");
+        Test.ensureEqual(suggestLongName("real_time_temp", "rt", null), "Real Time Temp", "");
+        Test.ensureEqual(suggestLongName("real.time.temp", "rt", null), "Real.time.temp", "");
+        Test.ensureEqual(suggestLongName("RealTimeTemp",   "rt", null), "Real Time Temp", "");
+        Test.ensureEqual(suggestLongName(null, "rhum", null), "Relative Humidity", "");
     }
 }

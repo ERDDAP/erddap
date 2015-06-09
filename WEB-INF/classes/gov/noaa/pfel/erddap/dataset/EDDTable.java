@@ -96,7 +96,7 @@ import ucar.ma2.*;
 public abstract class EDDTable extends EDD { 
 
     public final static String dapProtocol = "tabledap"; 
-    public final static String SEQUENCE_NAME = "s"; //same for all datasets
+    public final static String SEQUENCE_NAME = Table.SEQUENCE_NAME; //same for all datasets
    
     /** 
      * This is a list of all operator symbols (for my convenience in parseUserDapQuery: 
@@ -109,10 +109,10 @@ public abstract class EDDTable extends EDD {
      *    and no source supports string &lt; &lt;= &gt; &gt;= testing),
      * ERDDAP will just get all the relevant data and do the test itself. 
      */
-    public final static String OPERATORS[] = { 
+    public final static String OPERATORS[] = Table.OPERATORS;
         //EDDTableFromFiles.isOK relies on this order
-        "!=", PrimitiveArray.REGEX_OP, "<=", ">=",   
-        "=", "<", ">"}; 
+        //"!=", PrimitiveArray.REGEX_OP, "<=", ">=",   
+        //"=", "<", ">"}; 
     /** Partially Percent Encoded Operators ('=' is not encoded)*/
     public final static String PPE_OPERATORS[] = { 
         //EDDTableFromFiles.isOK relies on this order
@@ -1009,19 +1009,19 @@ public abstract class EDDTable extends EDD {
                             constraintValues.set(cv, "" + (constraintValueD + fudge));
                         } else if (constraintOp.equals("=")) {
                             constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
-                            constraintVariables.add(cv + 1, constraintVariable);
-                            constraintOps.set(cv,     ">=");
-                            constraintOps.add(cv + 1, "<=");
-                            constraintValues.set(cv,     "" + (constraintValueD - fudge));
-                            constraintValues.add(cv + 1, "" + (constraintValueD + fudge)); 
+                            constraintVariables.atInsert(cv + 1, constraintVariable);
+                            constraintOps.set(cv,          ">=");
+                            constraintOps.atInsert(cv + 1, "<=");
+                            constraintValues.set(cv,          "" + (constraintValueD - fudge));
+                            constraintValues.atInsert(cv + 1, "" + (constraintValueD + fudge)); 
                         //2014-11-05 != modifications commented out. Leave constaint as it is.
                         //} else if (constraintOp.equals("!=")) {
                         //    constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
                         //    constraintVariables.add(cv + 1, constraintVariable);
-                        //    constraintOps.set(cv,     "<=");
-                        //    constraintOps.add(cv + 1, ">=");
-                        //    constraintValues.set(cv,     constraintValueD - fudge);
-                        //    constraintValues.add(cv + 1, constraintValueD + fudge); 
+                        //    constraintOps.set(cv,          "<=");
+                        //    constraintOps.atInsert(cv + 1, ">=");
+                        //    constraintValues.set(cv,          constraintValueD - fudge);
+                        //    constraintValues.atInsert(cv + 1, constraintValueD + fudge); 
                         }
                     }
                 }
@@ -1707,10 +1707,10 @@ public abstract class EDDTable extends EDD {
 
     /**
      * This parses a PERCENT ENCODED OPeNDAP DAP-style query.
-     * This checks the validity of the resultsVariable and constraintVariabe names.
+     * This checks the validity of the resultsVariable and constraintVariable names.
      *
      * <p>Unofficially (e.g., for testing) the query can be already percent decoded
-     * if there are no %dd in the query.
+     * if there are no %dd in the decoded query.
      *
      * <p>There can be a constraints on variables that
      * aren't in the user-specified results variables.
@@ -1766,9 +1766,11 @@ public abstract class EDDTable extends EDD {
         StringArray resultsVariables,
         StringArray constraintVariables, StringArray constraintOps, StringArray constraintValues,
         boolean repair) throws Throwable {
+        //!!! Table.parseDapQuery and EDDTable.parseUserDapQuery ARE ALMOST IDENTICAL!!!
+        //IF YOU MAKE CHANGES TO ONE, MAKE CHANGES TO THE OTHER.
 
         //parse userDapQuery into parts
-        String parts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+        String parts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
         resultsVariables.clear();
         constraintVariables.clear(); 
         constraintOps.clear(); 
@@ -1808,7 +1810,7 @@ public abstract class EDDTable extends EDD {
                                     "...\") must be preceded by '&'.");
                         }
                         throw new SimpleException(EDStatic.queryError +
-                             "Unrecognized variable=" + tVar);
+                             "Unrecognized variable=\"" + tVar + "\"");
                     }
                 } else {
                     //it's valid; is it a duplicate?
@@ -1943,7 +1945,7 @@ public abstract class EDDTable extends EDD {
                         //it must be a number (epochSeconds)
                         //test that value=NaN must use NaN or "", not just an invalidly formatted number
                         conValueD = String2.parseDouble(tValue);
-                        if (Double.isNaN(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
+                        if (!Math2.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
                             if (repair) {
                                 tValue = "NaN";
                                 conValueD = Double.NaN;
@@ -2018,7 +2020,7 @@ public abstract class EDDTable extends EDD {
 
                     //test of value=NaN must use "NaN", not somthing just a badly formatted number
                     conValueD = String2.parseDouble(tValue);
-                    if (Double.isNaN(conValueD) && !tValue.equals("NaN")) {
+                    if (!Math2.isFinite(conValueD) && !tValue.equals("NaN")) {
                         if (repair) {
                             conValueD = Double.NaN;
                             tValue = "NaN";
@@ -2240,7 +2242,7 @@ public abstract class EDDTable extends EDD {
     /**
      * This formats the resultsVariables and constraints as an OPeNDAP DAP-style query.
      * This does no checking of the validity of the resultsVariable or 
-     * constraintVariabe names, so, e.g., axisVariables may be referred to by
+     * constraintVariable names, so, e.g., axisVariables may be referred to by
      * the sourceNames or the destinationNames, so this method can be used in various ways.
      *
      * @param resultsVariables  
@@ -2474,7 +2476,7 @@ public abstract class EDDTable extends EDD {
         else if (fileTypeName.equals(".geoJson") || 
                  fileTypeName.equals(".json")) {
             //did query include &.jsonp= ?
-            String parts[] = getUserQueryParts(userDapQuery); //decoded
+            String parts[] = Table.getDapQueryParts(userDapQuery); //decoded
             String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
             if (jsonp != null) {
                 jsonp = jsonp.substring(7);
@@ -2713,7 +2715,7 @@ public abstract class EDDTable extends EDD {
         TableWriter tableWriter, String userDapQuery) throws Throwable {
         
         //work backwards through parts so tableWriters are added in correct order
-        String[] parts = getUserQueryParts(userDapQuery); //decoded
+        String[] parts = Table.getDapQueryParts(userDapQuery); //decoded
         for (int part = parts.length - 1; part >= 0; part--) {
             String p = parts[part];
             if (p.equals("distinct()")) {
@@ -3313,7 +3315,7 @@ public abstract class EDDTable extends EDD {
             double fontScale = 1, vectorStandard = Double.NaN;
             int drawLandAsMask = 0;  //holds the .land setting: 0=default 1=under 2=over
             StringBuilder title2 = new StringBuilder();
-            String ampParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+            String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
             for (int ap = 0; ap < ampParts.length; ap++) {
                 String ampPart = ampParts[ap];
                 if (debugMode) String2.log("saveAsImage 4 " + ap);
@@ -3828,7 +3830,7 @@ public abstract class EDDTable extends EDD {
                     yVar instanceof EDVTimeStamp, 
                     graphDataLayers,
                     g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
-                    fontScale); 
+                    SgtGraph.DefaultBackgroundColor, fontScale); 
 
                 writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
             }
@@ -4032,7 +4034,7 @@ public abstract class EDDTable extends EDD {
         String nulls = String2.makeString('\u0000', 32);
         for (int col = 0; col < nCols; col++) 
             stream.write(String2.toByteArray(
-                String2.noLongerThan(twawm.columnName(col), 31) + nulls), 0, 32);
+                String2.noLongerThan(twawm.columnName(col), 31) + nulls), 0, 32); //EEEK! Better not be longer.
 
         //write the structure's elements (one for each col)
         //This is pretty good at conserving memory (just one column in memory at a time).
@@ -4253,8 +4255,6 @@ public abstract class EDDTable extends EDD {
         globalAtts.set("featureType", "Point");
         globalAtts.set(                            "Conventions", 
             ensureAtLeastCF16(globalAtts.getString("Conventions")));
-        globalAtts.set(                            "Metadata_Conventions", 
-            ensureAtLeastCF16(globalAtts.getString("Metadata_Conventions")));
 
         //set the variable attributes
         //section 9.1.1 says "The coordinates attribute must identify the variables 
@@ -4482,8 +4482,6 @@ public abstract class EDDTable extends EDD {
             cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
-            cdmGlobalAttributes.set(                            "Metadata_Conventions", 
-                ensureAtLeastCF16(cdmGlobalAttributes.getString("Metadata_Conventions")));
             NcHelper.setAttributes(ncCF, "NC_GLOBAL", cdmGlobalAttributes);
 
 
@@ -4888,8 +4886,6 @@ public abstract class EDDTable extends EDD {
             cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
-            cdmGlobalAttributes.set(                            "Metadata_Conventions", 
-                ensureAtLeastCF16(cdmGlobalAttributes.getString("Metadata_Conventions")));
             NcHelper.setAttributes(ncCF, "NC_GLOBAL", cdmGlobalAttributes);
 
             //set the variable attributes
@@ -5787,7 +5783,7 @@ public abstract class EDDTable extends EDD {
         writer.write(widgets.endTable());
 
         //functions
-        String queryParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+        String queryParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
         int nOrderBy = 5;
         writeFunctionHtml(loggedInAs, queryParts, writer, widgets, nOrderBy);
 
@@ -5891,7 +5887,7 @@ public abstract class EDDTable extends EDD {
 
         //orderBy... function
         StringArray dvNames0 = new StringArray(dataVariableDestinationNames);
-        dvNames0.add(0, "");
+        dvNames0.atInsert(0, "");
         String dvList0[] = dvNames0.toArray();
         String important[]= nOrderBy == 4?
             //"most", "second most", "third most", ["fourth most",] "least"};
@@ -6626,6 +6622,8 @@ public abstract class EDDTable extends EDD {
             "        <li>For numeric variables, tests of <tt><i>variable</i>&lt;NaN</tt> (Not-a-Number) (or &lt;=, &gt;, &gt;=) will\n" +
             "          <br>return false for any value of the variable, even NaN.  NaN isn't a number so these\n" +
             "          <br>tests are nonsensical.\n" +
+            "          <br>Similarly, tests of <tt><i>variable</i>&lt;<i>aNonNaNValue</i></tt> (or &lt;=, &gt;, &gt;=) will return false\n" +
+            "          <br>whenever the variable's value is NaN.\n" +
             "        </ul>\n" +
             "      <li><a name=\"regularExpression\"><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
             "          tests if the value from the variable on the left matches the \n" +
@@ -7084,7 +7082,7 @@ public abstract class EDDTable extends EDD {
         String[] axis = axisSA.toArray();       axisSA = null;
         String[] nonLL = nonLLSA.toArray();     nonLLSA = null;
         String[] numDvNames = sa.toArray();
-        sa.add(0, "");
+        sa.atInsert(0, "");
         String[] numDvNames0 = sa.toArray();    sa = null;
         String[] dvNames0 = new String[dataVariableDestinationNames.length + 1]; //all, including string vars
         dvNames0[0] = "";
@@ -7178,7 +7176,7 @@ public abstract class EDDTable extends EDD {
 
             //parse the query so &-separated parts are handy
             String paramName, paramValue, partName, partValue, pParts[];
-            String queryParts[] = getUserQueryParts(userDapQuery); //always at least 1 part (may be "")
+            String queryParts[] = Table.getDapQueryParts(userDapQuery); //always at least 1 part (may be "")
             //String2.log(">>queryParts=" + String2.toCSSVString(queryParts));
 
             //try to setup things for zoomLatLon
@@ -8899,7 +8897,7 @@ public abstract class EDDTable extends EDD {
         String subsetVariablesCSV = String2.toSVString(subsetVariables, ",", false);
 
         //if present, the lastP parameter is not used for bigTable, but is used for smallTable
-        String queryParts[] = getUserQueryParts(userQuery); //decoded.  userQuery="" returns String[1]  with #0=""
+        String queryParts[] = Table.getDapQueryParts(userQuery); //decoded.  userQuery="" returns String[1]  with #0=""
         String start = ".last=";
         String val = String2.stringStartsWith(queryParts, start);
         if (val != null)
@@ -9300,7 +9298,7 @@ public abstract class EDDTable extends EDD {
                 //int nBefore = pa.size();
                 pa.removeDuplicates();
                 //String2.log("  " + pName + " nBefore=" + nBefore + " nAfter=" + pa.size());
-                pa.addString(0, ""); //place holder for ANY (but pa may be numeric so can't take it now)
+                pa.atInsertString(0, ""); //place holder for ANY (but pa may be numeric so can't take it now)
                 String pasa[] = pa.toStringArray();
                 pasa[0] = ANY;
                 //use NaN for numeric missing value
@@ -12696,7 +12694,7 @@ public abstract class EDDTable extends EDD {
         //parse the dapQuery
         String minLon = null, maxLon = null, minLat = null, maxLat = null, 
             minTime = null, maxTime = null;
-        String parts[] = getUserQueryParts(dapQuery); //decoded.  always at least 1 part (may be "")
+        String parts[] = Table.getDapQueryParts(dapQuery); //decoded.  always at least 1 part (may be "")
         for (int p = 0; p < parts.length; p++) {
             String part = parts[p];
             if      (part.startsWith("longitude>=")) {minLon = part.substring(11); }
@@ -19056,9 +19054,8 @@ writer.write(
     "                            </ioos:CompositeValue>\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
     }
 
@@ -19104,9 +19101,8 @@ writer.write(
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, Math.min(5000, results.length())));
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
     }
@@ -19278,9 +19274,8 @@ writer.write(
     "</om:Observation>\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
     }

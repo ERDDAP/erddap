@@ -207,7 +207,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         Table table = new Table();
         table.globalAttributes()
             .add("cdm_data_type",   CDM_OTHER)
-            .add("Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0")
+            .add("Conventions", "COARDS, CF-1.6, ACDD-1.3")
             .add("creator_name",    EDStatic.adminIndividualName)
             .add("creator_email",   EDStatic.adminEmail)
             .add("creator_url",     tErddapUrl)
@@ -215,7 +215,6 @@ public class EDDTableFromAllDatasets extends EDDTable{
             .add("institution",     EDStatic.adminInstitution)
             .add("keywords",        EDStatic.admKeywords)
             .add("license",         EDStatic.standardLicense)
-            .add("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0")
             .add("sourceUrl",       publicSourceUrl)
             .add("subsetVariables", EDStatic.admSubsetVariables) 
             .add("summary",         EDStatic.admSummary)

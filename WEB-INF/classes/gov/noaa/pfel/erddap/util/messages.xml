@@ -173,6 +173,7 @@ then click <tt>{0}</tt>.
 <ArrayAddN>ERROR in {0}.addN: n ({1}) &lt; 0.</ArrayAddN>
 <ArrayAppendTables>ERROR in PrimitiveArray.append:
 the tables have a different number of columns ({0} != {1}).</ArrayAppendTables>
+<ArrayAtInsert>ERROR in {0}.atInsert: index ({1}) is &lt; 0 or &gt; size ({2}).</ArrayAtInsert>
 <ArrayDiff>ERROR: The PrimitiveArrays differ at [{0}] ({1} != {2}).</ArrayDiff>
 <ArrayDifferentSize>The other primitiveArray has a different size ({0} != {1}).</ArrayDifferentSize>
 <ArrayDifferentValue>The other primitiveArray has a different value for [{0}] ({1} != {2}).</ArrayDifferentValue>
@@ -246,6 +247,134 @@ a table of datasets is displayed (e.g., when you do a full text search for datas
 
 
 <!-- These HTML messages are used to describe the "convert" options in general and individually. -->
+<convertOceanicAtmosphericAcronyms>Convert a Common Oceanic/Atmospheric Acronym to/from a Full Name</convertOceanicAtmosphericAcronyms>
+
+<!-- Don't change the examples (from defaultN...). -->
+<convertOceanicAtmosphericAcronymsIntro><![CDATA[
+This web page lets you convert a common oceanic/atmospheric acronym to/from a full name.
+<br>For example, the acronym "NOAA" converts to the full name "National Oceanic and Atmospheric Administration".
+<br>&nbsp;
+]]></convertOceanicAtmosphericAcronymsIntro>
+
+<convertOceanicAtmosphericAcronymsNotes><![CDATA[
+<p><a name="notes"><b>Notes</b></a>
+<ul>
+<li><a name="disclaimer">DISCLAIMER OF LIABILITY</a> -
+  No person or organization associated with this web site
+  makes any warranty, express or implied, including warranties of merchantability and
+  fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  completeness, or usefulness, of any information at this web site.
+  <br>&nbsp;
+<li><a name="exactMatch">Exact Match</a> -
+  This service requires case-sensitive, exact matches. If there is no exact
+  match, you will get an error error message. Most of the acronyms are entirely
+  upper case. Some common variants with different cases are included (e.g.,
+  ESPRESSO and ESPreSSO).
+  <br>&nbsp;
+<li><a name="notPerfect">Not Perfect</a> -
+  This service isn't perfect. Many acronyms could be expanded to two or more
+  full names. This service includes acronyms that fairly reliably (&gt; 95% confidence?) 
+  expand to a particular name, but that doesn't mean it will be correct for your use
+  of the acronym. This service doesn't include acronyms that commonly expand to more than 
+  one full name (e.g., SAF, which could be expanded to Synthetic Aperture Focusing 
+  or Satellite Application Facility).
+  <br>&nbsp;
+<li><a name="suggestions">Suggestions?</a> 
+  This service's list of acronyms is not complete. If you want to add a common 
+  acronym or make a correction, please email it to bob.simons at noaa.gov.
+  <br>&nbsp;
+</ul>
+]]></convertOceanicAtmosphericAcronymsNotes>
+
+<!-- Don't change the examples (from defaultN, ...). -->
+<convertOceanicAtmosphericAcronymsService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="computerProgram">Want</a> To Do Oceanic/Atmospheric Acronym Conversions from within a Computer Program, Script, or Web Page?</h2>
+If you change the extension of this web page''s URL from .html to .txt,
+  ERDDAP will respond with just the text result.
+<ul>
+<li>An example which converts an acronym to a full name is
+  <br><a 
+  href="{0}/convert/oceanicAtmosphericAcronyms.txt?acronym=NOAA"
+       >{0}/convert/oceanicAtmosphericAcronyms.txt?acronym=NOAA</a>
+ <br>&nbsp;
+<li>An example which converts a full name into an acronym is
+  <br><a
+href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20and%20Atmospheric%20Administration"
+     >{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20and%20Atmospheric%20Administration</a>
+  <br>&nbsp;
+</ul>
+Note that the parameter values in the URL must be properly
+ <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+ which is normally taken care of by a browser.
+]]></convertOceanicAtmosphericAcronymsService>
+
+<convertOceanicAtmosphericVariableNames>Convert a Common Oceanic/Atmospheric Variable Name to/from a Full Name</convertOceanicAtmosphericVariableNames>
+
+<!-- Don't change the examples (from defaultN...). -->
+<convertOceanicAtmosphericVariableNamesIntro><![CDATA[
+This web page lets you convert a common oceanic/atmospheric variable name to/from a full name.
+<br>For example, the variable name "sst" converts to the full name "Sea Surface Temperature".
+<br>&nbsp;
+]]></convertOceanicAtmosphericVariableNamesIntro>
+
+<convertOceanicAtmosphericVariableNamesNotes><![CDATA[
+<p><a name="notes"><b>Notes</b></a>
+<ul>
+<li><a name="disclaimer">DISCLAIMER OF LIABILITY</a> -
+  No person or organization associated with this web site
+  makes any warranty, express or implied, including warranties of merchantability and
+  fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  completeness, or usefulness, of any information at this web site.
+  <br>&nbsp;
+<li><a name="exactMatch">Exact Match</a> -
+  This service requires case-sensitive, exact matches. If there is no exact match,
+  you will get an error error message. All of the variable names are all lower case.
+  <br>&nbsp;
+<li><a name="notPerfect">Not Perfect</a> -
+  This service is far from perfect. Most variable names could be expanded to a large number
+  of different full names. This service includes some commonly used variable names 
+  that fairly reliably 
+  (&gt; 60% confidence?) expand to a particular name (ignoring minor variations),
+  but that doesn't mean the service will be correct for your use of the variable name. 
+  The service only includes the most common full name related to a given variable 
+  name (e.g., SST expands here to Sea Surface Temperature, not Surface Skin Temperature).
+  <br>&nbsp;
+<li><a name="suggestions">Suggestions?</a> 
+  This service's list of variable names is not complete. If you want to add a 
+  commonly used variable name or make a correction, 
+  please email it to bob.simons at noaa.gov.
+  <br>&nbsp;
+</ul>
+]]></convertOceanicAtmosphericVariableNamesNotes>
+
+<!-- Don't change the examples (from defaultN, ...). -->
+<convertOceanicAtmosphericVariableNamesService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="computerProgram">Want</a> To Do Oceanic/Atmospheric Variable Name Conversions from within a Computer Program, Script, or Web Page?</h2>
+If you change the extension of this web page''s URL from .html to .txt,
+  ERDDAP will respond with just the text result.
+<ul>
+<li>An example which converts a variable name to a full name is
+  <br><a 
+  href="{0}/convert/oceanicAtmosphericVariableNames.txt?variableName=sst"
+       >{0}/convert/oceanicAtmosphericVariableNames.txt?variableName=sst</a>
+ <br>&nbsp;
+<li>An example which converts a full name into a variable name is
+  <br><a
+href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20Temperature"
+     >{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20Temperature</a>
+  <br>&nbsp;
+</ul>
+Note that the parameter values in the URL must be properly
+ <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+ which is normally taken care of by a browser.
+]]></convertOceanicAtmosphericVariableNamesService>
+
 <convertFipsCounty>Convert a FIPS County Code to/from a County Name</convertFipsCounty>
 
 <!-- Don't change the examples (from defaultN...). -->
@@ -318,7 +447,7 @@ to/from a county name.
 <!-- Don't change the examples (from defaultN, ...). -->
 <convertFipsCountyService><![CDATA[
 <p>&nbsp;<hr>
-<h2><a name="computerProgram">Want</a> To Do FIPS County Conversions from within a Computer Program?</h2>
+<h2><a name="computerProgram">Want</a> To Do FIPS County Conversions from within a Computer Program, Script, or Web Page?</h2>
 If you change the extension of this web page''s URL from .html to .txt,
   ERDDAP will respond with just the text result.
 <ul>
@@ -401,7 +530,7 @@ Please email any suggested corrections to bob.simons at noaa.gov .
 <!-- Don't change the examples (from defaultN, ...). -->
 <convertKeywordsService><![CDATA[
 <p>&nbsp;<hr>
-<h2><a name="computerProgram">Want</a> To Do Keyword Conversions from within a Computer Program?</h2>
+<h2><a name="computerProgram">Want</a> To Do Keyword Conversions from within a Computer Program, Script, or Web Page?</h2>
 If you change the extension of this web page''s URL from .html to .txt,
   ERDDAP will respond with just the text result.
 <ul>
@@ -740,7 +869,7 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
 <!-- Don't change the examples (from defaultN, ...). -->
 <convertTimeService><![CDATA[
 <p>&nbsp;<hr>
-<h2><a name="computerProgram">Want</a> To Do Time Conversions from within a Computer Program?</h2>
+<h2><a name="computerProgram">Want</a> To Do Time Conversions from within a Computer Program, Script, or Web Page?</h2>
 If you change the extension of this web page''s URL from .html to .txt,
   ERDDAP will respond with just the text result.
 <ul>
@@ -1098,7 +1227,7 @@ Two common standards for writing units of measure are:
 <!-- Don't change the examples. -->
 <convertUnitsService><![CDATA[
 <p>&nbsp;<hr>
-<h2><a name="computerProgram">Want</a> To Do Conversions from within a Computer Program?</h2>
+<h2><a name="computerProgram">Want</a> To Do Conversions from within a Computer Program, Script, or Web Page?</h2>
 If you change the extension of this web page''s URL from .html to .txt,
  <br>and add the query <tt>UDUNITS=<i>udunitsString</i></tt> or <tt>UCUM=<i>ucumString</i></tt>,
  <br>ERDDAP will respond with just the text result.
@@ -2402,7 +2531,7 @@ Widths are in ratio 1:2:3.
 
 <queryErrorGridNotIdentical>The constraint {0} for variable={1} is not identical the constraint {2} for variable={2}.  If you need different subsets, make separate requests.</queryErrorGridNotIdentical>
 
-<queryErrorGridSLessS>StartIndex={0} is less than StopIndex={1}.</queryErrorGridSLessS>
+<queryErrorGridSLessS>StartIndex={0} is greater than StopIndex={1}.</queryErrorGridSLessS>
 
 <queryErrorLastEndP>{0} starts with "(", but doesn't end with ")".</queryErrorLastEndP>
 <queryErrorLastExpected>"last" was expected at the beginning of {0}.</queryErrorLastExpected>
@@ -2836,7 +2965,7 @@ Our focus is on making it easier for you to get scientific data.
 <p><font class="highlightColor"><b>Different scientific communities have developed different types of data servers,</b></font>
 <br>for example, OPeNDAP, WCS, SOS, OBIS, and countless custom web pages with forms.
 Each is great on its own.
-But without ERDDAP, it is difficult to get data from different types of servers:
+Without ERDDAP, it is difficult to get data from different types of servers:
 <ul>
 <li>Different data servers make you format your data request in different ways.
 <li>Different data servers return data in different formats, usually not the common file format that you want.
@@ -2920,6 +3049,10 @@ or via the source files or database.
 Then, people will have another way to access your data
 and will be able to download the data in additional file formats
 or as graphs or maps.
+ERDDAP has been installed by over 50 organizations worldwide.
+<a rel="bookmark"
+href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive</a> 
+includes ERDDAP in its list of recommended data servers for use by groups within NOAA. 
 ]]></standardShortDescriptionHtml>
 
 <subset>Subset</subset>
@@ -3057,43 +3190,44 @@ subsets of scientific datasets in common file formats and make graphs and maps.
 
 <h2>Table of Contents</h2>
 <ul>
-<li><a href="#problems">The Problems that ERDDAP Tries To Solve</a>
-<li><a href="#solutions">ERDDAP's Solutions</a>
+<li><a rel="bookmark" href="#problems">The Problems that ERDDAP Tries To Solve</a>
+<li><a rel="bookmark" href="#solutions">ERDDAP's Solutions</a>
   <ul>
-  <li><a href="#video">For a quick introduction to ERDDAP, watch the first half of this 
+  <li><a rel="bookmark" href="#video">For a quick introduction to ERDDAP, watch the first half of this 
     <img align="bottom" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
     video</a>.
     (5 minutes)
-  <li><a href="#localAndRemote">ERDDAP can get data from local (on the server's hard drive) and
+  <li><a rel="bookmark" href="#localAndRemote">ERDDAP can get data from local (on the server's hard drive) and
   remote (accessed via the web) data sources.</a>
-  <li><a href="#scientificData">ERDDAP can serve many types of scientific data, not just oceanographic data.</a>
-  <li><a href="#search">ERDDAP offers several ways to search for interesting datasets.</a>
-  <li><a href="#standardizedRequests">ERDDAP lets you request data in a standardized way.</a>
-  <li><a href="#userUnits">Requests for gridded data can be made in user units.</a>
-  <li><a href="#fileFormats">ERDDAP sends results in common data file formats.</a>
-  <li><a href="#LLAT">ERDDAP standardizes the variable names and units for longitude, latitude,
+  <li><a rel="bookmark" href="#scientificData">ERDDAP can serve many types of scientific data, not just oceanographic data.</a>
+  <li><a rel="bookmark" href="#search">ERDDAP offers several ways to search for interesting datasets.</a>
+  <li><a rel="bookmark" href="#standardizedRequests">ERDDAP lets you request data in a standardized way.</a>
+  <li><a rel="bookmark" href="#userUnits">Requests for gridded data can be made in user units.</a>
+  <li><a rel="bookmark" href="#fileFormats">ERDDAP sends results in common data file formats.</a>
+  <li><a rel="bookmark" href="#LLAT">ERDDAP standardizes the variable names and units for longitude, latitude,
   altitude, and time in the results.</a>
-  <li><a href="#metadata">ERDDAP can add or modify metadata.</a>
-  <li><a href="#images">ERDDAP lets you request .png and .pdf image files with graphs and maps.</a>
-  <li><a href="#compression">Requesting Compressed Files</a>
-  <li><a href="#interoperable">ERDDAP makes different types of data servers
+  <li><a rel="bookmark" href="#metadata">ERDDAP can add or modify metadata.</a>
+  <li><a rel="bookmark" href="#images">ERDDAP lets you request .png and .pdf image files with graphs and maps.</a>
+  <li><a rel="bookmark" href="#compression">Requesting Compressed Files</a>
+  <li><a rel="bookmark" href="#interoperable">ERDDAP makes different types of data servers
   (OPeNDAP, OBIS, SOS, WMS, ...) interoperable.</a>
-  <li><a href="#dataStructures">ERDDAP uses just two basic data structures to hold data.</a>
-  <li><a href="#subscriptions">ERDDAP offers email/URL and RSS subscription services.</a>
-  <li><a href="#diverseSources">ERDDAP is a web application and a web service.</a>
-  <li><a href="#rest">ERDDAP has REST- and ROA-style links to make its services available to
+  <li><a rel="bookmark" href="#dataStructures">ERDDAP uses just two basic data structures to hold data.</a>
+  <li><a rel="bookmark" href="#subscriptions">ERDDAP offers email/URL and RSS subscription services.</a>
+  <li><a rel="bookmark" href="#diverseSources">ERDDAP is a web application and a web service.</a>
+  <li><a rel="bookmark" href="#rest">ERDDAP has REST- and ROA-style links to make its services available to
   computer programs.</a>
-  <li><a href="#security">Security</a>
-  <li><a href="#chunks">ERDDAP processes data in chunks.</a>
-  <li><a href="#modular">ERDDAP has a modular structure.</a>
-  <li><a href="#pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a>
+  <li><a rel="bookmark" href="#security">Security</a>
+  <li><a rel="bookmark" href="#chunks">ERDDAP processes data in chunks.</a>
+  <li><a rel="bookmark" href="#modular">ERDDAP has a modular structure.</a>
+  <li><a rel="bookmark" href="#pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a>
   </ul>
-<li><a href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
-<li><a href="#cite">How to Cite ERDDAP in a Paper</a>
-<li><a href="#acronym">What does the acronym "ERDDAP" stand for?</a>
-<li><a href="#dataDistributionSystems">Guidelines for Data Distribution Systems</a>
-<li><a href="#setup">You can set up your own ERDDAP server.</a>
-<li><a href="#contact">Contact Us</a>
+<li><a rel="bookmark" href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
+<li><a rel="bookmark" href="#sustainable">How sustainable is the ERDDAP project?</a>
+<li><a rel="bookmark" href="#cite">How to Cite ERDDAP in a Paper</a>
+<li><a rel="bookmark" href="#acronym">What does the acronym "ERDDAP" stand for?</a>
+<li><a rel="bookmark" href="#dataDistributionSystems">Guidelines for Data Distribution Systems</a>
+<li><a rel="bookmark" href="#setup">You can set up your own ERDDAP server.</a>
+<li><a rel="bookmark" href="#contact">Contact Us</a>
 </ul>
 
 <h2><a name="problems">The Problems</a> that ERDDAP Tries To Solve</h2>
@@ -3664,7 +3798,6 @@ like
 </ul>
 
 
-
 <p><b><a name="sweetSpot">Is</a> ERDDAP a solution to everyone's data distribution / data access problems?</b>
 <br>No. ERDDAP tries to find a sweet spot that is a really good solution to most of the
 data distribution problems that we confronted.
@@ -3709,23 +3842,158 @@ sphere projection) is to also offer a reprojected version of the dataset
 These simpler data structures aren't meant to replace the original data structures,
 but they can be a useful way to distribute the data to a wider audience.
 
+
+<br>&nbsp;
+<p><a name="sustainable"><b>How sustainable is the ERDDAP project?</b></a>
+<br>ERDDAP is very sustainable.
+<br>Some people are surprised and disappointed to hear that ERDDAP is mostly
+developed by one person (me, Bob Simons). 
+[By the way, the opinions on this web page are my personal opinions and 
+do not necessarily reflect any position of the 
+Government or the National Oceanic and Atmospheric Administration.]
+They fear that if something happens
+to me, that will be end of ERDDAP. That is simply not true. 
+ERDDAP's positioning for long-term sustainability is excellent, 
+perhaps the best it could possibly be.
+
+<p>Yes, I am the main developer of ERDDAP. I am a fully funded federal employee. 
+My funding isn't "soft" money, so I don't receive or rely on grants.
+I spend more than half my time developing ERDDAP. 
+The rest of my time is spent managing datasets. 
+That work is useful for ERDDAP because I need to work with real datasets in order to
+know in detail what ERDDAP needs to do. My bosses fully support my work on
+ERDDAP because it does what I was hired to do: make it easier for fisheries
+scientists (primarily, but really everyone) to get scientific data from diverse
+sources.
+
+<p><a name="miraculous">The miraculous</a>
+thing about software is that it costs nothing to duplicate. 
+So to do my job, I write ERDDAP for use at ERD. I think that is the best possible way
+for me to do my job. That reason alone justifies the
+expense of developing ERDDAP. (I think it could be shown that ERDDAP has saved
+more NOAA scientist's time than that I have spent developing ERDDAP. Time=Money.)
+But the side benefit is that any other organization can 
+<a rel="bookmark" 
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">download, install, and use ERDDAP</a>
+<b>for free</b> to distribute their scientific data.  
+<br><a rel="bookmark" 
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations">Over 50 organizations around the world use ERDDAP</a>. Maybe there is such a thing as a free lunch.
+
+<p>ERDDAP is a Java program. The source code
+for every version is on 
+<a rel="bookmark" href="https://github.com/BobSimons">GitHub<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+the most commonly used system for collaborative
+software projects. One person in France has also contributed code (thank you!).
+I hope others will contribute code in the future.
+If something happens to me, my bosses will hire a replacement with the specific goal that
+s/he continue the development of ERDDAP.
+Further, I try to write very clean code. I write Java Doc comments. I write
+comments in the code. I chose variable names carefully. I follow the Java formatting guidelines.
+All of this is an effort
+to make the code more readable, for other programmers who want to understand
+and/or change it, and for me, because, in a year or two, I will have forgotten
+the details of how and why the code was written the way it was.  
+Clean code with good comments makes my ongoing work on ERDDAP easier, so I have a
+great incentive to write clean code with good comments.
+
+<p><a name="FOSS">But</a> all of my answers so far are not very important. 
+Only one thing that is really important. Only one thing guarantees sustainability
+for ERDDAP or any software project: that ERDDAP is 
+<a rel="bookmark" href="http://en.wikipedia.org/wiki/Free_and_open-source_software">Free and Open Source Software (FOSS)<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
+Specifically, ERDDAP uses 
+<a rel="bookmark" href="http://en.wikipedia.org/wiki/Apache_License">Apache-compatible software licenses<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+so anyone can do anything they want with the code.
+
+<p>Why is that important? One might think that software will be reliably available 
+in the future because a big 
+company is behind it. But Google, for example, has discontinued numerous projects 
+(<a rel="bookmark"
+href="http://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services">here's a list<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>).
+I don't want to pick on Google because I really like Google and they 
+fund a large number of great, open-source projects. Microsoft has
+discontinued projects. Apple has discontinued projects. ... 
+The point is that just having the backing of a large company is no assurance
+that the project will continue.
+The users of that software are out of luck, 
+<b>unless</b> the software was (and therefore, is) Free and Open Source Software 
+(FOSS). Then, whenever there is interest by even one developer, the project can and will 
+continue to evolve. FOSS is an insurance policy. In fact, FOSS is the only
+insurance policy, the only assurance, that matters. FOSS insures that the there
+is always a way forward for the software. That is a right that no one can 
+take away, ever. 
+
+<p><a name="largeTeam">One</a> might also think that software that has a large team of developers 
+will be more sustainable than software with one main developer. But 
+lots of developers usually need lots of funding. I know a famous, reasonably 
+large project with 10 developers (I won't embarrass them by naming them) that is
+in constant serious danger of stopping the project because they don't have
+enough funding. They rely on grants. They always run a deficit. Their patron always bails them 
+out at the last minute, but is getting really tired of bailing them out. 
+So if they can't raise a million dollars a year in grant money 
+(or the patron gets too tired of bailing them out), they'll stop. And the group can't 
+conceive of having fewer than 10 developers. Each developer has a role to play
+in their group. In light of that, it seems to me that it is a great sign 
+that ERDDAP can be, and is, actively developed by just one person (who is
+fully funded). If fact, it would be a bad sign if ERDDAP required multiple
+developers. That ERDDAP has just one developer means that it isn't a huge 
+task that requires massive ongoing funding; it is a relatively small task 
+that requires minimal effort and funding. That is more sustainable, not less.
+
+<p><a name="contractingCompany">One</a> might think that hiring a contracting company 
+to write software is
+a good idea. For a fee, they'll provide developers and promise continuity (which
+is good unless/until they go out of business). But they 
+also have you over a barrel: you must pay them what they request or there is
+no more development, <b>unless</b> the software is FOSS and you're just paying them
+to work on the code. With FOSS, you always have choices about how to move forward.
+Because ERDDAP is FOSS, contractors are always a good option for you or anyone
+with regard to ERDDAP: if anything happens to me, or if I don't have time to
+make some change that you want, or I retire and you don't like my replacement's work, 
+you can always hire a contracting company to make the changes you want (or make them yourself). 
+
+<p><a name="sustainabilitySummary">In summary,</a>
+ERDDAP has the two sustainability features that matter most: 
+<ol>
+<li>ERDDAP is a small project (small enough to be handled by one person), so it doesn't require massive resources.
+<li>ERDDAP is Free and Open Source Software, so no one can ever stop you or anyone else 
+  from working on ERDDAP.
+</ol>
+I cannot think of a better situation. 
+I hope that relieves any fears you (or anyone else) had about ERDDAP's sustainability. 
+If you hear people questioning or discouraging the use of ERDDAP because there is just one 
+developer, please set them straight by pointing them to the above discussion at this URL:
+<a rel="bookmark" href="#sustainable">http://coastwatch.pfeg.noaa.gov/erddap/information.html#sustainable</a> .
+<!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
+for ERDDAP development, please contact me. I sure we can work something out.&lt;/sarc&gt;) -->
+
+<br>&nbsp;
 <p><b><a name="cite">How</a> to Cite ERDDAP in a Paper</b>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
 <pre>
-Simons, R.A. 2011. ERDDAP. http://coastwatch.pfeg.noaa.gov/erddap . 
-Pacific Grove, CA: NOAA/NMFS/SWFSC/ERD.</pre>
+Simons, R.A. 2015. ERDDAP. http://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</pre>
 
-<p>If you want to cite a specific dataset in ERDDAP, please generate the citation based on the information in the dataset's metadata.  If you are referring to a specific subset of a dataset, please include the complete URL needed to replicate that download.
+<p>Please always separately cite the dataset: see the "creator" attributes in the dataset's global metadata. Please include the URL of the dataset in ERDDAP so people know how you accessed the data.  
 
+<br>&nbsp;
 <p><b><a name="acronym">What</a> does the acronym "ERDDAP" stand for?</b>
 <br>"ERDDAP" used to be an acronym, but it outgrew that original description.
-Now, please just think of it as a name that has no meaning.
+Now, please just think of it as a name, not an acronym.
 
+<br>&nbsp;
 <p><b><a name="dataDistributionSystems">Guidelines</a> for Data Distribution Systems</b>
 <br>Bob's opinions about the design
 and evaluation of data distribution systems can be found
 <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erdData.html">here</a>.
 
+<br>&nbsp;
 <p><b><a name="setup">You</a> can</b>
 <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><b>Set Up Your Own ERDDAP Server</b></a>
 and serve your own data.
@@ -3745,6 +4013,10 @@ and serve your own data.
 If you have questions, suggestions, or comments about ERDDAP in general (not this specific
 ERDDAP installation), please send an email to <tt>bob dot simons at noaa dot gov</tt>
 and include the ERDDAP URL directly related to your question or comment.
+
+<p>DISCLAIMER: The opinions on this web page are Bob Simons' personal opinions and 
+do not necessarily reflect any position of the 
+Government or the National Oceanic and Atmospheric Administration.
 
 </td>
 </tr>

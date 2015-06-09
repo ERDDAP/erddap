@@ -1455,9 +1455,7 @@ not very polished.
             Test.ensureEqual(table.getFloatData(5,1), -.035f, ""); //dataset returns m/s (not original cm/s)
             Test.ensureEqual(table.getFloatData(6,1), .139f, ""); //dataset returns m/s (not original cm/s)
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
 
@@ -1631,9 +1629,7 @@ not very polished.
             Test.ensureEqual(table.getStringData(4, 1), "MBARI M0 SQ adcp", "");
             Test.ensureEqual(table.getFloatData(5, 1), (float)(stats[PrimitiveArray.STATS_SUM]/stats[PrimitiveArray.STATS_N]), ""); //ucur
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
     }
@@ -1992,7 +1988,7 @@ not very polished.
         //based on ndbc data
         testNc4DMakeSubset();
         testNc4DMakeAveragedTimeSeries();
-        //String2.getStringFromSystemIn("Check things over, then press Enter. ");
+        //String2.pressEnterToContinue("Check things over.");
 */
         /** MBARI datasets are inactive as of 2008-07-07
         //mbari data
@@ -2011,7 +2007,7 @@ not very polished.
             Test.ensureEqual(pointDataSets.size(), 10, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn("\nRecover from mbari nrt failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from mbari nrt failure?");
         }
         */
 

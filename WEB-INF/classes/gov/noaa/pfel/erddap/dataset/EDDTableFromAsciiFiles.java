@@ -238,6 +238,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                null, //no source global attributes
                 dataSourceTable.columnAttributes(col), colName, 
                 true, true); //addColorBarMinMax, tryToFindLLAT
 
@@ -393,7 +394,8 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
@@ -401,13 +403,12 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords\">altitude, atmosphere,\n" +
 "Atmosphere &gt; Altitude &gt; Station Height,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, atmp, direction, height, ndbc, newer, noaa, speed, station, surface, temperature, time, title, wind, wind_from_direction, wind_speed, winds, wtmp</att>\n" +
+"atmospheric, atmp, buoy, center, data, direction, height, identifier, latitude, longitude, national, ndbc, newer, noaa, speed, station, stationID, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds, wspd, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">The new summary!</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -535,7 +536,7 @@ directionsForGenerateDatasetsXml() +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
-"            <att name=\"long_name\">WTMP</att>\n" +
+"            <att name=\"long_name\">Water Temperature</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -564,9 +565,8 @@ directionsForGenerateDatasetsXml() +
 //"use a different destinationName for this variable.") >= 0) {
 //                String2.log("EXPECTED ERROR while creating the edd: altitude's units haven't been set.\n");
 //            } else 
-                String2.getStringFromSystemIn(msg + 
-                    "\nUnexpected error using generateDatasetsXml." + 
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(msg + 
+                    "\nUnexpected error using generateDatasetsXml."); 
         }
 
     }
@@ -682,7 +682,7 @@ directionsForGenerateDatasetsXml() +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station, longitude, latitude, altitude\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -48.13;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 37.75;\n" +
@@ -714,11 +714,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 37.75;\n" +
 "    String sourceUrl \"The source URL.\";\n" +
 "    Float64 Southernmost_Northing -27.7;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"station, longitude, latitude, altitude\";\n" +
 "    String summary \"The summary.\";\n" +
 "    String time_coverage_end \"2006-12-31T23:00:00Z\";\n" +
@@ -906,7 +905,7 @@ expected =
     "  NC_GLOBAL {\n" +
     "    String cdm_data_type \"Trajectory\";\n" +
     "    String cdm_trajectory_variables \"ship_call_sign\";\n" +
-    "    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+    "    String Conventions \"COARDS, CF-1.4, ACDD-1.3\";\n" +
     "    String creator_email \"eed.shiptracker@noaa.gov\";\n" +
     "    String creator_name \"NOAA OMAO,Ship Tracker\";\n" +
     "    Float64 Easternmost_Easting 274.2898;\n" +
@@ -933,11 +932,10 @@ expected =
     "implied, including warranties of merchantability and fitness for a\n" +
     "particular purpose, or assumes any legal liability for the accuracy,\n" +
     "completeness, or usefulness, of this information.\";\n" +
-    "    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
     "    Float64 Northernmost_Northing 30.368;\n" +
     "    String sourceUrl \"(local files)\";\n" +
     "    Float64 Southernmost_Northing 26.6255;\n" +
-    "    String standard_name_vocabulary \"CF-12\";\n" +
+    "    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
     (test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
     "    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
     "    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
@@ -1071,7 +1069,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"NOAA NDBC\";\n" +
 "    String creator_url \"http://www.ndbc.noaa.gov/\";\n" +
 "    String history \"" + today;
@@ -1091,9 +1089,8 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +

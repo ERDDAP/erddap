@@ -456,8 +456,7 @@ public class SgtMap  {
         //g2.drawRect(0, 0, imageWidthPixels-1, imageHeightPixels-1);
       
         //set the clip region
-        g2.setClip(null); //clear any previous clip region  //this is necessary!
-        g2.clipRect(baseULXPixel, baseULYPixel, imageWidthPixels, imageHeightPixels);
+        g2.setClip(baseULXPixel, baseULYPixel, imageWidthPixels, imageHeightPixels);
         {
             if (reallyVerbose) String2.log("\n{{ SgtMap.makeMap "); // + Math2.memoryString());
             long startTime = System.currentTimeMillis();
@@ -1610,7 +1609,7 @@ public class SgtMap  {
             String2.log(MustBe.throwableToString(t));
             if (JPane.debug) {
                 try { 
-                    String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue(); 
                 } catch (Throwable t2) {
                 }
             }
@@ -2056,7 +2055,6 @@ public class SgtMap  {
         int nLat = lat.length;
         int nLon = lon.length;
         globalAttributes.set("Conventions",               FileNameUtility.getConventions());
-        globalAttributes.set("Metadata_Conventions",      FileNameUtility.getMetadataConventions());
         globalAttributes.set("title",                     BATHYMETRY_BOLD_TITLE);
         globalAttributes.set("summary",                   BATHYMETRY_SUMMARY);
         globalAttributes.set("keywords",                  "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
@@ -2922,9 +2920,9 @@ String2.log("err: " + errCatcher.getString());
                     "tempXXX" + testImageExtension + " and .pdf files." +
                 "\nPress CtrlBreak in console window to generate hprof heap info.");
             if (lpr > 0)
-                String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(); 
         }
-        //String2.getStringFromSystemIn("Press 'Enter'...");
+        //String2.pressEnterToContinue();
 
         //make a transparent version
         bufferedImage = SgtUtil.getBufferedImage(600, 600);
@@ -3346,7 +3344,7 @@ String2.log("err: " + errCatcher.getString());
             if (args != null && args.length > 0) 
                 String2.log(NcHelper.dumpString(args[0], true));
         }
-        String2.getStringFromSystemIn("Press Enter to exit program....");
+        String2.pressEnterToContinue();
     }
 
     public static void makeAdvSearchMapBig() throws Exception {

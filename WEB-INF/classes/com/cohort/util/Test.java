@@ -273,11 +273,11 @@ public class Test {
             return "\n" + String2.ERROR + " in Test.ensureEqual(Strings):\n" + 
                 message + "\nSpecifically: " +                 
                 "s1=[null]\n" +
-                "s2=" + String2.noLongerThan(s2, 70);
+                "s2=" + String2.noLongerThanDots(s2, 70);
         if (s1 != null && s2 == null)
             return "\n" + String2.ERROR + " in Test.ensureEqual(Strings):\n" + 
                 message + "\nSpecifically:\n" +                 
-                "s1=" + String2.noLongerThan(s1, 70) +"\n" +
+                "s1=" + String2.noLongerThanDots(s1, 70) +"\n" +
                 "s2=[null]";
         if (s1.equals(s2)) 
             return "";
@@ -701,8 +701,7 @@ public class Test {
             "*** KNOWN PROBLEM: " + title); // + "\n" +
             //"Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
         //Math2.sleep(10000);
-        String2.getStringFromSystemIn( 
-            "Press ^C to stop or Enter to continue..."); 
+        String2.pressEnterToContinue(); 
     }
 
 

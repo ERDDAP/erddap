@@ -756,6 +756,9 @@ public class EDDTableFromDapSequence extends EDDTable{
         Table dataSourceTable = new Table();
         Table dataAddTable = new Table();
 
+        //get source global attributes
+        OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
+
         //get all of the vars
         String outerSequenceName = null;
         String innerSequenceName = null;
@@ -797,6 +800,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                                     dataAddTable.addColumn(dataAddTable.nColumns(), 
                                         varName, new StringArray(), 
                                         makeReadyToUseAddVariableAttributesForDatasetsXml(
+                                            dataSourceTable.globalAttributes(),
                                             sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
                                 }
                             }
@@ -823,6 +827,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                             sourceAtts);
                         dataAddTable.addColumn(   nOuterVars, varName, new StringArray(), 
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
+                                dataSourceTable.globalAttributes(),
                                 sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
                         nOuterVars++;
                     }
@@ -832,7 +837,6 @@ public class EDDTableFromDapSequence extends EDDTable{
 
         //get global attributes and ensure required entries are present 
         //after dataVariables known, add global attributes in the dataAddTable
-        OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
@@ -913,21 +917,20 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">DYNDNS CIMT</att>\n" +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
-"        <att name=\"keywords\">acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, oceans,\n" +
+"        <att name=\"keywords\">acceleration, anomaly, average, avg_sound_velocity, center, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, geopotential_anomaly, identifier, integrated, latitude, longitude, marine, ocean, oceans,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sound, station, temperature, time, vctd.das, velocity, water</att>\n" +
+"optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, vctd, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"subsetVariables\">time, latitude, longitude, station, depth, temperature, salinity, fluorescence, avg_sound_velocity, sigma_t, acceleration, geopotential_anomaly</att>\n" +
-"        <att name=\"summary\">DYNDNS CIMT data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
-"        <att name=\"title\">DYNDNS CIMT data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
+"        <att name=\"summary\">vCTD. DYNDNS Center for Integrated Marine Technology (CIMT) data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
+"        <att name=\"title\">vCTD. DYNDNS CIMT data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -1257,9 +1260,8 @@ directionsForGenerateDatasetsXml() +
                 //String2.log(results);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac numeric constraint." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error for psdac numeric constraint."); 
             }
 
             //basicQuery + String= constraint that shouldn't change the results
@@ -1269,9 +1271,8 @@ directionsForGenerateDatasetsXml() +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String= constraint." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error for psdac with non-time String= constraint."); 
             }
             
             //basicQuery + String> String< constraints that shouldn't change the results
@@ -1281,9 +1282,8 @@ directionsForGenerateDatasetsXml() +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String> String< constraints." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error for psdac with non-time String> String< constraints."); 
             }
            
             //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS WORKS SO SOURCE REGEX PARTLY WORKS 
@@ -1295,9 +1295,8 @@ directionsForGenerateDatasetsXml() +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String regex constraints." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error for psdac with non-time String regex constraints."); 
             }
 
             //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS DOESN'T WORK.
@@ -1310,9 +1309,8 @@ directionsForGenerateDatasetsXml() +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with non-time String regex constraints." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error for psdac with non-time String regex constraints."); 
             }
 
             //basicQuery + time= (a string= test) constraint that shouldn't change the results
@@ -1322,14 +1320,12 @@ directionsForGenerateDatasetsXml() +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error for psdac with time String= constraint." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error for psdac with time String= constraint."); 
             }
         } catch (Throwable t2) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t2) + 
-                "\nUnexpected error for psdac." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t2) + 
+                "\nUnexpected error for psdac."); 
         }
     }
 
@@ -1352,9 +1348,8 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error for erdlasNewportCtd." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error for erdlasNewportCtd."); 
         }
 
     }
@@ -1460,9 +1455,8 @@ try {
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error for erdlasCalCatch" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error for erdlasCalCatch"); 
         }
 
     }
@@ -1535,10 +1529,9 @@ try {
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS." + 
-                //Unexpected error for testSourceNeedsExpandedFP_EQ." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
+                //Unexpected error for testSourceNeedsExpandedFP_EQ.");
         }
     }
 
@@ -1568,9 +1561,8 @@ try {
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testNosCoopsRWL." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\nUnexpected error for testNosCoopsRWL."); 
         }
     }
 
@@ -1583,11 +1575,10 @@ try {
             DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
             DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\nUnexpected error for testReadDas." +
                 "\nNote: this test requires erdGtsppBest on coastwatch's ERDDAP:" +
-                "\nurl=" + url +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nurl=" + url); 
         }
     }
 
@@ -1605,10 +1596,9 @@ try {
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS." + 
-                //"\nUnexpected error for testSubsetVariablesGraph." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
+                //"\nUnexpected error for testSubsetVariablesGraph.");
         }
     }
 
@@ -1720,7 +1710,7 @@ try {
 " }[10]\n" +
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"Point\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";[10]\n" +
 "    Float64 Easternmost_Easting -117.27667236328125;[10]\n" +
 "    String featureType \"Point\";[10]\n" +
 "    Float64 geospatial_lat_max 48.969085693359375;[10]\n" +
@@ -1755,11 +1745,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a[10]\n" +
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 48.969085693359375;[10]\n" +
 "    String sourceUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";[10]\n" +
 "    Float64 Southernmost_Northing 32.570838928222656;[10]\n" +
-"    String standard_name_vocabulary \"CF-12\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
 "    String subsetVariables \"longitude, latitude, depth, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";[10]\n" +
 "    String summary \"This data contains the locations of some observations of[10]\n" +
 "cold-water/deep-sea corals off the west coast of the United States.[10]\n" +
@@ -1809,11 +1798,10 @@ expected =
             expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS." + 
-                //"\nUnexpected error:" + 
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
+                //"\nUnexpected error:");
         }
     }
 

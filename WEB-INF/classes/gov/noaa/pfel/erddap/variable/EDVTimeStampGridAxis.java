@@ -145,15 +145,16 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             */
         }
 
-        //extractScaleAddOffset     It sets destinationDataType
-        extractScaleAddOffset(); 
+        //adjust destinationMin/Max
+        /* 2015-05-05 I think this is duplicate of EDV, hence wrong because already scaled/offset.
+           and for string source times, scale_factor and add_offset musn't be used
         if (scaleAddOffset) {
             setDestinationMinMax(
                 destinationMin * scaleFactor + addOffset,
                 destinationMax * scaleFactor + addOffset);
         } else if (destinationMin > destinationMax) { //in Java, only true if neither is NaN      
             double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
-        }
+        }*/
 
         units = TIME_UNITS;
         if (destinationName.equals(EDV.TIME_NAME)) {

@@ -72,7 +72,7 @@ public class GraphDataLayer {
      * For drawing a colored surface based on the data in a Grid
      * (where grid.lon is treated as x, and grid.lat is treated as y).
      * Use colorMap (CompoundColorMap).
-     * Only available for SgtMap.
+     * Originally only available for SgtMap. 2015-03-31 SgtGraph, too.
      */
     public final static int DRAW_COLORED_SURFACE = 6;  
 
@@ -307,7 +307,8 @@ public class GraphDataLayer {
             (draw == DRAW_MARKERS || 
              draw == DRAW_MARKERS_AND_LINES ||
              draw == DRAW_POINT_VECTORS ||
-             draw == DRAW_GRID_VECTORS))  
+             draw == DRAW_GRID_VECTORS ||
+             draw == DRAW_COLORED_SURFACE))  
             count += 4; 
 
         //String2.log("GraphDataLayer.legendLineCount=" + count);
