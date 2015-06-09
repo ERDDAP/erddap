@@ -1400,6 +1400,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (tAddAtt == null)
                     tAddAtt = new Attributes();
                 tAddAtt.set("actual_range", actualRange);
+                //String2.log(">> actual_range=" + actualRange);
 
                 if (EDV.TIME_NAME.equals(tDestName)) {
                     //it's the time variable
@@ -1420,7 +1421,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 dataVariables[dv].setActualRangeFromDestinationMinMax();
             }
 
-        //String2.getStringFromSystemIn("!!!sourceName=" + dataVariables[dv].sourceName() + 
+        //String2.pressEnterToContinue("!!!sourceName=" + dataVariables[dv].sourceName() + 
         //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMin());
         }
 
@@ -1540,7 +1541,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         ensureValid();
 
         //EDV edv = findDataVariableByDestinationName("longitude");
-        //String2.getStringFromSystemIn("!!!end of EDDTableFromFiles constructor: sourceName=" + edv.sourceName() + 
+        //String2.pressEnterToContinue("!!!end of EDDTableFromFiles constructor: sourceName=" + edv.sourceName() + 
         //    " type=" + edv.sourceDataType() + " min=" + edv.destinationMin());
 
         //dirTable and fileTable InMemory?
@@ -2538,7 +2539,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }
 
         //distinct?    sometimes minMaxTable indicates there is only 1 value in the file
-        String[] parts = getUserQueryParts(userDapQuery); //decoded.  
+        String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
         boolean distinct = String2.indexOf(parts, "distinct()") >= 0;
         if (reallyVerbose && distinct) String2.log("  query includes \"distinct()\"");
 

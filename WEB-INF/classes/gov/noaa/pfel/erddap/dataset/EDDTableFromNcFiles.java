@@ -230,6 +230,10 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
 
         String2.log("EDDTableFromNcFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
+
+        String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
+        String2.log(NcHelper.dumpString(sampleFileName, false));
+
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         String[] useDimensions = StringArray.arrayFromCSV(useDimensionsCSV);
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
@@ -288,7 +292,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 dataSourceTable.getColumn(c),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
@@ -448,7 +453,6 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">NOAA National Data Buoy Center and Participators in Data Assembly Center.</att>\n" +
 "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans</att>\n" +
 "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither NOAA, NDBC, CoastWatch, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n" +
-//2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
 "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" +
 "        <att name=\"NDBCMeasurementDescriptionUrl\">http://www.ndbc.noaa.gov/measdes.shtml</att>\n" +
@@ -469,9 +473,10 @@ directionsForGenerateDatasetsXml() +
 "    </sourceAttributes -->\n" +
 cdmSuggestion() +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, Unidata Observation Dataset v1.0</att>\n" +
 "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, assembly, atmosphere,\n" +
+"        <att name=\"institution\">NOAA NDBC and Participators in Data Assembly Center.</att>\n" +
+"        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere,\n" +
 "Atmosphere &gt; Air Quality &gt; Visibility,\n" +
 "Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height,\n" +
 "Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,\n" +
@@ -483,15 +488,16 @@ cdmSuggestion() +
 "Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, average, boundary, buoy, center, data, depth, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, gust, height, layer, level, measurements, meridional, meteorological, meteorology, national, ndbc, noaa, northward, northward_wind, ocean, Oceans, oceans,\n" +
+"atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, eastward, eastward_wind, GST, gust, height, identifier, LAT, latitude, layer, level, LON, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
 "Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" +
 "Oceans &gt; Ocean Waves &gt; Swells,\n" +
 "Oceans &gt; Ocean Waves &gt; Wave Period,\n" +
-"participators, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal</att>\n" +
+"participators, period, planetary, point, pressure, PTDY, quality, real, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, swh, temperature, tendency, tendency_of_air_pressure, TIDE, time, vapor, VIS, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPU, WSPV, WTMP, WVHT, zonal</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -791,7 +797,7 @@ cdmSuggestion() +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Meteorology</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -899,9 +905,8 @@ cdmSuggestion() +
 "            <att name=\"units\">unitless</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"units\">null</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -928,9 +933,8 @@ cdmSuggestion() +
                 "");
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
         }
 
     }
@@ -954,7 +958,7 @@ cdmSuggestion() +
 
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "ngdcJasonSwath_c70d_5281_4d5c", "");
-            Test.ensureEqual(edd.title(), "OGDR - Standard dataset", "");
+            Test.ensureEqual(edd.title(), "OGDR, Standard dataset", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "time, latitude, longitude, surface_type, alt_echo_type, rad_surf_type, " +
 "qual_alt_1hz_range_ku, qual_alt_1hz_range_c, qual_alt_1hz_swh_ku, qual_alt_1hz_swh_c, " +
@@ -983,9 +987,8 @@ cdmSuggestion() +
                 ""); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
     }
@@ -1092,7 +1095,7 @@ cdmSuggestion() +
 "    String contributor_email \"David_Kushner@nps.gov\";\n" +
 "    String contributor_name \"Channel Islands National Park, National Park Service\";\n" +
 "    String contributor_role \"Source of data.\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"Roy.Mendelssohn@noaa.gov\";\n" +
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String creator_url \"http://www.pfel.noaa.gov\";\n" +
@@ -1127,7 +1130,6 @@ expected =
 "aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.  National Park Service Disclaimer: The National Park Service shall not be held liable for improper or incorrect use of the data described and/or contained herein. These data and related graphics are not legal documents and are not intended to be used as such. The information contained in these data is dynamic and may change over time. The data are not better than the original sources from which they were derived. It is the responsibility of the data user to use the data appropriately and consistent within the limitation of geospatial data in general and these data in particular. The related graphics are intended to aid the data user in acquiring relevant data; it is not appropriate to use the related graphics as data. The National Park Service gives no warranty, expressed or implied, as to the accuracy, reliability, or completeness of these data. It is strongly recommended that these data are directly acquired from an NPS server and not indirectly through other sources which may have changed the data in some way. Although these data have been processed successfully on computer systems at the National Park Service, no warranty expressed or implied is made regarding the utility of the data on other systems for general or scientific purposes, nor shall the act of distribution constitute any such warranty. This disclaimer applies both to individual use of the data and aggregate use with other data.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 34.05;\n" +
 "    String observationDimension \"row\";\n" + //2012-07-27 this should disappear soon
@@ -1135,7 +1137,7 @@ expected =
 "    String references \"Channel Islands National Parks Inventory and Monitoring information: http://nature.nps.gov/im/units/medn . Kelp Forest Monitoring Protocols: http://www.nature.nps.gov/im/units/chis/Reports_PDF/Marine/KFM-HandbookVol1.pdf .\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 32.8;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" + 
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" + 
 "    String subsetVariables \"id, longitude, latitude, common_name, species_name\";\n" +
 "    String summary \"This dataset has measurements of the size of selected animal species at selected locations in the Channel Islands National Park. Sampling is conducted annually between the months of May-October, so the Time data in this file is July 1 of each year (a nominal value). The size frequency measurements were taken within 10 meters of the transect line at each site.  Depths at the site vary some, but we describe the depth of the site along the transect line where that station's temperature logger is located, a typical depth for the site.\";\n" +
 "    String time_coverage_end \"2007-07-01T00:00:00Z\";\n" +
@@ -2271,7 +2273,7 @@ expected =
 "  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"dave.foley@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
@@ -2321,7 +2323,6 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 24.321f; // float\n" +
@@ -2395,7 +2396,7 @@ expected =
 "  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"dave.foley@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
@@ -2443,7 +2444,6 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 71.502; // double\n" +
@@ -3829,10 +3829,10 @@ expected =
                     StringArray tr = new StringArray();
                     int n = pl.size();
                     for (int i = 0; i < n; i++) {
-                        pl.set(i, String2.combineSpaces(pl.get(i)));
-                        cr.set(i, String2.combineSpaces(cr.get(i)));
-                        or.set(i, String2.combineSpaces(or.get(i)));
-                        ty.set(i, String2.combineSpaces(ty.get(i)));
+                        pl.set(i, String2.whitespacesToSpace(pl.get(i)));
+                        cr.set(i, String2.whitespacesToSpace(cr.get(i)));
+                        or.set(i, String2.whitespacesToSpace(or.get(i)));
+                        ty.set(i, String2.whitespacesToSpace(ty.get(i)));
                         tr.add(or.getString(i) + "_" + ty.getString(i) + "_" + 
                                pl.getString(i) + "_" + cr.getString(i));
                     }
@@ -4127,7 +4127,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 21871473;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 22523260;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4173,7 +4173,7 @@ expected =
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 _FillValue NaN;\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.42244922e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 6.31152e\\+8, 1.4303094e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4236,17 +4236,17 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2015-03-11 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2015-05-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"trajectory, org, type, platform, cruise\";\n" +
-"    String Conventions \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"nodc.gtspp@noaa.gov\";\n" +
 "    String creator_name \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
 "    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +                  //2 changes
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2015-01-24&time%3C=2015-02-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2015-04-24&time%3C=2015-05-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4264,9 +4264,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2015-02-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//2 date changes
+"    String history \"2015-05-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2015-02-10 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2015-05-08 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4285,7 +4285,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2015-02-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2015-05-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4294,14 +4294,13 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.nodc\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String project \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
 "    String references \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
 "    Float64 Southernmost_Northing -78.579;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"trajectory, org, type, platform, cruise\";\n" +
 "    String summary \"The Global Temperature-Salinity Profile Programme \\(GTSPP\\) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization \\(WMO\\) and Intergovernmental Oceanographic Commission \\(IOC\\) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center \\(NODC\\) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\n" +
 "\n" +
@@ -4311,7 +4310,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the January 2015 data\\) but is a subset of the " + //month changes
+    "up to and including the April 2015 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4323,7 +4322,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2015-01-28T12:47:00Z\";\n" + //changes
+"    String time_coverage_end \"2015-04-29T12:10:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -4437,7 +4436,7 @@ expected =
 "ME_BA_33TT_22001 00,ME,BA,33TT,22001 00,1254716,126.3,28.1667,2000-01-01T03:00:00Z,100.0,19.8,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime));
-        //String2.getStringFromSystemIn("Press Enter to continue or ^C to stop ->");
+        //String2.pressEnterToContinue();
 
     }
 
@@ -4873,12 +4872,11 @@ expected =
                         Test.ensureEqual(table.getFloatData(4, row), 29.3f, "");
                     }
                 }
-                //String2.getStringFromSystemIn("Okay. Press ^C to stop or Enter to continue..."); 
+                //String2.pressEnterToContinue("Okay."); 
             } catch (Exception e) {
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     MustBe.throwableToString(e) +
-                    "\nUnexpected ERROR for Test#" + ext + ": " + extensions[ext]+ 
-                    ".  Press ^C to stop or Enter to continue..."); 
+                    "\nUnexpected ERROR for Test#" + ext + ": " + extensions[ext] + "."); 
             }
         }
         reallyVerbose = oReallyVerbose;
@@ -5611,7 +5609,7 @@ landings.landings[12][1][1]
 "\n" +
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Point\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = -121.3140640258789; // double\n" +
 "  :featureType = \"Point\";\n" +
 "  :geospatial_lat_max = 47.237003326416016; // double\n" +
@@ -5648,11 +5646,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 47.237003326416016; // double\n" +
 "  :sourceUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";\n" +
 "  :Southernmost_Northing = 34.911373138427734; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"longitude, latitude, depth, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";\n" +
 "  :summary = \"This data contains the locations of some observations of\n" +
 "cold-water/deep-sea corals off the west coast of the United States.\n" +
@@ -5716,9 +5713,8 @@ expected =
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\n2014-08-08 Known problem: nwioos source currently isn't working." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\n2014-08-08 Known problem: nwioos source currently isn't working."); 
         }
 
     }
@@ -5822,7 +5818,7 @@ expected =
 "  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"dave.foley@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
@@ -5871,7 +5867,6 @@ String expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 37.997f; // float\n" +
@@ -6037,7 +6032,7 @@ String expected3 = expected2 +
 "  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"dave.foley@noaa.gov\";\n" +
 "  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 "  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
@@ -6086,7 +6081,6 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 37.997f; // float\n" +
@@ -6240,7 +6234,7 @@ expected =
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Trajectory\";\n" +
 "  :cdm_trajectory_variables = \"cruise\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"Keith.Sakuma@noaa.gov\";\n" +
 "  :creator_name = \"Keith Sakuma\";\n" +
 "  :Easternmost_Easting = -121.854f; // float\n" +
@@ -6269,11 +6263,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 38.8782f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 36.5567f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"cruise,ctd_index,ctd_no,station,time,longitude,latitude\";\n" +
 "  :summary = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey: Station Information and Surface Data.\n" +
 "Surveys have been conducted along the central California coast in May/June \n" +
@@ -6588,7 +6581,7 @@ expected =
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Trajectory\";\n" +
 "  :cdm_trajectory_variables = \"cruise\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"Keith.Sakuma@noaa.gov\";\n" +
 "  :creator_name = \"Keith Sakuma\";\n" +
 "  :Easternmost_Easting = -121.854f; // float\n" +
@@ -6619,11 +6612,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 38.8782f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 36.5567f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"cruise,ctd_index,ctd_no,station,time,longitude,latitude\";\n" +
 "  :summary = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey: Station Information and Surface Data.\n" +
 "Surveys have been conducted along the central California coast in May/June \n" +
@@ -6997,7 +6989,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = -124.18f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :geospatial_lat_max = 44.65f; // float\n" +
@@ -7041,11 +7033,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 44.65f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 44.65f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -7222,7 +7213,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = -124.18f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :geospatial_lat_max = 44.65f; // float\n" +
@@ -7266,11 +7257,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 44.65f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 44.65f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -7611,7 +7601,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"trajectory, org, type, platform, cruise\";\n" +
-"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
 "  :creator_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
 "  :creator_url = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
@@ -7666,14 +7656,13 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.nodc\";\n" +
 "  :Northernmost_Northing = -34.58f; // float\n" +
 "  :project = \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
 "  :references = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :sourceUrl = \"\\(local files\\)\";\n" +
 "  :Southernmost_Northing = -75.45f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"trajectory, org, type, platform, cruise\";\n" +  
 "  :summary = \"The Global Temperature-Salinity Profile Programme \\(GTSPP\\) develops and " +
     "maintains a global ocean temperature and salinity resource with data that are both " +
@@ -8001,7 +7990,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"trajectory, org, type, platform, cruise\";\n" +
-"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
 "  :creator_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
 "  :creator_url = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
@@ -8056,14 +8045,13 @@ String expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.nodc\";\n" +
 "  :Northernmost_Northing = -34.58f; // float\n" +
 "  :project = \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
 "  :references = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.45f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"platform, cruise, org, type\";\n" +                   
 "  :summary = \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains " +
     "a global ocean temperature and salinity resource with data that are both up-to-date and of " +
@@ -8217,8 +8205,7 @@ String expected3 = expected2 +
             results + "ms (java 1.7M4700 " + expected + "ms, 1.6 14.6ms, 1.5 40.8ms)\n" +  //slow because of info for sliders and subset variables
             "  outputFileName=" + fileName);
         if (results > expected * 2)
-            String2.getStringFromSystemIn(String2.beep(1) +
-                "\nSlow.  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(String2.beep(1) + "\nSlow."); 
 
         EDD.testVerbose(true);
     }
@@ -8249,9 +8236,7 @@ String expected3 = expected2 +
             "ms (java 1.7M4700 " + expect + "ms)\n" + //slow because of info for sliders and subset variables
             "  outputFileName=" + fileName);
         if (observe > 1.5 * expect) 
-            String2.getStringFromSystemIn(
-                "Too slow!\n" +
-                "Press ^C to stop or Enter to continue ->");
+            String2.pressEnterToContinue("Too slow!");
         EDD.testVerbose(true);
     }
 
@@ -8283,9 +8268,7 @@ String expected3 = expected2 +
             "ms (java 1.7M4700 " + expect + "ms, 1.6 17.36ms)\n" +
             "  outputFileName=" + fileName);
         if (observe > 1.5 * expect) 
-            String2.getStringFromSystemIn(
-                "Too slow!\n" +
-                "Press ^C to stop or Enter to continue ->");
+            String2.pressEnterToContinue("Too slow!");
         EDD.testVerbose(true);
     }
 
@@ -8428,15 +8411,13 @@ String expected3 = expected2 +
             String2.log(results);
             expected = "Shouldn't get here!";  
             Test.ensureEqual(results, expected, "");
-            String2.getStringFromSystemIn( 
-                "\nWrong! It shouldn't reply with NaN's."); 
+            String2.pressEnterToContinue("\nWrong! It shouldn't reply with NaN's."); 
  
         } catch (Throwable t) {
             String msg = t.toString();
             if (msg.indexOf(MustBe.THERE_IS_NO_DATA) < 0) 
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\nUnexpected error.   expected=" + MustBe.THERE_IS_NO_DATA + 
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nUnexpected error.   expected=" + MustBe.THERE_IS_NO_DATA); 
         }
         
     } //end of testMV
@@ -8681,7 +8662,7 @@ String expected3 = expected2 +
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0], 
-            "SimpleException: Query error: Unrecognized variable=lon", 
+            "SimpleException: Query error: Unrecognized variable=\"lon\"", 
             "error=" + error);
 
         error = "";
@@ -8714,7 +8695,7 @@ String expected3 = expected2 +
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0], 
-            "SimpleException: Query error: Unrecognized variable=zztop", "error=" + error);
+            "SimpleException: Query error: Unrecognized variable=\"zztop\"", "error=" + error);
 
         error = "";
         try {
@@ -8800,7 +8781,7 @@ String expected3 = expected2 +
             "not value=\"0|longitude>-180\".", "error=" + error);
 
         error = "";
-        String nowQ[] = {"nowa", "now-day", "now-", "now-4", "now-5date", "now-9dayss"};
+        String nowQ[] = {"nowa", "now-1 day", "now-", "now-4", "now-5date", "now-9dayss"};
         for (int i = 0; i < nowQ.length; i++) {
             try {
                 globecBottle.getSourceQueryFromDapQuery("time&time=" + nowQ[i], 
@@ -8811,7 +8792,7 @@ String expected3 = expected2 +
             Test.ensureEqual(String2.split(error, '\n')[0], 
                 "SimpleException: Query error: Timestamp constraints with \"now\" must be in " +
                 "the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\"" +
-                ".  \"" + nowQ[i] + "\" is invalid.", "error=" + error);
+                " (or singular units).  \"" + nowQ[i] + "\" is invalid.", "error=" + error);
         }
 
         //time tests are perfectly precise: actual_range 1.02272886e+9, 1.02978828e+9;                
@@ -9083,11 +9064,10 @@ String expected3 = expected2 +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -9326,8 +9306,8 @@ String expected3 = expected2 +
 "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //.csv  test of String< >
@@ -9363,8 +9343,8 @@ String expected3 = expected2 +
 "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //.csv    test of String regex
@@ -9410,8 +9390,8 @@ String expected3 = expected2 +
 "-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
 
@@ -9471,10 +9451,9 @@ String expected3 = expected2 +
             Test.ensureEqual(tTable.getStringData(3, 0), "New_Horizon", "");
             String2.log("  .dods test succeeded");
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nError accessing " + EDStatic.erddapUrl + //in tests, always use non-https url
-                " and reading erddap as a data source." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                " and reading erddap as a data source."); 
         }
 
 
@@ -9843,7 +9822,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = -124.8f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
@@ -9886,9 +9865,8 @@ String tHeader2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -9993,8 +9971,8 @@ expected =
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
                 "\nresults=\n" + String2.annotatedString(results));
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
 
@@ -10199,10 +10177,9 @@ expected =
 "</tr>\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nError creating a dataset from the dataset at " + 
-                EDStatic.erddapUrl + //in tests, always use non-https url                
-                "\nPress ^C to stop or Enter to continue..."); 
+                EDStatic.erddapUrl); //in tests, always use non-https url                
         }
         // */
 
@@ -10525,10 +10502,9 @@ expected =
                 }
 
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                     "\nError accessing " + EDStatic.erddapUrl + //in tests, always use non-https url
-                    " via netcdf-java." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                    " via netcdf-java."); 
             }
         }       
     }
@@ -10584,9 +10560,8 @@ expected =
             Test.ensureEqual(results, expected, "results=\n" + results);      
         
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error for erdGlobecBirds." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error for erdGlobecBirds."); 
         }
 
         try {        
@@ -10659,9 +10634,8 @@ expected =
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testLatLon." +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\nUnexpected error for testLatLon."); 
         }
     }
 
@@ -10992,9 +10966,8 @@ expected =
                 SSR.displayInBrowser("file://" + dir + tName);
             if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i])
                 //|| time < expectedMs[i] / 2 || time > expectedMs[i] * 2) 
-                String2.getStringFromSystemIn(
-                    "Unexpected length or time." + String2.beep(1) +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(
+                    "Unexpected length or time." + String2.beep(1)); 
         }
 
         testVerboseOn();
@@ -11137,7 +11110,7 @@ expected =
 "  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n" +
 "    String creator_name \"TAO Project Office/NOAA/PMEL\";\n" +
 "    String creator_url \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
@@ -11159,8 +11132,8 @@ expected =
 "    String geospatial_vertical_units \"m\";\n" + 
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
-//The date on line below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2015-03-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+//The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
+"2015-06-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -11184,7 +11157,6 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 21.0;\n" + 
 "    String project \"TAO/TRITON, RAMA, PIRATA\";\n" +
 "    String Request_for_acknowledgement \"If you use these data in publications " +
@@ -11196,7 +11168,7 @@ expected =
     "Seattle, WA 98115\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
 "    Float64 Southernmost_Northing -25.0;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String summary \"This dataset has daily Air Temperature data from the\n" +
 "TAO/TRITON \\(Pacific Ocean, http://www.pmel.noaa.gov/tao/\\),\n" +
@@ -12248,7 +12220,7 @@ So the changes seem good. */
 "\n" +
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Point\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = 10002.0; // double\n" +
 "  :featureType = \"Point\";\n" +
 "  :geospatial_lat_max = 42.0; // double\n" +
@@ -12275,11 +12247,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 42.0; // double\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = 40.0; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :time_coverage_end = \"1970-01-04\";\n" +
 "  :time_coverage_start = \"1970-01-02\";\n" +
@@ -12738,7 +12709,7 @@ expected =
 "\n" +
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Point\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = 10002.0; // double\n" +
 "  :featureType = \"Point\";\n" +
 "  :geospatial_lat_max = 42.0; // double\n" +
@@ -12765,11 +12736,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :Northernmost_Northing = 42.0; // double\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = 41.0; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :time_coverage_end = \"1970-01-04\";\n" +
 "  :time_coverage_start = \"1970-01-03\";\n" +
@@ -13066,10 +13036,9 @@ expected =
      */
     public static void testNewTime() throws Throwable {
 
-        String2.getStringFromSystemIn(
+        String2.pressEnterToContinue(
             "\n****************** EDDTableFromNcFiles.testNewTime() *****************\n" +
-            "Copy /u00/data/points/ndbcMet/NDBC_46088_met.nc from coastwatch to this computer.\n" +
-            "Then press Enter to continue..."); 
+            "Copy /u00/data/points/ndbcMet/NDBC_46088_met.nc from coastwatch to this computer."); 
 
         EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles)oneFromDatasetXml("cwwcNDBCMet"); 
         EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -13163,7 +13132,7 @@ expected =
         //testTableWithAltitude(); !!!2013-12-27 DATASET GONE! NO SUITABLE REPLACEMENT  
         testTableWithDepth();
         testMV();     
-        testBigRequest();
+//testBigRequest(); //very slow -- just run this occasionally
         testPmelTaoAirt();
         testNow();
         testTimePrecisionMillis();

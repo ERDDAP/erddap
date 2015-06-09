@@ -1,0 +1,239 @@
+variableName	fullName
+//THESE MUST BE PRETTY RELIABLE!   (90% confidence?)
+//THE varaibleNames ARE ALL LOWER CASE.
+//Lines starting with // are ignored
+//Sources: http://www.esrl.noaa.gov/psd/data/gridded/conventions/variable_abbreviations.html
+//air	Air Temperature
+//air	Surface Air Temperature
+airt	Air Temperature
+air_msu23	MSU Air Temperature Channel 2/3
+air_msu34	MSU Air Temperature Channel 3/4
+cdom	Chromophoric Dissolved Organic Material
+cfnlf	Cloud Forcing Net Longwave Flux
+cfnsf	Cloud Forcing Net Solar Flux
+chi	Velocity Potential
+cld	Fractional Cloudiness
+cldc	Cloudiness
+//convt  includes Latent Heat Release
+cog	Course Over Ground
+convt	Temperature Adjustment Due to Convection
+cprat	Convective Precipitation Rate
+csdlf	Clear Sky Downward Longwave Flux
+csdsf	Clear Sky Downward Solar Flux
+csulf	Clear Sky Upward Longwave Flux
+//csusf	Clear Sky Upward Shortwave Flux
+//csusf	Clear Sky Upward Solar Flux
+//curltau computed with a constant drag coeficient of 10**-3"
+curltau	Curl of the Surface Wind Stress
+div	Divergence
+dlwrf	Downward Longwave Radiation Flux
+dswrf	Downward Solar Radiation Flux
+//fricvel ... (tau/rhosea)**3/2 (computed with a constant drag coeficient of 10**-3)
+fricvel	Surface Friction Velocity Cubed
+gflux	Ground Heat Flux
+hflx	Heat flux
+hgt	Geopotential Height
+hgt_hgt	Mean Square Geopotential Height
+//hicld ... (sigma = 0.355,0.257) clouds. The layer was considered overcast if one of the levels was overcast
+hicld	Composite Average of High Level Clouds
+hrc	Highly Reflective Clouds
+icec	Ice Concentration
+land	Land Mask
+lflx	Latent Heat Parameter
+lftx	Surface Lifted Index
+lftx4	Best (4-layer) Lifted Index
+//lhtfl	Latent Heat Flux at the Surface
+lhtfl	Latent Heat Net Flux
+//lhtfl	Surface Latent Heat Flux
+//lowcld ... (sigma = 0.997, 0.979, 0.935) clouds. The layer was considered overcast if one of the levels was overcast
+lowcld	Composite Average of Low Level Clouds
+//lsmask	Land Sea Mask
+//lsmask	Land-sea mask
+lsmask	Land/Sea Mask
+lwe	Liquid Water Equivalent
+//mask	Land Sea Mask
+//mask	Validity
+//mask	Validity Mask
+//midcld... (sigma = 0.568 0.46) clouds. The layer was considered overcast if one of the levels was overcast
+midcld	Composite Average of Mid Level Clouds
+mldpd	Mixed Layer Depth via Potential Density
+mldpt	Mixed Layer Depth via Potential Temperature
+mslp	Mean Sea Level Pressure
+nbdsf	Near IR Beam Downward Solar Flux
+nddsf	Near IR Diffuse Downward Solar Flux
+//nlwrs	Net Longwave Heat Flux at the Surface
+nlwrs	Net Longwave Radiation at the Surface
+//nobs source says days missing!
+nobs	Number of Observations
+nswrs	Net Shortwave Radiation Flux
+nswrs	Shortwave Heat Flux at the Surface
+olr	Outgoing Longwave Radiation
+omega	Omega (dp/dt)
+//omega	vertical velocity
+omega_air	X-prod Air & Omega (dp/dt)
+omega_hgt	X-prod Omega (dp/dt) & Geo Height
+omega_omega	Mean Square Omega (dp/dt)
+omega_shum	X-prod Omega (dp/dt) & Specific Humidity
+omega_vair	X-prod Omega (dp/dt) & Virt Temp
+omega_vort	X-prod Omega (dp/dt) & Vorticity
+//otemp	Number of Observations
+otemp	Ocean Temperature
+//otemp	Ocean Temperature, analyzed mean
+//otemp	Ocean Temperature, analyzed mean - analyzed annual mean
+//otemp	Ocean Temperature, data distribution
+//otemp	Ocean Temperature, raw - analyzed
+//otemp	Ocean Temperature, Raw Nobs
+//otemp	Ocean Temperature, standard deviation
+//otemp	Ocean Temperature, standard error
+//otemp	Ocean Temperature, unanalyzed
+par	Photosynthetically Available Radiation
+pcpevp	Precipitation Minus Evaporation at the Surface
+pdsi	Palmer Drought Severity Index
+pevpr	Potential Evaporation Rate
+pic	Particulate Inorganic Carbon
+poc	Particulate Organic Carbon
+pottmp	Potential Temperature
+//prate	Monthly Mean Precipitation Rate
+prate	Precipitation Rate
+prec	Precipitation
+precip	Precipitation
+pres	Pressure
+//pres	Surface Pressure
+pr_wtr	Precipitable Water Content
+ps	Surface Pressure Variation
+//psi	Stream Function
+pv	Potential Vorticity
+qao	Net Surface Heat Flux
+qlh	Latent Heat Flux
+//qlh	Latent Heat Flux at the Surface
+qnet	Net Diabatic Heating
+qnetint	Vertically Integrated Net Diabaitic Heating
+qsat	Saturation Specific Humidity Relative to Surface Temperature
+qsfc	Specific Humidity at Sigma Level 0.9967
+qsh	Sensible Heat Flux
+qsh	Sensible Heat Flux at the Surface
+qshqlh	Sensible + Latent Heat Flux
+//qsminq	Sat Specific Humidity at Sst Minus Specific Humidity
+qv	Transient Meridional Moisture Flux
+rad	Temperature Adjustment Due to Radiation
+relh	Relative Humidity
+rhosfc	Air Density at Sigma Level 0.9967
+rhum	Relative humidity
+rot	Rate Of Turn
+runof	Water Runoff
+runoff	Water Runoff
+//salt	Number of Observations
+//salt	Ocean Salinity
+//salt	Ocean Salinity, analyzed mean
+//salt	Ocean Salinity, analyzed mean - analyzed annual mean
+//salt	Ocean Salinity, data distribution
+//salt	Ocean Salinity, raw - analyzed
+//salt	Ocean Salinity, Raw Nobs
+//salt	Ocean Salinity, standard deviation
+//salt	Ocean Salinity, standard error
+//salt	Ocean Salinity, unanalyzed
+salt	Salinity
+sfcr	Surface Roughness
+sflx	Sensible Heat Parameter
+//shtfl	Sensible Heat Flux at the Surface
+shtfl	Sensible Heat Net Flux
+//shtfl	Surface Sensible Heat Flux
+shum	Specific Humidity
+shum_shum	Mean Square Specific Humidity
+skt	Skin Temperature
+slp	Sea Level Pressure
+//slp	Surface Pressure
+smina	Sea-Air Temperature Difference
+snowcover	Extent of Snow Cover
+sog	Speed Over Ground
+soilw	Volumetric Soil Moisture
+spdsfc	Surface Wind Speed
+//srfp	Station pressure
+srfp	Surface Pressure
+srfpt	Surface Potential Temperature
+sst	Sea Surface Temperature
+//sst	Surface Skin Temperature
+stat	Static Stability
+swfx	Short Wave Heat flux
+tausfc	Surface Wind Stress
+//taux	u-wind Stress
+//taux... (computed with a constant drag coeficient of 10**-3
+taux	Zonal Component of Wind Stress
+//tauy... (computed with a constant drag coeficient of 10**-3
+tauy	Meridional Component of Wind Stress
+//tauy	v-wind Stress
+tc	Temperature Correction
+tcdc	Total Cloud Cover
+temp	Temperature
+//thickness	thickness
+thtasfc	Potential Temperature at Sigma Level 0.9967
+thtasst	Potential Temperature at Skin Surface
+tmax	Maximum Temperature
+tmin	Minimum Temperature
+tmp	Temperature
+//topo source has Topology Model ...
+topo	Topology
+trpp	Tropopause Pressure
+trpt	Tropopause Temperature
+//tv	3-10 Day Filtered Transient Meridional Heat Flux
+tv	Transient Meridional Heat Flux
+uairt	Eastward Sensible Heat Transport
+ucur	U Component of Ocean Current
+uflx	Momentum Flux, u-component
+ugwd	Zonal Gravity Wave Stress
+ulflx	Zonal Latent Heat
+ulwrf	Upward Longwave Radiation Flux
+upstr	u-wind PseudoStress
+//upstr	u-wind Stress
+uspeh	Eastward Latent Heat Transport
+ustr	u-wind Stress
+uswrf	Upward Solar Radiation Flux
+ut	Transient Zonal Heat Flux
+uu	Transient Zonal Flux of Zonal Momentum
+//uv	3-10 Day Filtered Transient Meridional Flux of Zonal Momentum
+uv	Transient Meridional Flux of Zonal Momentum
+uwnd	u-wind
+uwndsfc	u-wind
+uwnd_air	X-prod Air & u-wind
+uwnd_hgt	X-prod u-wind & Geo Height
+uwnd_omega	X-prod u-wind & Omega (dp/dt)
+uwnd_shum	X-prod u-wind & Spec Humidity
+uwnd_uwnd	Mean Square u-wind
+uwnd_vair	X-prod u-wind & Virt Temp
+uwnd_vort	X-prod u-wind & Vorticity
+uwnd_vwnd	X-prod u-wind & v-wind
+vair	Virtual Temperature
+vairt	Northward Sensible Heat Transport
+vair_vair	Mean Square Virtual Temperature
+vbdsf	Visible Beam Downward Solar Flux
+vcur	V Component of Ocean Current
+vddsf	Visible Diffuse Downward Solar Flux
+vflx	Momentum Flux, v-component
+vft	Temperature Adjustment Due to Vertical Diffusion
+vgwd	Meridional Gravity Wave Stress
+vlflx	Meridional Latent Heat Parameter
+vor	Relative Vorticity
+vort	Vorticity
+vort_vort	Mean Square Vorticity
+//vpstr	v-wind pseudoStress
+vpstr	v-wind Stress
+vspeh	Northward Latent Heat Transport
+vstr	v-wind Stress
+vt	Transient Meridional Heat Flux
+vv	Transient Meridional Flux of Meridional Momentum
+vwnd	v-wind
+vwndsfc	v-wind
+vwnd_air	X-prod Air & v-wind
+vwnd_hgt	X-prod v-wind & Geo Height
+vwnd_omega	X-prod v-wind & Omega (dp/dt)
+vwnd_shum	X-prod v-wind & Specific Humidity
+vwnd_vair	X-prod v-wind & Virt Temp
+vwnd_vort	X-prod v-wind & Vorticity
+vwnd_vwnd	Mean Square v-wind
+w	Vertical Velocity
+weasd	Water Equivalent of Accumulated Snow Depth
+//wspd alternative Scalar Wind
+wspd	Wind Speed
+wspd3	Scalar Wind Speed Cubed
+wt	Transient Vertical Heat Flux
+wtmp	Water Temperature

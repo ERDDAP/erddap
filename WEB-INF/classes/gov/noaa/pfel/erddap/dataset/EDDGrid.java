@@ -1072,7 +1072,7 @@ public abstract class EDDGrid extends EDD {
         if (userDapQuery == null) return false;
 
         //remove any &constraints; 
-        String ampParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+        String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
         userDapQuery = ampParts[0];
         int qLength = userDapQuery.length();
         if (qLength == 0) return false;
@@ -1135,7 +1135,7 @@ public abstract class EDDGrid extends EDD {
         if (reallyVerbose) String2.log("    EDDGrid.parseDataDapQuery: " + userDapQuery);
 
         //split userDapQuery at '&' and decode
-        String ampParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+        String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
 
         //ignore any &.cmd constraints
         for (int ap = 1; ap < ampParts.length; ap++) {
@@ -1321,7 +1321,7 @@ public abstract class EDDGrid extends EDD {
         if (reallyVerbose) String2.log("    EDDGrid.parseAxisDapQuery: " + userDapQuery);
 
         //split userDapQuery at '&' and decode
-        String ampParts[] = getUserQueryParts(userDapQuery);  //decoded.  always at least 1 part (may be "")
+        String ampParts[] = Table.getDapQueryParts(userDapQuery);  //decoded.  always at least 1 part (may be "")
 
         //ensure not nothing (which is a data request)
         if (ampParts[0].length() == 0) 
@@ -2455,7 +2455,7 @@ public abstract class EDDGrid extends EDD {
             writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, false, 
                 userDapQuery, "");
             if (userDapQuery.length() == 0) 
-                userDapQuery = defaultGraphQuery(); //after writeHtmlDatasetInfo and before getUserQueryParts
+                userDapQuery = defaultGraphQuery(); //after writeHtmlDatasetInfo and before Table.getDapQueryParts
             writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
 
             //make the big table
@@ -2468,7 +2468,7 @@ public abstract class EDDGrid extends EDD {
          
             //parse the query so &-separated parts are handy
             String paramName, paramValue, partName, partValue, pParts[];
-            String queryParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+            String queryParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
 
             //find the axisVariables (all are always numeric) with >1 value
             StringArray sa = new StringArray();
@@ -2478,6 +2478,7 @@ public abstract class EDDGrid extends EDD {
             }
             //if (sa.size() == 0)  //accessibleViaMAG tests this
             String[] avNames = sa.toArray();  //av with >1 value
+            int nAvNames = avNames.length;
 
             //find the numeric dataVariables 
             sa = new StringArray();
@@ -2486,7 +2487,7 @@ public abstract class EDDGrid extends EDD {
                     sa.add(dataVariables[dv].destinationName());
             }
             String[] dvNames = sa.toArray();  //list of dvNames
-            sa.add(0, "");
+            sa.atInsert(0, "");
             String[] dvNames0 = sa.toArray(); //list of #0="" + dvNames
             sa = null;
             //if you need advNames, you will need to modify the javascript below
@@ -2500,7 +2501,7 @@ public abstract class EDDGrid extends EDD {
 
             String gap = "&nbsp;&nbsp;&nbsp;";
 
-            //*** set the Graph Type
+            //*** set the Graph Type options
             StringArray drawsSA = new StringArray();        
             //it is important for javascript below that first 3 options are the very similar (L L&M M)
             drawsSA.add("lines");  
@@ -2508,8 +2509,11 @@ public abstract class EDDGrid extends EDD {
             drawsSA.add("markers");  
             if (axisVariables.length >= 1 && dataVariables.length >= 2) 
                 drawsSA.add("sticks");
-            if (lonIndex >= 0 && latIndex >= 0) {//currently on if x=lon and y=lat 
-                defaultDraw = drawsSA.size();
+            if (nAvNames >= 2) {
+                if ((lonIndex >= 0 && latIndex >= 0) ||
+                    ("x".equals(avNames[nAvNames-1].toLowerCase()) &&
+                     "y".equals(avNames[nAvNames-2].toLowerCase()))) 
+                    defaultDraw = drawsSA.size();
                 drawsSA.add("surface");
             }
             if (lonIndex >= 0 && latIndex >= 0 && dataVariables.length >= 2) 
@@ -2524,7 +2528,9 @@ public abstract class EDDGrid extends EDD {
                     preferDefaultVars = false;
                     //but check that it is possible
                     boolean trouble = false;
-                    if ((draws[draw].equals("surface") || draws[draw].equals("vectors")) &&
+                    if (draws[draw].equals("surface") && nAvNames < 2) 
+                        trouble = true;
+                    if (draws[draw].equals("vectors") &&
                         (lonIndex < 0 || latIndex < 0)) 
                         trouble = true;
                     if ((draws[draw].equals("sticks") || draws[draw].equals("vectors")) && 
@@ -2579,7 +2585,8 @@ public abstract class EDDGrid extends EDD {
                     EDStatic.magAxisHelpGraphX, EDStatic.magAxisHelpGraphY};
                 varOptions = new String[][]{avNames, dvNames};
                 varName[0] = (varsParts.length > 0 && String2.indexOf(avNames, varsParts[0]) >= 0)? varsParts[0]:
-                             timeIndex >= 0? EDV.TIME_NAME : avNames[0];
+                    String2.indexOf(avNames, EDV.TIME_NAME) >= 0? EDV.TIME_NAME : 
+                    avNames[0];
                 varName[1] = (varsParts.length > 1 && String2.indexOf(dvNames, varsParts[1]) >= 0)? varsParts[1]:
                              preferredDV0;
             } else if (drawLinesAndMarkers || drawMarkers) {
@@ -2591,11 +2598,13 @@ public abstract class EDDGrid extends EDD {
                     EDStatic.magAxisHelpMarkerColor};
                 varOptions = new String[][]{avNames, dvNames, dvNames0};
                 varName[0] = (varsParts.length > 0 && String2.indexOf(avNames, varsParts[0]) >= 0)? varsParts[0]:
-                             timeIndex >= 0? EDV.TIME_NAME : avNames[0];
+                    String2.indexOf(avNames, EDV.TIME_NAME) >= 0? EDV.TIME_NAME : 
+                    avNames[0];
                 varName[1] = (varsParts.length > 1 && String2.indexOf(dvNames, varsParts[1]) >= 0)? varsParts[1]:
-                             preferredDV0;
+                    preferredDV0;
                 varName[2] = (varsParts.length > 2 && String2.indexOf(dvNames0, varsParts[2]) >= 0)? varsParts[2]:
-                             "";
+                    "";
+                //String2.log(">>draw.Markers varName=" + String2.toCSSVString(varName));
             } else if (drawSticks) {
                 nVars = 3;
                 varLabel = new String[]{EDStatic.magAxisX + ":", EDStatic.magAxisStickX + ":", 
@@ -2605,7 +2614,8 @@ public abstract class EDDGrid extends EDD {
                     EDStatic.magAxisHelpStickX, EDStatic.magAxisHelpStickY};
                 varOptions = new String[][]{avNames, dvNames, dvNames};
                 varName[0] = (varsParts.length > 0 && String2.indexOf(avNames, varsParts[0]) >= 0)? varsParts[0]:
-                             timeIndex >= 0? EDV.TIME_NAME : avNames[0];
+                    String2.indexOf(avNames, EDV.TIME_NAME) >= 0? EDV.TIME_NAME : 
+                    avNames[0];
                 if (varsParts.length > 2 && 
                     String2.indexOf(dvNames, varsParts[1]) >= 0 &&
                     String2.indexOf(dvNames, varsParts[2]) >= 0) {
@@ -2618,15 +2628,27 @@ public abstract class EDDGrid extends EDD {
             } else if (drawSurface) {
                 nVars = 3;
                 varLabel = new String[]{EDStatic.magAxisX + ":", EDStatic.magAxisY + ":", 
-                    EDStatic.magAxisColor+ ":"};
+                    EDStatic.magAxisColor + ":"};
                 varHelp  = new String[]{
                     EDStatic.magAxisHelpMapX, EDStatic.magAxisHelpMapY,
                     EDStatic.magAxisHelpSurfaceColor};
-                varOptions = new String[][]{new String[]{EDV.LON_NAME}, new String[]{EDV.LAT_NAME}, dvNames};
-                varName[0] = EDV.LON_NAME;
-                varName[1] = EDV.LAT_NAME;
-                varName[2] = (varsParts.length > 2 && String2.indexOf(dvNames, varsParts[2]) >= 0)? varsParts[2]:
-                             preferredDV0;
+                varOptions = new String[][]{avNames, avNames, dvNames};
+                varName[0] = 
+                    (varsParts.length > 0 && String2.indexOf(avNames, varsParts[0]) >= 0)? varsParts[0]:
+                    lonIndex >= 0? EDV.LON_NAME :
+                    avNames[nAvNames-1];
+                varName[1] = 
+                    (varsParts.length > 1 && String2.indexOf(avNames, varsParts[1]) >= 0)? varsParts[1]:
+                    lonIndex >= 0? EDV.LON_NAME :
+                    avNames[nAvNames-1];
+                if (varName[0].equals(varName[1])) {
+                    if (varName[0].equals(avNames[nAvNames-1]))
+                         varName[1] = avNames[nAvNames-2];
+                    else varName[0] = avNames[nAvNames-1];
+                }
+                varName[2] = 
+                    (varsParts.length > 2 && String2.indexOf(dvNames, varsParts[2]) >= 0)? varsParts[2]:
+                    preferredDV0;
             } else if (drawVectors) {
                 nVars = 4;
                 varLabel = new String[]{EDStatic.magAxisX + ":", EDStatic.magAxisY + ":", 
@@ -2656,6 +2678,8 @@ public abstract class EDDGrid extends EDD {
                 varName[0] = "longitude";
                 varName[1] = "latitude";
             }
+            boolean isMap = "longitude".equals(varName[0]) &&  
+                             "latitude".equals(varName[1]);
 
             //find axisVar index (or -1 if not an axis var or not index in avNames)
             int axisVarX = String2.indexOf(axisVariableDestinationNames(), varName[0]); 
@@ -2703,11 +2727,15 @@ public abstract class EDDGrid extends EDD {
                 //find start and end
                 int ti1 = tConstraints.get(av * 3 + 0);
                 int ti2 = tConstraints.get(av * 3 + 2);
-                if (showStartAndStopFields[av] && ti1 == ti2) {
-                    if (ti2 == 0) {
-                        ti1 = 0; ti2 = 1;
-                    } else { 
-                        ti1 = ti2 - 1;
+                int tLast = sourceSize[av] - 1;
+                if (showStartAndStopFields[av] && ti2 - ti1 < 2) {
+                    //1-value axis now multi-value, and axis is either of right 2 axes
+                    if (ti1 == ti2 && nAv - av <= 2) { 
+                        ti1 = 0; ti2 = tLast; //all values
+                    } else { //at least 3 values
+                        ti2 = Math.min(ti1 + 2, tLast);
+                        if (ti2 - ti1 < 2)
+                            ti1 = Math.max(ti2 - 2, 0);
                     }
                 }
                 double dStart = userDapQuery.length() == 0? defStart :
@@ -2781,9 +2809,7 @@ public abstract class EDDGrid extends EDD {
             }
            
             //zoomLatLon is for maps (click to recenter and buttons to zoom in/out)
-            boolean zoomLatLon = (drawSurface || drawVectors) && 
-                varName[0].equals("longitude") &&
-                varName[1].equals("latitude");
+            boolean zoomLatLon = (drawSurface || drawVectors) && isMap;
             //zoomTime is for timeseries graphs
             boolean zoomTime = varName[0].equals("time") && timeAscending == 1;
 
@@ -2929,6 +2955,18 @@ public abstract class EDDGrid extends EDD {
             for (int v = 0; v < nVars; v++) {
                 String tvNames[] = varOptions[v];
                 int vi = String2.indexOf(tvNames, varName[v]); 
+                //String2.log(">>v=" + v + " vi=" + vi + " varName[v]=" + varName[v] + " opts=" + String2.toCSSVString(tvNames));
+                if (vi < 0) {
+                    if (tvNames.length > v) { 
+                        varName[v] = tvNames[v]; 
+                        vi = v;
+                    } else if (tvNames.length > 0) {
+                        varName[v] = tvNames[0]; 
+                        vi = 0;
+                    } else {
+                        throw new SimpleException(EDStatic.errorInternal + "No varOptions for v=" + v);
+                    }
+                }
                 //avoid duplicate with previous var 
                 //(there are never more than 2 axis or 2 data vars in a row)
                 if (v >= 1 && varName[v-1].equals(tvNames[vi]))
@@ -3313,7 +3351,7 @@ public abstract class EDDGrid extends EDD {
                     graphQuery.append("&.vec=" + vec);
             }
 
-            if (drawSurface) {
+            if (drawSurface && isMap) {
                 //Draw Land
                 int tLand = 0;
                 String landOptions[] = {"", "under the data", "over the data"};  //order also affects javascript below
@@ -3339,7 +3377,7 @@ public abstract class EDDGrid extends EDD {
 
             //yRange
             String yRange[] = new String[]{"", ""};
-            if (!drawSurface) {
+            if (!drawSurface) { //?? && !drawVector ??
                 paramName = "yRange";
                 String tyRange = String2.stringStartsWith(queryParts, partName = ".yRange=");
                 if (tyRange != null) {
@@ -3389,6 +3427,15 @@ public abstract class EDDGrid extends EDD {
                     "    c += \"[\"; \n" +
                     "    if (start != \"SeeStop\") c += \"(\" + start + \"):\"; \n" + //javascript uses !=, not !equals()
                     "    c += \"(\" + d.f1.stop" + av + ".value + \")]\"; \n");
+            //allow graph with 2 axes to swap axes
+            if (varOptions[1] == avNames)
+                writer.write( 
+                    //if user changed var0 to var1, change var1 to var0 
+                    "    if (d.f1.var0.selectedIndex == " + String2.indexOf(avNames, varName[1]) + ") " +
+                            "d.f1.var1.selectedIndex = "  + String2.indexOf(avNames, varName[0]) + ";\n" +
+                    //if user changed var1 to var0, change var0 to var1 
+                    "    if (d.f1.var1.selectedIndex == " + String2.indexOf(avNames, varName[0]) + ") " +
+                            "d.f1.var0.selectedIndex = "  + String2.indexOf(avNames, varName[1]) + ";\n");
             //var[constraints],var[constraints]
             for (int v = 1; v < nVars; v++) {
                 if (varOptions[v] == dvNames || varOptions[v] == dvNames0) { //simpler because advNames isn't an option
@@ -3429,7 +3476,7 @@ public abstract class EDDGrid extends EDD {
                 "      d.f1.pSec.options[d.f1.pSec.selectedIndex].text; \n");
             if (drawVectors) writer.write(
                 "    if (d.f1.vec.value.length > 0) q += \"&.vec=\" + d.f1.vec.value; \n");
-            if (drawSurface) writer.write(
+            if (drawSurface && isMap) writer.write(
                 "    if (d.f1.land.selectedIndex > 0) " +
                     "q += \"&.land=\" + (d.f1.land.selectedIndex==1? \"under\" : \"over\"); \n");
             if (!drawSurface) writer.write(
@@ -4754,7 +4801,7 @@ Attributes {
 
         /*
         //was &.size=width|height specified?
-        String ampParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+        String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
         int imageWidth = -1, imageHeight = -1;
         for (int ap = 0; ap < ampParts.length; ap++) {
             String ampPart = ampParts[ap];
@@ -4958,7 +5005,7 @@ Attributes {
             int nVars = 4;
             EDV vars[] = null; //set by .vars or lower
             int axisVarI[] = null, dataVarI[] = null; //set by .vars or lower
-            String ampParts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+            String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
             boolean customSize = false;
             int markerType = GraphDataLayer.MARKER_TYPE_FILLED_SQUARE;
             int markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
@@ -5129,13 +5176,13 @@ Attributes {
             int nAAv = activeAxes.size();
             if (nAAv < 1 || nAAv > 2)
                 throw new SimpleException(EDStatic.queryError +
-                    "To draw a graph, either 1 or 2 axes must be active and have a range of values.");
+                    "To draw a graph, either 1 or 2 axes must be active and have 2 or more values.");
 
             //figure out / validate graph set up
             //if .draw= was provided...
             int cAxisI = 0, cDataI = 0; //use them up as needed
             if (drawLines) {
-                if (vars == null) {
+                if (vars == null) { //use default var selection
                     vars = new EDV[nVars];
                     for (int v = 0; v < 2; v++) { //get 2 vars
                         if (nAAv > cAxisI)     vars[v] = axisVariables[activeAxes.get(cAxisI++)];
@@ -5154,7 +5201,7 @@ Attributes {
                 vars[3] = null;
             } else if (drawLinesAndMarkers || drawMarkers) {
                 String what = drawLinesAndMarkers? "linesAndMarkers" : "markers";
-                if (vars == null) {
+                if (vars == null) { //use default var selection
                     vars = new EDV[nVars];
                     for (int v = 0; v < 3; v++) { //get 2 or 3 vars
                         if (nAAv > cAxisI)     vars[v] = axisVariables[activeAxes.get(cAxisI++)];
@@ -5172,7 +5219,7 @@ Attributes {
                 }
                 vars[3] = null;
             } else if (drawSticks) {
-                if (vars == null) {
+                if (vars == null) { //use default var selection
                     vars = new EDV[nVars];
                     //var0 must be axis
                     if (nAAv > 0) vars[0] = axisVariables[activeAxes.get(cAxisI++)];
@@ -5195,32 +5242,38 @@ Attributes {
                 }
                 vars[3] = null;
             } else if (drawSurface) {
-                if (vars == null) {
+                if (vars == null) { //use default var selection
                     vars = new EDV[nVars];
-                    //var0,1 must be axis  (currently must be lon,lat)
+                    //var0,1 must be axis, prefer lon,lat
                     if (activeAxes.indexOf("" + lonIndex) >= 0 &&
                         activeAxes.indexOf("" + latIndex) >= 0) {
                         vars[0] = axisVariables[lonIndex];
                         vars[1] = axisVariables[latIndex];
-                    } else throw new SimpleException(EDStatic.queryError +
-                        ".draw=surface requires active longitude and latitude axes.");
+                    } else if (nAAv < 2) {
+                        throw new SimpleException(EDStatic.queryError +
+                            ".draw=surface requires 2 axes with >1 value.");
+                    } else {
+                        //prefer last 2 axes (e.g., if [time][altitude][y][x]
+                        vars[0] = axisVariables[activeAxes.get(nAAv - 1)];
+                        vars[1] = axisVariables[activeAxes.get(nAAv - 2)];
+                    }
                     //var 2 must be data
                     vars[2] = reqDataVars[cDataI++]; //at least one is valid
                 } else {
-                    //vars 0 must be axis, 1,2 must be data
-                    if (axisVarI[0] != lonIndex || lonIndex < 0) 
+                    //vars 0,1 must be axis, 2 must be data
+                    if (axisVarI[0] < 0 || axisVarI[1] < 0) 
                         throw new SimpleException(EDStatic.queryError +
-                            "For .draw=surface, .var #0 must be longitude.");
-                    if (axisVarI[1] != latIndex || latIndex < 0) 
+                            "For .draw=surface, .var #0 and #1 must be axis variables.");
+                    if (axisVarI[0] == axisVarI[1]) 
                         throw new SimpleException(EDStatic.queryError +
-                            "For .draw=surface, .var #1 must be latitude.");
+                            "For .draw=surface, .var #0 and #1 must be different axis variables.");
                     if (dataVarI[2] < 0) 
                         throw new SimpleException(EDStatic.queryError +
                             "For .draw=surface, .var #2 must be a data variable.");
                 }
                 vars[3] = null;
             } else if (drawVectors) {
-                if (vars == null) {
+                if (vars == null) { //use default var selection
                     vars = new EDV[nVars];
                     //var0,1 must be axes
                     if (nAAv == 2) {
@@ -5248,18 +5301,18 @@ Attributes {
 
             } else if (vars == null) {
                 //neither .vars nor .draw were provided
-                //detect from OPeNDAP request  (favor linesAndMarkers)
+                //detect from OPeNDAP request
                 vars = new EDV[nVars];
                 if (nAAv == 0) {
                     throw new SimpleException(EDStatic.queryError +
                         "At least 1 axis variable must be active and have a range of values.");
-                } else if (nAAv == 1) {
+                } else if (nAAv == 1) { //favor linesAndMarkers
                     drawLinesAndMarkers = true;
                     vars[0] = axisVariables[activeAxes.get(0)];
                     vars[1] = reqDataVars[0];
                     if (nDv > 1) vars[2] = reqDataVars[1];
-                } else if (nAAv == 2) {  
-                    //currently only if lon lat
+                } else if (nAAv == 2) {  //favor Surface
+                    //if lon lat in dataset
                     if (lonIndex >= 0 && latIndex >= 0 &&
                         activeAxes.indexOf(lonIndex) >= 0 &&
                         activeAxes.indexOf(latIndex) >= 0) {
@@ -5275,31 +5328,34 @@ Attributes {
                             drawSurface = true;
                         }
 
-                    } else throw new SimpleException(EDStatic.queryError +
-                        "If 2 axes are active, they must be longitude and latitude.");
+                    } else {
+                        //use last 2 axis vars (e.g., when time,alt,y,x)
+                        drawSurface = true;
+                        vars[0] = axisVariables[activeAxes.get(nAAv - 1)];
+                        vars[1] = axisVariables[activeAxes.get(nAAv - 2)];
+                        vars[2] = reqDataVars[0];
+                    }
                 } else {
                     throw new SimpleException(EDStatic.queryError +
                         "Either 1 or 2 axes must be active and have a range of values.");
                 }
             } else {
                 //.vars was provided, .draw wasn't
-                //look for drawSurface
+                //look for drawVector (2 axisVars + 2 dataVars)
                 if (axisVarI[0] >= 0 &&
                     axisVarI[1] >= 0 &&
                     dataVarI[2] >= 0 &&
                     dataVarI[3] >= 0) {
+                    //??? require map (lat lon), not graph???
                     drawVectors = true;
 
-                //look for drawVector(currently must have lon and lat)
-                } else if (lonIndex >= 0 && latIndex >= 0 &&
-                    activeAxes.indexOf(lonIndex) >= 0 && //lon or lat, in either order
-                    activeAxes.indexOf(latIndex) >= 0 &&
-                    dataVarI[2] >= 0) {
-                    vars[0] = axisVariables[lonIndex]; //force lon 
-                    vars[1] = axisVariables[latIndex]; //force lat
-                    //vars[2] already set
+                //look for drawSurface (2 axisVars + 1 dataVar)
+                } else if (
+                    axisVarI[0] >= 0 &&
+                    axisVarI[1] >= 0 &&
+                    dataVarI[2] >= 0 &&
+                    dataVarI[3] < 0) {
                     drawSurface = true;
-                    vars[3] = null;
 
                 //drawMarker 
                 } else {
@@ -5336,7 +5392,7 @@ Attributes {
             if (minX > maxX) {
                 double d = minX; minX = maxX; maxX = d;}
 
-            int minYIndex, maxYIndex;
+            int minYIndex = -1, maxYIndex = -1;
             EDVGridAxis yAxisVar = yAxisIndex >= 0? axisVariables[yAxisIndex] : null;
             double minData = Double.NaN, maxData = Double.NaN;
              
@@ -5386,17 +5442,21 @@ Attributes {
                         activeWidth  = Math.max(5, Math2.roundToInt((maxX - minX) / vecInc)); //e.g., 20 deg / 2 deg -> 10 
                         activeHeight = Math.max(5, Math2.roundToInt((maxY - minY) / vecInc));
 
-                    } else { //drawSurface;    currently drawSurface is always a map
+                    } else { //drawSurface;    
 
                         if (transparentPng) {
                             activeWidth = imageWidth;
                             activeHeight = imageHeight;
 
-                        } else {
+                        } else if (isMap) {
                             int wh[] = SgtMap.predictGraphSize(fontScale, imageWidth, imageHeight,
                                 minX, maxX, minY, maxY);
                             activeWidth = wh[0];
                             activeHeight = wh[1];
+
+                        } else {
+                            activeWidth = imageWidth;
+                            activeHeight = imageHeight;
                         }
                     } 
 
@@ -5427,7 +5487,7 @@ Attributes {
             zUnits = zUnits == null? "" : " (" + zUnits + ")";
             tUnits = tUnits == null? "" : " (" + tUnits + ")";
 
-            //get the desctiptive info for the axes with 1 value
+            //get the desctiptive info for the other axes (the ones with 1 value)
             StringBuilder otherInfo = new StringBuilder();
             for (int av = 0; av < axisVariables.length; av++) {
                 if (av != xAxisIndex && av != yAxisIndex) {
@@ -5444,9 +5504,14 @@ Attributes {
                         otherInfo.append(Calendar2.epochSecondsToLimitedIsoStringT(
                             axisVar.combinedAttributes().getString(EDV.TIME_PRECISION), td, "NaN"));
                     else {
+                        String avDN = axisVar.destinationName();
+                        String avLN = axisVar.longName();
                         String avUnits = axisVar.units();
-                        avUnits = avUnits == null? "" : " " + avUnits;
-                        otherInfo.append(axisVar.longName() + "=" + td + avUnits);
+                        otherInfo.append(
+                            (avLN.length() <= 12 || avLN.length() <= avDN.length()? 
+                                avLN : avDN) + 
+                            "=" + td + 
+                            (avUnits == null? "" : " " + avUnits));
                     }
                 }
             }
@@ -5468,7 +5533,8 @@ Attributes {
             String newQuery = buildDapQuery(newReqDataNames, constraints);
             if (reallyVerbose) String2.log("  newQuery=" + newQuery);
             GridDataAccessor gda = new GridDataAccessor(this, requestUrl, newQuery, 
-                yAxisVar == null, //Table needs row-major order, Grid needs column-major order
+                yAxisVar == null? true : //Table needs row-major order 
+                    yAxisIndex > xAxisIndex, //Grid needs column-major order (so depends on axis order)
                 true); //convertToNaN
             long requestNL = gda.totalIndex().size();
             EDStatic.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage"); 
@@ -5618,7 +5684,7 @@ Attributes {
                         " dataMax=" + stats[PrimitiveArray.STATS_MAX]);
                 }
 
-                //get the lon values
+                //get the x axis "lon" values
                 PrimitiveArray tpa = gda.axisValues(xAxisIndex);
                 int tn = tpa.size();
                 grid.lon = new double[tn];
@@ -5626,9 +5692,10 @@ Attributes {
                     grid.lon[i] = tpa.getDouble(i);
                 grid.lonSpacing = (grid.lon[tn - 1] - grid.lon[0]) / Math.max(1, tn - 1);
 
-                //get the lat values
+                //get the y axis "lat" values
                 tpa = gda.axisValues(yAxisIndex);
                 tn = tpa.size();
+                //String2.log(">>gdaYsize=" + tn);
                 grid.lat = new double[tn];
                 for (int i = 0; i < tn; i++)
                     grid.lat[i] = tpa.getDouble(i); 
@@ -5685,7 +5752,7 @@ Attributes {
                     (reallySmall? yAxisVar.destinationName() : yAxisVar.longName()) + yUnits, 
                     (reallySmall? vars[2].destinationName()  : vars[2].longName()) + zUnits, //boldTitle
                     title(),             
-                    "",
+                    otherInfo.toString(),
                     MessageFormat.format(EDStatic.imageDataCourtesyOf, institution()), 
                     null, grid, null,
                     new CompoundColorMap(cptFullName), color, //color is irrelevant 
@@ -5859,7 +5926,7 @@ Attributes {
                 g2.fillRect(0, 0, imageWidth, imageHeight);
             }
 
-            if (drawSurface) {
+            if (drawSurface && isMap) {
                 if (transparentPng) {
                     //draw the map
                     SgtMap.makeCleanMap(minX, maxX, minY, maxY,
@@ -5896,7 +5963,8 @@ Attributes {
                     writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
                 }
 
-            } else if (drawVectors || drawLines || drawLinesAndMarkers || drawMarkers || drawSticks) {
+            } else if (drawVectors || drawLines || drawLinesAndMarkers || 
+                drawMarkers || drawSticks || (drawSurface && !isMap)) {
                 if (drawLandAsMask == 0) {
                     EDV edv = vars[2] == null? vars[1] : vars[2];
                     drawLandAsMask = edv.drawLandMask(defaultDrawLandMask())? 2 : 1;
@@ -5909,7 +5977,8 @@ Attributes {
                         EDStatic.imageDir, logoImageFile,
                         minX, maxX, minY, maxY, 
                         drawLandAsMask == 2,
-                        false, null, 1, 1, 0, "", "", "", "", "", //plotGridData                
+                        false, //plotGridData 
+                        null, 1, 1, 0, "", "", "", "", "",
                         SgtMap.FILL_LAKES_AND_RIVERS, 
                         false, null, 1, 1, 1, "", null, "", "", "", "", "", //plot contour 
                         graphDataLayers,
@@ -5922,11 +5991,14 @@ Attributes {
                         png && drawLegend.equals(LEGEND_ONLY)? "." : graphDataLayer.yAxisTitle, //avoid running into legend
                         SgtUtil.LEGEND_BELOW, EDStatic.legendTitle1, EDStatic.legendTitle2,
                         EDStatic.imageDir, logoImageFile,
-                        minX, maxX,
-                        minY, maxY,
-                        xIsTimeAxis, yIsTimeAxis, 
+                        minX, maxX, minY, maxY, xIsTimeAxis, yIsTimeAxis, 
                         graphDataLayers,
                         g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
+                        drawSurface?
+                            (palette.equals("BlackWhite") || palette.equals("WhiteBlack")? 
+                                SgtGraph.DefaultBackgroundColor : //blue
+                                new Color(0x808080)) : //gray
+                            SgtGraph.DefaultBackgroundColor, //blue
                         fontScale); 
 
                 writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
@@ -6049,7 +6121,7 @@ Attributes {
         long time = System.currentTimeMillis();
 
         //did query include &.jsonp= ?
-        String parts[] = getUserQueryParts(userDapQuery); //decoded
+        String parts[] = Table.getDapQueryParts(userDapQuery); //decoded
         String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
         if (jsonp != null) {
             jsonp = jsonp.substring(7);
@@ -6127,7 +6199,7 @@ Attributes {
             throw new SimpleException(EDStatic.queryError +
                 "The .kml format can only handle one data variable.");
 
-        //find any &constraints (simplistic approach, but sufficient for here and hard to replace with getUserQueryParts)
+        //find any &constraints (simplistic approach, but sufficient for here and hard to replace with Table.getDapQueryParts)
         int ampPo = -1;
         if (userDapQuery != null) {
             ampPo = userDapQuery.indexOf('&');
@@ -6412,7 +6484,7 @@ Attributes {
             //Solution (crummy): assume an image represents -1/2 time to previous image until 1/2 time till next image
 
             //get all the .dotConstraints
-            String parts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+            String parts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
             StringBuilder dotConstraintsSB = new StringBuilder();
             for (int i = 0; i < parts.length; i++) {
                 if (parts[i].startsWith(".")) {
@@ -6628,10 +6700,10 @@ Attributes {
         String nulls = String2.makeString('\u0000', 32);
         for (int av = 0; av < nAv; av++)
             stream.write(String2.toByteArray(
-                String2.noLongerThan(axisVariables[av].destinationName(), 31) + nulls), 0, 32);
+                String2.noLongerThan(axisVariables[av].destinationName(), 31) + nulls), 0, 32); //EEEK! Better not be longer.
         for (int dv = 0; dv < ntDv; dv++) 
             stream.write(String2.toByteArray(
-                String2.noLongerThan(tDataVariables[dv].destinationName(), 31) + nulls), 0, 32);
+                String2.noLongerThan(tDataVariables[dv].destinationName(), 31) + nulls), 0, 32);//EEEK! Better not be longer.
 
         //write the axis miMatrix
         for (int av = 0; av < nAv; av++)

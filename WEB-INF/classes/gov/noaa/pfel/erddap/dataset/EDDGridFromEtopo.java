@@ -122,8 +122,7 @@ public class EDDGridFromEtopo extends EDDGrid {
             "Mediterranean Sea Bathymetry, U.S. Coastal Relief Model (CRM), " +
             "Antarctica RAMP Topography, Antarctic Digital Database, GSHHS");
         sourceGlobalAttributes.add("contributor_role", "source data");
-        sourceGlobalAttributes.add("Conventions",          "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
-        sourceGlobalAttributes.add("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
+        sourceGlobalAttributes.add("Conventions",          "COARDS, CF-1.6, ACDD-1.3");
         sourceGlobalAttributes.add("creator_email", "Barry.Eakins@noaa.gov ");
         sourceGlobalAttributes.add("creator_name", "NOAA NGDC");
         sourceGlobalAttributes.add("creator_url", "http://www.ngdc.noaa.gov/mgg/global/global.html");
@@ -488,7 +487,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 "  :cdm_data_type = \"Grid\";\n" +
 "  :contributor_name = \"GLOBE, SRTM30, Baltic Sea Bathymetry, Caspian Sea Bathymetry, Great Lakes Bathymetry, Gulf of California Bathymetry, IBCAO, JODC Bathymetry, Mediterranean Sea Bathymetry, U.S. Coastal Relief Model (CRM), Antarctica RAMP Topography, Antarctic Digital Database, GSHHS\";\n" +
 "  :contributor_role = \"source data\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"Barry.Eakins@noaa.gov \";\n" +
 "  :creator_name = \"NOAA NGDC\";\n" +
 "  :creator_url = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
@@ -522,7 +521,6 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
 "  :Northernmost_Northing = 85.0; // double\n" +
 "  :project = \"NOAA NGDC ETOPO\";\n" +
@@ -531,7 +529,7 @@ expected =
 "  :references = \"Amante, C. and B. W. Eakins, ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis. NOAA Technical Memorandum NESDIS NGDC-24, 19 pp, March 2009.\";\n" +
 "  :sourceUrl = \"(local file)\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"ETOPO1 is a 1 arc-minute global relief model of Earth's surface that integrates land topography and ocean bathymetry. It was built from numerous global and regional data sets. This is the 'Ice Surface' version, with the top of the Antarctic and Greenland ice sheets. The horizontal datum is WGS-84, the vertical datum is Mean Sea Level. Keywords: Bathymetry, Digital Elevation. This is the grid/node-registered version: the dataset's latitude and longitude values mark the centers of the cells.\";\n" +
 "  :title = \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\";\n" +
 "  :Westernmost_Easting = -180.0; // double\n" +

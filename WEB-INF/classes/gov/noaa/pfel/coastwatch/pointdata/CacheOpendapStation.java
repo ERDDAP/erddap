@@ -1097,9 +1097,7 @@ public class CacheOpendapStation {
 "v_component_uncorrected.v_component_uncorrected[v_component_uncorrected.time=1154396111][v_component_uncorrected.depth=10][v_component_uncorrected.latitude=36.833333], -8.2\n",
                 "response=" + response);
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
         //M0: make cache file 
@@ -1137,9 +1135,7 @@ public class CacheOpendapStation {
             Test.ensureEqual(table.getFloatData(4,1), 6.9f, "");
             Test.ensureEqual(table.getFloatData(5,1), -8.2f, "");
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
         }
 
 /* M1 and M2 tests work, but slow and no need to do all the time

@@ -695,10 +695,9 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         table.saveAsJson(dir + "nosCoopsCA.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
         String2.log(table.dataToCSVString());
 
-        String2.getStringFromSystemIn( 
+        String2.pressEnterToContinue( 
             "\n*** EDDTableFromAsciiServiceNOS.makeNosActiveCurrentsSubsetTable done.\n" +
-            "nStations=" + table.nRows() + "\n" +
-            "Press ^C to stop or Enter to continue...");         
+            "nStations=" + table.nRows());         
     }
 
     /**
@@ -756,18 +755,19 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         try {
             Test.ensureEqual(nRows, 6, "Rain Fall");
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\n2015-02-02 2 of the 6 stations aren't in the stations file:\n" +
-                "97557809 9757112, but they are still on the web page.\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.log(table.dataToCSVString());
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                //"\n2015-02-02 2 of the 6 stations aren't in the stations file:\n" +
+                //"97557809 9757112, but they are still on the web page.\n" +
+                "\n2015-05-04 1 of the 6 stations isn't in the stations file:\n" +
+                "9757112, but it is still on the web page."); 
         }
 
-        String2.getStringFromSystemIn( 
+        String2.pressEnterToContinue( 
             "\n*** EDDTableFromAsciiServiceNOS.makeNosCoopsMetSubsetFiles done.\n" +
             "nMAT=" + nMAT + " nMBP=" + nMBP + " nMC=" + nMC + 
             " nMRH=" + nMRH + " nMWT=" + nMWT + " nMW=" + nMW + " n=MV=" + nMV + "\n" +
-            " nMRF=" + nRows + "\n" +
-            "Press ^C to stop or Enter to continue...");         
+            " nMRF=" + nRows);         
     }
 
 
@@ -778,7 +778,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
      * @throws Throwable if trouble
      */
     public static void makeNosCoopsWLSubsetFiles(boolean reloadStationsFile) throws Throwable {
-        String2.log("\n****************** EDDTableFromAsciiServiceNOS.makeNosCoopsWLSubsetFiles\n");
+        String2.log("\n*********** EDDTableFromAsciiServiceNOS.makeNosCoopsWLSubsetFiles\n");
 
 
         //reload the Capabilities document
@@ -911,7 +911,9 @@ Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level
                         content[po] = content[po].substring(5);
                     String tDatum = content[po].substring(0, 10).trim();
                     String tValue = content[po].substring(15, 20).trim();
-                    if (tValue.length() > 0) {
+                    if (tDatum.startsWith("<") ||
+                        tDatum.startsWith("Please")) {}
+                    else if (tValue.length() > 0) {
                         String description = content[po].substring(30).trim();
                         datumsHash.put(tDatum, description);
                         toID.add(        fromID.get(row));
@@ -976,7 +978,7 @@ Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level
         toTable.saveAsJson(dir + "nosCoopsWLTP6.json",  -1, false);
         toTable.saveAsJson(dir + "nosCoopsWLTP60.json",  -1, false);
 
-        String2.getStringFromSystemIn(
+        String2.pressEnterToContinue(
             "\n*** EDDTableFromAsciiServiceNOS.makeNosCoopsWLSubsetFiles Done.\n" +
             "Of nStations=" + nStations + ", failures: noName=" + noName + 
                 " wrongName=" + wrongName + 
@@ -984,8 +986,7 @@ Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level
                 " noPre=" + noPre + " noDatumHeader=" + noDatumHeader + 
                 " noDatum=" + noDatum + "\n" +
             "nGoodStations=" + nGoodStations + "\n" +
-            "nStation+Datum combos with datum=MLLW =" + toTable.nRows() + "\n" +
-            "Press ^C to stop or Enter to continue...");         
+            "nStation+Datum combos with datum=MLLW =" + toTable.nRows());         
     }
 
 
@@ -1015,7 +1016,7 @@ These datasets were hard to work with:
     public static void testNosCoops(String idRegex) throws Throwable {
         String2.log("\n****************** EDDTableFromAsciiServiceNOS.testNosCoopsWL\n");
         testVerboseOn();
-EDD.debugMode=true;
+        //EDD.debugMode=true;
         String results, query, tName, expected;
         //(0, 11) causes all of these to end in 'T'
         String yesterday = Calendar2.epochSecondsToIsoStringT(  
@@ -1072,8 +1073,7 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t)); 
         }
         }
 
@@ -1105,9 +1105,8 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsLR1" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsLR1"); 
         }
         }
 
@@ -1143,9 +1142,8 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLV6" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsWLV6"); 
         }
         }
 
@@ -1180,9 +1178,8 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLV60" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsWLV60"); 
         }
         }
 
@@ -1209,13 +1206,12 @@ EDD.debugMode=true;
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2014-11-23T00:30:00Z,MLLW,1.374,H,0,0
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLVHL" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsWLVHL"); 
         }
         }
 
@@ -1248,10 +1244,9 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsWLTPHL results change every day (5-7 days ahead)." +
-                "\nIs the response reasonable?" +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nIs the response reasonable?"); 
         }
         }
 
@@ -1291,9 +1286,8 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLTP6" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsWLTP6"); 
         }
         }
 
@@ -1333,9 +1327,8 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLTP60" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsWLTP60"); 
         }
         }
 
@@ -1372,10 +1365,9 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMAT" +
-                "\nCOMMON PROBLEM - one row is missing in the results." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nCOMMON PROBLEM - one row is missing in the results."); 
         }
         }
 
@@ -1412,10 +1404,9 @@ EDD.debugMode=true;
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMBP" +
-                "\nCOMMON PROBLEM - one row is missing in the results." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nCOMMON PROBLEM - one row is missing in the results."); 
         }
         }
 
@@ -1454,10 +1445,9 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-                String2.getStringFromSystemIn("\n" + msg + 
-                    "\n*** nosCoopsMC" +
-                    "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsMC" +
+                "\nUnexpected error."); 
         }
         }
 
@@ -1493,10 +1483,9 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMRF" +
-                "\nCOMMON PROBLEM - one row is missing in the results." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nCOMMON PROBLEM - one row is missing in the results."); 
         }
         }
 
@@ -1533,9 +1522,8 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMRH" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsMRH"); 
         }
         }
 
@@ -1573,10 +1561,9 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMWT" +
-                "\nCOMMON PROBLEM - one row is missing in the results." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nCOMMON PROBLEM - one row is missing in the results."); 
         }
         }
 
@@ -1613,10 +1600,9 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMW" +
-                "\nCOMMON PROBLEM - one row is missing in the results." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nCOMMON PROBLEM - one row is missing in the results."); 
         }
         }
 
@@ -1648,9 +1634,8 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsMV" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsMV"); 
         }
         }
 
@@ -1686,9 +1671,8 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsCA" +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
+                "\n*** nosCoopsCA"); 
         }
         }
   
@@ -1711,11 +1695,10 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
                 "\n*** THIS HAS NEVER WORKED." +
                 "\nResponse says \"Water Level Daily Mean Data is only available for Great Lakes stations," +
-                "\nand not for coastal stations.\" but stations table only lists coastal stations." +   
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nand not for coastal stations.\" but stations table only lists coastal stations."); 
         }
         }
 */
@@ -1731,7 +1714,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
      *
      * @throws Throwable if trouble
      */
-    public static void test(boolean makeSubsetFiles) throws Throwable {
+    public static void test(boolean makeSubsetFiles, boolean reloadSF) throws Throwable {
         String2.log("\n****************** EDDTableFromAsciiServiceNOS.test() *****************\n");
         testVerboseOn();
  
@@ -1740,8 +1723,6 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
         //  to coastwatch ERDDAP /subset
         //  and UAF       ERDDAP /subset
         if (makeSubsetFiles) {
-            //reloadSF normally true.  But if working on stuff below, once is enough.
-            boolean reloadSF = true; 
             if (reloadSF) reloadStationsFile();
             makeNosCoopsWLSubsetFiles(false);  //re-download the stations file
             makeNosCoopsMetSubsetFiles(false); //re-download the stations file

@@ -56,7 +56,7 @@ public class EDDTableFromFileNames extends EDDTable{
     protected byte extractGroup[];        
 
     //variable names
-    public final static String URL          = "url";
+    public final static String URL          = FileVisitorDNLS.URL;          //"url";
     public final static String DIRECTORY    = FileVisitorDNLS.DIRECTORY;    //"directory";
     public final static String NAME         = FileVisitorDNLS.NAME;         //"name";
     public final static String LASTMODIFIED = FileVisitorDNLS.LASTMODIFIED; //"lastModified";
@@ -271,6 +271,10 @@ public class EDDTableFromFileNames extends EDDTable{
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
+        //get a source table (this also ensures there are valid files in fileDir)
+        Table sourceBasicTable = getBasicTable(fileDir, fileNameRegex, recursive, 
+             null, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
+
         //create dataVariables[]
         int ndv = tDataVariables.length;
         dataVariables = new EDV[ndv];
@@ -281,7 +285,9 @@ public class EDDTableFromFileNames extends EDDTable{
             String destName = (String)tDataVariables[dv][1];
             if (destName == null || destName.trim().length() == 0)
                 destName = sourceName;
-            Attributes sourceAtt = new Attributes();
+            int scol = sourceBasicTable.findColumnNumber(sourceName);
+            Attributes sourceAtt = scol >= 0? sourceBasicTable.columnAttributes(scol) : 
+                new Attributes();
             Attributes addAtt = (Attributes)tDataVariables[dv][2];
             String sourceType = (String)tDataVariables[dv][3];
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
@@ -395,6 +401,24 @@ public class EDDTableFromFileNames extends EDDTable{
     public boolean recursive() {return recursive;}
 
 
+    /**
+     * Get low level data: URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
+     *
+     * @throws Exception if trouble, e.g., 0 matching files
+     */
+    public static Table getBasicTable(String fileDir, String fileNameRegex, 
+        boolean recursive, String loggedInAs, String datasetID) throws Exception {
+        Table table = FileVisitorDNLS.oneStepAccessibleViaFiles(
+            fileDir, fileNameRegex, recursive, 
+            EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
+        int nRows = table.nRows();
+        if (nRows == 0)
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
+                " (0 matching files)");
+        return table;
+    }
+
+
     /** 
      * This gets the data (chunk by chunk) from this EDDTable for the 
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
@@ -417,57 +441,10 @@ public class EDDTableFromFileNames extends EDDTable{
         getSourceQueryFromDapQuery(userDapQuery, resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
-        //get low level data: DIRECTORY, NAME, LASTMODIFIED, SIZE
-        Table table = FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, 
-            false); //dirsToo
+        //get low level data: URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
+        Table table = getBasicTable(fileDir, fileNameRegex, recursive, 
+            loggedInAs, datasetID);
         int nRows = table.nRows();
-        if (nRows == 0)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
-                " (0 matching files)");
-
-        //replace dir with virtual url
-        int diri = table.findColumnNumber(DIRECTORY);
-        if (resultsVariables.indexOf(URL) < 0) {
-            table.removeColumn(diri);
-        } else {
-            table.setColumnName(diri, URL); 
-            StringArray dirPA = (StringArray)table.getColumn(diri);
-            StringArray namePA = (StringArray)table.getColumn(NAME);
-            int fromLength = fileDir.length();
-            //ensure returned dir is exactly as expected
-            String from = dirPA.get(0).substring(0, fromLength);
-            if (nRows > 0 && !from.equals(fileDir)) {
-                String2.log("Observed dir=" + from + "\n" +
-                            "Expected dir=" + fileDir);                            
-                throw new SimpleException(MustBe.InternalError + " unexpected directory name."); 
-            }
-            String to = EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID() + "/";
-            for (int row = 0; row < nRows; row++) {
-                //replace from with to 
-                dirPA.set(row, 
-                    to + dirPA.get(row).substring(fromLength) + namePA.get(row));               
-            }
-        }
-        
-        //modify columns to be as expected
-        //lastModified
-        int lastModifiedi = table.findColumnNumber(LASTMODIFIED);
-        if (resultsVariables.indexOf(LASTMODIFIED) < 0) {
-            table.removeColumn(lastModifiedi);
-        } else {
-            LongArray la = (LongArray)table.getColumn(lastModifiedi);
-            DoubleArray da = new DoubleArray(nRows, false);
-            for (int row = 0; row < nRows; row++) 
-                da.add(la.get(row) / 1000.0);
-            table.setColumn(lastModifiedi, da);
-        }
-
-        //size
-        int sizei = table.findColumnNumber(SIZE);
-        if (resultsVariables.indexOf(SIZE) < 0) 
-            table.removeColumn(sizei);
-        else
-            table.setColumn(sizei, new DoubleArray(table.getColumn(sizei)));
 
         //create other results variables as needed
         int namei = table.findColumnNumber(NAME);
@@ -530,14 +507,17 @@ public class EDDTableFromFileNames extends EDDTable{
         String2.log("EDDTableFromFileNames.generateDatasetsXml" +
             "\n  tFileDir=" + tFileDir);
         tFileDir = File2.addSlash(String2.replaceAll(tFileDir, '\\', '/'));
+        String tDatasetID = suggestDatasetID("EDDTableFromFileNames(" + tFileDir + "," +
+            tFileNameRegex + ")");
         if (tReloadEveryNMinutes < suggestReloadEveryNMinutesMin ||
             tReloadEveryNMinutes > suggestReloadEveryNMinutesMax)
             tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
 
         //make the sourceTable and addTable
-        Table sourceTable = FileVisitorDNLS.oneStep(tFileDir, tFileNameRegex, 
-            tRecursive, false); //dirsToo
-        sourceTable.setColumnName(0, "url");
+        Table sourceTable = FileVisitorDNLS.oneStepAccessibleViaFiles(
+            tFileDir, tFileNameRegex, tRecursive, 
+            EDStatic.erddapUrl(null) + "/files/" + tDatasetID + "/");
+
         Table addTable = new Table();
         addTable.globalAttributes()
             .add("cdm_data_type", "Other")
@@ -557,28 +537,8 @@ public class EDDTableFromFileNames extends EDDTable{
             Attributes addAtts = new Attributes();
             addTable.addColumn(col, sourceName, 
                 (PrimitiveArray)sourceTable.getColumn(col).clone(), addAtts);
-
-            if (sourceName.equals("url")) {
-                addAtts.set("ioos_category", "Identifier");
-                addAtts.set("long_name", "URL");
-            } else if (sourceName.equals("name")) {
-                addAtts.set("ioos_category", "Identifier");
-                addAtts.set("long_name", "File Name");
-            } else if (sourceName.equals("lastModified")) {
-                sourceTable.setColumn(col, new DoubleArray());
-                addTable.setColumn(   col, new DoubleArray());
-                addAtts.set("ioos_category", "Time");
-                addAtts.set("long_name", "Last Modified");
-                addAtts.set("units", Calendar2.SECONDS_SINCE_1970);
-            } else if (sourceName.equals("size")) {
-                sourceTable.setColumn(col, new DoubleArray());
-                addTable.setColumn(   col, new DoubleArray());
-                addAtts.set("ioos_category", "Other");
-                addAtts.set("long_name", "Size");
-                addAtts.set("units", "bytes");
-            }
         }
-        HashSet keywords = suggestKeywords(sourceTable, addTable);
+        HashSet<String> keywords = suggestKeywords(sourceTable, addTable);
         cleanSuggestedKeywords(keywords);
         String keywordSar[] = (String[])keywords.toArray(new String[0]); 
         Arrays.sort(keywordSar, new StringComparatorIgnoreCase()); 
@@ -590,9 +550,7 @@ public class EDDTableFromFileNames extends EDDTable{
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +
-            "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + 
-                suggestDatasetID("EDDTableFromFileNames(" + tFileDir + "," +
-                    tFileNameRegex + ")") + 
+            "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + 
                 "\" active=\"true\">\n" +
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
@@ -675,7 +633,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">null</att>\n" +
 "        <att name=\"infoUrl\">http://mur.jpl.nasa.gov/</att>\n" +
 "        <att name=\"institution\">NASA JPL</att>\n" +
-"        <att name=\"keywords\">file, images, jpl, modified, mur, name, nasa, size, sst, time, URL</att>\n" +
+"        <att name=\"keywords\">data, file, high, identifier, images, jet, jpl, laboratory, lastModified, modified, multi, multi-scale, mur, name, nasa, propulsion, resolution, scale, sea, size, sst, surface, temperature, time, ultra, ultra-high</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"summary\">Images from JPL MUR SST Daily.</att>\n" +
 "        <att name=\"title\">JPL MUR SST Images</att>\n" +
@@ -685,10 +643,10 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>url</destinationName>\n" +
 "        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">URL</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -696,10 +654,10 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>name</destinationName>\n" +
 "        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">File Name</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -707,11 +665,11 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>lastModified</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Last Modified</att>\n" +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -719,11 +677,11 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>size</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Other</att>\n" +
 "            <att name=\"long_name\">Size</att>\n" +
 "            <att name=\"units\">bytes</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <!-- You can create other variables which are derived from extracts\n" +
@@ -769,6 +727,7 @@ directionsForGenerateDatasetsXml() +
             "Unexpected results from GenerateDatasetsXml.doIt.");
 
         //ensure it is ready-to-use by making a dataset from it
+        String2.log("results=\n" + results);
         EDD edd = oneFromXmlFragment(results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), tTitle, "");
@@ -787,8 +746,6 @@ directionsForGenerateDatasetsXml() +
         String results, expected, query, tName;
 
         EDDTable tedd = (EDDTable)oneFromDatasetXml("testFileNames");
-            tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
-                tedd.className() + "_all", ".csv"); 
 
         //.dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 

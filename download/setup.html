@@ -3,6 +3,7 @@
 <html>
 <head>
 <title>ERDDAP - Set Up Your Own ERDDAP</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
 <link href="../images/erddap.css" rel="stylesheet" type="text/css">
 </head>
@@ -75,7 +76,72 @@ Because the small effort to setup ERDDAP brings many benefits.
   <li>Make graphs and maps.  (Everyone likes pretty pictures.)
   </ul>
 </ul>
-You can customize your ERDDAP's appearance so ERDDAP fits in with the rest of your web site.
+You can <a rel="help" href="#customize">customize</a> your ERDDAP's appearance 
+so ERDDAP reflects your organization and fits in with the rest of your web site.
+
+<h2><a name="organizations">ERDDAP</a> has been installed by over 50 organizations worldwide,</h2>
+including:
+<ul>
+<li><a rel="bookmark" href="https://bluehub.jrc.ec.europa.eu/erddap/index.html">IPSC JRC EC (Maritime Affairs Unit, Institute for the Protection and Security of the Citizen,
+Joint Research Centre of the European Commission)</a> 
+  <!-- 2014-11-19 and 2015-03-18 Conor Delaney  -->
+<li>IRD (Institut de Recherche pour le Développement, France)
+  <br>CNRS (Centre National de la Recherche Scientifique, France)
+  <br>UPMC (Université Pierre et Marie CURIE, Paris, France)
+  <br>UCAD (Université Cheikh Anta Diop de Dakar, Sénégal)
+  <br>UGB (Université Gaston Berger - Saint-Louis du Sénégal)
+  <br>UFHB (Université Félix HOUPHOUËT-BOIGNY, Abidjan, Côte d'Ivoire)
+  <br>IPSL (Institut Pierre Simon Laplace des sciences de l'environnement, Paris, France)
+  <br>LMI ECLAIRS (Laboratoire Mixte International «Etude du Climat en Afrique de l’Ouest et de ses Interactions avec l’Environnement Régional, et appui aux services climatiques») 
+  <!-- 2015-03-17 Thierry Valero -->
+<li><a rel="bookmark" href="http://erddap.marine.ie/erddap/index.html">The Marine Institute (Ireland)</a> 
+  <!-- 2015-03-19 Damian Smyth -->
+<li>Marine Instruments S.A. (Spain)
+  <!-- 2015-03-25 Iago Tejeda Pérez -->
+<li><a rel="bookmark" href="http://cwcgom.aoml.noaa.gov/erddap/index.html">NOAA CW CGOM (CoastWatch Caribbean/Gulf of Mexico Node)</a> 
+  <!-- assumed public, Joaquin Trinanes -->
+<li><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/index.html">NOAA CW WC (CoastWatch West Coast Node)</a> which is co-located with and works with 
+<br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/index.html">NOAA ERD (Environmental Research Division of SWFSC of NMFS)</a>
+  <!-- 2015-03-17 Bob Simons-->
+<li><a rel="bookmark" href="http://erddap.axiomalaska.com/erddap/index.html">NOAA IOOS CeNCOOS (Central and Northern California Ocean Observing System)</a> 
+  <!-- 2015-03-18 Jennifer Patterson -->
+<li><a rel="bookmark" href="http://www.neracoos.org/erddap/index.html">NOAA IOOS NERACOOS (Northeastern Regional Association of Coastal and Ocean Observing Systems)</a> 
+  <!-- 2015-03-18 Eric Bridger -->
+<li><a rel="bookmark" href="http://data.ioos.us/gliders/erddap/index.html">NOAA IOOS NGDAC (National Glider Data Assembly Center)</a> 
+  <!-- 2015-03-17 Luke Campbell -->
+<li><a rel="bookmark" href="http://oos.soest.hawaii.edu/erddap/index.html">NOAA IOOS PacIOOS (Pacific Islands Ocean Observing System) at the University of Hawaii (UH)</a> 
+  <!-- 2015-03-16 John Maurer, 2015-03-17 James Potemra -->
+<li><a rel="bookmark" href="http://129.252.139.124/erddap/index.html">NOAA IOOS SECOORA (Southeast Coastal Ocean Observing Regional Association)</a> 
+  <!-- 2015-03-27 Jeremy Cothran -->
+<li><a rel="bookmark" href="http://ecowatch.ncddc.noaa.gov/erddap/index.html">NOAA NCEI (National Centers for Environmental Information) / NCDDC</a> 
+  <!-- 2015-03-17 (was NCDDC) Glenn Rutledge, Charles Carleton -->
+<li>NOAA NGDC STP (National Geophysical Data Center, Solar - Terrestrial Physics)
+  <!-- 2015-03-23 Dominic Fuller-Rowell -->
+<li><a rel="bookmark" href="http://osmc.noaa.gov/erddap/index.html">NOAA OSMC (Observing System Monitoring Center)</a> 
+  <!-- 2015-03-23 Kevin O'Brien -->
+<li><a rel="bookmark" href="http://upwell.pfeg.noaa.gov/erddap/index.html">NOAA UAF (Unified Access Framework)</a>
+  <!-- 2015-03-17 Bob Simons-->
+<li><a rel="bookmark" href="http://dap.onc.uvic.ca/erddap/index.html">ONC (Ocean Networks Canada)</a> 
+  <!-- 2015-03-17 Reyna Jenkyns -->
+<li><a rel="bookmark" href="http://meteo.rtech.fr/erddap/index.html">R.Tech Engineering, France</a> 
+  <!-- 2015-03-20 Philippe Makowski -->
+<li>Stanford University, Hopkins Marine Station 
+  <!-- 2015-03-24 James Ganong -->
+<li><a rel="bookmark" href="http://bmlsc.ucdavis.edu:8080/erddap/index.html">UC Davis BML (University of California at Davis, Bodega Marine Laboratory)</a> 
+  <!-- 2015-03-17 Marcel Losekoot -->
+<li>USGS Coastal and Marine Geology Program 
+  <!-- 2015-03-18 Ellyn Montgomery -->
+<li>UW APL (University of Washington, Applied Physics Laboratory) 
+  <!-- 2015-04-02 Mike Harrington -->
+<!--
+<li><a rel="bookmark" href=""></a> 
+  <!-- 2015-03-19  -->
+
+</ul>
+
+<b>ERDDAP is recommended within NOAA:</b> <a rel="bookmark"
+href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive</a> 
+includes ERDDAP in its list of recommended data servers for use by groups within NOAA. 
 
 <h2>Is the installation procedure hard? Can I do it?</h2>
 The initial installation takes some time, but it isn't very hard. You can do it.
@@ -294,9 +360,9 @@ or Mac server instead.
       Please check back here tomorrow. Sorry for the inconvenience,
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: c:\content\bat\md5.bat erddapContent1.58.zip -->
+     <!-- Use: c:\content\bat\md5.bat erddapContent1.62.zip -->
     <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.60, size=25,035 bytes, MD5=10332FC959B72F17E6A00AD432A38578, dated 2015-03-12)
+    (version 1.62, size=25,035 bytes, MD5=4B17A93CE52087C53AF6AEA905391418, dated 2015-06-08)
 
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
@@ -318,6 +384,8 @@ or Mac server instead.
      (size=24,076 bytes, MD5=93E1272069DDF6C858C48F7EDB0CC690, dated 2014-12-17)
      <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.58.zip">1.58</a>
      (size=25,000 bytes, MD5=620A54B6A52D7C95C0D1635A9FF39DC6, dated 2015-02-25)
+     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.60.zip">1.60</a>
+     (size=25,035 bytes, MD5=10332FC959B72F17E6A00AD432A38578, dated 2015-03-12)
      ]
 
   <p>Then,
@@ -356,11 +424,11 @@ or Mac server instead.
       Please check back here tomorrow. Sorry for the inconvenience,
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download 
-    <!-- use: c:\content\bat\md5.bat erddap1.60.war  
+    <!-- use: c:\content\bat\md5.bat erddap1.62.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.60, size=490,919,033 bytes, MD5=99319916DA726030C25E0045A65B0971, dated 2015-03-12)
+    (version 1.62, size=491,038,285 bytes, MD5=1FDF3F349EC7D87A4A88AD14A7B5F41A, dated 2015-06-09)
 
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
@@ -386,6 +454,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.58.war">1.58</a> 
     (size=490,902,857 bytes, MD5=B4D1BBDA2FADD88FDCA29461C2578D3D, dated 2015-02-25)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.60.war">1.60</a> 
+    (size=490,919,033 bytes, MD5=99319916DA726030C25E0045A65B0971, dated 2015-03-12)
     ]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
@@ -478,18 +549,18 @@ or Mac server instead.
 <li>Download 
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.60, size=490,919,033 bytes, MD5=99319916DA726030C25E0045A65B0971, dated 2015-03-12)
-    into a  temporary directory.
+    (version 1.62, size=491,038,285 bytes, MD5=1FDF3F349EC7D87A4A88AD14A7B5F41A, dated 2015-06-09)
+    into a temporary directory.
   <br>&nbsp;
 
 <li><a name="messages.xml">messages.xml</a>
   <ul>
-  <li>If you are upgrading from ERDDAP version 1.46 (or above)
+  <li>Common: If you are upgrading from ERDDAP version 1.46 (or above)
     and you just use the standard messages, 
     the new standard messages.xml will be installed automatically 
     (amongst the .class files via erddap.war).
     <br>&nbsp;
-  <li>If you are upgrading from ERDDAP version 1.44 (or below), 
+  <li>Rare: If you are upgrading from ERDDAP version 1.44 (or below), 
     <br>you MUST delete the old messages.xml file:
     <br><i>tomcat</i>/content/erddap/messages.xml .
     <br>The new standard messages.xml will be installed automatically 
@@ -1165,6 +1236,7 @@ Blacklist the new IP number and hope that they will eventually get the message.
   <br>If you are creating a new robots.txt file, this is a good start:
     <pre>
 User-Agent: *
+Disallow: /erddap/files/ 
 Disallow: /files/ 
 Disallow: /images/ 
 Disallow: /*?
@@ -2325,7 +2397,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.60
+<p>ERDDAP, Version 1.62
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

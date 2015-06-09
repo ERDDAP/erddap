@@ -317,7 +317,7 @@ public class GSHHS  {
             int level = flag & 255;
             int greenwich = (flag >> 16) & 1; //Values: Greenwich is 1 if Greenwich is crossed
 
-            //if (debug && west > east) String2.getStringFromSystemIn("  west=" + west + "east=" + east + " greenwich=" + greenwich);
+            //if (debug && west > east) String2.pressEnterToContinue("  west=" + west + "east=" + east + " greenwich=" + greenwich);
 
             //if (greenwich == 1)                        
             //String2.log("id=" + id + " level=" + level + " gwch=" + greenwich + " ver=" + ((flag >> 8) & 255) + 

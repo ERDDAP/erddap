@@ -194,6 +194,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(col, colName,
                 (PrimitiveArray)dataSourceTable.getColumn(col).clone(),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
+                    null, //no source global attributes
                     sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
             Attributes addAtts = dataAddTable.columnAttributes(col);
 
@@ -330,7 +331,7 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">exploratorium</att>\n" +
 "        <att name=\"creator_url\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"infoUrl\">http://www.exploratorium.edu</att>\n" +
@@ -343,13 +344,12 @@ directionsForGenerateDatasetsXml() +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, currents, dew point, dew_point_temperature, direction, exploratorium, feels, feels-like, file, gust, gust-direction, height, high, humidity, humidity-rate, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, relative, relative_humidity, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, URL, vapor, water, wet, wet_bulb_temperature, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip</att>\n" +
+"atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, currents, data, date, dew, dew point, dew-point, dew_point_temperature, direction, elevation, exploratorium, feels, feels-like, file, fileName, gust, gust-direction, gust-speed, gust-time, height, high, humidity, humidity-high, humidity-low, humidity-rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, ob-date, phase, point, precipitation, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rainfall, rate, relative, relative_humidity, site, site-url, speed, state, station, station-id, sunrise, sunset, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, vapor, water, wet, wet-bulb, wet_bulb_temperature, wind, wind-direction, wind-direction-avg, wind-speed, wind-speed-avg, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">The new summary!</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"summary\">The new summary! exploratorium data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -372,7 +372,7 @@ directionsForGenerateDatasetsXml() +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
-"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"long_name\">Ob-date</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -511,8 +511,8 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
-"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Gust-time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -794,7 +794,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMaximum\" type=\"double\">104.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">14.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
-"            <att name=\"long_name\">Temp</att>\n" +
+"            <att name=\"long_name\">Temperature</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -848,7 +848,7 @@ directionsForGenerateDatasetsXml() +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
-"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"long_name\">Sunrise</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -861,7 +861,7 @@ directionsForGenerateDatasetsXml() +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
-"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"long_name\">Sunset</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -951,10 +951,8 @@ directionsForGenerateDatasetsXml() +
 "fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, altitude, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg", "");
 
         } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-            String2.getStringFromSystemIn(msg + 
-                "\nUnexpected error using generateDatasetsXml." + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error using generateDatasetsXml."); 
         }
 
     }
@@ -1300,7 +1298,7 @@ directionsForGenerateDatasetsXml() +
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"exploratorium\";\n" +
 "    String creator_url \"http://www.exploratorium.edu\";\n" +
 "    Float64 geospatial_vertical_max 0.0;\n" +
@@ -1324,9 +1322,8 @@ String expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"fileName, station_id, station, city_state_zip, city_state, site_url, altitude\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String time_coverage_end \"2012-11-03T20:30:00Z\";\n" +

@@ -4,10 +4,14 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
+import com.cohort.array.Attributes;
+import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.StringArray;
+import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -43,6 +47,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public final static String NAME         = "name";
     public final static String LASTMODIFIED = "lastModified";
     public final static String SIZE         = "size";
+
+    public final static String URL          = "url"; //in place of directory for oneStepAccessibleViaFiles
 
     /** things set by constructor */
     public String dir;  //with \\ or / separators. With trailing slash (to match).
@@ -150,8 +156,13 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;    
     }
 
-    /** A convenience method for using this class. 
-     * The results are in the global table and in the PA variables.
+    /** table.dataToCSVString(); */
+    public String resultsToString() {
+        return table.dataToCSVString();
+    }
+
+    /**
+     * This is a convenience method for using this class. 
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
      *    The resulting directoryPA will contain dirs with matching slashes and trailing slash.
@@ -171,10 +182,102 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return fv.table;
     }
 
-    /** table.dataToCSVString(); */
-    public String resultsToString() {
-        return table.dataToCSVString();
+    /** 
+     * This is a variant of oneStep (a convenience method for using this class)
+     * that returns lastModified as double epoch seconds and size as doubles (bytes)
+     * with some additional metadata. 
+     *
+     * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
+     *    The resulting directoryPA will contain dirs with matching slashes and trailing slash.
+     * @return a table with columns with DIRECTORY, NAME, LASTMODIFIED, and SIZE columns.
+     *    If directoriesToo=true, the original dir won't be included and any 
+     *    directory's name will be "".
+     */
+    public static Table oneStepDouble(String tDir, String tRegex, boolean tRecursive,
+        boolean tDirectoriesToo) throws IOException {
+
+        Table tTable = oneStep(tDir, tRegex, tRecursive, tDirectoriesToo);
+        int nCols = tTable.nColumns();
+        int nRows = tTable.nRows();
+
+        for (int col = 0; col < nCols; col++) {
+            String colName = tTable.getColumnName(col);
+            Attributes atts = tTable.columnAttributes(col);
+
+            if (colName.equals(DIRECTORY)) {
+                atts.set("ioos_category", "Identifier");
+                atts.set("long_name", "Directory");
+
+            } else if (colName.equals(NAME)) {
+                atts.set("ioos_category", "Identifier");
+                atts.set("long_name", "File Name");
+
+            } else if (colName.equals(LASTMODIFIED)) {
+                atts.set("ioos_category", "Time");
+                atts.set("long_name", "Last Modified");
+                atts.set("units", Calendar2.SECONDS_SINCE_1970);
+                LongArray la = (LongArray)tTable.getColumn(col);
+                DoubleArray da = new DoubleArray(nRows, false);
+                for (int row = 0; row < nRows; row++) 
+                    da.add(la.get(row) / 1000.0);
+                tTable.setColumn(col, da);
+
+            } else if (colName.equals(SIZE)) {
+                atts.set("ioos_category", "Other");
+                atts.set("long_name", "Size");
+                atts.set("units", "bytes");
+                tTable.setColumn(col, new DoubleArray(tTable.getColumn(col)));
+            }
+        }
+
+        return tTable;
     }
+
+    /** 
+     * This is a variant of oneStepDouble (a convenience method for using this class)
+     * that returns a url column instead of a directory column. 
+     *
+     * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
+     * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID() + "/"
+     * @return a table with columns with DIRECTORY, NAME, LASTMODIFIED, and SIZE columns.
+     *    If directoriesToo=true, the original dir won't be included and any 
+     *    directory's name will be "".
+     */
+    public static Table oneStepAccessibleViaFiles(String tDir, String tRegex, boolean tRecursive,
+        String startOfUrl) throws IOException {
+
+        tDir = File2.addSlash(String2.replaceAll(tDir, "\\", "/")); //ensure forward/ and trailing/
+        Table tTable = oneStepDouble(tDir, tRegex, tRecursive, false); //tDirectoriesToo
+        int nCols = tTable.nColumns();
+        int nRows = tTable.nRows();
+
+        //replace directory with virtual url
+        int diri = tTable.findColumnNumber(DIRECTORY);
+        tTable.setColumnName(diri, URL); 
+        tTable.columnAttributes(diri).set("long_name", "URL");
+        if (nRows == 0)
+            return tTable;
+
+        StringArray dirPA = (StringArray)tTable.getColumn(diri);
+        StringArray namePA = (StringArray)tTable.getColumn(NAME);
+        int fromLength = tDir.length();
+        //ensure returned dir is exactly as expected
+        String from = dirPA.get(0).substring(0, fromLength);
+        if (nRows > 0 && !from.equals(tDir)) {
+            String2.log("Observed dir=" + from + "\n" +
+                        "Expected dir=" + tDir);                            
+            throw new SimpleException(MustBe.InternalError + " unexpected directory name."); 
+        }
+        for (int row = 0; row < nRows; row++) {
+            //replace from with to 
+            dirPA.set(row, 
+                startOfUrl + dirPA.get(row).substring(fromLength) + namePA.get(row));               
+        }
+
+        return tTable;
+    }        
+
+
 
     /** 
      * This tests this class. 
@@ -228,7 +331,80 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 "c:/erddapTest/fileNames/,jplMURSST20150104090000.png,1420669338436,46586\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //huge dir
+
+        //***
+        //oneStepDouble
+        table = oneStepDouble("c:/erddapTest/fileNames", ".*\\.png", true, true); 
+        results = table.toCSVString();
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 4 ;\n" +
+"\tdirectory_strlen = 28 ;\n" +
+"\tname_strlen = 27 ;\n" +
+"variables:\n" +
+"\tchar directory(row, directory_strlen) ;\n" +
+"\t\tdirectory:ioos_category = \"Identifier\" ;\n" +
+"\t\tdirectory:long_name = \"Directory\" ;\n" +
+"\tchar name(row, name_strlen) ;\n" +
+"\t\tname:ioos_category = \"Identifier\" ;\n" +
+"\t\tname:long_name = \"File Name\" ;\n" +
+"\tdouble lastModified(row) ;\n" +
+"\t\tlastModified:ioos_category = \"Time\" ;\n" +
+"\t\tlastModified:long_name = \"Last Modified\" ;\n" +
+"\t\tlastModified:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tdouble size(row) ;\n" +
+"\t\tsize:ioos_category = \"Other\" ;\n" +
+"\t\tsize:long_name = \"Size\" ;\n" +
+"\t\tsize:units = \"bytes\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"}\n" +
+"row,directory,name,lastModified,size\n" +
+"0,c:/erddapTest/fileNames/,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
+"1,c:/erddapTest/fileNames/,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
+"2,c:/erddapTest/fileNames/sub/,,1.420735700318E9,0.0\n" +
+"3,c:/erddapTest/fileNames/sub/,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        //***
+        //oneStepAccessibleViaFiles
+        table = oneStepAccessibleViaFiles("c:/erddapTest/fileNames", ".*\\.png", true, 
+            "http://127.0.0.1:8080/cwexperimental/files/testFileNames/");
+        results = table.toCSVString();
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 3 ;\n" +
+"\turl_strlen = 88 ;\n" +
+"\tname_strlen = 27 ;\n" +
+"variables:\n" +
+"\tchar url(row, url_strlen) ;\n" +
+"\t\turl:ioos_category = \"Identifier\" ;\n" +
+"\t\turl:long_name = \"URL\" ;\n" +
+"\tchar name(row, name_strlen) ;\n" +
+"\t\tname:ioos_category = \"Identifier\" ;\n" +
+"\t\tname:long_name = \"File Name\" ;\n" +
+"\tdouble lastModified(row) ;\n" +
+"\t\tlastModified:ioos_category = \"Time\" ;\n" +
+"\t\tlastModified:long_name = \"Last Modified\" ;\n" +
+"\t\tlastModified:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tdouble size(row) ;\n" +
+"\t\tsize:ioos_category = \"Other\" ;\n" +
+"\t\tsize:long_name = \"Size\" ;\n" +
+"\t\tsize:units = \"bytes\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"}\n" +
+"row,url,name,lastModified,size\n" +
+"0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
+"1,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
+"2,http://127.0.0.1:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        //*** huge dir
         String unexpected = 
             "\nUnexpected FileVisitorDNLS error (but /data/gtspp/temp dir has variable nFiles):\n";
 
@@ -252,9 +428,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     Test.ensureTrue(dir0.endsWith("/"), "");
                 }
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(unexpected +
-                    MustBe.throwableToString(t) + "\n" +
-                    "Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(unexpected +
+                    MustBe.throwableToString(t)); 
             }
         }
 
@@ -278,9 +453,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     Test.ensureTrue(dir0.endsWith("\\"), "");
                 }
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(unexpected +
-                    MustBe.throwableToString(t) + "\n" +
-                    "Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(unexpected +
+                    MustBe.throwableToString(t)); 
             }
         }
         String2.log("\n*** FileVisitorDNLS.test finished.");

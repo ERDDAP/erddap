@@ -1372,6 +1372,7 @@ public class EDDTableFromCassandra extends EDDTable{
             else if (destName.equals(EDV.ALT_NAME))   sourceAtts.add("units", EDV.ALT_UNITS);
             else if (destName.equals(EDV.DEPTH_NAME)) sourceAtts.add("units", EDV.DEPTH_UNITS);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                null, //no source global attributes
                 sourceAtts, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
             //but make it real here, and undo the lie
             if (     destName.equals(EDV.LON_NAME))   {
@@ -1527,8 +1528,8 @@ public class EDDTableFromCassandra extends EDDTable{
         int tReloadEveryNMinutes = -1;
         String tInfoUrl = "http://www.oceannetworks.ca/";
         String tInstitution = "Ocean Networks Canada";
-        String tSummary = "The summary for Bob's Cassandra test data.";
-        String tTitle = "Bob's Test Data";
+        String tSummary = "The summary for Bob's great Cassandra test data.";
+        String tTitle = "The Title for Bob's Cassandra Test Data";
         //addGlobalAtts.
         String results, expected;
 
@@ -1666,19 +1667,18 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Ocean Networks Canada</att>\n" +
 "        <att name=\"creator_url\">http://www.oceannetworks.ca/</att>\n" +
 "        <att name=\"infoUrl\">http://www.oceannetworks.ca/</att>\n" +
 "        <att name=\"institution\">Ocean Networks Canada</att>\n" +
-"        <att name=\"keywords\">bob, canada, cascii, cboolean, cbyte, cdecimal, cdouble, cfloat, cint, clong, cmap, cset, cshort, ctext, cvarchar, data, date, depth, deviceid, networks, ocean, sampletime, test, time</att>\n" +
+"        <att name=\"keywords\">bob, bobtable, canada, cascii, cassandra, cboolean, cbyte, cdecimal, cdouble, cfloat, cint, clong, cmap, cset, cshort, ctext, currents, cvarchar, data, date, depth, deviceid, networks, ocean, sampletime, test, time, title, u, v, velocity, vertical, w</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, date</att>\n" +
-"        <att name=\"summary\">The summary for Bob&#39;s Cassandra test data.</att>\n" +
-"        <att name=\"title\">Bob&#39;s Test Data</att>\n" +
+"        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
+"        <att name=\"title\">The Title for Bob&#39;s Cassandra Test Data (bobTable)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>deviceid</sourceName>\n" +
@@ -1903,15 +1903,15 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">W</att>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"            <att name=\"long_name\">Vertical Velocity</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n";
             //String2.log(results);
             Test.ensureEqual(results, expected, "results=\n" + results);
-            //String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+            //String2.pressEnterToContinue(); 
 
             
         //generate the datasets.xml for a table with static columns
@@ -1969,18 +1969,17 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Ocean Networks Canada</att>\n" +
 "        <att name=\"creator_url\">http://www.oceannetworks.ca/</att>\n" +
 "        <att name=\"infoUrl\">http://www.oceannetworks.ca/</att>\n" +
 "        <att name=\"institution\">Ocean Networks Canada</att>\n" +
-"        <att name=\"keywords\">canada, cassandra, date, depth, deviceid, networks, ocean, sampletime, static, test, time</att>\n" +
+"        <att name=\"keywords\">canada, cassandra, data, date, depth, deviceid, latitude, longitude, networks, ocean, sampletime, static, test, time, u, v</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, date, latitude, longitude</att>\n" +
-"        <att name=\"summary\">The summary for Bob&#39;s Cassandra test data.</att>\n" +
+"        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">Cassandra Static Test</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -2112,10 +2111,9 @@ expected =
             EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nDataset constructed.\n" +
-                    "Paused to allow you to check the connectionProperty's.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the connectionProperty's."); 
 /* */
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
@@ -2254,7 +2252,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"Ocean Networks Canada\";\n" +
 "    String creator_url \"http://www.oceannetworks.ca/\";\n" +
 "    String geospatial_vertical_positive \"down\";\n" +
@@ -2276,9 +2274,8 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Bob's Cassandra Test Data\";\n" +
@@ -2320,11 +2317,10 @@ expected =
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: all\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset   test sampletime ">=" handled correctly
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
@@ -2339,11 +2335,10 @@ expected =
 "1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset   test sampletime \">=\" handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset   test sampletime ">" handled correctly
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>2014-11-01T03:02:03Z";
@@ -2357,11 +2352,10 @@ expected =
 "1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset   test sampletime \">\" handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset   test secondary index: ctext '=' handled correctly
             //so erddap tells Cass to handle this constraint
@@ -2376,11 +2370,10 @@ expected =
 "1001,2014-11-02T01:02:03Z,text1\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset   test secondary index: ctext '=' handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset  with code changes to allow any constraint on secondary index:
             //  proves ctext '>=' not allowed
@@ -2397,11 +2390,10 @@ expected =
 "1008,2014-11-08T01:02:03Z,text8\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset  test secondary index: ctext '>=' handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //distinct()   subsetVariables
             query = "deviceid,cascii&deviceid=1001&distinct()";
@@ -2417,11 +2409,10 @@ expected =
 "1001,ascii3\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: distinct()\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //orderBy()   subsetVariables
             query = "deviceid,sampletime,cascii&deviceid=1001&orderBy(\"cascii\")";
@@ -2438,11 +2429,10 @@ expected =
 "1001,2014-11-01T03:02:03Z,ascii3\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: orderBy()\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //just keys   deviceid
             query = "deviceid,date&deviceid=1001";
@@ -2456,11 +2446,10 @@ expected =
 "1001,2014-11-02T00:00:00Z\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: just keys   deviceid\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //no matching data (no matching keys)
             try {
@@ -2478,11 +2467,10 @@ expected =
                     "(no matching partition key values)", "");
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: no matching data (no matching keys)\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset cint=NaN
             query = "&cint=NaN";
@@ -2498,10 +2486,9 @@ expected =
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset cfloat=NaN
             query = "&cfloat=NaN";
@@ -2517,10 +2504,9 @@ expected =
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset cboolean=NaN
             query = "&cboolean=NaN";
@@ -2533,10 +2519,9 @@ expected =
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset cboolean=1     
             query = "&cboolean=1";
@@ -2551,10 +2536,9 @@ expected =
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset regex on set
             query = "&cset=~\".*set73.*\"";
@@ -2569,10 +2553,9 @@ expected =
 "1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,30.7,7.11,7.12,7.13\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //no matching data (sampletime)
             try {
@@ -2586,14 +2569,13 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: no matching data (sampletime)\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //request a subset of response vars 
             //(Unable to duplicate reported error: my Cass doesn't have 
@@ -2617,11 +2599,10 @@ expected =
 "2014-11-01T02:02:03Z,30.2,0.11\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: just keys   deviceid\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //no matching data (erddap)
             try {
@@ -2635,14 +2616,13 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: no matching data (erddap)\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //finished 
             //cum time ~313, impressive: ~30 subqueries and a lot of time spent
@@ -2652,9 +2632,8 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testBasic error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromCassandra.testBasic error:"); 
         }
     }
 
@@ -2679,9 +2658,7 @@ expected =
             EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
-                    "\nDataset constructed.\n" +
-                    "Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue("\nDataset constructed."); 
 
             //all    
             try {
@@ -2697,14 +2674,13 @@ expected =
                 if (msg.indexOf("You are requesting too much data. " +
                     "Please further constrain one or more of these variables: " +
                     "deviceid, date, sampletime. (5/5=1.0 > 0.55)") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: all\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //still too much     
             try {
@@ -2720,14 +2696,13 @@ expected =
                 if (msg.indexOf("You are requesting too much data. " +
                     "Please further constrain one or more of these variables: " +
                     "deviceid, date, sampletime. (3/5=0.6 > 0.55)") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: all\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset  2/5  0.4 is okay
             query = "deviceid,sampletime,cascii&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
@@ -2742,11 +2717,10 @@ expected =
 "1001,2014-11-02T02:02:03Z,\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset   test sampletime \">=\" handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //finished 
             String2.log("\n* EDDTableFromCassandra.testMaxRequestFraction finished successfully. time=" + 
@@ -2754,9 +2728,8 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testMaxRequestFraction error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromCassandra.testMaxRequestFraction error."); 
         }
     }
 
@@ -2780,10 +2753,9 @@ expected =
             EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nDataset constructed.\n" +
-                    "Paused to allow you to check the connectionProperty's.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the connectionProperty's."); 
 
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
@@ -2922,7 +2894,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Other\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"Ocean Networks Canada\";\n" +
 "    String creator_url \"http://www.oceannetworks.ca/\";\n" +
 "    String geospatial_vertical_positive \"down\";\n" +
@@ -2944,9 +2916,8 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Bob's Cassandra Test Data\";\n" +
@@ -2981,11 +2952,10 @@ expected =
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: all\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset   test sampletime ">=" handled correctly
             query = "deviceid,sampletime,cmap&sampletime>=2014-11-01T03:02:03Z";
@@ -3000,11 +2970,10 @@ expected =
 "1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset   test sampletime \">=\" handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //subset   test sampletime ">" handled correctly
             query = "deviceid,sampletime,cmap&sampletime>2014-11-01T03:02:03Z";
@@ -3018,11 +2987,10 @@ expected =
 "1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: subset   test sampletime \">\" handled correctly\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //distinct()   subsetVariables
             query = "deviceid,cascii&distinct()";
@@ -3038,11 +3006,10 @@ expected =
 "1001,ascii3\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: distinct()\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //orderBy()   subsetVariables
             query = "deviceid,sampletime,cascii&orderBy(\"cascii\")";
@@ -3059,11 +3026,10 @@ expected =
 "1001,2014-11-01T03:02:03Z,ascii3\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: orderBy()\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //just keys   deviceid
             query = "deviceid,date";
@@ -3077,11 +3043,10 @@ expected =
 "1001,2014-11-02T00:00:00Z\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: just keys   deviceid\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //no matching data (no matching keys)
             try {
@@ -3099,11 +3064,10 @@ expected =
                     "(no matching partition key values)", "");
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: no matching data (no matching keys)\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //no matching data (sampletime)
             try {
@@ -3117,14 +3081,13 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: no matching data (sampletime)\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //no matching data (erddap)
             try {
@@ -3138,14 +3101,13 @@ expected =
                 String msg = MustBe.throwableToString(t); 
                 String2.log(msg);
                 if (msg.indexOf("Your query produced no matching results.") < 0)
-                    String2.getStringFromSystemIn("Unexpected error. Press ^C to stop or Enter to continue..."); 
+                    String2.pressEnterToContinue("Unexpected error."); 
             }
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: no matching data (erddap)\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //finished 
             //cum time ~313, impressive: ~30 subqueries and a lot of time spent
@@ -3155,9 +3117,8 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testCass1Device error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromCassandra.testCass1Device error."); 
         }
     }
 
@@ -3183,10 +3144,9 @@ expected =
             EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nDataset constructed.\n" +
-                    "Paused to allow you to check the connectionProperty's.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the connectionProperty's."); 
 
             //.dds
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
@@ -3283,7 +3243,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"Ocean Networks Canada\";\n" +
 "    String creator_url \"http://www.oceannetworks.ca/\";\n" +
 "    Float64 Easternmost_Easting -123.0;\n" +
@@ -3313,11 +3273,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 34.0;\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
 "    Float64 Southernmost_Northing 33.0;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"deviceid, date, latitude, longitude\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Cassandra Static Test\";\n" +
@@ -3352,11 +3311,10 @@ expected =
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,30.1,34.0,-124.0,0.41,0.42\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: all\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //distinct()   subsetVariables
             query = "deviceid,date,latitude,longitude&distinct()";
@@ -3371,11 +3329,10 @@ expected =
 "1001,2014-11-02T00:00:00Z,34.0,-124.0\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: distinct()\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //static variables are NOT constrainable by Cassandra (even '=' queries)
             //so ERDDAP handles it
@@ -3391,11 +3348,10 @@ expected =
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,30.1,34.0,-124.0,0.41,0.42\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: showed that static variables are NOT constrainable by Cassandra\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
             //static variables are NOT constrainable by Cassandra (even '>' queries)
             //so ERDDAP handles it
@@ -3411,11 +3367,10 @@ expected =
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,30.1,34.0,-124.0,0.41,0.42\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
-                String2.getStringFromSystemIn(
+                String2.pressEnterToContinue(
                     "\nTest: showed that static variables are NOT constrainable by Cassandra\n" +
                     "query=" + query + "\n" +
-                    "Paused to allow you to check the stats.\n" + 
-                    "Press ^C to stop or Enter to continue..."); 
+                    "Paused to allow you to check the stats."); 
 
 
             //finished 
@@ -3424,9 +3379,8 @@ expected =
 
             /* */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromCassandra.testStatic error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected EDDTableFromCassandra.testStatic error."); 
         }
         debugMode = oDebugMode;
     }

@@ -274,9 +274,21 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     quickRestartAttributes.get(
                         "sourceValues_" + String2.encodeVariableNameSafe(varName));
 
+                //deal with remote not having ioos_category, but this ERDDAP requiring it
+                Attributes tAddAttributes = new Attributes();
+                if (EDStatic.variablesMustHaveIoosCategory &&
+                    tSourceAttributes.getString("ioos_category") == null) {
+
+                    //guess ioos_category   (alternative is always assign "Unknown")
+                    Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        null, //sourceGlobalAtts not yet known
+                        tSourceAttributes, varName, false, true); //tryToAddColorBarMinMax, tryToFindLLAT
+                    tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
+                }
+
                 //make an axisVariable
                 tAxisVariables.add(makeAxisVariable(-1, 
-                    varName, varName, tSourceAttributes, new Attributes(), 
+                    varName, varName, tSourceAttributes, tAddAttributes, 
                     tSourceValues));
 
                 //make new tSourceAttributes
@@ -292,10 +304,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
                     //guess ioos_category   (alternative is always assign "Unknown")
                     Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        null, //sourceGlobalAtts not yet known
                         tSourceAttributes, varName, false, false); //tryToAddColorBarMinMax, tryToFindLLAT
                     tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
                 }
 
+                //make a data variable
                 EDV edv;
                 if (varName.equals(EDV.TIME_NAME))
                     throw new RuntimeException(errorInMethod +
@@ -930,9 +944,8 @@ expected =
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nError using generateDatasetsXml on " + EDStatic.erddapUrl + //in tests, always non-https url
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml on " + EDStatic.erddapUrl); //in tests, always non-https url
         }
 
     }
@@ -1029,10 +1042,10 @@ expected =
 "    String composite \"true\";\n" +
 "    String contributor_name \"NASA GSFC \\(OBPG\\)\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
-"    String creator_email \"dave.foley@noaa.gov\";\n" +
-"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
-"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" + 
+"    String creator_email \"erd.data@noaa.gov\";\n" +
+"    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String creator_url \"http://www.pfeg.noaa.gov\";\n" +
 "    String date_created \"20.{8}Z\";\n" +  //changes
 "    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
@@ -1056,7 +1069,7 @@ expected =
 
 expected2 =
 "    String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
-"    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"8-day,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
 "aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
@@ -1068,7 +1081,6 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String origin \"NASA GSFC \\(OBPG\\)\";\n" +
@@ -1076,13 +1088,16 @@ expected2 =
 "    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
+"    String publisher_email \"erd.data@noaa.gov\";\n" +
+"    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
 "    String references \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
 "    String satellite \"Aqua\";\n" +
 "    String sensor \"MODIS\";\n" +
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "    Float64 Southernmost_Northing -90.0;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "    String time_coverage_end \"20.{8}T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
@@ -1100,8 +1115,7 @@ expected2 =
                 Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
                 Test.ensureLinesMatch(results.substring(tPo), expected2, "\nresults=\n" + results);
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                     "Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
 
             try {
@@ -1118,8 +1132,7 @@ expected2 =
                         "\nresults=\n" + results);
                 }
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                     "Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
 
             //*** test getting dds for entire dataset
@@ -1199,8 +1212,8 @@ expected2 =
                     results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
                     Test.ensureEqual(results, expected, "\nresults=\n" + results);
                 } catch (Throwable t) {
-                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.");
                 }
             }
 
@@ -1225,8 +1238,8 @@ expected2 =
                     results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
                     Test.ensureEqual(results, expected, "\nresults=\n" + results);
                 } catch (Throwable t) {
-                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.");
                 }
             }
 
@@ -1352,9 +1365,8 @@ expected2 =
                     Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
                 }
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                    "\n*** THIS WILL FAIL UNTIL AFTER RELEASE 1.48." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\n*** THIS WILL FAIL UNTIL AFTER RELEASE 1.48."); 
             }
 
             //********************************************** test getting grid data
@@ -1397,8 +1409,8 @@ expected2 =
                     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
                     Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
                 } catch (Throwable t) {
-                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.");
                 }
             }
 
@@ -1441,8 +1453,8 @@ expected2 =
                     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
                     Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
                 } catch (Throwable t) {
-                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.");
                 }
             }
 
@@ -1525,10 +1537,10 @@ expected2 =
 "  :composite = \"true\";\n" +
 "  :contributor_name = \"NASA GSFC \\(OBPG\\)\";\n" +
 "  :contributor_role = \"Source of level 2 data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" + 
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"20.{8}Z\";\n" + //changes periodically
 "  :date_issued = \"20.{8}Z\";\n" +  //changes periodically
 "  :Easternmost_Easting = 246.65354786433613; // double\n" +
@@ -1551,7 +1563,7 @@ expected2 =
 
         expected = //note original missing values
 "  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
-"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"8-day,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
 "aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
@@ -1563,7 +1575,6 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
 "  :Northernmost_Northing = 49.82403334105115; // double\n" +
 "  :origin = \"NASA GSFC \\(OBPG\\)\";\n" +
@@ -1571,13 +1582,16 @@ expected2 =
 "  :project = \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = 28.985876360268577; // double\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
@@ -1609,10 +1623,9 @@ expected2 =
             Test.ensureLinesMatch(results.substring(tPo, tPo2 + 9), expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\n*** This EDDGridFromErddap test requires erdMHchla8day on coastwatch's erddap" +
-                (testLocalErddapToo? "\n    AND rMHchla8day on localhost's erddap." : "") +
-                "\nPress ^C to stop or Enter to continue..."); 
+                (testLocalErddapToo? "\n    AND rMHchla8day on localhost's erddap." : "")); 
         }
     }
 

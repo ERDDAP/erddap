@@ -550,7 +550,6 @@ public class SimpleXMLReader {
     /**
      * This performs a unit test of this class.
      *
-     * @param args is ignored
      */
     public static void test() throws Exception {
 

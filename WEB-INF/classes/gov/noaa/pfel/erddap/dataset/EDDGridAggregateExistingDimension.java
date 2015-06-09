@@ -667,15 +667,17 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
+"        <att name=\"cols\">null</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, degrees, global, modis, noaa, npp, ocean, ocean color, oceans,\n" +
+"        <att name=\"keywords\">1day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, daily, data, day, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
-"quality, science, science quality, sea, seawater, water, wcn</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
-"        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
+"orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
+"        <att name=\"rows\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
+"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1day)</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -834,7 +836,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
 "        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
@@ -843,12 +845,12 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atmospheric, component, derived, downward, eastward, eastward_wind, flk, gsfc, level, meters, nasa, noaa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
+"atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, level, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
+"        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk)</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -1126,7 +1128,7 @@ expected =
 " :comment = \"S HATTERAS - 250 NM East of Charleston, SC\";\n" +
 " :contributor_name = \"NOAA NDBC\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 " :Easternmost_Easting = -75.42f; // float\n" +
 " :geospatial_lat_max = 32.27f; // float\n" +
 " :geospatial_lat_min = 32.27f; // float\n" +
@@ -1145,7 +1147,6 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 " :location = \"32.27 N 75.42 W \";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Northernmost_Northing = 32.27f; // float\n" +
 " :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
 " :sourceUrl = \"http://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\";\n" +
@@ -1359,6 +1360,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         
     }
 
+
     /**
      * This tests the methods in this class.
      *
@@ -1369,7 +1371,6 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         String2.log("\n****************** EDDGridAggregateExistingDimension.test() *****************\n");
         testGenerateDatasetsXml();
         testBasic();
-
 
         //not usually run
         //testRtofs();  //worked but needs to be updated; datasets are removed after ~1 month

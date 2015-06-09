@@ -582,12 +582,11 @@ Consortium (OGC) Web Feature Service (WFS) and the Geography
 Markup Language (GML) Simple Feature Profile to transport in-situ 
 time series data.</att>
             <att name="cdm_data_type">Station</att>
-            <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>  
+            <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>  
             <att name="infoUrl">http://www.csc.noaa.gov/DTL/dtl_proj4_gmlsfp_wfs.html</att>
             <att name="institution">NOAA CSC</att>
             <att name="license">[standard]</att>
-            <att name="Metadata_Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>  
-            <att name="standard_name_vocabulary">CF-12</att>
+            <att name="standard_name_vocabulary">CF Standard Name Table v27</att>
         </addAttributes> 
         <longitudeSourceMinimum>-97.22</longitudeSourceMinimum>
         <longitudeSourceMaximum>-70.43</longitudeSourceMaximum>
@@ -713,7 +712,7 @@ time series data.</att>
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"TimeSeries\";[10]\n" +
 "    String cdm_timeseries_variables \"???\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";[10]\n" +
 "    Float64 Easternmost_Easting -70.43;[10]\n" +
 "    Float64 geospatial_lat_max 38.48;[10]\n" +
 "    Float64 geospatial_lat_min 24.55;[10]\n" +
@@ -737,11 +736,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a[10]\n" +
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 38.48;[10]\n" +
 "    String sourceUrl \"http://csc-s-ial-p.csc.noaa.gov/cgi-bin/microwfs/microWFS.cgi?SERVICENAME=dtlservicesubType=gml/3.1.1/profiles/gmlsf/1.0.0/1\";[10]\n" +
 "    Float64 Southernmost_Northing 24.55;[10]\n" +
-"    String standard_name_vocabulary \"CF-12\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
 "    String summary \"[Normally, the summary describes the dataset. Here, it describes [10]\n" +
 "the server.][10]\n" +
 "The mission of the NOAA CSC Data Transport Laboratory (DTL) is to[10]\n" +
@@ -913,15 +911,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
         //expected error didn't occur!
-        String2.getStringFromSystemIn("\n" + 
+        String2.pressEnterToContinue("\n" + 
             MustBe.getStackTrace() + 
-            "An expected error didn't occur at the above location.\n" + 
-            "Press ^C to stop or Enter to continue..."); 
+            "An expected error didn't occur at the above location."); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
-                "*** EXPECTED ERROR first appeared 2008-09-04: " + MustBe.throwableToString(t) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(
+                "*** EXPECTED ERROR first appeared 2008-09-04: " + MustBe.throwableToString(t)); 
         }
 
     }

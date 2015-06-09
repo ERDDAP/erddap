@@ -45,12 +45,117 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.62">Changes</a> in ERDDAP version 1.62 (released 2015-06-08)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <ul>
+  <li>For EDDGrid datasets, users can now make Graph Type: Surface graphs 
+    with any combination of numeric axes, not just longitude vs. latitude.
+    This lets you make x vs y (projected) graphs and various
+    <a rel="help" 
+    href="http://en.wikipedia.org/wiki/Hovm%C3%B6ller_diagram">Hovm&ouml;ller Diagrams<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    for example, plotting longitude vs depth, or time vs depth.
+    [Note: if depth is on the Y Axis, it will probably be flipped from what you want.
+    Sorry, un-flipping it is not yet an option.]
+    Thanks to Cara Wilson and Lynn DeWitt.
+  <li>There is a new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/oceanicAtmosphericAcronyms.html">Oceanic/Atmospheric Acronym Converter</a>
+    which lets you convert a common oceanic/atmospheric acronym to/from a full name. 
+  <li>There is a new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/oceanicAtmosphericVariableNames.html">Oceanic/Atmospheric Variable Names Converter</a>
+    which lets you convert a common oceanic/atmospheric variable name to/from a full name.
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>Java 7/8
+    <br>Oracle no longer supports (provides security bug fixes for) Java 7. 
+    ERDDAP still supports Java 7, but please move to Java 8. 
+    The next release of ERDDAP will probably require Java 8.
+  <li>valid_min/max/range 
+    <br>Previously and now, if a dataVariable had scale_factor and add_offset metadata,
+    ERDDAP unpacks the data values and removes that metadata.
+    Previously, ERDDAP did not modify/unpack any valid_range, valid_min, valid_max 
+    metadata (which usually/should contained packed values) by scale_factor and add_offset.
+    Now it does.
+    Please search your ERDDAP for "valid_" and make sure that all of the 
+    variables that have valid_range, valid_min, or valid_max have the
+    correct values when the datasets appear in the new version of ERDDAP.
+    See 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#valid_range">valid_range/min/max documentation</a>.
+
+  <li>ACDD-1.3
+    <br>Previously, ERDDAP (notably GenerateDatasetsXml) 
+    used/recommended the original (1.0) version of the <a rel="bookmark" 
+    href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html">NetCDF Attribute Convention for Dataset Discovery</a>
+    which was referred to as "Unidata Dataset Discovery v1.0" in the
+    global Conventions and Metadata_Conventions attributes.
+    Now, we recommend
+    <a rel="bookmark" 
+    href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD version 1.3</a>
+    which was ratified in early 2015 and is referred to as "ACDD-1.3".
+    Fortunately, ACDD-1.3 is highly backward compatibly with version 1.0.
+    We RECOMMEND that you 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#switchToACDD13">switch to ACDD-1.3</a>. It isn't hard.
+  <li>GenerateDatasetsXml Attributes
+    <br>There were a large number of changes to 
+    improve the &lt;addAttributes&gt; values suggested by GenerateDatasetsXml
+    for the global Conventions, creator_name/email/url, keywords, summary, and 
+    title attributes and for the variable long_name attribute.
+    Some changes are related to the new use of ACDD-1.3.
+  <li>EDDTableFromSOS datasets
+    <br>With the occasional addition of new types of
+    SOS servers
+    and changes to the old servers, it is getting harder for ERDDAP to 
+    automatically detect the server type from the server's responses. 
+    The use of 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromSOSSkeletonXML">&lt;sosServerType&gt;</a> (with a value of 
+    IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI) is now STRONGLY RECOMMENDED. 
+    If any of your datasets of this type have problems in the new version of ERDDAP,
+    try re-running GenerateDatasetsXml for the SOS server to
+    generate a new chunk of datasets.xml for that dataset.
+    GenerateDatasetsXml will let you try out the different &lt;sosServerType&gt; options 
+    until you find the right one for a given server.
+    If you still have problems, 
+    please let me know the problem you see and the URL of the server and I will try to help.   
+  <li>EDDTableFromFileNames datasets
+    <br>Some attributes that were recommended 
+    addAttributes are now sourceAttributes.
+    You probably don't have to change anything for existing datasets in your datasets.xml.
+  <li>Bug fix related to certain requests to EDDTableFromNcCFFiles datasets.
+    <br>I also added a large number of unit tests
+    to the existing large number of units tests of the underlying methods
+    (there are 100's of scenarios).
+    Thanks to Eli Hunter.
+  <li>Bug fix/small changes to EDDGridFromMergeIR.
+    <br>Thanks to Jonathan Lafite and Philippe Makowski
+  <li>Bug fix: EDDGridFromErddap now works even if a remote dataset 
+    doesn't have ioos_category variable attributes.
+    <br>Thanks to Kevin O'Brien.
+  <li>Bug fix in .graph web page for EDDGrid datasets when
+    there is only one axis variable with more than one value.
+    <br>Thanks to Charles Carleton.
+  <li>There were other small improvements, changes, and bug fixes.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.60">Changes</a> in ERDDAP version 1.60 (released 2015-03-12)</h2>
 <ul>
 <li><b>New Features (for users):</b> none
 
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
+  <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:<tt>
+    <br>Disallow: /erddap/files/</tt>
   <li>INotify Problem and Solution:
     <br>On Linux computers, 
     if you are using &lt;updateEveryNMillis&gt; with datasets with 
@@ -60,8 +165,8 @@
     (occasionally or consistently) with the error message:
     "IOException: User limit of inotify instances reached or too many open files".
     If so, you can fix this problem by calling (as root):<tt>
-    <br>    echo 10000 > /proc/sys/fs/inotify/max_user_watches
-    <br>    echo 10000 > /proc/sys/fs/inotify/max_user_instances</tt>
+    <br>    echo 20000 > /proc/sys/fs/inotify/max_user_watches
+    <br>    echo 500 > /proc/sys/fs/inotify/max_user_instances</tt>
     <br>Or, use higher numbers if the problem persists.
     The default for watches is 8192. The default for instances is 128.
   <li>NoSuchFileException Bug Fix: 
@@ -116,8 +221,9 @@
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
   <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:
-    <br><tt>Disallow: /files/</tt>
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:<tt>
+    <br>Disallow: /files/
+    <br>Disallow: /erddap/files/</tt>
   <li>Sample datasets.xml - Last year, we recommended several excellent datasets
     in the coastwatch ERDDAP that you could add to your ERDDAP just by adding 
     a few lines to your datasets.xml. If you added the erdVH datasets, please
@@ -2457,7 +2563,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.60
+<p>ERDDAP, Version 1.62
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

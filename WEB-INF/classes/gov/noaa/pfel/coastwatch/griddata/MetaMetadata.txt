@@ -21,10 +21,9 @@ References:
      1.2 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.2/build/cf-conventions.html
      1.4 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.4/build/cf-conventions.html
      1.6 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
-   [UDD] refers to 
-     http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html
-     which is used by the THREDDS data server.
-     (Ethan agreed to the ACDD acronym.   But I think it is only used in this file.)
+   [ACDD] refers to 
+     1.0: http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html
+     1.3: http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3
    [UDUNITS] refers to http://www.unidata.ucar.edu/software/udunits/index.html
      and the data file http://www.unidata.ucar.edu/software/udunits/udunits.txt 
    [CWHDF] refers to the CoastWatch HDF Metadata Specification
@@ -53,7 +52,7 @@ References:
    "Lynn" is Lynn DeWitt (Lynn.Dewitt@noaa.gov) who maintained the OPeNDAP servers 
       (before we switched to THREDDS) at NOAA NMFS SWFSC ERD.
    "John" is John Caron (caron@unidata.ucar.edu) who created THREDDS.
-   "Ethan" is Ethan Davis (edavis@unidata.ucar.edu) who authored [UDD].
+   "Ethan" is Ethan Davis (edavis@unidata.ucar.edu) who authored [ACDD].
    "Bob" is Bob Simons (bob.simons@noaa.gov), author of this document.
    "Peter" is Peter Hollemans (Peter.Hollemans@noaa.gov), who authored [CWHDF].
 
@@ -62,7 +61,7 @@ GLOBAL ATTRIBUTES
 The global attributes are for the entire file. 
 
 "Conventions" is in [COARDS], [CF], [NETCDF]. 
-See also "Metadata-Conventions" below [UDD].
+See also "Metadata-Conventions" below [ACDD].
 Trouble:
 [COARDS] says to use  "Conventions"="COARDS"
 but [CF] says to use "Conventions"="CF-1.4"   //or 1.3, or 1.4, ...
@@ -73,7 +72,7 @@ separated by blank space (recommended) or commas".
 Bob's example: Conventions = CF-1.4
 Grid.saveAsNetCDF: this is a constant
 
-"Metadata_Conventions" is defined as a [UDD] required attribute, saying 
+"Metadata_Conventions" is defined as a [ACDD] required attribute, saying 
 "When following multiple conventions, list them with a comma separator".
 [Has this changed??? Was it "Metadata-conventions".  Was it also "Conventions"???  
 I think I made a mistake until 2010-01-14 
@@ -81,8 +80,8 @@ when I changed Conventions from (long string below, but CF-1.0) to "CF-1.4"
 and added Metadata_Conventions with long string below.]
 Example: Metadata_Conventions = "COARDS, CF-1.4, Unidata Dataset Discovery v1.0"
 
-"title" is in both [CF], [NETCDF] and [UDD]. 
-"title" is defined in the [UDD] Highly Recommended table as 
+"title" is in both [CF], [NETCDF] and [ACDD]. 
+"title" is defined in the [ACDD] Highly Recommended table as 
 "a sentence describing the dataset." 
 Ethan said OK to Bob's suggestion: I don't think it needs to be a sentence.
     How about "A brief description of the dataset (i.e., usually with fewer than 50 characters)"?
@@ -94,10 +93,10 @@ display in a list of such names."
 Example from [Lynn's File]: title = POES AVHRR HRPT 1.25 km SST
 Bob's example: title = SST, NOAA POES AVHRR, LAC, 0.0125 degrees, West US, Day and Night
 
-"summary" is in [UDD] but not [CF]. 
-"summary" is defined in the [UDD] Highly Recommended table as
+"summary" is in [ACDD] but not [CF]. 
+"summary" is defined in the [ACDD] Highly Recommended table as
 "A paragraph describing the dataset."    
-In [UDD]:  "In many discovery systems, the title and the summary will 
+In [ACDD]:  "In many discovery systems, the title and the summary will 
 be displayed in the results list from a search. It should therefore capture
 the essence of the dataset it describes. For instance, we recommend this field 
 include information on the type of data contained in the dataset, how the data 
@@ -113,8 +112,8 @@ Bob: should I include geospatial and temporal coverage as requested? How differe
 Bob's example: summary = NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (1.47km) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites.
 Grid.saveAsNetCDF: this will be generated on the fly from fgcd metadata (&abstract;)
     
-"keywords" is in [UDD] but not [CF]. 
-"keywords" is defined in the [UDD] Highly Recommended table as
+"keywords" is in [ACDD] but not [CF]. 
+"keywords" is defined in the [ACDD] Highly Recommended table as
 "A semicolon separated list of key words and phrases."
 CoastWatch West Coast is using "GCMD Science Keywords" (use the words from
 the relevant line of 
@@ -136,8 +135,8 @@ Bob's example: keywords = EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surfa
 Grid.saveAsNetCDF: For now, use keyworks below 
    (generated keywords by finding the relevant line in gcmd_parameters.html)
 
-"keywords_vocabulary" is in [UDD] but not [CF]. 
-"keywords_vocabulary" is defined in the [UDD] Recommended table as
+"keywords_vocabulary" is in [ACDD] but not [CF]. 
+"keywords_vocabulary" is defined in the [ACDD] Recommended table as
 "If you are following a guideline for the words/phrases in your 'keywords' 
 attribute, put the name of that guideline here."
 One of the suggested vocabularies is "GCMD Science Keywords" (
@@ -145,8 +144,8 @@ http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html ).
 Bob's example: keywords_vocabulary = GCMD Science Keywords
 Grid.saveAsNetCDF: this is a constant
 
-"id" is in [UDD] but not [CF]. 
-"id" is defined in the [UDD] Recommended table as
+"id" is in [ACDD] but not [CF]. 
+"id" is defined in the [ACDD] Recommended table as
 "The combination of the 'naming authority' and the 'id' should be a globally 
 unique identifier for the dataset."
 Later it says "The 'id' value should attempt to uniquely identify the dataset. 
@@ -159,24 +158,24 @@ Bob's example: id = LATsstaS1day_20030304_W-135E-113S30N50
    (but the exact format has varied)
 Grid.saveAsNetCDF: these will be generated on the fly (custom file name)
 
-"naming_authority" is in [UDD] but not [CF]. 
-"naming_authority" is defined in the [UDD] Recommended table as
+"naming_authority" is in [ACDD] but not [CF]. 
+"naming_authority" is defined in the [ACDD] Recommended table as
 "The combination of the 'naming authority' and the 'id' should be a globally 
 unique identifier for the dataset."
 Bob's example: naming_authority = gov.noaa.pfel.coastwatch
 That follows the Java system for unique identification of Java classes.
 Grid.saveAsNetCDF: this is a constant
 
-"cdm_data_type" is in [UDD] but not [CF]. 
-"cdm_data_type" is a [UDD] recommended attribute with a limited vocabulary
+"cdm_data_type" is in [ACDD] but not [CF]. 
+"cdm_data_type" is a [ACDD] recommended attribute with a limited vocabulary
 ("Grid", "Image", "Station", "Trajectory", "Radial"). 
 Example from [Lynn's File]: cdm_data_type = Grid
 Bob's example: cdm_data_type = Grid
 Grid.saveAsNetCDF: this is a constant
 ???But if you extract a time series from Gridded data, what type is it now if no longer in a grid?
 
-"history" is in [UDD], [NETCDF] and [CF]. 
-"history" is defined in the [UDD] Recommended table as
+"history" is in [ACDD], [NETCDF] and [CF]. 
+"history" is defined in the [ACDD] Recommended table as
 "The 'history' attribute provides an audit trail for modifications to the 
 original data. It should contain a separate line for each modification with
 each line including a timestamp, user name,  modification name, and 
@@ -187,7 +186,7 @@ append their name and the parameters with which they were invoked to the
 global history attribute of an input netCDF file. We recommend that each 
 line begin with a timestamp indicating the date and time of day that the 
 program was executed."
-[UDD] and [CF] are consistent with the way [COARDS] defines 
+[ACDD] and [CF] are consistent with the way [COARDS] defines 
 "history".
 "history" is a required CHAR8 [CWHDF] attribute defined as
 "A newline-separated list of utilities and command line parameters 
@@ -196,16 +195,16 @@ Bob points out: this is required for [CWHDF] but optional elsewhere.
 Bob says see DataHelper.addBrowserToHistory
 Bob's example: history = <courtesy>\n2006-04-07T19:02:34 NOAA NESDIS Coastwatch WCRN
     
-"date_created" is in [UDD] but not [CF]. 
-"date_created" is defined in the [UDD] Recommended table as
+"date_created" is in [ACDD] but not [CF]. 
+"date_created" is defined in the [ACDD] Recommended table as
 "the date on which the data was created."
 Bob's example: date_created = 2003-03-05
 Grid.saveAsNetCDF: this will be generated on the fly (the day after the end date)
 
-"creator_name", "creator_url", and "creator_email" are in [UDD] 
+"creator_name", "creator_url", and "creator_email" are in [ACDD] 
 but not [CF]. 
 "creator_name", "creator_url", "creator_email" are defined in the 
-[UDD] Recommended table as
+[ACDD] Recommended table as
 "The data creator's name, URL, and email. The 'institution' attribute will be 
 used if the 'creator_name' attribute does not exist."
 Dave, says we are almost always the "creator" (even by compositing the data)
@@ -230,8 +229,8 @@ Bob's example:
    or in some point files:  Roy.Mendelssohn@noaa.gov
 Grid.saveAsNetCDF: this is a constant
 
-"institution" is in [UDD] and [CF]. 
-"institution" is listed in the [UDD] Recommended table, but is
+"institution" is in [ACDD] and [CF]. 
+"institution" is listed in the [ACDD] Recommended table, but is
 not defined.
 "institution" is defined in [CF] section 2.6.2 as
 "Specifies where the original data was produced."
@@ -242,8 +241,8 @@ pre 2008-02-21, Bob used the "courtesy" of information.
 Bob's example : 
   institution = NOAA CoastWatch, West Coast Node
 
-"project" is in [UDD] but not [CF]. 
-"project" is a [UDD] recommended attribute:
+"project" is in [ACDD] but not [CF]. 
+"project" is a [ACDD] recommended attribute:
 "The 'project' attribute provides the name of the scientific project for 
 which the data was created."
 Later it says "Kind of one level above creator/institution. More of a 'why was
@@ -251,8 +250,8 @@ this dataset created' rather than 'where was it created'.".
 Bob's example: project = CoastWatch (http://coastwatch.noaa.gov/)
 Grid.saveAsNetCDF: this is a constant
     
-"processing_level" is in [UDD] but not [CF]. 
-"processing_level" is defined in the [UDD] Recommended table as
+"processing_level" is in [ACDD] but not [CF]. 
+"processing_level" is defined in the [ACDD] Recommended table as
 "A textual description of the processing (or quality control) level of the data."
 Later, it says "this is a bit vague. However, some places have specific 
 processing level terminology. Do we want to allow for specifying controlled 
@@ -267,8 +266,8 @@ Bob's example for Grid data: processing_level = 3
    but for Point data this isn't used.
 Grid.saveAsNetCDF: this is a constant
     
-"acknowledgement" is in [UDD] but not [CF]. 
-"acknowledgement" is defined in the [UDD] Highly Recommended table as
+"acknowledgement" is in [ACDD] but not [CF]. 
+"acknowledgement" is defined in the [ACDD] Highly Recommended table as
 "A place to acknowledge various type of support for the 
   project that produced this data."
 Bob takes this to mean e.g., funding sources, as opposed to contributors
@@ -277,12 +276,12 @@ Bob's example: acknowledgement = NOAA NESDIS
   since our funding comes from NESDIS.
 Grid.saveAsNetCDF: this is a constant
     
-"geospatial" man and max are in [UDD] but not [CF]. 
+"geospatial" man and max are in [ACDD] but not [CF]. 
 The "geospatial" min and max attributes are defined in the 
-[UDD] Recommended table. 
+[ACDD] Recommended table. 
 The other "geospatial" attributes are defined in the 
-[UDD] Suggested tables. 
-[UDD] says 
+[ACDD] Suggested tables. 
+[ACDD] says 
 "Use the min and max attributes to describe a simple latitude, longitude, 
 vertical bounding box. If none of the other attributes are used, latitude is 
 assumed to be in decimal degrees north, longitude is assumed to be in decimal 
@@ -350,10 +349,10 @@ Northernmost_Northing = <maxLat>
 Westernmost_Easting = <minLon +/-180>
 Easternmost_Easting = <maxLon +/-180>
 
-"time_coverage_start" is in [UDD] but not [CF]. 
+"time_coverage_start" is in [ACDD] but not [CF]. 
 "time_coverage_start", "time_coverage_end", "time_coverage_duration" , and
 "time_coverage_resolution" are
-defined in the [UDD] Recommended table as 
+defined in the [ACDD] Recommended table as 
 "Describes the temporal coverage of the data as a time range." 
 Later, it says "These attributes are used to describe the temporal coverage 
 of the data. The temporal coverage of the data can be described with any of 
@@ -371,8 +370,8 @@ Example from [Lynn's File]: time_coverage_resolution = P01D
 Bob's example (P1H for GOES composites, P12H? for POES composites) : time_coverage_resolution = P12H
 Grid.saveAsNetCDF: this is optional, let's just not support it for now
 
-"standard_name_vocabulary" is in [UDD] but not [CF]. 
-"standard_name_vocabulary" is defined in the [UDD] Recommended table as
+"standard_name_vocabulary" is in [ACDD] but not [CF]. 
+"standard_name_vocabulary" is defined in the [ACDD] Recommended table as
 "The name of the controlled vocabulary from which variable standard names are 
 taken."
 Later, it says to use [CF] for CF name (see [CF Standard Names]
@@ -380,15 +379,15 @@ for CF standard names).
 Bob's example: standard_name_vocabulary = CF-1.0
 Grid.saveAsNetCDF: this is a constant
 
-"license" is in [UDD] but not [CF]. 
-"license" is defined in the [UDD] Recommend table as
+"license" is in [ACDD] but not [CF]. 
+"license" is defined in the [ACDD] Recommend table as
 "Describe the restrictions to data access and distribution."
 Bob's example: license = The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.
   This is modified slightly from a NOAA NMFS SWFSC web page.
 Grid.saveAsNetCDF: this is a constant
 
-"contributor_name" and "contributor_role" is in [UDD] but not [CF]. 
-"contributor_name" and "contributor_role" are defined in the [UDD] 
+"contributor_name" and "contributor_role" is in [ACDD] but not [CF]. 
+"contributor_name" and "contributor_role" are defined in the [ACDD] 
 Suggested table as
 "The name and role of any individuals or institutions that contributed to the 
 creation of this data."
@@ -397,18 +396,18 @@ Bob's example: contributor_role = Source of level 2 data.
 Grid.saveAsNetCDF: contributor_name is generated on-the-fly ("<courtesy1> <courtesy2>")
 Grid.saveAsNetCDF: contributor_role is a constant
 
-"publisher_name", "publisher_url", and "publisher_email" are in [UDD]
+"publisher_name", "publisher_url", and "publisher_email" are in [ACDD]
 but not [CF]. 
 "publisher_name", "publisher_url", and "publisher_email" are defined in the
-[UDD] Suggested table as "The data publisher's name, URL, and email. 
+[ACDD] Suggested table as "The data publisher's name, URL, and email. 
 The publisher may be an individual or an institution."
 Dave, says we are almost always the "creator" (even by compositing the data)
 and not just the "publisher". 
 Leave sources (e.g., NOAA NESDIS) as "contributors" and "institution".
 Bob isn't using these since we are the creators.
 
-"date_issued" is in [UDD] but not [CF]. 
-"date_issued" is defined in the [UDD] Suggested table as
+"date_issued" is in [ACDD] but not [CF]. 
+"date_issued" is defined in the [ACDD] Suggested table as
 "The 'date_issued' attribute provides the date on which this data was formally 
 issued. Use of this attribute is suggested when relevant to the data and 
 distinct from other dates used for this data."
@@ -416,35 +415,35 @@ Bob's example: date_issued = 2003-03-05
 Grid.saveAsNetCDF: this will be generated on the fly (the day after the end date,
 which is probably when we processed the data).
 
-"date_modified" is in [UDD] but not [CF]. 
-"date_modified" is defined in the [UDD] Suggested table as
+"date_modified" is in [ACDD] but not [CF]. 
+"date_modified" is defined in the [ACDD] Suggested table as
 "The 'date_modified' attribute provides the date on which the data was last
 modified. Use of this attribute is suggested if the data has been modified 
 since the date of creation."
 Bob says it is not relevant to us.
 
-"comment" is in [CF] but not [UDD]. 
+"comment" is in [CF] but not [ACDD]. 
 "comment" is defined in [CF] section 2.6.2 as
 "Miscellaneous information about the data or methods used to produce it." 
-This is being considered for addition to [UDD].
+This is being considered for addition to [ACDD].
 ???Bob's [not yet] example: 
 Luke don't use this: it is not required and the information is in 'summary' and other fields.
     
-"references" is in [CF] but not [UDD]. 
+"references" is in [CF] but not [ACDD]. 
 "references" is defined in [CF] section 2.6.2 as 
 "Published or web-based references that describe the data or methods used to 
 produce it."
-This is being considered for addition to [UDD].
+This is being considered for addition to [ACDD].
 Bob's example: references = NOAA POES satellites information: http://coastwatch.noaa.gov/poes_sst_overview.html . Processing information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html . Processing reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May, The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites, J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colón, and J. Sapper, Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3, International Journal of Remote Sensing,  Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colón, V. Krasnopolsky, and J. Sapper, Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data, International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b.
 Bob says the length info below is from Luke, the short info is from Bob.
 
-"source" is in [CF] but not [UDD]. 
+"source" is in [CF] but not [ACDD]. 
 "source" is defined in [CF] section 2.6.2 as
 "The method of production of the original data. If it was model-generated, 
 source should name the model and its version, as specifically as could be 
 useful. If it is observational, source should characterize it (e.g., 
 'surface observation' or 'radiosonde')."
-This is being considered for addition to [UDD].
+This is being considered for addition to [ACDD].
 Sample from [Lynn's File]: source = "NWS and NESDIS" //this is probably inappropriate
 Bob's example (Dave okayed): source = satellite observation: POES AVHRR HRPT
 Bob's example:               source = observation from High Frequency Radar
@@ -461,13 +460,13 @@ It is unclear to me if these can also be used for bit-flags.
 Bob says: we don't use these because we don't have this kind of data.
   But some new data sets do?  Use these?
 
-"cwhdf_version" is in [CWHDF] but not in [UDD] or [CF].
+"cwhdf_version" is in [CWHDF] but not in [ACDD] or [CF].
 "cwhdf_version" is a required Char8 [CWHDF] attribute, defined as
 "The metadata version."
 Bob says this is a constant, but changes occasionally.
 Bob's example: cwhdf_version = 3.4
 
-"satellite" is in [CWHDF] but not in [UDD] or [CF].
+"satellite" is in [CWHDF] but not in [ACDD] or [CF].
 "satellite" is a required CHAR8 [CWHDF] attribute for satellite data, defined as
 "If data is from a satellite, the satellite name, for example 'noaa-16', 
 'goes-8', 'orbview-2'."
@@ -476,20 +475,20 @@ Bob's example: satellite = POES
   Since a dataset spans a long period of time, there may be more than
   one individual satellite involved.
 
-"sensor" is in [CWHDF] but not in [UDD] or [CF].
+"sensor" is in [CWHDF] but not in [ACDD] or [CF].
 "sensor" is a required CHAR8 [CWHDF] attribute for satellite data, defined as
 "If data is from a satellite, the satellite sensor name, for example 'avhrr', 
 'seawifs'."
 Bob says: see CWBrowser.properities info: sensor
 Bob's example: sensor = AVHRR HRPT
 
-"data_source" is in [CWHDF] but not in [UDD] or [CF].
+"data_source" is in [CWHDF] but not in [ACDD] or [CF].
 "data_source" is a required CHAR8 [CWHDF] attribute for non-satellite data, 
 defined as "If data is not from a satellite, the data source, for example the 
 instrument used to collect the data or the model used to generate the data."
 Bob says: we now have some non-satellite data, so start using it.  
 
-"composite" is in [CWHDF] but not in [UDD] or [CF].
+"composite" is in [CWHDF] but not in [ACDD] or [CF].
 "composite" is an optional CHAR8 [CWHDF] attribute defined as
 "The composite flag, 'true' if the data is derived from multiple datasets, 
 or 'false' if not. If true, then the pass_date, start_time, and temporal_extent
@@ -500,7 +499,7 @@ composite."
 Bob says: <startTime> != <endTime>
 Bob's example: composite = true
 
-"pass_date" is in [CWHDF] but not in [UDD] or [CF].
+"pass_date" is in [CWHDF] but not in [ACDD] or [CF].
 "pass_date" is a required INT32 [CWHDF] attribute defined as
 int32 "The date of data recording in days since January 1, 1970."
 Or as int32[] "If the data is a composite, the dates of data recording in 
@@ -510,7 +509,7 @@ Bob says: this examples below probably don't match the sample file name above
 Bob's example: pass_date = 12806                    //for non-composite  
 Bob's example: pass_date = 12806, 12807, 12808      //for composite
 
-"start_time" is in [CWHDF] but not in [UDD] or [CF].
+"start_time" is in [CWHDF] but not in [ACDD] or [CF].
 "start_time" is a required [CWHDF] attribute defined as
 FLOAT64 "The start time of the data recording in seconds since 00:00:00 UTC."
 Or FLOAT64[] "If the data is a composite, the start times of data recording in 
@@ -520,32 +519,32 @@ since 00:00:00 for the start_time for each of the pass_dates.
 Bob's example: start_time = 43104        //for non-composite
 Bob's example: start_time = 0, 0, 0   // for composite
 
-"temporal_extent" is in [CWHDF] but not in [UDD] or [CF].
+"temporal_extent" is in [CWHDF] but not in [ACDD] or [CF].
 "temporal_extent" is an optional [CWHDF] attribute defined as 
 FLOAT64[] "The time duration in seconds between the start of data recording 
 and the end of data recording."
 Bob says: since we don't have this info, we'll ignore it.
 
-"pass_type" is in [CWHDF] but not in [UDD] or [CF].
+"pass_type" is in [CWHDF] but not in [ACDD] or [CF].
 "pass_type" is an optional CHAR8 [CWHDF] attribute defined as
 "The satellite pass temporal type: 'day', 'night', 'day/night'."
 Bob says: since this is optional and we don't have the data, let's ignore it.
 
-"orbit_type" is in [CWHDF] but not in [UDD] or [CF].
+"orbit_type" is in [CWHDF] but not in [ACDD] or [CF].
 "orbit_type" is an optional CHAR8	[CWHDF] attribute defined as
 "If the data is from an orbiting satellite that crosses the equator in a 
 northward or southward direction, the orbit type as 'ascending' or 
 'descending' respectively."
 Bob says: since this is optional and we don't have the data, let's ignore it.
 
-"origin" is in [CWHDF] but not in [UDD] or [CF].
+"origin" is in [CWHDF] but not in [ACDD] or [CF].
 "origin" is a required CHAR8 [CWHDF]	attribute defined as
 "The original data source as an agency or organization name, for example 
 'USDOC/NOAA/NESDIS CoastWatch'."
 Bob says: see CWBrowser.properities info: <courtesy1> <courtesy2>
 Bob's example: data_source = NOAA NWS Monterey and NOAA CoastWatch
 
-"projection_type" is in [CWHDF] but not in [UDD] or [CF].
+"projection_type" is in [CWHDF] but not in [ACDD] or [CF].
 "projection_type" is a required CHAR8 [CWHDF] attribute defined as
 "The projection type: 'mapped', 'swath', or 'sensor_scan'. 
 Mapped data is formatted to a well-known map projection and accompanied by 
@@ -555,38 +554,38 @@ map projection, but is accompanied by Earth location data for each pixel
 Bob says we always use "mapped".
 Bob's example: projection_type = mapped
 
-"projection" is in [CWHDF] but not in [UDD] or [CF].
+"projection" is in [CWHDF] but not in [ACDD] or [CF].
 "projection" is a required CHAR8 [CWHDF] attribute defined as
 "For mapped data, a descriptive projection name, for example 'mercator', 
 'geographic', 'polar stereographic'."
 Bob says we always use "geographic"
 Bob's example: projection = geographic
 
-"gctp_sys" is in [CWHDF] but not in [UDD] or [CF].
+"gctp_sys" is in [CWHDF] but not in [ACDD] or [CF].
 "gctp_sys" is a required INT32 [CWHDF] attribute defined as
 "For mapped data, the GCTP projection system code."
 Bob says we always use 0;
 Bob's example: gctp_sys = 0
 
-"gctp_zone" is in [CWHDF] but not in [UDD] or [CF].
+"gctp_zone" is in [CWHDF] but not in [ACDD] or [CF].
 "gctp_zone" is a required INT32 [CWHDF] attribute defined as
 "For mapped data, the GCTP zone for UTM projections."
 Bob says we always use 0
 Bob's example: gctp_zone = 0
 
-"gctp_parm" is in [CWHDF] but not in [UDD] or [CF].
+"gctp_parm" is in [CWHDF] but not in [ACDD] or [CF].
 "gctp_parm" is a required FLOAT64[] [CWHDF] attribute defined as
 "For mapped data, the GCTP projection parameters."
 Bob says we always use 15 0's.
 Bob's example: gctp_parm = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-"gctp_datum" is in [CWHDF] but not in [UDD] or [CF].
+"gctp_datum" is in [CWHDF] but not in [ACDD] or [CF].
 "gctp_datum" is a required INT32 [CWHDF] attribute defined as
 "For mapped data, the GCTP spheroid code."
 Bob says we always use 12=WGS84
 Bob's example: gctp_datum = 12
 
-"et_affine" is in [CWHDF] but not in [UDD] or [CF].
+"et_affine" is in [CWHDF] but not in [ACDD] or [CF].
 "et_affine" is a required FLOAT64[] [CWHDF] attribute defined as
 "For mapped data, the map affine transform (6)."
 lon = a*row + c*col + e
@@ -598,42 +597,42 @@ Bob says, our minimalist transformation is double matrix[] = {
    0, lon[0], lat[lat.length-1]};
 Bob's example: et_affine = 0, -.0125, .0125, 0, -135, 50        
 
-"sensor_code" is in [CWHDF] but not in [UDD] or [CF].
+"sensor_code" is in [CWHDF] but not in [ACDD] or [CF].
 "sensor_code" is a required INT32 [CWHDF] attribute for sensor data, defined as
 "For sensor scan data, the sensor code. The only code currently available is 0,
 which indicates a geostationary satellite."
 Bob says he is unclear about this.
 
-"sensor_parm" is in [CWHDF] but not in [UDD] or [CF].
+"sensor_parm" is in [CWHDF] but not in [ACDD] or [CF].
 "sensor_parm" is a required FLOAT64[] [CWHDF] attribute for sensor data, defined as
 "For sensor scan data, the sensor parameters. ..."
 Bob says ignore this since we (I) don't have the information.
 
-"rows" is in [CWHDF] but not in [UDD] or [CF].
+"rows" is in [CWHDF] but not in [ACDD] or [CF].
 "rows" is a required INT32 [CWHDF] attribute defined as
 "The number of rows of data."
 Bob says use lat.length
 Bob's example: rows = 2241
 
-"cols" is in [CWHDF] but not in [UDD] or [CF].
+"cols" is in [CWHDF] but not in [ACDD] or [CF].
 "cols" is a required INT32 [CWHDF] attribute defined as
 "The number of columns of data."
 Bob says use lon.length
 Bob's example: cols = 2401
 
-"polygon_latitude" is in [CWHDF] but not in [UDD] or [CF].
+"polygon_latitude" is in [CWHDF] but not in [ACDD] or [CF].
 "polygon_latitude" is an optional FLOAT64[] [CWHDF] attribute defined as
 "	Latitude components of the bounding polygon with initial element repeated."
 Bob says we always use: polygon_latitude = <minY>, <maxY>, <maxY>, <minY>, <minY>
 Bob's example: polygon_latitude = 22, 50, 50, 22, 22
 
-"polygon_longitude" is in [CWHDF] but not in [UDD] or [CF].
+"polygon_longitude" is in [CWHDF] but not in [ACDD] or [CF].
 "polygon_longitude" is an optional FLOAT64[] [CWHDF] attribute defined as
 "Longitude components of the bounding polygon with initial element repeated."
 Bob says we always use: polygon_longitude = <minX>, <minX>, <maxX>, <maxX>, <minX>
 Bob's example: polygon_longitude = -135, -135, -105, -105, -135
 
-"raster_type" is in [CWHDF] but not in [UDD] or [CF].
+"raster_type" is in [CWHDF] but not in [ACDD] or [CF].
 "raster_type" is an optional CHAR8 [CWHDF] attribute defined as
 "One of 'RasterPixelIsArea' or 'RasterPixelIsPoint' to capture the same 
 distinction as the GeoTIFF global attribute 'GTRasterTypeGeoKey'. 
@@ -644,25 +643,25 @@ represent area data."
 Bob says we always use "RasterPixelIsArea"
 Bob's example: raster_type = RasterPixelIsArea
 
-"region_code" is in [CWHDF] but not in [UDD] or [CF].
+"region_code" is in [CWHDF] but not in [ACDD] or [CF].
 "region_code" is an optional CHAR8 [CWHDF] attribute defined as
 "The data processing region code as a short abbreviation."
 There is no indication of what the valid values are.
 Bob says: this is optional and we don't have enough info, so ignore it.
 
-"region_name" is in [CWHDF] but not in [UDD] or [CF].
+"region_name" is in [CWHDF] but not in [ACDD] or [CF].
 "region_name" is an optional CHAR8 [CWHDF] attribute defined as
 "The data processing region name in full."
 There is no indication of what the valid values are.
 Bob says: this is optional and we don't have enough info, so ignore it.
 
-"station_code" is in [CWHDF] but not in [UDD] or [CF].
+"station_code" is in [CWHDF] but not in [ACDD] or [CF].
 "station_code" is an optional CHAR8 [CWHDF] attribute defined as
 "The data capture ground station as a short abbreviation."
 There is no indication of what the valid values are.
 Bob says: this is optional and we don't have enough info, so ignore it.
 
-"station_name" is in [CWHDF] but not in [UDD] or [CF].
+"station_name" is in [CWHDF] but not in [ACDD] or [CF].
 "station_name" is an optional CHAR8 [CWHDF] attribute defined as
 "The data capture ground station name in full."
 There is no indication of what the valid values are.
@@ -695,8 +694,8 @@ Order of data in the .nc file:
 For each variable, the following attributes are defined:
 
 For all variables:
-"long_name" is in [UDD], [CF], [NETCDF], and [CWHDF].
-"long_name" is defined in the [UDD] Highly Recommended variable
+"long_name" is in [ACDD], [CF], [NETCDF], and [CWHDF].
+"long_name" is defined in the [ACDD] Highly Recommended variable
 attributes table as "A long descriptive name for the variable (not necessarily 
 from a controlled vocabulary)."
 [CF] section 3.2 says "The long_name attribute is defined by the NUG 
@@ -707,8 +706,8 @@ labeling plots."
 Example in [Lynn's File]: long_name = Longitude 
  
 For all variables:
-"standard_name" is in [UDD], and [CF], but not [CWHDF].
-"standard_name" is defined in the [UDD] Highly Recommended variable
+"standard_name" is in [ACDD], and [CF], but not [CWHDF].
+"standard_name" is defined in the [ACDD] Highly Recommended variable
 attributes table as 
 Later it says, "The value is from a controlled vocabulary of variable names. 
 We recommend using the CF convention and the variable names from the CF 
@@ -725,8 +724,8 @@ See [CF Standard Names] for CF standard names.
 Example in [Lynn's File]: standard_name = longitude
  
 For all variables:
-"units" is in [UDD], [CF], [NETCDF], and [CWHDF].
-"units" is defined in the [UDD] Highly Recommended variable attributes 
+"units" is in [ACDD], [CF], [NETCDF], and [CWHDF].
+"units" is defined in the [ACDD] Highly Recommended variable attributes 
 table as "The units of the variables data values. This attributes value should
 be a valid udunits string."
 "units" is defined in [CF] section 3.1 as 
@@ -747,26 +746,26 @@ Example from [Lynn's File]: units = degrees Celsius
 Bob's example: units = degree_C
 
 For all variables:
-"format" is in [CWHDF], but not [UDD] or [CF].
+"format" is in [CWHDF], but not [ACDD] or [CF].
 "format" is a required CHAR8 [CWHDF] attribute, defined as 
 "A FORTRAN-77 style format string, for example 'F7.2'.
 Bob says we got by ignoring this, but supplying 'fraction_digits'.
  
 For all variables:
-"C_format" is in [CWHDF], but not [UDD] or [CF].
+"C_format" is in [CWHDF], but not [ACDD] or [CF].
 "C_format" is a required CHAR8 [CWHDF] attribute, defined as 
 "A C style format string, for example '%7.2f'.
 Bob says we got by ignoring this, but supplying 'fraction_digits'.
  
 For all variables:
-"fraction_digits" is in [CWHDF], but not [UDD] or [CF].
+"fraction_digits" is in [CWHDF], but not [ACDD] or [CF].
 "fraction_digits" is a required INT32 [CWHDF] attribute, defined as 
 "This is an alternative to the C or FORTRAN notation for value formatting
 and is independent of the programming language."
 Bob's example: fraction_digits = 2
 
 For all variables:
-"coordsys" is in [CWHDF], but not [UDD] or [CF].
+"coordsys" is in [CWHDF], but not [ACDD] or [CF].
 "coordsys" is a required CHAR8 [CWHDF] attribute, defined as
 "A descriptive coordinate system name, the same as the global 'projection' 
 attribute."
@@ -775,8 +774,8 @@ Bob's example: coordsys = geographic
 
 
 For all variables:
-"scale_factor" and "add_offset" are in [CWHDF], [UDD], [NETCDF] and [CF].
-[COARDS], [CF], [UDD], and [CWHDF]
+"scale_factor" and "add_offset" are in [CWHDF], [ACDD], [NETCDF] and [CF].
+[COARDS], [CF], [ACDD], and [CWHDF]
 support two attributes: 
 "scale_factor" (default 1) and "add_offset" (default 0), 
 where value = valueInFile * scale_factor + add_offset. 
@@ -793,14 +792,14 @@ add_offset_err = 0       //float64
 calibrated_nt = 0        //int 32   //Better to use 6 for Float64?
 
 For all variables:
-"nav_affine" is in [CWHDF], but not [UDD] or [CF].
+"nav_affine" is in [CWHDF], but not [ACDD] or [CF].
 "nav_affine" is an optional FLOAT64[] [CWHDF] attribute, defined as
 "The navigational correction affine transform. If absent, an identity
 transform is assumed."
 Bob says, the identity transform is fine, so don't use this.
 
 For vector magnitude variable:
-"direction_variable" is in [CWHDF], but not [UDD] or [CF].
+"direction_variable" is in [CWHDF], but not [ACDD] or [CF].
 "direction_variable" is an optional CHAR8 [CWHDF] attribute, 
 defined as "The name of the associated SDS variable for vector direction. 
 Any variable with this attribute is assumed to be the magnitude component 
@@ -808,18 +807,18 @@ of a vector field, for which the named variable is the direction component.
 The direction component is encoded as degrees clockwise from north."
 Bob says, we don't provide vector data in this format, so don't use this.
 
-"quality_flag" is in [CWHDF], but not [UDD] or [CF].
+"quality_flag" is in [CWHDF], but not [ACDD] or [CF].
 "quality_flag" is an optional CHAR8 [CWHDF] attribute, defined as
 "The name of the associated SDS variable that contains quality flag information."
 Bob says, we don't provide this information, so don't use this.
 
-"quality_mask" is in [CWHDF], but not [UDD] or [CF].
+"quality_mask" is in [CWHDF], but not [ACDD] or [CF].
 "quality_mask" is an optional INT64 [CWHDF] attribute, defined as
 "The value to use as a mask in a bitwise AND operation to isolate the quality 
 bits in the SDS variable named by the 'quality_flag' attribute."
 Bob says, we don't provide this information, so don't use this.
 
-"flag_bits" is in [CWHDF], but not [UDD] or [CF].
+"flag_bits" is in [CWHDF], but not [ACDD] or [CF].
 "flag_bits" is an optional CHAR8 [CWHDF] attribute, defined as
 "The newline-separated list of flag descriptions for each bit from least 
 significant to most significant. This is generally only required if this 
@@ -829,8 +828,8 @@ Bob says, we don't provide this information, so don't use this.
 
 
 For coordinate variables:
-"axis" is in [CF], but not [UDD] or [CWHDF].
-"axis" is not defined by [UDD].
+"axis" is in [CF], but not [ACDD] or [CWHDF].
+"axis" is not defined by [ACDD].
 "axis" is defined by [CF] section 4 as 
 "Because identification of a coordinate type by its units is complicated by
 requiring the use of an external software package [UDUNITS], we provide two 
@@ -847,7 +846,7 @@ Bob now thinks: support it; some programs like it; it can't hurt.
 Example: axis = X
 
 For coordinate variables (but could/should be for all variables):
-"actual_range" is in [CDC COARDS], but not [CF], [UDD], [COARDS], or [CWHDF].
+"actual_range" is in [CDC COARDS], but not [CF], [ACDD], [COARDS], or [CWHDF].
 "actual_range" is defined in [CDC COARDS] as
 "actual data range for variable. Same type as unpacked values."
 Later, it says "The range values are used to indicate order of storage 
@@ -870,7 +869,7 @@ So it probably isn't a good idea.
 Example in [Lynn's File]: actual_range = 22., 51.
 
 For coordinate variables:
-Lynn uses "point_spacing". It is not in [UDD], [COARDS], or [CWHDF].
+Lynn uses "point_spacing". It is not in [ACDD], [COARDS], or [CWHDF].
 I don't know which standard it is from, or if it is from a standard.
 It is useful for the client to be able to determine if the coordinate values
 are evenly spaced without inspecting each value.
@@ -1000,7 +999,7 @@ Bob's example: units = degree_Celsius
 Grid.saveAsNetCDF: this is generated on the fly (<units>)
 
 
-"_FillValue" is in [COARDS], [CF], [NETCDF] and [CWHDF], but not [UDD].
+"_FillValue" is in [COARDS], [CF], [NETCDF] and [CWHDF], but not [ACDD].
 "_FillValue" is defined in [CF] as 
 "The scalar attribute with the name _FillValue and of the same type as its 
 variable is recognized by the netCDF library as the value used to pre-fill 
@@ -1032,7 +1031,7 @@ Bob's new example (we switched in late 2006):  _FillValue = -9999999  //same typ
   This value is useful because it is represented exactly as a double, float, or int.
   So it is much easier for processing programs to find _FillValues in the data.
 
-"missing_value" is in [COARDS], [CF], [NETCDF] and [CWHDF], but not [UDD].
+"missing_value" is in [COARDS], [CF], [NETCDF] and [CWHDF], but not [ACDD].
 "missing_value" is defined in [CF] as 
 "The missing_value attribute is considered deprecated by the NUG and we do not 
 recommend its use. However for backwards compatibility with COARDS this 

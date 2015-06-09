@@ -205,7 +205,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory, 
                 tAccessibleViaFiles);
         else if (tType.equals("EDDGridFromMergeIRFiles")) 
-            return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo,
+            return new EDDGridFromMergeIRFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,

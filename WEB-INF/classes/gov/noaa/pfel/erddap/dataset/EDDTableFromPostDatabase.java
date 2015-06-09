@@ -390,7 +390,7 @@ boolean addTestPostUser = false;
 
         if (loggedInAs == null || !loggedInAs.equals(EDStatic.loggedInAsSuperuser)) {
             //ensure userDapQuery includes PostRoleColumnName and PostDatePublicColumnName
-            String parts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
+            String parts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
             if (parts[0].equals("") || parts[0].startsWith("&")) {
                 //all variables are already selected
             } else {
@@ -760,7 +760,7 @@ boolean addTestPostUser = false;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
@@ -823,9 +823,8 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 "In this dataset, for rows of data where the date_public is in the future, access to this data is restricted to users who are logged in and have the appropriate role.  Such data may only be used in accordance with the terms specified by the owner of the data. Contact the owner for details.\n" +
 "\n" +
 "In this dataset, for rows of data where the date_public is in the past, the data is publicly available and may be used freely; although for scientific papers, you must reference the source of the data.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"This dataset has animal tagging surgery records from the Pacific Ocean \n" +
 "Shelf Tracking project (POST).  POST is a research tool for \n" +
 "tracking the movement and estimated survival of marine animals along \n" +
@@ -995,9 +994,8 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             String2.log("*** testPostSurg3 LLT FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "Unexpected EDDTableFromPostDatabase.testPostSurg3 error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "Unexpected EDDTableFromPostDatabase.testPostSurg3 error."); 
         }
     }
 
@@ -1125,7 +1123,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
@@ -1187,9 +1185,8 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet3.das\";\n" +
 "In this dataset, for rows of data where the date_public is in the future, access to this data is restricted to users who are logged in and have the appropriate role.  Such data may only be used in accordance with the terms specified by the owner of the data. Contact the owner for details.\n" +
 "\n" +
 "In this dataset, for rows of data where the date_public is in the past, the data is publicly available and may be used freely; although for scientific papers, you must reference the source of the data.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"This dataset has tag detection records from the Pacific Ocean \n" +
 "Shelf Tracking project (POST).  POST is a research tool for \n" +
 "tracking the movement and estimated survival of marine animals along \n" +
@@ -1322,9 +1319,8 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
 
 /* */
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "Unexpected EDDTableFromPostDatabase.testPostDet3 error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "Unexpected EDDTableFromPostDatabase.testPostDet3 error."); 
         }
     }
 
@@ -1386,9 +1382,8 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "Unexpected EDDTableFromPostDatabase.testPostTag error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "Unexpected EDDTableFromPostDatabase.testPostTag error."); 
         }
     }
 
@@ -1442,10 +1437,9 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
             }
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(
+            String2.pressEnterToContinue(
                 "\n*** Unexpected EDDTableFromDatabase.testPostSurg3 error:\n" +
-                MustBe.throwableToString(t) + 
-                "Press ^C to stop or Enter to continue..."); 
+                MustBe.throwableToString(t)); 
         }
     }
 

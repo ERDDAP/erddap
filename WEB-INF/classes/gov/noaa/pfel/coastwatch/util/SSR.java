@@ -1608,6 +1608,47 @@ public class SSR {
     } 
 
 
+    /**
+     * This gets the bytes from a file.
+     *
+     * @param fileName
+     * @return a byte[] with the response.
+     * @throws Exception if error occurs
+     */
+    public static String getFileString(String fileName) throws Exception {
+        return new String(getFileBytes(fileName));
+    }
+
+    /**
+     * This gets the bytes from a file.
+     *
+     * @param fileName
+     * @return a byte[] with the response.
+     * @throws Exception if error occurs
+     */
+    public static byte[] getFileBytes(String fileName) throws Exception {
+        InputStream is = null; 
+        try {
+            byte buffer[] = new byte[1024];
+            is = new FileInputStream(fileName); 
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            for(int s; (s=is.read(buffer)) != -1; ) 
+                baos.write(buffer, 0, s);
+            return baos.toByteArray();
+        } catch (Exception e) {
+            //String2.log(e.toString());
+            throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString());
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Throwable t) {
+                }
+            }
+        }
+    } 
+
+
     public static void genericTunnelTest(int nTimes, String baseUrl, String varName) throws Exception {
         //currently, GAssta hday on otter has time dimension size is 1392
         //currently, GAssta hday on oceanwatch has time dimension size is 2877

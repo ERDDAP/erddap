@@ -80,8 +80,8 @@ public class TestSSR {
                 Test.ensureEqual(File2.length(SSR.getTempDirectory() + fileName), 214, "a");
                 File2.delete(SSR.getTempDirectory() + fileName);
             } catch (Exception e) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                    "\nUnexpected error.  Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                    "\nUnexpected error."); 
             }
         }
         Math2.sleep(3000); //allow j2ssh to finish closing and writing messages
@@ -233,8 +233,7 @@ public class TestSSR {
                 false, "Response=" + String2.toNewlineString(sar));
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from failure? Press 'Enter' to continue or ^C to stop...");
+            String2.pressEnterToContinue("\nRecover from failure?");
         }
 
         //test non-existent file
@@ -244,7 +243,7 @@ public class TestSSR {
             throw new Throwable("shouldn't get here.");
         } catch (Exception e) { //not throwable
             String2.log("SSR.getUrlResponse for non existent url time=" + (System.currentTimeMillis() - rTime));
-            //String2.getStringFromSystemIn("continue? ");
+            //String2.pressEnterToContinue();
         } catch (Throwable t) {
             Test.error(t.toString()); //converts it to Exception and stops the testing
         }
@@ -257,8 +256,8 @@ public class TestSSR {
             String2.log("****beginResponse\n" + String2.toNewlineString(sar) + "\n****endResponse");
             Test.ensureNotEqual(String2.lineContaining(sar, "Download the grid data:"), -1, "e");
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nUnexpected error.  Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected error."); 
         }
 
         //postHTMLForm     (always right after contact the web site above)
@@ -362,9 +361,7 @@ public class TestSSR {
                     emailReplyToAddress, emailToAddresses,
                     "gmail email test", "This is a gmail email test from TestSSR.");
             } catch (Exception e) {
-                String2.getStringFromSystemIn(
-                    MustBe.throwableToString(e) +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(e)); 
             }
         }
         SSR.debugMode = false;

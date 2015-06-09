@@ -85,7 +85,7 @@ public class OptSwitch extends Object {
     /**
      *  Invocation with explicit integer switchname and type 
      *
-     *  @param	name  letter to indicate the switch name
+     *  @param c  letter to indicate the switch name
      *
      */
     public OptSwitch(int c, int type) {

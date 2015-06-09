@@ -220,7 +220,6 @@ public abstract class GridDataSetCW extends GridDataSet {
 
         //assemble the global metadata attributes
         gridGlobalAttributes.set("Conventions",               FileNameUtility.getConventions());
-        gridGlobalAttributes.set("Metadata_Conventions",      FileNameUtility.getMetadataConventions());
 
         //super is timid about these. be more forceful...
         //gridGlobalAttributes.set("keywords",                  keywords);

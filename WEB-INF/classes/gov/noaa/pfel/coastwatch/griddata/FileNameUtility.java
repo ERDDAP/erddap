@@ -67,8 +67,8 @@ public class FileNameUtility  {
     public static String getAcknowledgement() {return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD"; }
     public static String getCDMDataType() {return "Grid";  }
     public static String getContributorRole() {return "Source of level 2 data."; }
-    public static String getConventions()         {return "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"; }
-    public static String getMetadataConventions() {return "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"; }
+    public static String getConventions()         {return "COARDS, CF-1.6, ACDD-1.3, CWHDF"; }
+    public static String getMetadataConventions() {return "COARDS, CF-1.6, ACDD-1.3, CWHDF"; }
     public static String getCreatorEmail() {return DataHelper.CW_CREATOR_EMAIL;  }
     public static String getCreatorName() {return DataHelper.CW_CREATOR_NAME;  }
     public static String getCreatorURL() {return DataHelper.CW_CREATOR_URL;  }
@@ -82,7 +82,9 @@ public class FileNameUtility  {
     public static String getNamingAuthority() {return "gov.noaa.pfeg.coastwatch";    }
     public static String getProcessingLevel() {return "3 (projected)"; }
     public static String getProject() {return DataHelper.CW_PROJECT;  }
-    public static String getStandardNameVocabulary() {return "CF-12"; } //was CF-1.0 and CF-11
+    public static String getStandardNameVocabulary() {
+        //2015-04-17 new longer v27 name is from ACDD 1.3
+        return "CF Standard Name Table v27"; } //was CF-1.0 and CF-11, 2015-04-17 was CF-12
 
     private String categoryLetters;
     private String[] categoryNames;
@@ -1412,8 +1414,8 @@ public class FileNameUtility  {
             Test.ensureEqual(fnu.getDataFractionDigits(names[i]), 1, "getDataFractionDigits");
             Test.ensureEqual(fnu.getReadableUnits(names[i]),  "degree C", "getReadableUnits");
             Test.ensureEqual(fnu.getUdUnits(names[i]),  "degree_C", "getUDUnits");
-            Test.ensureEqual(getConventions(), "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF", "getConvention");
-            Test.ensureEqual(getMetadataConventions(), "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF", "getMetadataConvention");
+            Test.ensureEqual(getConventions(), "COARDS, CF-1.6, ACDD-1.3, CWHDF", "getConvention");
+            Test.ensureEqual(getMetadataConventions(), "COARDS, CF-1.6, ACDD-1.3, CWHDF", "getMetadataConvention");
             Test.ensureEqual(fnu.getAbstract(names[i]), "NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (0.0125 degrees) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites.", "getAbstract");
             Test.ensureEqual(fnu.getKeywords(names[i]), "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature", "getKeywords");
             Test.ensureEqual(getNamingAuthority(), "gov.noaa.pfeg.coastwatch", "getNamingAuthority");
@@ -1432,7 +1434,7 @@ public class FileNameUtility  {
             Test.ensureEqual(getAcknowledgement(), "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD", "getAcknowledgement");
             Test.ensureEqual(getLatUnits(), "degrees_north", "getLatUnits");
             Test.ensureEqual(getLonUnits(), "degrees_east", "getLonUnits");
-            Test.ensureEqual(getStandardNameVocabulary(), "CF-12", "getStandardNameVocabulary");
+            Test.ensureEqual(getStandardNameVocabulary(), "CF Standard Name Table v27", "getStandardNameVocabulary");
             Test.ensureEqual(getLicense(), "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.", "getLicense");
             Test.ensureEqual(fnu.getContributorName(names[i]), fnu.getCourtesy(names[i]), "getContributorName");
             Test.ensureEqual(getContributorRole(), "Source of level 2 data.", "getContributorRole");

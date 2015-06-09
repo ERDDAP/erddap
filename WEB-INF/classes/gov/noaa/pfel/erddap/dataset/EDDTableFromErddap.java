@@ -294,7 +294,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
                 //guess ioos_category   (alternative is always assign "Unknown")
                 Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    tSourceAtt, tSourceName, false, false); //tryToAddColorBarMinMax, tryToFindLLAT
+                    sourceGlobalAttributes, tSourceAtt, tSourceName, 
+                    false, false); //tryToAddColorBarMinMax, tryToFindLLAT
                 tAddAtt.add("ioos_category", tAtts.getString("ioos_category"));
             }
 
@@ -617,8 +618,8 @@ expected =
 try {
             Test.ensureTrue(results.indexOf("rGlobecBottle", po) > 0, "results=\n" + results);
 } catch (Throwable t) {
-    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-        "\n!!! This will fail until release 1.30.\nPress ^C to stop or Enter to continue..."); 
+    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+        "Unexpected error."); //was: This will fail until release 1.30."); 
 }
 
 
@@ -642,10 +643,9 @@ try {
 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nError using generateDatasetsXml on " + 
-                EDStatic.erddapUrl + //in tests, always use non-https url                
-                "\nPress ^C to stop or Enter to continue..."); 
+                EDStatic.erddapUrl); //in tests, always use non-https url                
         }
 
     }
@@ -945,7 +945,7 @@ try {
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"cast, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -124.1;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
@@ -989,11 +989,10 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -1163,8 +1162,8 @@ expected2 =
                     Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
                     Test.ensureTrue(results.endsWith(expected3), "\nresults=\n" + results);
                 } catch (Throwable t) {
-                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.");
                 }
             }
 
@@ -1225,7 +1224,7 @@ expected2 =
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"cast, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" + 
 "    Float64 Easternmost_Easting -124.1;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
@@ -1273,11 +1272,10 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -1366,10 +1364,9 @@ expected =
                 Test.ensureEqual(tTable.getStringData(3, 0), "New_Horizon", "");
                 String2.log("  .dods test succeeded");
             } catch (Throwable t) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                     "\nError accessing " + EDStatic.erddapUrl + //in tests, always use non-https url
-                    " and reading erddap as a data source." +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                    " and reading erddap as a data source."); 
             }
 
             //.nc    
@@ -1428,7 +1425,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" + 
 //goofy lat=double  lon=float!
 "  :Easternmost_Easting = -124.8f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
@@ -1473,9 +1470,8 @@ String tHeader2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -1547,12 +1543,11 @@ String tHeader2 =
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\n*** This EDDTableFromErddap test requires erdGlobecBottle on coastwatch's erddap" +
-                (testLocalErddapToo? "\n    AND rGlobecBottle on localhost's erddap." : "") +
-//"\n!!! This won't work till release 1.30 because of cdm_type issues." +
-//"\n!!! The space at end of line issue will be fixed at next release." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                (testLocalErddapToo? "\n    AND rGlobecBottle on localhost's erddap." : ""));
+//was "\n!!! This won't work till release 1.30 because of cdm_type issues." +
+//was "\n!!! The space at end of line issue will be fixed at next release.");
         }
 
 

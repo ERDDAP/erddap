@@ -1109,7 +1109,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 //can't validate, because no .dtd specified by DOCTYPE in file
                 //?how validate against schema?
                 //XML.parseXml(new StringReader(request), false); 
-                //String2.getStringFromSystemIn(request + "\nContinue? ");
+                //String2.pressEnterToContinue(request);
                 request = String2.toSVString(String2.split(request, '\n'),  //split trims each string
                     " ", true); //(white)space is necessary to separate schemalocation names and locations
                 //if (reallyVerbose) String2.log("\ncompactRequest=" + request + "\n");
@@ -1518,10 +1518,9 @@ String2.log("inventoryTable:\n" + table.toString());
                  expected, "results=" + results);
 
         //expected error didn't occur!
-        String2.getStringFromSystemIn("\n" + 
+        String2.pressEnterToContinue("\n" + 
             MustBe.getStackTrace() + 
-            "An expected error didn't occur at the above location.\n" + 
-            "Press ^C to stop or Enter to continue..."); 
+            "An expected error didn't occur at the above location."); 
 
         } catch (Exception e) {
             String2.log(
@@ -1887,9 +1886,8 @@ String2.log("inventoryTable:\n" + table.toString());
             }
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nUNEXPECTED DigirHelper " + String2.ERROR + 
-                ": Press ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUNEXPECTED DigirHelper " + String2.ERROR); 
 
         }
 
@@ -2183,14 +2181,13 @@ String2.log("inventoryTable:\n" + table.toString());
 
                 testObisAbietinariaTable(table);
             } catch (Exception e) {
-                String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                    "\nUnexpected DigirHelper error: Press ^C to stop or Enter to continue..."); 
+                String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                    "\nUnexpected DigirHelper error"); 
 
             }
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                "UNEXPECTED ERROR: " + MustBe.throwableToString(e) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.pressEnterToContinue(
+                "UNEXPECTED ERROR: " + MustBe.throwableToString(e)); 
         }
     }
 

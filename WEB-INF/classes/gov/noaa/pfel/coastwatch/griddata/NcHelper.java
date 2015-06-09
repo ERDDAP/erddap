@@ -617,10 +617,10 @@ public class NcHelper  {
     }
 
     /** 
-     * This converts a List of variables to a variable[].
+     * This converts a List of variables to a Variable[].
      *
      * @param list   
-     * @return a variable[]  (or null if list is null)
+     * @return a Variable[]  (or null if list is null)
      */
     public static Variable[] variableListToArray(List list) {
         if (list == null)
@@ -630,6 +630,22 @@ public class NcHelper  {
         for (int v = 0; v < nVars; v++) 
             vars[v] = (Variable)list.get(v);
         return vars;
+    }
+
+    /** 
+     * This converts a List of dimensions to a Dimension[].
+     *
+     * @param list   
+     * @return a Dimensione[]  (or null if list is null)
+     */
+    public static Dimension[] dimensionListToArray(List list) {
+        if (list == null)
+            return null;
+        int nDims = list.size();
+        Dimension dims[] = new Dimension[nDims];
+        for (int d = 0; d < nDims; d++) 
+            dims[d] = (Dimension)list.get(d);
+        return dims;
     }
 
     /**
@@ -1556,7 +1572,7 @@ public class NcHelper  {
      * (LongArray becomes StringArray, CharArray becomes ShortArray).
      *
      * @param pa a PrimitiveArray
-     * @returns a PrimitiveArray (usually the same one) that has a 
+     * @return a PrimitiveArray (usually the same one) that has a 
      * data type that is suitable for .nc files.
      */
     public static PrimitiveArray getNcSafePA(PrimitiveArray pa) {

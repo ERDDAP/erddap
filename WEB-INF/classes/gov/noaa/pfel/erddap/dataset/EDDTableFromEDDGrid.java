@@ -649,10 +649,10 @@ public class EDDTableFromEDDGrid extends EDDTable{
 "    String composite \"true\";\n" +
 "    String contributor_name \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String creator_email \"dave.foley@noaa.gov\";\n" +
-"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
-"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String creator_email \"erd.data@noaa.gov\";\n" +
+"    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String creator_url \"http://www.pfeg.noaa.gov\";\n" +
 "    String date_created \"20.{8}Z\";\n" + //changes
 "    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
@@ -680,7 +680,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
 expected2 = 
    "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
-"    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"5-day,\n" +
 "Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
 "blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
@@ -692,7 +692,6 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 75.0;\n" +
 "    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
@@ -700,6 +699,9 @@ expected2 =
 "    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
+"    String publisher_email \"erd.data@noaa.gov\";\n" +
+"    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
 "    String references \"Blended SST from satellites information: This is an " + 
     "experimental product which blends satellite-derived SST data from multiple " + 
     "platforms using a weighted mean.  Weights are based on the inverse square " + 
@@ -736,7 +738,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature " + 
     "\\(SST\\) products derived from both microwave and infrared sensors carried " + 
     "on multiple platforms.  The microwave instruments can measure ocean " + 
@@ -1143,10 +1145,10 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String composite \"true\";\n" +
 "    String contributor_name \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String creator_email \"dave.foley@noaa.gov\";\n" +
-"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
-"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String creator_email \"erd.data@noaa.gov\";\n" +
+"    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String creator_url \"http://www.pfeg.noaa.gov\";\n" +
 "    String date_created \"20.{8}Z\";\n" + //changes
 "    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
@@ -1174,7 +1176,7 @@ debugMode = false; //normally false.  Set it to true if need help.
 
 expected2 = 
    "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
-"    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"5-day,\n" +
 "Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
 "blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
@@ -1186,7 +1188,6 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 75.0;\n" +
 "    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
@@ -1194,6 +1195,9 @@ expected2 =
 "    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
+"    String publisher_email \"erd.data@noaa.gov\";\n" +
+"    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
 "    String references \"Blended SST from satellites information: This is an " +
     "experimental product which blends satellite-derived SST data from multiple " +
     "platforms using a weighted mean.  Weights are based on the inverse square " +
@@ -1230,7 +1234,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
-"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature " +
     "\\(SST\\) products derived from both microwave and infrared sensors carried " +
     "on multiple platforms.  The microwave instruments can measure ocean " +
