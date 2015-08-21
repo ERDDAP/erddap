@@ -108,6 +108,15 @@ public abstract class EDDGrid extends EDD {
      */
     protected EDVGridAxis axisVariables[];
 
+    /** 
+     * This is used to test equality of axis values. 
+     * 0=no testing (not recommended). 
+     * &gt;18 does exact test. default=20.
+     * 1-18 tests that many digets for doubles and hidiv(n,2) for floats.
+     */
+    public final static int DEFAULT_MATCH_AXIS_N_DIGITS = 20;
+   
+
     /** These are needed for EDD-required methods of the same name. */
     public final static String[] dataFileTypeNames = {  //
         ".asc", ".csv", ".csvp", ".csv0", ".das", ".dds", ".dods", 
@@ -1853,13 +1862,9 @@ public abstract class EDDGrid extends EDD {
      * This makes a sibling dataset, based on the new sourceUrl.
      *
      * @param tLocalSourceUrl
-     * @param ensureAxisValuesAreEqual If Integer.MAX_VALUE, no axis sourceValue tests are performed. 
+     * @param firstAxisToMatch 
      *    If 0, this tests if sourceValues for axis-variable #0+ are same.
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
-     *    (This is useful if the, for example, lat and lon values vary slightly and you 
-     *    are willing to accept the initial values as the correct values.)
-     *    Actually, the tests are always done but this determines whether
-     *    the error is just logged or whether it throws an exception.
      * @param shareInfo if true, this ensures that the sibling's 
      *    axis and data variables are basically the same as this datasets,
      *    and then makes the new dataset point to the this instance's data structures
@@ -1867,8 +1872,8 @@ public abstract class EDDGrid extends EDD {
      * @return EDDGrid
      * @throws Throwable if trouble
      */
-    public abstract EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual,
-        boolean shareInfo) throws Throwable;
+    public abstract EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch,
+        int matchAxisNDigits, boolean shareInfo) throws Throwable;
 
     /**
      * This tests if the axisVariables and dataVariables of the other dataset are similar 
@@ -1876,29 +1881,26 @@ public abstract class EDDGrid extends EDD {
      *     same missing values).
      *
      * @param other   
-     * @param ensureAxisValuesAreEqual If Integer.MAX_VALUE, no axis sourceValue 
-     *    tests are performed. 
+     * @param firstAxisToMatch 
      *    If 0, this tests if sourceValues for axis-variable #0+ are same.
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
-     *    (This is useful if the, for example, lat and lon values vary slightly and you 
-     *    are willing to accept the initial values as the correct values.)
-     *    Actually, the tests are always done but this determines whether
-     *    the error is just logged or whether it throws an exception.
      * @param strict if !strict, this is less strict
      * @return "" if similar (same axis and data var names,
      *    same units, same sourceDataType, same missing values) 
      *    or a message if not (including if other is null).
      */
-    public String similar(EDDGrid other, int ensureAxisValuesAreEqual, boolean strict) {
+    public String similar(EDDGrid other, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean strict) {
         try {
             if (other == null) 
                 return "EDDGrid.similar: There is no 'other' dataset.  (Perhaps ERDDAP just restarted.)";
-            if (reallyVerbose) String2.log("EDDGrid.similar ensureAxisValuesAreEqual=" + ensureAxisValuesAreEqual);
+            if (reallyVerbose) String2.log("EDDGrid.similar firstAxisToMatch=" + firstAxisToMatch);
             String results = super.similar(other);
             if (results.length() > 0) 
                 return results;
 
-            return similarAxisVariables(other, ensureAxisValuesAreEqual, strict);
+            return similarAxisVariables(other, firstAxisToMatch, 
+                matchAxisNDigits, strict);
         } catch (Throwable t) {
             return MustBe.throwableToShortString(t);
         }
@@ -2005,23 +2007,18 @@ public abstract class EDDGrid extends EDD {
      *     same missing values).
      *
      * @param other 
-     * @param ensureAxisValuesAreEqual If Integer.MAX_VALUE, no axis sourceValue 
-     *        tests are performed. 
+     * @param firstAxisToMatch 
      *    If 0, this tests if sourceValues for axis-variable #0+ are same.
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
-     *    (This is useful if the, for example, lat and lon values vary slightly and you 
-     *    are willing to accept the initial values as the correct values.)
-     *    Actually, the tests are always done but this determines whether
-     *    the error is just logged or whether it throws an exception.
      * @param strict if !strict, this is less strict (including allowing different
      *    sourceDataTypes and destinationDataTypes)
      * @return "" if similar (same axis and data var names,
      *    same units, same sourceDataType, same missing values) or a message if not.
      */
-    public String similarAxisVariables(EDDGrid other, int ensureAxisValuesAreEqual, 
-            boolean strict) {
-        if (reallyVerbose) String2.log("EDDGrid.similarAxisVariables ensureAxisValuesAreEqual=" + 
-            ensureAxisValuesAreEqual);
+    public String similarAxisVariables(EDDGrid other, int firstAxisToMatch, 
+            int matchAxisNDigits, boolean strict) {
+        if (reallyVerbose) String2.log("EDDGrid.similarAxisVariables firstAxisToMatch=" + 
+            firstAxisToMatch);
         String msg = "EDDGrid.similar: The other dataset has a different ";
         int nAv = axisVariables.length;
         if (nAv != other.axisVariables.length)
@@ -2080,12 +2077,11 @@ public abstract class EDDGrid extends EDD {
             }
 
             //test sourceValues  
-            String results = av1.sourceValues().almostEqual(av2.sourceValues());
-            if (results.length() > 0) {
-                results = msg + "sourceValue" + msg2 + results + ")";
-                if (av >= ensureAxisValuesAreEqual) 
-                    return results; 
-                else String2.log("NOTE: " + results);
+            if (av >= firstAxisToMatch) {
+                String results = av1.sourceValues().almostEqual(av2.sourceValues(), 
+                    matchAxisNDigits);
+                if (results.length() > 0) 
+                    return msg + "sourceValue" + msg2 + results + ")";
             }
         }
         //they are similar
@@ -8054,6 +8050,40 @@ Attributes {
             "  <br>and won't ever have a file extension (unlike, for example, .nc for the\n" +
             "  <br>sample dataset in the Pydap instructions).\n" +
             "\n" +
+            //Python
+            "  <p><b><a rel=\"bookmark\" href=\"http://python.org\">Python" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
+            "    <a name=\"Python\">is</a> a widely-used computer language that is very popular among scientists.\n" +
+            "    <br>In addition to the <a rel=\"help\" href=\"#PydapClient\">Pydap Client</a>, you can use Python to download various files from ERDDAP\n" +
+            "    <br>as you would download other files from the web:\n" +
+            "<pre>import urllib\n" +
+            "urllib.urlretrieve(\"http://<i>baseurl</i>/erddap/griddap/<i>datasetID.fileType?query</i>\", \"<i>outputFileName</i>\")</pre>\n" +
+            "    Or download the content to an object instead of a file:\n" +
+            "<pre>import urllib2\n" +
+            "response = urllib2.open(\"http://<i>baseurl</i>/erddap/griddap/<i>datasetID.fileType?query</i>\")\n" +
+            "theContent = response.read()</pre>\n" +
+            "  There are other ways to do this in Python. Search the web for more information.\n"+
+            "  <br>&nbsp;\n" +
+            "  <br>To access a password-protected, private ERDDAP dataset with Python via https, use this\n" +
+            "  <br>two-step process after you install the\n" +
+            "<a rel=\"bookmark\" href=\"http://www.python-requests.org/en/latest/\">requests library" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> (\"HTTP for Humans\"):\n" +
+            "  <ol>\n" +
+            "  <li>Log in (authenticate) and store the certificate in a 'session' object:\n" +
+            "<pre>import requests\n" +
+            "session = requests.session()\n" +
+            "credentials_dct = {'user': '<i>myUserName</i>', 'password': '<i>myPassword</i>'}\n" +
+            "p = session.post(\"https://<i>baseurl</i>:8443/erddap/login.html\", credentials_dct, verify=True)</pre>\n" +
+            "  <li>Repeatedly make data requests using the session: \n" +
+            "<pre>theContent = session.get('https://<i>baseurl</i>:8443/erddap/griddap/<i>datasetID.fileType?query</i>', verify=True)</pre>\n" +
+            "  </ol>\n" +            
+            "  * Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
+            "  <br>* If the server uses a self-signed certificate and you are okay with that, use <tt>verify=False</tt>\n" +
+            "  <br>&nbsp;&nbsp;to tell Python not to check the server's certificate.\n" +
+            "  <br>* That works in Python v2.7. You might need to make slight modifications for other versions.\n" +
+            "  <br>* (Thanks to Emilio Mayorga of NANOOS and Paul Janecek of Spyglass Technologies for\n" +
+            "  <br>&nbsp;&nbsp;figuring this out.)\n" +
+            "  <br>&nbsp;\n" +
             //R
             "  <p><b><a rel=\"bookmark\" href=\"http://www.r-project.org/\">R Statistical Package" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b> -\n" +
@@ -8197,8 +8227,19 @@ Attributes {
             "  <br>to be put into the output fileName.\n" +
             "  <br>For example, \n" +
             "<pre>curl \"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst&#37;5B%282010-09-[01-05]T12:00:00Z%29&#37;5D&#37;5B&#37;5D&#37;5B&#37;5D&#37;5B&#37;5D&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=|||||\" -o BAssta5day201009#1.png</pre>\n" +
-            "</ul>\n" +
-            "<br>&nbsp;\n");
+            "<li>To access a password-protected, private ERDDAP dataset with curl via https, use this\n" +
+            "  <br>two-step process:\n" +
+            "  <ol>\n" +
+            "  <li>Log in (authenticate) and save the certificate cookie in a cookie-jar file:\n" +
+            "<pre>curl -v --data 'user=<i>myUserName</i>&amp;password=<i>myPassword</i>' -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/login.html</pre>\n" +
+            "  <li>Repeatedly make data requests using the saved cookie: \n" +
+            "<pre>curl -v -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/griddap/<i>datasetID.fileType?query</i> -o <i>outputFileName</i></pre>\n" +
+            "  </ol>\n" +
+            "  Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
+            "  <br>(Thanks to Liquid Robotics for the starting point and Emilio Mayorga of NANOOS and\n" +
+            "  <br>Paul Janecek of Spyglass Technologies for testing.)\n" +
+            "  <br>&nbsp;\n" +
+            "</ul>\n");
 
         //query
         writer.write(

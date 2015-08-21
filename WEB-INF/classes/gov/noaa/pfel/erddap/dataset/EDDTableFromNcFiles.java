@@ -311,7 +311,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         if (tInstitution != null && tInstitution.length() > 0) externalAddGlobalAttributes.add("institution", tInstitution);
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
-        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
+        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
+            "(" + (File2.isRemote(tFileDir)? "remote" : "local") + " files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
@@ -347,7 +348,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
+            "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
@@ -435,8 +437,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2014-06-11Z</att>\n" + //changes
-"        <att name=\"date_issued\">2014-06-11Z</att>\n" +  //changes
+"        <att name=\"date_created\">2015-07-20Z</att>\n" + //changes
+"        <att name=\"date_issued\">2015-07-20Z</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -465,7 +467,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
 "\n" + //changes 2 places...  date is old, but this is what's in the file
 "This dataset has both historical data (quality controlled, before 2011-05-01T00:00:00) and near real time data (less quality controlled, from 2011-05-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2014-06-11T14:00:00Z</att>\n" + //changes
+"        <att name=\"time_coverage_end\">2015-07-20T15:00:00Z</att>\n" + //changes
 "        <att name=\"time_coverage_resolution\">P1H</att>\n" +
 "        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
 "        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
@@ -497,7 +499,7 @@ cdmSuggestion() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -516,7 +518,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.4024952E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.4374044E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -825,7 +827,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-2.8 3.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-3.1 3.8</att>\n" +
 "            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
 "            <att name=\"long_name\">Pressure Tendency</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -1137,7 +1139,7 @@ expected =
 "    String references \"Channel Islands National Parks Inventory and Monitoring information: http://nature.nps.gov/im/units/medn . Kelp Forest Monitoring Protocols: http://www.nature.nps.gov/im/units/chis/Reports_PDF/Marine/KFM-HandbookVol1.pdf .\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 32.8;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" + 
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" + 
 "    String subsetVariables \"id, longitude, latitude, common_name, species_name\";\n" +
 "    String summary \"This dataset has measurements of the size of selected animal species at selected locations in the Channel Islands National Park. Sampling is conducted annually between the months of May-October, so the Time data in this file is July 1 of each year (a nominal value). The size frequency measurements were taken within 10 meters of the transect line at each site.  Depths at the site vary some, but we describe the depth of the site along the transect line where that station's temperature logger is located, a typical depth for the site.\";\n" +
 "    String time_coverage_end \"2007-07-01T00:00:00Z\";\n" +
@@ -2239,12 +2241,12 @@ expected =
            //2014-08-07 small changes
 "netcdf EDDTableFromNcFiles_distincts2.nc {\n" +
 "  dimensions:\n" +
-"    row = 25;\n" +
+"    row = 26;\n" +
 "    station_strlen = 5;\n" +
 "  variables:\n" +
-"    float longitude(row=25);\n" +
+"    float longitude(row=26);\n" +
 "      :_CoordinateAxisType = \"Lon\";\n" +
-"      :actual_range = -162.279f, 171.395f; // float\n" +
+"      :actual_range = -170.493f, 171.395f; // float\n" +
 "      :axis = \"X\";\n" +
 "      :comment = \"The longitude of the station.\";\n" +
 "      :ioos_category = \"Location\";\n" +
@@ -2252,9 +2254,9 @@ expected =
 "      :standard_name = \"longitude\";\n" +
 "      :units = \"degrees_east\";\n" +
 "\n" +
-"    float latitude(row=25);\n" +
+"    float latitude(row=26);\n" +
 "      :_CoordinateAxisType = \"Lat\";\n" +
-"      :actual_range = 0.0f, 24.321f; // float\n" +
+"      :actual_range = -14.265f, 24.321f; // float\n" +
 "      :axis = \"Y\";\n" +
 "      :comment = \"The latitude of the station.\";\n" +
 "      :ioos_category = \"Location\";\n" +
@@ -2262,7 +2264,7 @@ expected =
 "      :standard_name = \"latitude\";\n" +
 "      :units = \"degrees_north\";\n" +
 "\n" +
-"    char station(row=25, station_strlen=5);\n" +
+"    char station(row=26, station_strlen=5);\n" +
 "      :cf_role = \"timeseries_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Station Name\";\n" +
@@ -2274,16 +2276,16 @@ expected =
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = 171.395f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_max = 24.321f; // float\n" +
-"  :geospatial_lat_min = 0.0f; // float\n" +
+"  :geospatial_lat_min = -14.265f; // float\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_max = 171.395f; // float\n" +
-"  :geospatial_lon_min = -162.279f; // float\n" +
+"  :geospatial_lon_min = -170.493f; // float\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
 "  :geospatial_vertical_positive = \"down\";\n" +
 "  :geospatial_vertical_units = \"m\";\n" +
@@ -2299,7 +2301,7 @@ expected =
 "http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.nc\\?longitude,latitude,station&station=~\\\\\"5\\.\\*\\\\\"&distinct\\(\\)\";\n" +
 "  :id = \"EDDTableFromNcFiles_distincts2\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
+"  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
 "Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
 "Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
@@ -2327,10 +2329,13 @@ expected =
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 24.321f; // float\n" +
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :Southernmost_Northing = 0.0f; // float\n" +
+"  :Southernmost_Northing = -14.265f; // float\n" +
 "  :standard_name_vocabulary = \"CF-12\";\n" +
 "  :subsetVariables = \"station, longitude, latitude\";\n" +
 "  :summary = \"The National Data Buoy Center \\(NDBC\\) distributes meteorological data from\n" +
@@ -2354,13 +2359,13 @@ expected =
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
 "  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
-"  :Westernmost_Easting = -162.279f; // float\n" +
+"  :Westernmost_Easting = -170.493f; // float\n" +
 " data:\n" +
 "longitude =\n" +
-"  \\{-162.279, -162.058, -160.66, -159.575, -158.303, -158.124, -158.116, -157.808, -157.753, -157.668, -157.1, -157.01, -156.93, -156.427, -156.1, -154.97, -154.056, -153.913, -153.9, -152.382, -144.668, 144.789, 144.812, 145.662, 171.395\\}\n" +
+"  \\{-170.493, -162.279, -162.058, -160.66, -159.575, -158.303, -158.124, -158.116, -157.808, -157.753, -157.668, -157.1, -157.01, -156.93, -156.427, -156.1, -154.97, -154.056, -153.913, -153.9, -152.382, -144.668, 144.789, 144.812, 145.662, 171.395\\}\n" +
 "latitude =\n" +
-"  \\{23.445, 24.321, 19.087, 22.286, 21.096, 21.281, 21.673, 17.094, 21.477, 21.417, 20.4, 20.788, 21.35, 21.019, 20.4, 19.78, 23.546, 0.0, 23.558, 17.525, 13.729, 13.354, 13.683, 15.267, 7.092\\}\n" +
-"station =\"51001\", \"51101\", \"51003\", \"51208\", \"51200\", \"51204\", \"51201\", \"51002\", \"51207\", \"51202\", \"51027\", \"51203\", \"51026\", \"51205\", \"51005\", \"51206\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52200\", \"52202\", \"52211\", \"52201\"\n" +
+"  \\{-14.265, 23.445, 24.321, 19.087, 22.286, 21.096, 21.281, 21.673, 17.094, 21.477, 21.417, 20.4, 20.788, 21.35, 21.019, 20.4, 19.78, 23.546, 0.0, 23.558, 17.525, 13.729, 13.354, 13.683, 15.267, 7.092\\}\n" +
+"station =\"51209\", \"51001\", \"51101\", \"51003\", \"51208\", \"51200\", \"51204\", \"51201\", \"51002\", \"51207\", \"51202\", \"51027\", \"51203\", \"51026\", \"51205\", \"51005\", \"51206\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52200\", \"52202\", \"52211\", \"52201\"\n" +
 "\\}\n";
         int tPo = results.indexOf(expected.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -2397,9 +2402,9 @@ expected =
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -153.348f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_max = 71.502; // double\n" +
@@ -2420,7 +2425,7 @@ expected =
 "http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.nc\\?longitude&longitude>-154&longitude<-153&distinct\\(\\)\";\n" +
 "  :id = \"EDDTableFromNcFiles_distincts3\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
+"  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
 "Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
 "Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
@@ -2448,6 +2453,9 @@ expected =
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 71.502; // double\n" +
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -2524,6 +2532,7 @@ expected =
 "51206\n" + //added 2012-06-29
 "51207\n" + //added 2014-08-07
 "51208\n" + //added 2014-08-07
+"51209\n" + //added 2015-07-31
 "52009\n" +
 "52200\n" +
 "52201\n" +
@@ -2849,6 +2858,8 @@ expected =
 "station,longitude,latitude\n" +
 ",degrees_east,degrees_north\n" +
 "0Y2W3,-87.313,44.794\n" +
+"18CI3,-86.91,41.73\n" +
+"20CM4,-86.49,42.09\n" +
 "23020,38.5,22.162\n" +
 "31201,-48.134,-27.705\n" +
 "32012,-85.384,-19.616\n" +
@@ -4010,6 +4021,7 @@ expected =
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec. 
 
+    try {
 
         //*** .das
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -4127,7 +4139,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 22523260;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 23262573;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4173,7 +4185,7 @@ expected =
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 _FillValue NaN;\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.4303094e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 6.31152e\\+8, 1.4377416e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4229,24 +4241,24 @@ expected =
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Practical Salinity\";\n" +
 "    Float32 missing_value NaN;\n" +
-"    String salinity_scale \"psu\";\n" +
-"    String standard_name \"sea_water_salinity\";\n" +
+"    String salinity_scale \"PSU\";\n" +
+"    String standard_name \"sea_water_practical_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  \\}\n" +
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2015-05-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2015-08-14 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"trajectory, org, type, platform, cruise\";\n" +
 "    String Conventions \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"nodc.gtspp@noaa.gov\";\n" +
-"    String creator_name \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
+"    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +                  //2 changes
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2015-04-24&time%3C=2015-05-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2015-07-24&time%3C=2015-08-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4264,9 +4276,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2015-05-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
+"    String history \"2015-08-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2015-05-08 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2015-08-14 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4281,11 +4293,11 @@ expected =
 "    String institution \"NOAA NODC\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"cruise, data, density, depth, global, gtspp, identifier, noaa, nodc, observation, ocean, oceans, organization, profile, program, salinity, sea, sea_water_salinity, sea_water_temperature, seawater, station, temperature, temperature-salinity, time, type, water\";\n" +
+"cruise, data, density, depth, global, gtspp, identifier, noaa, nodc, observation, ocean, oceans, organization, profile, program, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, station, temperature, temperature-salinity, time, type, water\";\n" +
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2015-05-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2015-08-14 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4300,7 +4312,7 @@ expected =
 "    String references \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
 "    Float64 Southernmost_Northing -78.579;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"trajectory, org, type, platform, cruise\";\n" +
 "    String summary \"The Global Temperature-Salinity Profile Programme \\(GTSPP\\) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization \\(WMO\\) and Intergovernmental Oceanographic Commission \\(IOC\\) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center \\(NODC\\) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\n" +
 "\n" +
@@ -4310,7 +4322,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the April 2015 data\\) but is a subset of the " + //month changes
+    "up to and including the July 2015 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4322,7 +4334,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2015-04-29T12:10:00Z\";\n" + //changes
+"    String time_coverage_end \"2015-07-24T12:40:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -4333,6 +4345,10 @@ expected =
         tResults = results.substring(tPo);
         Test.ensureLinesMatch(tResults, expected, "\nresults=\n" + results);
        
+    } catch (Throwable t) {
+        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+    }
+    try {
 
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -4356,6 +4372,11 @@ expected =
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    } catch (Throwable t) {
+        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+    }
+    try {
 
         //station_id    (slow for .nc, faster for .ncCF)
         tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -4398,6 +4419,11 @@ expected =
             Test.ensureTrue(error.indexOf(MustBe.THERE_IS_NO_DATA) >= 0, "error=" + error);
         }
 
+    } catch (Throwable t) {
+        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+    }
+    try {
+
         //latitude = -78.579002  the minmin value as of 2014-07-21
         //should succeed quickly (except for println statements here)
         tName = tedd.makeNewFileForDapQuery(null, null, "&latitude=-78.579002", 
@@ -4437,6 +4463,10 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime));
         //String2.pressEnterToContinue();
+
+    } catch (Throwable t) {
+        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+    }
 
     }
 
@@ -5649,7 +5679,7 @@ expected =
 "  :Northernmost_Northing = 47.237003326416016; // double\n" +
 "  :sourceUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";\n" +
 "  :Southernmost_Northing = 34.911373138427734; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"longitude, latitude, depth, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";\n" +
 "  :summary = \"This data contains the locations of some observations of\n" +
 "cold-water/deep-sea corals off the west coast of the United States.\n" +
@@ -5819,9 +5849,9 @@ expected =
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -122.21f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" + 
 "  :geospatial_lat_max = 37.997f; // float\n" +
@@ -5843,7 +5873,7 @@ String expected2 =
 "tabledap/cwwcNDBCMet.ncCF\\?longitude,latitude,station,time,atmp,wtmp&longitude>-123&longitude<-122&latitude>37&latitude<38&time>=2005-05-01T00&time<=2005-05-01T03\";\n" +
 "  :id = \"ncCF1a\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
+"  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
 "Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
 "Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
@@ -5871,6 +5901,9 @@ String expected2 =
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 37.997f; // float\n" +
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -6033,9 +6066,9 @@ String expected3 = expected2 +
 "  :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -122.21f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_max = 37.997f; // float\n" +
@@ -6057,7 +6090,7 @@ expected =
 "tabledap/cwwcNDBCMet.ncCFMA\\?longitude,latitude,station,time,atmp,wtmp&longitude>-123&longitude<-122&latitude>37&latitude<38&time>=2005-05-01T00&time<=2005-05-01T03\";\n" +
 "  :id = \"ncCFMA1a\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
+"  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
 "Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
 "Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
@@ -6085,6 +6118,9 @@ expected =
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 "  :Northernmost_Northing = 37.997f; // float\n" +
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -6266,7 +6302,7 @@ expected =
 "  :Northernmost_Northing = 38.8782f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 36.5567f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"cruise,ctd_index,ctd_no,station,time,longitude,latitude\";\n" +
 "  :summary = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey: Station Information and Surface Data.\n" +
 "Surveys have been conducted along the central California coast in May/June \n" +
@@ -6615,7 +6651,7 @@ expected =
 "  :Northernmost_Northing = 38.8782f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 36.5567f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"cruise,ctd_index,ctd_no,station,time,longitude,latitude\";\n" +
 "  :summary = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey: Station Information and Surface Data.\n" +
 "Surveys have been conducted along the central California coast in May/June \n" +
@@ -7024,7 +7060,7 @@ expected =
 "Oceans > Ocean Optics > Attenuation/Transmission,\n" +
 "Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7036,7 +7072,7 @@ expected =
 "  :Northernmost_Northing = 44.65f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 44.65f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -7248,7 +7284,7 @@ expected =
 "Oceans > Ocean Optics > Attenuation/Transmission,\n" +
 "Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7260,7 +7296,7 @@ expected =
 "  :Northernmost_Northing = 44.65f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 44.65f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -7590,8 +7626,8 @@ expected =
 "      :ioos_category = \"Salinity\";\n" +
 "      :long_name = \"Practical Salinity\";\n" +
 "      :missing_value = NaNf; // float\n" +
-"      :salinity_scale = \"psu\";\n" +
-"      :standard_name = \"sea_water_salinity\";\n" +
+"      :salinity_scale = \"PSU\";\n" +
+"      :standard_name = \"sea_water_practical_salinity\";\n" +
 "      :units = \"PSU\";\n" +
 "\n" +                                                                   
 "  // global attributes:\n" +
@@ -7603,7 +7639,7 @@ expected =
 "  :cdm_trajectory_variables = \"trajectory, org, type, platform, cruise\";\n" +
 "  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
-"  :creator_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
+"  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
 "  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=201.-.{5}&time%3C=201.-..-01&.draw=markers&.marker=1\\|5\";\n" +
@@ -7662,7 +7698,7 @@ expected =
 "  :references = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :sourceUrl = \"\\(local files\\)\";\n" +
 "  :Southernmost_Northing = -75.45f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"trajectory, org, type, platform, cruise\";\n" +  
 "  :summary = \"The Global Temperature-Salinity Profile Programme \\(GTSPP\\) develops and " +
     "maintains a global ocean temperature and salinity resource with data that are both " +
@@ -7979,8 +8015,8 @@ expected =
 "      :ioos_category = \"Salinity\";\n" +
 "      :long_name = \"Practical Salinity\";\n" +
 "      :missing_value = NaNf; // float\n" +
-"      :salinity_scale = \"psu\";\n" +
-"      :standard_name = \"sea_water_salinity\";\n" +
+"      :salinity_scale = \"PSU\";\n" +
+"      :standard_name = \"sea_water_practical_salinity\";\n" +
 "      :units = \"PSU\";\n" +
 "\n" +
 "  // global attributes:\n" +
@@ -7992,7 +8028,7 @@ expected =
 "  :cdm_trajectory_variables = \"trajectory, org, type, platform, cruise\";\n" +
 "  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
-"  :creator_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
+"  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
 "  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=201.-..-..&time%3C=201.-..-01&.draw=markers&.marker=1\\|5\";\n" +
@@ -8051,7 +8087,7 @@ String expected2 =
 "  :references = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.45f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"platform, cruise, org, type\";\n" +                   
 "  :summary = \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains " +
     "a global ocean temperature and salinity resource with data that are both up-to-date and of " +
@@ -9055,7 +9091,7 @@ String expected3 = expected2 +
 "Oceans > Ocean Optics > Attenuation/Transmission,\n" +
 "Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -9067,7 +9103,7 @@ String expected3 = expected2 +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -9856,7 +9892,7 @@ String tHeader2 =
 "Oceans > Ocean Optics > Attenuation/Transmission,\n" +
 "Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -9866,7 +9902,7 @@ String tHeader2 =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
@@ -11133,7 +11169,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2015-06-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2015-08-04 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -11168,7 +11204,7 @@ expected =
     "Seattle, WA 98115\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
 "    Float64 Southernmost_Northing -25.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String summary \"This dataset has daily Air Temperature data from the\n" +
 "TAO/TRITON \\(Pacific Ocean, http://www.pmel.noaa.gov/tao/\\),\n" +
@@ -12250,7 +12286,7 @@ expected =
 "  :Northernmost_Northing = 42.0; // double\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = 40.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :time_coverage_end = \"1970-01-04\";\n" +
 "  :time_coverage_start = \"1970-01-02\";\n" +
@@ -12739,7 +12775,7 @@ expected =
 "  :Northernmost_Northing = 42.0; // double\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = 41.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :time_coverage_end = \"1970-01-04\";\n" +
 "  :time_coverage_start = \"1970-01-03\";\n" +

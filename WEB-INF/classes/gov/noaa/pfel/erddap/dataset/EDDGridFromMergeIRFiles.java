@@ -68,7 +68,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             Object[][] tDataVariables,
             int tReloadEveryNMinutes, int tUpdateEveryNMillis,
             String tFileDir, boolean tRecursive, String tFileNameRegex, 
-            String tMetadataFrom, boolean tEnsureAxisValuesAreExactlyEqual, 
+            String tMetadataFrom, int tMatchAxisNDigits, 
             boolean tFileTableInMemory, boolean tAccessibleViaFiles)
             throws Throwable {
 
@@ -80,7 +80,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
                 tDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis,
                 tFileDir, tRecursive, tFileNameRegex, 
-                tMetadataFrom, tEnsureAxisValuesAreExactlyEqual, 
+                tMetadataFrom, tMatchAxisNDigits, 
                 tFileTableInMemory, tAccessibleViaFiles);
 
         if (verbose) String2.log("\n*** constructing EDDGridFromMergeIRFiles(xmlReader)...");        
@@ -452,8 +452,8 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual,
-            boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch,
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException(
             "Error: EDDGridFromMergeIRFiles doesn't support method=\"sibling\".");
 

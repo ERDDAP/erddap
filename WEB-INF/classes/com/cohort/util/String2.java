@@ -92,6 +92,8 @@ public class String2 {
         https://developer.apple.com/library/mac/technotes/tn2002/tn2110.html        */
     public static boolean OSIsMacOSX = OSName.contains("OS X");
 
+    public final static String AWS_S3_REGEX = "http(s|)://(\\w*)\\.s3\\.amazonaws\\.com/(.*)";
+
     /** These are NOT thread-safe.  Always use them in synchronized blocks ("synchronized(gen....) {}").*/
     private static DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
     private static DecimalFormat genEngFormat6 = new DecimalFormat("##0.#####E0");
@@ -217,7 +219,8 @@ public class String2 {
      *
      * @param s
      * @param max
-     * @return s (if it is short) or the first max characters of s
+     * @return s (if it is short) or the first max characters of s.
+     *   If s==null, this returns "".
      */
     public static String noLongerThan(String s, int max) {
         if (s == null)
@@ -5204,6 +5207,54 @@ public class String2 {
             b;
     }
 
+
+    /** 
+     * Given an Amazon AWS S3 URL, this returns the bucketName.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * If files have file-system-like names, e.g., 
+     *   http(s|)://bucketName.s3.amazonaws.com/prefix
+     *   where the prefix is usually in the form dir1/dir2/fileName.ext
+     *   http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+     *
+     * @param url
+     * @return the bucketName or null if not an s3 URL
+     */
+    public static String getAwsS3BucketName(String url) {
+        if (url == null)
+            return null;
+        Pattern pattern = Pattern.compile(String2.AWS_S3_REGEX);
+        if (url.endsWith(".s3.amazonaws.com"))
+            url = File2.addSlash(url);
+        Matcher matcher = pattern.matcher(url); 
+        if (matcher.matches()) 
+            return matcher.group(2); //bucketName
+        return null;
+    }
+
+    /** 
+     * Given an Amazon AWS S3 URL, this returns the objectName or prefix.
+     * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+     * If files have file-system-like names, e.g., 
+     *   http(s|)://bucketName.s3.amazonaws.com/prefix
+     *   where a prefix is usually in the form dir1/dir2/ 
+     *   where an objectName is usually in the form dir1/dir2/fileName.ext
+     *   http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+     *
+     * @param url  If the url is supposed to be for a prefix, use 
+     *    getAwsS3Prefix(File2.addSlash(url))
+     * @return the prefix or null if not an s3 URL
+     */
+    public static String getAwsS3Prefix(String url) {
+        if (url == null)
+            return null;
+        Pattern pattern = Pattern.compile(String2.AWS_S3_REGEX);
+        if (url.endsWith(".s3.amazonaws.com"))
+            url = File2.addSlash(url);
+        Matcher matcher = pattern.matcher(url); 
+        if (matcher.matches()) 
+            return matcher.group(3); //prefix
+        return null;
+    }
 
 
 } //End of String2 class.

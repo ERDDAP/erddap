@@ -20473,14 +20473,16 @@ touble: because table is JsonObject, info may not be in expected order
      * <br>It mimics http://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
      * stored on Bob's computer as c:/programs/apache/listing.html
      *  See also http://www.ndbc.noaa.gov/data/realtime2/?C=N;O=A
-     * <br>***WARNING*** The URL for that got the user to this page MUST be a 
+     * <br>***WARNING*** The URL that got the user to this page MUST be a 
      *   directoryURL ending in '/', or the links don't work (since they are implied
      *   to be relative to the current URL, not explicit)!
      * <br>This just writes the part inside the 'body' tag.
      * <br>If there is a parentDirectory, its link will be at the top of the list.
      * <br>The table need not be sorted initially. This method handles sorting.
-     * <br>The table should have 4 columns: "Name" (String), "Last modified" (long), 
-     *    "Size" (long), and "Description" (String)
+     * <br>The table should have 4 columns: "Name" (String, dir names should end in /), 
+     *    "Last modified" (long, in milliseconds, directories/unknown should have Long.MAX_VALUE), 
+     *    "Size" (long, directories/unknown should have Long.MAX_VALUE), and 
+     *    "Description" (String)
      * <br>The displayed Last Modified time will be Zulu timezone.
      * <br>The displayed size will be some number of bytes, or truncated to some
      *    number of K (1024), M (1024^2), G (1024^3), or T (1024^4), 
@@ -20506,7 +20508,8 @@ touble: because table is JsonObject, info may not be in expected order
      *   <br>Currently, only C= and O= parameters are supported.
      * @param iconUrlDir the public URL directory (with slash at end) with the icon files
      * @param addParentDir if true, this shows a link to the parent directory
-     * @param dirNames is the list of subdirectories in the directory (without trailing '/'). 
+     * @param dirNames is the list of subdirectories in the directory 
+     *   just the individual words (and without trailing '/'), not the whole URL. 
      *   It will be sorted within directoryListing.
      * @param dirDescriptions may be null
      */
@@ -23325,17 +23328,15 @@ expected =
         time = System.currentTimeMillis();
         table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
             null, //all vars
-            StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("2874.7"));
+            StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
-"latitude,discharge,longitude,station,time\n" +
-"39.01061275,57.76636788,-75.45794828,1484080.0,2874.70000000007\n" +
-"39.01061275,63.99607422,-75.45794828,1484080.0,2874.704166666721\n" +
-"43.26944444,176.13078833999998,-73.5958333,1327750.0,2874.708333333372\n" +
-"42.78527778,273.54074202,-73.7075,1357500.0,2874.708333333372\n" +
-"39.01061275,61.16438952,-75.45794828,1484080.0,2874.708333333372\n" +
-"39.01061275,60.59805258,-75.45794828,1484080.0,2874.7125000000233\n";
+"discharge,station,time,longitude,latitude\n" +
+"80.98618241999999,1327750.0,3426.6979166667443,-73.5958333,43.26944444\n" +
+"181.2278208,1357500.0,3426.6979166667443,-73.7075,42.78527778\n" +
+"183.77633703,1357500.0,3426.708333333372,-73.7075,42.78527778\n" +
+"-56.06735706,1484085.0,3426.691666666651,-75.3976111,39.05830556\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //               just read station vars (all stations)  no constraints
@@ -23430,7 +23431,7 @@ expected =
 "1463500.0,40.22166667,-74.7780556,638.2708333332557,97.40995368\n";  //stop there
         results = results.substring(0, expected.length());
         Test.ensureEqual(results, expected, "results=\n" + results);
-        Test.ensureEqual(table.nRows(), 209126, "wrong nRows");
+        Test.ensureEqual(table.nRows(), 256610, "wrong nRows");
 
         //               read all data 
         String2.log("\n* read all data");
@@ -23440,21 +23441,20 @@ expected =
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
-"latitude,discharge,longitude,station,time\n" +
-"40.22166667,92.02975275,-74.7780556,1463500.0,638.1666666666279\n" +
-"40.8847222,1.500792891,-74.2261111,1389500.0,638.1666666666279\n" +
-"40.5511111,4.190893356,-74.5483333,1403060.0,638.1666666666279\n" +
-"39.9678905,11.921392587,-75.1885123,1474500.0,638.1666666666279\n" +
-"40.22166667,92.02975275,-74.7780556,1463500.0,638.1770833332557\n" +
-"40.8847222,1.500792891,-74.2261111,1389500.0,638.1770833332557\n" +
-"40.5511111,4.190893356,-74.5483333,1403060.0,638.1770833332557\n" +
-"40.22166667,92.02975275,-74.7780556,1463500.0,638.1875\n" +
-"40.8847222,1.500792891,-74.2261111,1389500.0,638.1875\n" +
-"40.5511111,4.275843897,-74.5483333,1403060.0,638.1875\n" +
-"39.9678905,11.921392587,-75.1885123,1474500.0,638.1875\n";  //stop there
+"discharge,station,time,longitude,latitude\n" +
+"92.02975275,1463500.0,638.1666666666279,-74.7780556,40.22166667\n" +
+"92.02975275,1463500.0,638.1770833332557,-74.7780556,40.22166667\n" +
+"92.02975275,1463500.0,638.1875,-74.7780556,40.22166667\n" +
+"92.87925815999999,1463500.0,638.1979166666279,-74.7780556,40.22166667\n" +
+"93.72876357,1463500.0,638.2083333332557,-74.7780556,40.22166667\n" +
+"93.72876357,1463500.0,638.21875,-74.7780556,40.22166667\n" +
+"94.86143745,1463500.0,638.2291666666279,-74.7780556,40.22166667\n" +
+"95.71094286,1463500.0,638.2395833332557,-74.7780556,40.22166667\n" +
+"95.71094286,1463500.0,638.25,-74.7780556,40.22166667\n" +
+"95.71094286,1463500.0,638.2604166666279,-74.7780556,40.22166667\n";  //stop there
         results = results.substring(0, expected.length());
         Test.ensureEqual(results, expected, "results=\n" + results);
-        Test.ensureEqual(table.nRows(), 1742115, "wrong nRows");
+        Test.ensureEqual(table.nRows(), 2315617, "wrong nRows");
 
 
         //               read all vars when obs is constrained, 

@@ -32,6 +32,8 @@ import gov.noaa.pfel.erddap.variable.*;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -58,6 +60,9 @@ import ucar.ma2.*;
  */
 public class EDDGridFromNcFiles extends EDDGridFromFiles { 
 
+    /** Used by Bob only. Don't set this to true here -- do it in the calling code. */
+    public static boolean generateDatasetsXmlCoastwatchErdMode = false;
+
 
     /** The constructor just calls the super constructor. */
     public EDDGridFromNcFiles(String tDatasetID, String tAccessibleTo,
@@ -68,7 +73,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        boolean tEnsureAxisValuesAreExactlyEqual, boolean tFileTableInMemory,
+        int tMatchAxisNDigits, boolean tFileTableInMemory,
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
@@ -80,7 +85,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
             tDataVariables,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory,
+            tMatchAxisNDigits, tFileTableInMemory,
             tAccessibleViaFiles);
     }
 
@@ -279,8 +284,8 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException("Error: " + 
             "EDDGridFromNcFiles doesn't support method=\"sibling\".");
 
@@ -309,7 +314,14 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
 
         String2.log("EDDGridFromNcFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
-        tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        if (tFileDir.endsWith("/catalog.html")) //thredds catalog
+            tFileDir = tFileDir.substring(0, tFileDir.length() - 12);
+        else if (tFileDir.endsWith("/catalog.xml")) //thredds catalog
+            tFileDir = tFileDir.substring(0, tFileDir.length() - 11);
+        else if (tFileDir.endsWith("/contents.html")) //hyrax catalog
+            tFileDir = tFileDir.substring(0, tFileDir.length() - 11);
+        else tFileDir = File2.addSlash(tFileDir); //otherwise, assume tFileDir is missing final slash
+
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
@@ -326,7 +338,8 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         StringBuilder sb = new StringBuilder();
 
         //get source global Attributes
-        NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
+        Attributes globalSourceAtts = axisSourceTable.globalAttributes();
+        NcHelper.getGlobalAttributes(ncFile, globalSourceAtts);
 
         try {
             //look at all variables with dimensions, find ones which share same max nDim
@@ -376,7 +389,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                         String destName = String2.modifyToBeVariableNameSafe(axisName);
                         axisAddTable.addColumn(   avi, destName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                axisSourceTable.globalAttributes(),
+                                globalSourceAtts,
                                 sourceAtts, destName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
@@ -408,14 +421,18 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 String destName = String2.modifyToBeVariableNameSafe(varName);
                 dataAddTable.addColumn(   dataAddTable.nColumns(),   destName, pa, 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        axisSourceTable.globalAttributes(),
+                        globalSourceAtts,
                         sourceAtts, destName, true, false)); //addColorBarMinMax, tryToFindLLAT
             }
 
+            if (dataAddTable.nColumns() == 0)
+                throw new RuntimeException("No dataVariables found.");
+
             //after dataVariables known, add global attributes in the axisAddTable
-            axisAddTable.globalAttributes().set(
+            Attributes globalAddAtts = axisAddTable.globalAttributes();
+            globalAddAtts.set(
                 makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                    axisSourceTable.globalAttributes(), 
+                    globalSourceAtts, 
                     "Grid",  //another cdm type could be better; this is ok
                     tFileDir, externalAddGlobalAttributes, 
                     EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
@@ -423,7 +440,63 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
-            sb.append(directionsForGenerateDatasetsXml());
+            boolean accViaFiles = false;
+            int tMatchNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
+
+            if (generateDatasetsXmlCoastwatchErdMode) {
+                accViaFiles = true;
+                tMatchNDigits = 15;
+                //  /u00/satellite/AT/ssta/1day/
+                Pattern pattern = Pattern.compile("/u00/satellite/([^/]+)/([^/]+)/([^/]+)day/");
+                Matcher matcher = pattern.matcher(tFileDir); 
+                String m12, m1_2; //ATssta  AT_ssta
+                String cl; //composite length
+                if (matcher.matches()) {
+                    m12 = matcher.group(1) + matcher.group(2);
+                    m1_2 = matcher.group(1) + "_" + matcher.group(2);
+                    cl = matcher.group(3);
+                } else {
+                    //  /u00/satellite/MPIC/1day/
+                    pattern = Pattern.compile("/u00/satellite/([^/]+)/([^/]+)day/");
+                    matcher = pattern.matcher(tFileDir); 
+                    if (matcher.matches()) {
+                        m12 = matcher.group(1);
+                        m1_2 = m12;
+                        cl = matcher.group(2);
+                    } else {
+                        throw new RuntimeException(tFileDir + " doesn't match the pattern!");
+                    }
+                }
+
+                tDatasetID = "erd" + m12 + cl + "day";
+                globalAddAtts.set("creator_name", "NOAA NMFS SWFSC ERD");
+                globalAddAtts.set("creator_email", "erd.data@noaa.gov");
+                globalAddAtts.set("creator_url", "http://www.pfeg.noaa.gov");
+                globalAddAtts.set("publisher_name", "NOAA NMFS SWFSC ERD");
+                globalAddAtts.set("publisher_email", "erd.data@noaa.gov");
+                globalAddAtts.set("publisher_url", "http://www.pfeg.noaa.gov");
+                globalAddAtts.set("id", "null");
+                globalAddAtts.set("infoUrl", "http://coastwatch.pfeg.noaa.gov/infog/" +
+                    m1_2 + "_las.html");
+                globalAddAtts.set("institution", "NOAA NMFS SWFSC ERD");
+                globalAddAtts.set("license", "[standard]");
+                globalAddAtts.remove("summary");
+                globalAddAtts.set("title", 
+                    globalSourceAtts.getString("title") + " (" + 
+                    (cl.equals("h")? "Single Scan" : 
+                     cl.equals("m")? "Monthly Composite" : 
+                                     cl + " Day Composite") + 
+                    ")");
+
+                for (int dv = 0; dv < dataSourceTable.nColumns(); dv++) {
+                    dataAddTable.columnAttributes(dv).set("long_name", "!!! FIX THIS !!!");
+                    if (dataSourceTable.columnAttributes(dv).get("actual_range") != null)
+                           dataAddTable.columnAttributes(dv).set("actual_range", "null");
+                }
+
+            } else {
+                sb.append(directionsForGenerateDatasetsXml());
+            }
 
             if (nGridsAtSource > dataAddTable.nColumns())
                 sb.append(
@@ -431,20 +504,23 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                     "but this dataset will only serve " + dataAddTable.nColumns() + 
                     " because the others use different dimensions.\n");
             sb.append(
-                "-->\n\n" +
+                (generateDatasetsXmlCoastwatchErdMode? "": "-->\n") +
+                "\n" +
                 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + tDatasetID +                      
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-                "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+                "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
+                "</updateEveryNMillis>\n" +  
                 "    <fileDir>" + tFileDir + "</fileDir>\n" +
                 "    <recursive>true</recursive>\n" +
                 "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
                 "    <metadataFrom>last</metadataFrom>\n" +
+                "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
                 "    <fileTableInMemory>false</fileTableInMemory>\n" +
-                "    <accessibleViaFiles>false</accessibleViaFiles>\n");
+                "    <accessibleViaFiles>" + accViaFiles + "</accessibleViaFiles>\n");
 
-            sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
-            sb.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
+            sb.append(writeAttsForDatasetsXml(false, globalSourceAtts, "    "));
+            sb.append(writeAttsForDatasetsXml(true,  globalAddAtts,    "    "));
             
             //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
             sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, true,  false));
@@ -507,6 +583,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_03\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -573,7 +650,7 @@ directionsForGenerateDatasetsXml() +
 "atmospheric, coast, coastwatch, composite, data, day, global, latitude, longitude, meridional, mod, modulus, noaa, node, ocean, oceans,\n" +
 "Oceans &gt; Ocean Winds &gt; Surface Winds,\n" +
 "quality, quikscat, science, science quality, surface, time, wcn, west, wind, winds, x_wind, y_wind, zonal</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -746,6 +823,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -773,7 +851,7 @@ directionsForGenerateDatasetsXml() +
 "ordered, ordered_sequence_of_data, period, prediction, sea, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sequence, significant, Significant_height_of_swell_waves_ordered_sequence_of_data, source, surface, surface waves, swell, swells, time, wave, waves</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">National Centers for Environmental Prediction (NCEP) data from a local source.</att>\n" +
 "        <att name=\"title\">NCEP data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -911,6 +989,420 @@ directionsForGenerateDatasetsXml() +
     }
 
 
+    /** This tests generateDatasetsXml with an AWS S3 dataset. 
+     * @throws Throwable if touble
+     */
+    public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
+
+        String dir = "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
+        String regex = ".*_CESM1-CAM5_.*\\.nc";
+        String name = dir + "/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc";
+        int reload = 1000000;
+
+        String results = generateDatasetsXml(dir, regex, name, reload, null) + "\n";
+        String suggDatasetID = suggestDatasetID(dir + "/" + regex);
+
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDGridFromNcFiles", dir, regex, name, "" + reload},
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt. " + 
+            gdxResults.length() + " " + results.length());
+
+        String expected = 
+directionsForGenerateDatasetsXml() +
+"!!! The source for s3nasanex_5c8a_8589_b680 has nGridVariables=4,\n" +
+"but this dataset will only serve 1 because the others use different dimensions.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"s3nasanex_5c8a_8589_b680\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>0</updateEveryNMillis>\n" +
+"    <fileDir>http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</fileDir>\n" +
+"    <recursive>true</recursive>\n" +
+"    <fileNameRegex>.*_CESM1-CAM5_.*\\.nc</fileNameRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"CMIPtable\">Amon</att>\n" +
+"        <att name=\"contact\">Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org</att>\n" +
+"        <att name=\"Conventions\">CF-1.4</att>\n" +
+"        <att name=\"creation_date\">Wed Sep 12 14:44:16 PDT 2012</att>\n" +
+"        <att name=\"DOI\">http://dx.doi.org/10.7292/W0WD3XH4</att>\n" +
+"        <att name=\"downscalingModel\">BCSD</att>\n" +
+"        <att name=\"driving_data_tracking_ids\">N/A</att>\n" +
+"        <att name=\"driving_experiment\">historical</att>\n" +
+"        <att name=\"driving_experiment_name\">historical</att>\n" +
+"        <att name=\"driving_model_ensemble_member\">r3i1p1</att>\n" +
+"        <att name=\"driving_model_id\">CESM1-CAM5</att>\n" +
+"        <att name=\"experiment\">RCP2.6</att>\n" +
+"        <att name=\"experiment_id\">rcp26</att>\n" +
+"        <att name=\"frequency\">mon</att>\n" +
+"        <att name=\"initialization_method\">1</att>\n" +
+"        <att name=\"institute_id\">NASA-Ames</att>\n" +
+"        <att name=\"institution\">NASA Earth Exchange, NASA Ames Research Center, Moffett Field, CA 94035</att>\n" +
+"        <att name=\"model_id\">BCSD</att>\n" +
+"        <att name=\"modeling_realm\">atmos</att>\n" +
+"        <att name=\"parent_experiment\">historical</att>\n" +
+"        <att name=\"parent_experiment_id\">historical</att>\n" +
+"        <att name=\"parent_experiment_rip\">r1i1p1</att>\n" +
+"        <att name=\"physics_version\">1</att>\n" +
+"        <att name=\"product\">downscaled</att>\n" +
+"        <att name=\"project_id\">NEX</att>\n" +
+"        <att name=\"realization\">1</att>\n" +
+"        <att name=\"realm\">atmos</att>\n" +
+"        <att name=\"references\">BCSD method: Wood AW, Maurer EP, Kumar A, Lettenmaier DP, 2002, J Geophys Res 107(D20):4429 &amp; \n" +
+" Wood AW, Leung LR, Sridhar V, Lettenmaier DP, 2004, Clim Change 62:189-216\n" +
+" Reference period obs: PRISM (http://www.prism.oregonstate.edu/)</att>\n" +
+"        <att name=\"region\">CONUS</att>\n" +
+"        <att name=\"region_id\">CONUS</att>\n" +
+"        <att name=\"region_lexicon\">http://en.wikipedia.org/wiki/Contiguous_United_States</att>\n" +
+"        <att name=\"resolution_id\">800m</att>\n" +
+"        <att name=\"table_id\">Table Amon</att>\n" +
+"        <att name=\"title\">800m Downscaled NEX CMIP5 Climate Projections for the Continental US</att>\n" +
+"        <att name=\"tracking_id\">d7ed8c4a-af11-11e2-9608-e41f13ef9be2</att>\n" +
+"        <att name=\"variableName\">tasmin</att>\n" +
+"        <att name=\"version\">1.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">rama.nemani@nasa.gov</att>\n" +
+"        <att name=\"creator_name\">Rama Nemani</att>\n" +
+"        <att name=\"creator_url\">http://www.nasa.gov/</att>\n" +
+"        <att name=\"infoUrl\">http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</att>\n" +
+"        <att name=\"keywords\">800m, air, air_temperature, ames, atmosphere,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
+"atmospheric, center, climate, cmip5, continental, daily, data, day, downscaled, earth, exchange, field, intercomparison, minimum, model, moffett, nasa, near, near-surface, nex, project, projections, research, surface, tasmin, temperature, time, US</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"summary\">800m Downscaled NEX Climate Model Intercomparison Project 5 (CMIP5) Climate Projections for the Continental US</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"int\">1</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"bounds\">time_bnds</att>\n" +
+"            <att name=\"calendar\">standard</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">days since 1950-01-01 00:00:00</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"int\">3105</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"bounds\">lat_bnds</att>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"int\">7025</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"bounds\">lon_bnds</att>\n" +
+"            <att name=\"long_name\">longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"            <att name=\"valid_range\" type=\"doubleList\">0.0 360.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>tasmin</sourceName>\n" +
+"        <destinationName>tasmin</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 369 836</att>\n" +
+"            <att name=\"_FillValue\" type=\"float\">1.0E20</att>\n" +
+"            <att name=\"associated_files\">baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_CESM1-CAM5_rcp26_r0i0p0.nc areacella: areacella_fx_CESM1-CAM5_rcp26_r0i0p0.nc</att>\n" +
+"            <att name=\"cell_measures\">area: areacella</att>\n" +
+"            <att name=\"cell_methods\">time: minimum (interval: 30 days) within days time: mean over days</att>\n" +
+"            <att name=\"comment\">TREFMNAV no change, CMIP5_table_comment: monthly mean of the daily-minimum near-surface air temperature.</att>\n" +
+"            <att name=\"coordinates\">height</att>\n" +
+"            <att name=\"history\">2012-06-09T00:36:32Z altered by CMOR: Treated scalar dimension: &#39;height&#39;. 2012-06-09T00:36:32Z altered by CMOR: Reordered dimensions, original order: lat lon time. 2012-06-09T00:36:32Z altered by CMOR: replaced missing value flag (-1e+32) with standard missing value (1e+20).</att>\n" +
+"            <att name=\"long_name\">Daily Minimum Near-Surface Air Temperature</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">1.0E20</att>\n" +
+"            <att name=\"original_name\">TREFMNAV</att>\n" +
+"            <att name=\"standard_name\">air_temperature</att>\n" +
+"            <att name=\"units\">K</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">313.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">263.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+        Test.ensureEqual(results, expected, results.length() + " " + expected.length() + 
+            "\nresults=\n" + results);
+
+        //ensure it is ready-to-use by making a dataset from it
+        EDD edd = oneFromXmlFragment(results);
+        Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
+        Test.ensureEqual(edd.title(), "800m Downscaled NEX CMIP5 Climate Projections for the Continental US", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "tasmin", "");
+
+        String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3 passed the test.");
+    }
+
+    /**
+     * This tests reading NetCDF .nc files with this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "testAwsS3";
+        if (deleteCachedDatasetInfo) 
+            deleteCachedDatasetInfo(id);
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .nc test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_Entire", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.1374128e+9, 4.1011056e+9;\n" +
+"    String axis \"T\";\n" +
+"    String calendar \"standard\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 24.0625, 49.92916665632;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 234.97916666666998, 293.51249997659;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float64 valid_range 0.0, 360.0;\n" +
+"  }\n" +
+"  tasmin {\n" +
+"    Float32 _FillValue 1.0E20;\n" +
+"    String associated_files \"baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_CESM1-CAM5_rcp26_r0i0p0.nc areacella: areacella_fx_CESM1-CAM5_rcp26_r0i0p0.nc\";\n" +
+"    String cell_measures \"area: areacella\";\n" +
+"    String cell_methods \"time: minimum (interval: 30 days) within days time: mean over days\";\n" +
+"    Float64 colorBarMaximum 313.0;\n" +
+"    Float64 colorBarMinimum 263.0;\n" +
+"    String comment \"TREFMNAV no change, CMIP5_table_comment: monthly mean of the daily-minimum near-surface air temperature.\";\n" +
+"    String history \"2012-06-09T00:36:32Z altered by CMOR: Treated scalar dimension: 'height'. 2012-06-09T00:36:32Z altered by CMOR: Reordered dimensions, original order: lat lon time. 2012-06-09T00:36:32Z altered by CMOR: replaced missing value flag (-1e+32) with standard missing value (1e+20).\";\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Daily Minimum Near-Surface Air Temperature\";\n" +
+"    Float32 missing_value 1.0E20;\n" +
+"    String original_name \"TREFMNAV\";\n" +
+"    String standard_name \"air_temperature\";\n" +
+"    String units \"K\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String CMIPtable \"Amon\";\n" +
+"    String contact \"Dr. Rama Nemani: rama.nemani@nasa.gov, Dr. Bridget Thrasher: bridget@climateanalyticsgroup.org, and Dr. Mark Snyder: mark@climateanalyticsgroup.org\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creation_date \"Wed Sep 12 14:44:43 PDT 2012\";\n" +
+"    String creator_email \"rama.nemani@nasa.gov\";\n" +
+"    String creator_name \"Rama Nemani\";\n" +
+"    String creator_url \"http://www.nasa.gov/\";\n" +
+"    String DOI \"http://dx.doi.org/10.7292/W0WD3XH4\";\n" +
+"    String downscalingModel \"BCSD\";\n" +
+"    String driving_data_tracking_ids \"N/A\";\n" +
+"    String driving_experiment \"historical\";\n" +
+"    String driving_experiment_name \"historical\";\n" +
+"    String driving_model_ensemble_member \"r3i1p1\";\n" +
+"    String driving_model_id \"CESM1-CAM5\";\n" +
+"    Float64 Easternmost_Easting 293.51249997659;\n" +
+"    String experiment \"RCP2.6\";\n" +
+"    String experiment_id \"rcp26\";\n" +
+"    String frequency \"mon\";\n" +
+"    Float64 geospatial_lat_max 49.92916665632;\n" +
+"    Float64 geospatial_lat_min 24.0625;\n" +
+"    Float64 geospatial_lat_resolution 0.00833333333;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 293.51249997659;\n" +
+"    Float64 geospatial_lon_min 234.97916666666998;\n" +
+"    Float64 geospatial_lon_resolution 0.008333333330000001;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"" + today;
+//2015-06-24T17:36:33Z (local files)
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = 
+//"2015-06-24T17:36:33Z http://127.0.0.1:8080/cwexperimental/griddap/testAwsS3.das\";\n" +
+    "String infoUrl \"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
+"    String initialization_method \"1\";\n" +
+"    String institute_id \"NASA-Ames\";\n" +
+"    String institution \"NASA Earth Exchange, NASA Ames Research Center, Moffett Field, CA 94035\";\n" +
+"    String keywords \"800m, air, air_temperature, ames, atmosphere,\n" +
+"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
+"Atmosphere > Atmospheric Temperature > Surface Air Temperature,\n" +
+"atmospheric, center, climate, cmip5, continental, daily, data, day, downscaled, earth, exchange, field, intercomparison, minimum, model, moffett, nasa, near, near-surface, nex, project, projections, research, surface, tasmin, temperature, time, US\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String model_id \"BCSD\";\n" +
+"    String modeling_realm \"atmos\";\n" +
+"    Float64 Northernmost_Northing 49.92916665632;\n" +
+"    String parent_experiment \"historical\";\n" +
+"    String parent_experiment_id \"historical\";\n" +
+"    String parent_experiment_rip \"r1i1p1\";\n" +
+"    String physics_version \"1\";\n" +
+"    String product \"downscaled\";\n" +
+"    String project_id \"NEX\";\n" +
+"    String realization \"1\";\n" +
+"    String realm \"atmos\";\n" +
+"    String references \"BCSD method: Wood AW, Maurer EP, Kumar A, Lettenmaier DP, 2002, J Geophys Res 107(D20):4429 & \n" +
+" Wood AW, Leung LR, Sridhar V, Lettenmaier DP, 2004, Clim Change 62:189-216\n" +
+" Reference period obs: PRISM (http://www.prism.oregonstate.edu/)\";\n" +
+"    String region \"CONUS\";\n" +
+"    String region_id \"CONUS\";\n" +
+"    String region_lexicon \"http://en.wikipedia.org/wiki/Contiguous_United_States\";\n" +
+"    String resolution_id \"800m\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing 24.0625;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"800m Downscaled NEX Climate Model Intercomparison Project 5 (CMIP5) Climate Projections for the Continental US\";\n" +
+"    String table_id \"Table Amon\";\n" +
+"    String time_coverage_end \"2099-12-16T12:00:00Z\";\n" +
+"    String time_coverage_start \"2006-01-16T12:00:00Z\";\n" +
+"    String title \"800m Downscaled NEX CMIP5 Climate Projections for the Continental US\";\n" +
+"    String tracking_id \"d62220e2-af11-11e2-bdc9-e41f13ef5cee\";\n" +
+"    String variableName \"tasmin\";\n" +
+"    String version \"1.0\";\n" +
+"    Float64 Westernmost_Easting 234.97916666666998;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 25));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_Entire", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 1128];\n" +
+"  Float64 latitude[latitude = 3105];\n" +
+"  Float64 longitude[longitude = 7025];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 tasmin[time = 1128][latitude = 3105][longitude = 7025];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1128];\n" +
+"      Float64 latitude[latitude = 3105];\n" +
+"      Float64 longitude[longitude = 7025];\n" +
+"  } tasmin;\n" +
+"} testAwsS3;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  with data from one file
+        String2.log("\n*** .nc test read from one file\n");       
+        userDapQuery = "tasmin[1127][(40):100:(43)][(260):100:(263)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_Data1", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time,latitude,longitude,tasmin\n" +
+"UTC,degrees_north,degrees_east,K\n" +
+"2099-12-16T12:00:00Z,40.00416666029,260.00416665666,263.7364\n" +
+"2099-12-16T12:00:00Z,40.00416666029,260.83749998966,263.4652\n" +
+"2099-12-16T12:00:00Z,40.00416666029,261.67083332266,263.61017\n" +
+"2099-12-16T12:00:00Z,40.00416666029,262.50416665566,264.5588\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,260.00416665666,263.3948\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,260.83749998966,263.02103\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,261.67083332266,263.31967\n" +
+"2099-12-16T12:00:00Z,40.837499993289995,262.50416665566,263.83475\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,260.00416665666,262.9155\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,260.83749998966,261.65094\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,261.67083332266,261.9907\n" +
+"2099-12-16T12:00:00Z,41.670833326289994,262.50416665566,262.13275\n" +
+"2099-12-16T12:00:00Z,42.50416665929,260.00416665666,263.9838\n" +
+"2099-12-16T12:00:00Z,42.50416665929,260.83749998966,262.93536\n" +
+"2099-12-16T12:00:00Z,42.50416665929,261.67083332266,262.64273\n" +
+"2099-12-16T12:00:00Z,42.50416665929,262.50416665566,261.5762\n";         
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //img
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "tasmin[(2099-12-16T12:00:00Z)][(24.0625):(49.92916665632)][(234.97916666666998):" +
+            "(293.51249997659)]&.draw=surface&.vars=longitude|latitude|tasmin" +
+            "&.colorBar=|||||&.land=under",
+            tDir, "testAwsS3", ".png"); 
+        SSR.displayInBrowser("file://" + tDir + tName);
+
+    }
 
     /**
      * This tests reading NetCDF .nc files with this class.
@@ -1074,7 +1566,7 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
                      //numeric IP because these are files captured long ago
 "    String sourceUrl \"http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
 "    Float64 Southernmost_Northing -89.875;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
 "    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +
@@ -1401,7 +1893,7 @@ expected =
 "    String source \"Initialized analysis product\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -88.75;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This is a test of EDDGridFromNcFiles with GRIB files.\";\n" +
 "    String time_coverage_end \"1990-12-01T12:00:00Z\";\n" +
 "    String time_coverage_start \"1981-01-01T12:00:00Z\";\n" +
@@ -1823,7 +2315,7 @@ expected=
 "    String source \"Type: Forecast products Status: Operational products\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -77.5;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"???\";\n" +
 "    String time_coverage_end \"2009-06-08T18:00:00Z\";\n" +
 "    String time_coverage_start \"2009-06-01T06:00:00Z\";\n" +
@@ -2116,7 +2608,7 @@ expected =
 "    String Product_Type \"Initialized analysis product\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -88.74999;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This is a test of EDDGridFromNcFiles with GRIB files.\";\n" +
 "    String time_coverage_end \"1990-12-01T12:00:00Z\";\n" +
 "    String time_coverage_start \"1981-01-01T12:00:00Z\";\n" +
@@ -2467,7 +2959,7 @@ expected=
 "    String Originating_or_generating_Subcenter \"0\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -77.5;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"???\";\n" +
 "    String time_coverage_end \"2009-06-08T18:00:00Z\";\n" +
 "    String time_coverage_start \"2009-06-01T06:00:00Z\";\n" +
@@ -2753,7 +3245,7 @@ expected =
 "    String satellite \"noaa-18\";\n" +
 "    String sensor \"avhrr\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"???\";\n" +
 "    String title \"Test of CoastWatch HDF files\";\n" +
 "  }\n" +
@@ -3613,7 +4105,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :title = \"My Title\";\n" +
 " data:\n" +
@@ -3917,7 +4409,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"My summary.\";\n" +
 "  :title = \"My Title\";\n" +
 " data:\n" +
@@ -4249,6 +4741,692 @@ directionsForGenerateDatasetsXml() +
             "\nNot an error, just FYI."); 
     }
 
+    /**
+     * !!! NOT FINISHED/TESTABLE: this test server doesn't support byte ranges!!!
+     *
+     * This tests if netcdf-java can work with remote Hyrax files
+     * and thus if a dataset can be made from remote Hyrax files.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGenerateDatasetsXmlWithRemoteHyraxFiles() throws Throwable {
+        String2.log("\n****** EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles() *****************\n");
+        testVerboseOn();
+        String results, expected;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = "http://podaac-opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/";
+
+        results = generateDatasetsXml( //dir is a HYRAX catalog.html URL!
+            dir + "contents.html", 
+            ".*\\.nc", 
+            dir + "ersst.201401.nc", 
+            -1, null);
+        //String2.log(results);
+        expected = "zztop";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteHyraxFiles() finished successfully\n");
+   
+    }
+
+    /**
+     * !!! NOT FINISHED/TESTABLE: this test server doesn't support byte ranges!!!
+     *
+     * This tests if netcdf-java can work with remote files
+     * and thus if a dataset can be made from remote files.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testRemoteHyraxFiles(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****** EDDGridFromNcFiles.testRemoteHyraxFiles(" + deleteCachedInfo + 
+            ") *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        int po;
+        EDV edv;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String id = "testRemoteHyraxFiles";
+
+/*
+        //*** test getting das for entire dataset
+        String2.log("\n*** testCwHdf test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_CwHdfEntire", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  rows {\n" +
+"    Int32 actual_range 0, 1247;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Rows\";\n" +
+"    String units \"count\";\n" +
+"  }\n" +
+"  cols {\n" +
+"    Int16 actual_range 0, 1139;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Cols\";\n" +
+"    String units \"count\";\n" +
+"  }\n" +
+"  avhrr_ch1 {\n" +
+"    Float64 _FillValue -327.68;\n" +
+"    Float64 add_offset_err 0.0;\n" +
+"    Int32 calibrated_nt 0;\n" +
+"    String coordsys \"Mercator\";\n" +
+"    Int32 fraction_digits 2;\n" +
+"    String ioos_category \"Other\";\n" +
+"    String long_name \"AVHRR Channel 1\";\n" +
+"    Float64 missing_value -327.68;\n" +
+"    Float64 scale_factor_err 0.0;\n" +
+"    String standard_name \"isotropic_spectral_radiance_in_air\";\n" +
+"    String units \"percent\";\n" +
+"  }\n" +
+"  sst {\n" +
+"    Float64 _FillValue -327.68;\n" +
+"    Float64 add_offset_err 0.0;\n" +
+"    Int32 calibrated_nt 0;\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordsys \"Mercator\";\n" +
+"    Int32 fraction_digits 2;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Surface Temperature\";\n" +
+"    Float64 missing_value -327.68;\n" +
+"    Float64 scale_factor_err 0.0;\n" +
+"    String sst_equation_day \"nonlinear split window\";\n" +
+"    String sst_equation_night \"linear triple window modified\";\n" +
+"    String standard_name \"sea_surface_temperature\";\n" +
+"    String units \"celsius\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _History \"Direct read of HDF4 file through CDM library\";\n" +
+"    String autonav_performed \"true\";\n" +
+"    Int32 autonav_quality 2;\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String history \"Direct read of HDF4 file through CDM library\n" +
+today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+        
+//+ " (local files)\n" +
+//today + 
+    
+expected =
+" http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
+"    String infoUrl \"???\";\n" +
+"    String institution \"NOAA CoastWatch\";\n" +
+"    String keywords \"Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String origin \"USDOC/NOAA/NESDIS CoastWatch\";\n" +
+"    String pass_type \"day\";\n" +
+"    String projection \"Mercator\";\n" +
+"    String projection_type \"mapped\";\n" +
+"    String satellite \"noaa-18\";\n" +
+"    String sensor \"avhrr\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"???\";\n" +
+"    String title \"Test of CoastWatch HDF files\";\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_CwHdfEntire", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Int32 rows[rows = 1248];\n" +
+"  Int16 cols[cols = 1140];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 avhrr_ch1[rows = 1248][cols = 1140];\n" +
+"    MAPS:\n" +
+"      Int32 rows[rows = 1248];\n" +
+"      Int16 cols[cols = 1140];\n" +
+"  } avhrr_ch1;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 sst[rows = 1248][cols = 1140];\n" +
+"    MAPS:\n" +
+"      Int32 rows[rows = 1248];\n" +
+"      Int16 cols[cols = 1140];\n" +
+"  } sst;\n" +
+"} testCwHdf;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //.csv  with data from one file
+        String2.log("\n*** testCwHdf test read from one file\n");       
+        userDapQuery = "sst[600:2:606][500:503]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_CwHdfData1", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"rows,cols,sst\n" +
+"count,count,celsius\n" +
+"600,500,21.07\n" +
+"600,501,20.96\n" +
+"600,502,21.080000000000002\n" +
+"600,503,20.93\n" +
+"602,500,21.16\n" +
+"602,501,21.150000000000002\n" +
+"602,502,21.2\n" +
+"602,503,20.95\n" +
+"604,500,21.34\n" +
+"604,501,21.13\n" +
+"604,502,21.13\n" +
+"604,503,21.25\n" +
+"606,500,21.37\n" +
+"606,501,21.11\n" +
+"606,502,21.0\n" +
+"606,503,21.02\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //  */
+    }
+
+    /**
+     * This tests if netcdf-java can work with remote Thredds files
+     * and thus if a dataset can be made from remote Thredds files.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGenerateDatasetsXmlWithRemoteThreddsFiles() throws Throwable {
+        String2.log("\n****** EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles() *****************\n");
+        testVerboseOn();
+        String results, expected;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = "http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/"; //catalog.html
+
+        //dir  is a /thredds/catalog/.../  [implied catalog.html] URL!
+        //file is a /thredds/fileServer/... not compressed data file.
+        results = generateDatasetsXml( 
+            dir, 
+            "sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc",
+            //sample file is a thredds/fileServer/.../...nc URL!
+            "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2011.nc", 
+            -1, null);
+        //String2.log(results);
+String2.setClipboardString(results);
+
+        expected = 
+"<!--\n" +
+" DISCLAIMER:\n" +
+"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
+"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
+"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
+"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
+"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
+"\n" +
+" DIRECTIONS:\n" +
+" * Read about this type of dataset in\n" +
+"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   so that you understand about sourceAttributes and addAttributes.\n" +
+" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
+"   below as comments, for informational purposes only.\n" +
+"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
+"   precedence) to make the combinedAttributes that are shown to the user.\n" +
+"   (And other attributes are automatically added to longitude, latitude,\n" +
+"   altitude, depth, and time variables).\n" +
+" * If you don't like a sourceAttribute, override it by adding an\n" +
+"   addAttribute with the same name but a different value\n" +
+"   (or no value, if you want to remove it).\n" +
+" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
+"   If you don't like an addAttribute, change it.\n" +
+" * If you want to add other addAttributes, add them.\n" +
+" * If you want to change a destinationName, change it.\n" +
+"   But don't change sourceNames.\n" +
+" * You can change the order of the dataVariables or remove any of them.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"noaa_nodc_0ba9_b245_c4c4\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>0</updateEveryNMillis>\n" +
+"    <fileDir>http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/</fileDir>\n" +
+"    <recursive>true</recursive>\n" +
+"    <fileNameRegex>sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc</fileNameRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"Conventions\">CF-1.6</att>\n" +
+"        <att name=\"creator_email\">Yongsheng.Zhang@noaa.gov</att>\n" +
+"        <att name=\"creator_institution\">US National Oceanographic Data Center</att>\n" +
+"        <att name=\"creator_name\">Yongsheng Zhang, Ph.D.</att>\n" +
+"        <att name=\"creator_url\">http://www.nodc.noaa.gov/SatelliteData</att>\n" +
+"        <att name=\"date_created\">20140716T073150Z</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">90.0</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">-90.0</att>\n" +
+"        <att name=\"geospatial_lat_resolution\">1.0 degree grids</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">180.0</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-180.0</att>\n" +
+"        <att name=\"geospatial_lon_resolution\">1.0 degree grids</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
+"        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
+"        <att name=\"history\">Aquarius Level-2 SCI CAP V3.0</att>\n" +
+"        <att name=\"institution\">JPL,  California Institute of Technology</att>\n" +
+"        <att name=\"keywords\">Earth Science &gt;Oceans &gt; Surface Salinity</att>\n" +
+"        <att name=\"keywords_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords</att>\n" +
+"        <att name=\"license\">These data are available for use without restriction.</att>\n" +
+"        <att name=\"Metadata_Conventions\">Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"mission\">SAC-D Aquarius</att>\n" +
+"        <att name=\"necdf_version_id\">3.6.3</att>\n" +
+"        <att name=\"nodc_template_version\">NODC_NetCDF_Grid_Template_v1.0</att>\n" +
+"        <att name=\"publisher_name\">NOAA/NESDIS/NODC - US National Oceanographic Data Center</att>\n" +
+"        <att name=\"references\">Aquarius users guide, V6.0, PO.DAAC, JPL/NASA. Jun 2, 2014</att>\n" +
+"        <att name=\"sensor\">Aquarius</att>\n" +
+"        <att name=\"source\">Jet Propulsion Laboratory, California Institute of Technology</att>\n" +
+"        <att name=\"summary\">This dataset is created by NODC Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average</att>\n" +
+"        <att name=\"title\">Gridded monthly mean Sea Surface Salinity calculated from Aquarius level-2 SCI V3.0 data</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/catalog.html</att>\n" +
+"        <att name=\"institution\">JPL, California Institute of Technology</att>\n" +
+"        <att name=\"keywords\">aquarius, calculate, calculated, california, center, data, earth,\n" +
+"Earth Science &gt;Oceans &gt; Surface Salinity,\n" +
+"gridded, institute, jet, jpl, laboratory, level, level-2, mean, month, monthly, national, ncei, noaa, nodc, number, observation, observations, ocean, oceanographic, oceans, propulsion, salinity, sci, science, sea, sea_surface_salinity, sea_surface_salinity_number_of_observations, sss, sss_obs, statistics, surface, swath, technology, time, used, v3.0, valid</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"Metadata_Conventions\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"summary\">This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"calendar\">gregorian</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">months since 2010-01-15 00:00:00</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-89.5 89.5</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"coordinate_defines\">center</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-179.5 179.5</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"coordinate_defines\">center</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sss</sourceName>\n" +
+"        <destinationName>sss</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9999.0</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"ancillary_variables\">sss_obs </att>\n" +
+"            <att name=\"cell_methods\">time: mean over one month</att>\n" +
+"            <att name=\"coordinates\">time lat lon</att>\n" +
+"            <att name=\"grid_mapping\">crs</att>\n" +
+"            <att name=\"long_name\"> Monthly mean Sea Surface Salinity from level-2 swath data</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">1.0</att>\n" +
+"            <att name=\"standard_name\">Sea_Surface_Salinity</att>\n" +
+"            <att name=\"units\">psu</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sss_obs</sourceName>\n" +
+"        <destinationName>sss_obs</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9999.0</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"cell_methods\">time: sum over one month</att>\n" +
+"            <att name=\"coordinates\">time lat lon</att>\n" +
+"            <att name=\"grid_mapping\">crs</att>\n" +
+"            <att name=\"long_name\">Valid observation number used to calculate SSS from level-2 swath data</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">1.0</att>\n" +
+"            <att name=\"standard_name\">Sea_Surface_Salinity_number_of_observations</att>\n" +
+"            <att name=\"units\">count</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles() finished successfully\n");
+   
+    }
+
+    /**
+     * This tests if netcdf-java can work with remote files
+     * and thus if a dataset can be made from remote files.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testRemoteThreddsFiles(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****** EDDGridFromNcFiles.testRemoteThreddsFiles(" + deleteCachedInfo + 
+            ") *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        int po;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String id = "testRemoteThreddsFiles";  //from generateDatasetsXml above but different datasetID
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id);
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_trtf", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.3133664e+9, 1.4263776e+9;\n" +
+"    String axis \"T\";\n" +
+"    String calendar \"gregorian\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 89.5, -89.5;\n" +
+"    String axis \"Y\";\n" +
+"    String coordinate_defines \"center\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range -179.5, 179.5;\n" +
+"    String axis \"X\";\n" +
+"    String coordinate_defines \"center\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  sss {\n" +
+"    Float32 _FillValue -9999.0;\n" +
+"    String ancillary_variables \"sss_obs \";\n" +
+"    String cell_methods \"time: mean over one month\";\n" +
+"    Float64 colorBarMaximum 37.0;\n" +
+"    Float64 colorBarMinimum 32.0;\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Salinity\";\n" +
+"    String long_name \" Monthly mean Sea Surface Salinity from level-2 swath data\";\n" +
+"    String standard_name \"Sea_Surface_Salinity\";\n" +
+"    String units \"psu\";\n" +
+"  }\n" +
+"  sss_obs {\n" +
+"    Float32 _FillValue -9999.0;\n" +
+"    String cell_methods \"time: sum over one month\";\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Valid observation number used to calculate SSS from level-2 swath data\";\n" +
+"    String standard_name \"Sea_Surface_Salinity_number_of_observations\";\n" +
+"    String units \"count\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"Yongsheng.Zhang@noaa.gov\";\n" +
+"    String creator_institution \"US National Oceanographic Data Center\";\n" +
+"    String creator_name \"Yongsheng Zhang, Ph.D.\";\n" +
+"    String creator_url \"http://www.nodc.noaa.gov/SatelliteData\";\n" +
+"    String date_created \"20150424T093015Z\";\n" +
+"    Float64 Easternmost_Easting 179.5;\n" +
+"    Float64 geospatial_lat_max 89.5;\n" +
+"    Float64 geospatial_lat_min -89.5;\n" +
+"    Float64 geospatial_lat_resolution 1.0;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.5;\n" +
+"    Float64 geospatial_lon_min -179.5;\n" +
+"    Float64 geospatial_lon_resolution 1.0;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String history \"Aquarius Level-2 SCI CAP V3.0\n" +
+today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+        
+//+ " (local files)\n" +
+//today + 
+    
+expected =
+"Z http://127.0.0.1:8080/cwexperimental/griddap/testRemoteThreddsFiles.das\";\n" +
+"    String infoUrl \"http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/catalog.html\";\n" +
+"    String institution \"JPL, California Institute of Technology\";\n" +
+"    String keywords \"aquarius, calculate, calculated, california, center, data, earth,\n" +
+"Earth Science >Oceans > Surface Salinity,\n" +
+"gridded, institute, jet, jpl, laboratory, level, level-2, mean, month, monthly, national, ncei, noaa, nodc, number, observation, observations, ocean, oceanographic, oceans, propulsion, salinity, sci, science, sea, sea_surface_salinity, sea_surface_salinity_number_of_observations, sss, sss_obs, statistics, surface, swath, technology, time, used, v3.0, valid\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"These data are available for use without restriction.\";\n" +
+"    String mission \"SAC-D Aquarius\";\n" +
+"    String necdf_version_id \"3.6.3\";\n" +
+"    String nodc_template_version \"NODC_NetCDF_Grid_Template_v1.0\";\n" +
+"    Float64 Northernmost_Northing 89.5;\n" +
+"    String publisher_name \"NOAA/NESDIS/NODC - US National Oceanographic Data Center\";\n" +
+"    String references \"Aquarius users guide, V6.0, PO.DAAC, JPL/NASA. Jun 2, 2014\";\n" +
+"    String sensor \"Aquarius\";\n" +
+"    String source \"Jet Propulsion Laboratory, California Institute of Technology\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -89.5;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average\";\n" +
+"    String time_coverage_end \"2015-03-15T00:00:00Z\";\n" +
+"    String time_coverage_start \"2011-08-15T00:00:00Z\";\n" +
+"    String title \"Gridded monthly mean Sea Surface Salinity calculated from Aquarius level-2 SCI V3.0 data\";\n" +
+"    Float64 Westernmost_Easting -179.5;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_trtf", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 44];\n" +
+"  Float32 latitude[latitude = 180];\n" +
+"  Float32 longitude[longitude = 360];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sss[time = 44][latitude = 180][longitude = 360];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 44];\n" +
+"      Float32 latitude[latitude = 180];\n" +
+"      Float32 longitude[longitude = 360];\n" +
+"  } sss;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sss_obs[time = 44][latitude = 180][longitude = 360];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 44];\n" +
+"      Float32 latitude[latitude = 180];\n" +
+"      Float32 longitude[longitude = 360];\n" +
+"  } sss_obs;\n" +
+"} testRemoteThreddsFiles;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //.csv  with data from one file
+        String2.log("\n*** test read from one file\n");       
+        userDapQuery = "sss[43][100:2:106][50:53]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_trtf", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time,latitude,longitude,sss\n" +
+"UTC,degrees_north,degrees_east,psu\n" +
+"2015-03-15T00:00:00Z,-10.5,-129.5,35.764122\n" +
+"2015-03-15T00:00:00Z,-10.5,-128.5,35.747765\n" +
+"2015-03-15T00:00:00Z,-10.5,-127.5,35.75875\n" +
+"2015-03-15T00:00:00Z,-10.5,-126.5,35.791206\n" +
+"2015-03-15T00:00:00Z,-12.5,-129.5,35.893097\n" +
+"2015-03-15T00:00:00Z,-12.5,-128.5,35.968\n" +
+"2015-03-15T00:00:00Z,-12.5,-127.5,35.920654\n" +
+"2015-03-15T00:00:00Z,-12.5,-126.5,35.961067\n" +
+"2015-03-15T00:00:00Z,-14.5,-129.5,36.069397\n" +
+"2015-03-15T00:00:00Z,-14.5,-128.5,36.19855\n" +
+"2015-03-15T00:00:00Z,-14.5,-127.5,36.24694\n" +
+"2015-03-15T00:00:00Z,-14.5,-126.5,36.085762\n" +
+"2015-03-15T00:00:00Z,-16.5,-129.5,36.118313\n" +
+"2015-03-15T00:00:00Z,-16.5,-128.5,36.377663\n" +
+"2015-03-15T00:00:00Z,-16.5,-127.5,36.298218\n" +
+"2015-03-15T00:00:00Z,-16.5,-126.5,36.25797\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //  */
+    }
+
+    /** This tests matchAxisNDigits */
+    public static void testMatchAxisNDigits() throws Throwable {
+
+        String2.log("\n *** EDDGridFromNcFiles.testMatchAxisNDigits() ***");
+
+        //force reload files
+        File2.delete("/u00/cwatch/erddap2/dataset/ay/erdATssta3day/fileTable.nc");
+
+        //load dataset
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String cDir = EDStatic.fullTestCacheDirectory;
+        String error = "";
+        int po;
+        String id = "erdATssta3day"; 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id);
+        Table table;
+        PrimitiveArray pa1, pa2;
+
+        //there should be two time values
+        String2.log("\n*** test all time values\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "time", 
+            cDir, eddGrid.className() + "_tmnd0", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time\n" +
+"UTC\n" +
+"2004-02-18T12:00:00Z\n" +
+"2004-03-20T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+//a further test by hand:
+//change erdATssta3day's <matchAxisNValues> to 20
+//  and above test will fail because n time points will be 1 
+//  (because axes don't match: because lat [641](30.0125 != 30.012500000000003)
+
+        //*** even though the 2 files have slightly different axis values
+        //    test that lats returned from requests are always the same
+        String2.log("\n*** test get one lon, all lats\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][0][][0]", 
+            cDir, eddGrid.className() + "_tmnd1", ".csv"); 
+        table = new Table();
+        table.readASCII(cDir + tName, 0, 2);
+        pa1 = table.getColumn("latitude");
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[1][0][][0]", 
+            cDir, eddGrid.className() + "_tmnd2", ".csv"); 
+        table = new Table();
+        table.readASCII(cDir + tName, 0, 2);
+        pa2 = table.getColumn("latitude");
+
+        String2.log("pa1[0:10]=" + pa1.subset(0, 1, 10).toString());
+        Test.ensureEqual(pa1.testEquals(pa2), "", "");
+
+        //*** even though the 2 files have slightly different axis values
+        //    test that lons returned from requests are always the same
+        String2.log("\n*** test get one lat, all lons\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][0][0][]", 
+            cDir, eddGrid.className() + "_tmnd3", ".csv"); 
+        table = new Table();
+        table.readASCII(cDir + tName, 0, 2);
+        pa1 = table.getColumn("longitude");
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[1][0][0][]", 
+            cDir, eddGrid.className() + "_tmnd4", ".csv"); 
+        table = new Table();
+        table.readASCII(cDir + tName, 0, 2);
+        pa2 = table.getColumn("longitude");
+
+        String2.log("pa1[0:10]=" + pa1.subset(0, 1, 10).toString());
+        Test.ensureEqual(pa1.testEquals(pa2), "", "");
+
+
+    }
 
 
     /**
@@ -4257,7 +5435,7 @@ directionsForGenerateDatasetsXml() +
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-        /* */
+/* */
         testNc(deleteCachedDatasetInfo);
         testCwHdf(deleteCachedDatasetInfo);
         testHdf();
@@ -4276,7 +5454,24 @@ directionsForGenerateDatasetsXml() +
         testSimpleTestNc2();
 //finish this        testRTechHdf();
         testUpdate();
+
+        //tests of remote sources on-the-fly
+        testGenerateDatasetsXmlAwsS3();
+        testAwsS3(false);  //deleteCachedInfo
+        testGenerateDatasetsXmlWithRemoteThreddsFiles();
+        testRemoteThreddsFiles(false); //deleteCachedInfo 
+        testMatchAxisNDigits();
+
         /* */
+
+        //NOT FINISHED
+        //none
+
+        //Remote Hyrax
+        //  These were tests of reading remote data files on Hyrax without downloading,
+        //  but test Hyrax server doesn't support Byte Ranges.
+        //testGenerateDatasetsXmlWithRemoteHyraxFiles();  //Test server doesn't support Byte Ranges.
+        //testRemoteHyraxFiles(false); //deleteCachedInfo //Test server doesn't support Byte Ranges.
 
         //one time tests
         //String fiName = "/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2";

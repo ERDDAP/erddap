@@ -824,7 +824,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 "\n" +
 "In this dataset, for rows of data where the date_public is in the past, the data is publicly available and may be used freely; although for scientific papers, you must reference the source of the data.\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This dataset has animal tagging surgery records from the Pacific Ocean \n" +
 "Shelf Tracking project (POST).  POST is a research tool for \n" +
 "tracking the movement and estimated survival of marine animals along \n" +
@@ -1186,7 +1186,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet3.das\";\n" +
 "\n" +
 "In this dataset, for rows of data where the date_public is in the past, the data is publicly available and may be used freely; although for scientific papers, you must reference the source of the data.\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This dataset has tag detection records from the Pacific Ocean \n" +
 "Shelf Tracking project (POST).  POST is a research tool for \n" +
 "tracking the movement and estimated survival of marine animals along \n" +

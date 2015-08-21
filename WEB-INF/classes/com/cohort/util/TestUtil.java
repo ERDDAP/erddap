@@ -3929,8 +3929,8 @@ public class TestUtil {
         Math2.sleep(20); //make the file a little older
         long fileTime = File2.getLastModified(utilDir + "temp.txt");     
         long time1 = System.currentTimeMillis();
-        Test.ensureEqual(time1 >= fileTime + 10, true, "a1");
-        Test.ensureEqual(time1 <= fileTime + 100, true, "a2");
+        Test.ensureEqual(time1 >= fileTime + 10, true, "a1 " + time1 + " " + fileTime);
+        Test.ensureEqual(time1 <= fileTime + 100, true, "a2 " + time1 + " " + fileTime);
         Test.ensureEqual(File2.touch(utilDir + "temp.txt"), true,  "a"); //touch the file
         long time2 = System.currentTimeMillis();
         fileTime = File2.getLastModified(utilDir + "temp.txt");

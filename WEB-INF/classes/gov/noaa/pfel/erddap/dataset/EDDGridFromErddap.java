@@ -641,13 +641,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * This makes a sibling dataset, based on the new sourceUrl.
      *
      * @param tLocalSourceUrl
-     * @param ensureAxisValuesAreEqual If Integer.MAX_VALUE, no axis sourceValue tests are performed. 
+     * @param firstAxisToMatch 
      *    If 0, this tests if sourceValues for axis-variable #0+ are same.
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
-     *    (This is useful if the, for example, lat and lon values vary slightly and you 
-     *    are willing to accept the initial values as the correct values.)
-     *    Actually, the tests are always done but this determines whether
-     *    the error is just logged or whether it throws an exception.
      * @param shareInfo if true, this ensures that the sibling's 
      *    axis and data variables are basically the same as this datasets,
      *    and then makes the new dataset point to the this instance's data structures
@@ -656,7 +652,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * @return EDDGrid
      * @throws Throwable if trouble  (e.g., try to shareInfo, but datasets not similar)
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         if (verbose) String2.log("EDDGridFromErddap.sibling " + tLocalSourceUrl);
 
         int nAv = axisVariables.length;
@@ -684,7 +681,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
             //ensure similar
             boolean testAV0 = false;
-            String results = similar(newEDDGrid, ensureAxisValuesAreEqual, false); 
+            String results = similar(newEDDGrid, firstAxisToMatch, 
+                matchAxisNDigits, false); 
             if (results.length() > 0)
                 throw new RuntimeException("Error in EDDGrid.sibling: " + results);
 
@@ -1097,7 +1095,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "    Float64 Southernmost_Northing -90.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "    String time_coverage_end \"20.{8}T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
@@ -1591,7 +1589,7 @@ expected2 =
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = 28.985876360268577; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +

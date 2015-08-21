@@ -406,7 +406,7 @@ public class EDDTableFromOBIS extends EDDTable{
             "publications that use the data in order to comply with license. " + 
             "A suitable email address can be found by reading the XML response from the sourceURL.");
         tAddGlobalAttributes.add("cdm_data_type", CDM_POINT);
-        tAddGlobalAttributes.add("standard_name_vocabulary", "CF Standard Name Table v27");
+        tAddGlobalAttributes.add("standard_name_vocabulary", "CF Standard Name Table v29");
         addGlobalAttributes = tAddGlobalAttributes;
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
@@ -801,7 +801,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">DUKE</att>\n" +
 "        <att name=\"keywords\">area, assessment, biogeographic, data, digir.php, duke, information, monitoring, obis, obis-seamap, ocean, program, rutgers, seamap, server, southeast, system</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Ocean Biogeographic Information System (OBIS)-Southeast Area Monitoring &amp; Assessment Program (SEAMAP) Data from the OBIS Server at RUTGERS.\n" +
 "\n" +
 "[OBIS_SUMMARY]</att>\n" +
@@ -1050,7 +1050,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Northernmost_Northing 90.0;[10]\n" +
 "    String sourceUrl \"http://iobis.marine.rutgers.edu/digir2/DiGIR.php\";[10]\n" +
 "    Float64 Southernmost_Northing -90.0;[10]\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";[10]\n" +
 "    String subsetVariables \"ScientificName\";[10]\n" +
 "    String summary \"The database covers the Haida Gwaii archipelago on the West Coast of Canada, including all species of the Haida Gwaii region from any published source, accessible collection and unpublished observations from scientists.Lists all marine plant species and maps their distributions from the first records (1911) to 1999 and includes 348 seaweed and 4 seagrass species from 456 intertidal to shallow subtidal locations. This inventory had detailed regional starting points (Hawkes et al. 1978; Scagel et al. 1993) and >90% of the plant species are represented by specimens in the Phycological Herbarium of the University of British Columbia Botany Department. OBIS Schema concepts implemented in this data set are:DateLastModified, InstitutionCode, CollectionCode, CatalogNumber, ScientificName, Phylum, Class, Order, Family, Genus, Species, Subspecies, ScientificNameAuthor, YearCollected, MonthCollected, DayCollected, Country, Locality, Longitude, Latitude, Citation, DepthRange. For OBIS Schema concept details see http://www.iobis.org/tech/provider/[10]\n" +
 "[10]\n" +

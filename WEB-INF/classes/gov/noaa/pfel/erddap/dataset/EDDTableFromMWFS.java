@@ -586,7 +586,7 @@ time series data.</att>
             <att name="infoUrl">http://www.csc.noaa.gov/DTL/dtl_proj4_gmlsfp_wfs.html</att>
             <att name="institution">NOAA CSC</att>
             <att name="license">[standard]</att>
-            <att name="standard_name_vocabulary">CF Standard Name Table v27</att>
+            <att name="standard_name_vocabulary">CF Standard Name Table v29</att>
         </addAttributes> 
         <longitudeSourceMinimum>-97.22</longitudeSourceMinimum>
         <longitudeSourceMaximum>-70.43</longitudeSourceMaximum>
@@ -739,7 +739,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Northernmost_Northing 38.48;[10]\n" +
 "    String sourceUrl \"http://csc-s-ial-p.csc.noaa.gov/cgi-bin/microwfs/microWFS.cgi?SERVICENAME=dtlservicesubType=gml/3.1.1/profiles/gmlsf/1.0.0/1\";[10]\n" +
 "    Float64 Southernmost_Northing 24.55;[10]\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";[10]\n" +
 "    String summary \"[Normally, the summary describes the dataset. Here, it describes [10]\n" +
 "the server.][10]\n" +
 "The mission of the NOAA CSC Data Transport Laboratory (DTL) is to[10]\n" +

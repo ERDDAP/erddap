@@ -81,7 +81,7 @@ public class EmaStringBox extends EmaAttribute {
             "\" rows=\"" + rows + 
             "\" cols=\"" + cols + 
             //'wrap' is non-standard. see http://www.idocs.com/tags/forms/_TEXTAREA_WRAP.html
-            "\" wrap=\"SOFT\"");  //was "virtual"
+            "\" maxlength=\"" + (rows * cols) + "\" wrap=\"SOFT\"");  //was "virtual"
         if (title.length() > 0)
             sb.append("\n        title=\"" + XML.encodeAsHTML(title) + "\"");
         //style not used here 

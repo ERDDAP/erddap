@@ -239,7 +239,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
+            "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
@@ -348,7 +349,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">The new summary! exploratorium data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -1065,7 +1066,7 @@ directionsForGenerateDatasetsXml() +
 "  gust_time {\n" +
 "    Float64 actual_range 1.3519746e+9, 1.3519746e+9;\n" +
 "    String ioos_category \"Time\";\n" +
-"    String long_name \"Time\";\n" +
+"    String long_name \"Gust-time\";\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -1241,7 +1242,7 @@ directionsForGenerateDatasetsXml() +
 "  sunrise {\n" +
 "    Float64 actual_range 1.351953497e+9, 1.351953497e+9;\n" +
 "    String ioos_category \"Time\";\n" +
-"    String long_name \"Time\";\n" +
+"    String long_name \"Sunrise\";\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -1249,7 +1250,7 @@ directionsForGenerateDatasetsXml() +
 "  sunset {\n" +
 "    Float64 actual_range 1.351991286e+9, 1.351991286e+9;\n" +
 "    String ioos_category \"Time\";\n" +
-"    String long_name \"Time\";\n" +
+"    String long_name \"Sunset\";\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -1323,7 +1324,7 @@ String expected2 =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"fileName, station_id, station, city_state_zip, city_state, site_url, altitude\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String time_coverage_end \"2012-11-03T20:30:00Z\";\n" +

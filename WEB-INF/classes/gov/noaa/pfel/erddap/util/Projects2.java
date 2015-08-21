@@ -327,8 +327,10 @@ public class Projects2  {
         //parse the hyrax catalog
         StringArray childUrls = new StringArray();
         DoubleArray lastModified = new DoubleArray();
-        EDDGridFromDap.addToHyraxUrlList(urlDir + "contents.html", fileNameRegex, 
-            true, childUrls, lastModified);
+        LongArray fSize = new LongArray();
+        FileVisitorDNLS.addToHyraxUrlList(
+            urlDir + "contents.html", fileNameRegex, true, false, //recursive, dirsToo
+            childUrls, lastModified, fSize);
 
         //copy the files
         int n = childUrls.size();

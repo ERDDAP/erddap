@@ -83,8 +83,8 @@ public class FileNameUtility  {
     public static String getProcessingLevel() {return "3 (projected)"; }
     public static String getProject() {return DataHelper.CW_PROJECT;  }
     public static String getStandardNameVocabulary() {
-        //2015-04-17 new longer v27 name is from ACDD 1.3
-        return "CF Standard Name Table v27"; } //was CF-1.0 and CF-11, 2015-04-17 was CF-12
+        //2015-04-17 new, longer name format is from ACDD 1.3
+        return "CF Standard Name Table v29"; } //was CF-1.0 and CF-11, 2015-04-17 was CF-12, 2015-07-23 was v27
 
     private String categoryLetters;
     private String[] categoryNames;
@@ -1434,7 +1434,7 @@ public class FileNameUtility  {
             Test.ensureEqual(getAcknowledgement(), "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD", "getAcknowledgement");
             Test.ensureEqual(getLatUnits(), "degrees_north", "getLatUnits");
             Test.ensureEqual(getLonUnits(), "degrees_east", "getLonUnits");
-            Test.ensureEqual(getStandardNameVocabulary(), "CF Standard Name Table v27", "getStandardNameVocabulary");
+            Test.ensureEqual(getStandardNameVocabulary(), "CF Standard Name Table v29", "getStandardNameVocabulary");
             Test.ensureEqual(getLicense(), "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.", "getLicense");
             Test.ensureEqual(fnu.getContributorName(names[i]), fnu.getCourtesy(names[i]), "getContributorName");
             Test.ensureEqual(getContributorRole(), "Source of level 2 data.", "getContributorRole");

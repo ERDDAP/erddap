@@ -1027,7 +1027,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Northernmost_Northing 71.3601;[10]\n" +
 "    String sourceUrl \"http://opendap.co-ops.nos.noaa.gov/axis/services/Wind\";[10]\n" +
 "    Float64 Southernmost_Northing -14.28;[10]\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";[10]\n" +
 "    String summary \"[Normally, the summary describes the dataset. Here, it describes[10]\n" +
 "the server.][10]\n" +
 "NOS CO-OPS has developed a web-based application that serves as an[10]\n" +

@@ -50,8 +50,8 @@ import java.util.regex.*;
  *   (from the local files, unlike remote data) and all variable's min and max info
  *   can be gathered (for each file) 
  *   and cached (facilitating handling constraints in data requests).
- * <br>And file data can be cached and reused because each file has a lastModified
- *   time which can be used to detect if file is unchanged.
+ * <br>And file data can be cached and reused because each file has a lastModified 
+ *   time and size which can be used to detect if file is unchanged.
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2008-04-12
  */
@@ -59,6 +59,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
     public final static String MF_FIRST = "first", MF_LAST = "last";
     public static int suggestedUpdateEveryNMillis = 10000;
+    public static int suggestUpdateEveryNMillis(String tFileDir) {
+        return File2.isRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
+    }
+
 
     //set by constructor
     protected String fileDir;
@@ -97,13 +101,14 @@ public abstract class EDDTableFromFiles extends EDDTable{
     protected double addAttMissingValueNEC[];
 
     /** Columns in the File Table */
-    protected final static int dv0 = 4;
     protected final static int 
         FT_DIR_INDEX_COL=0, //useful that it is #0   (tFileTable uses same positions)
         FT_FILE_LIST_COL=1, //useful that it is #1
         FT_LAST_MOD_COL=2, 
-        FT_SORTED_SPACING_COL=3;
-    //then 3 cols for each dataVariable: sourceName + _min_|_max_|_hasNaN
+        FT_SIZE_COL=3, 
+        FT_SORTED_SPACING_COL=4;
+    //then 3 cols for each dataVariable: sourceName + _min_|_max_|_hasNaN starting at dv0
+    protected final static int dv0 = 5;
     int     fileTableSortColumns[];   //null if not active
     boolean fileTableSortAscending[]; //size matches fileTableSortcolumns, all true
 
@@ -123,7 +128,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
     //dirTable and fileTable inMemory (default=false)
     protected boolean fileTableInMemory = false;
-    protected Table dirTable; 
+    protected Table dirTable; //one column with dir names
     protected Table fileTable;
 
     /**
@@ -832,10 +837,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
             if      (fileTable.findColumnNumber("dirIndex")      != FT_DIR_INDEX_COL)      ok = false; 
             else if (fileTable.findColumnNumber("fileName")      != FT_FILE_LIST_COL)      ok = false; 
             else if (fileTable.findColumnNumber("lastMod")       != FT_LAST_MOD_COL)       ok = false;
+            else if (fileTable.findColumnNumber("size")          != FT_SIZE_COL)           ok = false;
             else if (fileTable.findColumnNumber("sortedSpacing") != FT_SORTED_SPACING_COL) ok = false;
             else if (!(fileTable.getColumn(FT_DIR_INDEX_COL)      instanceof ShortArray))  ok = false;
             else if (!(fileTable.getColumn(FT_FILE_LIST_COL)      instanceof StringArray)) ok = false;
             else if (!(fileTable.getColumn(FT_LAST_MOD_COL)       instanceof DoubleArray)) ok = false;
+            else if (!(fileTable.getColumn(FT_SIZE_COL)           instanceof DoubleArray)) ok = false;
             else if (!(fileTable.getColumn(FT_SORTED_SPACING_COL) instanceof DoubleArray)) ok = false;
             else for (int dv = 0; dv < ndv; dv++) {
                 String sdt = sourceDataTypes[dv];
@@ -874,7 +881,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             fileTable.addColumn("dirIndex",      new ShortArray());  //col 0=FT_DIR_INDEX_COL
             fileTable.addColumn("fileName",      new StringArray()); //col 1=FT_FILE_NAME_COL
             fileTable.addColumn("lastMod",       new DoubleArray()); //col 2=FT_LAST_MOD_COL
-            fileTable.addColumn("sortedSpacing", new DoubleArray()); //col 3=FT_SORTED_SPACING_COL
+            fileTable.addColumn("size",          new DoubleArray()); //col 3=FT_SIZE_COL
+            fileTable.addColumn("sortedSpacing", new DoubleArray()); //col 4=FT_SORTED_SPACING_COL
             for (int dv = 0; dv < ndv; dv++) {
                 String sdt = sourceDataTypes[dv]; //booleans handled correctly below
                 fileTable.addColumn(safeSourceDataNames.get(dv) + "_min_", 
@@ -905,17 +913,33 @@ public abstract class EDDTableFromFiles extends EDDTable{
         ShortArray  ftDirIndex      = (ShortArray)fileTable.getColumn( FT_DIR_INDEX_COL); //0
         StringArray ftFileList      = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL); //1
         DoubleArray ftLastMod       = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL); //2
-        DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //3
+        DoubleArray ftSize          = (DoubleArray)fileTable.getColumn(FT_SIZE_COL); //3
+        DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //4
 
         //get tFileList of available data files
         long elapsedTime = System.currentTimeMillis();
         //was tFileNames with dir+name
         Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive);
-        if (updateEveryNMillis > 0)
-            watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive) ;
+        if (updateEveryNMillis > 0) {
+            try {
+                watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive);
+            } catch (Throwable t) {
+                String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
+                String msg = MustBe.throwableToString(t);
+                if (msg.indexOf("inotify instances") >= 0)
+                    msg +=
+                      "This may be the problem that is solvable by calling (as root):\n" +
+                      "  echo 20000 > /proc/sys/fs/inotify/max_user_watches\n" +
+                      "  echo 500 > /proc/sys/fs/inotify/max_user_instances\n" +
+                      "Or, use higher numbers if the problem persists.\n" +
+                      "The default for watches is 8192. The default for instances is 128.";
+                EDStatic.email(EDStatic.adminEmail, subject, msg);
+            }
+        }
         StringArray tFileDirPA     = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
         StringArray tFileNamePA    = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.NAME));
         LongArray   tFileLastModPA = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
+        LongArray   tFileSizePA    = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.SIZE));
         tFileTable.removeColumn(FileVisitorDNLS.SIZE);
         int ntft = tFileNamePA.size();
         String msg = ntft + " files found in " + fileDir + 
@@ -1041,7 +1065,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             String dir = dirList.get(ftDirIndex.get(f));
             String name = ftFileList.get(f);
             long lastMod = getLastModified(dir, name);
-            if (lastMod == 0 || ftLastMod.get(f) != lastMod) //unavailable or changed
+            if (lastMod == 0 || ftLastMod.get(f) != lastMod) //0=trouble: unavailable or changed
+                continue;
+            long size = getSize(dir, name);
+            if (size < 0 || ftSize.get(f) != size) //-1=touble: unavailable or changed
                 continue;
 
             try {
@@ -1100,8 +1127,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //update fileTable  by processing tFileNamePA
         int fileListPo = 0;  //next one to look at
         int tFileListPo = 0; //next one to look at
-        long lastModCumTime = 0;
-        int nReadFile = 0, nNoLastMod = 0;
+        int nReadFile = 0, nNoLastMod = 0, nNoSize = 0;
         long readFileCumTime = 0;
         long removeCumTime = 0;
         int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
@@ -1112,6 +1138,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
             String fileS   = fileListPo < ftFileList.size()? ftFileList.get(fileListPo) : "\uFFFF";
             double lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Double.MAX_VALUE;
+            double size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Double.MAX_VALUE;
             boolean logThis = (reallyVerbose && tFileListPo <= 100) || 
                 ((reallyVerbose || verbose) && 
                     ((tFileListPo <= 1000 && tFileListPo % 100 == 0) ||
@@ -1120,15 +1147,24 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 String2.log("EDDTableFromFiles file #" + tFileListPo + "=" + dirList.get(tDirI) + tFileS);
 
             //is tLastMod available for tFile?
-            long lmcTime = System.currentTimeMillis();
             long tLastMod = tFileLastModPA.get(tFileListPo);
-            lastModCumTime += System.currentTimeMillis() - lmcTime;
             if (tLastMod == 0) { //0=trouble
                 nNoLastMod++;
                 String2.log(tFileListPo + " reject because unable to get lastMod time: " + 
                     dirList.get(tDirI) + tFileS);                
                 tFileListPo++;
                 addBadFile(badFileMap, tDirI, tFileS, tLastMod, "Unable to get lastMod time.");
+                continue;
+            }
+
+            //is tSize available for tFile?
+            long tSize = tFileSizePA.get(tFileListPo);
+            if (tSize < 0) { //-1=trouble
+                nNoSize++;
+                String2.log(tFileListPo + " reject because unable to get size: " + 
+                    dirList.get(tDirI) + tFileS);                
+                tFileListPo++;
+                addBadFile(badFileMap, tDirI, tFileS, tLastMod, "Unable to get size.");
                 continue;
             }
 
@@ -1160,7 +1196,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             }
 
             //is tFile already in cache?
-            if (tDirI == dirI && tFileS.equals(fileS) && tLastMod == lastMod) {
+            if (tDirI == dirI && tFileS.equals(fileS) && tLastMod == lastMod && tSize == size) {
                 if (logThis)
                     String2.log(tFileListPo + " already in cached fileList");
                 nUnchanged++;
@@ -1209,7 +1245,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 readFileCumTime += System.currentTimeMillis() - rfcTime;
 
                 //set the values on the fileTable row     throws throwable
-                setFileTableRow(fileTable, fileListPo, tDirI, tFileS, tLastMod, 
+                setFileTableRow(fileTable, fileListPo, tDirI, tFileS, tLastMod, tSize, 
                     tTable, logThis? tFileListPo : -1);
                 tFileListPo++;
                 fileListPo++;
@@ -1276,14 +1312,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         minMaxTable = tMinMaxTable;
 
         msg = "\n  tFileNamePA.size()=" + tFileNamePA.size() + 
-                 " lastModCumTime=" + Calendar2.elapsedTimeString(lastModCumTime) + 
-                 " avg=" + (lastModCumTime / Math.max(1, tFileNamePA.size())) + "ms" +
             "\n  dirTable.nRows()=" + dirTable.nRows() +
             "\n  fileTable.nRows()=" + fileTable.nRows() + 
             "\n    fileTableInMemory=" + fileTableInMemory + 
             "\n    nUnchanged=" + nUnchanged + 
             "\n    nRemoved=" + nRemoved + " (nNoLastMod=" + nNoLastMod + 
-                 ") removedCumTime=" + Calendar2.elapsedTimeString(lastModCumTime) +
+                 ", nNoSize=" + nNoSize + ")" +
             "\n    nReadFile=" + nReadFile + 
                    " (nDifferentModTime=" + nDifferentModTime + " nNew=" + nNew + ")" +
                    " readFileCumTime=" + Calendar2.elapsedTimeString(readFileCumTime) +
@@ -1640,16 +1674,18 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @throws throwable if trouble
      */
     protected void setFileTableRow(Table fileTable, int fileListPo,
-        int tDirI, String tFileS, double tLastMod, Table tTable, int logAsRowNumber) {
+        int tDirI, String tFileS, double tLastMod, double tSize, Table tTable, int logAsRowNumber) {
 
         ShortArray  ftDirIndex      =  (ShortArray)fileTable.getColumn(FT_DIR_INDEX_COL);      //0
         StringArray ftFileList      = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL);      //1
         DoubleArray ftLastMod       = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL);       //2
-        DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //3
+        DoubleArray ftSize          = (DoubleArray)fileTable.getColumn(FT_SIZE_COL);           //3
+        DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //4
 
         ftDirIndex.setInt(fileListPo, tDirI);
         ftFileList.set(fileListPo, tFileS);
         ftLastMod.set(fileListPo, tLastMod);
+        ftSize.set(fileListPo, tSize);
         ftSortedSpacing.set(fileListPo, -1); //default, usually set below
 
         //get min,max for dataVariables
@@ -1931,7 +1967,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         ShortArray  ftDirIndex      = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);      //0
         StringArray ftFileList      = (StringArray)tFileTable.getColumn(FT_FILE_LIST_COL);      //1
         DoubleArray ftLastMod       = (DoubleArray)tFileTable.getColumn(FT_LAST_MOD_COL);       //2
-        DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(FT_SORTED_SPACING_COL); //3
+        DoubleArray ftSize          = (DoubleArray)tFileTable.getColumn(FT_SIZE_COL);           //3
+        DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(FT_SORTED_SPACING_COL); //4
 
         //for each changed file
         int nChanges = 0; //BadFiles or FileTable
@@ -2022,7 +2059,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         tFileTable.insertBlankRow(fileListPo);
                     } //else use same row it was on before (can be inappropriate, but will sort below)
                     setFileTableRow(tFileTable, fileListPo, dirIndex, fileName,
-                        File2.getLastModified(fullName), tTable, 
+                        File2.getLastModified(fullName), File2.length(fullName), tTable, 
                         debugMode? evi : -1);
 
                 } else {
@@ -2156,7 +2193,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
     /** 
      * Try to load the dirTable or fileTable.
-     * fileTable PrimitiveArrays: 0=ftDirIndex 1=ftFileList 2=ftLastMod 3=ftSortedSpacing, 
+     * fileTable PrimitiveArrays: 0=ftDirIndex 1=ftFileList 2=ftLastMod 3=ftSize 4=ftSortedSpacing, 
      * then sourceMin, sourceMax, hasNaN columns for each dv. 
      *
      * @param fileName dirTableFileName or fileTableFileName
@@ -2179,6 +2216,46 @@ public abstract class EDDTableFromFiles extends EDDTable{
         return table;
     }
 
+    /** 
+     * This returns a fileTable (formatted like 
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
+     * and size is LongArray of epochMillis)
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     */
+    public Table accessibleViaFilesFileTable() {
+        try {
+            //get a copy of the source file information
+            Table tDirTable; 
+            Table tFileTable;
+            if (fileTableInMemory) {
+                tDirTable  = (Table)dirTable.clone();
+                tFileTable = (Table)fileTable.clone(); 
+            } else {
+                tDirTable  = tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
+                tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME); //shouldn't be null
+                Test.ensureNotNull(tDirTable, "dirTable");
+                Test.ensureNotNull(tFileTable, "fileTable");
+            }
+
+            //make the results Table
+            Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
+            dnlsTable.setColumn(0, tFileTable.getColumn(FT_DIR_INDEX_COL));
+            dnlsTable.setColumn(1, tFileTable.getColumn(FT_FILE_LIST_COL));
+            dnlsTable.setColumn(2, new LongArray(tFileTable.getColumn(FT_LAST_MOD_COL))); //double -> long
+            dnlsTable.setColumn(3, new LongArray(tFileTable.getColumn(FT_SIZE_COL)));     //double -> long
+            //convert dir Index to dir names
+            tDirTable.addColumn(0, "dirIndex", new IntArray(0, tDirTable.nRows() - 1));
+            dnlsTable.join(1, 0, "", tDirTable);
+            dnlsTable.removeColumn(0);
+            dnlsTable.setColumnName(0, FileVisitorDNLS.DIRECTORY);
+
+            return dnlsTable;
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            return null;
+        }
+    }
 
     /**
      * This tests if 'old' is different from this in any way.
@@ -2216,7 +2293,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /**
      * This is the default implementation of getFileLastModified, which
      * gets lastModified for files in local directory.
-     * Some subclasses override this.
+     * Subclasses can override this. (Currently, none.)
      *
      * @return the time (millis since the start of the Unix epoch) 
      *    the file was last modified 
@@ -2224,6 +2301,17 @@ public abstract class EDDTableFromFiles extends EDDTable{
      */
     public long getLastModified(String tDir, String tName) {
         return File2.getLastModified(tDir + tName);
+    }
+
+    /**
+     * This is the default implementation of getSize, which
+     * gets size for files in local directory.
+     * Subclasses can override this. (Currently, none.)
+     *
+     * @return the size (in bytes) of the file (-1 if trouble)
+     */
+    public long getSize(String tDir, String tName) {
+        return File2.length(tDir + tName);
     }
 
     /**
@@ -2478,7 +2566,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         ShortArray  ftDirIndex      = (ShortArray)tFileTable.getColumn(0);
         StringArray ftFileList      = (StringArray)tFileTable.getColumn(1);        
         DoubleArray ftLastMod       = (DoubleArray)tFileTable.getColumn(2);
-        DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(3);
+        DoubleArray ftSize          = (DoubleArray)tFileTable.getColumn(3);
+        DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(4);
 
 
         //no need to further prune constraints. 

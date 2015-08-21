@@ -990,9 +990,9 @@ public class SSR {
      * @param emailAddress (eg. bob DOT simons AT noaa DOT gov)
      * @return the safer form (eg. bob DOT simons AT noaa DOT gov)
      */
-    public static String getSaveEmailAddress(String emailAddress) {
-         emailAddress = String2.replaceAll(emailAddress, ".", " DOT ");
-         emailAddress = String2.replaceAll(emailAddress, "@", " AT ");
+    public static String getSafeEmailAddress(String emailAddress) {
+         emailAddress = String2.replaceAll(emailAddress, ".", " dot ");
+         emailAddress = String2.replaceAll(emailAddress, "@", " at ");
          return emailAddress;
     }
 
@@ -1463,7 +1463,7 @@ public class SSR {
             getUrlInputStream(urlString) :             
             getUncompressedUrlInputStream(urlString);  
         OutputStream out = new FileOutputStream(fullFileName);
-        byte buffer[] = new byte[8192];
+        byte buffer[] = new byte[32768];
         int nBytes = in.read(buffer);
         while (nBytes > 0) {
             out.write(buffer, 0, nBytes);
@@ -2501,25 +2501,63 @@ public class SSR {
         copy(getPostInputStream(url, "text/xml", "UTF-8", content), System.out);
     }*/
 
+
+    /**
+     * Copy from source to outputStream.
+     *
+     * @param source May be local fileName or a URL.
+     * @param out At the end, out is flushed, but not closed
+     * @return true if successful
+     */
+    public static boolean copy(String source, OutputStream out) {
+        if (source.startsWith("http://") ||
+            source.startsWith("https://") ||  //untested.
+            source.startsWith("ftp://")) {    //untested. presumably anonymous
+            //URL
+            InputStream in = null;
+            try {
+                in = (InputStream)(getUrlConnInputStream(source, 
+                    120000)[1]); //timeOutMillis. throws Exception
+                copy(in, out);
+                return true;
+            } catch (Exception e) {
+                String2.log(String2.ERROR + " in SSR.copy(source=" + source + ")\n" +
+                    MustBe.throwableToString(e));
+                return false;
+            } finally {
+                try {
+                    if (in != null)
+                        in.close();
+                } catch (Exception e2) {
+                } 
+            }
+
+        } else {
+            //presumably a file
+            return File2.copy(source, out);
+        }
+    }
+
+
     /** 
      * A method to copy the info from an inputStream to an outputStream.
+     * Based on E.R. Harold's book "Java I/O".
      *
-     * Copied from E.R. Harold's book "Java I/O".
+     * @param in At the end, in isn't closed.
+     * @param out At the end, out is flushed, but not closed
+     * @throws IOException if trouble
      */
     public static void copy(InputStream in, OutputStream out) throws IOException {
 
         // do not allow other threads to read from the
-        // input or write to the output while copying is
-        // taking place
+        // input or write to the output while copying is taking place
         synchronized (in) {
             synchronized (out) {
-
-                byte[] buffer = new byte[256];
-                while (true) {
-                    int bytesRead = in.read(buffer);
-                    if (bytesRead == -1) break;
-                    out.write(buffer, 0, bytesRead);
-                }
+                byte[] buffer = new byte[32768];
+                int nRead;
+                while ((nRead = in.read(buffer)) >= 0) //0 shouldn't happen. -1=end of file
+                    out.write(buffer, 0, nRead);
+                out.flush();
             }
         }
     } 
