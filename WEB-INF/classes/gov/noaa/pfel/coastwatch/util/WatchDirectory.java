@@ -86,12 +86,12 @@ public class WatchDirectory {
             throw new RuntimeException(
                 "The OS doesn't support WatchService for that file system.");
         if (recursive) {
-            ArrayList<Path> alps = FileVisitorSubdir.oneStep(watchDir); 
+            StringArray alps = FileVisitorSubdir.oneStep(watchDir); 
             int n = alps.size();
             for (int i = 0; i < n; i++) {
-                WatchKey key = alps.get(i).register(watchService, events);
+                WatchKey key = Paths.get(alps.get(i)).register(watchService, events);
                 keyToDirMap.put(key, String2.canonical(File2.addSlash(
-                    String2.replaceAll(alps.get(i).toString(), fromSlash, toSlash))));
+                    String2.replaceAll(alps.get(i), fromSlash, toSlash))));
             }
         } else {
             WatchKey key = watchPath.register(watchService, events);

@@ -718,21 +718,34 @@ public class File2 {
      */
     public static boolean copy(String source, OutputStream out) {
 
-        FileInputStream in = null;
-        int bufferSize = 8192;
-        byte buffer[] = new byte[bufferSize];
-        boolean success = false;
         try {
             File file = new File(source);
             if (!file.isFile())
                 return false;
-            long remain = file.length();
-            in  = new FileInputStream(file);
-            while (remain > 0) {
-                int read = in.read(buffer);
-                out.write(buffer, 0, read);
-                remain -= read;
-            }
+            FileInputStream in  = new FileInputStream(file);
+            return copy(in, out);
+        } catch (Exception e) {
+            String2.log(MustBe.throwable(String2.ERROR + " in File2.copy: ", e));
+            return false;
+        }
+    }
+
+    /**
+     * This copies from an inputStream to an outputStream.
+     *
+     * @param in   When finished, successful or not, this closes 'in'.
+     * @param out  which is flushed, but not closed, at the end
+     * @return true if successful. 
+     */
+    public static boolean copy(InputStream in, OutputStream out) {
+
+        int bufferSize = 32768;
+        byte buffer[] = new byte[bufferSize];
+        boolean success = false;
+        try {
+            int nRead;
+            while ((nRead = in.read(buffer)) >= 0)  //0 shouldn't happen. -1=end of file
+                out.write(buffer, 0, nRead);
             out.flush();
             success = true;
         } catch (Exception e) {
@@ -837,6 +850,23 @@ public class File2 {
         char slash = po < 0? '/' : dir.charAt(po);
         return dir + slash;
     }
+
+    /** 
+     * This returns true if the dir starts with http://, https://, ftp://, sftp://,
+     * or smb://.
+     * If dir is null or "", this returns false.
+     */
+    public static boolean isRemote(String dir) {
+        if (dir == null)
+            return false;
+        return 
+            dir.startsWith("http://") ||
+            dir.startsWith("https://") ||
+            dir.startsWith("ftp://") ||
+            dir.startsWith("sftp://") ||
+            dir.startsWith("smb://");
+    }
+
 
 }
 

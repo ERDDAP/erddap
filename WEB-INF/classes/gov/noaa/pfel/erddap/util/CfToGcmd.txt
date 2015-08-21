@@ -5715,6 +5715,9 @@ Oceans > Salinity/Density > Potential Density
 sea_water_potential_temperature
 Oceans > Ocean Temperature > Potential Temperature
 
+sea_water_practical_salinity
+Oceans > Salinity/Density > Salinity
+
 sea_water_pressure
 Oceans > Ocean Pressure > Water Pressure
 

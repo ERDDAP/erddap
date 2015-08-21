@@ -738,7 +738,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature " + 
     "\\(SST\\) products derived from both microwave and infrared sensors carried " + 
     "on multiple platforms.  The microwave instruments can measure ocean " + 
@@ -1234,7 +1234,7 @@ expected2 =
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature " +
     "\\(SST\\) products derived from both microwave and infrared sensors carried " +
     "on multiple platforms.  The microwave instruments can measure ocean " +

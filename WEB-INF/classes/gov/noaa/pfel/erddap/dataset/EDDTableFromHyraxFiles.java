@@ -26,6 +26,7 @@ import dods.dap.*;
 
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
@@ -155,9 +156,10 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             //gather all sourceFile info
             StringArray sourceFileName  = new StringArray();
             DoubleArray sourceFileLastMod = new DoubleArray();             
-            boolean completelySuccessful = EDDGridFromDap.addToHyraxUrlList(
-                catalogUrl, fileNameRegex, recursive,
-                sourceFileName, sourceFileLastMod);
+            LongArray fSize = new LongArray();
+            boolean completelySuccessful = FileVisitorDNLS.addToHyraxUrlList(
+                catalogUrl, fileNameRegex, recursive, false, //dirsToo
+                sourceFileName, sourceFileLastMod, fSize);
 
             //Rename local files that shouldn't exist?
             //If completelySuccessful and found some files, 
@@ -450,7 +452,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 suggestDatasetID(tPublicDirUrl + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>0</updateEveryNMillis>\n" +  //files are only added by full reload
             "    <fileDir></fileDir>\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
@@ -500,7 +502,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"nasa_jpl_91f4_69e3_32c9\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>2880</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>pentad.*\\.nc\\.gz</fileNameRegex>\n" +
@@ -539,7 +541,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -801,20 +803,38 @@ directionsForGenerateDatasetsXml() +
      *
      * @throws Throwable if trouble
      */
-    public static void testJpl(boolean deleteCachedInfo) throws Throwable {
-        String2.log("\n****************** EDDTableFromHyraxFiles.testJpl() *****************\n");
+    public static void testJpl(boolean deleteCachedInfoAndOneFile) throws Throwable {
+        String2.log("\n****** EDDTableFromHyraxFiles.testJpl(deleteCachedInfoAndOneFile=" + 
+            deleteCachedInfoAndOneFile + ")\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         int po;
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String id = "testEDDTableFromHyraxFiles";
+        String deletedFile = "pentad_19870928_v11l35flk.nc.gz";
 
         try {
-        String id = "testEDDTableFromHyraxFiles";
-        if (deleteCachedInfo) 
+
+        //delete the last file in the collection
+        if (deleteCachedInfoAndOneFile) {
             deleteCachedDatasetInfo(id);
+            File2.delete(EDStatic.fullCopyDirectory + id + "/" + deletedFile);
+        }
+
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+
+        if (deleteCachedInfoAndOneFile) {
+            String2.pressEnterToContinue(
+                "\n****** BOB! ******\n" +
+                "This test just deleted a file: " + deletedFile + "\n" +
+                "The background task to re-download it should have already started.\n" +
+                "The remote dataset is really slow.\n" +
+                "Wait for it to finish background tasks.\n\n");
+            eddTable = (EDDTable)oneFromDatasetXml(id); //redownload the dataset
+        }
+
 
         //*** test getting das for entire dataset
         try {
@@ -929,10 +949,8 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
-"    Int16 base_date 1987, 9, 28;\n" +
 "    String cdm_data_type \"Point\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"    String description \"Time average of level3.0 products for the period: 1987-09-28 to 1987-10-02\";\n" +
 "    Float64 Easternmost_Easting 359.875;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 78.375;\n" +
@@ -951,7 +969,7 @@ today;
 //today + " http://127.0.0.1:8080/cwexperimental/
 expected = 
 "tabledap/testEDDTableFromHyraxFiles.das\";\n" +
-"    String infoUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/.html\";\n" +
+"    String infoUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Atmosphere > Atmospheric Winds > Wind Stress,\n" +
@@ -965,10 +983,10 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 78.375;\n" +
-"    String sourceUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\";\n" +
+"    String sourceUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/\";\n" +
 "    Float64 Southernmost_Northing -78.375;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
-"    String summary \"Time average of level3.0 products for the period: 1987-09-08 to 1987-09-12\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"Time average of level3.0 products.\";\n" +
 "    String time_coverage_end \"1987-09-28T00:00:00Z\";\n" +
 "    String time_coverage_start \"1987-09-03T00:00:00Z\";\n" +
 "    String title \"Atlas FLK v1.1 derived surface winds (level 3.5)\";\n" +
@@ -1089,7 +1107,7 @@ expected =
 
         /* */
     }
-  
+       
 
     /**
      * This tests the methods in this class.
@@ -1101,9 +1119,8 @@ expected =
         //usually run
 /* */
         testGenerateDatasetsXml();
-        testJpl(true);   //deleteCachedInfo (the file info, not the data files)
+        testJpl(true);   //deleteCachedInfoAndOneFile
         testJpl(false);  
-
     }
 }
 

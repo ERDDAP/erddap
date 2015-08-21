@@ -1575,6 +1575,9 @@ This constraint variable has a limited number of values. They are listed here.
 <errorOdvLLTGrid>For an ODV .txt file, the dataset MUST include longitude, latitude, and time axes.</errorOdvLLTGrid>
 <errorOdvLLTTable>Data requests for ODV .txt files must include longtitude, latitude, and time data.</errorOdvLLTTable>
 <errorOnWebPage>An error occurred while writing this web page:</errorOnWebPage>
+<!-- These are also in/copied to  HtmlWidgets -->
+<errorXWasntSpecified>Error: "{0}" wasn''t specified.</errorXWasntSpecified>
+<errorXWasTooLong>Error: "{0}" was more than {1} characters long.</errorXWasTooLong>
 
 <externalLink>(external link)</externalLink>
 <externalWebSite>This link to an external web site does not constitute an endorsement.</externalWebSite>

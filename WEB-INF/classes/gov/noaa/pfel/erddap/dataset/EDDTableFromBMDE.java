@@ -661,7 +661,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Northernmost_Northing 38.5;\n" +
 "    String sourceUrl \"http://digir.prbo.org/digir/DiGIR.php\";\n" +
 "    Float64 Southernmost_Northing 36.5;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"Shorebird observation data from the Southeast Farallon Island from the PRBO Conservation Service.\n" +
 "\n" +
 "DiGIR is an engine which takes XML requests for data and returns a data\n" +

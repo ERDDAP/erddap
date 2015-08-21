@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
@@ -30,6 +31,7 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtGraph;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
@@ -674,13 +676,9 @@ public class EDDGridFromDap extends EDDGrid {
      * This makes a sibling dataset, based on the new sourceUrl.
      *
      * @param tLocalSourceUrl
-     * @param ensureAxisValuesAreEqual If Integer.MAX_VALUE, no axis sourceValue tests are performed. 
+     * @param firstAxisToMatch 
      *    If 0, this tests if sourceValues for axis-variable #0+ are same.
      *    If 1, this tests if sourceValues for axis-variable #1+ are same.
-     *    (This is useful if the, for example, lat and lon values vary slightly and you 
-     *    are willing to accept the initial values as the correct values.)
-     *    Actually, the tests are always done but this determines whether
-     *    the error is just logged or whether it throws an exception.
      * @param shareInfo if true, this ensures that the sibling's 
      *    axis and data variables are basically the same as this datasets,
      *    and then makes the new dataset point to the this instance's data structures
@@ -689,7 +687,8 @@ public class EDDGridFromDap extends EDDGrid {
      * @return EDDGrid
      * @throws Throwable if trouble  (e.g., try to shareInfo, but datasets not similar)
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         if (verbose) String2.log("EDDGridFromDap.sibling " + tLocalSourceUrl);
 
         int nAv = axisVariables.length;
@@ -736,7 +735,8 @@ public class EDDGridFromDap extends EDDGrid {
 
             //ensure similar
             boolean testAV0 = false;
-            String results = similar(newEDDGrid, ensureAxisValuesAreEqual, testAV0); 
+            String results = similar(newEDDGrid, firstAxisToMatch, 
+                matchAxisNDigits, testAV0); 
             if (results.length() > 0)
                 throw new SimpleException("Error in EDDGrid.sibling: " + results);
 
@@ -1351,11 +1351,11 @@ public class EDDGridFromDap extends EDDGrid {
      * <br>This calls itself recursively, adding into to fileNameInfo as it is found.
      * <br>If there is trouble (e.g., an exception), this catches it and returns.
      * <br>http://www.unidata.ucar.edu/projects/THREDDS/tech/catalog/InvCatalogSpec.html
-
+     *
      * <p>Unsolved problem: this does nothing for detecting groups of files/URLs 
      * that should be aggregated.
      *
-     * @param tLocalSourceUrl the tLocalSourceUrl of the current Thredds xml catalog (which usually includes /catalog/), e.g.,
+     * @param tLocalSourceUrl the tLocalSourceUrl of the current Thredds catalog.xml (which usually includes /catalog/), e.g.,
      *    http://thredds1.pfeg.noaa.gov/thredds/catalog/catalog.xml 
      *    http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
      *    (note that comparable .html is at
@@ -2147,11 +2147,14 @@ String expected2 =
 "        <att name=\"keywords\">altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, data, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
+"        <att name=\"pass_date\">null</att>\n" +
+"        <att name=\"polygon_latitude\">null</att>\n" +
+"        <att name=\"polygon_longitude\">null</att>\n" +
 "        <att name=\"publisher_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"publisher_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"publisher_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft. This is Science Quality data. \\(1-day\\)</att>\n" +
 "    </addAttributes>\n" +
@@ -2309,211 +2312,6 @@ String expected2 =
             UAFSubThreddsCatalogs[which], ".*", -1);  //-1 uses suggestReloadEveryNMinutes
     }
 
-    /**
-     * This gets the file names from Hyrax catalog directory URL.
-     *
-     * @param startUrl the url of the current web page (with a hyrax catalog) e.g.,
-            "http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/contents.html"
-     * @param fileNameRegex e.g.,
-            "pentad.*flk\\.nc\\.gz"
-     * @param recursive
-     * @returns a String[] with a list of full URLs of the children (may be new String[0]) 
-     * @throws Throwable if trouble
-     */
-    public static String[] getUrlsFromHyraxCatalog(String startUrl, String fileNameRegex, 
-        boolean recursive) throws Throwable {
-        if (verbose) String2.log("getUrlsFromHyraxCatalog regex=" + fileNameRegex);
-
-        //call the recursive method
-        StringArray childUrls = new StringArray();
-        DoubleArray lastModified = new DoubleArray();
-        addToHyraxUrlList(startUrl, fileNameRegex, recursive, childUrls, lastModified);
-
-        return childUrls.toArray();
-    }
-
-    /**
-     * This does the work for getHyraxUrls.
-     * This calls itself recursively, adding into to fileNameInfo as it is found.
-     *
-     * @param url the url of the current web page (with a hyrax catalog) e.g.,
-            "http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/contents.html"
-     * @param fileNameRegex e.g.,
-            "pentad.*flk\\.nc\\.gz"
-     * @param childUrls  new children will be added to this
-     * @param lastModified the lastModified time (secondsSinceEpoch, NaN if not available)
-     * @return true if completely successful (no access errors, all URLs found)
-     * @throws Throwable if trouble, e.g., if url doesn't respond
-     */
-    public static boolean addToHyraxUrlList(String url, String fileNameRegex, boolean recursive,
-        StringArray childUrls, DoubleArray lastModified) throws Throwable {
-
-        if (reallyVerbose) String2.log("\ngetHyraxUrlInfo childUrls.size=" + childUrls.size() + 
-            "\n  url=" + url); 
-        boolean completelySuccessful = true;  //but any child can set it to false
-        String response;
-        try {
-            response = SSR.getUrlResponseString(url);
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            return false;
-        }
-        String responseLC = response.toLowerCase();
-        String urlDir = File2.getDirectory(url);
-
-        //skip header line and parent directory
-        int po = responseLC.indexOf("parent directory");  //Lower Case
-        if (po < 0 ) {
-            if (reallyVerbose) String2.log("ERROR: \"parent directory\" not found in Hyrax response.");
-            return false;
-        }
-        po += 18;
-
-        //endPre
-        int endPre = responseLC.indexOf("</pre>", po); //Lower Case
-        if (endPre < 0) 
-            endPre = response.length();
-
-        //go through file,dir listings
-        boolean diagnosticMode = false;
-        while (true) {
-
-            //EXAMPLE http://data.nodc.noaa.gov/opendap/wod/monthly/  No longer available
-
-            //EXAMPLE http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M07
-            //(reformatted: look for tags, not formatting
-            /*   <tr>
-                   <td align="left"><b><a href="month_19870701_v11l35flk.nc.gz.html">month_19870701_v11l35flk.nc.gz</a></b></td>
-                   <td align="center" nowrap="nowrap">2007-04-04T07:00:00</td>
-                   <td align="right">4807310</td>
-                   <td align="center">
-                      <table>
-                      <tr>
-                        <td><a href="month_19870701_v11l35flk.nc.gz.ddx">ddx</a>&nbsp;</td>
-                        <td><a href="month_19870701_v11l35flk.nc.gz.dds">dds</a>&nbsp;</td>
-                      </table>  //will exist if <table> exists
-                   </td>
-                   <td align="center"><a href="/opendap/webstart/viewers?dapService=/opendap/hyrax&amp;datasetID=/allData/ccmp/L3.5a/monthly/flk/1987/M07/month_19870701_v11l35flk.nc.gz">viewers</a></td>
-                 </tr>  //may or may not exist
-                 <tr>   //may or may not exist
-                   //the next row...
-               </table>
-            */ 
-
-            //find beginRow and nextRow
-            int beginRow = responseLC.indexOf("<tr", po);      //Lower Case
-            if (beginRow < 0 || beginRow > endPre)
-                return completelySuccessful;
-            int endRow = responseLC.indexOf("<tr", beginRow + 3);      //Lower Case
-            if (endRow < 0 || endRow > endPre)
-                endRow = endPre;
-
-            //if <table> in the middle, skip table 
-            int tablePo = responseLC.indexOf("<table", beginRow + 3);
-            if (tablePo > 0 && tablePo < endRow) {
-                int endTablePo = responseLC.indexOf("</table", tablePo + 6);
-                if (endTablePo < 0 || endTablePo > endPre)
-                    endTablePo = endPre;
-
-                //find <tr after </table>
-                endRow = responseLC.indexOf("<tr", endTablePo + 7);      //Lower Case
-                if (endRow < 0 || endRow > endPre)
-                    endRow = endPre;
-            }
-            String thisRow   = response.substring(beginRow, endRow);
-            String thisRowLC = responseLC.substring(beginRow, endRow);
-            if (diagnosticMode) 
-                String2.log("<<<beginRow=" + beginRow + " endRow=" + endRow + "\n" + 
-                    thisRow + "\n>>>");
-
-            //look for .das   href="wod_013459339O.nc.das">das<     
-            int dasPo = thisRowLC.indexOf(".das\">das<");
-            if (diagnosticMode) 
-                String2.log("    .das " + (dasPo < 0? "not " : "") + "found");
-            if (dasPo > 0) {
-                int quotePo = thisRow.lastIndexOf('"', dasPo);
-                if (quotePo < 0) {
-                    String2.log("ERROR: invalid .das reference:\n  " + thisRow);
-                    po = endRow;
-                    continue;
-                }
-                String fileName = thisRow.substring(quotePo + 1, dasPo);
-                if (diagnosticMode) 
-                    String2.log("    filename=" + fileName + 
-                        (fileName.matches(fileNameRegex)? " does" : " doesn't") + 
-                        " match " + fileNameRegex);
-                if (fileName.matches(fileNameRegex)) {
-
-                    //get lastModified time   >2011-06-30T04:43:09<
-                    String stime = String2.extractRegex(thisRow,
-                        ">\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}<", 0);
-                    double dtime = Calendar2.safeIsoStringToEpochSeconds(
-                        stime == null? "" : stime.substring(1, stime.length() - 1));
-
-                    childUrls.add(urlDir + fileName);
-                    lastModified.add(dtime);
-                    //String2.log("  file=" + fileName + "   " + stime);
-                    po = endRow;
-                    continue;
-                }
-            } 
-
-            if (recursive) {
-                //look for   href="199703-199705/contents.html"     
-                int conPo = thisRowLC.indexOf("/contents.html\"");
-                if (conPo > 0) {
-                    int quotePo = thisRow.lastIndexOf('"', conPo);
-                    if (quotePo < 0) {
-                        String2.log("ERROR: invalid contents.html reference:\n  " + thisRow);
-                        po = endRow;
-                        continue;
-                    }
-                    boolean tSuccessful = addToHyraxUrlList(
-                        urlDir + thisRow.substring(quotePo + 1, conPo + 14),
-                        fileNameRegex, recursive, childUrls, lastModified);
-                    if (!tSuccessful)
-                        completelySuccessful = false;
-                    po = endRow;
-                    continue;
-                }
-            }
-            po = endRow;
-        }
-    }
-
-    /**
-     */
-    public static void testGetUrlsFromHyraxCatalog() throws Throwable {
-        String2.log("\n*** EDDGridAggregateExistingDimension.testGetUrlsFromHyraxCatalog()\n");
-
-        try {
-
-
-        String results[] = getUrlsFromHyraxCatalog(
-            //before 2011-05-18, was 
-            //"http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/contents.html", 
-            "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html",
-            "month.*flk\\.nc\\.gz", true);
-        String expected[] = new String[]{
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880201_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880301_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880401_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880501_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880601_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880701_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880801_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880901_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881001_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881201_v11l35flk.nc.gz"}; 
-        Test.ensureEqual(results, expected, "results=\n" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t));
-        }
-
-
-    }
 
     /** 
      * This is for use by Bob at ERD -- others don't need it.
@@ -3433,7 +3231,7 @@ String expected2 =
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2006-12-15T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
@@ -4127,7 +3925,7 @@ pre 2012-08-17 was
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = 28.985876360268577; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
@@ -4693,7 +4491,7 @@ boolean testAll = true;
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
 "  :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
@@ -4870,7 +4668,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">NOAA GFDL</att>\n" +
 "        <att name=\"keywords\">18610101-20001231, 20c3m, 20c3m-0, 20th, ar4, assessment, atmosphere, ccsp, century, change, climate, cm2.0, coefficient, coordinate, data, diagnosis, dynamics, experiment, fluid, fourth, geophysical, gfdl, hybrid, intercomparison, intergovernmental, ipcc, laboratory, layer, lev, model, month, monthly, noaa, output, panel, pcmdi, program, report, run, science, sigma, US</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Geophysical Fluid Dynamics Laboratory (GFDL) CM2.0, 20C3M (run 1) climate of the 20th Century experiment (20C3M) output for Intergovernmental Panel on Climate Change (IPCC) Fourth Assessment Report (AR4) and US Climate Change Science Program (CCSP). GFDL experiment name = CM2Q-d2_1861-2000-AllForc_h1. Program for Climate Model Diagnosis and Intercomparison (PCMDI) experiment name = 20C3M (run1). Initial conditions for this experiment were taken from 1 January of year 1 of the 1860 control model experiment named CM2Q_Control-1860_d2. Several forcing agents varied during the 140 year duration of the CM2Q-d2_1861-2000-AllForc_h1 experiment in a manner based upon observations and reconstructions for the late 19th and 20th centuries. The time varying forcing agents were atmospheric CO2, CH4, N2O, halons, tropospheric and stratospheric O3, anthropogenic tropospheric sulfates, black and organic carbon, volcanic aerosols, solar irradiance, and the distribution of land cover types. The direct effect of tropospheric aerosols is calculated by the model, but not the indirect effects.</att>\n" +
 "        <att name=\"title\">IPCC AR4 CM2.0 R1 20C3M-0 monthly atmos 18610101-20001231 [lev]</att>\n" +
 "    </addAttributes>\n" +
@@ -5024,7 +4822,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"source\">satellite observation: GOES, Imager</att>\n" +
 "        <att name=\"sourceUrl\">http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">-44.975</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch provides SST data from the NOAA Geostationary Operational Environmental Satellites (GOES).  Measurements are gathered by the GOES Imager, a multi-channel radiometer carried aboard the satellite.  SST is available for hourly Imager measurements, or in composite images of various durations.</att>\n" +
 "        <att name=\"time_coverage_end\">2013-01-30T15:00:00Z</att>\n" +
 "        <att name=\"time_coverage_start\">2008-06-02T00:00:00Z</att>\n" +
@@ -5576,7 +5374,7 @@ expected =
 "    String source \"Gary Lagerloef, ESR (lager@esr.org) and Fabrice Bonjean (bonjean@esr.org)\";\n" +
 "    String sourceUrl \"http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\";\n" +
 "    Float64 Southernmost_Northing -69.5;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This project is developing a processing system and data center to provide operational ocean surface velocity fields from satellite altimeter and vector wind data. The method to derive surface currents with satellite altimeter and scatterometer data is the outcome of several years NASA sponsored research. The project will transition that capability to operational oceanographic applications. The end product is velocity maps updated daily, with a goal for eventual 2-day maximum delay from time of satellite measurement. Grid resolution is 100 km for the basin scale, and finer resolution in the vicinity of the Pacific Islands.\";\n" +
 "    String time_coverage_end \"" + lastTimeString + "\";\n" +
 "    String time_coverage_start \"1992-10-21T00:00:00Z\";\n" +
@@ -5710,7 +5508,7 @@ expected =
 " :source = \"Gary Lagerloef, ESR (lager@esr.org) and Fabrice Bonjean (bonjean@esr.org)\";\n" +
 " :sourceUrl = \"http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\";\n" +
 " :Southernmost_Northing = -60.5f; // float\n" +
-" :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+" :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 " :summary = \"This project is developing a processing system and data center to provide operational ocean surface velocity fields from satellite altimeter and vector wind data. The method to derive surface currents with satellite altimeter and scatterometer data is the outcome of several years NASA sponsored research. The project will transition that capability to operational oceanographic applications. The end product is velocity maps updated daily, with a goal for eventual 2-day maximum delay from time of satellite measurement. Grid resolution is 100 km for the basin scale, and finer resolution in the vicinity of the Pacific Islands.\";\n" +
 " :title = \"OSCAR - Ocean Surface Current Analyses, Real-Time\";\n" +
 " :VARIABLE = \"Ocean Surface Currents\";\n" +
@@ -5956,7 +5754,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "    String reference \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String sourceUrl \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "    Float64 Southernmost_Northing 18.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
 "    String title \"Topography, NOAA Coastal Relief Model, 3 arc second, Vol. 10 (Hawaii)\";\n" +
 "    Float64 Westernmost_Easting -161.0;\n" +
@@ -6038,7 +5836,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "  :reference = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :sourceUrl = \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "  :Southernmost_Northing = 21.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
 "  :title = \"Topography, NOAA Coastal Relief Model, 3 arc second, Vol. 10 (Hawaii)\";\n" +
 " data:\n" +
@@ -8020,41 +7818,6 @@ EDStatic.startBodyHtml(null) + "\n" +
 
     }
 
-    /** 
-     * This tests addToHyraxUrlList.
-     */
-    public static void testAddToHyraxUrlList() throws Throwable {
-        String2.log("\n*** testAddToHyraxUrlList");
-
-      try{
-        StringArray childUrls = new StringArray();
-        DoubleArray lastModified = new DoubleArray();
-        addToHyraxUrlList(
-            "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/", //startUrl, 
-            "month_[0-9]{8}_v11l35flk\\.nc\\.gz", //fileNameRegex, 
-            true, //recursive, 
-            childUrls, lastModified);
-
-        String results = childUrls.toNewlineString();
-        String expected = 
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870701_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870801_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870901_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871001_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871101_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871201_v11l35flk.nc.gz\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        results = lastModified.toString();
-        expected = "1.336609915E9, 1.336785444E9, 1.336673639E9, 1.336196561E9, 1.336881763E9, 1.336705731E9";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-      } catch (Throwable t) {
-          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nUnexpected error."); 
-      }
-
-    }
-
     /** This tests saveAsNcml. */
     public static void testNcml() throws Throwable {
         testVerboseOn();
@@ -8141,7 +7904,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  <attribute name=\"source\" value=\"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\" />\n" +
 "  <attribute name=\"sourceUrl\" value=\"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\" />\n" +
 "  <attribute name=\"Southernmost_Northing\" type=\"double\" value=\"-75.0\" />\n" +
-"  <attribute name=\"standard_name_vocabulary\" value=\"CF Standard Name Table v27\" />\n" +
+"  <attribute name=\"standard_name_vocabulary\" value=\"CF Standard Name Table v29\" />\n" +
 "  <attribute name=\"summary\" value=\"NOAA OceanWatch provides a blended sea surface temperature \\(SST\\) products derived from both microwa" +
 "ve and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence " +
 "of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented " +
@@ -8343,7 +8106,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
 "  :time_coverage_start = \"20.{8}T00:00:00Z\";\n" +
@@ -8686,8 +8449,6 @@ EDStatic.startBodyHtml(null) + "\n" +
         testGenerateDatasetsXml3();
         testGenerateDatasetsXmlFromThreddsCatalog();
         testGetUrlsFromThreddsCatalog();
-        testGetUrlsFromHyraxCatalog();
-        testAddToHyraxUrlList();
         testScaleFactor();
         testSliderCsv();
         testKml();

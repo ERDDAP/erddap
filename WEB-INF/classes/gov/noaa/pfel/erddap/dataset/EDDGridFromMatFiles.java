@@ -262,8 +262,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException("Error: " + 
             "EDDGridFromMatFiles doesn't support method=\"sibling\".");
 
@@ -402,7 +402,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 "<dataset type=\"EDDGridFromMatFiles\" datasetID=\"" + tDatasetID +                      
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-                "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+                "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
+                "</updateEveryNMillis>\n" +  
                 "    <fileDir>" + tFileDir + "</fileDir>\n" +
                 "    <recursive>true</recursive>\n" +
                 "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
@@ -839,7 +840,7 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "    String source \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
 "    Float64 Southernmost_Northing -89.875;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
 "    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +

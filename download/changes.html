@@ -45,6 +45,144 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.64">Changes</a> in ERDDAP version 1.64 (released 2015-08-19)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <ul>
+  <li>There is now guidance for accessing the password-protected private ERDDAP 
+    datasets (https://) via curl and Python.
+    See the
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#curl">curl</a>
+    and 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#Python">Python</a>
+    instructions.
+    <br>Thanks to Emilio Mayorga of NANOOS and Paul Janecek of Spyglass Technologies.
+    <br>&nbsp;
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>ERDDAP now requires Java 1.8+.
+    <br>Java 1.7 reached its
+    <a rel="help" href="http://www.oracle.com/technetwork/java/eol-135779.html">end of life<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    (no more security updates) in April 2015.
+    This version of ERDDAP will not work with versions of Java below 1.8.
+    If you update from Java 1.7x (or earlier), you should also update Tomcat.
+    See the <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"
+    >ERDDAP Set Up Instructions</a> for download links and advice.
+
+  <li>New Data Provider Form.
+    <br>When a data provider comes to you hoping to add some data to your ERDDAP, 
+    it can be difficult and time consuming to collect all of the metadata 
+    needed to add the dataset into ERDDAP. Many data sources 
+    (for example, .csv files, Excel files, databases) have no internal metadata. 
+    So ERDDAP has a new Data Provider Form which gathers metadata from the data 
+    provider and gives the data provider some other guidance, 
+    including extensive guidance for Data In Databases. 
+    The information submitted is converted into the datasets.xml format 
+    and then emailed to the ERDDAP administrator (you) and written (appended) 
+    to bigParentDirectory/logs/dataProviderForm.log . 
+    Thus, the form semi-automates the process of getting a dataset into ERDDAP, 
+    but the ERDDAP administrator still has to complete the datasets.xml chunk 
+    and deal with getting the data file(s) from the provider or connecting to the database.
+    For more information, see the 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#DataProviderForm"
+>Data&nbsp;Provider&nbsp;Form&nbsp;description</a>.
+
+  <li>New &lt;matchAxisNDigits&gt;
+    <br>can be used by EDDGridFromFiles (and thus fromNcFiles and fromMergeIRFiles), 
+    EDDGridAggregateExistingDimension, EDDGridCopy, and EDDGridSideBySide datasets
+    to specify how precisely equal the axis values in different files must be
+    (how many digits): 0=no checking (don't use this!), 1-18 for increasing precision,
+    or 20 (the default) for exact equality. 
+    For n=1-18, ERDDAP ensures that the first n digits of double values 
+    (or (n+1) div 2 for float values) are equal.
+    <br>&lt;matchAxisNDigits&gt; replaces &lt;ensureAxisValuesAreEqual&gt;, which is now deprecated.
+    A value of 'true' will be converted to matchAxisNDigits=20.
+    A value of 'false' (don't do this!) will be converted to matchAxisNDigits=0.    
+
+  <li>EDDGridFromFiles and EDDTableFromFiles will load very slowly the first time
+    you use this version of ERDDAP.
+    <br>ERDDAP now stores the internal file information a little differently, 
+    so the internal file table for each of these datasets has to be rebuilt.
+    So don't worry. Nothing is wrong. It's a one time thing.
+
+  <li>Remote Source Files 
+    <br>EDDGridFromNcFiles, EDDTableFromNcFiles, EDDTableFromNcCFFiles now
+    allow the files to be remote files in a directory accessible by 
+    http:// (and probably https:// and ftp://, but they are untested)
+    if the remote server supports 
+    <a rel="help" href="https://en.wikipedia.org/wiki/Byte_serving">Range Requests<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    in the request header. THREDDS and Amazon S3 support Range Requests,
+    Hyrax does not.
+    This system allows you to access data in remote files without downloading the files
+    (which is helpful if the remote files are too voluminous), 
+    but access to these files will be far slower than access to local files
+    or even to a remote OPeNDAP source.
+
+    <br>This includes "files" in an Amazon S3 bucket since they are accessible via http://.
+    If the S3 object names are like file names (with internal /'s like a Linux
+    directory tree), ERDDAP can also make the files accessible via ERDDAP's "files" system.
+    For this to work, your S3 credentials must be in 
+    ~/.aws/credentials (on Linux, OS X, or Unix), or C:\Users\USERNAME\.aws\credentials (on Windows)
+    on the server with ERDDAP. See the 
+    <a rel="help" href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html"
+    >Amazon SDK documentation<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+
+  <li>GenerateDatasetsXml has a new, unusual option: EDDsFromFiles.
+    <br>This will go through a file system (even a remote system like an Amazon S3
+    if the objects have file-like names) and create the datasets.xml chunks for 
+    a series of datasets.
+    Your mileage may vary. 
+    This works well if the files are organized so that all the data files in a given directory
+    (and its subdirectories) are suitable for one dataset (e.g., all SST 1-day composites).
+    Otherwise (e.g., if a diretory contains some SST files and some Chlorophyll-a files),
+    this works poorly but may still be useful.
+    
+  <li>Programmers: new /lib .jar files.
+    <br>If you compile ERDDAP, please note the new .jar files in the 
+    classpath -cp parameter listed in the ERDDAP 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide"
+    >Programmer's Guide</a>.
+
+  <li>sea_water_practical_salinity
+    <br>If you use the CF standard name sea_water_salinity for any variable, 
+    I encourage you to switch to sea_water_practical_salinity which 
+    is available in <a rel="help" 
+    href="http://cfconventions.org/Data/cf-standard-names/29/build/cf-standard-name-table.html"
+    >version 29 of the CF Standard Name Table</a>
+    (and some previous versions -- I didn't know that).
+    This name indicates that this is indeed a Practical Salinity value using 
+    Practical Salinity Units (PSU), as opposed to an older g/kg value.
+    The canonical units are different, but still incredibly unhelpful:
+    1 (presumably implying PSU/PSS-78), as opposed to 1e-3 
+    (presumably implying g/kg) for sea_water_salinity. 
+    [Hey, Unidata and CF: We identify values that use other scales, 
+    for example Fahrenheit or Celsius, 
+    via a units string that is the name of the scale or some variation. 
+    Why can't we identify salinity units via their scale, e.g., PSS-78? 
+    I know: PSS-78 values are "unitless", but there is an implied scale,
+    isn't there? If I invent a new practical salinity scale where the values
+    are 0.875 times the PSS-78 values, should the canonical units still be "1"?
+    How could a user tell them apart? 
+    Units of 1e-3 and 1 are neither descriptive nor helpful to users
+    who are trying to figure out what the numbers indicate.]
+
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.62">Changes</a> in ERDDAP version 1.62 (released 2015-06-08)</h2>
 <ul>
 <li><b>New Features (for users):</b> 

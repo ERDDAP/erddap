@@ -113,7 +113,7 @@ public class XML {
      * @return the encoded string
      */
     public static String encodeAsHTML(String plainText) {
-//future should it:* Pairs of spaces are converted to sp + &nbsp;.
+//future: should it convert pairs of spaces to sp + &nbsp;  ?
         int size = plainText.length();
         StringBuilder output = new StringBuilder(size * 2);
 

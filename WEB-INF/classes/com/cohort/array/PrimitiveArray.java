@@ -373,7 +373,6 @@ public abstract class PrimitiveArray {
      *
      * @param type an element type (e.g., float.class)
      * @return the string representation of the element type (e.g., float)
-     * @throws exception if not one of the PrimitiveArray types
      */
     public static String elementClassToString(Class type) {
         if (type == double.class) return "double";
@@ -393,7 +392,6 @@ public abstract class PrimitiveArray {
      *
      * @param type an element type string (e.g., "float")
      * @return the corresponding element type (e.g., float.class)
-     * @throws exception if not one of the PrimitiveArray types
      */
     public static Class elementStringToClass(String type) {
         if (type.equals("double")) return double.class;
@@ -414,7 +412,6 @@ public abstract class PrimitiveArray {
      *
      * @param type an element type string (e.g., "float")
      * @return the corresponding number of bytes
-     * @throws exception if not one of the PrimitiveArray types
      */
     public static int elementSize(String type) {
         if (type.equals("double")) return 8;
@@ -435,7 +432,6 @@ public abstract class PrimitiveArray {
      *
      * @param type an element type (e.g., float.class)
      * @return the corresponding number of bytes
-     * @throws exception if not one of the PrimitiveArray types
      */
     public static int elementSize(Class type) {
         return elementSize(elementClassToString(type));
@@ -491,7 +487,7 @@ public abstract class PrimitiveArray {
      *   See http://www.techonthenet.com/sql/datatypes.php .
      * <li> For safety, ByteArray returns SMALLINT (not TINYINT,
      *   which isn't universally supported, e.g., postgresql).
-     * <ul>
+     * </ul>
      *
      * @param stringLengthFactor for StringArrays, this is the factor (typically 1.5)  
      *   to be multiplied by the current max string length (then rounded up to 
@@ -702,7 +698,6 @@ public abstract class PrimitiveArray {
      * This removes the specified element.
      *
      * @param index the element to be removed, 0 ... size-1
-     * @throws Exception if trouble.
      */
     abstract public void remove(int index);
 
@@ -711,7 +706,6 @@ public abstract class PrimitiveArray {
      *
      * @param from the first element to be removed, 0 ... size
      * @param to one after the last element to be removed, from ... size
-     * @throws Exception if trouble.
      */
     abstract public void removeRange(int from, int to);
 
@@ -722,7 +716,6 @@ public abstract class PrimitiveArray {
      * @param first  the first to be move
      * @param last  (exclusive)
      * @param destination the destination, can't be in the range 'first+1..last-1'.
-     * @throws Exception if trouble
      */
     abstract public void move(int first, int last, int destination);
 
@@ -773,7 +766,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as an int. String values are parsed
      *   with String2.parseInt and so may return Integer.MAX_VALUE.
-     * @throws Exception if trouble.
      */
     abstract public int getInt(int index);
 
@@ -783,7 +775,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(i).
-     * @throws Exception if trouble.
      */
     abstract public void setInt(int index, int i);
 
@@ -794,7 +785,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a long. String values are parsed
      *   with String2.parseLong and so may return Long.MAX_VALUE.
-     * @throws Exception if trouble.
      */
     abstract public long getLong(int index);
 
@@ -804,7 +794,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(i).
-     * @throws Exception if trouble.
      */
     abstract public void setLong(int index, long i);
 
@@ -815,7 +804,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a float. String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
-     * @throws Exception if trouble.
      */
     abstract public float getFloat(int index);
 
@@ -825,7 +813,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @param d the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.roundToInt(d).
-     * @throws Exception if trouble.
      */
     abstract public void setFloat(int index, float d);
 
@@ -836,7 +823,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     * @throws Exception if trouble.
      */
     abstract public double getDouble(int index);
 
@@ -847,7 +833,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
-     * @throws Exception if trouble.
      */
     public double getNiceDouble(int index) {
         return getDouble(index);
@@ -859,7 +844,6 @@ public abstract class PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @param d the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.roundToInt(d).
-     * @throws Exception if trouble.
      */
     abstract public void setDouble(int index, double d);
 
@@ -868,7 +852,6 @@ public abstract class PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
-     * @throws Exception if trouble.
      */
     abstract public String getString(int index);
 
@@ -879,7 +862,6 @@ public abstract class PrimitiveArray {
      * @param s the value. For numeric PrimitiveArray's, it is parsed
      *   with String2.parse and narrowed if needed by methods like
      *   Math2.roundToInt(d).
-     * @throws Exception if trouble.
      */
     abstract public void setString(int index, String s);
 
@@ -1372,14 +1354,33 @@ public abstract class PrimitiveArray {
     /**
      * This tests if the other PrimitiveArray has almost equal values.
      * If both are integer types or String types, this is an exact test (and says null==null is true).
-     * If either are double types, this tests almostEqual9() (and says NaN==NaN is true).
      * If either are float types, this tests almostEqual5() (and says NaN==NaN is true).
+     * If either are double types, this tests almostEqual9() (and says NaN==NaN is true).
      *
      * @param other 
      * @return "" if almost equal, or message if not.
      *     other=null throws an exception.
      */
     public String almostEqual(PrimitiveArray other) {
+        return almostEqual(other, 9);
+    }
+
+    /**
+     * This tests if the other PrimitiveArray has almost equal values.
+     * If both are integer types or String types, this is an exact test (and says null==null is true).
+     *
+     * @param other 
+     * @param matchNDigits This is used if this or other is DoubleArray or FloatArray.
+     *    Otherwise, this is ignored. 
+     *    (&lt;=)0=no testing. 
+     *    1 to 18 tests hidiv(nDigits,2) digits if either is FloatArray,
+     *       or nDigits if either is DoubleArray. 
+     *    (Integer.MAX_VALUE is interpreted as 9.)
+     *    &gt;18 says to test exact equality.       
+     * @return "" if almost equal, or message if not.
+     *     other=null throws an exception.
+     */
+    public String almostEqual(PrimitiveArray other, int matchNDigits) {
         if (size != other.size())
             return MessageFormat.format(ArrayDifferentSize, "" + size, "" + other.size());
         
@@ -1398,32 +1399,78 @@ public abstract class PrimitiveArray {
             return "";
         }
 
-        if (this instanceof LongArray && other instanceof LongArray) {
+        if (this instanceof FloatArray || other instanceof FloatArray) {
+            matchNDigits = matchNDigits == Integer.MAX_VALUE? 5 : matchNDigits;
+            if (matchNDigits > 18) {
+                for (int i = 0; i < size; i++) {
+                    float f1 = getFloat(i);
+                    float f2 = other.getFloat(i);
+                    if (Math2.isFinite(f1)) {
+                        if (Math2.isFinite(f2)) {
+                            if (f1 != f2) //exact 
+                                return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                                    "" + f1, "" + f2);
+                        } else {
+                            return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                                "" + f1, "" + f2);
+                        }
+                    } else if (Math2.isFinite(f2)) {
+                        return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                            "" + f1, "" + f2);
+                    }
+                }
+            } else if (matchNDigits <= 0) {
+                return "";
+            } else {
+                int tMatchNDigits = Math2.hiDiv(matchNDigits, 2);
+                for (int i = 0; i < size; i++)
+                    if (!Math2.almostEqual(tMatchNDigits, //this says NaN==NaN is true
+                        getFloat(i), other.getFloat(i)))  
+                        return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                            "" + getFloat(i), "" + other.getFloat(i));
+            }
+            return "";
+        }
+
+        if (this instanceof DoubleArray || other instanceof DoubleArray) {
+            matchNDigits = matchNDigits == Integer.MAX_VALUE? 9 : matchNDigits;
+            if (matchNDigits > 18) {
+                for (int i = 0; i < size; i++) {
+                    double d1 = getDouble(i);
+                    double d2 = other.getDouble(i);
+                    if (Math2.isFinite(d1)) {
+                        if (Math2.isFinite(d2)) {
+                            if (d1 != d2) //exact
+                                return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                                    "" + d1, "" + d2);
+                        } else {
+                            return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                                "" + d1, "" + d2);
+                        }
+                    } else if (Math2.isFinite(d2)) {
+                        return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                            "" + d1, "" + d2);
+                    }
+                }
+            } else if (matchNDigits <= 0) {
+                return "";
+            } else {
+                for (int i = 0; i < size; i++)
+                    if (!Math2.almostEqual(matchNDigits, getDouble(i), other.getDouble(i)))  //this says NaN==NaN is true
+                        return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                            "" + getDouble(i), "" + other.getDouble(i));
+            }
+            return "";
+        }
+
+        if (this instanceof LongArray || other instanceof LongArray) {
             for (int i = 0; i < size; i++)
-                if (!Test.equal(getLong(i), other.getLong(i)))  //this says NaN==NaN is true
+                if (getLong(i) != other.getLong(i))
                     return MessageFormat.format(ArrayDifferentValue, "" + i, 
                         "" + getLong(i), "" + other.getLong(i));
-            return "";
         }
 
-        if (this instanceof DoubleArray || this instanceof LongArray ||
-            other instanceof DoubleArray || other instanceof LongArray) {
-            for (int i = 0; i < size; i++)
-                if (!Test.equal(getDouble(i), other.getDouble(i)))  //this says NaN==NaN is true
-                    return MessageFormat.format(ArrayDifferentValue, "" + i, 
-                        "" + getDouble(i), "" + other.getDouble(i));
-            return "";
-        }
-
-        if (this instanceof FloatArray ||
-            other instanceof FloatArray) {
-            for (int i = 0; i < size; i++)
-                if (!Test.equal(getFloat(i), other.getFloat(i))) //this says NaN==NaN is true
-                    return MessageFormat.format(ArrayDifferentValue, "" + i, 
-                        "" + getFloat(i), "" + other.getFloat(i));
-            return "";
-        }
-
+        //test via int's
         for (int i = 0; i < size; i++)
             if (getInt(i) != other.getInt(i))
                 return MessageFormat.format(ArrayDifferentValue, "" + i, 
@@ -1508,7 +1555,7 @@ public abstract class PrimitiveArray {
      * @param highPo the high index to start with, usually 
      *  (originalPrimitiveArray.size() - 1)
      * @param value the value you are searching for
-     * @return the index of the first element @gt;= value 
+     * @return the index of the first element &gt;= value 
      *     (or highPo + 1, if there are none)
      * @throws Exception if trouble
      */
@@ -1668,7 +1715,7 @@ public abstract class PrimitiveArray {
      *     (or -index-1 where it should be inserted, with extremes of
      *     -lowPo-1 and -(highPo+1)-1).
      *     [So insert at -response-1.]
-     * @throws Exception if lowPo > highPo.
+     * @throws Exception if lowPo &gt; highPo.
      */
     public int binarySearch(int lowPo, int highPo, double value) {
         
@@ -2711,7 +2758,7 @@ public abstract class PrimitiveArray {
      * Given nHave values and stride, this returns the actual number of points that will be found.
      *
      * @param nHave the size of the array (or  end-start+1)
-     * @param stride  (must be >= 1)
+     * @param stride  (must be &gt;= 1)
      * @return the actual number of points that will be found.
      */
     public static int strideWillFind(int nHave, int stride) {

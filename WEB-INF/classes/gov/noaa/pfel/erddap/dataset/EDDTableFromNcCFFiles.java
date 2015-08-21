@@ -188,7 +188,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         if (tInstitution != null && tInstitution.length() > 0) externalAddGlobalAttributes.add("institution", tInstitution);
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
-        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
+        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
+            "(" + (File2.isRemote(tFileDir)? "remote" : "local") + " files)");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
@@ -221,7 +222,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
+            "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
@@ -369,7 +371,7 @@ directionsForGenerateDatasetsXml() +
 "Oceans &gt; Aquatic Sciences &gt; Fisheries,\n" +
 "order, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>line_station</sourceName>\n" +

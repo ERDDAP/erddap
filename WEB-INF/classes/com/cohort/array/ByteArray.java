@@ -60,7 +60,6 @@ public class ByteArray extends PrimitiveArray {
      * @param capacity creates an ByteArray with the specified initial capacity.
      * @param active if true, size will be set to capacity and all elements 
      *    will equal 0; else size = 0.
-     * @throws Exception if trouble.
      */
     public ByteArray(int capacity, boolean active) {
         Math2.ensureMemoryAvailable(1L * capacity, "ByteArray");
@@ -85,7 +84,6 @@ public class ByteArray extends PrimitiveArray {
      *
      * @param first the value of the first element.
      * @param last the value of the last element (inclusive!).
-     * @throws Exception if trouble.
      */
     public ByteArray(int first, int last) {
         size = last - first + 1;
@@ -414,7 +412,6 @@ public class ByteArray extends PrimitiveArray {
      * This removes the specified element.
      *
      * @param index the element to be removed, 0 ... size-1
-     * @throws Exception if trouble.
      */
     public void remove(int index) {
         if (index >= size)
@@ -431,7 +428,6 @@ public class ByteArray extends PrimitiveArray {
      *
      * @param from the first element to be removed, 0 ... size
      * @param to one after the last element to be removed, from ... size
-     * @throws Exception if trouble.
      */
     public void removeRange(int from, int to) {
         if (to > size)
@@ -456,7 +452,6 @@ public class ByteArray extends PrimitiveArray {
      * @param first  the first to be move
      * @param last  (exclusive)
      * @param destination the destination, can't be in the range 'first+1..last-1'.
-     * @throws Exception if trouble
      */
     public void move(int first, int last, int destination) {
         String errorIn = String2.ERROR + " in ByteArray.move:\n";
@@ -602,7 +597,6 @@ public class ByteArray extends PrimitiveArray {
      * This gets a specified element.
      *
      * @param index 0 ... size-1
-     * @throws Exception if trouble.
      */
     public byte get(int index) {
         if (index >= size)
@@ -616,7 +610,6 @@ public class ByteArray extends PrimitiveArray {
      *
      * @param index 0 ... size-1
      * @param value the value for that element
-     * @throws Exception if trouble.
      */
     public void set(int index, byte value) {
         if (index >= size)
@@ -632,7 +625,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as an int. 
      *   Byte.MAX_VALUE is returned as Integer.MAX_VALUE.
-     * @throws Exception if trouble.
      */
     public int getInt(int index) {
         int i = get(index);
@@ -645,7 +637,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(i).
-     * @throws Exception if trouble.
      */
     public void setInt(int index, int i) {
         set(index, Math2.narrowToByte(i));
@@ -657,7 +648,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a long. 
      *   Byte.MAX_VALUE is returned as Long.MAX_VALUE.
-     * @throws Exception if trouble.
      */
     public long getLong(int index) {
         int i = get(index);
@@ -670,7 +660,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(long).
-     * @throws Exception if trouble.
      */
     public void setLong(int index, long i) {
         set(index, Math2.narrowToByte(i));
@@ -683,7 +672,6 @@ public class ByteArray extends PrimitiveArray {
      * @return the value as a float. String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      *   Byte.MAX_VALUE is returned as Float.NaN.
-     * @throws Exception if trouble.
      */
     public float getFloat(int index) {
         byte b = get(index);
@@ -696,7 +684,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
      *   if needed by methods like Math2.roundToByte(d).
-     * @throws Exception if trouble.
      */
     public void setFloat(int index, float d) {
         set(index, Math2.roundToByte(d));
@@ -709,7 +696,6 @@ public class ByteArray extends PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      *   Byte.MAX_VALUE is returned as Double.NaN.
-     * @throws Exception if trouble.
      */
     public double getDouble(int index) {
         byte b = get(index);
@@ -722,7 +708,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
      *   if needed by methods like Math2.roundToByte(d).
-     * @throws Exception if trouble.
      */
     public void setDouble(int index, double d) {
         set(index, Math2.roundToByte(d));
@@ -733,7 +718,6 @@ public class ByteArray extends PrimitiveArray {
      * 
      * @param index the index number 0 .. 
      * @return For numeric types, this returns (String.valueOf(ar[index])), or "" for NaN or infinity.
-     * @throws Exception if trouble.
      */
     public String getString(int index) {
         byte b = get(index);
@@ -746,7 +730,6 @@ public class ByteArray extends PrimitiveArray {
      * @param index the index number 0 .. 
      * @param s the value. For numeric PrimitiveArray's, it is parsed
      *   with String2.parseInt and narrowed by Math2.narrowToByte(i).
-     * @throws Exception if trouble.
      */
     public void setString(int index, String s) {
         set(index, Math2.narrowToByte(String2.parseInt(s)));

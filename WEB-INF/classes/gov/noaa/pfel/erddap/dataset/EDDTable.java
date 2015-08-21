@@ -6385,6 +6385,40 @@ public abstract class EDDTable extends EDD {
             "  <br>Pydap instructions).  Also, the name of the sequence in tabledap datasets will always be \"" + SEQUENCE_NAME + "\"\n" +
             "  <br>(unlike \"location\" for the sample dataset in the Pydap instructions).\n" +
             "\n" +
+            //Python
+            "  <p><b><a rel=\"bookmark\" href=\"http://python.org\">Python" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
+            "    <a name=\"Python\">is</a> a widely-used computer language that is very popular among scientists.\n" +
+            "    <br>In addition to the <a rel=\"help\" href=\"#PydapClient\">Pydap Client</a>, you can use Python to download various files from ERDDAP\n" +
+            "    <br>as you would download other files from the web:\n" +
+            "<pre>import urllib\n" +
+            "urllib.urlretrieve(\"http://<i>baseurl</i>/erddap/tabledap/<i>datasetID.fileType?query</i>\", \"<i>outputFileName</i>\")</pre>\n" +
+            "    Or download the content to an object instead of a file:\n" +
+            "<pre>import urllib2\n" +
+            "response = urllib2.open(\"http://<i>baseurl</i>/erddap/tabledap/<i>datasetID.fileType?query</i>\")\n" +
+            "theContent = response.read()</pre>\n" +
+            "  There are other ways to do this in Python. Search the web for more information.\n"+
+            "  <br>&nbsp;\n" +
+            "  <br>To access a password-protected, private ERDDAP dataset with Python via https, use this\n" +
+            "  <br>two-step process after you install the\n" +
+            "<a rel=\"bookmark\" href=\"http://www.python-requests.org/en/latest/\">requests library" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> (\"HTTP for Humans\"):\n" +
+            "  <ol>\n" +
+            "  <li>Log in (authenticate) and store the certificate in a 'session' object:\n" +
+            "<pre>import requests\n" +
+            "session = requests.session()\n" +
+            "credentials_dct = {'user': '<i>myUserName</i>', 'password': '<i>myPassword</i>'}\n" +
+            "p = session.post(\"https://<i>baseurl</i>:8443/erddap/login.html\", credentials_dct, verify=True)</pre>\n" +
+            "  <li>Repeatedly make data requests using the session: \n" +
+            "<pre>theContent = session.get('https://<i>baseurl</i>:8443/erddap/tabledap/<i>datasetID.fileType?query</i>', verify=True)</pre>\n" +
+            "  </ol>\n" +            
+            "  * Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
+            "  <br>* If the server uses a self-signed certificate and you are okay with that, use <tt>verify=False</tt>\n" +
+            "  <br>&nbsp;&nbsp;to tell Python not to check the server's certificate.\n" +
+            "  <br>* That works in Python v2.7. You might need to make slight modifications for other versions.\n" +
+            "  <br>* (Thanks to Emilio Mayorga of NANOOS and Paul Janecek of Spyglass Technologies for\n" +
+            "  <br>&nbsp;&nbsp;figuring this out.)\n" +
+            "  <br>&nbsp;\n" +
             //R
             "  <p><b><a rel=\"bookmark\" href=\"http://www.r-project.org/\">R Statistical Package" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b> -\n" +
@@ -6510,8 +6544,19 @@ public abstract class EDDTable extends EDD {
             "  <br>to be put into the output fileName.\n" +
             "  <br>For example, \n" +
             "<pre>curl \"http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22{TAML1,41009,46088}%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmp#1.png</pre>\n" +
-            "</ul>\n" +
-            "<br>&nbsp;\n");
+            "<li>To access a password-protected, private ERDDAP dataset with curl via https, use this\n" +
+            "  <br>two-step process:\n" +
+            "  <ol>\n" +
+            "  <li>Log in (authenticate) and save the certificate cookie in a cookie-jar file:\n" +
+            "<pre>curl -v --data 'user=<i>myUserName</i>&amp;password=<i>myPassword</i>' -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/login.html</pre>\n" +
+            "  <li>Repeatedly make data requests using the saved cookie: \n" +
+            "<pre>curl -v -c cookies.txt -b cookies.txt -k https://<i>baseurl</i>:8443/erddap/tabledap/<i>datasetID.fileType?query</i> -o <i>outputFileName</i></pre>\n" +
+            "  </ol>\n" +            
+            "  Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
+            "  <br>(Thanks to Liquid Robotics for the starting point and Emilio Mayorga of NANOOS and\n" +
+            "  <br>Paul Janecek of Spyglass Technologies for testing.)\n" +
+            "  <br>&nbsp;\n" +
+            "</ul>\n");
 
 
         //query
@@ -6670,8 +6715,8 @@ public abstract class EDDTable extends EDD {
             "      <br>display date/time values as \n" +
             "        <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>, but some variables include milliseconds, e.g.,\n" +
-            "      <br>2002-08-03T12:30:00.123Z).\n" +
+            "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>, but some time variables in some datasets include\n" +
+            "      <br>milliseconds, e.g., <tt>2002-08-03T12:30:00.123Z</tt>).\n" +
             (EDStatic.convertersActive? 
               "      <br>ERDDAP has a utility to\n" +
               "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +

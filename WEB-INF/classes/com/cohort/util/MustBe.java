@@ -356,19 +356,25 @@ public class MustBe {
                     Map.Entry me = (Map.Entry)oar[i];
                     Thread t = (Thread)me.getKey();
                     StackTraceElement ste[] = (StackTraceElement[])me.getValue();
-                    String ste0 = ste.length == 0? "" : ste[0].toString();
+                    String ste0 = ste.length < 1? "" : ste[0].toString();
+                    String ste1 = ste.length < 2? "" : ste[1].toString();
+                    String ste2 = ste.length < 3? "" : ste[2].toString();
                     if (hideThisThread && ste0.startsWith("java.lang.Thread.dumpThreads(Native Method)"))
                         continue;
-                    //linux
                     if (hideTomcatWaitingThreads &&
-                        ste.length == 4 && ste0.startsWith("java.lang.Object.wait(Native Method)") &&
-                        ste[2].toString().startsWith("org.apache.tomcat.util.threads.ThreadPool")) 
-                        continue;
-                    //Mac OS/X
+                        ste.length >= 3 && 
+                        ste0.startsWith("java.lang.Object.wait(Native Method)")) {
+                        if (ste2.startsWith("org.apache.tomcat.util.threads.ThreadPool") || //linux
+                            ste2.startsWith("org.apache.tomcat.util.net.JIoEndpoint$Worker.await(JIoEndpoint.java:")) //Mac
+                                continue;
+                    }
+                    //inotify thredd 
                     if (hideTomcatWaitingThreads &&
-                        ste.length == 5 && ste0.startsWith("java.lang.Object.wait(Native Method)") &&
-                        ste[2].toString().startsWith("org.apache.tomcat.util.net.JIoEndpoint$Worker.await(JIoEndpoint.java:")) 
+                        ste.length >= 1 && 
+                        ste0.startsWith("sun.nio.fs.LinuxWatchService.poll(") || //linux
+                        ste0.startsWith("org.apache.tomcat.jni.Poll.poll(")) //windows
                         continue;
+
                     sar[count] = t.toString() + " " + t.getState().toString() + 
                             (t.isDaemon()? " daemon\n" : "\n") + 
                         String2.toNewlineString(ste) + "\n";
@@ -384,7 +390,7 @@ public class MustBe {
 
             //write to StringBuilder
             StringBuilder sb = new StringBuilder();
-            sb.append("Number of " + (hideTomcatWaitingThreads? "non-Tomcat-waiting " : "") + 
+            sb.append("Number of " + (hideTomcatWaitingThreads? "non-Tomcat-waiting non-inotify " : "") + 
                 "threads in this JVM = " + count + "\n" +
                 "(format: #threadNumber Thread[threadName,threadPriority,threadGroup] threadStatus)\n\n");
             for (int i = 0; i < count; i++) 

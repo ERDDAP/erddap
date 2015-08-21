@@ -32,6 +32,7 @@ import java.util.ArrayList;
 
 /** 
  * THIS IS NOT FINISHED AND NOT ACTIVE.
+ * IF THIS IS REVIVED, MAKE IT A SUBCLASS OF EDDGridFromFiles.
  * This class represents a grid dataset from a binary file (e.g., the Etopo1g bathymetry data).
  * Ideally, this would be quite general. Currently, it is pretty tied to the Etopo1g
  * data.
@@ -253,8 +254,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException( 
             "Error: EDDGridBinaryFile doesn't support method=\"sibling\".");
 

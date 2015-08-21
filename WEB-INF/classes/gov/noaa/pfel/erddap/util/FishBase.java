@@ -98,7 +98,7 @@ public class FishBase  {
 "\n" +
 EDStatic.standardLicense);
             gatts.set("sourceUrl", "(local files)");
-            gatts.set("standard_name_vocabulary", "CF Standard Name Table v27");
+            gatts.set("standard_name_vocabulary", "CF Standard Name Table v29");
             String startReference = "To give due credit to the original authors, please cite:\n" +
 "Froese, R. and D. Pauly, Editors. 2004. FishBase 2004 DVD: the " + fName + " table.\n";
 

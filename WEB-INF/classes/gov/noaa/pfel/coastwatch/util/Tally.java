@@ -117,17 +117,17 @@ public class Tally  {
     }
 
     /**
-     * This returns a String with the information for one category (or "" if not found).
+     * This returns a table-like ArrayList with 2 items:
+     * attributeNames (a StringArray) and counts (an IntArray), 
+     * sorted by counts (descending) then attributeNames (ascending).
      *
-     * @param categoryName
-     * @param maxAttributeNames the maximum number of attribute names printed per
-     *    category
+     * @return null if no items for categoryName
      */
-    public String toString(String categoryName, int maxAttributeNames) {
-        StringBuilder results = new StringBuilder();
+    public ArrayList getSortedNamesAndCounts(String categoryName) {
+
         ConcurrentHashMap hashMap = (ConcurrentHashMap)mainHashMap.get(categoryName);
         if (hashMap == null)
-            return "";
+            return null;
 
         //make a StringArray of attributeNames and IntArray of counts
         StringArray attributeNames = new StringArray();
@@ -145,7 +145,25 @@ public class Tally  {
         arrayList.add(counts);
         PrimitiveArray.sortIgnoreCase(arrayList, new int[]{1,0}, new boolean[]{false, true});
 
+        return arrayList;
+    }
+
+    /**
+     * This returns a String with the information for one category (or "" if not found).
+     *
+     * @param categoryName
+     * @param maxAttributeNames the maximum number of attribute names printed per
+     *    category
+     */
+    public String toString(String categoryName, int maxAttributeNames) {
+        ArrayList arrayList = getSortedNamesAndCounts(categoryName);
+        if (arrayList == null)
+            return "";
+        StringArray attributeNames = (StringArray)arrayList.get(0);
+        IntArray counts = (IntArray)arrayList.get(1);
+
         //print
+        StringBuilder results = new StringBuilder();
         results.append(categoryName + "\n");
         int countsSize = counts.size();
         int nRows = Math.min(maxAttributeNames, countsSize);

@@ -4,10 +4,13 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
+import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+
+import gov.noaa.pfel.coastwatch.pointdata.Table;
 
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -22,6 +25,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -82,32 +87,46 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
      * A convenience method for using this class. 
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
-     * @return an ArrayList&lt;Path&gt; with the dir and subdir paths.
-     *   Note that path.toString() returns the full dir name with the OS's slashes
-     *   (\\ for Windows!).
+     * @return a StringArray with dir and subdir names 
+     *   (with the OS's slashes -- \\ for Windows!).
      */
-    public static ArrayList<Path> oneStep(String tDir) 
+    public static StringArray oneStep(String tDir) 
         throws IOException {
         long time = System.currentTimeMillis();
+
+        //Is it an S3 bucket with "files"?
+        //http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
+        if (File2.addSlash(tDir).matches(String2.AWS_S3_REGEX)) { //forcing trailing slash avoids problems
+            Table table = FileVisitorDNLS.oneStep(tDir, "/", //regex that won't match any files 
+                true, true); //tRecursive, tDirectoriesToo
+            StringArray dirNames = (StringArray)table.getColumn(FileVisitorDNLS.DIRECTORY);
+            return dirNames;
+        }            
+
+        //do local file system
         FileVisitorSubdir fv = new FileVisitorSubdir(tDir);
         Files.walkFileTree(FileSystems.getDefault().getPath(tDir), fv);
+        int n = fv.results.size();
+        StringArray dirNames = new StringArray(n, false);
+        for (int i = 0; i < n; i++)
+            dirNames.add(fv.results.get(i).toString());
         if (verbose) String2.log("FileVisitorSubdir.oneStep finished successfully. n=" + 
-            fv.results.size() + " time=" + (System.currentTimeMillis() - time));
-        return fv.results;
+            n + " time=" + (System.currentTimeMillis() - time));
+        return dirNames;
     }
 
     /** 
-     * This tests this class. 
+     * This tests a local file system. 
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** FileVisitorSubdir.test");
+    public static void testLocal() throws Throwable {
+        String2.log("\n*** FileVisitorSubdir.testLocal");
         verbose = true;
         String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
-        ArrayList<Path> alps;
+        StringArray alps;
         long time;
 
         alps = oneStep(contextDir + "WEB-INF/classes/com/cohort"); 
-        String results = String2.toNewlineString(alps.toArray());
+        String results = alps.toNewlineString();
         String expected = 
 "C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\n" +
 "C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\array\n" +
@@ -116,10 +135,55 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         Test.ensureEqual(results, expected, "results=\\n" + results);
 
         alps = oneStep(String2.replaceAll(contextDir + "WEB-INF/classes/com/cohort/", '/', '\\')); 
-        results = String2.toNewlineString(alps.toArray());
-        Test.ensureEqual(results, expected, "results=\\n" + results);
+        results = alps.toNewlineString();
+        Test.ensureEqual(results, expected, "results=\n" + results);
 
-        String2.log("\n*** FileVisitorSubdir.test finished.");
+        String2.log("\n*** FileVisitorSubdir.testLocal finished.");
+    }
+
+    /** 
+     * This tests an Amazon AWS S3 file system.
+     * Your S3 credentials must be in 
+     * <br> ~/.aws/credentials on Linux, OS X, or Unix
+     * <br> C:\Users\USERNAME\.aws\credentials on Windows
+     * See http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-setup.html .
+     */
+    public static void testAWSS3() throws Throwable {
+        String2.log("\n*** FileVisitorSubdir.testAWSS3");
+        try {
+
+        verbose = true;
+        String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
+        StringArray alps;
+        long time;
+
+        alps = oneStep(
+            "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/"); 
+        String results = alps.toNewlineString();
+        String expected = 
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        String2.log("\n*** FileVisitorSubdir.testAWSS3 finished.");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error.  (Did you create your AWS S3 credentials file?)"); 
+        }
+    }
+
+    /**
+     * This tests the methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void test() throws Throwable {
+        String2.log("\n****************** FileVisitorSubdir.test() *****************\n");
+/* */
+        //always done        
+        testLocal();
+        testAWSS3();
     }
 
 

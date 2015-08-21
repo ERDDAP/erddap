@@ -162,7 +162,8 @@ public class GenerateDatasetsXml {
             "EDDTableFromOBIS",
             "EDDTableFromSOS",
             "EDDTableFromThreddsFiles",
-            "EDDTableFromWFSFiles"};
+            "EDDTableFromWFSFiles",
+            "EDDsFromFiles"};
         StringBuilder sb = new StringBuilder();
         int net = eddTypes.length;
         int net2 = Math2.hiDiv(net, 2);
@@ -501,6 +502,11 @@ public class GenerateDatasetsXml {
                         s1, s2, 
                         String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s4, s5, s6, s7, null));
+
+                } else if (eddType.equals("EDDsFromFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    String2.log("working...");
+                    printToBoth(EDD.generateDatasetsXmlFromFiles(s1));
 
                 } else {
                     String2.log("ERROR: eddType=" + eddType + " is not an option.");
