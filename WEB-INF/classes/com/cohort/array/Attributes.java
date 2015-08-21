@@ -117,7 +117,7 @@ public class Attributes {
      * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as a String, regardless of the type used to store it.
      *
-     * @param name
+     * @param name the name of an attribute
      * @return the String attribute or null if trouble (e.g., not found)
      */
     public String getString(String name) {
@@ -135,7 +135,7 @@ public class Attributes {
      * A convenience method which assumes the first element of the attribute's 
      * value PrimitiveArray is a CSV String and which splits the string into parts.
      *
-     * @param name
+     * @param name the name of an attribute
      * @return a String[] or null if trouble (e.g., not found)
      */
     public String[] getStringsFromCSV(String name) {
@@ -154,7 +154,7 @@ public class Attributes {
      * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as a double, regardless of the type used to store it.
      *
-     * @param name
+     * @param name the name of an attribute
      * @return the attribute as a double or Double.NaN if trouble (e.g., not found)
      */
     public double getDouble(String name) {
@@ -173,7 +173,7 @@ public class Attributes {
      * value PrimitiveArray as a double, regardless of the type used to store it.
      * If the type was float, this returns Math2.floatToDouble(value).
      *
-     * @param name
+     * @param name the name of an attribute
      * @return the attribute as a nice double or Double.NaN if trouble (e.g., not found)
      */
     public double getNiceDouble(String name) {
@@ -191,7 +191,7 @@ public class Attributes {
      * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as a float, regardless of the type used to store it.
      *
-     * @param name
+     * @param name the name of an attribute
      * @return the attribute as a float or Float.NaN if trouble (e.g., not found)
      */
     public float getFloat(String name) {
@@ -209,7 +209,7 @@ public class Attributes {
      * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as a long, regardless of the type used to store it.
      *
-     * @param name
+     * @param name the name of an attribute
      * @return the attribute as a long or Long.MAX_VALUE if trouble (e.g., not found)
      */
     public long getLong(String name) {
@@ -227,7 +227,7 @@ public class Attributes {
      * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as an int, regardless of the type used to store it.
      *
-     * @param name
+     * @param name the name of an attribute
      * @return the attribute as an int or Integer.MAX_VALUE if trouble (e.g., not found)
      */
     public int getInt(String name) {

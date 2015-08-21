@@ -2672,7 +2672,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 
 expected = 
 "    Float64 Southernmost_Northing -14.28;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
 "\n" +
@@ -4276,7 +4276,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf.ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.19;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have currents data.\n" +
 "\n" +
@@ -4537,8 +4537,9 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
 "    String ioos_category \"Salinity\";\n" +
+"    String long_name \"Sea Water Practical Salinity\";\n" +
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/sea_water_salinity\";\n" +
-"    String standard_name \"sea_water_salinity\";\n" +
+"    String standard_name \"sea_water_practical_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  }\n" +
 " }\n" +
@@ -4569,7 +4570,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Atmosphere > Altitude > Station Height,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"altitude, atmosphere, density, height, identifier, ndbc, noaa, oceans, salinity, sea, sea_water_salinity, seawater, sensor, sos, station, time, water\";\n" +
+"altitude, atmosphere, density, height, identifier, ndbc, noaa, oceans, salinity, sea, sea_water_practical_salinity, seawater, sensor, sos, station, time, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4581,13 +4582,13 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.86;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
-"    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_salinity data.\n" +
+"    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_practical_salinity data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
 "    String time_coverage_start \"2007-11-02T00:00:00Z\";\n" +  //changes
-"    String title \"NOAA NDBC SOS - sea_water_salinity\";\n" +
+"    String title \"NOAA NDBC SOS - sea_water_practical_salinity\";\n" +
 "    Float64 Westernmost_Easting -148.28;\n" +
 "  }\n" +
 "}\n";
@@ -4820,7 +4821,7 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    Float64 Northernmost_Northing 57.5;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -46.92;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_floor_depth_below_sea_surface data.\n" +
 "\n" +
@@ -4976,7 +4977,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    Float64 Northernmost_Northing 70.875;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -14.551;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_temperature data.\n" +
 "\n" +
@@ -5085,7 +5086,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range -19.713, 70.872;\n" +  //2010-10-10 was 60.8
+"    Float64 actual_range -19.713, 70.875;\n" +  //2010-10-10 was 60.8
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -5283,7 +5284,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting 179.0;\n" +
 "    String featureType \"TimeSeries\";\n" +
-"    Float64 geospatial_lat_max 70.872;\n" +
+"    Float64 geospatial_lat_max 70.875;\n" +
 "    Float64 geospatial_lat_min -19.713;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 179.0;\n" +
@@ -5319,10 +5320,10 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    Float64 Northernmost_Northing 70.872;\n" +
+"    Float64 Northernmost_Northing 70.875;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have waves data.\n" +
 "\n" +
@@ -5564,7 +5565,7 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "    Float64 Northernmost_Northing 80.81;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have winds data.\n" +
 "\n" +
@@ -5893,15 +5894,13 @@ So I will make ERDDAP able to read
 "longitude,latitude\n" +  //starting 2014-08-11
 "degrees_east,degrees_north\n" +
 "-69.9877,43.7628\n" +
-"-69.3550033569336,43.7163009643555\n" + //2014-09-22 was -69.3578,43.7148\n" +
+"-69.3551864624023,43.7155990600586\n" + //2015-07-31 was -69.3550033569336,43.7163009643555\n" + //2014-09-22 was -69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
 "-68.9982,44.0555\n" +
 "-68.8249619164502,44.3871537467378\n" +
-"-68.1084442138672,44.1057103474935\n" +
+"-68.1094970703125,44.1061668395996\n" + //2015-07-31 was -68.1084442138672,44.1057103474935\n" +
 "-67.8798,43.4907\n" +
 "-65.907,42.3303\n"; //2014-09-22 was -65.9061666666667,42.3336666666667\n";
-
-
 //"-65.9069544474284,42.3313840230306\n"; //pre 2013-06-28 was "-65.907,42.3303\n"; 
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
@@ -6627,7 +6626,7 @@ String expected1 =
 "---  ----------------------------------  ------------------------------------------------------------\n" +
 "  0  urn:ioos:network:noaa.nws.ndbc:all  ABCDEFGHI\n" +
 "  1  wmo:0y2w3                           AB    G I\n" +
-"  2  wmo:18ci3                            B    G\n";
+"  2  wmo:18ci3                           AB    G I\n";
 
             Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
                 "results=\n" + results);
@@ -6707,7 +6706,7 @@ String expected2 =
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">buoy, center, data, national, ndbc, noaa, server.php, sos</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">National Data Buoy Center SOS. NOAA NDBC data from http://sdf.ndbc.noaa.gov/sos/server.php.das .</att>\n" +
 "        <att name=\"title\">National Data Buoy Center SOS (server.php)</att>\n" +
@@ -6774,7 +6773,7 @@ String expected2 =
 "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"ioos_category\">Salinity</att>\n" +
-"            <att name=\"long_name\">Sea Water Salinity</att>\n" +
+"            <att name=\"long_name\">Sea Water Practical Salinity</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_salinity</att>\n" +
 "            <att name=\"standard_name\">sea_water_salinity</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -7352,7 +7351,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">" + tLicense + "</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  " +
 "The stations in this dataset have " + shortObservedProperty + " data.\n" +
@@ -7504,7 +7503,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have " + whichObsProp + " data.\n" +
 "\n" +
@@ -7563,7 +7562,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"ioos_category\">Salinity</att>\n" +
-"            <att name=\"long_name\">Sea Water Salinity</att>\n" +
+"            <att name=\"long_name\">Sea Water Practical Salinity</att>\n" +
 "            <att name=\"observedProperty\">sea_water_salinity</att>\n" +
 "            <att name=\"standard_name\">sea_water_salinity</att>\n" +
 "            <att name=\"units\">psu</att>\n" +
@@ -8412,7 +8411,7 @@ expected =
 "    Float64 Northernmost_Northing 30.766;\n" +
 "    String sourceUrl \"http://data.gcoos.org:8080/52nSOS/sos/kvp\";\n" +
 "    Float64 Southernmost_Northing 16.834;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air_pressure data.\n" +
 "\n" +
@@ -8574,7 +8573,7 @@ expected =
 
 expected = 
 "    Float64 Southernmost_Northing -14.28;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
 "\n" +

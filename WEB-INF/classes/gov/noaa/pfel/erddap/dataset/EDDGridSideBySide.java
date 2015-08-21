@@ -50,6 +50,14 @@ public class EDDGridSideBySide extends EDDGrid {
     protected int childStopsAt[]; //the last valid dataVariables index for each childDataset
     protected IntArray indexOfAxis0Value[]; //an IntArray for each child; a row for each axis0 value
 
+    /** 
+     * This is used to test equality of axis values. 
+     * 0=no testing (not recommended). 
+     * &gt;18 does exact test. default=20.
+     * 1-18 tests that many digets for doubles and hidiv(n,2) for floats.
+     */
+    protected int matchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
+
 
     /**
      * This constructs an EDDGridSideBySide based on the information in an .xml file.
@@ -71,6 +79,7 @@ public class EDDGridSideBySide extends EDDGrid {
         ArrayList tChildDatasets = new ArrayList();
         StringBuilder messages = new StringBuilder();
         String tAccessibleTo = null;
+        int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -120,6 +129,12 @@ public class EDDGridSideBySide extends EDDGrid {
 
             } else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
+            else if (localTags.equals( "<matchAxisNDigits>")) {}
+            else if (localTags.equals("</matchAxisNDigits>")) 
+                tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS); 
+            else if (localTags.equals( "<ensureAxisValuesAreEqual>")) {} //deprecated
+            else if (localTags.equals("</ensureAxisValuesAreEqual>")) 
+                tMatchAxisNDigits = String2.parseBoolean(content)? 20 : 0;
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<fgdcFile>")) {}
@@ -145,7 +160,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
         //make the main dataset based on the information gathered
         return new EDDGridSideBySide(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tMatchAxisNDigits, tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tcds);
 
     }
@@ -171,6 +186,7 @@ public class EDDGridSideBySide extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridSideBySide(String tDatasetID, String tAccessibleTo,
+        int tMatchAxisNDigits, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         EDDGrid tChildDatasets[]) throws Throwable {
@@ -192,13 +208,15 @@ public class EDDGridSideBySide extends EDDGrid {
         childDatasets = tChildDatasets;
         int nChildren = tChildDatasets.length;
         childStopsAt = new int[nChildren];
+        matchAxisNDigits = tMatchAxisNDigits;
 
         //check the siblings and create childStopsAt
         EDDGrid firstChild = childDatasets[0];
         int nAV = firstChild.axisVariables.length;
         for (int c = 0; c < nChildren; c++) {
             if (c > 0) {
-                String similar = firstChild.similarAxisVariables(childDatasets[c], 1, false); //test axes 1+
+                String similar = firstChild.similarAxisVariables(childDatasets[c], 1, //test axes 1+
+                    matchAxisNDigits, false);
                 if (similar.length() > 0)
                     throw new RuntimeException("Error: Datasets #0 and #" + c + " are not similar: " + similar);
 
@@ -371,8 +389,8 @@ public class EDDGridSideBySide extends EDDGrid {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException("Error: " + 
             "EDDGridSideBySide doesn't support method=\"sibling\".");
     }

@@ -14,6 +14,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import java.awt.Color;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 
 /**
  * HtmlWidgets has methods to simplify creation of widgets in
@@ -103,6 +104,9 @@ public class HtmlWidgets {
     /** The default tooltip for twoClickMap. */
     public static String twoClickMapDefaultTooltip =
         "Specify a rectangle by clicking on two diagonal corners.  Do it again if needed.";
+
+    public static String errorXWasntSpecified = "Error: \"{0}\" wasn''t specified.";
+    public static String errorXWasTooLong = "\"{0}\" was more than {1} characters long.";
 
     /**
      * If you want to use Tip for big html tooltips (see below),
@@ -770,18 +774,20 @@ public class HtmlWidgets {
      * @param fieldLength  the size of the field, in mspaces(?), e.g., 10.
      *     If the fieldLength <= 0, no 'size' value is specified in the html.
      * @param maxLength    usually 255
-     * @param initialTextValue the initial text value, or "" if none
+     * @param initialTextValue the initial text value, or null or "" if none
      * @param other e.g., "onchange=\"pleaseWait();\""
      *    For textField(), use onchange, not onclick.
      * @return the HTML code for a textField.
      */
     public String textField(String name, String tooltip, 
         int fieldLength, int maxLength, String initialTextValue, String other) {
-
+        
         return 
             "    <input type=\"text\" name=\"" + XML.encodeAsHTMLAttribute(name) + "\"" +
             " alt=\"" + XML.encodeAsHTMLAttribute(name) + "\"" + //An accessibility aid. USGS requested to pass Acunetix scan.
-            " value=\"" + XML.encodeAsHTMLAttribute(initialTextValue) + "\"" +
+            " value=\"" + 
+            (initialTextValue == null? "" : XML.encodeAsHTMLAttribute(initialTextValue)) + 
+            "\"" +
             //"\n      onkeypress=\"return !enter(event);\"" + 
             //supress Enter->submit
             //was the keypress event's keycode 'Enter'?
@@ -1436,6 +1442,107 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
                 continue;
 */
 
+    /**
+     * This ensure that the string value isn't null and isn't too long. 
+     * 
+     * @param cumulativeHtmlErrorMsg (may be null)
+     * @return the corrected value (default (if it was null), previous value.trim(), or 
+     *    previous value shortened to maxLength)
+     */
+    public static String validateNotNullNotTooLong(String name, String defaultValue, 
+        String value, int maxLength, StringBuilder cumulativeHtmlErrorMsg) {
+       
+        if (value == null) {
+            if (cumulativeHtmlErrorMsg != null)
+                cumulativeHtmlErrorMsg.append("<br>&bull; " + 
+                    MessageFormat.format(errorXWasntSpecified, XML.encodeAsHTML(name)) + 
+                    "\n");
+            return defaultValue;
+        } else {
+            value = value.trim();
+        }
+        if (value.length() > maxLength) {
+            if (cumulativeHtmlErrorMsg != null)
+                cumulativeHtmlErrorMsg.append("<br>&bull; " + 
+                    MessageFormat.format(errorXWasTooLong, XML.encodeAsHTML(name), "" + maxLength) + 
+                    "\n");
+            return value.substring(0, maxLength);
+        }
+        return value;
+    }
+
+    /**
+     * This ensure that the string value isSomething and isn't too long. 
+     * 
+     * @param cumulativeHtmlErrorMsg (may be null)
+     * @return the corrected value (default (if value was null or ""), previous value.trim(), or 
+     *    previous value shortened to maxLength)
+     */
+    public static String validateIsSomethingNotTooLong(String name, String defaultValue, 
+        String value, int maxLength, StringBuilder cumulativeHtmlErrorMsg) {
+       
+        if (!String2.isSomething(value)) {
+            if (cumulativeHtmlErrorMsg != null)
+                cumulativeHtmlErrorMsg.append("<br>&bull; " + 
+                    MessageFormat.format(errorXWasntSpecified, XML.encodeAsHTML(name)) + 
+                    "\n");
+            return defaultValue;
+        } else {
+            value = value.trim();
+        }
+        if (value.length() > maxLength) {
+            if (cumulativeHtmlErrorMsg != null)
+                cumulativeHtmlErrorMsg.append("<br>&bull; " + 
+                    MessageFormat.format(errorXWasTooLong, XML.encodeAsHTML(name), "" + maxLength) + 
+                    "\n");
+            return value.substring(0, maxLength);
+        }
+        return value;
+    }
+
+    /**
+     * This ensure that the string value isn't too long. 
+     * 
+     * @param cumulativeHtmlErrorMsg (may be null)
+     * @return the corrected value (default (if value was null), previous value.trim(), or 
+     *    previous value shortened to maxLength)
+     */
+    public static String validateNotTooLong(String name, String defaultValue, 
+        String value, int maxLength, StringBuilder cumulativeHtmlErrorMsg) {
+       
+        if (value == null)
+            value = defaultValue;
+        else
+            value = value.trim();
+        if (value.length() > maxLength) {
+            if (cumulativeHtmlErrorMsg != null)
+                cumulativeHtmlErrorMsg.append("<br>&bull; " + 
+                    MessageFormat.format(errorXWasTooLong, XML.encodeAsHTML(name), "" + maxLength) + 
+                    "\n");
+            return value.substring(0, maxLength);
+        }
+        return value;
+    }
+
+    /**
+     * This ensure that value is &gt;=0 and &lt;=maxValue. 
+     * 
+     * @param cumulativeHtmlErrorMsg (may be null)
+     * @return the corrected value (default (if it was null), previous value, or 
+     *    previous value shortened to maxLength)
+     */
+    public static int validate0ToMax(String name, int defaultValue, 
+        int value, int max, StringBuilder cumulativeHtmlErrorMsg) {
+       
+        if (value < 0 || value > max) {
+            if (cumulativeHtmlErrorMsg != null)
+                cumulativeHtmlErrorMsg.append("<br>&bull; " + 
+                    MessageFormat.format(errorXWasntSpecified, XML.encodeAsHTML(name)) + 
+                    "\n");
+            return defaultValue;
+        }
+        return value;
+    }
 
     /**
      * This makes a test document and displays it in the browser.
@@ -1508,7 +1615,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             widgets.textField("textFieldName2", "", 20, 255, "has big tooltip <script>prompt(123)</script>", 
                 htmlTooltip("Hi <b>bold</b>!\n<br>There \\/'\"&amp;&brvbar;!")) +
             "<br>\n" +
-            "<textarea name=address cols=40 rows=4 wrap=\"virtual\">\n" +
+            "<textarea name=\"address\" cols=\"40\" rows=\"4\" maxlength=\"160\" wrap=\"soft\">" +
             "John Smith\n123 Main St\nAnytown, CA 94025\n" +
             XML.encodeAsHTMLAttribute("<>&\"<script>prompt(123)</script>\n") +
             "</textarea>\n" +

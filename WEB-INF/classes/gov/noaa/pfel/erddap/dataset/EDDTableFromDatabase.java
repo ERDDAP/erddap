@@ -1417,7 +1417,7 @@ expected =
 "        <att name=\"keywords\">birthdate, category, center, data, erd, first, fisheries, height, height_cm, identifier, local, marine, national, nmfs, noaa, science, service, source, southwest, swfsc, time, weight, weight_kg</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local database)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source.</att>\n" +
 "        <att name=\"title\">NOAA NMFS SWFSC ERD data from a local source.</att>\n" +
 "    </addAttributes>\n" +
@@ -1606,7 +1606,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(source database\\)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This is Bob's test for reading from a database table.\";\n" +
 "    String title \"mydatabase myschema mytable\";\n" +
 "  \\}\n" +

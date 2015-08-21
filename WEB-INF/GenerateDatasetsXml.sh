@@ -8,6 +8,10 @@ cp3=":lib/commons-compress.jar:lib/commons-discovery.jar:lib/itext-1.3.1.jar"
 cp4=":lib/jaxrpc.jar:lib/joda-time.jar:lib/joid.jar:lib/lucene-core.jar"
 cp5=":lib/mail.jar:lib/netcdfAll-latest.jar:lib/postgresql.jdbc.jar"
 cp6=":lib/saaj.jar:lib/tsik.jar:lib/wsdl4j.jar"
-cp0="$cp1$cp2$cp3$cp4$cp5$cp6"
+cp7=":lib/aws-java-sdk.jar:lib/commons-codec.jar:lib/commons-logging.jar"
+cp8=":lib/fluent-hc.jar:lib/httpclient.jar:lib/httpclient-cache.jar:lib/httpcore.jar"
+cp9=":lib/httpmime.jar:lib/jna.jar:lib/jna-platform.jar:lib/jackson-annotations.jar"
+cp10=":lib/jackson-core.jar:lib/jackson-databind.jar"
+cp0="$cp1$cp2$cp3$cp4$cp5$cp6$cp7$cp8$cp9$cp10"
 
 java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.erddap.GenerateDatasetsXml $1 $2 $3 $4 $5 $6 $7 $8 $9

@@ -697,7 +697,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"" + 
                 tDatasetID + "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>0</updateEveryNMillis>\n" +  //files are only added by full reload
             "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/" + tDatasetID + "/ -->\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
@@ -761,7 +761,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_8fcf_be37_cbe4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/noaa_nodc_8fcf_be37_cbe4/ -->\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*MTBD.*\\.nc</fileNameRegex>\n" +
@@ -800,7 +800,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">NOAA National Oceanographic Data Center (NODC) data from http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"title\">NOAA NODC data from http://data.nodc.noaa.gov/thredds/catalo ...</att>\n" +
 "    </addAttributes>\n" +
@@ -1105,7 +1105,7 @@ expected =
 "    Float64 Northernmost_Northing 48.325001;\n" +
 "    String sourceUrl \"http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 33.89511;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station, longitude, latitude\";\n" +
 "    String summary \"The West Coast Observing System (WCOS) project provides access to temperature and currents data collected at four of the five National Marine Sanctuary sites, including Olympic Coast, Gulf of the Farallones, Monterey Bay, and Channel Islands. A semi-automated end-to-end data management system transports and transforms the data from source to archive, making the data acessible for discovery, access and analysis from multiple Internet points of entry.\n" +
 "\n" +
@@ -1479,14 +1479,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 height -9999.0;\n" +
 "    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
-"    String long_name \"Salinity\";\n" +
+"    String long_name \"Sea Water Practical Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
 "    String original_units \"PSU\";\n" +
 "    Int32 qcindex 15;\n" +
 "    Float32 sampling_rate -9999.0;\n" +
 "    Float32 special_value -8888.0;\n" +
-"    String standard_name \"sea_water_salinity\";\n" +
+"    String standard_name \"sea_water_practical_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  \\}\n" +
 "  seaTemperature \\{\n" +
@@ -1749,7 +1749,7 @@ expected =
 "Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Oceans > Salinity/Density > Conductivity,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"air, air_pressure, air_temperature, atmosphere, atmospheric, calender, conductivity, control, course, data, date, day, density, direction, dyson, earth, electrical, file, flags, from, fsu, ground, heading, history, humidity, information, level, measurements, meteorological, meteorology, oceans, oscar, over, platform, pressure, quality, relative, relative_humidity, salinity, sea, sea_water_electrical_conductivity, sea_water_salinity, seawater, speed, static, surface, temperature, time, vapor, water, wind, wind_from_direction, wind_speed, winds\";\n" +
+"air, air_pressure, air_temperature, atmosphere, atmospheric, calender, conductivity, control, course, data, date, day, density, direction, dyson, earth, electrical, file, flags, from, fsu, ground, heading, history, humidity, information, level, measurements, meteorological, meteorology, oceans, oscar, over, platform, pressure, quality, relative, relative_humidity, salinity, sea, sea_water_electrical_conductivity, sea_water_practical_salinity, seawater, speed, static, surface, temperature, time, vapor, water, wind, wind_from_direction, wind_speed, winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1763,7 +1763,7 @@ expected =
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
 "    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data " +
     "\\(delayed ~10 days for quality control\\) are from the Shipboard " +

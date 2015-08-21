@@ -345,6 +345,8 @@ public class Calendar2 {
      * This is like isoStringToEpochSeconds, but returns NaN if trouble.
      */
     public static double safeIsoStringToEpochSeconds(String isoZuluString) {
+        if (isoZuluString == null || isoZuluString.length() < 4)
+            return Double.NaN;
         try {
             return isoZuluStringToMillis(isoZuluString) / 1000.0;
         } catch (Exception e) {

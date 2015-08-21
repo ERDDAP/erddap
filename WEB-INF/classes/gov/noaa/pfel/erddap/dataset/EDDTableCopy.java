@@ -529,6 +529,17 @@ public class EDDTableCopy extends EDDTable{
         localEdd.getDataForDapQuery(loggedInAs, requestUrl, userDapQuery, tableWriter);
     }
 
+    /** 
+     * This returns a fileTable (formatted like 
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
+     * and size is LongArray of epochMillis)
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     */
+    public Table accessibleViaFilesFileTable() {
+        return localEdd.accessibleViaFilesFileTable();
+    }
+
     /**
      * The basic tests of this class (erdGlobecBottle).
      * 

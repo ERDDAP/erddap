@@ -18,6 +18,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
@@ -54,6 +55,14 @@ public class EDDGridCopy extends EDDGrid {
     protected EDDGridFromNcFiles localEdd;
 
     /** 
+     * This is used to test equality of axis values. 
+     * 0=no testing (not recommended). 
+     * &gt;18 does exact test. default=20.
+     * 1-18 tests that many digets for doubles and hidiv(n,2) for floats.
+     */
+    protected int matchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
+
+    /** 
      * Some tests set EDDGridCopy.defaultCheckSourceData = false; 
      * Don't set it here.
      */
@@ -78,6 +87,7 @@ public class EDDGridCopy extends EDDGrid {
         EDDGrid tSourceEdd = null;
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -103,6 +113,12 @@ public class EDDGridCopy extends EDDGrid {
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<matchAxisNDigits>")) {}
+            else if (localTags.equals("</matchAxisNDigits>")) 
+                tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS); 
+            else if (localTags.equals( "<ensureAxisValuesAreEqual>")) {} //deprecated
+            else if (localTags.equals("</ensureAxisValuesAreEqual>")) 
+                tMatchAxisNDigits = String2.parseBoolean(content)? 20 : 0;
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
@@ -150,7 +166,8 @@ public class EDDGridCopy extends EDDGrid {
         }
 
         return new EDDGridCopy(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tAccessibleTo, tMatchAxisNDigits, 
+            tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, 
             tReloadEveryNMinutes, 
             tSourceEdd, tFileTableInMemory, tAccessibleViaFiles);
@@ -181,7 +198,7 @@ public class EDDGridCopy extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridCopy(String tDatasetID, 
-        String tAccessibleTo, 
+        String tAccessibleTo, int tMatchAxisNDigits, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, EDDGrid tSourceEdd, 
@@ -204,6 +221,7 @@ public class EDDGridCopy extends EDDGrid {
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
+        matchAxisNDigits = tMatchAxisNDigits;
 
         //ensure copyDatasetDir exists
         String copyDatasetDir = EDStatic.fullCopyDirectory + datasetID + "/";
@@ -386,7 +404,7 @@ public class EDDGridCopy extends EDDGrid {
             tReloadEveryNMinutes, 0, //updateEveryNMillis
             copyDatasetDir, recursive, fileNameRegex, 
             EDDGridFromFiles.MF_LAST,
-            true, //tEnsureAxisValuesAreExactlyEqual,  sourceEdd should have made them consistent
+            matchAxisNDigits,  //sourceEdd should have made them consistent
             tFileTableInMemory, false); //accessibleViaFiles false here
 
         //copy things from localEdd 
@@ -460,11 +478,23 @@ public class EDDGridCopy extends EDDGrid {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException("Error: " + 
             "EDDGridCopy doesn't support method=\"sibling\".");
     }
+
+    /** 
+     * This returns a fileTable (formatted like 
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
+     * and size is LongArray of epochMillis)
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     */
+    public Table accessibleViaFilesFileTable() {
+        return localEdd.accessibleViaFilesFileTable();
+    }
+
 
     /**
      * The basic tests of this class (erdGlobecBottle).

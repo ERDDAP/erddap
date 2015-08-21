@@ -231,7 +231,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (tInstitution != null && tInstitution.length() > 0) externalAddGlobalAttributes.add("institution", tInstitution);
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
-        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
+        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
+            "(" + (File2.isRemote(tFileDir)? "remote" : "local") + " files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
         boolean dateTimeAlreadyFound = false;
@@ -298,7 +299,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
+            "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
@@ -407,7 +409,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
@@ -717,7 +719,7 @@ expected =
 "    Float64 Northernmost_Northing 37.75;\n" +
 "    String sourceUrl \"The source URL.\";\n" +
 "    Float64 Southernmost_Northing -27.7;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station, longitude, latitude, altitude\";\n" +
 "    String summary \"The summary.\";\n" +
 "    String time_coverage_end \"2006-12-31T23:00:00Z\";\n" +
@@ -935,7 +937,7 @@ expected =
     "    Float64 Northernmost_Northing 30.368;\n" +
     "    String sourceUrl \"(local files)\";\n" +
     "    Float64 Southernmost_Northing 26.6255;\n" +
-    "    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+    "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
     (test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
     "    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
     "    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
@@ -1090,7 +1092,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"five, fileName\";\n" +
 "    String summary \"The new summary!\";\n" +
 "    String title \"The Newer Title!\";\n" +

@@ -2511,9 +2511,9 @@ expected =
 "  :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
 "  :contributor_role = \"Source of level 2 data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"2010-04-18Z\";\n" +
 "  :date_issued = \"2010-04-18Z\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
@@ -2536,7 +2536,7 @@ today + "T";  // + time " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellit
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 String expected2 = 
 "  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
-"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Oceans > Ocean Winds > Surface Winds,\n" +
 "atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
@@ -2555,13 +2555,16 @@ String expected2 =
 "  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
 "  :satellite = \"QuikSCAT\";\n" +
 "  :sensor = \"SeaWinds\";\n" +
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
@@ -2723,9 +2726,9 @@ y_wind.y_wind[1][1][7][15]
 "  :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
 "  :contributor_role = \"Source of level 2 data.\";\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"  :creator_email = \"dave.foley@noaa.gov\";\n" +
-"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"2010-04-18Z\";\n" +
 "  :date_issued = \"2010-04-18Z\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
@@ -2748,7 +2751,7 @@ today + "T"; //time http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/u
 //today + time " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 expected2 = 
 "  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
-"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Oceans > Ocean Winds > Surface Winds,\n" +
 "atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
@@ -2767,13 +2770,16 @@ expected2 =
 "  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
+"  :publisher_email = \"erd.data@noaa.gov\";\n" +
+"  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
 "  :satellite = \"QuikSCAT\";\n" +
 "  :sensor = \"SeaWinds\";\n" +
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
 "  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +

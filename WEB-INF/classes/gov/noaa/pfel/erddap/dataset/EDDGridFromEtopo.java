@@ -199,8 +199,8 @@ public class EDDGridFromEtopo extends EDDGrid {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException("Error: " + 
             "EDDGridFromEtopo doesn't support method=\"sibling\".");
 
@@ -529,7 +529,7 @@ expected =
 "  :references = \"Amante, C. and B. W. Eakins, ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis. NOAA Technical Memorandum NESDIS NGDC-24, 19 pp, March 2009.\";\n" +
 "  :sourceUrl = \"(local file)\";\n" +
 "  :Southernmost_Northing = -90.0; // double\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v27\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :summary = \"ETOPO1 is a 1 arc-minute global relief model of Earth's surface that integrates land topography and ocean bathymetry. It was built from numerous global and regional data sets. This is the 'Ice Surface' version, with the top of the Antarctic and Greenland ice sheets. The horizontal datum is WGS-84, the vertical datum is Mean Sea Level. Keywords: Bathymetry, Digital Elevation. This is the grid/node-registered version: the dataset's latitude and longitude values mark the centers of the cells.\";\n" +
 "  :title = \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\";\n" +
 "  :Westernmost_Easting = -180.0; // double\n" +

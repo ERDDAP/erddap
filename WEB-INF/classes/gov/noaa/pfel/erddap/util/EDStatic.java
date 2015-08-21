@@ -134,9 +134,10 @@ public class EDStatic {
      * <br>1.56 released on 2014-12-16
      * <br>1.58 released on 2015-02-25
      * <br>1.60 released on 2015-03-12
-     * <br>1.62 released on 2015-05-08
+     * <br>1.62 released on 2015-06-08
+     * <br>1.64 released on 2015-08-19
      */   
-    public static String erddapVersion = "1.62";  
+    public static String erddapVersion = "1.64";  
 
     /** 
      * This is almost always false.  
@@ -422,7 +423,7 @@ public static boolean developmentMode = false;
         postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there        
         subscriptionSystemActive,  convertersActive, slideSorterActive,
         fgdcActive, iso19115Active, geoServicesRestActive, 
-        filesActive, sosActive, wcsActive, wmsActive,
+        filesActive, dataProviderFormActive, sosActive, wcsActive, wmsActive,
         quickRestart,
         useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
@@ -719,6 +720,8 @@ public static boolean developmentMode = false;
         errorOdvLLTGrid,
         errorOdvLLTTable,
         errorOnWebPage,
+        errorXWasntSpecified,
+        errorXWasTooLong,
         externalLink,
         externalWebSite,
         fileHelp_asc,
@@ -1489,6 +1492,7 @@ public static boolean developmentMode = false;
 //until geoServicesRest is finished, it is always inactive
 geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
         filesActive                = setup.getBoolean(         "filesActive",                true); 
+        dataProviderFormActive     = setup.getBoolean(         "dataProviderFormActive",     true); 
 //until SOS is finished, it is always inactive
 sosActive = false;//        sosActive                  = setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
@@ -1903,6 +1907,10 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         errorOdvLLTGrid            = messages.getNotNothingString("errorOdvLLTGrid",            "");
         errorOdvLLTTable           = messages.getNotNothingString("errorOdvLLTTable",           "");
         errorOnWebPage             = messages.getNotNothingString("errorOnWebPage",             "");
+        errorXWasntSpecified       = messages.getNotNothingString("errorXWasntSpecified",       "");
+        HtmlWidgets.errorXWasntSpecified = errorXWasntSpecified;
+        errorXWasTooLong           = messages.getNotNothingString("errorXWasTooLong",           "");
+        HtmlWidgets.errorXWasTooLong = errorXWasTooLong;
         externalLink         = " " + messages.getNotNothingString("externalLink",               "");
         externalWebSite            = messages.getNotNothingString("externalWebSite",            "");
         fileHelp_asc               = messages.getNotNothingString("fileHelp_asc",               "");
@@ -2387,8 +2395,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         convertUnitsService      = MessageFormat.format(convertUnitsService,      erddapUrl) + "\n"; 
 
         //standardContact is used by legal
-        String tEmail = String2.replaceAll(adminEmail, "@", " at ");
-        tEmail        = String2.replaceAll(tEmail,     ".", " dot ");
+        String tEmail = SSR.getSafeEmailAddress(adminEmail);
         filesDocumentation = String2.replaceAll(filesDocumentation, "&adminEmail;", tEmail); 
         standardContact    = String2.replaceAll(standardContact,    "&adminEmail;", tEmail);
         legal = String2.replaceAll(legal,"[standardContact]",                   standardContact                   + "\n\n"); 
@@ -2812,9 +2819,10 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         try {
             //catch common problem: sending email to one invalid address
             if (emailAddresses.length == 1 &&
-                !String2.isEmailAddress(emailAddresses[0]) ||
-                emailAddresses[0].startsWith("your.name") || 
-                emailAddresses[0].startsWith("your.email")) {
+                (!String2.isEmailAddress(emailAddresses[0]) ||
+                 emailAddresses[0].startsWith("nobody@") || 
+                 emailAddresses[0].startsWith("your.name") || 
+                 emailAddresses[0].startsWith("your.email"))) {
                 errors = "Error in EDStatic.email: invalid emailAddresses=" + emailAddressesCSSV;
                 String2.log(errors);
             }

@@ -30,24 +30,29 @@ import gov.noaa.pfel.coastwatch.sgt.Boundaries;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
 import gov.noaa.pfel.coastwatch.sgt.SgtGraph;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.coastwatch.util.FileVisitorSubdir;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.Tally;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-//import java.util.BitSet;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -68,6 +73,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONString;
 import org.json.JSONTokener;
+
+import ucar.nc2.NetcdfFile;
 
 /** 
 This class represents an ERDDAP Dataset (EDD) -- 
@@ -1374,6 +1381,17 @@ public abstract class EDD {
      */
     public boolean accessibleViaFilesRecursive() {
         return accessibleViaFilesRecursive;
+    }
+
+    /** 
+     * This returns a fileTable (formatted like 
+     * FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
+     * and size is LongArray of epochMillis)
+     * with valid files (or null if unavailable or any trouble).
+     * This is a copy of any internal data, so client can modify the contents.
+     */
+    public Table accessibleViaFilesFileTable() {
+        return null;
     }
 
     /** 
@@ -3773,10 +3791,17 @@ public abstract class EDD {
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
         if (tPublicSourceUrl == null)
             tPublicSourceUrl = "";
-        boolean sourceUrlIsThreddsCatalogXml = 
+        boolean sourceUrlIsHyraxFile = 
             tPublicSourceUrl.startsWith("http") &&
-            tPublicSourceUrl.indexOf("/thredds/catalog/") > 0 &&  
-            tPublicSourceUrl.endsWith(".xml");
+            tPublicSourceUrl.indexOf("/opendap/") > 0 &&
+            (tPublicSourceUrl.endsWith("/") || tPublicSourceUrl.endsWith("/contents.html"));
+        boolean sourceUrlIsHyraxCatalog = 
+            tPublicSourceUrl.startsWith("http") &&
+            tPublicSourceUrl.indexOf("/opendap/") > 0 &&
+            !sourceUrlIsHyraxFile;
+        boolean sourceUrlIsThreddsCatalog = 
+            tPublicSourceUrl.startsWith("http") &&
+            tPublicSourceUrl.indexOf("/thredds/catalog/") > 0;
 
         String sourceUrlAsTitle = String2.replaceAll(
             //"extension" may be part of name with internal periods, 
@@ -3816,12 +3841,15 @@ public abstract class EDD {
         //fgdc_metadata_url is fgdc metadata, so not so useful as infoUrl
         HashSet toRemove = new HashSet(Arrays.asList( 
             //Enter them lowercase here. The search for them is case-insensitive.
-            "cols", "columns",
+            "cols", "columns", "cwhdf_version",
             "data_bins", "data_center", "data_maximum", "data_minimum",
             "easternmost_longitude",
-            "end_day", "end_millisec", "end_orbit", "end_time", "end_year",
+            "end_day", "end_millisec", "end_time", "end_year",
+            "end_orbit", "endorbitnumber", "end_orbit_number",
+            "et_affine", 
             "first_index", "format", //e.g., hdf5
             "fgdc_metadata_url", "fgdc:metadata_url", 
+            "gctp_datum", "gctp_parm", "gctp_sys", "gctp_zone",
             "gds_version_id", "georange", "granulepointer",
             "ice_fraction", "inputpointer",
             "intercept",
@@ -3847,9 +3875,10 @@ public abstract class EDD {
             "num_l3_columns", "num_l3_rows",
             "observation_date", "operationmode", "orbitparameterspointer",
             "orbit",
-            "parameter", "percent_rev_data_usage",
+            "parameter", "pass_date", "percent_rev_data_usage",
             "period", 
             "period_end_day", "period_end_year", "period_start_day", "period_start_year", 
+            "polygon_latitude", "polygon_longitude",
             "qagranulepointer", "qapercentmissingdata", "qapercentoutofboundsdata",
             "range_beginning_date", "rangebeginningdate", 
             "range_beginning_time", "rangebeginningtime", 
@@ -3863,11 +3892,11 @@ public abstract class EDD {
             "spatial_completeness_definition", 
             "spatial_completeness_ratio", 
             "start_date", "start_day", "start_millisec", 
-            "start_orbit", "startorbitnumber",
+            "start_orbit", "startorbitnumber", "start_orbit_number",
             "start_time", "start_year",
             "station_latitude", "station_longitude",
             "stop_date", "stop_time",
-            "stop_orbit", "stoporbitnumber",
+            "stop_orbit", "stoporbitnumber", "stop_orbit_number",
             "suggested_image_scaling_applied",
             "suggested_image_scaling_maximum",
             "suggested_image_scaling_minimum",
@@ -4158,8 +4187,12 @@ public abstract class EDD {
                     if (tPublicSourceUrl.startsWith("http://nomads.ncep.noaa.gov") &&
                         tPublicSourceUrl.indexOf("/rtofs/") > 0) {
                         value = "http://polar.ncep.noaa.gov/global/";
-                    } else if (sourceUrlIsThreddsCatalogXml) {  //thredds catalog.xml -> .html
-                        value = tPublicSourceUrl.substring(0, tPublicSourceUrl.length() - 4) + ".html";
+                    } else if (sourceUrlIsHyraxFile) {  
+                        value = File2.getDirectory(tPublicSourceUrl) + ".html";
+                    } else if (sourceUrlIsHyraxCatalog) {  
+                        value = File2.getDirectory(tPublicSourceUrl) + "contents.html";
+                    } else if (sourceUrlIsThreddsCatalog) {  
+                        value = File2.getDirectory(tPublicSourceUrl) + "catalog.html";
                     } else {
                         value = tPublicSourceUrl + 
                             ((tPublicSourceUrl.indexOf("/thredds/") > 0 ||       //most DAP servers, add .html:  THREDDS
@@ -4636,7 +4669,7 @@ public abstract class EDD {
         if (!isSomething(value)) value = sourceAtts.getString(name);
         if (!isSomething(value) || 
             //this isn't very sophisticated:
-            //ensure it is the new ACDD-1.3 style "CF Standard Name Table v27"
+            //ensure it is the new ACDD-1.3 style "CF Standard Name Table v29"
             !value.matches("CF Standard Name Table v[0-9]{2,}")) 
             addAtts.add(name, FileNameUtility.getStandardNameVocabulary());
 
@@ -4644,8 +4677,9 @@ public abstract class EDD {
         if (!isSomething(tSummary) || tSummary.length() < 30) {
 
             value = isSomething(tInstitution)? tInstitution + " data " : "Data ";
-            if (sourceUrlIsThreddsCatalogXml)  //thredds catalog.xml -> .html
-                 value += "from " + tPublicSourceUrl.substring(0, tPublicSourceUrl.length() - 4) + ".html";
+            if (sourceUrlIsHyraxFile || sourceUrlIsHyraxCatalog ||
+                sourceUrlIsThreddsCatalog)  
+                 value += "from " + infoUrl;
             else if (tPublicSourceUrl.startsWith("http"))
                  value += "from " + tPublicSourceUrl + ".das ."; 
             else value += "from a local source.";
@@ -4722,13 +4756,11 @@ public abstract class EDD {
             }
             if (debugMode) String2.log(">> 3 title=" + value);
 
-            //thredds catalog.xml?   use last two directory names
-            if (!isSomething(value) && sourceUrlIsThreddsCatalogXml) {
-                value = tPublicSourceUrl;
+            //hyrax or thredds catalog?   use last two directory names
+            if (!isSomething(value) && 
+                (sourceUrlIsHyraxCatalog || sourceUrlIsThreddsCatalog)) {
+                value = File2.getDirectory(tPublicSourceUrl);
                 int po = value.lastIndexOf("/");
-                if (po > 0) 
-                    value = value.substring(0, po);
-                po = value.lastIndexOf("/");
                 if (po > 0) po = value.substring(0, po).lastIndexOf("/");
                 value = po > 0 && po < value.length() - 1? 
                     value.substring(po + 1) : 
@@ -6002,8 +6034,9 @@ public abstract class EDD {
         String tUnits        = oUnits;
         if (tUnits.length() == 0) {
             //rtofs grads
-            String from[] = {"degc",     "psu",  "m/s",   "m"};
-            String to[]   = {"degree_C", "1e-3", "m s-1", "m"}; //PSU -> 1e-3 in CF std names 25
+            //sea_water_practical_salinity units = "1" in CF std names 27; I'm sticking with PSU.
+            String from[] = {"degc",     "psu",  "m/s",   "m", "Presumed Salinity Units"};
+            String to[]   = {"degree_C", "PSU",  "m s-1", "m", "PSU"}; 
             for (int i = 0; i < from.length; i++) {
                 if (oLongName.endsWith(" (" + from[i] + ")")) {  //e.g. " (degc)"
                     tUnits = to[i];
@@ -6345,7 +6378,25 @@ public abstract class EDD {
             testUnits.equals("k");                     //udunits and ucum
         boolean hasTemperatureUnits = isDegreesC || isDegreesF || isDegreesK;
 
-        if (!isSomething(tStandardName)) {
+        if (isSomething(tStandardName)) {
+            //deal with the mess that is salinity
+            if (tStandardName.equals("sea_water_salinity") ||
+                tStandardName.equals("sea_surface_salinity")) {
+                //g/g and kg/kg are very rare
+                if ("|g/g|kg/kg|g kg-1|g/kg|".indexOf("|" + tUnits + "|") >= 0) {
+                    tStandardName = "sea_water_absolute_salinity";  //canonical is g/kg
+                } else {
+                    tStandardName = "sea_water_practical_salinity"; 
+                    //Possibly changing units is very aggressive. I know.
+                    //1 is CF canonical, but datasets have 1e-3, 1, psu, ...
+                    //It is better to be aggressive and defy CF than have misleading/
+                    //  bizarre units based on previous versions of CF standard names.
+                    if (tUnitsLC.indexOf("pss") < 0)
+                        tUnits = "PSU"; 
+                }
+            }
+        } else {
+
             //does the lcSourceName or ttLongName equal a cfName?
             //special cases
             String tsn = String2.replaceAll(isSomething(lcSourceName)? lcSourceName : "\r", " ", "_"); //\r won't match anything
@@ -6406,6 +6457,7 @@ public abstract class EDD {
                      lcu.indexOf("precision")    >= 0 ||
                      lcu.indexOf("error")        >= 0 || //"interpolation error fields"
                      lcu.indexOf("number")       >= 0 || //"number of observations"
+                     lcu.indexOf("|nobs|")       >= 0 || //number of observations
                      lcu.indexOf("radius|influence|grid|points") >= 0 ||
                      lcu.indexOf("standard|deviation") >= 0 ||
                      lcu.indexOf("standard|error") >= 0) {}
@@ -6577,7 +6629,14 @@ public abstract class EDD {
                         //no generic salt_flux
                     }
                 } else {
-                    tStandardName = "sea_water_salinity"; 
+                    if ("|g kg-1|g/kg|".indexOf("|" + tUnits + "|") >= 0) {
+                        tStandardName = "sea_water_absolute_salinity"; 
+                    } else {
+                        tStandardName = "sea_water_practical_salinity"; 
+                        if (tUnitsLC.indexOf("pss") < 0)
+                            tUnits = "PSU"; //1 is CF canonical, but datasets have 1e-3, 1, psu, ...
+                            //better to defy CF than have misleading bizarre units.
+                    }
                 }}
             else if (((lc.indexOf("water") >= 0 && 
                        lc.indexOf("temp") >= 0) ||
@@ -6629,6 +6688,13 @@ public abstract class EDD {
                       lc.indexOf("water|y") >= 0))    tStandardName = "northward_sea_water_velocity";
             else if ((lc.indexOf("surface") >= 0 && lc.indexOf("roughness") >= 0 &&
                       isMeters))                    tStandardName = "surface_roughness_length"; 
+
+            else if (lcSourceName.equals("par")) 
+                    tStandardName = "downwelling_photosynthetic_photon_radiance_in_sea_water";
+            
+            else if (lcSourceName.equals("ph"))
+                    tStandardName = "sea_water_ph_reported_on_total_scale";
+
             else if (((lc.indexOf("rel") >= 0 && 
                        lc.indexOf("hum") >= 0) ||
                       lc.indexOf("humidity") >= 0 ||
@@ -6993,6 +7059,12 @@ public abstract class EDD {
                                                                         )  {tMin = 0;    tMax = 10;}                    
             else if (tStandardName.indexOf("oxygen_in_sea_water") >= 0)    {tMin = 0;    tMax = 500;}                      
             else if (tStandardName.indexOf("water_flux_into_ocean") >= 0)  {tMin = 0;    tMax = 1e-4;}
+            else if (tStandardName.equals("downwelling_photosynthetic_photon_radiance_in_sea_water") ||
+                     lcSourceName.equals("par")) {
+                if (tUnitsLC.equals("volt") || tUnitsLC.equals("volts"))   {tMin = 0;    tMax = 3;}
+                else                  /* microEinsteins m^-2 s-1 */        {tMin = 0;    tMax = 70;}} 
+            else if (tStandardName.equals("sea_water_ph_reported_on_total_scale") ||
+                     lcSourceName.equals("ph"))                            {tMin = 7;    tMax = 9;}
             else if (tStandardName.indexOf("precipitation") >= 0 ||
                      tStandardName.indexOf("snowfall") >= 0 ||
                      tStandardName.indexOf("rainfall") >= 0 ||
@@ -7060,11 +7132,19 @@ public abstract class EDD {
             else if (tStandardName.equals("sea_water_pressure"          ))            {tMin = 0;    tMax = 5000;}
             else if (tStandardName.equals("sea_surface_salinity"        ) ||
                      tStandardName.equals("sea_water_salinity"          ) ||
+                     tStandardName.equals("sea_water_absolute_salinity") ||
+                     tStandardName.equals("sea_water_cox_salinity") ||
+                     tStandardName.equals("sea_water_knudsen_salinity") ||
                      tStandardName.equals("sea_water_practical_salinity") ||
+                     tStandardName.equals("sea_water_preformed_salinity") ||
+                     tStandardName.equals("sea_water_reference_salinity") ||
+                     tStandardName.equals("sea_water_salinity") ||
                      //lc.indexOf(   "salinity") >= 0     || //!but river/bay salinity close to 0
-                     tUnitsLC.equals("psu"                              ) ||
-                     tUnitsLC.equals("pss"                              )) {
-                 if (tUnitsLC.equals("kg/kg") || tUnitsLC.equals("g/g")) {
+                     tUnitsLC.equals("psu") ||
+                     tUnitsLC.equals("pss78")  || tUnitsLC.equals("ipss78") ||
+                     tUnitsLC.equals("pss-78") || tUnitsLC.equals("ipss-78") || 
+                     tUnitsLC.equals("pss")    || tUnitsLC.equals("ipss")) {
+                 if (tUnitsLC.equals("kg/kg") || tUnitsLC.equals("g/g")) { //rare
                      tMin = 0.032;   tMax = 0.037;
                  } else {
                      tMin = 32;   tMax = 37;
@@ -7916,10 +7996,12 @@ public abstract class EDD {
      * <br>This seeks to be short, descriptive, and unique (so 2 datasets don't have same datasetID).
      *
      * @param tPublicSourceUrl a real URL (starts with "http", e.g., http://oceanwatch.pfeg.noaa.gov/...), 
-     *     a fileDirectory (with trailing '/') or directory+fileName (may be a fileNameRegex), 
-     *     or a fake fileDirectory (not ideal).
-     *     <br>If an OPeNDAP url, it is without the .das, .dds, or .html extension.
-     *     <br>If a fileDirectory, the two rightmost directories are important.
+     *   a fileDirectory (with trailing '/') or directory+fileName (may be a fileNameRegex), 
+     *   or a fake fileDirectory (not ideal).
+     *   <br>If an OPeNDAP url, it is without the .das, .dds, or .html extension.
+     *   <br>If a fileDirectory, the two rightmost directories are important.
+     *   <br>If you want to add additional information (e.g. dimension names or "EDDTableFromFileNames"), 
+     *     add it add the end of the url.
      * @return a suggested datasetID, e.g., noaa_pfeg#########
      */
     public static String suggestDatasetID(String tPublicSourceUrl) {
@@ -7928,12 +8010,20 @@ public abstract class EDD {
         //But some datasetIDs would be very long and info is already in sourceUrl in original form.
 
         //extract from tPublicSourceUrl
-        String dir = tPublicSourceUrl.indexOf('/' ) >= 0 ||
-                     tPublicSourceUrl.indexOf('\\') >= 0?
-            File2.getDirectory(tPublicSourceUrl) :
-            tPublicSourceUrl;
-        String dsi = String2.modifyToBeFileNameSafe(
-            String2.toSVString(suggestInstitutionParts(dir), "_", true));
+        //is it an Amazon AWS S3 URL?
+        String dsi = String2.getAwsS3BucketName(tPublicSourceUrl);
+        if (dsi == null) {
+            //regular url
+            String dir = tPublicSourceUrl.indexOf('/' ) >= 0 ||
+                         tPublicSourceUrl.indexOf('\\') >= 0?
+                File2.getDirectory(tPublicSourceUrl) :
+                tPublicSourceUrl;
+            dsi = String2.toSVString(suggestInstitutionParts(dir), "_", true);
+        } else {
+            //AWS S3 url
+            dsi = "s3" + dsi + "_";
+        }
+        dsi = String2.modifyToBeFileNameSafe(dsi);
         dsi = String2.replaceAll(dsi, '-', '_');
         dsi = String2.replaceAll(dsi, '.', '_');
         return dsi + String2.md5Hex12(tPublicSourceUrl);  
@@ -8949,6 +9039,278 @@ public abstract class EDD {
         }
     }
 
+    /**
+     * This walks through the start directory and subdirectories and tries
+     * to generateDatasetsXml for groups of data files that it finds.
+     * <br>This assumes that when a dataset is found, the dataset includes all 
+     *   subdirectories.
+     * <br>If dataset is found, sibling directories will be treated as separate datasets
+     *   (e.g., dir for 1990's, dir for 2000's, dir for 2010's will be separate datasets).
+     *   But they should be easy to combine by hand.
+     * <br>This will only catch one type of file in a directory (e.g., 
+     *   a dir with sst files and chl files will just catch one of those).
+     * 
+     * @return a suggested chunk of xml for all datasets it can find for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., startDir not found or no valid datasets were made.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
+     */
+    public static String generateDatasetsXmlFromFiles(String startDir) throws Exception {
+        String2.log("> EDD.generateDatasetsXmlFromFiles(" + startDir  + ")");
+        StringBuilder resultsSB = new StringBuilder();
+        long time = System.currentTimeMillis();
+
+        //get list of subdirs
+        //because of the way it recurses, the order is already fine for my use here:
+        //  every parent directory is listed before all of its child directories.
+        StringArray paths = FileVisitorSubdir.oneStep(startDir);
+        int nDirs = paths.size();
+        //String2.pressEnterToContinue(String2.toNewlineString(paths.toArray()));
+        
+        StringArray dirs = new StringArray(nDirs, false);
+        for (int i = 0; i < nDirs; i++) {
+            String path = paths.get(i); 
+            if (File.separatorChar == '\\')
+                path = String2.replaceAll(path, '\\', '/');
+            path = File2.addSlash(path);
+            dirs.add(path);
+        }
+        StringArray dirInfo = new StringArray(nDirs, true);
+        Table dirTable = new Table();
+        dirTable.addColumn("dir", dirs);
+        dirTable.addColumn("dirInfo", dirInfo);
+        BitSet dirDone = new BitSet(nDirs); //all false
+        String2.log("> nDirs=" + nDirs + " elapsedTime=" +
+            (System.currentTimeMillis() - time));
+
+        //go through dirs, from high level to low level, looking for datafiles/datasets
+        int nCreated = 0;
+        int nGridNc = 0;
+        int nTableNcCF = 0;
+        int nTableNc = 0;
+        int nTableAscii = 0;
+        int nTableFileNames = 0;
+        String skipThisDir = "> Skip this directory: ";
+        String success = "> Success: ";
+        String indent = "    ";
+        for (int diri = 0; diri < nDirs; diri++) {
+            String tDir = dirs.get(diri);
+            String2.log("> dir#" + diri + " of " + nDirs + "=" + tDir);
+            if (dirDone.get(diri)) {
+                dirInfo.set(diri, indent + "see parent dataset");
+                String2.log("> Skip this directory: already covered by a dataset in a parent dir.");
+                continue;
+            }
+
+            Table fileTable = FileVisitorDNLS.oneStep(tDir, ".*", 
+                false, false); //tRecursive, tDirectoriesToo
+            StringArray names = (StringArray)fileTable.getColumn(FileVisitorDNLS.NAME);
+            StringArray exts = new StringArray();
+            int nFiles = names.size();
+            if (nFiles == 0) {
+                dirDone.set(diri);
+                String msg = "nFiles=0";
+                dirInfo.set(diri, indent + msg);
+                String2.log(skipThisDir + msg);
+                continue;
+            }
+
+            //tally the file's extensions
+            Tally tally = new Tally();
+            for (int filei = 0; filei < nFiles; filei++) {
+                String tName = names.get(filei);
+                String ext = File2.getExtension(tName); //may be ""
+                exts.add(ext);
+                if (ext.equals(".md5") || 
+                    tName.toLowerCase().startsWith("readme")) { //readme or read_me
+                    //don't tally .md5, readme, or others?
+                } else {
+                    tally.add("ext", ext);
+                }
+            }
+            fileTable.addColumn(0, "ext", exts);
+        
+            //get the most common file extension
+            ArrayList tallyArrayList = tally.getSortedNamesAndCounts("ext");
+            if (tallyArrayList == null)
+                return "";
+            StringArray tallyExts = (StringArray)tallyArrayList.get(0);
+            IntArray tallyCounts = (IntArray)tallyArrayList.get(1);
+            if (tallyCounts.size() == 0) {
+                dirDone.set(diri);
+                String msg = "0 of " + nFiles + " have interesting extensions";
+                dirInfo.set(diri, indent + msg);
+                String2.log(skipThisDir + msg);
+                continue;
+            }
+            String topExt = tallyExts.get(0);
+            int topCount = tallyCounts.get(0);
+            int sampleRow = exts.indexOf(topExt);
+            String sampleName = names.get(sampleRow);
+            String2.log("> topExt=" + topExt + " topCount=" + topCount + " sample=" + sampleName);
+            String topOfAre = topCount + " of " + nFiles + " files are " + topExt + ": ";
+
+            if (topCount < 4) {
+                //I'm looking for collections of data files. 
+                //Don't be distracted by e.g., one .txt file.
+                dirDone.set(diri);
+                String msg = topOfAre + "That's less than 4.";
+                dirInfo.set(diri, indent + msg);
+                String2.log(skipThisDir + msg);
+                continue;
+            }
+
+            //try to make datasets.xml for files in this dir (and subdirs)
+            int tReloadEveryNMinutes = 1440;
+//If updateNMillis works, then 1440 is good. If not, then 180?
+
+            //table in .ncCF file
+            if (topExt.equals(".nc") || topExt.equals(".cdf")) {
+                String featureType = null;
+                try {
+                    //does it have featureType metadata?
+                    NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName);
+                    Attributes gAtts = new Attributes();
+                    NcHelper.getGlobalAttributes(ncFile, gAtts);
+                    featureType = gAtts.getString("featureType"); 
+                    ncFile.close();
+                    if (featureType == null)
+                        throw new RuntimeException("No featureType, so it isn't an .ncCF file.");
+
+                    //try to interpret as a .ncCF file
+                    String xmlChunk = EDDTableFromNcCFFiles.generateDatasetsXml(
+                        tDir, ".*\\" + topExt, 
+                        tDir + sampleName, tReloadEveryNMinutes,
+                        "", "", "", "", //extract
+                        "", "", "", "", "", null); //other info
+                    resultsSB.append(xmlChunk);  //recursive=true
+                    for (int diri2 = diri; diri2 < nDirs; diri2++)
+                        if (dirs.get(diri2).startsWith(tDir))
+                            dirDone.set(diri2);
+                    String msg = topOfAre + "EDDTableFromNcCFFiles/" + featureType;
+                    dirInfo.set(diri, indent + msg);
+                    String2.log(success + msg);
+                    nTableNcCF++;
+                    nCreated++;
+                    continue;
+                } catch (Throwable t) {
+                    String2.log("> Attempt with EDDTableFromNcCFFiles (" + 
+                        featureType + ") failed:\n" +
+                        MustBe.throwableToString(t));
+                }
+            }
+
+            //grid via netcdf-java
+            if (topExt.equals(".nc") || topExt.equals(".cdf") || 
+                topExt.equals(".hdf") || 
+                topExt.equals(".grb") || topExt.equals(".grb2") || 
+                topExt.equals(".bufr") || 
+                topExt.equals("")) {  //.hdf are sometimes unidentified
+                try {
+                    String xmlChunk = EDDGridFromNcFiles.generateDatasetsXml(
+                        tDir, ".*\\" + topExt, 
+                        tDir + sampleName, 
+                        tReloadEveryNMinutes, null); //externalAddGlobalAttributes
+                    resultsSB.append(xmlChunk);  //recursive=true
+                    for (int diri2 = diri; diri2 < nDirs; diri2++)
+                        if (dirs.get(diri2).startsWith(tDir))
+                            dirDone.set(diri2);
+                    String msg = topOfAre + "EDDGridFromNcFiles";
+                    dirInfo.set(diri, indent + msg);
+                    String2.log(success + msg);
+                    nGridNc++; 
+                    nCreated++;
+                    continue;
+                } catch (Throwable t) {
+                    String2.log("> Attempt with EDDGridFromNcFiles failed:\n" +
+                        MustBe.throwableToString(t));
+                }
+            }
+
+            //table in .nc file
+            if (topExt.equals(".nc") || topExt.equals(".cdf")) {
+                try {
+                    String xmlChunk = EDDTableFromNcFiles.generateDatasetsXml(
+                        tDir, ".*\\" + topExt, 
+                        tDir + sampleName, "", tReloadEveryNMinutes,
+                        "", "", "", "", //extract
+                        "", "", "", "", "", "", null); //other info
+                    resultsSB.append(xmlChunk);  //recursive=true
+                    for (int diri2 = diri; diri2 < nDirs; diri2++)
+                        if (dirs.get(diri2).startsWith(tDir))
+                            dirDone.set(diri2);
+                    String msg = topOfAre + "EDDTableFromNcFiles";
+                    dirInfo.set(diri, indent + msg);
+                    String2.log(success + msg);
+                    nTableNc++; 
+                    nCreated++;
+                    continue;
+                } catch (Throwable t) {
+                    String2.log("> Attempt with EDDTableFromNcFiles failed:\n" +
+                        MustBe.throwableToString(t));
+                }
+            } 
+
+            //ascii table 
+            if (topExt.equals(".csv") || topExt.equals(".tsv") || 
+                topExt.equals(".txt")) {
+                try {
+                    String xmlChunk = EDDTableFromAsciiFiles.generateDatasetsXml(
+                        tDir, ".*\\" + topExt, 
+                        tDir + sampleName, 
+                        "", 1, 2, //charset, columnNamesRow, firstDataRow, 
+                        tReloadEveryNMinutes, 
+                        "", "", "", "", //extract
+                        "", "", "", "", "", "", null); //other info
+                    resultsSB.append(xmlChunk);  //recursive=true
+                    for (int diri2 = diri; diri2 < nDirs; diri2++)
+                        if (dirs.get(diri2).startsWith(tDir))
+                            dirDone.set(diri2);
+                    String msg = topOfAre + "EDDTableFromAsciiFiles";
+                    dirInfo.set(diri, indent + msg);
+                    String2.log(success + msg);
+                    nTableAscii++;
+                    nCreated++;
+                    continue;
+                } catch (Throwable t) {
+                    String2.log("> Attempt with EDDTableFromAscii failed:\n" +
+                        MustBe.throwableToString(t));
+                }
+            }
+
+            //all fail? Use EDDTableFromFileNames and serve all files (not just topExt)
+            try {
+                String xmlChunk = EDDTableFromFileNames.generateDatasetsXml(
+                    tDir, ".*", true, //recursive 
+                    tReloadEveryNMinutes, 
+                    "", "", "", "", null); //other info
+                resultsSB.append(xmlChunk);  //recursive=true
+                for (int diri2 = diri; diri2 < nDirs; diri2++)
+                    if (dirs.get(diri2).startsWith(tDir))
+                        dirDone.set(diri2);
+                String msg = topOfAre + "EDDTableFromFileNames";
+                dirInfo.set(diri, indent + msg);
+                String2.log(success + msg);
+                nTableFileNames++;
+                nCreated++;
+                continue;
+            } catch (Throwable t) {
+                String2.log("> Attempt with EDDTableFromFileNames failed! Give up on this dir.\n" +
+                    MustBe.throwableToString(t));
+            }
+        }
+
+        String2.log("\nDirectory Tree:\n");
+        String2.log(dirTable.dataToCSVString());
+        String2.log("\n> *** EDD.generateDatasetsXmlFromFiles finished successfully. time=" +
+            Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n" +
+            "> nDirs=" + nDirs + " nDatasetsCreated=" + nCreated + "\n" +
+            "> (nGridNc=" + nGridNc + " nTablencCF=" + nTableNcCF +
+            " nTableNc=" + nTableNc + " nTableAscii=" + nTableAscii +
+            " nTableFileNames=" + nTableFileNames + ")\n");
+        if (nCreated == 0)
+            throw new RuntimeException("No datasets.xml chunks where successfully constructed."); 
+        return resultsSB.toString();
+    }
 
     /**
      * This calls testDasDds(tDatasetID, true).

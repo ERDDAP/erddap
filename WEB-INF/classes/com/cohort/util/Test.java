@@ -114,8 +114,8 @@ public class Test {
     }  
       
     /** 
-     * This returns true if the two float values are almost equal (or both NaN
-     * or both infinite). 
+     * This returns true if the two float values are almost equal (5 digits) 
+     * or both NaN or both infinite. 
      *
      * @param f1
      * @param f2 
@@ -130,8 +130,8 @@ public class Test {
     }  
       
     /** 
-     * This returns true if the two double values are almost equal (or both NaN
-     * or both infinite). 
+     * This returns true if the two double values are almost equal (9 digits)
+     * or both NaN or both infinite. 
      *
      * @param d1
      * @param d2 

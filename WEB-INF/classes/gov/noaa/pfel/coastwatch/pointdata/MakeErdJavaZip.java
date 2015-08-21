@@ -48,7 +48,7 @@ public class MakeErdJavaZip  {
 
         //make the JavaDocs
         String coastWatchClass = "gov.noaa.pfel.coastwatch.";
-        String commandLine0 = "C:\\Progra~1\\Java\\jdk1.7.0_67\\bin\\javadoc" +
+        String commandLine0 = "C:\\Progra~1\\Java\\jdk1.8.0_51\\bin\\javadoc" +
             //" -source 1.4" + //use 1.4 for the DODS classes that use "enum" //2011-02-22 Bob Simons changed enum to en.
             " -sourcepath " + classPath +      //root directory of the classes
             " -d "; //+ baseDir + "ConvertTableDoc" + //dir to hold results
@@ -237,7 +237,7 @@ public class MakeErdJavaZip  {
         //accumulate the file names to be zipped
         String ctName = destinationDir + "converttable.jar";
         StringBuilder cmdLine = new StringBuilder();
-        cmdLine.append("\\Progra~1\\Java\\jdk1.7.0_67\\bin\\jar cvf " + ctName);
+        cmdLine.append("\\Progra~1\\Java\\jdk1.8.0_51\\bin\\jar cvf " + ctName);
         //I thought I could use -C once and have lots of files after it. 
         //But no. I need to use -C for each file.   (maybe just if 'file' is a directory)
         //And can't use *. List files separately.

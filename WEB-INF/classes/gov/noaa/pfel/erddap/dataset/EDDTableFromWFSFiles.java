@@ -257,7 +257,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"" + tDatasetID +
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
+            "    <updateEveryNMillis>0</updateEveryNMillis>\n" +  //files are only added by full reload
             //"    <recursive>false</recursive>\n" +
             //"    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
             //"    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" +
@@ -294,7 +294,9 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
-developmentMode = true;
+        boolean oDevelopmentMode = developmentMode;
+        developmentMode = false;
+        try {
 
         Attributes externalAddAttributes = new Attributes();
         externalAddAttributes.add("title", "Old Title!");
@@ -321,8 +323,6 @@ developmentMode = true;
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-developmentMode = true;
-
 String expected = 
 directionsForGenerateDatasetsXml() +
 " * Since the source files don't have any metadata, you must add metadata\n" +
@@ -331,7 +331,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"uky_2ed7_6297_9e6e\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
-"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
@@ -352,7 +352,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"rowElementXPath\">/wfs:FeatureCollection/gml:featureMember</att>\n" +
 "        <att name=\"sourceUrl\">http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&amp;service=WFS&amp;typename=aasg:BoreholeTemperature&amp;format=&quot;text/xml;&#37;20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">The summary. Kentucky Geological Survey data from a local source.</att>\n" +
 "        <att name=\"title\">The Title</att>\n" +
 "    </addAttributes>\n" +
@@ -863,6 +863,13 @@ directionsForGenerateDatasetsXml() +
             pa1 = new FloatArray(table.getColumn("aasg:BoreholeTemperature/aasg:LongDegree"));
             pa2 = new FloatArray(table.getColumn("aasg:BoreholeTemperature/aasg:Shape/gml:Point/longitude"));
             Test.ensureEqual(pa1, pa2, "");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "*** The server disappeared ~July 2015. Find another?"); 
+        }
+        developmentMode = oDevelopmentMode;
+
     }
 
 
@@ -876,6 +883,7 @@ directionsForGenerateDatasetsXml() +
         String tName, error, results, tResults, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        try {
 
         //*** .das
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1080,7 +1088,7 @@ expected =
 "    String rowElementXPath \"/wfs:FeatureCollection/gml:featureMember\";\n" +
 "    String sourceUrl \"http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=\\\"text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0\\\"\";\n" +
 "    Float64 Southernmost_Northing 37.24673;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"WellName,APINo,Label,Operator,WellType,Field,County,State,FormationTD,OtherName\";\n" +
 "    String summary \"Borehole temperature measurements in West Virginia\";\n" +
 "    String time_coverage_end \"2012-08-05\";\n" +
@@ -1149,6 +1157,10 @@ expected =
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "\nresults=\n" + results);
 
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "Unexpected error"); 
+        }
 
     }
 

@@ -77,16 +77,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-//import org.apache.lucene.analysis.Analyzer;
-//import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-//import org.apache.lucene.document.Field;
-//import org.apache.lucene.index.IndexReader;
-//import org.apache.lucene.index.IndexWriter;
-//import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-//import org.apache.lucene.queryParser.ParseException;
-//import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TopDocs;
@@ -96,9 +88,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
-//import org.apache.lucene.store.Directory;
-//import org.apache.lucene.store.SimpleFSDirectory;
-//import org.apache.lucene.util.Version;
 
 import org.verisign.joid.consumer.OpenIdFilter;
 
@@ -609,6 +598,24 @@ public class Erddap extends HttpServlet {
                 doSlideSorter(request, response, loggedInAs, userQuery);
             } else if (endOfRequest.equals("status.html")) {
                 doStatus(request, response, loggedInAs);
+            } else if (endOfRequest.startsWith("dataProviderForm")) {
+                if (!EDStatic.dataProviderFormActive)
+                    throw new SimpleException(MessageFormat.format(EDStatic.disabled, 
+                        "Data Provider From"));
+                else if (endOfRequest.equals("dataProviderForm.html")) 
+                    doDataProviderForm(request, response, loggedInAs);
+                else if (endOfRequest.equals("dataProviderForm1.html")) 
+                    doDataProviderForm1(request, response, loggedInAs, ipAddress);
+                else if (endOfRequest.equals("dataProviderForm2.html")) 
+                    doDataProviderForm2(request, response, loggedInAs, ipAddress);
+                else if (endOfRequest.equals("dataProviderForm3.html")) 
+                    doDataProviderForm3(request, response, loggedInAs, ipAddress);
+                else if (endOfRequest.equals("dataProviderForm4.html")) 
+                    doDataProviderForm4(request, response, loggedInAs, ipAddress);
+                else if (endOfRequest.equals("dataProviderFormDone.html")) 
+                    doDataProviderFormDone(request, response, loggedInAs);
+                else sendResourceNotFoundError(request, response, "the first subdirectory or file is unknown");
+
             } else if (protocol.equals("subscriptions")) {
                 doSubscriptions(request, response, loggedInAs, ipAddress, endOfRequest, 
                     protocol, protocolEnd + 1, userQuery);
@@ -621,8 +628,7 @@ public class Erddap extends HttpServlet {
             } else if (endOfRequest.equals("version")) {
                 doVersion(request, response);
             } else {
-                if (verbose) String2.log(EDStatic.resourceNotFound + " end of protocol list");
-                sendResourceNotFoundError(request, response, "");
+                sendResourceNotFoundError(request, response, "the first subdirectory or file is unknown");
             }
             
             //tally
@@ -726,8 +732,7 @@ public class Erddap extends HttpServlet {
 
         //only thing left should be erddap/index.html request
         if (!requestUrl.equals("/" + EDStatic.warName + "/index.html")) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " not /index.html");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "index.html expected");
             return;
         }
 
@@ -1523,6 +1528,1536 @@ public class Erddap extends HttpServlet {
     }
 
     /**
+     * This shows the start of the forms for data providers to fill out.
+     * Note: default URL length (actually, the whole header) is 8KB. 
+     * That should be plenty. For longer, see tomcat settings:
+     * http://serverfault.com/questions/56691/whats-the-maximum-url-length-in-tomcat
+     *
+     */
+    public void doDataProviderForm(HttpServletRequest request, HttpServletResponse response,
+        String tLoggedInAs) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
+        OutputStream out = getHtmlOutputStream(request, response);
+        Writer writer = getHtmlWriter(tLoggedInAs, "Data Provider Form", out);
+
+        try {
+            writer.write(EDStatic.youAreHere(tLoggedInAs, "Data Provider Form"));
+
+//begin text
+//the overall table that constrains the width of the text
+writer.write(
+"<table style=\"width:800px; border-style:outset; border-width:0px; padding:0px; \" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<td>\n" +
+"This Data Provider Form is for people who have data and want it to be served by this ERDDAP.\n" +
+"The overview of the process is:\n" +
+"<ol>\n" +
+"<li>You fill out a 4-part form. When you finish a part,\n" +
+"  the information you just entered is\n"+
+"  sent to the administrator of this ERDDAP (<tt>" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"<li>The ERDDAP administrator will contact you to figure out the best way to\n" +
+"  transfer the data and to work out other details.\n" +
+"  &nbsp;\n" +
+"</ol>\n" +
+"\n" +
+"<h2>Things You Need To Know</h2>\n" +
+"<b>The Goal</b>\n" +
+"<br>The goal of this form is to help you create a description of your dataset\n" +
+"  (\"metadata\"), so that someone who knows nothing about this dataset will be\n" +
+"  able to find the dataset when they search for this type of dataset,\n" +
+"  understand the dataset, use the data properly, and give you credit\n" +
+"  for having created the dataset.\n" +
+"<p><b>Don't skim.</b>\n" +
+"<br>Please work your way down this document, reading everything carefully. Don't skim.\n" +
+"  If you skip over some important point, it will just be twice as much\n" +
+"  work for you (and me) later.\n" +
+"<p><b>Do your best.</b>\n" +
+"<br>This is the first pass at creating metadata for this dataset.\n" +
+"  The ERDDAP administrator will edit this and work with you to improve it.\n" +
+"  It is even easy to change the metadata after the dataset is in ERDDAP.\n" +
+"  <br>But, it is better to get this right the first time.\n" + 
+"  <br>Please focus, read carefully, be patient, be diligent, and do your best.\n" +
+"<p><b>Helpful Hint Icons</b> " + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Success! As you see, when you move/hover your mouse over" +
+    "<br>these question mark icons, you will see helpful hints" +
+    "<br>and term definitions.") + "\n" +
+"<br>If you move/hover your mouse over these question mark icons,\n" +
+"  you will see helpful hints and term definitions.\n" +
+"  <br>Try it now with the icon above.\n" +
+"  <br>There are lots of these icons on this web page and in ERDDAP in general.\n" +
+"  The information they contain is essential for filling out this form properly.\n" +
+"<p><b>How much time will this take?</b>\n" +
+"<br>It takes an hour to do a really good job with this form,\n" +
+"  less if you have all the needed information handy.\n" +
+"<p><b>Running out of time?</b>\n" +
+"<br>If you run out of time before you finish all 4 parts, just leave the\n" +
+"  tab open in your browser so you can come back and finish it later.\n" +
+"  There is no time limit for finishing all 4 parts.\n" +
+"<p><b>Large Number of Datasets?</b>\n" +
+"<br>If you have structured information (for example, ISO 19115 files) for a large\n" +
+"  number of datasets, there are probably ways that we can work together to\n" +
+"  (semi-)automate the process of getting the datasets into ERDDAP.\n" +
+"  Please email the administrator of this ERDDAP\n" +
+"  (<tt>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>)\n" + 
+"  to discuss the options.\n" +
+"<p><b>Need help?</b>\n" +
+"<br>If you have questions or need help while filling out this form,\n" +
+"  please send an email to the administrator of this ERDDAP\n" +
+"  (<tt>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"  <br>&nbsp;\n" +
+"\n" +
+
+"<p><a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm1.html\">" +
+    "<font size=\"4\"><b>Click Here for Part 1 (of 4) of the Data Provider Form</b></font></a>\n" +
+
+//the end of the overall table that constrains the width of the text
+"</tr>\n" +
+"</table>\n");
+
+        
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            writer.write(EDStatic.htmlForException(t));
+        }
+        endHtmlWriter(out, writer, tErddapUrl, false);
+        return;
+    }
+
+    /**
+     * This is part 1 of the Data Provider Form -- The Data.
+     */
+    public void doDataProviderForm1(HttpServletRequest request, HttpServletResponse response,
+        String tLoggedInAs, String ipAddress) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
+        OutputStream out = null;
+        Writer writer = null;
+
+        try {
+
+            //getParameters
+            //gridded options
+            String griddedOptions[] = {"(No, I have tabular data.)", 
+                ".bufr files", ".grib files",  ".hdf files", ".mat files",
+                ".nc files",
+                "(let's talk)"};
+            int griddedOption = Math.max(0, String2.indexOf(griddedOptions, 
+                request.getParameter("griddedOption")));
+
+            //tabular options
+            String tabularOptions[] = {"(No, I have gridded data.)",                 
+                ".csv files", "database", "Excel files", 
+                ".hdf files", ".mat files", ".nc files", 
+                "(let's talk)"};
+            int tabularOption = Math.max(0, String2.indexOf(tabularOptions, 
+                request.getParameter("tabularOption")));
+
+            //frequency options
+            String frequencyOptions[] = {
+                "never", 
+                "rarely", 
+                "yearly",
+                "monthly",
+                "daily",
+                "hourly",
+                "every minute",
+                "(irregularly)",
+                "(let's talk)"};
+            int frequencyOption = String2.indexOf(frequencyOptions, 
+                request.getParameter("frequencyOption"));
+
+            String 
+                tYourName         = request.getParameter("yourName"),
+                tEmailAddress     = request.getParameter("emailAddress"),
+                tTimestamp        = request.getParameter("timestamp");                
+
+            //validate (same order as form)
+            StringBuilder errorMsgSB = new StringBuilder();
+            tYourName     = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Your Name",     "", tYourName,     50, errorMsgSB);
+            tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Email Address", "", tEmailAddress, 50, errorMsgSB);
+            tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal(), 
+                tTimestamp, 20, errorMsgSB);
+            if (griddedOption == 0 && tabularOption == 0) 
+                errorMsgSB.append( 
+                "<br>&bull; Error: Please specify (below) how your gridded or tabular data is stored.\n");
+            frequencyOption = HtmlWidgets.validate0ToMax(
+                "Frequency", 0, frequencyOption, frequencyOptions.length - 1, errorMsgSB);
+            if (errorMsgSB.length() > 0)
+                errorMsgSB.insert(0, 
+                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+
+            String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
+
+            //if this is a submission, 
+            boolean isSubmission = "Submit".equals(request.getParameter("Submit"));
+            if (isSubmission && errorMsgSB.length() == 0) {
+                //convert the info into psuedo datasets.xml
+                String content = 
+                    "Data Provider Form - Part 1\n" + //important! Bob's erd.data gmail filter looks for 'Data Provider Form'
+                    "  from " + fromInfo + "\n" +
+                    "  ipAddress=" + ipAddress + "\n" +
+                    "\n" +
+                    "griddedOption=" + griddedOptions[griddedOption] + "\n" +
+                    "tabularOption=" + tabularOptions[tabularOption] + "\n" +
+                    "frequencyOption=" + frequencyOptions[frequencyOption] + "\n" +
+                    "\n";
+
+                //log the content to /logs/dataProviderForm.log
+                String error = String2.appendFile(
+                    EDStatic.fullLogsDirectory + "dataProviderForm.log",
+                    "*** " + content);
+                if (error.length() > 0)
+                    String2.log(String2.ERROR + 
+                        " while writing to logs/dataProviderForm.log:\n" +
+                        error);
+                //email the content to the admin
+                EDStatic.email(EDStatic.adminEmail, 
+                    "Data Provider Form - Part 1, from " + fromInfo,
+                    content);
+
+                //redirect to part 2
+                sendRedirect(response, tErddapUrl + "/dataProviderForm2.html?" +
+                    "yourName=" + SSR.minimalPercentEncode(tYourName) +
+                    "&emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) +
+                    "&timestamp=" + SSR.minimalPercentEncode(tTimestamp));
+    
+                return;
+            }
+
+            //write the HTML
+            out = getHtmlOutputStream(request, response);
+            writer = getHtmlWriter(tLoggedInAs, "Data Provider Form - Part 1", out);
+            writer.write(EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 1"));
+
+            //begin form
+            String formName = "f1";
+            HtmlWidgets widgets = new HtmlWidgets("", false, //style, false=not htmlTooltips
+                EDStatic.imageDirUrl(tLoggedInAs)); 
+            widgets.enterTextSubmitsForm = false; 
+            writer.write(widgets.beginForm(formName, 
+                //this could be POST to deal with lots of text. 
+                //but better to change tomcat settings (above) and keep ease of use
+                "GET", tErddapUrl + "/dataProviderForm1.html", "") + "\n");
+
+            //hidden fields
+            writer.write(
+                widgets.hidden("timestamp", XML.encodeAsHTML(tTimestamp)) + 
+                "\n");
+
+//begin text
+//the overall table that constrains the width of the text
+writer.write(
+"<table style=\"width:800px; border-style:outset; border-width:0px; padding:0px; \" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<td>\n" +
+"This is part 1 (of 4) of the Data Provider Form.\n" +
+"<br>Need help? Send an email to the administrator of this ERDDAP (<tt>" + 
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"<br>&nbsp;\n" +
+"\n");
+
+//error message?
+if (isSubmission && errorMsgSB.length() > 0) 
+writer.write("<font class=\"warningColor\">" + errorMsgSB.toString() + "</font> " + 
+    "<br>&nbsp;\n");
+
+//Contact Info
+writer.write(
+"<h2>Your Contact Information</h2>\n" +
+"This will be used by the ERDDAP administrator to contact you.\n" +
+"This won't go in the dataset's metadata or be made public.\n" +
+"<p>What is your name? " +
+widgets.textField("yourName", "", //tooltip
+    30, 50, tYourName, "") +
+"  <br>What is your email address? " +
+widgets.textField("emailAddress", "", //tooltip
+    30, 50, tEmailAddress, "") +
+"  <br>This dataset submission's timestamp is " + tTimestamp + ".\n" + 
+"\n");
+
+//The Data
+writer.write(
+"<h2>The Data</h2>\n" +
+"ERDDAP deals with a dataset in one of two ways: as gridded data or as tabular data.\n" +
+
+//Gridded Data
+"<p><b>Gridded Data</b>\n" +
+"<br>ERDDAP can serve data from various types of data files\n" +
+"(and from OPeNDAP servers like Hyrax, THREDDS, GrADS, ERDDAP) that contain multi-dimensional\n" +
+"gridded data, for example, Level 3 sea surface temperature data (from a satellite) with\n" +
+"three dimensions: [time][latitude][longitude].\n" +
+"<p>The data for a gridded dataset can be stored in one file or many files\n" +
+"(typically with one time point per file).\n" +
+"<p>If your dataset is already served via an OPeNDAP server,\n" +
+"skip this form and just email the dataset's OPeNDAP URL\n" +
+"to the administrator of this ERDDAP \n" +
+"  (<tt>" + XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"<p>How is your gridded data stored?\n" +
+widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, "") +
+"\n" +
+
+//Tabular Data
+"<p><b>Tabular Data</b>\n" +
+"<br>ERDDAP can also serve data that can be <i>represented</i> as a single, database-like\n" +
+"table, where there is a column for each type of data and a row for each observation.\n" +
+"This includes:\n" +
+"<ul>\n" +
+"<li>All data that is currently stored in a database.\n" +
+"  <br>(See <a rel=\"help\" href=\"#databases\">Data in Databases</a>\n" +
+"  below for more information.)\n" +
+"<li>All <i>in situ</i> data.\n" +
+"  <br>Examples: a time series from an instrument or several similar instruments,\n" +
+"  profile data from a CTD or a group of CTD's,\n" +
+"  or data collected during a ship's cruise (the similar cuises over several years).\n" +
+"<li>Non-geospatial data that can be represented as a table of data,\n" +
+"  <br>Examples: data from a laboratory experiment, genetic sequence data,\n" +
+"  <br>or a list of bibliographic references.\n" +
+"<li>Collections of other types of files (for example, image or audio files).\n" +
+"  <br>ERDDAP can present the file names in a table and let users\n" +
+"  view or download the files.\n" +
+"</ul>\n" +
+"The data for a tabular dataset can be stored in one file or many files\n" +
+"(typically with data for one station, one glider, one animal, or one cruise per file).\n" +
+"We recommend making one dataset with all of the data that is very similar,\n" +
+"and not a lot of separate datasets.\n" +
+"For example, you might make one dataset with data from a group of moored buoys,\n" +
+"a group of gliders, a group of animals, or a group of cruises (for example, annually on one line).\n" +
+"<p>How is your tabular data stored?\n" +
+widgets.select("tabularOption", "", 1, tabularOptions, tabularOption, "") +
+"\n" +
+
+//Frequency Of Changes
+"<p><b>Frequency of Changes</b>\n" +
+"<br>Some datasets get new data frequently. Some datasets will never be changed.\n" +
+"<br>How often will this data be changed?\n" +
+widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") +
+"<br>&nbsp;\n" +
+"\n");
+
+//Submit
+writer.write(
+"<h2>Finished with part 1?</h2>\n" + 
+"Click\n" + 
+widgets.button("submit", "Submit", "", "Submit", "") +
+"to send this information to the ERDDAP administrator and move on to part 2 (of 4).\n" +
+"\n");
+
+//Data in Databases
+writer.write(
+"<br>&nbsp;" +
+"<hr>\n" + 
+"<h2><a name=\"databases\"><font size=\"3\">Additional information about<br></font>Data in Databases</a></h2>\n" +
+"If your data is in a database,\n" +
+"you need to make one,\n" +
+"  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Denormalization\">denormalized<img\n" + 
+"    src=\"images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
+"    title=\"This link to an external web site does not constitute an endorsement.\"/></a>\n" +
+"table or\n" +
+"  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/View_(SQL)\">view<img\n" + 
+"    src=\"images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
+"    title=\"This link to an external web site does not constitute an endorsement.\"/></a>\n" +
+"with all of the data that you want to make available as one dataset in ERDDAP.\n" +
+"For large, complex databases, it may make sense to separate out several chunks\n" +
+"as denormalized tables,\n" +
+"each with a different type of data, which will become separate datasets in ERDDAP.\n" +
+"Talk this over with the administrator of this ERDDAP (<tt>" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"\n" +
+"<p>Making a denormalized table may sound like a crazy idea to you.\n" +
+"Please trust us. The denormalized table solves several problems:\n" +
+"<ul>\n" +
+"<li>It's vastly easier for users.\n" +
+"  <br>When ERDDAP presents the dataset as one, simple, denormalized table,\n" +
+"  it is very easy for anyone to understand the data. Most users have never\n" +
+"  heard of normalized tables, and very few understand\n" +
+"  keys, foreign keys, or table joins,\n" +
+"  and they almost certainly don't know the details of the different types of joins,\n" +
+"  or how to specify the SQL to do a join (or multiple joins). Using a denormalized\n" +
+"  table avoids all those problems.  This reason alone justifies the use of a\n" +
+"  denormalized table for the presentation of the data to ERDDAP users.\n" +
+"  <br>&nbsp;\n" +
+"<li>You can make changes for ERDDAP without changing your tables.\n" +
+"  <br>ERDDAP has a few requirements that may be different from how you have set\n" +
+"  up your database.\n" +
+"  <br>For example, ERDDAP requires that timestamp data be stored in 'timestamp\n" +
+"  with timezone' fields.\n" +
+"  <br>By making a separate table/view for ERDDAP, you can make these changes\n" +
+"  when you make the denormalized table for ERDDAP.\n" +
+"  Thus, you don't have to make any changes to your tables.\n" +
+"  <br>&nbsp;\n" +
+"<li>ERDDAP will recreate some of the structure of the normalized tables.\n" +
+"  <br>You can specify which columns of data come from the 'outer' tables and therefore\n" +
+"  have a limited number of distinct values.  ERDDAP will collect all of the\n" +
+"  distinct values in each of these columns\n" +
+"  and present them to users in drop-down lists.\n" +
+"  <br>&nbsp;\n" +
+"<li>A denormalized table makes the data hand-off from you to the ERDDAP\n" +
+"  administrator easy.\n" +
+"  <br>You're the expert for this dataset,\n" +
+"  so it makes sense that you make the decisions\n" +
+"  about which tables and which columns to join and how to join them.\n" +
+"  So you don't have to hand us several tables and detailed instructions for\n" +
+"  several joins, you just have to give us access to the denormalized table.\n" +
+"  <br>&nbsp;\n" +
+"<li>A denormalized table allows for efficient access to the data.\n" +
+"  <br>The denormalized form is usually faster to access than the normalized form.\n" +
+"  Joins can be slow. Multiple joins can be very slow.\n" +
+"</ul>\n" +
+"In order to get the data from the database into ERDDAP, there are three options:\n" +
+"<ul>\n" +
+"<li>Recommended Option:\n" +
+"  <br>You can create a comma- or tab-separated-value file with\n" +
+"  the data from the denormalized table.\n" +
+"  <br>If the dataset is huge, then it makes sense to create several files,\n" +
+"  each with a cohesive subset of the denormalized table\n" +
+"  (for example, data from a smaller time range).\n" +
+"  <p>The big advantage here is that ERDDAP will be able to handle user requests\n" +
+"  for data without any further effort by your database.\n" +
+"  So ERDDAP won't be a burden on your database or a security risk.\n" +
+"  This is the best option under almost all circumstances because ERDDAP can usually\n" +
+"  get data from files faster than from a database\n" +
+"  (if we convert the .csv files to .ncCF files). (Part of the reason is that\n" +
+"  ERDDAP+files is a read-only system and doesn't have to deal with making changes\n" +
+"  while providing\n" +
+"  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ACID\">ACID<img\n" + 
+"    src=\"images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
+"    title=\"This link to an external web site does not constitute an endorsement.\"/></a>\n" +
+"  (Atomicity, Consistency, Isolation, Durability).)\n" +
+"  Also, you probably won't need a separate server since we can store the data\n" +
+"  on one of our RAIDs and access it with an existing ERDDAP on an existing server.\n" +
+"<li>Okay Option:\n" +
+"  <br>You set up a new database on a different computer with just the\n" +
+"  denormalized table.\n" +
+"  <br>Since that database can be a free and open source database like PostgreSQL,\n" +
+"  this option needn't cost a lot.\n" +
+"  <p>The big advantage here are that ERDDAP will be able to handle user requests\n" +
+"  for data without any further effort by your current database.\n" +
+"  So ERDDAP won't be a burden on your current database.\n" +
+"  This also eliminates a lot of security concerns since ERDDAP will not have\n" +
+"  access to your current database.\n" +
+"<li>Discouraged Option:\n" +
+"  <br>We can connect ERDDAP to your current database.\n" +
+"  <br>To do this, you need to:\n" +
+"  <ul>\n" +
+"  <li>Create a separate table or view with the denormalized table of data.\n" +
+"  <li>Create an \"erddap\" user who has read-only access to only the denormalized table(s).\n" +
+"    <br>&nbsp;\n" +
+"  </ul>\n" +
+"  This is an option if the data changes very frequently and you want to give\n" +
+"  ERDDAP users instant access to those changes; however, even so,\n" +
+"  it may make sense to use the file option above and periodically\n" +
+"  (every 30 minutes?) replace the file that has today's data.\n" +
+"  <br>The huge disadvantages of this approach are that ERDDAP user requests will\n" +
+"  probably place an unbearably large burden on your database and that\n" +
+"  the ERDDAP connection is a security risk (although we can minimize/manage the risk).\n" +
+"</ul>\n" +
+"When you talk with the administrator of this ERDDAP (<tt>" +
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>),\n" +
+"you can discuss which of these options\n" +
+"to pursue and how to handle the details.\n" +
+"\n");
+
+//the end of the overall table that constrains the width of the text
+writer.write(
+"</tr>\n" +
+"</table>\n");
+
+//end form
+writer.write(widgets.endForm());        
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            if (out == null || writer == null)
+                throw t;
+            else writer.write(EDStatic.htmlForException(t));
+        }
+        endHtmlWriter(out, writer, tErddapUrl, false);
+        return;
+    }
+
+    /**
+     * This is Data Provider Form 2
+     */
+    public void doDataProviderForm2(HttpServletRequest request, HttpServletResponse response,
+        String tLoggedInAs, String ipAddress) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
+        OutputStream out = null;
+        Writer writer = null;
+
+        try {
+
+            //get parameters
+            //cdm_data_type options
+            String cdmDataTypes[] = {
+                "Grid",
+                "Point", 
+                "Profile", 
+                "TimeSeries",
+                "TimeSeriesProfile",
+                "Trajectory",
+                "TrajectoryProfile",
+                "Other"};
+            int defaultCdmDataType = String2.indexOf(cdmDataTypes, "Other");
+            int tCdmDataType = String2.indexOf(cdmDataTypes, 
+                request.getParameter("cdm_data_type"));
+            String cdmDataTypeHelp =                 
+"CDM is Unidata's Common Data Model, a way of categorizing datasets" +
+"<br>based on the geometry of the dataset. Pick the cdm_data_type which" +
+"<br>is most appropriate:" +
+"<br>&bull; Use <tt>Grid</tt> for all gridded datasets." +
+"<br>&bull; Use <tt>Point</tt> for a dataset with unrelated points." +
+"<br>&nbsp;&nbsp;Example: whale sightings, or stranded marine mammal sightings." +
+"<br>&bull; Use <tt>Profile</tt> for data from multiple depths at one or more longitude," +
+"<br>&nbsp;&nbsp;latitude locations." +
+"<br>&nbsp;&nbsp;Example: CTD's if not associated with a TimeSeries or Trajectory." +
+"<br>&bull; Use <tt>TimeSeries</tt> for data from a set of stations with fixed longitude," +
+"<br>&nbsp;&nbsp;latitude(,altitude)." +
+"<br>&nbsp;&nbsp;Examples: moored buoys, or stations." +
+"<br>&bull; Use <tt>TimeSeriesProfile</tt> for profiles from a set of stations." +
+"<br>&nbsp;&nbsp;Examples: stations with CTD's." +
+"<br>&bull; Use <tt>Trajectory</tt> for data from a set of longitude,latitude(,altitude)" +
+"<br>&nbsp;&nbsp;paths called trajectories." +
+"<br>&nbsp;&nbsp;Examples: ships, surface gliders, or tagged animals." +
+"<br>&bull; Use <tt>TrajectoryProfile</tt> for profiles along trajectories." +
+"<br>&nbsp;&nbsp;Examples: ships + CTD's, or profiling gliders." +
+"<br>&bull; Use <tt>Other</tt> if the dataset doesn't have latitude,longitude data or if" +
+"<br>&nbsp;&nbsp;no other type is appropriate." +
+"<br>&nbsp;&nbsp;Examples: laboratory analyses, or fish landings by port name (if no lat,lon).";
+
+            String creatorTypes[] = {
+                "person",
+                "group", 
+                "institution", 
+                "position"};
+            int tCreatorType = String2.indexOf(creatorTypes, 
+                request.getParameter("creator_type"));
+
+            String 
+                //required
+                tYourName         = request.getParameter("yourName"),
+                tEmailAddress     = request.getParameter("emailAddress"),
+                tTimestamp        = request.getParameter("timestamp"),
+                tTitle            = request.getParameter("title"),
+                tSummary          = request.getParameter("summary"),
+                tCreatorName      = request.getParameter("creator_name"),
+                tCreatorEmail     = request.getParameter("creator_email"),
+                tInstitution      = request.getParameter("institution"),
+                tInfoUrl          = request.getParameter("infoUrl"),
+                tLicense          = request.getParameter("license"),
+                //optional
+                tHistory          = request.getParameter("history"),
+                tAcknowledgement  = request.getParameter("acknowledgement"),
+                tID               = request.getParameter("id"),
+                tNamingAuthority  = request.getParameter("naming_authority"),
+                tProductVersion   = request.getParameter("product_version"),
+                tReferences       = request.getParameter("references"),
+                tComment          = request.getParameter("comment");
+
+            //validate (same order as form) 
+            StringBuilder errorMsgSB = new StringBuilder();
+            tYourName     = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Your Name",     "?", tYourName,     50, null);
+            tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Email Address", "?", tEmailAddress, 50, null);
+            tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
+                tTimestamp, 20, null);
+
+            //required
+            tTitle          = HtmlWidgets.validateIsSomethingNotTooLong("title",         "", tTitle,             80, errorMsgSB);
+            tSummary        = HtmlWidgets.validateIsSomethingNotTooLong("summary",       "", tSummary,          500, errorMsgSB);
+            tCreatorName    = HtmlWidgets.validateIsSomethingNotTooLong("creator_name",  "", tCreatorName,       80, errorMsgSB);
+            tCreatorType    = HtmlWidgets.validate0ToMax("creator_type", 0, 
+                tCreatorType, creatorTypes.length - 1, errorMsgSB);
+            tCreatorEmail   = HtmlWidgets.validateIsSomethingNotTooLong("creator_email", "", tCreatorEmail,      80, errorMsgSB);
+            tInstitution    = HtmlWidgets.validateIsSomethingNotTooLong("institution",   "", tInstitution,       80, errorMsgSB);
+            tInfoUrl        = HtmlWidgets.validateIsSomethingNotTooLong("infoUrl",       "", tInfoUrl,          120, errorMsgSB);
+            tLicense        = HtmlWidgets.validateIsSomethingNotTooLong("license", "[standard]", tLicense,      500, errorMsgSB);
+            tCdmDataType    = HtmlWidgets.validate0ToMax("cdm_data_type", defaultCdmDataType, 
+                tCdmDataType, cdmDataTypes.length - 1, errorMsgSB);
+            //optional
+            tAcknowledgement= HtmlWidgets.validateNotTooLong("acknowledgement",          "", tAcknowledgement,  350, errorMsgSB);
+            tHistory        = HtmlWidgets.validateNotTooLong("history",                  "", tHistory,          500, errorMsgSB);
+            tID             = HtmlWidgets.validateNotTooLong("id",                       "", tID,                80, errorMsgSB);
+            tNamingAuthority= HtmlWidgets.validateNotTooLong("naming_authority",         "", tNamingAuthority,  160, errorMsgSB);
+            tProductVersion = HtmlWidgets.validateNotTooLong("product_version",          "", tProductVersion,    40, errorMsgSB);
+            tReferences     = HtmlWidgets.validateNotTooLong("references",               "", tReferences,       500, errorMsgSB);
+            tComment        = HtmlWidgets.validateNotTooLong("comment",                  "", tComment,          350, errorMsgSB);
+            if (errorMsgSB.length() > 0)
+                errorMsgSB.insert(0, 
+                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+
+            String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
+
+            //if this is a submission, 
+            boolean isSubmission = "Submit".equals(request.getParameter("Submit"));
+            if (isSubmission && errorMsgSB.length() == 0) {
+                //convert the info into psuedo datasets.xml
+                String content = 
+"Data Provider Form - Part 2\n" + //important! Bob's erd.data gmail filter looks for this
+"  from " + fromInfo + "\n" +
+"  ipAddress=" + ipAddress + "\n" +
+"\n" +
+"    <addAttributes>\n" +
+"        <att name=\"acknowledgement\">" + XML.encodeAsXML(tAcknowledgement)           + "</att>\n" +
+"        <att name=\"cdm_data_type\">"   + XML.encodeAsXML(cdmDataTypes[tCdmDataType]) + "</att>\n" +
+"        <att name=\"cdm_timeseries|trajectory|profile_variables\">???</att>\n" +
+"        <att name=\"subsetVariables\">???</att>\n" +
+"        <att name=\"comment\">"         + XML.encodeAsXML(tComment)                   + "</att>\n" +
+"        <att name=\"Conventions\">ACDD-1.3, COARDS, CF-1.6</att>\n" +
+"        <att name=\"creator_name\">"    + XML.encodeAsXML(tCreatorName)               + "</att>\n" +
+"        <att name=\"creator_type\">"    + XML.encodeAsXML(creatorTypes[tCreatorType]) + "</att>\n" +
+"        <att name=\"creator_email\">"   + XML.encodeAsXML(tCreatorEmail)              + "</att>\n" +
+"        <att name=\"creator_url\">"     + XML.encodeAsXML(tInfoUrl) /*yes, infoUrl*/  + "</att>\n" +
+"        <att name=\"history\">"         + XML.encodeAsXML(tHistory)                   + "</att>\n" +
+"        <att name=\"id\">"              + XML.encodeAsXML(tID)                        + "</att>\n" +
+"        <att name=\"infoUrl\">"         + XML.encodeAsXML(tInfoUrl)                   + "</att>\n" +
+"        <att name=\"institution\">"     + XML.encodeAsXML(tInstitution)               + "</att>\n" +
+"        <!-- att name=\"keywords\"></att -->\n" +
+"        <att name=\"license\">"         + XML.encodeAsXML(tLicense)                   + "</att>\n" +
+"        <att name=\"naming_authority\">"+ XML.encodeAsXML(tNamingAuthority)           + "</att>\n" +
+"        <att name=\"product_version\">" + XML.encodeAsXML(tProductVersion)            + "</att>\n" +
+"        <att name=\"references\">"      + XML.encodeAsXML(tReferences)                + "</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"summary\">"         + XML.encodeAsXML(tSummary)                   + "</att>\n" +
+"        <att name=\"title\">"           + XML.encodeAsXML(tTitle)                     + "</att>\n" +
+"    </addAttributes>\n" +
+"\n";
+
+                //log the content to /logs/dataProviderForm.log
+                String error = String2.appendFile(
+                    EDStatic.fullLogsDirectory + "dataProviderForm.log",
+                    "*** " + content);
+                if (error.length() > 0)
+                    String2.log(String2.ERROR + 
+                        " while writing to logs/dataProviderForm.log:\n" +
+                        error);
+                //email the content to the admin
+                EDStatic.email(EDStatic.adminEmail, 
+                    "Data Provider Form - Part 2, from " + fromInfo,
+                    content);
+
+                //redirect to part 3
+                sendRedirect(response, tErddapUrl + "/dataProviderForm3.html?" +
+                    "yourName=" + SSR.minimalPercentEncode(tYourName) +
+                    "&emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) +
+                    "&timestamp=" + SSR.minimalPercentEncode(tTimestamp));
+               
+                return;
+            }
+
+            //write the HTML
+            out = getHtmlOutputStream(request, response);
+            writer = getHtmlWriter(tLoggedInAs, "Data Provider Form - Part 2", out);
+            writer.write(EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 2"));
+
+            //begin form
+            String formName = "f1";
+            HtmlWidgets widgets = new HtmlWidgets("", false, //style, false=not htmlTooltips
+                EDStatic.imageDirUrl(tLoggedInAs)); 
+            widgets.enterTextSubmitsForm = false; 
+            writer.write(widgets.beginForm(formName, 
+                //this could be POST to deal with lots of text. 
+                //but better to change tomcat settings (above) and keep ease of use
+                "GET", tErddapUrl + "/dataProviderForm2.html", "") + "\n");
+            
+            //hidden fields
+            writer.write(
+                widgets.hidden("yourName",     XML.encodeAsHTML(tYourName)) +
+                widgets.hidden("emailAddress", XML.encodeAsHTML(tEmailAddress)) +
+                widgets.hidden("timestamp",    XML.encodeAsHTML(tTimestamp)) + 
+                "\n");
+
+//begin text
+//the overall table that constrains the width of the text
+writer.write(
+"<table style=\"width:800px; border-style:outset; border-width:0px; padding:0px; \" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<td>\n" +
+"This is part 2 (of 4) of the Data Provider Form\n" +
+"<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
+"<br>Need help? Send an email to the administrator of this ERDDAP (<tt>" + 
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"<br>&nbsp;\n" +
+"\n");
+
+//error message?
+if (isSubmission && errorMsgSB.length() > 0) 
+writer.write("<font class=\"warningColor\">" + errorMsgSB.toString() + "</font> " + 
+    "<br>&nbsp;\n");
+
+//Global Metadata
+writer.write(
+"<h2>Global Metadata</h2>\n" +
+"Global metadata is information about the entire dataset. It is a set of\n" +
+"<tt>attribute=value</tt> pairs, for example,\n" +
+"<br><tt>title=Spray Gliders, Scripps Institution of Oceanography</tt>\n" +
+"<p>.nc files &mdash; If your data is in .nc files that already have some metadata,\n" +
+"just provide the information below for attributes that aren't in your files\n" +
+"or where you want to change the attribute's value.\n" +
+"\n" +
+"<br>" + widgets.beginTable(0, 0, "") +
+//Required
+"<tr>\n" +
+"  <td colspan=\"3\"><b>Required</b>\n" + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>title\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+     "This is a short (&lt;=80 characters) description of the dataset. For example," + 
+"    <br><tt>Spray Gliders, Scripps Institution of Oceanography</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("title", "", 80, 80, tTitle, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>summary\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is a paragraph describing the dataset.  (&lt;=500 characters)" + 
+    "<br>The summary should answer these questions:" +
+    "<br>&bull; Who created the dataset?" +
+    "<br>&bull; What information was collected?" +
+    "<br>&bull; When was the data collected?" +
+    "<br>&bull; Where was it collected?" +
+    "<br>&bull; Why was it collected?" +
+    "<br>&bull; How was it collected?") + "&nbsp;\n" +
+"  <td><textarea name=\"summary\" cols=\"80\" rows=\"6\" maxlength=\"500\" wrap=\"soft\">" +
+XML.encodeAsHTML(tSummary) + //encoding is important for security
+"</textarea>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>creator_name\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is the name of the primary person, group, institution," +
+    "<br>or position that created the data. For example," + 
+    "<br><tt>John Smith</tt>") + "&nbsp;" +
+"  <td>\n" + 
+widgets.textField("creator_name", "", 40, 40, tCreatorName, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>creator_type\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This identifies the creator_name (above) as a person," +
+    "<br>group, institution, or position.") + "&nbsp;" + 
+"  <td>\n" + 
+widgets.select("creator_type", "", 1, creatorTypes, tCreatorType, "") +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>creator_email\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is the best contact email address for the creator of this data." +
+    "<br>Use your judgment &mdash; the creator_email might be for a" +
+    "<br>different entity than the creator_name." + 
+    "<br>For example, <tt>your.name@yourOrganization.org</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("creator_email", "", 40, 40, tCreatorEmail, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>institution\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is the short/abbreviated form of the name of the primary" +
+    "<br>organization that created the data. For example," + 
+    "<br><tt>NOAA NMFS SWFSC</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("institution", "", 40, 40, tInstitution, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>infoUrl\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is a URL with information about this dataset." +
+    "<br>For example, <tt>http://spray.ucsd.edu</tt>" + 
+    "<br>If there is no URL related to the dataset, provide" +
+    "<br>a URL for the group or organization.") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("infoUrl", "", 80, 120, tInfoUrl, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>license\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is the license and disclaimer for use of this data." +
+    "<br>ERDDAP has a standard license, which you can use via <tt>[standard]</tt>" +
+    "<br>You can either add to that or replace it. (&lt;=500 characters)" +
+    "<br>The text of the standard license is:" +
+    "<br><tt>" + String2.replaceAll(EDStatic.standardLicense, "\n", "<br>") +
+    "</tt>") + "&nbsp;\n" +
+"  <td><textarea name=\"license\" cols=\"80\" rows=\"6\" maxlength=\"500\" wrap=\"soft\" >" +
+XML.encodeAsHTML(tLicense) +  //encoding is important for security
+"</textarea>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>cdm_data_type\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, cdmDataTypeHelp) + "&nbsp;\n" + 
+"  <td>\n" + 
+widgets.select("cdm_data_type", "", 1, cdmDataTypes, tCdmDataType, "") +
+"</tr>\n" +
+"<tr><td>&nbsp;\n" +
+"</tr>\n" +
+//Optional
+"<tr>\n" +
+"  <td><b>Optional</b>\n" +
+"  <td>&nbsp;\n" +
+"  <td>(Please provide the information if it is available for your dataset.)\n" + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>acknowledgement\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is the place to acknowledge various types of support for" +
+    "<br>the project that produced this data. (&lt;=350 characters) For example," +
+    "<br><tt>This project received additional funding from the NOAA" +
+    "<br>Climate and Global Change Program.</tt>") + "&nbsp;\n" +
+"  <td><textarea name=\"acknowledgement\" cols=\"80\" rows=\"4\" maxlength=\"350\" wrap=\"soft\" >" +
+XML.encodeAsHTML(tAcknowledgement) +  //encoding is important for security
+"</textarea>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>history\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is a list of the actions (one per line) which led to the creation of this data." +
+    "<br>Ideally, each line includes a timestamp and a description of the action. (&lt;=500 characters) For example," + 
+    "<br><tt>Datafiles are downloaded ASAP from http://oceandata.sci.gsfc.nasa.gov/MODISA/L3SMI/ to NOAA NMFS SWFSC ERD." +
+    "<br>NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add the time dimension and slightly modify the metadata.</tt>") + "&nbsp;\n" +
+"  <td><textarea name=\"history\" cols=\"80\" rows=\"6\" maxlength=\"500\" wrap=\"soft\" >" +
+XML.encodeAsHTML(tHistory) +  //encoding is important for security
+"</textarea>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>id\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is an identifier for the dataset, as provided by" +
+    "<br>its naming authority. The combination of \"naming authority\"" +
+    "<br>and the \"id\" should be globally unique, but the id can be" +
+    "<br>globally unique by itself also. IDs can be URLs, URNs, DOIs," +
+    "<br>meaningful text strings, a local key, or any other unique" +
+    "<br>string of characters. The id should not include white space" +
+    "<br>characters." +
+    "<br>For example, <tt>CMC0.2deg-CMC-L4-GLOB-v2.0</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("id", "", 40, 80, tID, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>naming_authority\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is the organization that provided the id (above) for the dataset." +
+    "<br>The naming authority should be uniquely specified by this attribute." +
+    "<br>We recommend using reverse-DNS naming for the naming authority;" +
+    "<br>URIs are also acceptable." +
+    "<br>For example, <tt>org.ghrsst</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("naming_authority", "", 80, 160, tNamingAuthority, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>product_version\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is the version identifier of this data. For example, if you" +
+    "<br>plan to add new data yearly, you might use the year as the version identifier." +
+    "<br>For example, <tt>2014</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("product_version", "", 20, 40, tProductVersion, "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>references\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is one or more published or web-based references" +
+    "<br>that describe the data or methods used to produce it. URL's and" +
+    "<br>DOI's are recommend. (&lt;=500 characters) For example,\n" +
+    "<br><tt>Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a" +
+    "<br>algorithms for oligotrophic oceans: A novel approach" +
+    "<br>based on three-band reflectance difference, J. Geophys." +
+    "<br>Res., 117, C01011, doi:10.1029/2011JC007395.</tt>") + "&nbsp;\n" +
+"  <td><textarea name=\"references\" cols=\"80\" rows=\"6\" maxlength=\"500\" wrap=\"soft\" >" +
+XML.encodeAsHTML(tReferences) +  //encoding is important for security
+"</textarea>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>comment\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is miscellaneous information about the data, not" +
+    "<br>captured elsewhere. (&lt;=350 characters) For example," +
+    "<br><tt>No animals were harmed during the collection of this data.</tt>") + "&nbsp;\n" +
+"  <td><textarea name=\"comment\" cols=\"80\" rows=\"4\" maxlength=\"350\" wrap=\"soft\" >" +
+XML.encodeAsHTML(tComment) +  //encoding is important for security
+"</textarea>\n" +
+"</tr>\n" +
+"<tr><td>&nbsp;\n" +
+"</tr>\n" +
+"</table>\n" +
+"\n");
+
+//Submit
+writer.write(
+"<h2>Finished with part 2?</h2>\n" + 
+"Click\n" + 
+widgets.button("submit", "Submit", "", "Submit", "") +
+"to send this information to the ERDDAP administrator and move on to part 3 (of 4).\n" +
+"\n");
+
+//the end of the overall table that constrains the width of the text
+writer.write(
+"</tr>\n" +
+"</table>\n");
+        
+//end form
+writer.write(widgets.endForm());        
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            if (out == null || writer == null)
+                throw t;
+            else writer.write(EDStatic.htmlForException(t));
+        }
+        endHtmlWriter(out, writer, tErddapUrl, false);
+        return;
+    }
+
+    /**
+     * This shows the form for data providers to fill out.
+     * Note: default URL length (actually, the whole header) is 8KB. 
+     * That should be plenty. For longer, see tomcat settings:
+     * http://serverfault.com/questions/56691/whats-the-maximum-url-length-in-tomcat
+     *
+     */
+    public void doDataProviderForm3(HttpServletRequest request, HttpServletResponse response,
+        String tLoggedInAs, String ipAddress) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
+        OutputStream out = null;
+        Writer writer = null;
+
+        try {
+
+            //get parameters
+            //dataType  (pretend char doesn't exist?)
+            String groupOptions[] = {
+                "first", "second", "third", "fourth", "fifth"};
+            int tGroup = Math.max(0, String2.indexOf(groupOptions,
+                request.getParameter("group")));             
+            
+            String dataTypeOptions[] = {"(unknown)", 
+                "String", "boolean", "byte",  "short", "int", "long", "float", "double"};
+            String dataTypeHelp = 
+                "This is the data type and precision of this variable." +
+                "<br>If the data file uses a specific type (for example, in a .nc file)," +
+                "<br>&nbsp;&nbsp;specify that type here." +
+                "<br>If the data file doesn't use a specific type (for example, in a .csv file)," +
+                "<br>&nbsp;&nbsp;specify the type that should be used in ERDDAP." +
+                "<br>&bull; Use <tt>(unknown)</tt> if you don't know." +
+                "<br>&bull; <tt>String</tt> is a series of characters." +
+                "<br>&nbsp;&nbsp;(For databases, ERDDAP treats all non-numeric data types as Strings.)" +
+                "<br>&bull; <tt>boolean</tt> is either true or false. ERDDAP will convert these to bytes, 1 or 0." +
+                "<br>&bull; <tt>byte</tt> is an 8 bit signed integer, +/-127" +
+                "<br>&bull; <tt>short</tt> is a 16 bit signed integer, +/-32,767" +
+                "<br>&bull; <tt>int</tt> is a 32 bit signed integer, +/-2,147,483,647" +
+                "<br>&bull; <tt>long</tt> is a 64 bit signed integer, +/- ~1e19" +
+                "<br>&bull; <tt>float</tt> is a 32 bit floating point number (up to 7 significant digits)" +
+                "<br>&bull; <tt>double</tt> is a 64 bit floating point number (up to 17 significant digits)";
+
+            String ioosCategoryOptions[] = {
+                 "Bathymetry", "Biology", "Bottom Character", "Colored Dissolved Organic Matter", 
+                 "Contaminants", "Currents", "Dissolved Nutrients", "Dissolved O2", "Ecology", 
+                 "Fish Abundance", "Fish Species", "Heat Flux", "Hydrology", "Ice Distribution", 
+                 "Identifier", "Location", "Meteorology", "Ocean Color", "Optical Properties", 
+                 "Other", "Pathogens", "pCO2", "Phytoplankton Species", "Pressure", 
+                 "Productivity", "Quality", "Salinity", "Sea Level", "Statistics", 
+                 "Stream Flow", "Surface Waves", "Taxonomy", "Temperature", "Time", 
+                 "Total Suspended Matter", "Unknown", "Wind", "Zooplankton Species", 
+                 "Zooplankton Abundance"};
+            int ioosUnknown = String2.indexOf(ioosCategoryOptions, "Unknown");
+            String ioosCategoryHelp = 
+                "Pick the ioos_category which is most appropriate for this variable." +
+                "<br>&bull; Use <tt>Location</tt> for place names and for longitude, latitude," +
+                "<br>&nbsp;&nbsp;altitude, and depth." +
+                "<br>&bull; Use <tt>Time</tt> for date/time." +
+                "<br>&bull; Use <tt>Taxonomy</tt> for species names." +
+                "<br>&bull; Use <tt>Identifier</tt> for cruise names, ship names, line names," +
+                "<br>&nbsp;&nbsp;station names, equipment types, serial numbers, etc." +
+                "<br>&bull; Use <tt>Ocean Color</tt> for chlorophyll." +
+                "<br>&bull; Use <tt>Other</tt> if no other category in the list is close." +
+                "<br>&bull; Use <tt>Unknown</tt> if you really don't know.";
+
+            String 
+                tYourName         = request.getParameter("yourName"),
+                tEmailAddress     = request.getParameter("emailAddress"),
+                tTimestamp        = request.getParameter("timestamp");
+
+            //variable attributes
+            int nVars = 10;
+            String                
+                tSourceName[]      = new String[nVars+1],
+                tDestinationName[] = new String[nVars+1],
+                tLongName[]        = new String[nVars+1],
+                tUnits[]           = new String[nVars+1],
+                tRangeMin[]        = new String[nVars+1],
+                tRangeMax[]        = new String[nVars+1],
+                tStandardName[]    = new String[nVars+1],
+                tFillValue[]       = new String[nVars+1],
+                tComment[]         = new String[nVars+1];
+            int tDataType[]        = new int[   nVars+1],
+                tIoosCategory[]    = new int[   nVars+1];
+
+            for (int var = 1; var <= nVars; var++) {     
+                //String
+                tSourceName[var]      = request.getParameter("sourceName" + var);
+                tDestinationName[var] = request.getParameter("destinationName" + var);
+                tLongName[var]        = request.getParameter("long_name" + var);
+                tUnits[var]           = request.getParameter("units" + var);
+                tRangeMin[var]        = request.getParameter("rangeMin" + var);
+                tRangeMax[var]        = request.getParameter("rangeMax" + var);
+                tStandardName[var]    = request.getParameter("standard_name" + var);
+                tFillValue[var]       = request.getParameter("FillValue" + var); //note that field name lacks leading '_'
+                tComment[var]         = request.getParameter("comment" + var); //note that field name lacks leading '_'
+
+                //int
+                tDataType[var]        = Math.max(0, String2.indexOf(dataTypeOptions,
+                                            request.getParameter("dataType" + var)));
+                tIoosCategory[var]    = String2.indexOf(ioosCategoryOptions,
+                                            request.getParameter("ioos_category" + var));
+                if (tIoosCategory[var] < 0)
+                    tIoosCategory[var] = ioosUnknown;
+            }
+
+            //validate (same order as form)
+            StringBuilder errorMsgSB = new StringBuilder();
+            tYourName     = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Your Name",     "?", tYourName,     50, null);
+            tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Email Address", "?", tEmailAddress, 50, null);
+            tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
+                tTimestamp, 20, null);
+
+            for (int var = 1; var <= nVars; var++) {     
+                tSourceName[var] = var == 1?
+                    HtmlWidgets.validateIsSomethingNotTooLong(
+                        "sourceName #" + var, "", tSourceName[var], 50, errorMsgSB) :
+                    HtmlWidgets.validateNotTooLong(
+                        "sourceName #" + var, "", tSourceName[var], 50, errorMsgSB);
+                tDestinationName[var] = HtmlWidgets.validateNotTooLong(
+                    "destinationName #" + var, "", tDestinationName[var], 50, errorMsgSB);
+                tLongName[var] = HtmlWidgets.validateNotTooLong(
+                    "long_name #" + var, "", tLongName[var], 80, errorMsgSB);
+                tStandardName[var] = HtmlWidgets.validateNotTooLong(
+                    "standard_name #" + var, "", tStandardName[var], 80, errorMsgSB);
+                tFillValue[var] = HtmlWidgets.validateNotTooLong(
+                    "_FillValue #" + var, "", tFillValue[var], 20, errorMsgSB);
+                tUnits[var] = HtmlWidgets.validateNotTooLong(
+                    "units #" + var, "", tUnits[var], 40, errorMsgSB);
+                tRangeMin[var] = HtmlWidgets.validateNotTooLong(
+                    "range min #" + var, "", tRangeMin[var], 15, errorMsgSB);
+                tRangeMax[var] = HtmlWidgets.validateNotTooLong(
+                    "range max #" + var, "", tRangeMax[var], 15, errorMsgSB);
+                tComment[var] = HtmlWidgets.validateNotTooLong(
+                    "comment #" + var, "", tComment[var], 160, errorMsgSB);
+            }
+            if (errorMsgSB.length() > 0)
+                errorMsgSB.insert(0, 
+                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+
+            String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
+
+            //if this is a submission, 
+            boolean isSubmission = "Submit".equals(request.getParameter("Submit"));
+            if (isSubmission && errorMsgSB.length() == 0) {
+                //convert the info into psuedo datasets.xml
+                StringBuilder content = new StringBuilder();
+                content.append(
+                    "Data Provider Form - Part 3\n" + //important! Bob's erd.data gmail filter looks for this
+                    "  from " + fromInfo + "\n" +
+                    "  ipAddress=" + ipAddress + "\n" +
+                    "\n" +
+                    "groupOf10=" + groupOptions[tGroup] + "\n" +
+                        "\n");
+
+                for (int var = 1; var <= nVars; var++) 
+                    content.append(   
+"    <dataVariable>\n" +
+"        <sourceName>"      + XML.encodeAsXML(tSourceName[var])                + "</sourceName>\n" +
+"        <destinationName>" + XML.encodeAsXML(tDestinationName[var])           + "</destinationName>\n" +
+"        <dataType>"        + XML.encodeAsXML(dataTypeOptions[tDataType[var]]) + "</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">"
+                                          + XML.encodeAsXML(tRangeMin[var])    + "</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">"
+                                          + XML.encodeAsXML(tRangeMax[var])    + "</att>\n" +
+"            <att name=\"comment\">"      + XML.encodeAsXML(tComment[var])     + "</att>\n" +
+"            <att name=\"_FillValue\" type=\"" + 
+dataTypeOptions[tDataType[var]] + "\">"   + XML.encodeAsXML(tFillValue[var])   + "</att>\n" +
+"            <att name=\"ioos_category\">"+ XML.encodeAsXML(ioosCategoryOptions[tIoosCategory[var]]) + "</att>\n" +
+"            <att name=\"long_name\">"    + XML.encodeAsXML(tLongName[var])    + "</att>\n" +
+"            <att name=\"standard_name\">"+ XML.encodeAsXML(tStandardName[var])+ "</att>\n" +
+"            <att name=\"units\">"        + XML.encodeAsXML(tUnits[var])       + "</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n");
+                content.append(
+                        "</dataset>\n" +
+                        "\n");
+
+                //log the content to /logs/dataProviderForm.log
+                String error = String2.appendFile(
+                    EDStatic.fullLogsDirectory + "dataProviderForm.log",
+                    "*** " + content.toString());
+                if (error.length() > 0)
+                    String2.log(String2.ERROR + 
+                        " while writing to logs/dataProviderForm.log:\n" +
+                        error);
+                //email the content to the admin
+                EDStatic.email(EDStatic.adminEmail, 
+                    "Data Provider Form - Part 3, from " + fromInfo,
+                    content.toString());
+
+                //redirect to part 4
+                sendRedirect(response, tErddapUrl + "/dataProviderForm4.html?" +
+                    "yourName=" + SSR.minimalPercentEncode(tYourName) +
+                    "&emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) +
+                    "&timestamp=" + SSR.minimalPercentEncode(tTimestamp));
+                
+                return;
+            }
+
+            //write the HTML
+            out = getHtmlOutputStream(request, response);
+            writer = getHtmlWriter(tLoggedInAs, "Data Provider Form - Part 3", out);
+            writer.write(EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 3"));
+
+            //begin form
+            String formName = "f1";
+            HtmlWidgets widgets = new HtmlWidgets("", false, //style, false=not htmlTooltips
+                EDStatic.imageDirUrl(tLoggedInAs)); 
+            widgets.enterTextSubmitsForm = false; 
+            writer.write(widgets.beginForm(formName, 
+                //this could be POST to deal with lots of text. 
+                //but better to change tomcat settings (above) and keep ease of use
+                "GET", tErddapUrl + "/dataProviderForm3.html", "") + "\n");
+
+            //hidden fields
+            writer.write(
+                widgets.hidden("yourName",     XML.encodeAsHTML(tYourName)) +
+                widgets.hidden("emailAddress", XML.encodeAsHTML(tEmailAddress)) +
+                widgets.hidden("timestamp",    XML.encodeAsHTML(tTimestamp)) + 
+                "\n");
+
+//begin text
+//the overall table that constrains the width of the text
+writer.write(
+"<table style=\"width:800px; border-style:outset; border-width:0px; padding:0px; \" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<td>\n" +
+"This is part 3 (of 4) of the Data Provider Form\n" +
+"<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
+"<br>Need help? Send an email to the administrator of this ERDDAP (<tt>" + 
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"<br>&nbsp;\n" +
+"\n");
+
+//error message?
+if (isSubmission && errorMsgSB.length() > 0) 
+writer.write("<font class=\"warningColor\">" + errorMsgSB.toString() + "</font> " + 
+    "<br>&nbsp;\n");
+
+//Variable Metadata
+writer.write(
+"<h2>Variable Metadata</h2>\n" +
+"Variable metadata is information that is specific to a given variable within\n" +
+"the dataset. It is a set of <tt>attribute=value</tt> pairs, for example,\n" +
+"<tt>units=degree_C</tt> .\n" +
+"\n" +
+"<p><b>Fewer Or More Than 10 Variables</b>\n" + //n variables
+"<br>There are slots on this form for 10 variables.\n" +
+"<br>If your dataset has 10 or fewer variables, just use the slots that you need.\n" +
+"<br>If your dataset has more than 10 variables, then for each group of 10 variables:\n" +
+"<ol>\n" +
+"<li>Identify the group: This is the\n" +
+widgets.select("group", "", 1, groupOptions, tGroup, "") +
+"  group of 10 variables.\n" +
+"<li>Fill out the form below for that group of 10 variables.\n" +
+"<li>Click \"I'm finished!\" below to submit the information for that group of 10 variables.\n" +
+"<li>If this isn't the last group, then on the next web page (for Part 4 of this form),\n" +
+"  press your browser's Back button so that you can fill out this part of the form\n" +
+"  (Part 3) for the next group of 10 variables.\n" +
+"</ol>\n" +
+"\n" +
+"<p><b>.nc Files</b>\n" +
+"<br>If your data is in .nc files that already have some metadata,\n" +
+"just provide the information below for attributes that aren't in your files\n" +
+"or where you want to change the attribute's value.\n" +
+"\n");
+
+for (int var = 1; var <= nVars; var++) 
+writer.write(
+widgets.beginTable(0, 0, "") +
+"<tr>\n" +
+"  <td colspan=3>&nbsp;<br><b>Variable #" + var + "</b></td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>sourceName\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is the name of this variable currently used by the data source." +
+    "<br>For example, <tt>wt</tt>" +
+    "<br>This is case-sensitive.") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("sourceName" + var, "", 20, 50, tSourceName[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>destinationName\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: You can specify a new, different name for this variable." +
+    "<br>This new name is the one that will be shown to users in ERDDAP." +
+    "<br>For example, <tt>waterTemp</tt>" +
+    "<br>This is case-sensitive." +
+    "<br>This MUST start with a letter (A-Z, a-z) and MUST be followed by\n" +
+    "<br>0 or more characters (A-Z, a-z, 0-9, and _)." +
+    "<br>&bull; Use <tt>latitude</tt> for the main latitude variable." +
+    "<br>&bull; Use <tt>longitude</tt> for the main longitude variable." +
+    "<br>&bull; Use <tt>altitude</tt> if the variable measures height above sea level." +
+    "<br>&bull; Use <tt>depth</tt> if the variable measures distance below sea level." +
+    "<br>&bull; Use <tt>time</tt> for the main date/time variable." +
+    "<br>&bull; Otherwise, it is up to you. If you want to use the sourceName\n" +
+    "<br>&nbsp;&nbsp;as the destinationName, leave this blank.") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("destinationName" + var, "", 20, 50, tDestinationName[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>long_name\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "This is a longer, written-out version of the destinationName." +
+    "<br>For example, <tt>Water Temperature</tt>" +
+    "<br>Among other uses, it will be used as an axis title on graphs." +
+    "<br>Capitalize each word in the long_name." +
+    "<br>Don't include the units. (ERDDAP will add units when creating" +
+    "<br>&nbsp;&nbsp;an axis title.)") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("long_name" + var, "", 40, 80, tLongName[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>standard_name\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is the name from the CF Standard Name Table" +
+    "<br>&nbsp;&nbsp;which is most appropriate for this variable.\n" +
+    "<br>For example, <tt>sea_water_temperature</tt>." +
+    "<br>If you don't already know, or if no CF Standard Name is" +
+    "<br>&nbsp;&nbsp;appropriate, just leave this blank. We'll fill it in.") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("standard_name" + var, "", 60, 80, tStandardName[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>dataType\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, dataTypeHelp) + "&nbsp;\n" + 
+"  <td>\n" +
+widgets.select("dataType" + var, "", 1, 
+    dataTypeOptions, tDataType[var], "") +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>_FillValue\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "For numeric variables, this is the value that is used in the" +
+    "<br>data file to indicate a missing value for this variable.\n" +
+    "<br>For example, <tt>-999</tt> ." +
+    "<br>If the _FillValue is NaN, use <tt>NaN</tt> .\n" +
+    "<br>For String variables, leave this blank.") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("FillValue" + var, //note that field name lacks leading '_'
+    "", 10, 20, tFillValue[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>units\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "These are the units of this variable. For example, <tt>degree_C</tt>" + 
+    "<br>This is <b>required</b> for numeric variables, but not used for most String variables." +
+    "<br>&bull; For temperature, use <tt>degree_C</tt> or <tt>degree_F</tt> ." +
+    "<br>&bull; For counts of things, use <tt>count</tt> ." +
+    "<br>&bull; For latitude variables, use <tt>degrees_north</tt> ." +
+    "<br>&bull; For longitude variables, use <tt>degrees_east</tt> ." +
+    "<br>&bull; For String date/time variables, paste a sample date/time value here." +
+    "<br>&nbsp;&nbsp;We'll convert it to UDUnits." +
+    "<br>&bull; For numeric date/time variables, describe the values as <tt><i>units</i> since <i>basetime</i></tt>," +
+    "<br>&nbsp;&nbsp;for example, <tt>days since 2010-01-01</tt>" +
+    "<br>&bull; For all other variables, use UDUNITs unit names if you know them;" +
+    "<br>&nbsp;&nbsp;otherwise, use whatever units you already know.") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("units" + var, "", 20, 40, tUnits[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>range\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "For numeric variables, this specifies the typical range of values." +
+    "<br>For example, <tt>minimum=32.0</tt> and <tt>maximum=37.0</tt> ." + 
+    "<br>The range should include about 98% of the values." +
+    "<br>These should be round numbers. This isn't precise.\n" +
+    "<br>If you don't know the typical range of values, leave this blank." +
+    "<br>For String variables, leave this blank.") + "&nbsp;\n" +
+"  <td>minimum =\n" + 
+widgets.textField("rangeMin" + var, "", 10, 15, tRangeMin[var], "") + 
+"  &nbsp;&nbsp;maximum =\n" + 
+widgets.textField("rangeMax" + var, "", 10, 15, tRangeMax[var], "") + 
+"</tr>\n" +
+"<tr>\n" +
+"  <td>ioos_category\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, ioosCategoryHelp) + "&nbsp;\n" + 
+"  <td>\n" + 
+widgets.select("ioos_category" + var, "", 1, 
+    ioosCategoryOptions, tIoosCategory[var], "") +
+"</tr>\n" +
+"<tr>\n" +
+"  <td>comment\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
+    "Optional: This is miscellaneous information about this variable, not captured" +
+    "<br>elsewhere. For example," +
+    "<br><tt>This is the difference between today's SST and the previous day's SST.</tt>") + "&nbsp;\n" +
+"  <td>\n" + 
+widgets.textField("comment" + var, "", 80, 160, tComment[var], "") + 
+"</tr>\n" +
+"<tr><td>&nbsp;\n" +
+"</tr>\n" +
+"</table>\n" + //end of variable's table
+"\n");
+
+//Submit
+writer.write(
+"<h2>Finished with part 3?</h2>\n" + 
+"Click\n" + 
+widgets.button("submit", "Submit", "", "Submit", "") +
+"to send this information to the ERDDAP administrator and move on to part 4 (of 4).\n" +
+"\n");
+
+//the end of the overall table that constrains the width of the text
+writer.write(
+"</tr>\n" +
+"</table>\n");
+        
+//end form
+writer.write(widgets.endForm());        
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            if (out == null || writer == null)
+                throw t;
+            else writer.write(EDStatic.htmlForException(t));
+        }
+        endHtmlWriter(out, writer, tErddapUrl, false);
+        return;
+    }
+
+    /**
+     * This is Data Provider Form 4
+     *
+     */
+    public void doDataProviderForm4(HttpServletRequest request, HttpServletResponse response,
+        String tLoggedInAs, String ipAddress) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
+        OutputStream out = null;
+        Writer writer = null;
+
+        try {
+
+            //get parameters
+            String 
+                tYourName         = request.getParameter("yourName"),
+                tEmailAddress     = request.getParameter("emailAddress"),
+                tTimestamp        = request.getParameter("timestamp"),
+                tOtherComments    = request.getParameter("otherComments");
+
+            //validate (same order as form)
+            StringBuilder errorMsgSB = new StringBuilder();
+            tYourName     = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Your Name",     "?", tYourName,     50, null);
+            tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Email Address", "?", tEmailAddress, 50, null);
+            tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
+                tTimestamp, 20, null);
+            tOtherComments = HtmlWidgets.validateNotNullNotTooLong(
+                "Other Comments", "", tOtherComments, 500, errorMsgSB);
+            if (errorMsgSB.length() > 0)
+                errorMsgSB.insert(0, 
+                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+
+            String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
+
+            //if this is a submission, 
+            boolean isSubmission = "Submit".equals(request.getParameter("Submit"));
+            if (isSubmission && errorMsgSB.length() == 0) {
+                //convert the info into psuedo datasets.xml
+                String content = 
+                    "Data Provider Form - Part 4\n" + //important! Bob's erd.data gmail filter looks for this
+                    "  from " + fromInfo + "\n" +
+                    "  ipAddress=" + ipAddress + "\n" +
+                    "\n" +
+                    "Other comments:\n" + 
+                    tOtherComments + "\n\n";
+
+                //log the content to /logs/dataProviderForm.log
+                String error = String2.appendFile(
+                    EDStatic.fullLogsDirectory + "dataProviderForm.log",
+                    "*** " + content);
+                if (error.length() > 0)
+                    String2.log(String2.ERROR + 
+                        " while writing to logs/dataProviderForm.log:\n" +
+                        error);
+                //email the content to the admin
+                EDStatic.email(EDStatic.adminEmail, 
+                    "Data Provider Form - Part 4, from " + fromInfo,
+                    content);
+
+                //redirect to Done
+                sendRedirect(response, tErddapUrl + "/dataProviderFormDone.html?" +
+                    "yourName=" + SSR.minimalPercentEncode(tYourName) +
+                    "&emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) +
+                    "&timestamp=" + SSR.minimalPercentEncode(tTimestamp));
+
+                return;
+            }
+
+            //write the HTML
+            out = getHtmlOutputStream(request, response);
+            writer = getHtmlWriter(tLoggedInAs, "Data Provider Form - Part 4", out);
+            writer.write(EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 4"));
+
+            //begin form
+            String formName = "f1";
+            HtmlWidgets widgets = new HtmlWidgets("", false, //style, false=not htmlTooltips
+                EDStatic.imageDirUrl(tLoggedInAs)); 
+            widgets.enterTextSubmitsForm = false; 
+            writer.write(widgets.beginForm(formName, 
+                //this could be POST to deal with lots of text. 
+                //but better to change tomcat settings (above) and keep ease of use
+                "GET", tErddapUrl + "/dataProviderForm4.html", "") + "\n");
+
+            //hidden fields
+            writer.write(
+                widgets.hidden("yourName",     XML.encodeAsHTML(tYourName)) +
+                widgets.hidden("emailAddress", XML.encodeAsHTML(tEmailAddress)) +
+                widgets.hidden("timestamp",    XML.encodeAsHTML(tTimestamp)) + 
+                "\n");
+
+//begin text
+//the overall table that constrains the width of the text
+writer.write(
+"<table style=\"width:800px; border-style:outset; border-width:0px; padding:0px; \" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<td>\n" +
+"This is part 4 (of 4) of the Data Provider Form\n" +
+"<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
+"<br>Need help? Send an email to the administrator of this ERDDAP (<tt>" + 
+    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
+"<br>&nbsp;\n" +
+"\n");
+
+//error message?
+if (isSubmission && errorMsgSB.length() > 0) 
+writer.write("<font class=\"warningColor\">" + errorMsgSB.toString() + "</font> " + 
+    "<br>&nbsp;\n");
+
+//other comments
+writer.write(
+"<h2>Other Comments</h2>\n" + 
+"Optional: If there are other things you think the ERDDAP administrator\n" +
+"should know about this dataset, please add them here.\n" +
+"This won't go in the dataset's metadata or be made public. (&lt;500 characters)\n" +
+"<br><textarea name=\"otherComments\" cols=\"80\" rows=\"6\" maxlength=\"500\" wrap=\"soft\">" +
+XML.encodeAsHTML(tOtherComments) +  //encoding is important for security
+"</textarea>\n" +
+"<br>&nbsp;\n" +
+"\n");
+
+//Submit
+writer.write(
+"<h2>Finished with part 4?</h2>\n" + 
+"Click\n" + 
+widgets.button("submit", "Submit", "", "Submit", "") +
+"to send this information to the ERDDAP administrator and move on to the \"You're done!\" page.\n" +
+"\n");
+
+//the end of the overall table that constrains the width of the text
+writer.write(
+"</tr>\n" +
+"</table>\n");
+        
+//end form
+writer.write(widgets.endForm());        
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            if (out == null || writer == null)
+                throw t;
+            else writer.write(EDStatic.htmlForException(t));
+        }
+        endHtmlWriter(out, writer, tErddapUrl, false);
+        return;
+    }
+
+    /**
+     * This is Data Provider Form Done
+     */
+    public void doDataProviderFormDone(HttpServletRequest request, HttpServletResponse response,
+        String tLoggedInAs) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
+        OutputStream out = null;
+        Writer writer = null;
+
+        try {
+
+            //global attributes (and contact info)
+            String 
+                tYourName         = request.getParameter("yourName"),
+                tEmailAddress     = request.getParameter("emailAddress"),
+                tTimestamp        = request.getParameter("timestamp");
+
+            tYourName     = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Your Name",     "?", tYourName,     50, null);
+            tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Email Address", "?", tEmailAddress, 50, null);
+            tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
+                tTimestamp, 20, null);
+
+            //write the HTML
+            out = getHtmlOutputStream(request, response);
+            writer = getHtmlWriter(tLoggedInAs, "Data Provider Form - Done", out);
+            writer.write(EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Done"));
+
+//begin text
+//the overall table that constrains the width of the text
+writer.write(
+"<table style=\"width:800px; border-style:outset; border-width:0px; padding:0px; \" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<td>\n" +
+"<h2>You're done! Congratulations! Thank you!</h2>\n" +
+"The ERDDAP administrator will email you soon to figure out the best way transfer\n" +
+"  the data and to work out other details.\n" +
+"  This dataset submission's timestamp is " + tTimestamp + ".\n" + 
+"<p>You can <a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm1.html?" +
+    "yourName=" + SSR.minimalPercentEncode(tYourName) +
+    "&amp;emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) + "\">submit another dataset</a>\n" +
+"or go back to the <a rel=\"bookmark\" href=\"" + tErddapUrl + 
+    "/index.html\">ERDDAP home page</a>.\n");
+
+//the end of the overall table that constrains the width of the text
+writer.write(
+"</tr>\n" +
+"</table>\n");
+        
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            if (out == null || writer == null)
+                throw t;
+            else writer.write(EDStatic.htmlForException(t));
+        }
+        endHtmlWriter(out, writer, tErddapUrl, false);
+        return;
+    }
+
+
+
+
+
+    /**
      * This responds to a request for status.html.
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
@@ -1720,7 +3255,7 @@ public class Erddap extends HttpServlet {
                 "<li>Subsequent rows have the information you requested.\n" +
                 "</ul>\n" +
                 "<p>The content in these plain file types is also slightly different from the .html\n" +
-                "response -- it is intentionally bare-boned, so that it is easier for a computer\n" +
+                "response &mdash; it is intentionally bare-boned, so that it is easier for a computer\n" +
                 "program to work with.\n" +
                 "\n" +
                 "<p><a name=\"DataStructure\">A Consistent Data Structure for the Responses</a>\n" +
@@ -1807,7 +3342,7 @@ public class Erddap extends HttpServlet {
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <b>categoryAttributes</b>\n" +
-                "  (e.g., institution, long_name, standard_name), use\n" +
+                "  (for example, institution, long_name, standard_name), use\n" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/index", 
                     EDStatic.encodedDefaultPIppQuery) + 
                 "  <br>&nbsp;\n" +
@@ -1850,7 +3385,7 @@ public class Erddap extends HttpServlet {
                 "<li>Griddap and tabledap have many web services that you can use.\n" +
                 "  <ul>\n" +
                 "  <li>The Data Access Forms are just simple web pages to generate URLs which\n" +
-                "    request <b>data</b> (e.g., satellite and buoy data).  The data can be in any of\n" +
+                "    request <b>data</b> (for example, satellite and buoy data).  The data can be in any of\n" +
                 "    several common file formats. Your program can generate these URLs directly.\n" +
                 "    For more information, see the\n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\">griddap documentation</a> and\n" +
@@ -1883,13 +3418,13 @@ public class Erddap extends HttpServlet {
                 "      <a href=\"" + tErddapUrl + "/tabledap/allDatasets.html\"><b>allDatasets</b></a>\n" +
                 "    which has data about all of the datasets currently available in\n" +
                 "    this ERDDAP.  There is a row for each dataset. There are columns with\n" +
-                "    different types of information (e.g., datasetID, title, summary,\n" +
+                "    different types of information (for example, datasetID, title, summary,\n" +
                 "    institution, license, Data Access Form URL, Make A Graph URL).\n" +
                 "    Because this is a tabledap dataset,\n" +
                 "    you can use a tabledap data request to request\n" +
                 "    specific columns and rows which match the constraints, and you can\n" +
                 "    get the response in whichever reponse file type you prefer,\n" +
-                "    e.g., .html, .xhtml, .csv, .json.\n" +
+                "    for example, .html, .xhtml, .csv, .json.\n" +
                 "    <br>&nbsp;\n" +
                 "  </ul>\n");
             if (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive) {
@@ -2314,8 +3849,7 @@ public class Erddap extends HttpServlet {
                 endOfRequestUrl = endOfRequestUrl.substring(0, slashPoNP);
 
                 //currently no nextPath options
-                if (verbose) String2.log(EDStatic.resourceNotFound + " no nextPath options");
-                sendResourceNotFoundError(request, response, "");
+                sendResourceNotFoundError(request, response, "no nextPath options");
                 return;
             }
             //String2.log(">>nextPath=" + nextPath + " endOfRequestUrl=" + endOfRequestUrl);
@@ -2539,7 +4073,7 @@ public class Erddap extends HttpServlet {
     }
 
     /**
-     * Process a /files/ request for EDDTableFromFileNames files.
+     * Process a /files/ request for an accessibleViaFiles dataset.
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
@@ -2630,8 +4164,7 @@ public class Erddap extends HttpServlet {
 
             //beware malformed nextPath, e.g., internal /../
             if (File2.addSlash("/" + nextPath + "/").indexOf("/../") >= 0) {
-                String2.log("MALICIOUS ERROR?! /../ in nextPath=" + nextPath);
-                sendResourceNotFoundError(request, response, "");
+                sendResourceNotFoundError(request, response, "/../ not allowed!");
                 return;
             }
         } else {
@@ -2670,7 +4203,7 @@ public class Erddap extends HttpServlet {
 
         if (fileDir.length() == 0) {
             if (verbose) String2.log(EDStatic.resourceNotFound + " accessibleViaFilesDir=\"\"");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "this dataset is not accessible via /files/");
             return;
         }
         if (!edd.isAccessibleTo(roles)) { //listPrivateDatasets doesn't apply
@@ -2681,7 +4214,7 @@ public class Erddap extends HttpServlet {
         //if nextPath has a subdir, ensure dataset is recursive
         if (nextPath.indexOf('/') >= 0 && !recursive) {
             if (verbose) String2.log(EDStatic.resourceNotFound + " subdirectory doesn't exist");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "the subdirectory doesn't exist");
             return;
         }
 
@@ -2697,48 +4230,86 @@ public class Erddap extends HttpServlet {
             nextPath = nextPath.substring(0, nextPath.length() - justExtension.length());
             //request will be handled below
 
- //if (EDStatic.filesActive) ...
         } else {
             justExtension = "";
         }
 
-        //if localFullName is a file, return it
-        //String2.log(">>localFullName=" + localFullName + "\nfullRequestUrl=" + fullRequestUrl);
-        if (nextPath.length() > 0 && 
-            !localFullName.endsWith("/") && File2.isFile(localFullName)) {
-            String localDir = File2.getDirectory(localFullName);
-            String webDir = File2.getDirectory(fullRequestUrl);
-            String nameAndExt = File2.getNameAndExtension(localFullName);
-            if (nameAndExt.matches(fileRegex)) {
-                String ext = File2.getExtension(nameAndExt);
+        //get the accessibleViaFilesFileTable
+        //Formatted like 
+        //FileVisitorDNLS.oneStep(tDirectoriesToo=false, last_mod is LongArray,
+        //and size is LongArray of epochMillis)
+        //with valid files (or null if unavailable or any trouble).
+        //This is a copy of any internal data, so contents can be modified.
+        Table fileTable = edd.accessibleViaFilesFileTable();
+        if (fileTable == null) {
+            sendResourceNotFoundError(request, response, 
+                "file info for this dataset is currently unavailable");
+            return;
+        }
+        int fileTableRow;
+        int fileTableNRows = fileTable.nRows();
+        StringArray dirSA  = (StringArray)fileTable.getColumn(0);
+        StringArray nameSA = (StringArray)fileTable.getColumn(1);
+
+        String localDir = File2.getDirectory(localFullName); //where I access source
+        String webDir = File2.getDirectory(fullRequestUrl);  //what user as apparent location
+        String nameAndExt = File2.getNameAndExtension(localFullName);
+        String ext = File2.getExtension(nameAndExt);
+
+        //is it a file in the fileTable?
+        if (nameAndExt.length() > 0) {
+            fileTableRow = 0;
+            while (fileTableRow < fileTableNRows && 
+                (!localDir.equals(   dirSA.get(fileTableRow)) || 
+                 !nameAndExt.equals(nameSA.get(fileTableRow))))
+                fileTableRow++;
+            if (fileTableRow < fileTableNRows) {
                 OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                     request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
                 doTransfer(request, response, localDir, webDir, nameAndExt, 
                     outSource.outputStream("", File2.length(localFullName)));
-            } else {
-                if (verbose) String2.log(EDStatic.resourceNotFound + " doesn't match regex");
-                sendResourceNotFoundError(request, response, "");
-            }
 
-            //tally
-            EDStatic.tally.add("files download DatasetID (since startup)", id);
-            EDStatic.tally.add("files download DatasetID (since last daily report)", id);
-            return;
+                //tally
+                EDStatic.tally.add("files download DatasetID (since startup)", id);
+                EDStatic.tally.add("files download DatasetID (since last daily report)", id);
+                return;
+            }
         }
-        
-        //is it a directory?
-        if (!File2.isDirectory(localFullName)) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " !isDirectory");
-            sendResourceNotFoundError(request, response, "");
-            return;
+
+        //reduce fileTable to just files in that dir
+        boolean addedSlash = false;
+        if (nameAndExt.length() > 0) {
+            //perhaps user forgot trailing slash
+            localDir += nameAndExt + "/";
+            webDir += nameAndExt + "/";
+            nameAndExt = "";
+            addedSlash = true;
         }
-        if (!fullRequestUrl.endsWith("/")) { //required for table.directoryListing below
+        int localDirLength = localDir.length();
+        HashSet subdirHash = new HashSet(); //catch all subdirectories
+        BitSet keep = new BitSet(fileTableNRows);  //all false
+        for (int row = 0; row < fileTableNRows; row++) {
+            String tDir = dirSA.get(row);
+            if (tDir.startsWith(localDir)) {
+                if (tDir.length() == localDirLength) {
+                    keep.set(row);
+                } else {
+                    //add next-level directory name
+                    subdirHash.add(tDir.substring(localDirLength, tDir.indexOf('/', localDirLength))); 
+                }
+            }
+        }
+        fileTable.removeColumn(0); //directory
+        fileTable.justKeep(keep);
+        fileTableNRows = fileTable.nRows();
+        //yes, there's a match
+        if (addedSlash) {
             sendRedirect(response, fullRequestUrl + "/");  
             return;               
         }
 
         //handle justExtension request  e.g., datasetID/.csv[?constraintExpression]
-        if (justExtension.length() > 0) {
+        /*if (justExtension.length() > 0) {
             //tally it
 
             //make a EDDTableFromAccessibleViaFiles
@@ -2757,37 +4328,16 @@ public class Erddap extends HttpServlet {
 
 
             return;
-        }
+        }*/
 
-        //get list of dirs and files in that dir
-        Table table = FileVisitorDNLS.oneStep(localFullName, fileRegex, 
-            false, true); //not recursive, dirsToo
-        Test.ensureEqual(table.getColumnNamesCSVString(), 
-            "directory,name,lastModified,size", 
-            "Unexpected columnNames");
-        //extract the subDirs from the table
-        StringArray subDirs = new StringArray();
-        int nRows = table.nRows();
-        BitSet keep = new BitSet();  //all false
-        keep.set(0, nRows);          //all true
-        StringArray dirPA = (StringArray)table.getColumn(0);
-        StringArray namePA = (StringArray)table.getColumn(1);
-        for (int row = 0; row < nRows; row++) {
-            if (namePA.get(row).length() == 0) {
-                keep.clear(row);
-                String td = dirPA.get(row);
-                subDirs.add(File2.getNameAndExtension(td.substring(0, td.length() - 1)));
-            }
-        }
-        table.removeColumn(0); //directory
-        table.justKeep(keep);
-        nRows = table.nRows();
+        //show directory index
         //make columns: "Name" (String), "Last modified" (long), 
-        //  "Size" (long), and "Description" (String)
-        table.setColumnName(0, "Name");
-        table.setColumnName(1, "Last modified");
-        table.setColumnName(2, "Size");            
-        table.addColumn("Description", new StringArray(nRows, true));
+        //  "Size" (long), and "Description" (String)        
+        StringArray subDirs = new StringArray((String[])(subdirHash.toArray(new String[0])));
+        fileTable.setColumnName(0, "Name");
+        fileTable.setColumnName(1, "Last modified");
+        fileTable.setColumnName(2, "Size");            
+        fileTable.addColumn("Description", new StringArray(fileTableNRows, true));
         OutputStream out = getHtmlOutputStream(request, response);
         Writer writer = getHtmlWriter(loggedInAs, "files/" + id + "/" + nextPath, out);
         writer.write(
@@ -2813,7 +4363,7 @@ public class Erddap extends HttpServlet {
         edd.writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, true, "", "");
         writer.flush();
         writer.write(
-            table.directoryListing(
+            fileTable.directoryListing(
                 fullRequestUrl, userDapQuery, //may have sort instructions
                 EDStatic.imageDirUrl(loggedInAs) + "fileIcons/",
                 true, subDirs, null));  //addParentDir                
@@ -2822,6 +4372,7 @@ public class Erddap extends HttpServlet {
         //tally
         EDStatic.tally.add("files browse DatasetID (since startup)", id);
         EDStatic.tally.add("files browse DatasetID (since last daily report)", id);
+
     }
 
 
@@ -3197,8 +4748,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //ensure it is a SOS server request
         if (!part1.equals(EDDTable.sosServer) && urlEndParts.length == 2) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " not SOS request");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "not a SOS request");
             return;
         }
 
@@ -3550,8 +5100,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //ensure it is a SOS server request
         if (!part1.equals(EDDGrid.wcsServer) && urlEndParts.length == 2) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " not wcs request");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "not a WCS request");
             return;
         }
 
@@ -3856,14 +5405,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             }
 
             //error
-            if (verbose) String2.log(EDStatic.resourceNotFound + " unmatched wms request");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "unmatched WMS request");
             return;
         } 
 
         //error
-        if (verbose) String2.log(EDStatic.resourceNotFound + " unmatched wms request #2");
-        sendResourceNotFoundError(request, response, "");
+        sendResourceNotFoundError(request, response, "unmatched WMS request (2)");
     }
 
     /**
@@ -5535,7 +7082,7 @@ writer.write(
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
             sendResourceNotFoundError(request, response, 
-                "Currently, datasetID=" + tDatasetID + " isn't available.");
+                "datasetID=" + tDatasetID + " is currently unavailable.");
             return;
         }
         if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
@@ -6420,8 +7967,7 @@ breadCrumbs + endBreadCrumbs +
         String tDatasetID = urlParts[2];
         EDDGrid tEddGrid = gridDatasetHashMap.get(tDatasetID);
         if (tEddGrid == null) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " eddGrid=null");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "no such dataset");
             return;
         }
         if (!tEddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //authorization (very important)
@@ -6511,8 +8057,7 @@ breadCrumbs + endBreadCrumbs +
         int tDvi = String2.indexOf(tEddGrid.dataVariableDestinationNames(), tDestName);
         if (tDvi < 0 ||
             !tDataVariables[tDvi].hasColorBarMinMax()) { //must have colorBarMin/Max
-            if (verbose) String2.log(EDStatic.resourceNotFound + " no colorBarMin/Max");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "This variable doesn't have predefined colorBarMin/Max.");
             return;
         }
         EDV tEdv = tDataVariables[tDvi];
@@ -6520,7 +8065,7 @@ breadCrumbs + endBreadCrumbs +
         //just "/rest/services/[tDatasetID]/[tDestName]"
         if (nUrlParts == 4) {
             if (verbose) String2.log(EDStatic.resourceNotFound + " nParts=" + nUrlParts + " !=4");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "nQueryParts!=4");
             return;
         }
 
@@ -6530,7 +8075,7 @@ breadCrumbs + endBreadCrumbs +
         //ensure urlParts[4]=ImageServer
         if (!urlParts[4].equals("ImageServer")) {
             if (verbose) String2.log(EDStatic.resourceNotFound + " ImageServer expected");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "ImageServer expected");
             return;
         }
 
@@ -7069,14 +8614,14 @@ breadCrumbs + endBreadCrumbs +
                 } else {
                     if (verbose) String2.log(EDStatic.resourceNotFound + 
                         " !isFile " + actualDir + tFileName);
-                    sendResourceNotFoundError(request, response, "");
+                    sendResourceNotFoundError(request, response, "file doesn't exist");
                 }
                 return;
 
             } else {
                 if (verbose) String2.log(EDStatic.resourceNotFound + 
                     " nParts=" + nUrlParts + " !=7");
-                sendResourceNotFoundError(request, response, "");
+                sendResourceNotFoundError(request, response, "incorrect nParts");
                 return;
             } 
             //end of /exportImage[/fileName]
@@ -7127,9 +8672,7 @@ breadCrumbs + endBreadCrumbs +
             requestUrl.substring(datasetIDStartsAt);
 
         if (!File2.isFile(dir + fileNameAndExt)) {
-            if (verbose) String2.log(EDStatic.resourceNotFound + 
-                " !isFile " + dir +fileNameAndExt);
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(request, response, "file doesn't exist");
             return;
         }
         String ext = File2.getExtension(fileNameAndExt);
@@ -7157,9 +8700,9 @@ breadCrumbs + endBreadCrumbs +
             gc.add(Calendar2.DATE, nDays); 
             String expires = Calendar2.formatAsRFC822GMT(gc);
             if (reallyVerbose) String2.log("  setting expires=" + expires + " header");
-     		response.setHeader("Cache-Control", "PUBLIC, max-age=" + 
+            response.setHeader("Cache-Control", "PUBLIC, max-age=" + 
                 (nDays * Calendar2.SECONDS_PER_DAY) + ", must-revalidate");
-			response.setHeader("Expires", expires);
+            response.setHeader("Expires", expires);
         }
 
         doTransfer(request, response, dir, protocol + "/", fileNameAndExt, 
@@ -7183,10 +8726,11 @@ breadCrumbs + endBreadCrumbs +
         //To deal with problems in multithreaded apps 
         //(when deleting and renaming files, for an instant no file with that name exists),
         int maxAttempts = 3;
+        String localFullName = localDir + fileNameAndExt;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            if (File2.isFile(localDir + fileNameAndExt)) {                
-                //ok, copy it
-                File2.copy(localDir + fileNameAndExt, outputStream);
+
+            //ok, copy it
+            if (SSR.copy(localFullName, outputStream)) { //handles file or URL source
                 outputStream.close();
                 return;
             }
@@ -7805,8 +9349,7 @@ breadCrumbs + endBreadCrumbs +
                 }
                 //else handle just below here
             } else { //usually unsupported fileType
-                if (verbose) String2.log(EDStatic.resourceNotFound + " unsupported endOfRequestUrl");
-                sendResourceNotFoundError(request, response, "");
+                sendResourceNotFoundError(request, response, "unsupported endOfRequestUrl");
                 return;
             }
 
@@ -12943,12 +14486,29 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
      * @throws Throwable if trouble
      */
     Writer getHtmlWriter(String loggedInAs, String addToTitle, OutputStream out) throws Throwable {
+        return getHtmlWriter(loggedInAs, addToTitle, "", out);
+    }
+
+    /**
+     * Get a writer for an html file and write up to and including the startHtmlBody
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param addToTitle   a string, not yet XML encoded
+     * @param addToHead  additional info for the &lt;head&gt;
+     * @param out
+     * @return writer
+     * @throws Throwable if trouble
+     */
+    Writer getHtmlWriter(String loggedInAs, String addToTitle, String addToHead, 
+        OutputStream out) throws Throwable {
 
         Writer writer = new OutputStreamWriter(out, "UTF-8");
 
         //write the information for this protocol (dataset list table and instructions)
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         writer.write(EDStatic.startHeadHtml(tErddapUrl, addToTitle));
+        if (String2.isSomething(addToHead))
+            writer.write("\n" + addToHead);
         writer.write("\n</head>\n");
         writer.write(EDStatic.startBodyHtml(loggedInAs));
         writer.write("\n");

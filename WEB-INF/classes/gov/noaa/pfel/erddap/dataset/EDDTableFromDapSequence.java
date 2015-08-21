@@ -885,10 +885,6 @@ public class EDDTableFromDapSequence extends EDDTable{
 
 
 
-
-
-
-
     /**
      * testGenerateDatasetsXml
      */
@@ -924,10 +920,10 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
 "        <att name=\"keywords\">acceleration, anomaly, average, avg_sound_velocity, center, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, geopotential_anomaly, identifier, integrated, latitude, longitude, marine, ocean, oceans,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, vctd, vctd.das, velocity, water</att>\n" +
+"optical, optical properties, practical, properties, salinity, sea, sea_water_practical_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, vctd, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"subsetVariables\">time, latitude, longitude, station, depth, temperature, salinity, fluorescence, avg_sound_velocity, sigma_t, acceleration, geopotential_anomaly</att>\n" +
 "        <att name=\"summary\">vCTD. DYNDNS Center for Integrated Marine Technology (CIMT) data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
 "        <att name=\"title\">vCTD. DYNDNS CIMT data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
@@ -1029,8 +1025,9 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"ioos_category\">Salinity</att>\n" +
-"            <att name=\"long_name\">Sea Water Salinity</att>\n" +
-"            <att name=\"standard_name\">sea_water_salinity</att>\n" +
+"            <att name=\"long_name\">Sea Water Practical Salinity</att>\n" +
+"            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" +
+"            <att name=\"units\">PSU</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1748,7 +1745,7 @@ expected =
 "    Float64 Northernmost_Northing 48.969085693359375;[10]\n" +
 "    String sourceUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";[10]\n" +
 "    Float64 Southernmost_Northing 32.570838928222656;[10]\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v27\";[10]\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";[10]\n" +
 "    String subsetVariables \"longitude, latitude, depth, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";[10]\n" +
 "    String summary \"This data contains the locations of some observations of[10]\n" +
 "cold-water/deep-sea corals off the west coast of the United States.[10]\n" +

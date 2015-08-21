@@ -17,6 +17,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -36,7 +37,14 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
     protected EDDGrid childDatasets[];
     protected int childStopsAt[]; //the last valid axisVar0 index for each childDataset
-    protected boolean ensureAxisValuesAreEqual;
+
+    /** 
+     * This is used to test equality of axis values. 
+     * 0=no testing (not recommended). 
+     * &gt;18 does exact test. Default=20.
+     * 1-18 tests that many digits for doubles and hidiv(n,2) for floats.
+     */
+    protected int matchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
 
     /**
      * This constructs an EDDGridAggregateExistingDimension based on the information in an .xml file.
@@ -61,7 +69,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
-        boolean tEnsureAxisValuesAreEqual = true;
+        int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
 
@@ -79,7 +87,6 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             xmlReader.nextTag();
             String tags = xmlReader.allTags();
             String content = xmlReader.content();
-            //if (reallyVerbose) String2.log("eavae=" + tEnsureAxisValuesAreEqual + "  tags=" + tags + content);
             if (xmlReader.stackSize() == startOfTagsN) 
                 break; //the </dataset> tag
             String localTags = tags.substring(startOfTagsLength);
@@ -115,9 +122,12 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                 tSURecursive  = tr == null? true : String2.parseBoolean(tr);
             }
             else if (localTags.equals("</sourceUrls>")) tSU = content; 
-            else if (localTags.equals( "<ensureAxisValuesAreEqual>")) {}
+            else if (localTags.equals( "<matchAxisNDigits>")) {}
+            else if (localTags.equals("</matchAxisNDigits>")) 
+                tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS); 
+            else if (localTags.equals( "<ensureAxisValuesAreEqual>")) {} //deprecated
             else if (localTags.equals("</ensureAxisValuesAreEqual>")) 
-                tEnsureAxisValuesAreEqual = String2.parseBoolean(content); 
+                tMatchAxisNDigits = String2.parseBoolean(content)? 20 : 0;
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<onChange>")) {}
@@ -140,7 +150,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             tDefaultDataQuery, tDefaultGraphQuery,
             firstChild, tLocalSourceUrls.toArray(),
             tSUServerType, tSURegex, tSURecursive, tSU, 
-            tEnsureAxisValuesAreEqual);
+            tMatchAxisNDigits);
 
     }
 
@@ -163,13 +173,9 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param firstChild
      * @param tLocalSourceUrls the sourceUrls for the other siblings
-     * @param tEnsureAxisValuesAreEqual if true (recommended), this ensures
-     *   that the axis sourceValues for axisVar 1+ are almostEqual.
-     *   (Setting this to false is not recommended, but is useful if the, 
-     *   for example, lat and lon values vary slightly and you 
-     *   are willing to accept the initial values as the correct values.)   
-     *   Actually, the tests are always done but if this is false and the test fails,
-     *   the error is just logged and doesn't throw an exception.
+     * @param tMatchAxisNDigits 0=no checking, 1-18 checks n digits,
+     *   &gt;18 does exact checking.  Default is 20. 
+     *   This ensures that the axis sourceValues for axisVar 1+ are almostEqual.   
      * @throws Throwable if trouble
      */
     public EDDGridAggregateExistingDimension(String tDatasetID, 
@@ -177,11 +183,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String tDefaultDataQuery, String tDefaultGraphQuery,
         EDDGrid firstChild, String tLocalSourceUrls[], 
         String tSUServerType, String tSURegex, boolean tSURecursive, String tSU,
-        boolean tEnsureAxisValuesAreEqual) throws Throwable {
+        int tMatchAxisNDigits) throws Throwable {
 
         if (verbose) String2.log(
-            "\n*** constructing EDDGridAggregateExistingDimension " + tDatasetID + 
-            " ensureEqual=" + tEnsureAxisValuesAreEqual); 
+            "\n*** constructing EDDGridAggregateExistingDimension " + tDatasetID); 
         long constructionStartMillis = System.currentTimeMillis();
         String errorInMethod = "Error in EDDGridGridAggregateExistingDimension(" + 
             tDatasetID + ") constructor:\n";
@@ -195,7 +200,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         iso19115File = tIso19115File;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
-        ensureAxisValuesAreEqual = tEnsureAxisValuesAreEqual;
+        matchAxisNDigits = tMatchAxisNDigits;
 
         //if no tLocalSourceURLs, generate from hyrax, thredds, or dodsindex catalog?
         if (tLocalSourceUrls.length == 0 && tSU != null && tSU.length() > 0) {
@@ -206,7 +211,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             if (tSUServerType == null)
                 throw new RuntimeException(errorInMethod + "<sourceUrls> serverType is null.");
             else if (tSUServerType.toLowerCase().equals("hyrax"))
-                tsa.add(EDDGridFromDap.getUrlsFromHyraxCatalog(tSU, tSURegex, tSURecursive));
+                tsa.add(FileVisitorDNLS.getUrlsFromHyraxCatalog(tSU, tSURegex, tSURecursive));
             else if (tSUServerType.toLowerCase().equals("thredds"))
                 tsa.add(EDDGridFromDap.getUrlsFromThreddsCatalog(tSU, tSURegex, tSURecursive));
             else if (tSUServerType.toLowerCase().equals("dodsindex"))
@@ -237,7 +242,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         for (int sib = 0; sib < nChildren - 1; sib++) {
             if (reallyVerbose) String2.log("\n+++ Creating childDatasets[" + (sib+1) + "]\n");
             EDDGrid sibling = firstChild.sibling(tLocalSourceUrls[sib], 
-                ensureAxisValuesAreEqual? 1 : Integer.MAX_VALUE, true);
+                1, matchAxisNDigits, true);
             childDatasets[sib + 1] = sibling;
             PrimitiveArray sourceValues0 = sibling.axisVariables()[0].sourceValues();
             cumSV.append(sourceValues0);
@@ -297,8 +302,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *
      * @throws Throwable always (since this class doesn't support sibling())
      */
-    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
-        boolean shareInfo) throws Throwable {
+    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
+        int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException( 
             "Error: EDDGridAggregateExistingDimension doesn't support method=\"sibling\".");
     }
@@ -460,7 +465,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                     tDataVariables, childConstraints);
                 //childDataset has already checked that axis values are as *it* expects          
                 if (cumResults == null) {
-                    if (!ensureAxisValuesAreEqual) {
+                    if (matchAxisNDigits <= 0) {
                         //make axis values exactly as expected by aggregate dataset
                         for (int av = 1; av < nAv; av++)
                             tResults[av] = axisVariables[av].sourceValues().subset(
@@ -488,7 +493,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
 
     /**
-     * This generates datasets.xml for an aggregated dataset from a Hyrax catalog.
+     * This generates datasets.xml for an aggregated dataset from a Hyrax or 
+     * THREDDS catalog.
      *
      * @param serverType Currently, only "hyrax" and "thredds" are supported  (case insensitive)
      * @param startUrl the url of the current web page (with a hyrax catalog) e.g.,
@@ -510,11 +516,19 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         StringBuilder sb = new StringBuilder();
         String sa[];
         serverType = serverType.toLowerCase();
-        if ("hyrax".equals(serverType))
-            sa = EDDGridFromDap.getUrlsFromHyraxCatalog(startUrl, fileNameRegex, recursive);
-        else if ("thredds".equals(serverType))
-            sa = EDDGridFromDap.getUrlsFromThreddsCatalog(startUrl, fileNameRegex, recursive);
-        else throw new RuntimeException("ERROR: serverType must be \"hyrax\" or \"thredds\".");
+        if ("hyrax".equals(serverType)) {
+            Test.ensureTrue(startUrl.endsWith("/contents.html"),
+                "startUrl must end with '/contents.html'.");
+            sa = FileVisitorDNLS.getUrlsFromHyraxCatalog(
+                File2.getDirectory(startUrl), fileNameRegex, recursive);
+        } else if ("thredds".equals(serverType)) {
+            Test.ensureTrue(startUrl.endsWith("/catalog.xml"),
+                "startUrl must end with '/catalog.xml'.");
+            sa = EDDGridFromDap.getUrlsFromThreddsCatalog(
+                startUrl, fileNameRegex, recursive);
+        } else {
+            throw new RuntimeException("ERROR: serverType must be \"hyrax\" or \"thredds\".");
+        }
 
         if (sa.length == 0)
             throw new RuntimeException("ERROR: No matching URLs were found.");
@@ -669,13 +683,22 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"cwhdf_version\">null</att>\n" +
+"        <att name=\"et_affine\">null</att>\n" +
+"        <att name=\"gctp_datum\">null</att>\n" +
+"        <att name=\"gctp_parm\">null</att>\n" +
+"        <att name=\"gctp_sys\">null</att>\n" +
+"        <att name=\"gctp_zone\">null</att>\n" +
 "        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
 "        <att name=\"keywords\">1day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, daily, data, day, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
+"        <att name=\"pass_date\">null</att>\n" +
+"        <att name=\"polygon_latitude\">null</att>\n" +
+"        <att name=\"polygon_longitude\">null</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1day)</att>\n" +
 "    </addAttributes>\n" +
@@ -840,7 +863,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
 "        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
-"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz.html</att>\n" +
+"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</att>\n" +
 "        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
 "        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
@@ -848,7 +871,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, level, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v27</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
 "        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk)</att>\n" +
 "    </addAttributes>\n" +
