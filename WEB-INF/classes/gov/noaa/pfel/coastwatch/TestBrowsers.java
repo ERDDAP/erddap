@@ -42,7 +42,7 @@ public class TestBrowsers  {
         //This section has circular tests; used as basis for other tests.
         //Bath in cwbrowser180 looks right for this range.
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile(  //throws Exception
             url + "?get=bathymetryData&minLon=-180&maxLon=160&minLat=-80&maxLat=80&nLon=35&nLat=17&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -74,7 +74,7 @@ public class TestBrowsers  {
 
         //-180 180  //hard part: catch 180
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile(  //throws Exception
             url + "?get=bathymetryData&minLon=-180&maxLon=180&minLat=-80&maxLat=80&nLon=37&nLat=17&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -104,7 +104,7 @@ public class TestBrowsers  {
 
         //lon 0 360 //hard parts, 180 to 359,  360
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile(  //throws Exception
             url + "?get=bathymetryData&minLon=0&maxLon=360&minLat=-80&maxLat=80&nLon=37&nLat=17&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -134,7 +134,7 @@ public class TestBrowsers  {
 
         //1 point
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile(  //throws Exception
             url + "?get=bathymetryData&minLon=-10&maxLon=-10&minLat=-80&maxLat=-80&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -148,7 +148,7 @@ public class TestBrowsers  {
 
         //1 point, but approx lon and lat
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile(  //throws Exception
             url + "?get=bathymetryData&minLon=-10.002&maxLon=-10.001&minLat=-80.002&maxLat=-80.001&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -162,7 +162,7 @@ public class TestBrowsers  {
 
         //2x2 points, approx lon and lat
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=bathymetryData&minLon=-10.01&maxLon=-9.97&minLat=-80.01&maxLat=-79.97&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -181,7 +181,7 @@ public class TestBrowsers  {
 
         //2x2 points
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -200,7 +200,7 @@ public class TestBrowsers  {
 
         //2x2 points, approx lon and lat
         File2.delete(ncName);
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=bathymetryData&minLon=-10.01&maxLon=-9.01&minLat=-80.01&maxLat=-79.01&fileType=.nc",
             ncName, true);
         grid.clear();
@@ -237,7 +237,7 @@ public class TestBrowsers  {
 
         //.grd file
         File2.delete(testName + ".grd");
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.grd",
             testName + ".grd", true);
         grid.clear();
@@ -461,7 +461,7 @@ public class TestBrowsers  {
 
         //test of HTTP GET an .grd grid file 
         File2.delete(tempFileName + ".grd");
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.grd",
             tempFileName + ".grd", true);
         grid.readGrd(tempFileName + ".grd");
@@ -497,7 +497,7 @@ public class TestBrowsers  {
 
         //test of HTTP GET an .nc grid file 
         File2.delete(tempFileName + ".nc");
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.nc",
             tempFileName + ".nc", true);
         grid.readNetCDF(tempFileName + ".nc", null);
@@ -1810,34 +1810,34 @@ String2.ERROR + " getting .asc");
         String testName = SSR.getTempDirectory() + "TestBrowsersGraphicalGet";
 
         //bathymetry 
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=bathymetryData&minLon=-180&maxLon=180&minLat=-90&maxLat=90&fileType=medium.png",
             testName + "0.png", true);
         SSR.displayInBrowser(testName + "0.png");
 
         //grid
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=medium.png",
             testName + "1.png", true);
         SSR.displayInBrowser(testName + "1.png");
 
         //grid time series
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day" +
             "&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&lon=-124.81&lat=38.69&fileType=medium.png",
             testName + "2.png", true);
         SSR.displayInBrowser(testName + "2.png");
 
         //vector
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day&centeredTime=2006-11-21T12:00:00" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=medium.png",
             testName + "3.png", true);
         SSR.displayInBrowser(testName + "3.png");
 
         //station 
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-135.0" +
             "&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
             "&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=medium.png",
@@ -1845,7 +1845,7 @@ String2.ERROR + " getting .asc");
         SSR.displayInBrowser(testName + "4.png");
 
         //station vector
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
             "&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=medium.png",
@@ -1853,7 +1853,7 @@ String2.ERROR + " getting .asc");
         SSR.displayInBrowser(testName + "5.png");
 
         //transparent grid
-        SSR.downloadFile(
+        SSR.downloadFile( //throws Exception
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=transparent.png",
             testName + "6.png", true);

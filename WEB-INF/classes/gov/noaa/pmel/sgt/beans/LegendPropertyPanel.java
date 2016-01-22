@@ -75,7 +75,7 @@ class LegendPropertyPanel extends PropertyPanel implements ActionListener, Chang
   private JComponent[] comps_ = new JComponent[pNames_.length];
   private String[] keyType = {"Line", "Color", "Vector", "Point"};
   private String[] borderType = {"Plain Line", "Raised", "No Border"};
-  private static DecimalFormat format_ = new DecimalFormat("#.###");
+  private DecimalFormat format_ = new DecimalFormat("#.###"); //2015-09-02 was static!
 
   public LegendPropertyPanel(Legend legend, boolean expert) {
     super();

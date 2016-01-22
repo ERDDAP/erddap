@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.*;
 import java.util.TimeZone;
 
 import org.apache.commons.codec.digest.DigestUtils;  //in netcdf-all.jar
@@ -3467,7 +3468,7 @@ public static void testJanino() throws Exception {
              String file = baseDir + datasetID + "/" + datasetID + "_" + i + ".nc";
              String2.log("\n url=" + url + "\nfile=" + file);
              long time = System.currentTimeMillis();
-             SSR.downloadFile(url, file, compress);
+             SSR.downloadFile(url, file, compress); //throws Exception
              String2.log("time=" + (System.currentTimeMillis() - time)/1000 + "s"); 
          }
     }
@@ -6084,13 +6085,13 @@ project)
                 if ("degree_Celsius".equals(units)) {
                 } else if ("Kelvin".equals(units)) {
                     pa = table.getColumn(col);
-                    pa.scaleAddOffset(1, -273.15); 
+                    pa.scaleAddOffset(1, Math2.kelvinToC); 
                 } else {
                     throw new Exception("Unexpected units for ext: " + units);
                 }
                 atts.set("units", "degrees_Celsius");
             }
-            pa.switchFromTo("-273.15", ""); 
+            pa.switchFromTo("" + Math2.kelvinToC, ""); 
             //count n<-100 degrees
             pa = table.getColumn(col);
             count = 0;
@@ -6108,7 +6109,7 @@ project)
                 if ("degree_Celsius".equals(units)) {
                 } else if ("Kelvin".equals(units)) {
                     pa = table.getColumn(col);
-                    pa.scaleAddOffset(1, -273.15); 
+                    pa.scaleAddOffset(1, Math2.kelvinToC); 
 
                 } else {
                     throw new Exception("Unexpected units for intp: " + units);
@@ -6140,7 +6141,7 @@ project)
                 if ("degree_Celsius".equals(units)) {
                 } else if ("Kelvin".equals(units)) {
                     pa = table.getColumn(col);
-                    pa.scaleAddOffset(1, -273.15); 
+                    pa.scaleAddOffset(1, Math2.kelvinToC); 
                 } else {
                     throw new Exception("Unexpected units for sst: " + units);
                 }
@@ -6207,7 +6208,7 @@ project)
         String logFile = "c:/data/cchdo/convertCchdoBottle.log";
         Attributes colInfo = new Attributes();  //colName -> units|type
 
-        String2.setupLog(true, false, logFile, false, false, 1000000000);
+        String2.setupLog(true, false, logFile, false, 1000000000);
         String2.log("*** Projects.convertCchdoBottle " + 
             Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
               " inDir=" + inDir +
@@ -8904,7 +8905,6 @@ towTypesDescription);
             }
         }
     }
-
 
 }
 

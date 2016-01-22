@@ -154,7 +154,7 @@ public class TwoGrids  {
                 globalAttributes);
         } catch (Exception e) {
             File2.delete(hdfFileName + ".hdf");
-            throw new Exception(e);
+            throw e;
         }
         
     } */

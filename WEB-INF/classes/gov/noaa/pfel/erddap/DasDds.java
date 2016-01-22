@@ -72,8 +72,7 @@ public class DasDds {
         }
         String2.setupLog(true, false,  //toSystemOut, toSystemErr
             logFileName,
-            false, //logToStringBuffer
-            true, 20000000);  //append
+            true, String2.logFileDefaultMaxSize);  //append
         String2.log("*** Starting DasDds " + 
             Calendar2.getCurrentISODateTimeStringLocal() + "\n" +        
             "logFile=" + String2.logFileName() + "\n" +

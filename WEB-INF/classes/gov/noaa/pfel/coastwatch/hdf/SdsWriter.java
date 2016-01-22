@@ -775,18 +775,18 @@ public class SdsWriter  {
             globalAttributes);
 
         //regenerate mini.hdf.dump  (e.g., if I changed the format of a HdfXxx.toString method)
-        //String2.setupLog(false, false, dir + "mini.hdf.dump", false, false, 1000000); //capture results to file
+        //String2.setupLog(false, false, dir + "mini.hdf.dump", false, String2.logFileDefaultMaxSize); //capture results to file
         //SdsReader.verbose = true;  //so verbose results get sent to file
         //SdsReader.read(dir + "mini.hdf");
 
         //now try to read it
         String2.log("SdsWriter.main read mini2.hdf and generate mini2.hdf.dump file");  
-        String2.setupLog(false, false, dir + "mini2.hdf.dump", false, false, 1000000); //capture results to file
+        String2.setupLog(false, false, dir + "mini2.hdf.dump", false, String2.logFileDefaultMaxSize); //capture results to file
         SdsReader.verbose = true; //so verbose results get sent to file
         SdsReader sdsReader = new SdsReader(dir + "mini2.hdf");
 
         //look for differences
-        String2.setupLog(true, false, "", false, false, 1000000);
+        String2.setupLog(true, false, "", false, String2.logFileDefaultMaxSize);
         String2.log("SdsWriter.main look for dump differences");  //after close log files
         String miniDump[]  = String2.readFromFile(dir + "mini.hdf.dump");
         String mini2Dump[] = String2.readFromFile(dir + "mini2.hdf.dump");
@@ -805,7 +805,7 @@ public class SdsWriter  {
         /*
         //read a standard file
         String2.setupLog(true, false, dir + "OQNux10.hdf.dump",
-            false, false, 1000000);
+            false, String2.logFileDefaultMaxSize); //append
         SdsReader.verbose = true;
         SdsReader.read(String2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/griddata/OQNux101day_20050712_W-135E-105S22N50.hdf");

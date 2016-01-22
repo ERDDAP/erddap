@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -49,7 +49,7 @@ public class ResourceBundle2 {
      *   for a file in the class path named 
      *   "com/cohort/util/TestResourceBundle2.properties".
      * @param locale
-     * @throws Exception if properties file not found
+     * @throws RuntimeException if properties file not found
      */
     public ResourceBundle2(String primaryBaseName, Locale locale) {
         primaryRB = ResourceBundle.getBundle(primaryBaseName, locale);
@@ -66,7 +66,7 @@ public class ResourceBundle2 {
      *   for a file in the class path named 
      *   "com/cohort/util/DefaultResourceBundle2.properties".
      * @param locale
-     * @throws Exception if properties files not found
+     * @throws RuntimeException if properties files not found
      */
     public ResourceBundle2(String primaryBaseName, String secondaryBaseName, Locale locale) {
         primaryRB = ResourceBundle.getBundle(primaryBaseName, locale);
@@ -77,7 +77,7 @@ public class ResourceBundle2 {
      * A constructor that uses the one specified primary ResourceBundle.
      * 
      * @param primaryBaseName
-     * @throws Exception if properties file not found
+     * @throws RuntimeException if properties file not found
      */
     public ResourceBundle2(String primaryBaseName) {
         primaryRB = ResourceBundle.getBundle(primaryBaseName);
@@ -89,7 +89,7 @@ public class ResourceBundle2 {
      * 
      * @param primaryBaseName
      * @param secondaryBaseName
-     * @throws Exception if properties file not found
+     * @throws RuntimeException if properties file not found
      */
     public ResourceBundle2(String primaryBaseName, String secondaryBaseName) {
         primaryRB = ResourceBundle.getBundle(primaryBaseName);
@@ -254,7 +254,7 @@ public class ResourceBundle2 {
      *
      * @param key
      * @param errorInMethod the start of an Error message
-     * @throws Exception if there is no value for key
+     * @throws RuntimeException if there is no value for key
      */
     public String getNotNullString(String key, String errorInMethod) {
         String value = getString(key, null);
@@ -267,7 +267,7 @@ public class ResourceBundle2 {
      *
      * @param key
      * @param errorInMethod the start of an Error message
-     * @throws Exception if there is no value for key
+     * @throws RuntimeException if there is no value for key
      */
     public String getNotNothingString(String key, String errorInMethod) {
         String value = getString(key, null);

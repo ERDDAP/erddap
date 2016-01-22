@@ -45,7 +45,7 @@ abstract class PropertyPanel extends JComponent implements DesignListener {
   private Font textFont_ = new Font("Dialog", 0, 9);
   private Insets lInset = new Insets(2, 1, 1, 3);
   private Insets rInset = new Insets(2, 3, 1, 1);
-  private static DecimalFormat numberFormat_ = new DecimalFormat("#.##");
+  private DecimalFormat numberFormat_ = new DecimalFormat("#.##"); //2015-09-02 was static
   //2011-12-15 Bob Simons changed space to 'T' and hh to HH (24 hour)
   private String dateFormat_ = "yyyy-MM-dd'T'HH:mm";
 

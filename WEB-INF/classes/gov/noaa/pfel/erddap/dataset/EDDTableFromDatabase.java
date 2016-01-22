@@ -22,6 +22,7 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -79,19 +80,22 @@ public class EDDTableFromDatabase extends EDDTable{
     /**
      * This constructs an EDDTableFromDatabase based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromDatabase"&gt; 
      *    having just been read.  
      * @return an EDDTableFromDatabase.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromDatabase fromXml(SimpleXMLReader xmlReader) throws Throwable {
-        return lowFromXml(xmlReader, "");
+    public static EDDTableFromDatabase fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
+        return lowFromXml(erddap, xmlReader, "");
     }
 
     /**
      * This constructs an EDDTableFromDatabase based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromDatabase"&gt; 
      *    having just been read.  
      * @param subclass "" for regular or "Post"
@@ -99,7 +103,8 @@ public class EDDTableFromDatabase extends EDDTable{
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromDatabase lowFromXml(SimpleXMLReader xmlReader, String subclass) throws Throwable {
+    public static EDDTableFromDatabase lowFromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader, String subclass) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFrom" + subclass + "Database(xmlReader)...");
@@ -884,7 +889,7 @@ public class EDDTableFromDatabase extends EDDTable{
                 throw t;
             } else {
                 //all other errors probably from database
-                throw new Throwable(EDStatic.errorFromDataSource + t.toString());
+                throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
             }
         }
     }
@@ -1223,22 +1228,23 @@ public class EDDTableFromDatabase extends EDDTable{
             "   below, notably 'units' for each of the dataVariables.\n" +
             "-->\n\n" +
             "<dataset type=\"EDDTableFromDatabase\" datasetID=\"" + 
-                ((catalogName != null && catalogName.length() > 0)? catalogName + "_" : "") +
-                (( schemaName != null &&  schemaName.length() > 0)?  schemaName + "_" : "") +
-                tableName + 
+                XML.encodeAsXML(
+                    ((catalogName != null && catalogName.length() > 0)? catalogName + "_" : "") +
+                    (( schemaName != null &&  schemaName.length() > 0)?  schemaName + "_" : "") +
+                    tableName) + 
                 "\" active=\"true\">\n" +
-            "    <sourceUrl>" + url + "</sourceUrl>\n" +
-            "    <driverName>" + driverName + "</driverName>\n");
+            "    <sourceUrl>" + XML.encodeAsXML(url) + "</sourceUrl>\n" +
+            "    <driverName>" + XML.encodeAsXML(driverName) + "</driverName>\n");
         for (int i = 0; i < connectionProperties.length; i += 2) 
             sb.append(
                 "    <connectionProperty name=\"" + XML.encodeAsXML(connectionProperties[i]) + "\">" + 
                     XML.encodeAsXML(connectionProperties[i+1]) + "</connectionProperty>\n");
         sb.append(
-            "    <catalogName>" + catalogName + "</catalogName>\n" +
-            "    <schemaName>" + schemaName + "</schemaName>\n" +
-            "    <tableName>" + tableName + "</tableName>\n" +
+            "    <catalogName>" + XML.encodeAsXML(catalogName) + "</catalogName>\n" +
+            "    <schemaName>" + XML.encodeAsXML(schemaName) + "</schemaName>\n" +
+            "    <tableName>" + XML.encodeAsXML(tableName) + "</tableName>\n" +
             (tOrderBy == null || tOrderBy.length() == 0? "" : 
-            "    <orderBy>" + tOrderBy + "</orderBy>\n") +
+            "    <orderBy>" + XML.encodeAsXML(tOrderBy) + "</orderBy>\n") +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
@@ -1505,7 +1511,7 @@ expected =
 
             //ensure it is ready-to-use by making a dataset from it
             //!!! This doesn't actually request data, so it isn't a complete test
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             String tDatasetID = "myschema_mytable";
             Test.ensureEqual(edd.datasetID(), tDatasetID, "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -1546,10 +1552,10 @@ expected =
         String tQuery;
         String dir = EDStatic.fullTestCacheDirectory;
         String results, expected;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         try {
-            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetXml("testMyDatabase"); 
+            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testMyDatabase"); 
             String tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".das"); 
             results = new String((new ByteArray(dir + tName)).toArray());
@@ -1721,7 +1727,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
      */
     public static String getCSV(String datasetID) throws Throwable {
         String dir = EDStatic.fullTestCacheDirectory;
-        EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetXml(datasetID); 
+        EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, datasetID); 
         String tName = tedd.makeNewFileForDapQuery(null, null, "", 
             dir, tedd.className() + "_" + datasetID + "_getCSV", ".csv"); 
         return new String((new ByteArray(dir + tName)).toArray());
@@ -1738,7 +1744,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
         String results = "not set";
         try {
             //if there is no subsetVariables att, the dataset will be created successfully
-            EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetXml("testNonExistentVariable"); 
+            EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testNonExistentVariable"); 
             results = "shouldn't get here";
             edd.getDataForDapQuery(null, "", "",                    //should throw error
                 new TableWriterAll(dir, "testNonExistentVariable")); 
@@ -1760,7 +1766,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
         String results = "not set";
         try {
             //if there is no subsetVariables att, the dataset will be created successfully
-            EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetXml("testNonExistentTable"); 
+            EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testNonExistentTable"); 
             results = "shouldn't get here";
             edd.getDataForDapQuery(null, "", "",                    //should throw error
                 new TableWriterAll(dir, "testNonExistentTable")); 

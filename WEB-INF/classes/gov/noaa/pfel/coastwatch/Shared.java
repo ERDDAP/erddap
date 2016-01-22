@@ -1019,7 +1019,8 @@ String2.log("!!!Category=" + category);
         long time = System.currentTimeMillis();
         OneOf oneOf = new OneOf("gov.noaa.pfel.coastwatch.CWBrowser");
         //oneOf suppresses output to screen; re start it
-        String2.setupLog(true, false, "", false, true, 100000);
+        String2.setupLog(true, false, "", 
+            true, String2.logFileDefaultMaxSize); //append
         Shared shared = new Shared(oneOf);
         shared.run();
         String[] options = shared.activeGridDataSetOptions(); 

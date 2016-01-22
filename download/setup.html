@@ -48,6 +48,7 @@
 <a rel="help" href="#needToKnow">Need To Know</a> | 
 <a rel="help" href="#dontNeedToKnow">Don't Need To Know</a> | 
 <br>
+<a rel="help" href="#slideShows">Slide Shows</a> | 
 <a rel="help" href="#programmersGuide">Programmer's Guide</a> | 
 <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">List of Changes</a> | 
 <a rel="copyright" href="#credits">Credits</a> | 
@@ -128,6 +129,8 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-17 Reyna Jenkyns -->
 <li><a rel="bookmark" href="http://meteo.rtech.fr/erddap/index.html">R.Tech Engineering</a>, France 
   <!-- 2015-03-20 Philippe Makowski -->
+<li>Spyglass Technologies 
+  <!-- 2015-08-24 Paul Janecek -->
 <li>Stanford University, Hopkins Marine Station 
   <!-- 2015-03-24 James Ganong -->
 <li><a rel="bookmark" href="http://bmlsc.ucdavis.edu:8080/erddap/index.html">UC Davis BML</a> (University of California at Davis, Bodega Marine Laboratory) 
@@ -136,36 +139,45 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-18 Ellyn Montgomery -->
 <li>UW APL (University of Washington, Applied Physics Laboratory) 
   <!-- 2015-04-02 Mike Harrington -->
-<!--
-<li><a rel="bookmark" href=""></a> 
-  <!-- 2015-03-19  -->
-
 </ul>
 
-<b>ERDDAP is recommended within NOAA:</b> <a rel="bookmark"
-href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive</a> 
+<b>ERDDAP is recommended within NOAA</b> 
+<br><a rel="bookmark" 
+href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
+  src="../images/external.png" align="bottom" alt=" (external link)" 
+  title="This is a link to an external web site."/></a> 
 includes ERDDAP in its list of recommended data servers for use by groups within NOAA. 
 
 <h2>Is the installation procedure hard? Can I do it?</h2>
 The initial installation takes some time, but it isn't very hard. You can do it.
 If you get stuck, email me at <tt>bob dot simons at noaa dot gov</tt> .  I will help you.
+<br>Or, you can join the <a rel="help"
+href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+and post your question there.
 
 
 <!-- ******* -->
 <h2><a name="initialSetup">How</a> To Do the Initial Setup of ERDDAP on Your Server</h2>
 ERDDAP can run on any server that supports Java and Tomcat (and perhaps other application servers).  
-ERDDAP has been tested on Linux, Mac, and Windows computers.   If you are installing
+ERDDAP has been tested on Linux (including on Amazon's AWS), Mac, and Windows computers.   
+<br><b>Amazon</b> - If you are installing
 ERDDAP on an Amazon Web Services EC2 instance, see this 
-<a rel="help" href="#amazon">Amazon Web Services Overview</a>
+<a rel="help" href="#amazon">Amazon Web Services Overview</a> (below)
 first.
-
-<p>Running ERDDAP on Windows may have problems: notably, ERDDAP may be unable to delete 
+<br><b>Docker</b> - Axiom now offers 
+<a rel="bookmark" href="https://hub.docker.com/u/axiom/">ERDDAP in a Docker container<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+    We haven't worked with Docker yet. If you work with this, please send us your comments.
+<br><b>Windows</b> - Running ERDDAP on Windows may have problems: 
+notably, ERDDAP may be unable to delete 
 and/or rename files quickly. This is probably due to antivirus software (e.g., from MacAfee
 and Norton) which is checking the files for viruses. If you run into this problem (which
 can be seen by error messages in the log.txt file like "Unable to delete ..."), changing the
 antivirus software's settings may partially alleviate the problem. Or consider using a Linux
 or Mac server instead.
 
+<p><b>The standard ERDDAP installation instructions are:</b>
 <ol>
 <li><a name="java">Set up Java.</a>  
     <br>Type "java -version" from your server's command line to make sure you have 
@@ -359,6 +371,9 @@ or Mac server instead.
         web site or search the web for help,
         but please let us know the problems you had and the solutions you found.
       <li>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will try to help you.
+      <li>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and post your question there.
         <br>&nbsp;
       </ul>
     </ul>
@@ -371,8 +386,9 @@ or Mac server instead.
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download
      <!-- Use: c:\content\bat\md5.bat erddapContent1.64.zip -->
-    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.64, size=24,996 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2015-08-19)
+    <a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
+    (version 1.66, size=25,887 bytes, MD5=70B46B5E96DD17F4DCEAC27CC95BDFBB, dated 2016-01-19)
 
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
@@ -382,19 +398,29 @@ or Mac server instead.
     in ~tomcat/conf/tomcat8.conf <!-- tomcatVersion --> so ERDDAP can find the directory.
     
   <p>[Some previous versions are also available:  
-     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.58.zip">1.58</a>
-     (size=25,000 bytes, MD5=620A54B6A52D7C95C0D1635A9FF39DC6, dated 2015-02-25)
-     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.60.zip">1.60</a>
-     (size=25,035 bytes, MD5=10332FC959B72F17E6A00AD432A38578, dated 2015-03-12)
-     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.62.zip">1.62</a>
-     (size=25,035 bytes, MD5=4B17A93CE52087C53AF6AEA905391418, dated 2015-06-08)
-     ]
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.58.zip">1.58</a>
+    (size=25,000 bytes, MD5=620A54B6A52D7C95C0D1635A9FF39DC6, dated 2015-02-25)
+    <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.60.zip">1.60</a>
+    (size=25,035 bytes, MD5=10332FC959B72F17E6A00AD432A38578, dated 2015-03-12)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.62.zip">1.62</a>
+    (size=25,035 bytes, MD5=4B17A93CE52087C53AF6AEA905391418, dated 2015-06-08)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.64.zip">1.64</a>
+    (size=24,996 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2015-08-19)
+    ]
 
   <p>Then,
   <ul>
   <li><a name="setup.xml">Read</a> the comments in <i>tomcat</i>/content/erddap/<b>setup.xml</b>
       and make the requested changes.
     setup.xml is the file with all of the settings which specify how your ERDDAP behaves.
+    <br>For the initial setup, you MUST at least change these settings:
+      <tt>&lt;bigParentDirectory&gt;, &lt;emailEverythingTo&gt;, &lt;baseUrl&gt;,
+      &lt;baseHttpsUrl&gt;, &lt;email.*&gt;, &lt;admin.*&gt;</tt> 
+      (and <tt>&lt;fontFamily&gt;</tt> if you are using Bitstream Vera Sans fonts).
+
   <li><a name="datasets.xml">Read</a> the comments in 
       <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>, then modify the XML in 
     <i>tomcat</i>/content/erddap/<b>datasets.xml</b> to specify all of the datasets 
@@ -430,7 +456,7 @@ or Mac server instead.
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.64, size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
+    (version 1.66, size=512,007,729 bytes, MD5=71CB248B05F0340BE6CF4CF71F3BD8E6, dated 2016-01-19)
 
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
@@ -447,6 +473,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.62.war">1.62</a> 
     (size=491,038,285 bytes, MD5=1FDF3F349EC7D87A4A88AD14A7B5F41A, dated 2015-06-09)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.64.war">1.64</a> 
+    (size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
     ]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
@@ -477,16 +506,29 @@ or Mac server instead.
   <br>ERDDAP starts up without any datasets loaded. 
   Datasets are loaded in a background thread and so become available one-by-one.
 
-  <p>Trouble? Tomcat has to do a lot of work the first time an application like 
+  <p><a name="LookInLogFiles">Trouble? Look in the log files.</a>
+  <br>If ERDDAP won't run or some datasets won't load, look for error messages in 
+  <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out) and
+  <br><a rel="help" href="#log">ERDDAP's log file</a> (<i>bigParentDirectory</i>/logs/log.txt).
+
+  <p><a name="OldVersionOfJava">Trouble: Old Version of Java</a>
+  <br>If you are using a version of Java that is too old for ERDDAP,
+  ERDDAP won't run and you will see an error message in Tomcat's log file like
+  <br><tt>Exception in thread "main" java.lang.UnsupportedClassVersionError: 
+  <br><i>some/class/name</i>: Unsupported major.minor version <i>someNumber</i></tt>
+  <br>The solution is to update to the most recent version of Java
+  and make sure that Tomcat is using it.
+
+  <p><a name="SlowStartup">Trouble: Slow Startup First Time</a>
+  <br>Tomcat has to do a lot of work the first time an application like 
   ERDDAP is started.
   On some servers, the first attempt to view ERDDAP stalls (30 seconds?) until 
   this work is finished.
   On other servers, the first attempt will fail immediately. But if you wait 
   30 seconds and try again,
   it will succeed if ERDDAP was installed correctly.
-  <br>If your second attempt to view ERDDAP fails, look for error messages in 
-  <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out) and
-  <br><a rel="help" href="#log">ERDDAP's log file</a> (<i>bigParentDirectory</i>/logs/log.txt).
+  <br>There is no fix for this, but it usually only occurs the first time after 
+  you install a new version of ERDDAP.
 
 <li>In the future, to shut down (and restart) ERDDAP, see 
   <br><a rel="help" href="#shutdown">How to Shut Down and Restart Tomcat and ERDDAP</a>.
@@ -494,12 +536,16 @@ or Mac server instead.
 
 <li>Troubles installing Tomcat or ERDDAP?
   <br>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will help you.
+    <br>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and post your question there.
   <br>&nbsp;
 
 <li>Email <a name="updateNotification">Notification</a> of New Versions of ERDDAP
-  <br>If you want to receive an 
-  email whenever a new version of ERDDAP 
-  is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requesting this.
+  <br>If you want to receive an email whenever a new version of ERDDAP 
+  is available, send an email to <tt>bob dot simons at noaa dot gov</tt> 
+  requesting to be added to the ERDDAP Announcements mailing list.
+  This list averages roughly one email every three months.
   <br>&nbsp;
 
 <li><a name="customize">Customize</a> your ERDDAP to highlight your organization (not ERD).
@@ -539,7 +585,7 @@ or Mac server instead.
 <li>Download 
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.64, size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
+    (version 1.66, size=512,007,729 bytes, MD5=71CB248B05F0340BE6CF4CF71F3BD8E6, dated 2016-01-19)
     into a temporary directory.
   <br>&nbsp;
 
@@ -572,7 +618,7 @@ or Mac server instead.
 <li>Install the new ERDDAP in Tomcat:
   <ol>
   <li>(Don't use Tomcat Manager. Sooner or later there will be PermGen memory issues. 
-    It is better to actully shutdown and startup Tomcat.)
+    It is better to actually shutdown and startup Tomcat.)
   <li>From a command line, use <tt><i>tomcat</i>/bin/shutdown.sh</tt> 
     (or \'s and .bat in Windows).
     <br>On Linux, you may want to use <tt>ps -ef | grep tomcat</tt> to see if/when 
@@ -589,12 +635,27 @@ or Mac server instead.
 
 <li>Troubles updating ERDDAP?
   <br>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will help you.
+    <br>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and post your question there.
 
 </ol>
 
 <!-- ******* -->
 <h2><a name="needToKnow">Things You Need To Know</a></h2>
 <ul>
+
+<li><b><a name="useCtrlF">Use</a> Ctrl-F To Find Things On This Web Page</b> 
+<br>All of the information about administering ERDDAP 
+(other than 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"
+>working with datasets.xml</a>)
+is on this one, very long, .html web page,
+not several .html pages as some people prefer.
+The advantage of one .html web page is that you can use Ctrl-F (Command-F on a Mac) 
+in your web browser to search for text (for example, <tt>flag</tt>) within this web page.
+<p>Alternatively, at the top of this document, there is a 
+<a rel="help" href="#">list of main topics</a> (a Table of Contents).
 
 <li><b><a name="respondingSlowly">If ERDDAP Is Responding</a> Slowly</b> 
     <br>you may be able to figure out if the slowness is reasonable 
@@ -626,6 +687,9 @@ or Mac server instead.
       If you want help speeding up a specific dataset, 
       email a description of the problem and the dataset's chunk of datasets.xml to
       <tt>bob dot simons at noaa dot gov</tt>.  
+    <br>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and post your question there.
       <br>&nbsp;
     </ul>
 
@@ -692,7 +756,7 @@ or Mac server instead.
        <a name="frozen">Shut</a> Down and Restart Tomcat and ERDDAP</b> 
 
   <br>You don't need to shut down and restart Tomcat and ERDDAP
-  if ERDDAP is temporarily</br> slow, or slow for some known reason 
+  if ERDDAP is temporarily slow, or slow for some known reason 
   (like lots of requests from scripts or WMS users).
 
   <p>You do need to shut down and restart Tomcat and ERDDAP 
@@ -717,6 +781,9 @@ or Mac server instead.
       also by reading relevant parts of the <a rel="help" href="#log">ERDDAP log archive</a>.
       If you want, you can email that information to <tt>bob dot simons at noaa dot gov</tt> 
       so I can see what went wrong.
+      <br>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and post your question there.
     <li>Use <tt>./shutdown.sh</tt>
     <li>Use <tt>ps -u <i>tomcatUser</i> | grep java</tt> repeatedly until the java/tomcat process isn't listed.
 
@@ -814,6 +881,9 @@ or Mac server instead.
   </ul>
   If you do set up Monit or a cron job, please email the details to 
   <tt>bob dot simons at noaa dot gov</tt> .
+    <br>Or, you can join the <a rel="help"
+        href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
+        and share the information there.
   <br>&nbsp;
 
 <li><b><a name="permgen">PermGen</a></b> - 
@@ -849,6 +919,11 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
   <li>When the log.txt files gets to 20 MB, 
     <br>the file is renamed log.txt.previous and a new log.txt file is created.
     So log files don't accumulate.
+    <p>In setup.xml, you can specify a different maximum size for the log file, in MegaBytes.
+    The minimum allowed is 1 (MB). The maximum allowed is 2000 (MB). 
+    The default is 20 (MB). For example:
+    <br>&lt;logMaxSizeMB&gt;20&lt;/logMaxSizeMB&gt;
+
   <li>Whenever you restart ERDDAP, 
     <br>ERDDAP makes an archive copy of the 
     log.txt and log.txt.previous files with a time stamp in the file's name. 
@@ -1810,7 +1885,7 @@ These are details that you don't need to know until a need arises.
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
     on your EC2 instance.
-  <li>Follow the regular <a rel="help" href="#initialSetup">ERDDAP installation instructions</a>.
+  <li>Follow the standard <a rel="help" href="#initialSetup">ERDDAP installation instructions</a>.
     <br>&nbsp;
   </ul>
 
@@ -1917,8 +1992,257 @@ when making graphs and maps.
   <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erdData.html">here</a>.
   <br>&nbsp;
 
+<li><b><a name="ArchiveADataset">ArchiveADataset</a></b>  
+  - Included in your ERDDAP installation is a command line tool called ArchiveADataset
+  which can help you make an archive (a .tar.gz file) with part or all of a dataset
+  stored in a series of data files in a file format that is suitable for 
+  submission to NOAA's NCEI archive (.nc for gridded datasets or 
+  <a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA">.ncCFMA</a>    
+  for tabular datasets, as specified by the 
+  <a rel="help"
+href="https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/">NCEI NetCDF Templates v2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+
+  <p>ArchiveADataset follows these 
+  <a rel="help"
+href="https://www.ncdc.noaa.gov/atrac/guidelines.html">NCEI Archiving Guidelines<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+  this guide for 
+  <a rel="help"
+href="https://sites.google.com/a/noaa.gov/ncei-ioos-archive/cookbook?pli=1">Archiving
+Your Data at NCEI<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+   and the related
+  <a rel="help"
+href="https://sites.google.com/a/noaa.gov/ncei-ioos-archive/cookbook/data-integrity">Practices
+for Ensuring Data Integrity<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+  Not surprisingly, the 
+  <a rel="help" 
+  href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes"
+  >global and variable metadata</a> 
+  that ERDDAP encourages/requires is almost exactly the same metadata 
+  that NCEI encourages/requires,
+  so all of your datasets should be ready for submission to NCEI via
+  <a rel="bookmark" href="https://www.nodc.noaa.gov/s2n/">Send2NCEI<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  or 
+  <a rel="bookmark" href="https://www.ncdc.noaa.gov/atrac/index.html">ATRAC<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    (NCEI's Advanced Tracking and Resource tool for Archive Collections).
+  Also, NCEI can download the ISO 19115 .xml metadata file for the dataset from 
+  your ERDDAP.
+  
+  <p>ArchiveADataset may be useful in other situations,
+  for example, for ERDDAP administrators who need to convert a subset of a dataset
+  (on a private ERDDAP) from its native file format into a set of 
+  <a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA">.ncCF files</a>,
+  so that a public ERDDAP can 
+  serve the data from the .ncCF files instead of the original files.
+
+  <p>Once you have set up ERDDAP and run it (at least one time), 
+  you can find and use ArchiveADataset in the 
+  <i>tomcat</i>/webapps/erddap/WEB-INF directory. 
+  There is a shell script (ArchiveADataset.sh) for Linux/Unix 
+  and a batch file (ArchiveADataset.bat) for Windows. 
+  When you run ArchiveADataset, it will ask you a series of questions. 
+  For each question, type a response, then press Enter. 
+  Or press ^C to exit a program at any time.
+
+  <p>Or, you can put the answers to the questions, in order, on the command line.
+  To do this, run the program once and type in and write down your answers.
+  Then, you can create a single command line (with the answers as parameters) which 
+  runs the program and answers all the questions.
+  <br>Use the word <tt>default</tt> if you want to use the default value for a given parameter.
+  <br>Use "" (two double quotes) as a placeholder for an empty string.
+  <br>Specifying parameters on the command line can be very convenient, for example, 
+  if you use ArchiveADataset once a month to 
+  archive a month's worth of data. Once you have generated the command line 
+  with parameters and saved that in your notes or in a shell script, 
+  you just need to make small changes each month to make that month's archive.
+
+  <p>The questions that ArchiveADataset asks allow you to:
+  <ul>
+  <li>Specify a contact email address for this archive
+    (it will be written in the READ_ME.txt file in the archive).
+  <li>Specify the datasetID of the dataset you want to archive.
+  <li>Specify which data variables you want to archive (usually all).
+  <li>Specify which subset of the dataset you want to archive.
+    You need to format the subset in the same way you would format 
+    a subset for a data request,
+    so it will be different for gridded 
+    than for tabular datasets.
+    <ul>
+    <li>For gridded datasets, you can specify a range of values of the leftmost dimension,
+      usually that is a range of time. ArchiveADataset will make a separate
+      request and generate a separate data file for each value in the range of values. 
+      Since gridded datasets are usually large, you will almost always have to specify 
+      a small subset relative to the size of the entire dataset.
+      <br>For example, <tt>[(2015-12-01):(2015-12-31)][][][]</tt> 
+    <li>For tabular datasets, you can specify any collection of constraints, but
+      it is often a range of time.
+      Since tabular datasets are usually small, it is often possible to specify 
+      no constraints, so that the entire dataset is archived.
+      <br>For example, <tt>&amp;time&gt;=2015-12-01&amp;time&lt;2016-01-01</tt>
+    </ul>
+  <li>For tabular datasets: specify a comma separated list of 0 or more variables 
+    that will determine 
+    how the archived data is further subsetted into different data files.
+    For datasets that have
+    <br><a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type"
+    ><tt>cdm_data_type</tt></a><tt>=TimeSeries|TimeSeriesProfile|Trajectory|TrajectoryProfile</tt>
+    <br>you should almost always specify the variable that has the 
+    <tt>cf_role=timeseries_id</tt> (e.g., stationID) 
+    or <tt>cf_role=trajectory_id</tt> attibute.
+    ArchiveADataset will make a separate request and generate a separate
+    data file for each combination of the values of these variables,
+    e.g., for each stationID.
+    <br>For all other tabular datasets, you will probably not specify any variables
+    for this purpose. 
+    <br>Warning: If the subset of the dataset you are archiving is very large (&gt;2GB) 
+    and there is no suitable variable for this purpose,
+    then ArchiveADataset is not usable with this dataset. This should be rare.
+  <li>Specify the file format for the data files that will be created.
+    <br>For gridded datasets, for NCEI, use <tt>.nc</tt> .
+    <br>For tabular datasets, for NCEI, use 
+      <a rel="help"
+      href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA"
+      ><tt>.ncCFMA</tt></a>.    
+  <li>Specify the type of file digest 
+    to be created for each data file and 
+    for the .tar.gz file.  
+    The file digest provides a way for the client (e.g., NCEI) 
+    to test whether the data file has become corrupted. 
+    Traditionally, these were 
+    <a rel="bookmark" href="https://en.wikipedia.org/wiki/MD5">.md5 files<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    but now there are better options.
+    For NCEI, use <tt>.sha256</tt> .
+  </ul>
+
+  <p>After you answer all of the questions, ArchiveADataset will:
+  <ol>
+  <li>Make a series of requests to the dataset and stage the resulting data files in
+      <i>bigParentDirectory</i>/ArchiveADataset/<i>datasetID_timestamp</i>/. 
+    <br>For gridded datasets, there will be a file for each value of the leftmost dimension
+      (e.g., time). The name of the file will be that value (e.g., the time value).
+    <br>For tabular datasets, there will be a file for each value of the
+      ... variable(s). The name of the file will be that value.
+      If there is more than one variable, the left variables will be used
+      to make subdirectory names, and the rightmost variable will be used
+      to make the file names.
+    <br>Each of data file must be &lt;2GB (the maximum allowed by .nc version 3 files).
+  <li>Make a file related to each data file with the digest of the data file.
+    For example, if the data file is 46088.nc and the digest type is .sha256, 
+    then the digest file will have the name 46088.nc.sha256 .
+  <li>Make a READ_ME.txt file with information about the archive,
+    including a list of all the settings you specified to generate this archive.
+  <li>Make 3 files in <i>bigParentDirectory</i>/ArchiveADataset/ :
+    <ul>
+    <li>A .tar.gz archive file named <i>datasetID_timestamp</i>.tar.gz
+      containing all of the staged data files and digest files.
+      The .tar.gz file may be any size, limited only by disk space.
+    <li>A digest file for the .tar.gz file, for example,
+      <i>datasetID_timestamp</i>.tar.gz.sha256
+    <li>A text file named
+      <i>datasetID_timestamp</i>.tar.gz.listOfFiles.txt
+      which lists all of the files in the .tar.gz file.
+    </ul>
+    If you are preparing the archive for NCEI, these are the files that you will send to 
+    NCEI, perhaps via 
+    <a rel="bookmark" href="https://www.nodc.noaa.gov/s2n/">Send2NCEI<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    or 
+    <a rel="bookmark" href="https://www.ncdc.noaa.gov/atrac/index.html">ATRAC<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    (NCEI's Advanced Tracking and Resource tool for Archive Collections).
+  <li>Delete all of the staged files so that only the .tar.gz, .tar.gz.sha256, 
+    and .tar.gz.listOfFiles.txt files remain.
+  </ol>
+
+  <p>Problems? Suggestions? ArchiveADataset is new. If you have problems or suggestions,
+    please email them to <tt>bob dot simons at noaa dot gov</tt> .
+  <br>&nbsp;
+
 </ul>
 
+<!-- ******* -->
+<h2><a name="slideShows">Slide Shows</a></h2>
+
+Here are some PowerPoint slide shows and documents that Bob Simons has created 
+related to ERDDAP.
+<p><b>DISCLAIMER: The content and opinions expressed in these documents 
+are Bob Simons' personal opinions and 
+do not necessarily reflect any position of the 
+Government or the National Oceanic and Atmospheric Administration.</b>
+
+<p>The Three Main Documents:
+<ul>
+<li><a rel="help" 
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erddapTalk4.ppt"
+  >The main introduction to ERDDAP (version 4)</a>
+<li><a rel="help" 
+  href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  >ERDDAP: Heavy Loads, Grids, Clusters, Federations, and Cloud Computing</a>
+<li><a rel="help" 
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erdData.html"
+  >Bob's Guidelines for Data Distribution Systems</a>
+</ul>
+
+<p>Previous/Specialized Presentations:
+<ul>
+<li><a rel="help" 
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/OneAndDone.pptx"
+  >2016 EDMC: One And Done</a>
+
+<li><a rel="help" 
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/NextGeneration.pptx"
+  >2016 Gov API: Next Generation Data Servers</a> 
+
+<li><a rel="help"
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/TabularAggregation.pptx"
+  >2015 ESIP: Tabular Aggregation</a>
+
+<li><a rel="help"
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/SimonsDosDontsTabular.pptx"
+  >2014 EDMC: Bob's Do's and Don't for Tabular Data</a>
+
+<li><a rel="help"
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/TheIdealUserInterface.pptx"
+  >2014 EDMC: The Ideal User Interface</a>
+
+<li><a rel="help"
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/TabularData.pptx"
+  >2014 ESIP: Tabular Data</a>
+
+<li><a rel="help"
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/DoMoreWithLess.ppt"
+  >2013 EDMC: Do More With Less</a>
+
+<li><a rel="help"
+  href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/guidelines3.ppt"
+  >2012 EDMC: Guidelines for Data Distribution Systems</a>
+</ul>
+
+<p>I hope it isn't true that
+<a rel="bookmark"
+href="http://markandrewgoetz.com/blog/wp-content/uploads/2009/11/tufte-wallpaper.png">"Every 
+time you make a PowerPoint, Edward Tufte kills a kitten."<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+<br>&nbsp;
 
 <!-- ******* -->
 <h2><a name="programmersGuide">Programmer's Guide</a></h2>
@@ -1928,24 +2252,34 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
 <li><b><a name="sourceCode">Source Code</a></b> 
   <ul>
   <li>The source code for the current version of ERDDAP is always in the current erddap.war file.
+    So when you install ERDDAP in tomcat, all of the source code is unpacked
+    and installed on the server. If you just want to read the source code,
+    this is the easiest option.
   <li>The source code for recent public versions and in-development versions 
-    is available via <a rel="help" href="https://github.com/BobSimons">GitHub<img 
+    is also available via <a rel="help" href="https://github.com/BobSimons">GitHub<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
     Please read the <a rel="help" href="https://github.com/BobSimons/erddap/wiki">Wiki<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
-    for that project.
-  <li>ERDDAP has a very liberal, open-source <a rel="copyright" href="#license">license</a>,
-    so you can use the source code for any purpose.  
+    for that project. 
+    If you want to modify the source code (and possibly have the changes incorporated
+    into the standard ERDDAP distribution), this is the recommended approach.
+  <li>ERDDAP and its subcomponents have very liberal, open-source <a rel="copyright" href="#license">licenses</a>,
+    so you can use and modify the source code for any purpose, for-profit or not-for-profit.
+    Note that ERDDAP and many subcomponents have licenses that require that you 
+    acknowledge the source of the code that you are using. See
+    <a rel="copyright" href="#credits">Credits</a>. Whether required or not, it is just
+    good form to acknowledge all of these contributors.
     <br>&nbsp;
   </ul>
 
 <li><b><a name="useTheCode">Use the Code for Other Projects</a></b> 
-  While you are welcome to use parts of the ERDDAP code for other projects, be warned that the code 
-  can and will change.   
+  While you are welcome to use parts of the ERDDAP code for other projects, 
+  be warned that the code can and will change.   
   We don't promise to support other uses of our code. 
-  Our main goal is to make a web application that people can download and use, as is, to distribute data. 
+  Git and GitHub will be your main solutions for dealing with this - 
+  Git allows you to merge our changes into your changes. 
 
   <p><b>For many situations where you might be tempted to use parts of ERDDAP in your project, 
   we think you will find it much easier to install and use ERDDAP as is,</b>
@@ -1954,7 +2288,8 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   You can set up your own ERDDAP installation in a polished way in a few days 
   (depending on the number and complexity of your datasets).
   But hacking out parts of ERDDAP for your own project is likely to take weeks 
-  (and months to catch subtleties).
+  (and months to catch subtleties) and you will lose the ability to 
+  incorporate changes and bug fixes from subsequent ERDDAP releases.
   We (obviously) think there are many benefits to using ERDDAP as is and making your ERDDAP 
   installation publicly accessible.
   However, in some circumstances, you might not want to make your ERDDAP installation publicly accessible.
@@ -2080,7 +2415,6 @@ at the source code and try to figure out how ERDDAP works, please do.
 </ul>
 
 
-
 <!-- ******* -->
 <h2><a name="changes">List of Changes</a></h2>
 
@@ -2100,7 +2434,8 @@ ERDDAP is a product of the
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>  
 <a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
-<br>Bob Simons is the author of ERDDAP (the designer and programmer who wrote the ERDDAP-specific code).
+<br>Bob Simons is the author of ERDDAP (the designer and programmer who wrote 
+the ERDDAP-specific code).
 <br>Roy Mendelssohn instigated the project.
 <br>The ERDDAP-specific code is licensed as copyrighted open source, with 
   <a rel="bookmark" href="http://www.noaa.gov">NOAA<img 
@@ -2109,15 +2444,22 @@ ERDDAP is a product of the
   holding the copyright. See the <a rel="copyright" href="#license">ERDDAP license</a>.
 <br>ERDDAP uses copyrighted open source, Apache, LGPL, MIT/X, Mozilla, and public domain libraries and data.
 <br>ERDDAP does not require any GPL code or commercial programs.
-<br>Some of the funding for work on ERDDAP has come from the 
+
+<p>The bulk of the funding for work on ERDDAP has come from NOAA,
+in that it pays Bob Simons salary (he is a full time government employee with 
+"hard"-money/full funding).
+In the early days of ERDDAP, when he was a government contractor, 
+funding came from the
 <a rel="bookmark" href="http://coastwatch.noaa.gov/">NOAA CoastWatch<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> program, 
 the <a rel="bookmark" href="http://www.ioos.gov/">NOAA IOOS<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
-program, and the now defunct POST program.  
-<br>Thank you all very much.
+program, and the now defunct Pacific Ocean Shelf Tracking (POST) program.  
+
+<p>Here is the list of software that ERDDAP uses. We are grateful for all of these. 
+Thank you.
 
 <ul>
 <li>ERDDAP is a 
@@ -2311,7 +2653,7 @@ program, and the now defunct POST program.
       >Oracle Binary Code License Agreement for Java EE Technologies<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
-<li> JavaMail uses activation.jar from the 
+<!--li> JavaMail uses activation.jar from the 
     <a rel="help" href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
@@ -2319,7 +2661,7 @@ program, and the now defunct POST program.
     <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt"
     >Oracle Binary Code License Agreement for Java EE Technologies<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>.
+      title="This link to an external web site does not constitute an endorsement."/></a>. -->
 <li> For <a rel="help" href="http://openid.net/">OpenID<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
@@ -2429,12 +2771,40 @@ program, and the now defunct POST program.
       title="This link to an external web site does not constitute an endorsement."/></a>)
   </ul>
 
-<li>EDDGridFromMergeIRFiles.java was written and contributed by
+<li> EDDGridFromMergeIRFiles.java was written and contributed by
    Jonathan Lafite and Philippe Makowski of 
    <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
    (license: copyrighted open source).
+
+<li> For working with Amazon AWS and S3, ERDDAP uses the
+  <a rel="help" href="http://aws.amazon.com/sdk-for-java/">aws-java-sdk.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+  <br>aws-java-sdk.jar requires commons-codec.jar, commons-logging.jar, fluent-hc.jar,
+      httpclient.jar, httpclient-cache.jar, httpcore.jar, and httpmime.jar
+      which are all from the    
+      <a rel="help" href="https://hc.apache.org/downloads.cgi">Apache Project<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+  <br>aws-java-sdk.jar also requires the 
+      <a rel="help" href="https://github.com/java-native-access/jna">Java Native Access 
+      jna.jar and jna-platform.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="https://github.com/java-native-access/jna/blob/master/LICENSE">Apache 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 
 <li> ERDDAP uses code from the 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
@@ -2476,11 +2846,50 @@ Questions, comments, suggestions?  Please send an email to
   <tt>bob dot simons at noaa dot gov</tt>
 and include the ERDDAP URL directly related to your question or comment.
 
+<p><a name="ERDDAPMailingList">Or,</a>
+you can join the ERDDAP Google Group / Mailing List by visiting
+<a rel="help"
+href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap<img 
+  src="../images/external.png" align="bottom" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."/></a> 
+and clicking on "Apply for membership". 
+Once you are a member, you can post your question there
+or search to see if the question has already been asked and answered. 
+
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.62
+<p>ERDDAP, Version 1.66
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
 
 </td>
 </tr>

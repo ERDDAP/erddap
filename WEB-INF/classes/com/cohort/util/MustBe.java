@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  *   differentiate between different numeric data types; just use doubles
  *   here.
  * <LI> Because the tests are done locally, there is no need to
- *   distinguish between > and >=, or between < and <=; both can
+ *   distinguish between &gt; and &gt;=, or between &lt; and &lt;=; both can
  *   use the same error messages.
  * <LI> ******* Don't generate lots of MustBe messages.
  *   throwableStackTrace's throwable.printStackTrace is very slow
@@ -118,7 +118,7 @@ public class MustBe {
      * @param nRemoveLines determines how many lines should be
      *   removed from the start of the stack trace.
      *   For handler routine and artificial Throwable
-     *     (like MustBe.between -> stackTrace()), 3 is recommended.
+     *     (like MustBe.between -&lt; stackTrace()), 3 is recommended.
      *   For any routine handling a real Thrown exception
      *     (e.g., MustBe.throwable), 0 is recommended.
      * @param removeAtJava removes all lines starting with "at java".
@@ -350,11 +350,16 @@ public class MustBe {
             Thread thread = Thread.currentThread();
             Object oar[] = thread.getAllStackTraces().entrySet().toArray();
             int count = 0;
+            int tomcatWaiting = 0; 
+            int inotify = 0;
             String sar[] = new String[oar.length];
             for (int i = 0; i < oar.length; i++) {
                 try {
                     Map.Entry me = (Map.Entry)oar[i];
                     Thread t = (Thread)me.getKey();
+                    String threadName = t.getName();
+                    if (threadName == null)
+                        threadName = "";
                     StackTraceElement ste[] = (StackTraceElement[])me.getValue();
                     String ste0 = ste.length < 1? "" : ste[0].toString();
                     String ste1 = ste.length < 2? "" : ste[1].toString();
@@ -363,17 +368,25 @@ public class MustBe {
                         continue;
                     if (hideTomcatWaitingThreads &&
                         ste.length >= 3 && 
-                        ste0.startsWith("java.lang.Object.wait(Native Method)")) {
+                        (ste0.startsWith("sun.misc.Unsafe.park(Native Method)") ||
+                         ste0.startsWith("java.lang.Object.wait(Native Method)"))) {
                         if (ste2.startsWith("org.apache.tomcat.util.threads.ThreadPool") || //linux
-                            ste2.startsWith("org.apache.tomcat.util.net.JIoEndpoint$Worker.await(JIoEndpoint.java:")) //Mac
-                                continue;
+                            String2.lineStartsWith(ste, "org.apache.tomcat.util.threads.TaskQueue.poll(") >= 0 || //linux, added 2015-12-04
+                            ste2.startsWith("org.apache.tomcat.util.net.JIoEndpoint$Worker.await(JIoEndpoint.java:") ||  //Mac
+                            (threadName.startsWith("http-apr-8080-exec-") && 
+                                "WAITING".equals(t.getState().toString()))) { //windows
+                            tomcatWaiting++;
+                            continue;
+                        }
                     }
                     //inotify thredd 
                     if (hideTomcatWaitingThreads &&
                         ste.length >= 1 && 
                         ste0.startsWith("sun.nio.fs.LinuxWatchService.poll(") || //linux
-                        ste0.startsWith("org.apache.tomcat.jni.Poll.poll(")) //windows
+                        ste2.startsWith("sun.nio.fs.WindowsWatchService")) { //windows
+                        inotify++;
                         continue;
+                    }
 
                     sar[count] = t.toString() + " " + t.getState().toString() + 
                             (t.isDaemon()? " daemon\n" : "\n") + 
@@ -390,7 +403,10 @@ public class MustBe {
 
             //write to StringBuilder
             StringBuilder sb = new StringBuilder();
-            sb.append("Number of " + (hideTomcatWaitingThreads? "non-Tomcat-waiting non-inotify " : "") + 
+            sb.append("Number of " + 
+                (hideTomcatWaitingThreads? 
+                    "non-Tomcat-waiting (" + tomcatWaiting + 
+                    ") non-inotify (" + inotify + ") " : "") + 
                 "threads in this JVM = " + count + "\n" +
                 "(format: #threadNumber Thread[threadName,threadPriority,threadGroup] threadStatus)\n\n");
             for (int i = 0; i < count; i++) 

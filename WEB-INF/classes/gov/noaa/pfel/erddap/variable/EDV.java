@@ -213,6 +213,9 @@ public class EDV {
 
     protected boolean isBoolean = false;
     protected boolean scaleAddOffset = false;
+    //used for scaleAddOffset. Only true, if scaleAddOffset is true, too.
+    //Thus 'true' also indicates: And this class is unpacking to to a larger datatype.
+    protected boolean sourceIsUnsigned = false; 
     protected double scaleFactor = 1, addOffset = 0;
 
     /**
@@ -349,7 +352,10 @@ public class EDV {
         //the metadata specifies.
         PrimitiveArray pa = combinedAttributes.get("missing_value"); 
         if (pa != null) {
-            sourceMissingValue = pa.getNiceDouble(0);
+            //attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
+            sourceMissingValue = sourceIsUnsigned? 
+                pa.getUnsignedDouble(0) : 
+                pa.getNiceDouble(0); 
             destinationMissingValue = sourceMissingValue * scaleFactor + addOffset;
             PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataTypeClass, 1, false);
             pa2.addDouble(destinationMissingValue);
@@ -357,7 +363,10 @@ public class EDV {
         }
         pa = combinedAttributes.get("_FillValue"); 
         if (pa != null) {
-            sourceFillValue = pa.getNiceDouble(0);
+            //attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
+            sourceFillValue = sourceIsUnsigned?
+                pa.getUnsignedDouble(0) :
+                pa.getNiceDouble(0);
             destinationFillValue = sourceFillValue * scaleFactor + addOffset;
             PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataTypeClass, 1, false);
             pa2.addDouble(destinationFillValue);
@@ -368,35 +377,34 @@ public class EDV {
             destinationMissingValue : destinationFillValue;
 
         //after extractScaleAddOffset, adjust valid_range
-        PrimitiveArray vr = combinedAttributes.get("unpacked_valid_range"); 
+        PrimitiveArray vr = combinedAttributes.remove("unpacked_valid_range"); 
         if (vr == null) {
-            vr = combinedAttributes.get("valid_range"); 
-            if (vr != null) {
+            vr = combinedAttributes.remove("valid_range"); 
+            if (vr != null && vr.size() == 2) {
                 //adjust valid_range
-                if (vr.size() == 2) {
-                    vr = PrimitiveArray.factory(destinationDataTypeClass, vr); 
-                    vr.scaleAddOffset(scaleFactor, addOffset);
-                    combinedAttributes.set("valid_range", vr);
-                } else {
-                    combinedAttributes.remove("valid_range");
-                }
+                //attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
+                if (sourceIsUnsigned)
+                    vr = PrimitiveArray.unsignedFactory(destinationDataTypeClass, vr);
+                vr = vr.scaleAddOffset(destinationDataTypeClass, scaleFactor, addOffset);
+                combinedAttributes.set("valid_range", vr);
             }
         } else {
             //save unpacked_valid_range as valid_range (overwriting any previous version)
             combinedAttributes.set("valid_range", vr);
-            combinedAttributes.remove("unpacked_valid_range");
         }
         //adjust valid_min and valid_max?
-        PrimitiveArray vMin = combinedAttributes.get("valid_min"); 
+        PrimitiveArray vMin = combinedAttributes.get("valid_min"); //attributes are never unsigned
         if (vMin != null) {
-            vMin = PrimitiveArray.factory(destinationDataTypeClass, vMin); 
-            vMin.scaleAddOffset(scaleFactor, addOffset);
+            if (sourceIsUnsigned)
+                vMin = PrimitiveArray.unsignedFactory(destinationDataTypeClass, vMin);
+            vMin = vMin.scaleAddOffset(destinationDataTypeClass, scaleFactor, addOffset);
             combinedAttributes.set("valid_min", vMin);
         }
-        PrimitiveArray vMax = combinedAttributes.get("valid_max"); 
+        PrimitiveArray vMax = combinedAttributes.get("valid_max"); //attributes are never unsigned
         if (vMax != null) {
-            vMax = PrimitiveArray.factory(destinationDataTypeClass, vMax); 
-            vMax.scaleAddOffset(scaleFactor, addOffset);
+            if (sourceIsUnsigned)
+                vMax = PrimitiveArray.unsignedFactory(destinationDataTypeClass, vMax);
+            vMax = vMax.scaleAddOffset(destinationDataTypeClass, scaleFactor, addOffset);
             combinedAttributes.set("valid_max", vMax);
         }
 
@@ -491,6 +499,11 @@ public class EDV {
 
         //scaleAddOffset will be used
         scaleAddOffset = true;
+        PrimitiveArray un = combinedAttributes.remove("_Unsigned");
+        sourceIsUnsigned = 
+            un != null && "true".equals(un.toString()) &&
+            PrimitiveArray.isIntegerType(sourceDataTypeClass);
+
         if (sf != null) {
             scaleFactor = sf.getNiceDouble(0);
             if (Double.isNaN(scaleFactor))
@@ -505,11 +518,19 @@ public class EDV {
             destinationDataType = ao.elementClassString();
             destinationDataTypeClass = ao.elementClass();
         }
-        if (scaleFactor == 1 && addOffset == 0)
+        if (scaleFactor == 1 && addOffset == 0) {
             scaleAddOffset = false;
+            sourceIsUnsigned = false;
+            if (un != null && "true".equals(un.toString()) &&
+                //if floating type, '_Unsigned'=true is nonsense
+                PrimitiveArray.isIntegerType(sourceDataTypeClass)) 
+                combinedAttributes.set("_Unsigned", un); //re-set it
+        }
         if (verbose && scaleAddOffset)
-            String2.log("EDV sourceName=" + sourceName + " will be unpacked via scale_factor=" + 
-                scaleFactor + ", then add_offset=" + addOffset);
+            String2.log("EDV sourceName=" + sourceName + 
+                " (unsigned=" + sourceIsUnsigned + 
+                ") will be unpacked via scale_factor=" + scaleFactor + 
+                ", then add_offset=" + addOffset);
     }
 
     /** 
@@ -657,7 +678,8 @@ public class EDV {
             "\n  fixedValue=" + fixedValue + 
             "\n  destinationDataType=" + destinationDataType +
             "\n  destinationMin=" + destinationMin + " max=" + destinationMax + 
-            "\n  scaleAddOffset=" + scaleAddOffset + " sf=" + scaleFactor + " ao=" + addOffset +
+            "\n  scaleAddOffset=" + scaleAddOffset + " sf=" + scaleFactor + 
+                " ao=" + addOffset + " unsigned=" + sourceIsUnsigned +
             "\n  hasColorBarMinMax=" + hasColorBarMinMax +
             "\n  sourceAttributes=\n" + sourceAttributes.toString() + //it has trailing newline
               "  addAttributes=\n" + addAttributes.toString(); //it has trailing newline
@@ -1046,6 +1068,13 @@ public class EDV {
     public boolean scaleAddOffset() {return scaleAddOffset;}
 
     /** 
+     * This returns true if the source if scaleAddOffset is true and _Unsigned="true".
+     *
+     * @return true if the source has _Unsigned="true".
+     */
+    public boolean sourceIsUnsigned() {return sourceIsUnsigned;}
+
+    /** 
      * This returns true if the destinationValues equal the sourceValues 
      *   (e.g., scaleFactor = 1 and addOffset = 0). 
      * <br>Some subclasses overwrite this to cover other situations:
@@ -1104,7 +1133,7 @@ public class EDV {
      */
     public PrimitiveArray toDestination(PrimitiveArray source) {
         return scaleAddOffset?
-            source.scaleAddOffset(destinationDataTypeClass, scaleFactor, addOffset):
+            source.scaleAddOffset(sourceIsUnsigned, destinationDataTypeClass, scaleFactor, addOffset):
             source;        
     }
 
@@ -1123,6 +1152,7 @@ public class EDV {
      */
     public PrimitiveArray toSource(PrimitiveArray destination) {
         return scaleAddOffset?
+//sourceIsUnsigned?
             destination.addOffsetScale(sourceDataTypeClass, -addOffset, 1/scaleFactor): //note different method
             destination;        
     }

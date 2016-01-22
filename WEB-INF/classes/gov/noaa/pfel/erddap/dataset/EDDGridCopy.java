@@ -22,10 +22,12 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,13 +75,14 @@ public class EDDGridCopy extends EDDGrid {
     /**
      * This constructs an EDDGridCopy based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridCopy"&gt; 
      *    having just been read.  
      * @return an EDDGridCopy.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridCopy fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridCopy fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridCopy(xmlReader)...");
@@ -87,6 +90,7 @@ public class EDDGridCopy extends EDDGrid {
         EDDGrid tSourceEdd = null;
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -113,6 +117,8 @@ public class EDDGridCopy extends EDDGrid {
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<matchAxisNDigits>")) {}
             else if (localTags.equals("</matchAxisNDigits>")) 
                 tMatchAxisNDigits = String2.parseInt(content, DEFAULT_MATCH_AXIS_N_DIGITS); 
@@ -142,7 +148,7 @@ public class EDDGridCopy extends EDDGrid {
                 try {
                     if (checkSourceData) {
                         //after first time, it's ok if source dataset isn't available
-                        tSourceEdd = (EDDGrid)EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
+                        tSourceEdd = (EDDGrid)EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
                     } else {
                         String2.log("WARNING!!! checkSourceData is false, so EDDGridCopy datasetID=" + 
                             tDatasetID + " is not checking the source dataset!");
@@ -166,7 +172,7 @@ public class EDDGridCopy extends EDDGrid {
         }
 
         return new EDDGridCopy(tDatasetID, 
-            tAccessibleTo, tMatchAxisNDigits, 
+            tAccessibleTo, tAccessibleViaWMS, tMatchAxisNDigits, 
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, 
             tReloadEveryNMinutes, 
@@ -198,7 +204,7 @@ public class EDDGridCopy extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridCopy(String tDatasetID, 
-        String tAccessibleTo, int tMatchAxisNDigits, 
+        String tAccessibleTo, boolean tAccessibleViaWMS, int tMatchAxisNDigits, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, EDDGrid tSourceEdd, 
@@ -215,6 +221,9 @@ public class EDDGridCopy extends EDDGrid {
         datasetID = tDatasetID;
         sourceEdd = tSourceEdd;
         setAccessibleTo(tAccessibleTo);
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -395,14 +404,14 @@ public class EDDGridCopy extends EDDGrid {
         boolean recursive = false; //false=notRecursive   since always just 1 directory
         String fileNameRegex = ".*\\.nc";
         localEdd = new EDDGridFromNcFiles(datasetID, 
-            tAccessibleTo,
+            tAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery,
             new Attributes(), //addGlobalAttributes
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes, 0, //updateEveryNMillis
-            copyDatasetDir, recursive, fileNameRegex, 
+            copyDatasetDir, fileNameRegex, recursive, ".*", //true pathRegex is for remote site
             EDDGridFromFiles.MF_LAST,
             matchAxisNDigits,  //sourceEdd should have made them consistent
             tFileTableInMemory, false); //accessibleViaFiles false here
@@ -514,7 +523,7 @@ public class EDDGridCopy extends EDDGrid {
         try {
          
             try {
-                eddGrid = (EDDGridCopy)oneFromDatasetXml("testGridCopy");
+                eddGrid = (EDDGridCopy)oneFromDatasetsXml(null, "testGridCopy");
             } catch (Throwable t2) {
                 //it will fail if no files have been copied
                 String2.log(MustBe.throwableToString(t2));
@@ -525,7 +534,7 @@ public class EDDGridCopy extends EDDGrid {
                     Math2.sleep(10000);
                 }
                 //recreate edd to see new copied data files
-                eddGrid = (EDDGridCopy)oneFromDatasetXml("testGridCopy");
+                eddGrid = (EDDGridCopy)oneFromDatasetsXml(null, "testGridCopy");
             }
 
             //*** test getting das for entire dataset

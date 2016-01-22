@@ -25,6 +25,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
@@ -49,13 +50,15 @@ public class EDDTableFromEDDGrid extends EDDTable{
     /**
      * This constructs an EDDTableFromEDDGrid based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromEDDGrid"&gt; 
      *    having just been read.  
      * @return an EDDTableFromEDDGrid.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromEDDGrid fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromEDDGrid fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromEDDGrid(xmlReader)...");
@@ -92,7 +95,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
                     throw new SimpleException(
                         "type=\"" + tType + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. " +
                         "The type MUST start with \"EDDGrid\".");
-                tEDDGrid = (EDDGrid)EDD.fromXml(tType, xmlReader);
+                tEDDGrid = (EDDGrid)EDD.fromXml(erddap, tType, xmlReader);
 
             } else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
@@ -572,7 +575,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         debugMode = false; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
         String id = "testEDDTableFromEDDGrid";
-        EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, id);
         String dir = EDStatic.fullTestCacheDirectory;
 
 
@@ -1068,7 +1071,7 @@ expected2 =
 debugMode = false; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
         String id = "testTableFromGriddap";
-        EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, id);
         String dir = EDStatic.fullTestCacheDirectory;
 
 

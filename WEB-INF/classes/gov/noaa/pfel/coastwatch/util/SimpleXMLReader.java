@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package gov.noaa.pfel.coastwatch.util;
 

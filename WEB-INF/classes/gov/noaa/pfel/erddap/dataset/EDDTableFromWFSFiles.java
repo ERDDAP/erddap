@@ -65,8 +65,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
+        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -79,7 +79,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -161,6 +161,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("EDDTableFromWFSFiles.generateDatasetsXml");
+        if (!String2.isSomething(tSourceUrl))
+            throw new IllegalArgumentException("sourceUrl wasn't specified.");
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
@@ -258,9 +260,10 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>0</updateEveryNMillis>\n" +  //files are only added by full reload
-            //"    <recursive>false</recursive>\n" +
+            //"    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" + //irrelevant/overridden
+            //"    <recursive>false</recursive>\n" +            //irrelevant/overridden 
+            //"    <pathRegex>.*</pathRegex>\n" +               //irrelevant/overridden
             //"    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
-            //"    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
             "    <accessibleViaFiles>false</accessibleViaFiles>\n");
@@ -839,7 +842,7 @@ directionsForGenerateDatasetsXml() +
             //    expected, "");
 
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             //these won't actually be tested...
             Test.ensureEqual(edd.datasetID(), "uky_2ed7_6297_9e6e", "");
             Test.ensureEqual(edd.title(), "The Title", "");
@@ -879,7 +882,7 @@ directionsForGenerateDatasetsXml() +
     public static void testBasic() throws Throwable {
 
         String2.log("\n*** EDDTableFromWFSFiles.testBasic");
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("kgsBoreTempWVTRUE"); //should work
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "kgsBoreTempWVTRUE"); //should work
         String tName, error, results, tResults, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.

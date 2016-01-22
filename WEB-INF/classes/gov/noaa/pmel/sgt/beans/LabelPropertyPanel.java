@@ -35,7 +35,7 @@ import gov.noaa.pmel.util.Point2D;
 class LabelPropertyPanel extends PropertyPanel implements ActionListener, ChangeListener, FocusListener {
   private boolean expert_ = false;
   private Label label_;
-  private static DecimalFormat format_ = new DecimalFormat("#.###");
+  private DecimalFormat format_ = new DecimalFormat("#.###"); //2015-09-02 was static
   private String[] pNames_ = {"Color", "Font", "Height", "Id", "Justification",
                               "Location", "Orientation", "Selectable", "Text", "Visible", "Width"};
   private JComponent[] comps_ = new JComponent[pNames_.length];

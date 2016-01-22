@@ -139,7 +139,7 @@ public class CWDataBrowser extends EmaClass  {
         String logDir = String2.replaceAll(fullClassName.substring(0, logPo + 1), ".", "/");
         String2.setupLog(false, false, 
             String2.getClassPath() + logDir + "log.txt", //with / separator
-            false, true, 1000000);
+            true, String2.logFileDefaultMaxSize); //append?
         String2.log("\n" + String2.makeString('*', 80) +  
             "\nCWDataBrowser.constructor " + constructorDateTime +
             "\nlogFile=" + String2.logFileName() + "\n" +

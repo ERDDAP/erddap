@@ -115,11 +115,6 @@ public class EDDTableFromAllDatasets extends EDDTable{
         //ensure the setup is valid
         ensureValid();
 
-        //override accessibleViaMAG
-        accessibleViaMAG = MessageFormat.format(EDStatic.noXxxBecause2, 
-            EDStatic.mag, "there is nothing to graph");
-
-
         //finally
         if (verbose) 
             String2.log(

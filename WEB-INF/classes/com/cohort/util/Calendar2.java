@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -12,8 +12,15 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.TimeZone;
+
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * This class has static methods for dealing with dates and times.
@@ -99,6 +106,95 @@ public class Calendar2 {
     private final static String[] DAY_OF_WEEK_FULL = { 
         "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
+    /** special Formats for ISO date time without a suffix (assumed to be UTC) */
+    public final static String ISO8601T_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss"; 
+    public final static String ISO8601T3_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"; 
+
+    /** special case format supports suffix 'Z' or +/-HH:MM */
+    public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
+    public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
+
+    /** 
+     * This has alternating regex/timeFormat for formats where the first char is a digit.
+     * This is used by suggestDateTimeFormat. 
+     */
+    public final static String digitRegexTimeFormat[] = {
+        //* Compact (number-only) formats only support years 0000 - 4999.
+        //  That makes it likely that numbers won't be interpreted as compact date times.
+        //check for julian date before ISO 8601 format
+        "[0-9]{4}-[0-3][0-9]{2}", "yyyy-DDD",  
+        "[0-4][0-9]{3}[0-3][0-9]{2}",  "yyyyDDD",  //compact
+        //variants of space-separated 1970-01-01 00:00:00.000
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}[+-][0-9].*",
+             "yyyy-MM-dd HH:mm:ss.sssZ", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}",
+             "yyyy-MM-dd HH:mm:ss.sss", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-9].*",
+             "yyyy-MM-dd HH:mm:ssZ", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]",
+             "yyyy-MM-dd HH:mm:ss", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]",
+             "yyyy-MM-dd HH:mm", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]",
+             "yyyy-MM-dd HH", 
+        //all other variants go to T-separated 1970-01-01T00:00:00.000  (for formatting date times)
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}[+-][0-9].*",
+             "yyyy-MM-dd'T'HH:mm:ss.sssZ", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}",
+             "yyyy-MM-dd'T'HH:mm:ss.sss", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-9].*",
+             "yyyy-MM-dd'T'HH:mm:ssZ", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9]",
+             "yyyy-MM-dd'T'HH:mm:ss", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]",
+             "yyyy-MM-dd'T'HH:mm", 
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]",
+             "yyyy-MM-dd'T'HH", 
+        //remaining ISO dates
+        "[0-9]{4}-[0-1][0-9]-[0-3][0-9]",                          "yyyy-MM-dd", 
+        "[0-9]{4}-[0-1][0-9].*",                                   "yyyy-MM", 
+        //compact ISO
+        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]",          
+                                                                   "yyyyMMddHHmmss",
+        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]",  
+                                                                   "yyyyMMddHHmm",
+        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]",  
+                                                                   "yyyyMMddHH",
+        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9]",                       "yyyyMMdd",
+        "[0-4][0-9]{3}[0-1][0-9]",                                 "yyyyMM",
+        //note that yy handles conversion of 2 digit year to 4 digits (e.g., 85 -> 1985)
+        "[0-9]{1,2}/[0-9]{1,2}/[0-9]{2,4}",                        "M/d/yy",      //assume US ordering
+        "[0-9]{1,2} [a-zA-Z]{3} [0-9]{2,4}",                       "d MMM yy",    //2 Jan 85
+        "[0-9]{1,2}-[a-zA-Z]{3}-[0-9]{2,4}",                       "d-MMM-yy"     //02-JAN-1985
+    };
+
+    /** 
+     * This has alternating regex/timeFormat for formats where the first char is a digit.
+     * This is used by suggestDateTimeFormat. 
+     */
+    public final static String letterRegexTimeFormat[] = {
+        //test formats that start with a letter
+        "[a-zA-Z]{3} [0-9]{1,2}, [0-9]{2,4}",   
+            "MMM d, yy",   //Jan 2, 1985
+        //                 "Sun, 06 Nov 1994 08:49:37 GMT"  //GMT is literal. Joda doesn't parse z
+        "[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT",  
+            "EEE, dd MMM yyyy HH:mm:ss 'GMT'",  //RFC 822 format date time
+        //                 "Sun, 06 Nov 1994 08:49:37 -0800" or -08:00
+        "[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} -[0-9]{2}:?[0-9]{2}",  
+            "EEE, dd MMM yyyy HH:mm:ss Z"  //RFC 822 format date time
+    };
+
+    public static HashMap<String,Pattern> dateTimeFormatPatternHM = new HashMap();
+    static {
+        for (int i = 0; i < digitRegexTimeFormat.length; i += 2) 
+            dateTimeFormatPatternHM.put(digitRegexTimeFormat[i + 1], 
+                        Pattern.compile(digitRegexTimeFormat[i]));
+
+        for (int i = 0; i < letterRegexTimeFormat.length; i += 2) 
+            dateTimeFormatPatternHM.put(letterRegexTimeFormat[i + 1], 
+                        Pattern.compile(letterRegexTimeFormat[i])); 
+    }
+
     /** The IDEAL values are used for makeIdealGC. */
     public static String IDEAL_N_OPTIONS[] = new String[100];
     static {
@@ -151,15 +247,28 @@ public class Calendar2 {
     }
 
     /**
-     * This determines if a variable is a TimeStamp variable by looking
-     * for "[a-zA-Z]+ +since +[0-9].*" (used for UDUNITS numeric times) or 
-     * "yy" or "YY" (a formatting string which has the year designator) in the units attribute.
+     * This tests if the units are numeric time units (regex="[a-zA-Z]+ +since +[0-9].*").
+     * This is a good, quick hueristic. For a definitive test, use getTimeBaseAndFactor(String tsUnits).
+     */
+    public static boolean isNumericTimeUnits(String tUnits) {
+        if (tUnits == null)
+            return false;
+        tUnits = tUnits.toLowerCase();
+        return tUnits.matches(" *[a-z]+ +since +[0-9].+");
+    }
+    /**
+     * This tests if the units are 
+     * numeric time units (regex="[a-zA-Z]+ +since +[0-9].*") or 
+     * or String time units ("yy" or "YY": a formatting string which has the year designator).
+     *
+     * <p>The test for numeric time units is a good, quick hueristic. 
+     * For a definitive test, use getTimeBaseAndFactor(String tsUnits).
      */
     public static boolean isTimeUnits(String tUnits) {
         if (tUnits == null)
             return false;
         tUnits = tUnits.toLowerCase();
-        return tUnits.indexOf("yy") >= 0 ||
+        return tUnits.indexOf("yy") >= 0 || 
                tUnits.matches(" *[a-z]+ +since +[0-9].+");
     }
 
@@ -335,7 +444,7 @@ public class Calendar2 {
      *
      * @param isoZuluString (to millis precision)
      * @return seconds 
-     * @throws exception if trouble (e.g., input is null or invalid format)
+     * @throws RuntimeException if trouble (e.g., input is null or invalid format)
      */
     public static double isoStringToEpochSeconds(String isoZuluString) {
         return isoZuluStringToMillis(isoZuluString) / 1000.0;
@@ -370,60 +479,63 @@ public class Calendar2 {
         gc.add(SECOND, 1);
         gc.set(MILLISECOND, 0); 
         String tError = 
-            "Query error: Timestamp constraints with \"now\" must be in the form " +
-            "\"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  " +
-            "\"" + nowString + "\" is invalid.";
-        if (nowString == null || !nowString.startsWith("now"))
+            "Query error: Invalid \"now\" constraint: \"" + nowString + "\". " +
+            "Timestamp constraints with \"now\" must be in the form " +
+            "\"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units).";
+        if (nowString == null || !nowString.startsWith("now") || nowString.length() == 4)
             throw new SimpleException(tError);
-        if (nowString.length() > 3) {
-            // e.g., now-5hours
-            char ch = nowString.charAt(3);
-            int start = -1;  //trouble
-            //non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+' 
-            if (ch == '+' || ch == ' ') start = 4;  
-            else if (ch == '-') start = 3;
-            else throw new SimpleException(tError);
+        if (nowString.length() == 3)
+            return gcToEpochSeconds(gc);
 
-            //keep going?  parse the number
-            int n = 1;
-            if (start > 0) {
-                int end = 4;
-                while (nowString.length() > end && String2.isDigit(nowString.charAt(end)))
-                    end++;
-                n = String2.parseInt(nowString.substring(start, end) + 
-                    (end==4? "1" : ""));
-                if (n == Integer.MAX_VALUE) {
-                    throw new SimpleException(tError);
-                } else { 
-                    start = end;
-                }
-            }
+        // e.g., now-5hours
+        char ch = nowString.charAt(3);
+        int start = -1;  //trouble
+        //non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+' 
+        if (ch == '+' || ch == ' ') start = 4;  
+        else if (ch == '-') start = 3;
+        else throw new SimpleException(tError);           
 
-            //keep going?  find the units, adjust gc
-            if (start > 0) {
-                //test sUnits.equals to ensure no junk at end of constraint
-                String sUnits = nowString.substring(start);  
-                if (     sUnits.equals("second") || 
-                         sUnits.equals("seconds"))
-                    gc.add(SECOND, n);
-                else if (sUnits.equals("minute") || 
-                         sUnits.equals("minutes"))
-                    gc.add(MINUTE, n);
-                else if (sUnits.equals("hour") || 
-                         sUnits.equals("hours"))
-                    gc.add(HOUR, n);
-                else if (sUnits.equals("day") || 
-                         sUnits.equals("days"))
-                    gc.add(DATE, n);
-                else if (sUnits.equals("month") || 
-                         sUnits.equals("months"))
-                    gc.add(MONTH, n);
-                else if (sUnits.equals("year") || 
-                         sUnits.equals("years"))
-                    gc.add(YEAR, n);
-                else throw new SimpleException(tError);
-            }
-        } 
+        //find the end of the number
+        int n = 1;
+        int end = 4;
+        while (nowString.length() > end && String2.isDigit(nowString.charAt(end)))
+            end++;
+        //parse the number
+        n = String2.parseInt(nowString.substring(start, end) + 
+            (end == 4? "1" : "")); //if no digits
+        if (n == Integer.MAX_VALUE) 
+            throw new SimpleException(tError);
+        start = end;
+
+        //find the units, adjust gc
+        //test sUnits.equals to ensure no junk at end of constraint
+        String sUnits = nowString.substring(start);  
+        if (     sUnits.equals("milli") || 
+                 sUnits.equals("millis") ||
+                 sUnits.equals("millisecond") ||
+                 sUnits.equals("milliseconds"))
+            gc.add(MILLISECOND, n);
+        else if (sUnits.length() == 0 ||   //default
+                 sUnits.equals("second") || 
+                 sUnits.equals("seconds"))
+            gc.add(SECOND, n);
+        else if (sUnits.equals("minute") || 
+                 sUnits.equals("minutes"))
+            gc.add(MINUTE, n);
+        else if (sUnits.equals("hour") || 
+                 sUnits.equals("hours"))
+            gc.add(HOUR, n);
+        else if (sUnits.equals("day") || 
+                 sUnits.equals("days"))
+            gc.add(DATE, n);
+        else if (sUnits.equals("month") || 
+                 sUnits.equals("months"))
+            gc.add(MONTH, n);
+        else if (sUnits.equals("year") || 
+                 sUnits.equals("years"))
+            gc.add(YEAR, n);
+        else throw new SimpleException(tError);
+ 
         return gcToEpochSeconds(gc);
     }
 
@@ -441,6 +553,106 @@ public class Calendar2 {
             String2.log(t.toString());
             return troubleValue;
         }
+    }
+
+    /**
+     * This converts an EDDTable "min(varName)-nUnits" or "max(varName)-nUnits" 
+     * string the resulting value.
+     * - can also be + or space.
+     * n is a positive floating point number
+     * If allowTimeUnits, units is optional (default=seconds) and can be singular or plural
+     *   and n must be a positive integer.
+     *
+     * @param mmString  presumably, the min(varName) or max(varName) part has already
+     *   been parsed and dealt with (see the mmValue param)
+     * @param mmValue the variable's min or max value (known because mmString was
+     *    already partly parsed).
+     * @param allowTimeUnits specify true if var is a timestamp variable
+     * @return epochSeconds  (rounded up to the next second) (or Double.NaN if trouble)
+     * @throws SimpleException if trouble
+     */
+    public static double parseMinMaxString(String mmString, double mmValue, 
+        boolean allowTimeUnits) {
+
+        if (!mmString.startsWith("min(") &&
+            !mmString.startsWith("max("))
+            throw new SimpleException("Query error: \"min(\" or \"max(\" expected.");
+        String mm = mmString.substring(0, 4);
+
+        String tError = 
+            "Query error: Invalid \"" + mm + ")\" constraint: \"" + mmString + "\". " +
+            (allowTimeUnits? "T" : "Non-t") + 
+            "imestamp constraints with \"" + mm + ")\" must be in the form " +
+            "\"" + mmString.substring(0, 3) + "(varName)[+|-" +
+            (allowTimeUnits? "positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units)." : 
+                             "positiveNumber]\".");
+        int start = mmString.indexOf(')');
+        if (start < 0)
+            throw new SimpleException(tError);
+        if (start == mmString.length() - 1)
+            return mmValue;
+
+        start++;
+        if (start == mmString.length() - 1)
+            throw new SimpleException(tError); //can't be just min(varName)+
+        char ch = mmString.charAt(start);
+        //non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+' 
+        if (ch == '+' || ch == ' ') start++;  
+        else if (ch == '-') {}
+        else throw new SimpleException(tError);
+
+        //parse the number
+        double d = 1;
+        int end = start;
+        while (end < mmString.length() && "0123456789eE+-.".indexOf(mmString.charAt(end)) >= 0)
+            end++;
+        if (end > start)
+            d = String2.parseDouble(mmString.substring(start, end));
+        if (Double.isNaN(d)) 
+            throw new SimpleException(tError);
+        start = end;
+        if (start >= mmString.length()) 
+            return mmValue += d;
+
+        //test sUnits.equals to ensure no junk at end of constraint
+        String sUnits = mmString.substring(start);  //it will be something
+        if (allowTimeUnits) {
+            int n = Math2.roundToInt(d);
+            if (n != d)
+                throw new SimpleException(tError);
+            GregorianCalendar gc = epochSecondsToGc(mmValue);
+ 
+            if (     sUnits.equals("milli") || 
+                     sUnits.equals("millis") ||
+                     sUnits.equals("millisecond") ||
+                     sUnits.equals("milliseconds"))
+                gc.add(MILLISECOND, n);
+            else if (sUnits.equals("second") || 
+                     sUnits.equals("seconds"))
+                gc.add(SECOND, n);
+            else if (sUnits.equals("minute") || 
+                     sUnits.equals("minutes"))
+                gc.add(MINUTE, n);
+            else if (sUnits.equals("hour") || 
+                     sUnits.equals("hours"))
+                gc.add(HOUR, n);
+            else if (sUnits.equals("day") || 
+                     sUnits.equals("days"))
+                gc.add(DATE, n);
+            else if (sUnits.equals("month") || 
+                     sUnits.equals("months"))
+                gc.add(MONTH, n);
+            else if (sUnits.equals("year") || 
+                     sUnits.equals("years"))
+                gc.add(YEAR, n);
+            else throw new SimpleException(tError);
+
+            mmValue = gcToEpochSeconds(gc);
+
+        } else {  //!allowTimeUnits
+            throw new SimpleException(tError);
+        }
+        return mmValue;
     }
 
     /**
@@ -463,18 +675,19 @@ public class Calendar2 {
      *
      * @param gc
      * @return seconds, including fractional seconds (Double.NaN if trouble)
-     * @throws exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static double gcToEpochSeconds(GregorianCalendar gc) {
         return gc.getTimeInMillis() / 1000.0;
     }
 
     /**
-     * This converts seconds since 1970-01-01T00:00:00Z to a GregorianCalendar.
+     * This converts seconds since 1970-01-01T00:00:00Z to a GregorianCalendar 
+     * (Zulu timezone).
      *
      * @param seconds  (including fractional seconds)
      * @return an iso zulu time-zone GregorianCalendar   (rounded to nearest ms)
-     * @throws exception if trouble (e.g., seconds is NaN)
+     * @throws RuntimeException if trouble (e.g., seconds is NaN)
      */
     public static GregorianCalendar epochSecondsToGc(double seconds) {
         if (!Math2.isFinite(seconds))
@@ -494,7 +707,7 @@ public class Calendar2 {
      *
      * @param isoZuluString
      * @return seconds 
-     * @throws Exception if trouble (e.g., input is null or invalid format)
+     * @throws RuntimeException if trouble (e.g., input is null or invalid format)
      */
     public static int isoStringToEpochHours(String isoZuluString) {
         long tl = isoZuluStringToMillis(isoZuluString);
@@ -510,7 +723,7 @@ public class Calendar2 {
      *
      * @param seconds  with optional fractional part
      * @return isoZuluString with 'T' (without the trailing Z)
-     * @throws Exception if trouble (e.g., seconds is NaN)
+     * @throws RuntimeException if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringT(double seconds) {
         if (!Math2.isFinite(seconds))
@@ -595,7 +808,7 @@ public class Calendar2 {
      *
      * @param seconds   with optional fractional part
      * @return isoZuluString with space (without the trailing Z)
-     * @throws Exception if trouble (e.g., seconds is NaN)
+     * @throws RuntimeException if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringSpace(double seconds) {
         if (!Math2.isFinite(seconds))
@@ -615,7 +828,7 @@ public class Calendar2 {
      * @param hours
      * @return isoZuluString 'T' (without the trailing Z).
      *    If hours==Integer.MAX_VALUE, this returns null.
-     * @throws Exception if trouble (e.g., hours is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., hours is Integer.MAX_VALUE)
      */
     public static String epochHoursToIsoString(int hours) {
         if (hours == Integer.MAX_VALUE)
@@ -627,7 +840,7 @@ public class Calendar2 {
      * This returns a 3 character month name (eg. "Jan").
      *
      * @param month 1..12
-     * @throws Exception if month is out of range
+     * @throws RuntimeException if month is out of range
      */
     public static String getMonthName3(int month) {
         return MONTH_3[month - 1];
@@ -637,7 +850,7 @@ public class Calendar2 {
      * This returns the full month name (e.g., "January").
      *
      * @param month 1..12
-     * @throws Exception if month is out of range
+     * @throws RuntimeException if month is out of range
      */
     public static String getMonthName(int month) {
         return MONTH_FULL[month - 1];
@@ -665,7 +878,7 @@ public class Calendar2 {
      * but with the local time zone (when displayed).
      *
      * @return the GregorianCalendar object.
-     * @throws Exception if trouble (e.g., millis == Long.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., millis == Long.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarLocal(long millis) {
         if (millis == Long.MAX_VALUE)
@@ -701,7 +914,7 @@ public class Calendar2 {
      * and a UTC time zone.
      *
      * @return the GregorianCalendar object.
-     * @throws Exception if trouble (e.g., millis == Long.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., millis == Long.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarZulu(long millis) {
         if (millis == Long.MAX_VALUE)
@@ -789,7 +1002,7 @@ public class Calendar2 {
 */
     /**
      * Get a GregorianCalendar object (local time zone) for the specified.
-     * [Currently, it is lenient -- e.g., Dec 32 -> Jan 1 of the next year.]
+     * [Currently, it is lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.]
      * Information can be retrieved via calendar.get(Calendar.XXXX),
      * where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
      *
@@ -797,7 +1010,7 @@ public class Calendar2 {
      * @param month (1..12)  (this is consciously different than Java's standard)
      * @param dayOfMonth (1..31)
      * @return the corresponding GregorianCalendar object (local time zone)
-     * @throws Exception if trouble (e.g., year is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarLocal(int year, int month, int dayOfMonth) {
         if (year == Integer.MAX_VALUE)
@@ -807,7 +1020,7 @@ public class Calendar2 {
 
     /**
      * Get a GregorianCalendar object (Zulu time zone) for the specified time.
-     * [Currently, it is lenient -- e.g., Dec 32 -> Jan 1 of the next year.]
+     * [Currently, it is lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.]
      * Information can be retrieved via calendar.get(Calendar.XXXX),
      * where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
      *
@@ -815,7 +1028,7 @@ public class Calendar2 {
      * @param month (1..12)  (this is consciously different than Java's standard)
      * @param dayOfMonth (1..31)
      * @return the corresponding GregorianCalendar object (Zulu time zone)
-     * @throws Exception if trouble (e.g., year is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarZulu(int year, int month, int dayOfMonth) {
         if (year == Integer.MAX_VALUE)
@@ -825,7 +1038,7 @@ public class Calendar2 {
 
     /**
      * Get a GregorianCalendar object (local time zone) for the specified time.
-     * [Currently, it is lenient -- e.g., Dec 32 -> Jan 1 of the next year.]
+     * [Currently, it is lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.]
      * Information can be retrieved via calendar.get(Calendar.XXXX),
      * where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
      *
@@ -837,7 +1050,7 @@ public class Calendar2 {
      * @param second (0..59)
      * @param millis (0..999)
      * @return the corresponding GregorianCalendar object (local time zone)
-     * @throws Exception if trouble (e.g., year is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarLocal(int year, int month, int dayOfMonth,
             int hour, int minute, int second, int millis) {
@@ -852,7 +1065,7 @@ public class Calendar2 {
 
     /**
      * Get a GregorianCalendar object (Zulu time zone) for the specified time.
-     * [Currently, it is lenient -- e.g., Dec 32 -> Jan 1 of the next year.]
+     * [Currently, it is lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.]
      * Information can be retrieved via calendar.get(Calendar.XXXX),
      * where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
      *
@@ -864,7 +1077,7 @@ public class Calendar2 {
      * @param second (0..59)
      * @param millis (0..999)
      * @return the corresponding GregorianCalendar object (Zulu time zone)
-     * @throws Exception if trouble (e.g., year is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarZulu(int year, int month, int dayOfMonth,
             int hour, int minute, int second, int millis) {
@@ -881,14 +1094,14 @@ public class Calendar2 {
 
     /**
      * Get a GregorianCalendar object (local time zone) for the specified time.
-     * [Currently, it is lenient -- e.g., day 366 -> Jan 1 of the next year.]
+     * [Currently, it is lenient -- e.g., day 366 -&gt; Jan 1 of the next year.]
      * Information can be retrieved via calendar.get(Calendar.XXXX),
      * where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
      *
      * @param year  (e.g., 2005)
      * @param dayOfYear (usually 1..365, but 1..366 in leap years)
      * @return the corresponding GregorianCalendar object (local time zone)
-     * @throws Exception if trouble (e.g., year is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarLocal(int year, int dayOfYear) {
         if (year == Integer.MAX_VALUE)
@@ -901,14 +1114,14 @@ public class Calendar2 {
 
     /**
      * Get a GregorianCalendar object (Zulu time zone) for the specified time.
-     * [Currently, it is lenient -- e.g., day 366 -> Jan 1 of the next year.]
+     * [Currently, it is lenient -- e.g., day 366 -&gt; Jan 1 of the next year.]
      * Information can be retrieved via calendar.get(Calendar.XXXX),
      * where XXXX is one of the Calendar constants, like DAY_OF_YEAR.
      *
      * @param year  (e.g., 2005)
      * @param dayOfYear (usually 1..365, but 1..366 in leap years)
      * @return the corresponding GregorianCalendar object (Zulu time zone)
-     * @throws Exception if trouble (e.g., year is Integer.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., year is Integer.MAX_VALUE)
      */
     public static GregorianCalendar newGCalendarZulu(int year, int dayOfYear) {
         if (year == Integer.MAX_VALUE)
@@ -950,7 +1163,7 @@ public class Calendar2 {
      *
      * @param gc a GregorianCalendar object
      * @return the date in gc, formatted as (for example) "2004-01-02"
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsISODate(GregorianCalendar gc) {
         
@@ -973,7 +1186,7 @@ public class Calendar2 {
      *
      * @param gc
      * @return the corresponding dateTime String (without the trailing Z).
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsISODateTimeT(GregorianCalendar gc) {
         return formatAsISODate(gc) + "T" + 
@@ -992,7 +1205,7 @@ public class Calendar2 {
      *
      * @param gc
      * @return the corresponding dateTime String (without the trailing Z).
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsISODateTimeT3(GregorianCalendar gc) {
         return formatAsISODate(gc) + "T" + 
@@ -1093,7 +1306,7 @@ public class Calendar2 {
      *
      * @param gc
      * @return the corresponding dateTime String (without the trailing Z).
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsISODateTimeSpace(GregorianCalendar gc) {
         return formatAsISODate(gc) + " " + 
@@ -1114,7 +1327,7 @@ public class Calendar2 {
      *
      * @param gc
      * @return the corresponding ESRI dateTime String.
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsEsri(GregorianCalendar gc) {
         return 
@@ -1132,7 +1345,7 @@ public class Calendar2 {
      *
      * @param gc a GregorianCalendar object
      * @return the date in gc, formatted as (for example) "20040102030405".
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsCompactDateTime(GregorianCalendar gc) {
         return
@@ -1155,7 +1368,7 @@ public class Calendar2 {
      *
      * @param gc a GregorianCalendar object
      * @return the date in gc, formatted as (for example) "2004001".
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsYYYYDDD(GregorianCalendar gc) {
         return
@@ -1174,7 +1387,7 @@ public class Calendar2 {
      *
      * @param gc a GregorianCalendar object
      * @return the date in gc, formatted as (for example) "200401".
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsYYYYMM(GregorianCalendar gc) {
         return
@@ -1194,7 +1407,7 @@ public class Calendar2 {
      *
      * @param gc a GregorianCalendar object
      * @return the date in gc, formatted as (for example) "31-Jul-2004 00:00:00".
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsDDMonYYYY(GregorianCalendar gc) {
         return
@@ -1218,7 +1431,7 @@ public class Calendar2 {
      * @param gc a GregorianCalendar object. The dateTime will be interpreted
      *   as being in gc's time zone.
      * @return gc in the US slash format ("1/20/2006 9:00:00 pm").
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsUSSlashAmPm(GregorianCalendar gc) {
         int hour = gc.get(HOUR); //0..11
@@ -1239,7 +1452,7 @@ public class Calendar2 {
      * @param gc a GregorianCalendar object. The dateTime will be interpreted
      *   as being in the gc's time zone (which should always be GMT because "GMT" is put at the end).
      * @return gc in the RFC 822 format ("Sun, 06 Nov 1994 08:49:37 GMT").
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsRFC822GMT(GregorianCalendar gc) {
         return 
@@ -1259,7 +1472,7 @@ public class Calendar2 {
      * @param gc a GregorianCalendar object. The dateTime will be interpreted
      *   as being in gc's time zone.
      * @return gc in the US slash date 24 hour format ("1/20/2006 21:00:00").
-     * @throws Exception if trouble (e.g., gc is null)
+     * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsUSSlash24(GregorianCalendar gc) {
         return 
@@ -1501,7 +1714,7 @@ public class Calendar2 {
      * @param s the dateTimeString in the ISO format ([-]YYYY-MM-DDTHH:MM:SS)
      *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      * @return a GregorianCalendar object
-     * @throws Exception if trouble (e.g., s is null or not at least #)
+     * @throws RuntimeException if trouble (e.g., s is null or not at least #)
      */
     public static GregorianCalendar parseISODateTimeZulu(String s) {
         return parseISODateTime(newGCalendarZulu(), s);
@@ -1522,7 +1735,7 @@ public class Calendar2 {
      * @param s the dateString in the US slash format ("1/20/2006" or 
      *    "1/20/2006 14:23:59")
      * @return the same GregorianCalendar object, but with the date info
-     * @throws Exception if trouble (e.g., gc is null or s is null or not at least #/#/#)
+     * @throws RuntimeException if trouble (e.g., gc is null or s is null or not at least #/#/#)
      */
     public static GregorianCalendar parseUSSlash24(GregorianCalendar gc, 
         String s) {
@@ -1558,7 +1771,7 @@ public class Calendar2 {
     /**
      * This is like parseUSSlash24, but assumes the time zone is Zulu.
      *
-     * @throws Exception if trouble (e.g., s is null or not at least #/#/#)
+     * @throws RuntimeException if trouble (e.g., s is null or not at least #/#/#)
      */
     public static GregorianCalendar parseUSSlash24Zulu(String s) {
         return parseUSSlash24(newGCalendarZulu(), s);
@@ -1576,7 +1789,7 @@ public class Calendar2 {
      * @param s dateTimeString in compact format (must be [-]YYYYMMDD, [-]YYYYMMDDhh,
      *   [-]YYYYMMDDhhmm, or [-]YYYYMMDDhhmmss)
      * @return the same GregorianCalendar object, but with the date info
-     * @throws Exception if trouble (e.g., gc is null or s is null or not at least
+     * @throws RuntimeException if trouble (e.g., gc is null or s is null or not at least
      *    YYYYMMDD)
      */
     public static GregorianCalendar parseCompactDateTime(GregorianCalendar gc, 
@@ -1616,7 +1829,7 @@ public class Calendar2 {
     /**
      * This is like parseCompactDateTime, but assumes the time zone is Zulu.
      *
-     * @throws Exception if trouble (e.g., s is null or invalid)
+     * @throws RuntimeException if trouble (e.g., s is null or invalid)
      */
     public static GregorianCalendar parseCompactDateTimeZulu(String s) {
         return parseCompactDateTime(newGCalendarZulu(), s);
@@ -1630,10 +1843,11 @@ public class Calendar2 {
      * Ferret often uses this format.
      *
      * @param gc a GregorianCalendar object. The dateTime will be interpreted
-     *   as being in gc's time zone.
-     * @param s dateTimeString in YYYYDDD format
+     *   as being in gc's time zone. 
+     * @param s dateTimeString in DDMonYYY format.
+     *   The time part can be shorter or missing.
      * @return the same GregorianCalendar object, but with the date info
-     * @throws Exception if trouble (e.g., gc is null or s is null or not
+     * @throws RuntimeException if trouble (e.g., gc is null or s is null or not
      *    DDMonYYYY)
      */
     public static GregorianCalendar parseDDMonYYYY(GregorianCalendar gc, String s) {
@@ -1657,17 +1871,25 @@ public class Calendar2 {
 
         gc.clear();
         int hour = 0, min = 0, sec = 0;
-        if (sLength >= 20) {
+        if (sLength >= 13) {
             if (s.charAt(11) != ' ' ||
                 !String2.isDigit(s.charAt(12)) ||
-                !String2.isDigit(s.charAt(13)) ||
-                s.charAt(14) != ':' ||
-                !String2.isDigit(s.charAt(15)) ||
-                !String2.isDigit(s.charAt(16)) ||
-                s.charAt(17) != ':')
+                !String2.isDigit(s.charAt(13)))
                 Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
             hour = String2.parseInt(s.substring(12, 14));
+        }
+        if (sLength >= 16) {
+            if (s.charAt(14) != ':' ||
+                !String2.isDigit(s.charAt(15)) ||
+                !String2.isDigit(s.charAt(16)))
+                Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
             min  = String2.parseInt(s.substring(15, 17));
+        }
+        if (sLength >= 19) {
+            if (s.charAt(17) != ':' ||
+                !String2.isDigit(s.charAt(18)) ||
+                !String2.isDigit(s.charAt(19)))
+                Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
             sec  = String2.parseInt(s.substring(18, 20));
         }
 
@@ -1694,7 +1916,7 @@ public class Calendar2 {
     /**
      * This is like parseDDMonYYYY, but assumes the time zone is Zulu.
      *
-     * @throws Exception if trouble (e.g., s is null or invalid)
+     * @throws RuntimeException if trouble (e.g., s is null or invalid)
      */
     public static GregorianCalendar parseDDMonYYYYZulu(String s) {
         return parseDDMonYYYY(newGCalendarZulu(), s);
@@ -1711,7 +1933,7 @@ public class Calendar2 {
      *   as being in gc's time zone.
      * @param s dateTimeString in YYYYDDD format
      * @return the same GregorianCalendar object, but with the date info
-     * @throws Exception if trouble (e.g., gc is null or s is null or not
+     * @throws RuntimeException if trouble (e.g., gc is null or s is null or not
      *    YYYYDDDD)
      */
     public static GregorianCalendar parseYYYYDDD(GregorianCalendar gc, 
@@ -1748,7 +1970,7 @@ public class Calendar2 {
 
     /**
      * This is like parseYYYYDDD, but assumes the time zone is Zulu.
-     * @throws Exception if trouble (e.g., s is null or not YYYYDDD)
+     * @throws RuntimeException if trouble (e.g., s is null or not YYYYDDD)
      */
     public static GregorianCalendar parseYYYYDDDZulu(String s) {
         return parseYYYYDDD(newGCalendarZulu(), s);
@@ -1776,7 +1998,7 @@ public class Calendar2 {
      * 
      * @param s a String with a date in the form yyyyddd
      * @return the date formatted as YYYY-mm-dd 
-     * @throws Exception if trouble (e.g., s is null or not YYYYDDD)
+     * @throws RuntimeException if trouble (e.g., s is null or not YYYYDDD)
      */
     public static String yyyydddToIsoDate(String s) {
         //ensure it is a string with 7 digits
@@ -1857,7 +2079,7 @@ public class Calendar2 {
      * @param s the ISO Zulu DateTime string.
      *   This may include hours, minutes, seconds, millis and Z or timezone offset (default=Zulu).  
      * @return the millis since 1970-01-01T00:00:00Z 
-     * @throws Exception if trouble (e.g., s is null or not at least #)
+     * @throws RuntimeException if trouble (e.g., s is null or not at least #)
      */
     public static long isoZuluStringToMillis(String s) {
         GregorianCalendar gc = parseISODateTime(newGCalendarZulu(), s);
@@ -1869,7 +2091,7 @@ public class Calendar2 {
      *
      * @param millis the millis since 1970-01-01T00:00:00Z
      * @return the ISO Zulu DateTime string 'T' (without the trailing Z)
-     * @throws Exception if trouble (e.g., millis is Long.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
      */
     public static String millisToIsoZuluString(long millis) {
         GregorianCalendar gc = newGCalendarZulu(millis); 
@@ -1881,7 +2103,7 @@ public class Calendar2 {
      *
      * @param millis the millis since 1970-01-01T00:00:00Z
      * @return the ISO Zulu DateTime string 'T' (with 3 decimal places) (without the trailing Z)
-     * @throws Exception if trouble (e.g., millis is Long.MAX_VALUE)
+     * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
      */
     public static String millisToIso3ZuluString(long millis) {
         GregorianCalendar gc = newGCalendarZulu(millis); 
@@ -1893,8 +2115,8 @@ public class Calendar2 {
      *
      * @param s a string
      * @return s with any spaces, dashes, colons removed
-     *    (if s == null, this throws Exception)
-     * @throws Exception if trouble (e.g., s is null)
+     *    (if s == null, this throws RuntimeException)
+     * @throws RuntimeException if trouble (e.g., s is null)
      */
     public static String removeSpacesDashesColons(String s) {
         boolean negative = s.startsWith("-");
@@ -1959,7 +2181,7 @@ public class Calendar2 {
     }
 
     /**
-     * Find the last element which is <= timeValue in isoDates (sorted ascending).
+     * Find the last element which is &lt;= timeValue in isoDates (sorted ascending).
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -1972,9 +2194,9 @@ public class Calendar2 {
      * @param timeValue an iso formatted date value
      *    (with connector "T" or " " matching the isoDates).
      *   This may include hours, minutes, seconds, decimal, and timezone offset (default=Zulu).  
-     * @return the index of the last element which is <= timeValue in an ascending sorted array.
-     *   If timeValue is invalid or timeValue < the smallest element, this returns -1  (no element is appropriate).
-     *   If timeValue > the largest element, this returns isoDates.length-1.
+     * @return the index of the last element which is &lt;= timeValue in an ascending sorted array.
+     *   If timeValue is invalid or timeValue &lt; the smallest element, this returns -1  (no element is appropriate).
+     *   If timeValue &gt; the largest element, this returns isoDates.length-1.
      */
     public static int binaryFindLastLE(String[] isoDates, String timeValue) {
         try {
@@ -2007,7 +2229,7 @@ public class Calendar2 {
     }
 
     /**
-     * Find the first element which is >= timeValue in isoDates (sorted ascending.
+     * Find the first element which is &gt;= timeValue in isoDates (sorted ascending.
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -2020,9 +2242,9 @@ public class Calendar2 {
      * @param timeValue an iso formatted date value
      *    (with connector "T" or " " matching the isoDates).
      *   This may include hours, minutes, seconds, decimal, and timezone offset (default=Zulu).  
-     * @return the index of the first element which is >= timeValue in an ascending sorted array.
-     *   <br>If timeValue < the smallest element, this returns 0.
-     *   <br>If timeValue is invalid or timeValue > the largest element, 
+     * @return the index of the first element which is &gt;= timeValue in an ascending sorted array.
+     *   <br>If timeValue &lt; the smallest element, this returns 0.
+     *   <br>If timeValue is invalid or timeValue &gt; the largest element, 
      *     this returns isoDates.length (no element is appropriate).
      */
     public static int binaryFindFirstGE(String[] isoDates, String timeValue) {
@@ -2182,6 +2404,7 @@ public class Calendar2 {
      * @param nDays
      * @param max  seconds since epoch
      * @return seconds since epoch for the start of a day, n days back from max (or from now if max=NaN).
+     * @throws Exception if trouble
      */
     public static double backNDays(int nDays, double max) throws Exception {
         GregorianCalendar gc = Math2.isFinite(max)?
@@ -2206,7 +2429,7 @@ public class Calendar2 {
      *   evenly spaced, between start and stop.
      *   <br>If start or stop is not finite, this returns null.
      *   <br>If start=stop, this returns just one value.
-     *   <br>If start > stop, they are swapped so the results are always ascending.
+     *   <br>If start &gt; stop, they are swapped so the results are always ascending.
      *   <br>If trouble, this returns null.
      */
     public static double[] getNEvenlySpaced(double start, double stop,
@@ -2329,12 +2552,16 @@ public class Calendar2 {
         return gc;
     }
 
+
     /**
-     * Given a text date time string, this suggests a Java/Joda date/time format.
+     * Given a date time string, this suggests a Java/Joda date/time format suitable 
+     * for parsing and output formatting.
      *
      * @param sample   
      * @return an appropriate Java/Joda date/time format
      *   or "" if not matched.
+     *   If the response starts with "yyyy-MM", parse with Calendar2.parseISODateTimeZulu();
+     *   else parse with Joda. 
      */
     public static String suggestDateTimeFormat(String sample) {
         if (sample == null || sample.length() == 0)
@@ -2342,50 +2569,16 @@ public class Calendar2 {
 
         char ch = Character.toLowerCase(sample.charAt(0));
         if (ch >= '0' && ch <= '9') {
-            //test formats that start with a digit
-            //For all 4 digit years, ensure first digit is 0|1|2 (especially all numeric formats).
-            //For all 2 digit months, ensure first digit is 0|1 (especially all numeric formats).
-            //etc for dates, hours, minutes, seconds.
-
-            //check for julian date before ISO 8601 format
-            if (sample.matches("[0-2][0-9]{3}-[0-3][0-9]{2}"))         return "yyyy-DDD";  
-            if (sample.matches("[0-2][0-9]{3}[0-3][0-9]{2}"))          return "yyyyDDD";  
-            //space-separated 1970-01-01 00:00:00.000
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9]-[0-3][0-9] [0-5][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}"))
-                                                                       return "yyyy-MM-dd HH:mm:ss.sss"; 
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9]-[0-3][0-9] [0-5][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-9].*"))
-                                                                       return "yyyy-MM-dd HH:mm:ssZ"; 
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9]-[0-3][0-9] [0-5][0-9]:[0-5][0-9]:[0-5][0-9]"))
-                                                                       return "yyyy-MM-dd HH:mm:ss"; 
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9]-[0-3][0-9] [0-5][0-9]:[0-5][0-9]"))
-                                                                       return "yyyy-MM-dd HH:mm"; 
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9]-[0-3][0-9] [0-5][0-9]"))
-                                                                       return "yyyy-MM-dd HH"; 
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]")) return "yyyy-MM-dd"; 
-            //special EDVTimeStamp.ISO8601TZ_FORMAT accepts a wide range of variants of 1970-01-01T00:00:00Z
-            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9].*"))          return "yyyy-MM-dd'T'HH:mm:ssZ"; 
-            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]"))         
-                                                                       return "yyyyMMddHHmmss";
-            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]")) 
-                                                                       return "yyyyMMddHHmm";
-            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]")) 
-                                                                       return "yyyyMMddHH";
-            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9]"))   return "yyyyMMdd";
-            if (sample.matches("[0-2][0-9]{3}[0-1][0-9]"))             return "yyyyMM";
-            //note that yy handles conversion of 2 digit year to 4 digits (e.g., 85 -> 1985)
-            if (sample.matches("[0-9]{1,2}/[0-9]{1,2}/[0-9]{2,4}"))    return "M/d/yy";      //assume US ordering
-            if (sample.matches("[0-9]{1,2} [a-zA-Z]{3} [0-9]{2,4}"))   return "d MMM yy";    //2 Jan 85
-            if (sample.matches("[0-9]{1,2}-[a-zA-Z]{3}-[0-9]{2,4}"))   return "d-MMM-yy";    //02-JAN-1985
+            for (int i = 0; i < digitRegexTimeFormat.length; i += 2) {
+                if (sample.matches(digitRegexTimeFormat[i]))
+                    return digitRegexTimeFormat[i+1];
+            }
 
         } else if (ch >= 'a' && ch <= 'z') {
-            //test formats that start with a letter
-            if (sample.matches("[a-zA-Z]{3} [0-9]{1,2}, [0-9]{2,4}"))  return "MMM d, yy";   //Jan 2, 1985
-            //                 "Sun, 06 Nov 1994 08:49:37 GMT"  //GMT is literal. Joda doesn't parse z
-            if (sample.matches("[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT")) 
-                        return "EEE, dd MMM yyyy HH:mm:ss 'GMT'";  //RFC 822 format date time
-            //                 "Sun, 06 Nov 1994 08:49:37 -0800" or -08:00
-            if (sample.matches("[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} -[0-9]{2}:?[0-9]{2}")) 
-                        return "EEE, dd MMM yyyy HH:mm:ss Z";  //RFC 822 format date time
+            for (int i = 0; i < letterRegexTimeFormat.length; i += 2) {
+                if (sample.matches(letterRegexTimeFormat[i]))
+                    return letterRegexTimeFormat[i+1];
+            }
         }
 
         //fail
@@ -2394,30 +2587,40 @@ public class Calendar2 {
 
     /**
      * This looks for a date time format which is suitable for all elements of sa
-     * (other than nulls and ""'s).
+     * (other than nulls and ""'s). 
      * 
      * @param sa a StringArray, perhaps with consistently formatted date time String values.
      * @return a date time format which is suitable for all elements of sa
      *   (other than nulls and ""'s), or "" if no suggestion.
+     *   The format is suitable for parsing and output formatting
+     *   If the response starts with "yyyy-MM", parse with Calendar2.parseISODateTimeZulu();
+     *   else parse with Joda. 
      */
     public static String suggestDateTimeFormat(StringArray sa) {
         boolean debugMode = false;
         int size = sa.size();
         String format = null;
+        Pattern pattern = null;
         for (int row = 0; row < size; row++) {
             String s = sa.get(row);
             if (s == null || s.length() == 0)
                 continue;
-            if (format == null) {
+            if (pattern == null) {
                 format = suggestDateTimeFormat(s);
                 if (format.length() == 0) {
                     if (debugMode)
                         String2.log("  suggestDateTimeFormat: no format for \"" + s + "\".");
-                    return "";
+                    return "";                
                 }
+                if (debugMode)
+                    String2.log("  suggestDateTimeFormat: format for \"" + s + "\" = " + format);
+                pattern = dateTimeFormatToPattern(format);
+                if (pattern == null)
+                    return "";
+                
             } else {
-                String tFormat = suggestDateTimeFormat(s);
-                if (!format.equals(tFormat)) {
+                Matcher matcher = pattern.matcher(s);
+                if (!matcher.matches()) {
                     if (debugMode)
                         String2.log("  suggestDateTimeFormat: [" + row + "]=\"" + s + 
                             "\" doesn't match format=\"" + format + "\".");
@@ -2427,5 +2630,97 @@ public class Calendar2 {
         }
         return format == null? "" : format;
     }
+
+    /** 
+     * Given one of the known dateTimeFormats, this returns a Joda Pattern for it.
+     * Patterns are thread safe.
+     *
+     * @return the relevant pattern, or null if not matched.
+     */
+    public static Pattern dateTimeFormatToPattern(String dateTimeFormat) {
+        return dateTimeFormatPatternHM.get(dateTimeFormat);
+    }
+
+
+    /**
+     * This converts s into a double with epochSeconds.
+     *
+     * @param dateTimeFormat one of the ISO8601 formats above, or a Joda format.
+     *   If it starts with "yyyy-MM", sourceTime will be parsed with Calendar2.parseISODateTimeZulu();
+     *   else parse with Joda. 
+     * @return the epochSeconds value or NaN if trouble
+     */
+    public static double toEpochSeconds(String sourceTime, String dateTimeFormat) {
+        try {
+            if (dateTimeFormat.startsWith("yyyy-MM"))
+                //parse with Calendar2.parseISODateTime
+                return safeIsoStringToEpochSeconds(sourceTime);
+            
+            //parse with Joda
+            DateTimeFormatter formatter = 
+                DateTimeFormat.forPattern(dateTimeFormat).withZone(DateTimeZone.UTC);
+            return formatter.parseMillis(sourceTime) / 1000.0; //thread safe
+
+        } catch (Throwable t) {
+            if (verbose && sourceTime != null && sourceTime.length() > 0)
+                String2.log("  EDVTimeStamp.sourceTimeToEpochSeconds: Invalid sourceTime=" + 
+                    sourceTime + " format=" + dateTimeFormat + "\n" + t.toString());
+            return Double.NaN;
+        }
+    }
+
+
+    /**
+     * This converts sa into a DoubleArray with epochSeconds.
+     *
+     * @param dateTimeFormat one of the ISO8601 formats above, or a Joda format.
+     *   If it starts with "yyyy-MM", sa strings will be parsed with Calendar2.parseISODateTimeZulu();
+     *   else parse with Joda. 
+     * @return a DoubleArray with the epochSeconds values (any/all will be NaN if touble)
+     */
+    public static DoubleArray toEpochSeconds(StringArray sa, String dateTimeFormat) {
+        int n = sa.size();
+        DoubleArray da = new DoubleArray(n, false);
+        if (dateTimeFormat == null ||
+            dateTimeFormat.length() == 0) {
+            da.addN(n, Double.NaN);
+            return da;
+        }
+        try {
+            
+            if (dateTimeFormat.startsWith("yyyy-MM")) {
+                //use Calendar2
+                for (int i = 0; i < n; i++) 
+                    da.add(safeIsoStringToEpochSeconds(sa.get(i))); 
+            } else {
+                //use Joda
+                boolean printError = verbose;
+                DateTimeFormatter formatter = 
+                    DateTimeFormat.forPattern(dateTimeFormat).withZone(DateTimeZone.UTC);
+                da.addN(n, Double.NaN);
+                for (int i = 0; i < n; i++) {
+                    String s = sa.get(i);
+                    if (s != null && s.length() > 0) {
+                        try {
+                            da.set(i, formatter.parseMillis(s) / 1000.0); //thread safe
+                        } catch (Throwable t2) {
+                            if (printError) {
+                                String2.log("  EDVTimeStamp.sourceTimeToEpochSeconds: error while parsing sourceTime=" + 
+                                    s + " with format=" + dateTimeFormat + "\n" + t2.toString());
+                                printError = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (Throwable t) {
+            if (verbose)
+                String2.log("  Calendar2.toEpochSeconds: format=" + dateTimeFormat + 
+                    ", Unexpected error=" + t.toString());
+        }
+        return da;
+
+    } 
 
 }

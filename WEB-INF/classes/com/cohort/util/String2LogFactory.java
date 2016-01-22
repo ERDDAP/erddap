@@ -96,7 +96,7 @@ public final class String2LogFactory extends LogFactory {
      *
      * @param clazz Class for which a suitable Log name will be derived
      *
-     * @exception LogConfigurationException if a suitable <code>Log</code>
+     * @throws LogConfigurationException if a suitable <code>Log</code>
      *  instance cannot be returned
      */
     public Log getInstance(Class clazz)
@@ -112,8 +112,7 @@ public final class String2LogFactory extends LogFactory {
      * that error level will be used; otherwise INFO_LEVEL will be used.
      *
      * @param name the name of a class for which a suitable Log name will be derived
-     *
-     * @exception LogConfigurationException if a suitable <code>Log</code>
+     * @throws LogConfigurationException if a suitable <code>Log</code>
      *  instance cannot be returned
      */
     public Log getInstance(String name)

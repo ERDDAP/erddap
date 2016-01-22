@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -64,17 +64,13 @@ public class String2 {
     //public static Logger log = Logger.getLogger("com.cohort.util");
     private static boolean logToSystemOut = true;
     private static boolean logToSystemErr = false;
+    public final static StringBuilder logFileLock = new StringBuilder(); //synchronize all logFile use on this 
     private static BufferedWriter logFile;
     private static String logFileName;
-    /** e.g.,  1=flush after every log write.  e.g., 2=flush after every other write. */
-    public static int logFileFlushEveryNth = 1; 
-    private static int logFileFlushCount = 0;
-    /** or flush if lots of text pending.*/
-    public static int logFileFlushEveryNBytes = 400; 
-    private static int logFileFlushBytesCount = 0;
-    private static StringBuffer logStringBuffer; //thread-safe (writing is synchronized but many threads may read)
-    private static int logMaxSize;
-    private static long logFileSize;
+    /** logFileMaxSize determines when it's time to make a new logFile */
+    private static int logFileSize = 0;
+    public  final static int logFileDefaultMaxSize = 20000000; //20MB
+    public  static int logFileMaxSize = logFileDefaultMaxSize;
 
     /**
      * This returns the line separator from
@@ -91,8 +87,24 @@ public class String2 {
         2014-01-09 was System.getProperty("mrj.version") != null
         https://developer.apple.com/library/mac/technotes/tn2002/tn2110.html        */
     public static boolean OSIsMacOSX = OSName.contains("OS X");
-
-    public final static String AWS_S3_REGEX = "http(s|)://(\\w*)\\.s3\\.amazonaws\\.com/(.*)";
+    public final static String  AWS_S3_REGEX = "https?://(\\w*)\\.s3\\.amazonaws\\.com/(.*)";
+    /** If testing a "dir", url should have a trailing slash.
+        Patterns are thread-safe. */
+    public final static Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
+    /** 
+     * email regex used to identify likely email addresses.
+     * This is intended to accept most common valid addresses and reject most invalid addresses.
+     * Modified from http://www.regular-expressions.info/email.html 
+     * (was "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}" )
+     * (with a-z added instead of using case-insensitive regex)
+     * and http://emailregex.com/ 
+     *   (wow! Mine is far simpler and more restrictive. Don't want too many false positives.)
+     * and https://en.wikipedia.org/wiki/Email_address
+     * This isn't perfect, but it is probably good enough.
+     */
+    public final static String EMAIL_REGEX = // \\p{L} is any Unicode letter
+        "\\p{L}[\\p{L}0-9'._%+-]{0,127}@[\\p{L}0-9.-]{1,127}\\.[A-Za-z]{2,4}";
+    public final static Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
 
     /** These are NOT thread-safe.  Always use them in synchronized blocks ("synchronized(gen....) {}").*/
     private static DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
@@ -106,6 +118,8 @@ public class String2 {
 
     private static Map canonicalMap = new WeakHashMap();
 
+    //EDStatic may change this
+    public static String unitTestDataDir = "/erddapTest/";
 
     /**
      * This returns the string which sorts higher.
@@ -141,12 +155,12 @@ public class String2 {
 
     /**
      * This makes a new String of specified length, filled with ch.
-     * For safety, if length>=1000000, it returns "".
+     * For safety, if length&gt;=1000000, it returns "".
      * 
      * @param ch the character to fill the string
      * @param length the length of the string
      * @return a String 'length' long, filled with ch.
-     *    If length < 0 or >= 1000000, this returns "".
+     *    If length &lt; 0 or &gt;= 1000000, this returns "".
      */
     public static String makeString(char ch, int length) {
         if ((length < 0) || (length >= 1000000))
@@ -466,7 +480,7 @@ public class String2 {
      * @param regex the regular expression, see java.util.regex.Pattern.
      * @param fromIndex the starting index in s
      * @return the section of s which matches regex, or null if not found
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static String extractRegex(String s, String regex, int fromIndex) {
         Pattern p = Pattern.compile(regex);
@@ -487,7 +501,7 @@ public class String2 {
      *    not the "greedy"  qualifiers
      *    which match as many chars as possible (e.g., ?, *, +).
      * @return a String[] with all the matching sections of s (or String[0] if none)
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static String[] extractAllRegexes(String s, String regex) {
         ArrayList<String> al = new ArrayList();
@@ -594,6 +608,22 @@ public class String2 {
         return -1;
     }
 
+    /** 
+     * This tries to find the first one of the words in the longerString.
+     * This is case-sensitive.
+     *
+     * @return index of the matching word (or -1 if no match or other trouble)
+     */
+    public static int whichWord(String longerString, String words[]) {
+        if (longerString == null || longerString.length() == 0 || words == null)
+            return -1;
+        int n = words.length;
+        for (int i = 0; i < n; i++) 
+            if (longerString.indexOf(words[i]) >= 0)
+                return i;
+        return -1;
+    }
+
     /**
      * Finds the first instance of d in dArray
      * (tested with Math2.almostEqual5).
@@ -606,8 +636,6 @@ public class String2 {
         return indexOf(dArray, d, 0);
     }
 
-    /**
-     
 
     /**
      * This is a variant of readFromFile that uses the default character set 
@@ -1100,7 +1128,7 @@ public class String2 {
      * <UL>
      * <LI> This is used, for example, to limit characters entering CoText.
      * <LI> Currently, this accepts the ch if
-     *   <TT>(ch>=32 && ch<127) || (ch>=161 && ch<=255)</TT>.
+     *   <TT>(ch&gt;=32 &amp;&amp; ch&lt;127) || (ch&gt;=161 &amp;&amp; ch&lt;=255)</TT>.
      * <LI> tab(#9) is not included.  It should be caught separately
      *   and dealt with (expand to spaces?).  The problem is that
      *   tabs are printed with a wide box (non-character symbol)
@@ -1116,7 +1144,7 @@ public class String2 {
      * @return true if ch is a printable character
      */
     public static final boolean isPrintable(int ch) {
-        //return (ch>=32 && ch<127) || (ch>=161 && ch<=255);  //was 160
+        //return (ch&gt;=32 &amp;&amp; ch<127) || (ch&gt;=161 &amp;&amp; ch&lt;=255);  //was 160
         if (ch <   32) return false;
         if (ch <= 126) return true;  //was 127 
         if (ch <  161) return false; //was 160
@@ -1202,9 +1230,9 @@ public class String2 {
      * @return true if ch is a file-name-safe character (A-Z, a-z, 0-9, _, -, .).
      */
     public static boolean isFileNameSafe(char ch) {
-        //return (ch >= 'A' && ch <= 'Z') ||                
-        //       (ch >= 'a' && ch <= 'z') ||                
-        //       (ch >= '0' && ch <= '9') ||
+        //return (ch >= 'A' &amp;&amp; ch <= 'Z') ||                
+        //       (ch >= 'a' &amp;&amp; ch <= 'z') ||                
+        //       (ch >= '0' &amp;&amp; ch <= '9') ||
         //        ch == '-' || ch == '_' || ch == '.';
         if (ch == '.' || ch == '-') return true;
         if (ch <  '0') return false;
@@ -1227,29 +1255,27 @@ public class String2 {
         if (email == null || email.length() == 0)
             return false;
 
-        //regex from http://www.regular-expressions.info/email.html 
-        //(with a-z added instead of using case-insensitive regex)
-        //(This isn't perfect, but it is probably good enough.)
-        return email.matches("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}");
+        return EMAIL_PATTERN.matcher(email).matches(); 
     }
 
     /**
      * This indicates if 'url' is probably a valid url.
+     * This is like isRemote, but returns true for "file://...".
      *
      * @param url a possible url
      * @return true if 'url' is probably a valid url.
      *    false if 'url' is not a valid url.
+     *    Note that "file://..." is a url.
      */
     public static boolean isUrl(String url) {
         if (url == null)
             return false;
         int po = url.indexOf("://");
         if (po == -1 ||
-            !isPrintable(url) ||
-            url.indexOf(' ') >= 0)
+            !isPrintable(url))
             return false;
 
-        String protocol = url.substring(0, po).toLowerCase();
+        String protocol = url.substring(0, po);
         return 
             protocol.equals("file") ||
             protocol.equals("ftp") ||
@@ -1258,6 +1284,21 @@ public class String2 {
             protocol.equals("sftp") ||
             protocol.equals("smb");
     }
+
+    /** 
+     * This returns true if the dir starts with http://, https://, ftp://, sftp://,
+     * or smb://.
+     * This is like isRemote, but returns true for "file://...".
+     * 
+     * @return true if the dir is remote (e.g., a URL other than file://)
+     *   If dir is null or "", this returns false.
+     */
+    public static boolean isRemote(String dir) {
+        if (isUrl(dir))
+            return dir.startsWith("file://")? false : true;
+        return false;
+    }
+
 
 
     /**
@@ -1319,7 +1360,7 @@ public class String2 {
      * <ul>
      * <li>first character must be (iso8859Letter|_).
      * <li>optional subsequent characters must be (iso8859Letter|_|0-9).
-     * <ul>
+     * </ul>
      * Note that Java allows Unicode characters, but this does not.
      *
      * @param s a possible variable name
@@ -1354,7 +1395,7 @@ public class String2 {
      * <li>The first character must be (iso8859Letter|_).
      * <li>The optional subsequent characters must be (iso8859Letter|_|0-9).
      * <li>s must not be longer than 255 characters.
-     * <ul>
+     * </ul>
      * Note that JavaScript allows Unicode characters, but this does not.
      *
      * @param s a possible jsonp function name
@@ -1403,7 +1444,7 @@ public class String2 {
      * <ul>
      * <li>first character must be (iso8859Letter|_).
      * <li>subsequent characters must be (iso8859Letter|_|0-9).
-     * <ul>
+     * </ul>
      * Note that Java allows Unicode characters, but this does not.
      * See also the safer encodeVariableNameSafe(String s).
      * Note, this does not check for names that are too long
@@ -1567,7 +1608,7 @@ public class String2 {
      * @param oldS the string to be searched for
      * @param newS the string to replace oldS
      * @return a modified version of s, with newS in place of all the olds.
-     *   Throws exception if s is null.
+     * @throws RuntimeException if s is null.
      */
     public static String replaceAll(String s, String oldS, String newS) {
         StringBuilder sb = new StringBuilder(s);
@@ -1586,7 +1627,7 @@ public class String2 {
      * @param oldS the string to be searched for
      * @param newS the string to replace oldS
      * @return a modified version of s, with newS in place of all the olds.
-     *   Throws exception if s is null.
+     *   throws RuntimeException if s is null.
      */
     public static String replaceAllIgnoreCase(String s, String oldS, String newS) {
         StringBuilder sb = new StringBuilder(s);
@@ -1896,7 +1937,7 @@ public class String2 {
      * This creates an ArrayList with the objects from the enumeration.
      * WARNING: This does not have a sychronized block: if your enumeration
      *    needs thread-safety, wrap this call in somthing like 
-     *    <tt>synchronized (enum) {String2.toArrayList(enum); }</tt>.
+     *    <tt>synchronized(enum) {String2.toArrayList(enum); }</tt>.
      *
      * @param e an enumeration
      * @return arrayList with the objects from the enumeration
@@ -1961,6 +2002,27 @@ public class String2 {
         if (s2 != null) 
             replaceAll(msgSB, "{2}", s2); 
         return msgSB.toString();
+    }
+
+    /**
+     * This returns a CSV (not CSSV) String.
+     */
+    public static String toCSVString(Enumeration en) {
+        return toSVString(toArrayList(en).toArray(), ",", false);
+    }
+    public static String toCSVString(ArrayList al) {
+        return toSVString(al.toArray(), ",", false);
+    }
+    public static String toCSVString(Vector v) {
+        return toSVString(v.toArray(), ",", false);
+    }
+    public static String toCSVString(Object ar[]) {
+        return toSVString(ar, ",", false);
+    }
+    public static String toCSVString(Set set) {
+        Object ar[] = set.toArray();
+        Arrays.sort(ar, new StringComparatorIgnoreCase());
+        return toCSVString(ar);
     }
 
     /**
@@ -2197,9 +2259,18 @@ public class String2 {
         return sb.toString();
     }
 
+    /** 
+     * This returns the int formatted as a 0x hex String with at least nHexDigits, 
+     * e.g., 0x00FF00.
+     * Negative numbers are twos compliment, e.g., -4 -&gt; 0xfffffffc.
+     */
+    public static String to0xHexString(int i, int nHexDigits) {
+        return "0x" + String2.zeroPad(Integer.toHexString(i), nHexDigits);
+    }
+
     /**
      * This generates a hexadecimal Comma-Space-Separated-Value (CSSV) String from the array.
-     * Negative numbers are twos compliment, e.g., -4 -> 0xfc.
+     * Negative numbers are twos compliment, e.g., -4 -&gt; 0xfc.
      * <p>CHANGED: before 2011-09-04, this was called toHexCSVString.
      *
      * @param ar an array of bytes
@@ -2245,7 +2316,7 @@ public class String2 {
 
     /**
      * This generates a hexadecimal Comma-Space-Separated-Value (CSSV) String from the array.
-     * Negative numbers are twos compliment, e.g., -4 -> 0xfffc.
+     * Negative numbers are twos compliment, e.g., -4 -&gt; 0xfffc.
      * <p>CHANGED: before 2011-09-04, this was called toHexCSVString.
      *
      * @param ar an array of short
@@ -2291,7 +2362,7 @@ public class String2 {
 
     /**
      * This generates a hexadecimal Comma-Space-Separated-Value (CSSV) String from the array.
-     * Negative numbers are twos compliment, e.g., -4 -> 0xfffffffc.
+     * Negative numbers are twos compliment, e.g., -4 -&gt; 0xfffffffc.
      * <p>CHANGED: before 2011-09-04, this was called toHexCSVString.
      *
      * @param ar an array of ints
@@ -2473,7 +2544,7 @@ public class String2 {
      *
      * @param map  if it needs to be thread-safe, use ConcurrentHashMap
      * @return the corresponding String, with one entry on each line 
-     *    (<key> = <value>) sorted (case insensitive) by key
+     *    (key = value) sorted (case insensitive) by key
      */
     public static String toString(Map map) {
         if (map == null)
@@ -2492,7 +2563,7 @@ public class String2 {
     /**
      * From an arrayList which alternates attributeName (a String) and 
      * attributeValue (an object), this generates a String with 
-     * "    <name>=<value>" on each line.
+     * "    name=value" on each line.
      * If arrayList == null, this returns "    [null]\n".
      *
      * @param arrayList 
@@ -2566,7 +2637,7 @@ public class String2 {
      * @param attributeName
      * @param value the value associated with the attributeName
      * @return the previous value for the attribute (or null)
-     * @throws Exception of trouble (e.g., if arrayList is null)
+     * @throws RuntimeException of trouble (e.g., if arrayList is null)
      */
     public static Object alternateSetValue(ArrayList arrayList, 
             String attributeName, Object value) {
@@ -2704,8 +2775,8 @@ public class String2 {
      * @param ar the array of Objects
      * @param s the String to be found
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
-     *    If startAt >= ar.length, this returns -1.
+     *    If startAt &lt; 0, this starts with startAt = 0.
+     *    If startAt &gt;= ar.length, this returns -1.
      * @return the element number of ar which is equal to s (or -1 if ar is null, or s is null or not found)
      */
     public static int indexOf(Object[] ar, String s, int startAt) {
@@ -2756,7 +2827,7 @@ public class String2 {
      * @param ar the array of objects
      * @param s the String to be found
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which is equal to s (or -1 if not found)
      */
     public static int lineContaining(Object[] ar, String s, int startAt) {
@@ -2777,7 +2848,7 @@ public class String2 {
      * @param ar the array of objects
      * @param s the String to be found
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which is equal to s (or -1 if not found)
      */
     public static int lineContainingIgnoreCase(Object[] ar, String s, int startAt) {
@@ -2823,7 +2894,7 @@ public class String2 {
      * @param ar the array of objects
      * @param s the String to be found
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which starts with s (or -1 if not found)
      */
     public static int lineStartsWith(Object[] ar, String s, int startAt) {
@@ -2842,7 +2913,7 @@ public class String2 {
      * @param ar the array of objects
      * @param s the String to be found
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which starts with s (or -1 if not found)
      */
     public static int lineStartsWithIgnoreCase(Object[] ar, String s, int startAt) {
@@ -2863,7 +2934,7 @@ public class String2 {
      * @param prefixes the array of prefixes
      * @param longerString the String that might start with one of the prefixes
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of prefixes which longerString starts with (or -1 if not found)
      */
     public static int whichPrefix(String[] prefixes, String longerString, int startAt) {
@@ -2882,7 +2953,7 @@ public class String2 {
      * @param prefixes the array of prefixes
      * @param longerString the String that might start with one of the prefixes
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the prefixes[i] which longerString starts with (or null if not found)
      */
     public static String findPrefix(String[] prefixes, String longerString, int startAt) {
@@ -2897,7 +2968,7 @@ public class String2 {
      * @param suffixes the array of suffixes
      * @param longerString the String that might end with one of the suffixes
      * @param startAt the first element of ar to be checked.
-     *    If startAt < 0, this starts with startAt = 0.
+     *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of suffixes which longerString ends with (or -1 if not found)
      */
     public static int whichSuffix(String[] suffixes, String longerString, int startAt) {
@@ -2948,25 +3019,20 @@ public class String2 {
      * @param tLogToSystemOut indicates if info should be printed to System.out (default = true).
      * @param tLogToSystemErr indicates if info should be printed to System.err (default = false).
      * @param fullFileName the name for the log file (or "" for none).
-     * @param logToStringBuffer specifies if the logged info should also
-     *   be saved in a StringBuffer (see getlogStringBuffer) 
      * @param append If a previous log file of the same name exists,
-     *   and/or if a logStringBuffer exists,
      *   this determines whether a new log file should be created
      *   or whether info should be appended to the old file.
-     * @param maxSize determines the approximate max size of the log file
-     *   and/or logStringBuffer.
+     * @param tLogFileMaxSize determines the approximate max size (in bytes) of the log file.
      *   When maxSize is reached, the current log file is copied to 
-     *   fullFileName.previous, and a new fullFileName is created.
-     *   When maxSize is reached, the first half of the
-     *   logStringBuffer is deleted.
+     *   fullFileName.previous, and a new fullFileName is created. 
      *   Specify 0 for no limit to the size.    
+     * @throws Exception if trouble
      */
     public static synchronized void setupLog(
-            boolean tLogToSystemOut, boolean tLogToSystemErr,
-            String fullFileName, boolean logToStringBuffer, 
-            boolean append, int maxSize) 
-            throws Exception {
+        boolean tLogToSystemOut, boolean tLogToSystemErr,
+        String fullFileName, //boolean logToStringBuilder, 
+        boolean append, int tLogFileMaxSize) 
+        throws Exception {
 
         String oLogFileName = logFileName;
         logToSystemOut = tLogToSystemOut;
@@ -2974,17 +3040,10 @@ public class String2 {
 
         if (!append)
             logFileSize = 0;
-        logMaxSize = maxSize;
+        logFileMaxSize = Math2.minMax(Math2.BytesPerMB, 2000000000, tLogFileMaxSize);
 
         //close the old file
-        closeLogFile();
-
-        //StringBuilderToo?
-        if (logToStringBuffer) {
-            if (append && logStringBuffer != null) {
-                //use existing logStringBuffer
-            } else logStringBuffer = new StringBuffer();
-        } else logStringBuffer = null;
+        closeLogFile(); //it synchronizes on logFileBuilder
 
         //if no file name, return
         if (fullFileName.length() == 0) {
@@ -2994,14 +3053,21 @@ public class String2 {
             return;
         }
 
-        //open the file
-        //This uses a BufferedWriter wrapped around a FileWriter
-        //to write the information to the file.
-        logFileName = fullFileName;
-        logFile = new BufferedWriter(new FileWriter(fullFileName, append));
-        logFileSize = (new File(fullFileName)).length();
-        logFileFlushCount = 0;
-        logFileFlushBytesCount = 0;
+        //logFile: open the file
+        //always synchronize on logFileLock
+        synchronized(logFileLock) { 
+            try {
+                logFile = new BufferedWriter(new FileWriter(fullFileName, append));
+                logFileSize = Math2.narrowToInt((new File(fullFileName)).length());
+                logFileName = fullFileName; //log file created, so assign logFileName
+            } catch (Throwable t) {
+                System.out.println(Calendar2.getCurrentISODateTimeStringZulu() +
+                    " ERROR: while creating new logFile=" + fullFileName + "\n" +
+                    MustBe.throwableToString(t));
+            }
+        }
+
+log("logFileMaxSize=" + logFileMaxSize);
     }
 
     /**
@@ -3009,15 +3075,21 @@ public class String2 {
      * It is best if a crashing program calls this to ensure logFile is closed.
      */
     public static void closeLogFile() {
-        if (logFile != null) {
-            try {
-                logFile.flush(); //be extra sure it is flushed
-                logFile.close();
-                logFile = null;
+        try {
+            if (logFile == null) {
                 logFileName = null;
-            } catch (Exception e) {
-                //do nothing
+            } else {
+                //always synchronize on logFileLock
+                synchronized(logFileLock) {  
+                    logFile.flush(); //be extra sure it is flushed
+                    logFile.close();
+                    logFile = null;
+                    logFileName = null;
+                }
             }
+        } catch (Exception e) {
+            logFile = null;
+            logFileName = null;
         }
     }
 
@@ -3026,7 +3098,7 @@ public class String2 {
      */
     public static void returnLoggingToSystemOut() {
         try {
-            String2.setupLog(true, false, "", false, false, 100000);
+            String2.setupLog(true, false, "", false, logFileDefaultMaxSize);
         } catch (Throwable t2) {
             System.out.println(MustBe.throwableToString(t2));
         }
@@ -3061,59 +3133,68 @@ public class String2 {
      *
      * @param message the message
      */
-    public static synchronized void lowLog(String message, boolean addNewline) {
+    public static void lowLog(String message, boolean addNewline) {
+        //Now each part is thread safe.
+/*To test thread safety: 
+1) In Erddap.java, set log file size to 1 byte (so default of 10K will be used)
+2) run local erddap with standard test datasets
+3) in a browser, in separate tabs, simultaneously load
+http://127.0.0.1:8080/cwexperimental/tabledap/erdGtsppBest.htmlTable?&depth=200&temperature=10
+http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.htmlTable?&atmp=10&wtmp=10
+http://127.0.0.1:8080/cwexperimental/tabledap/pmelTaoDySst.htmlTable?&T_25=25
+and zoom and pan with controls in 
+  http://127.0.0.1:8080/cwexperimental/wms/erdBAssta5day/index.html
+*/
         try {
-            //print message with \n's to logStringBuffer
-            if (logStringBuffer != null) {
-                if (logStringBuffer.length() > logMaxSize && logMaxSize > 0)
-                    logStringBuffer.delete(0, logMaxSize / 2);
-                logStringBuffer.append(message);
-                if (addNewline) 
-                    logStringBuffer.append('\n');
-            }
-
             //write to system.out and/or logFile 
             if (!lineSeparator.equals("\n"))
                 message = replaceAll(message, "\n", lineSeparator);
 
             if (logToSystemOut) {
-                if (addNewline)
-                     System.out.println(message);
-                else System.out.print(message);
+                if (addNewline) 
+                     System.out.println(message); //it's synchronized
+                else System.out.print(  message); //it's synchronized
             }
 
             if (logToSystemErr) {
                 if (addNewline)
-                     System.err.println(message);
-                else System.err.print(message);
+                     System.err.println(message); //it's synchronized
+                else System.err.print(  message); //it's synchronized
             }
 
             if (logFile != null) {
-                //is file too big?
-                if (logFileSize > logMaxSize && logMaxSize > 0) {
-                    logFile.flush(); //extra sure it is flushed
-                    logFile.close();
-                    logFile = null; //otherwise, infinite loop if File2.rename calls String2.log
-                    File2.rename(logFileName, logFileName + ".previous");
-                    logFile = new BufferedWriter(new FileWriter(logFileName));
-                    logFileSize = 0;
-                    logFileFlushCount = 0;
-                    logFileFlushBytesCount = 0;
-                }
+                long ctm = System.currentTimeMillis();
+                //always synchronize on logFileLock
+                synchronized(logFileLock) {
+                    //write the message to the logFile (common, fast)
+                    logFile.write(message); //non-blocking
+                    if (addNewline) 
+                        logFile.write(lineSeparator); //non-blocking
+                    logFileSize += message.length() + (addNewline? 1 : 0); //not crucial: true for Linux; underestimate if Windows
 
-                //write the message to the file
-                logFile.write(message);
-                if (addNewline)
-                    logFile.write(lineSeparator);
-                logFileSize += message.length(); 
-
-                //flush so file is always up-to-date if trouble?
-                //  nice, but significant time penalty (2.5X slower if flush every time)
-                if ((logFileFlushBytesCount += message.length()) > logFileFlushEveryNBytes ||
-                    ++logFileFlushCount >= logFileFlushEveryNth) {
-                    logFile.flush(); 
-                    logFileFlushCount = 0;
-                    logFileFlushBytesCount = 0;
+                    if (logFileSize >= logFileMaxSize) {
+                        //is the file too big?
+                        //time to roll over log file to .previous
+                        //rare, slow
+                        logFile.close();
+                        logFile = null; //was: otherwise, infinite loop if File2.rename calls String2.log
+                        logFileSize = 0;
+                        File2.safeRename(logFileName, logFileName + ".previous"); //won't throw exception
+                        try {
+                            logFile = new BufferedWriter(new FileWriter(logFileName));
+                        } catch (Throwable t) {
+                            //try again: really bad if unable to create a new logFile
+                            Math2.gc(1000);
+                            try {
+                                logFile = new BufferedWriter(new FileWriter(logFileName));
+                            } catch (Throwable t2) {
+                                System.out.println(Calendar2.getCurrentISODateTimeStringZulu() +
+                                    " ERROR: while creating new logFile=" + logFileName + "\n" +
+                                    MustBe.throwableToString(t));
+                                logFileName = null; //logFile disabled
+                            }
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
@@ -3127,12 +3208,13 @@ public class String2 {
      * since other log destinations (e.g., System.out) are flushed automatically every time.
      * This will not throw an exception.
      */
-    public static synchronized void flushLog() {
+    public static void flushLog() {
         if (logFile != null) {
             try {
-                logFile.flush(); 
-                logFileFlushCount = 0;
-                logFileFlushBytesCount = 0;
+                //always synchronize on logFileLock
+                synchronized(logFileLock) {
+                    logFile.flush(); 
+                }
             } catch (Exception e) {
                 //do nothing
             }
@@ -3146,17 +3228,6 @@ public class String2 {
      */
     public static String logFileName() {
         return logFileName;
-    }
-
-    /**
-     * This returns the logStringBuffer object.
-     * Then you can get call sb.toString() to get the contents,
-     * setLength(0) to clear it, etc.
-     *
-     * @return the logStringBuffer (or null if none)
-     */
-    public static synchronized StringBuffer getLogStringBuffer() {
-        return logStringBuffer;
     }
 
     /**
@@ -3565,8 +3636,8 @@ public class String2 {
 
         //try to parse hex or regular int        
         try {
-            if (s.startsWith("0x")) 
-                return Integer.parseInt(s.substring(2), 16);
+            if (s.startsWith("0x") || s.startsWith("0X")) 
+                return (int)Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int
             return Integer.parseInt(s);
         } catch (Exception e) {      
             //falls through
@@ -3610,8 +3681,8 @@ public class String2 {
             return Double.NaN;
 
         try {
-            if (s.startsWith("0x")) 
-                return Integer.parseInt(s.substring(2), 16);
+            if (s.startsWith("0x") || s.startsWith("0X")) 
+                return Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int
 
             //2011-02-09 Bob Simons added to avoid Java hang bug.
             //But now, latest version of Java is fixed.
@@ -3662,7 +3733,7 @@ public class String2 {
     /** 
      * This converts String representation of a long. 
      * Leading or trailing spaces are automatically removed.
-     * This *doesn't* round. So floating point values lead to Long.MAX_VALUE.
+     * THIS DOESN'T ROUND! So floating point values lead to Long.MAX_VALUE.
      *
      * @param s a valid String representation of a long value
      * @return a long (or Long.MAX_VALUE if trouble).
@@ -3681,7 +3752,7 @@ public class String2 {
             return Long.MAX_VALUE;
 
         try {
-            if (s.startsWith("0x"))
+            if (s.startsWith("0x") || s.startsWith("0X"))
                 return Long.parseLong(s.substring(2), 16);
             return Long.parseLong(s);
         } catch (Exception e) {
@@ -3816,7 +3887,7 @@ public class String2 {
      *   different categories
      * @param n from getDistributionN
      * @return the approximate median of the distribution.
-     *    If trouble or n<=0, this returns -1.
+     *    If trouble or n&lt;=0, this returns -1.
      */
     public static int getDistributionMedian(int[] distribution, int n) {
         double n2 = n / 2.0;
@@ -4029,7 +4100,7 @@ public class String2 {
      * @param fullOutFileName the full name of the output file 
         (if same as fullInFileName, fullInFileName will be renamed +.original)
      * @param search  a plain text string to search for
-     * @param replace  a plain text string to replace any instances of <search>
+     * @param replace  a plain text string to replace any instances of 'search'
      * @throws Exception if any trouble
      */
     public static void simpleSearchAndReplace(String fullInFileName,
@@ -4083,7 +4154,7 @@ public class String2 {
      * @param fullInFileName the full name of the input file
      * @param fullOutFileName the full name of the output file
      * @param search  a regex to search for
-     * @param replace  a plain text string to replace any instances of <search>
+     * @param replace  a plain text string to replace any instances of 'search'
      * @throws Exception if any trouble
      */
     public static void regexSearchAndReplace(String fullInFileName,
@@ -4338,7 +4409,7 @@ public class String2 {
      *
      * @return directory that is the classpath for the source
      *     code files (with / separator and / at the end)
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static String getClassPath() {
         if (classPath == null) {
@@ -4374,6 +4445,7 @@ public class String2 {
      * @throws Exception if trouble
      */
     public static String getStringFromSystemIn(String prompt) throws Exception {
+        flushLog();
         System.out.print(prompt);
         BufferedReader inReader = new BufferedReader(new InputStreamReader(System.in));
         return inReader.readLine();
@@ -4382,6 +4454,8 @@ public class String2 {
     /** 
      * A variant of getStringFromSystemIn that adds "\nPress ^C to stop or Enter to continue..."
      * to the prompt.
+     *
+     * @throws Exception if trouble
      */
     public static String pressEnterToContinue(String prompt) throws Exception {
         if (prompt == null)
@@ -4394,6 +4468,8 @@ public class String2 {
     /** 
      * A variant of pressEnterToContinue with "Press ^C to stop or Enter to continue..."
      * as the prompt.
+     *
+     * @throws Exception if trouble
      */
     public static String pressEnterToContinue() throws Exception {
         return pressEnterToContinue("");
@@ -4401,17 +4477,8 @@ public class String2 {
      
 
 
-    /**
-     * On the command line, this prompts the user a String (which is
-     * not echoed to the screen, so is suitable for passwords).
-     * This is slighly modified from 
-     * http://java.sun.com/developer/technicalArticles/Security/pwordmask/ .
-     *
-     * @param prompt
-     * @return the String the user entered
-     * @throws IOException if trouble
-     */
-/*    public static String getPasswordFromSystemIn(String prompt) throws Exception {
+/*  OLD VERSION
+    public static String getPasswordFromSystemIn(String prompt) throws Exception {
         System.out.print(prompt);
         StringBuilder sb = new StringBuilder();
         while (true) {
@@ -4428,6 +4495,17 @@ public class String2 {
         }
     }
 */
+
+    /**
+     * On the command line, this prompts the user a String (which is
+     * not echoed to the screen, so is suitable for passwords).
+     * This is slighly modified from 
+     * http://java.sun.com/developer/technicalArticles/Security/pwordmask/ .
+     *
+     * @param prompt
+     * @return the String the user entered
+     * @throws Exception if trouble
+     */
     public static final String getPasswordFromSystemIn(String prompt) throws Exception {
         InputStream in = System.in; //bob added, instead of parameter
 
@@ -4486,13 +4564,13 @@ public class String2 {
     }
 
     /**
-     * Find the last element which is <= s in an ascending sorted array.
+     * Find the last element which is &lt;= s in an ascending sorted array.
      *
      * @param sar an ascending sorted String[] which may have duplicate values
      * @param s
-     * @return the index of the last element which is <= s in an ascending sorted array.
-     *   If s is null or s < the smallest element, this returns -1  (no element is appropriate).
-     *   If s > the largest element, this returns sar.length-1.
+     * @return the index of the last element which is &lt;= s in an ascending sorted array.
+     *   If s is null or s &lt; the smallest element, this returns -1  (no element is appropriate).
+     *   If s &gt; the largest element, this returns sar.length-1.
      */
     public static int binaryFindLastLE(String[] sar, String s) {
         if (s == null) 
@@ -4511,13 +4589,13 @@ public class String2 {
     }
 
     /**
-     * Find the first element which is >= s in an ascending sorted array.
+     * Find the first element which is &gt;= s in an ascending sorted array.
      *
      * @param sar an ascending sorted String[] which currently may not have duplicate values
      * @param s
-     * @return the index of the first element which is >= s in an ascending sorted array.
-     *   If s < the smallest element, this returns 0.
-     *   If s is null or s > the largest element, this returns sar.length (no element is appropriate).
+     * @return the index of the first element which is &gt;= s in an ascending sorted array.
+     *   If s &lt; the smallest element, this returns 0.
+     *   If s is null or s &gt; the largest element, this returns sar.length (no element is appropriate).
      */
     public static int binaryFindFirstGE(String[] sar, String s) {
         if (s == null) 
@@ -4753,6 +4831,39 @@ public class String2 {
         }
     }
 
+    public static final String FILE_DIGEST_OPTIONS[]    = {"MD5",  "SHA-1", "SHA-256"};
+    public static final String FILE_DIGEST_EXTENSIONS[] = {".md5", ".sha1", ".sha256"};
+
+    /**
+     * This returns a hash digest of fullFileName (read as bytes)
+     * as a String of lowercase hex digits.
+     * Lowercase because the digest authentication standard uses lower case; so mimic them.
+     * And lowercase is easier to type.
+     * 
+     * @param algorithm one of the FILE_DIGEST_OPTIONS ("MD5", "SHA-1", "SHA-256").
+     * @param fullFileName  the name of the file to be digested
+     * @return the hash digest of the file
+     *   (for MD5, 32 lowercase hex digits as a String),
+     *   or null if fullFileName is null or there is trouble.
+     */
+    public static String fileDigest(String algorithm, String fullFileName) 
+        throws Exception {
+        MessageDigest md = MessageDigest.getInstance(algorithm);
+        FileInputStream fis = new FileInputStream(fullFileName);
+        byte buffer[] = new byte[8192];
+        int nBytes;
+        while ((nBytes = fis.read(buffer)) > 0) 
+            md.update(buffer, 0, nBytes);
+        fis.close();
+        byte bytes[] = md.digest();
+        nBytes = bytes.length;
+        StringBuilder sb = new StringBuilder(nBytes * 2);
+        for (int i = 0; i < nBytes; i++)
+            sb.append(zeroPad(Integer.toHexString(
+                (int)bytes[i] & 0xFF), 2));   //safe, (int) and 0xFF make it unsigned byte
+        return sb.toString();
+    }
+
     /** 
      * This returns the last 12 hex digits from md5Hex (or null if md5 is null),
      * broken into 3 blocks of 4 digits, separated by '_'.
@@ -4914,7 +5025,7 @@ public class String2 {
      * <ul>
      * <li>first character must be A-Z, a-z, _.
      * <li>subsequent characters must be A-Z, a-z, _, 0-9.
-     * <ul>
+     * </ul>
      * <br>'x' and non-safe characters are CONVERTED to 'x' plus their 
      *   2 lowercase hexadecimalDigit number or "xx" + their 4 hexadecimalDigit number.
      * <br>See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
@@ -5037,6 +5148,19 @@ public class String2 {
     public static int canonicalSize() {
         return canonicalMap.size();
     }
+
+    /** 
+     * For command line parameters, this returns toJson(s) if the string is empty or contains 
+     * special characters or single or double quotes or backslash; otherwise it return s.
+     */
+    public static String quoteParameterIfNeeded(String s) {
+        return s.length() > 0 && isPrintable(s) && 
+            s.indexOf('\"') < 0 && s.indexOf('\'') < 0 && 
+            s.indexOf('\\') < 0? s : 
+            toJson(s);
+    }
+
+
 
     /** If quoted=true, this puts double quotes around a string, if needed.
      * In any case, carriageReturn/newline characters/combos are replaced by 
@@ -5177,7 +5301,7 @@ public class String2 {
         return true;
     }
 
-    /** This returns true if s isn't null and s.trim().length() > 0. */
+    /** This returns true if s isn't null and s.trim().length() &gt; 0. */
     public static boolean isSomething(String s) {
         return s != null && s.trim().length() > 0;
     }
@@ -5212,7 +5336,7 @@ public class String2 {
      * Given an Amazon AWS S3 URL, this returns the bucketName.
      * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
      * If files have file-system-like names, e.g., 
-     *   http(s|)://bucketName.s3.amazonaws.com/prefix
+     *   https?://(bucketName).s3.amazonaws.com/(prefix)
      *   where the prefix is usually in the form dir1/dir2/fileName.ext
      *   http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
      *
@@ -5222,12 +5346,11 @@ public class String2 {
     public static String getAwsS3BucketName(String url) {
         if (url == null)
             return null;
-        Pattern pattern = Pattern.compile(String2.AWS_S3_REGEX);
         if (url.endsWith(".s3.amazonaws.com"))
             url = File2.addSlash(url);
-        Matcher matcher = pattern.matcher(url); 
+        Matcher matcher = AWS_S3_PATTERN.matcher(url); 
         if (matcher.matches()) 
-            return matcher.group(2); //bucketName
+            return matcher.group(1); //bucketName
         return null;
     }
 
@@ -5235,7 +5358,7 @@ public class String2 {
      * Given an Amazon AWS S3 URL, this returns the objectName or prefix.
      * http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
      * If files have file-system-like names, e.g., 
-     *   http(s|)://bucketName.s3.amazonaws.com/prefix
+     *   https?://(bucketName).s3.amazonaws.com/(prefix)
      *   where a prefix is usually in the form dir1/dir2/ 
      *   where an objectName is usually in the form dir1/dir2/fileName.ext
      *   http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
@@ -5247,13 +5370,36 @@ public class String2 {
     public static String getAwsS3Prefix(String url) {
         if (url == null)
             return null;
-        Pattern pattern = Pattern.compile(String2.AWS_S3_REGEX);
         if (url.endsWith(".s3.amazonaws.com"))
             url = File2.addSlash(url);
-        Matcher matcher = pattern.matcher(url); 
+        Matcher matcher = AWS_S3_PATTERN.matcher(url); 
         if (matcher.matches()) 
-            return matcher.group(3); //prefix
+            return matcher.group(2); //prefix
         return null;
+    }
+
+    /** 
+     * This provides an endsWith() method for StringBuilder, which has none!
+     *
+     * @return true if sb ends with suffix (including if suffix=""), otherwise returns false (including
+     *    if sb or suffix is null).
+     */
+    public static boolean endsWith(StringBuilder sb, String suffix) {
+        if (sb == null || suffix == null || suffix.length() > sb.length())
+            return false;
+        return sb.substring(sb.length() - suffix.length()).equals(suffix);
+    }
+
+    /** 
+     * This adds a newline to sb if sb.length() &gt; 0 and !endsWith("\n").
+     * @return sb for convenience
+     */
+    public static StringBuilder addNewlineIfNone(StringBuilder sb) {
+        if (sb == null || sb.length() == 0)
+            return sb;
+        if (!endsWith(sb, "\n"))
+            sb.append('\n');
+        return sb;
     }
 
 

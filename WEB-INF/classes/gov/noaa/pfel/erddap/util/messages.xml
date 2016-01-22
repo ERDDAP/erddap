@@ -1921,6 +1921,13 @@ and even from web pages (via HTML image tags or JavaScript).
 <infoTableTitleHtml>The Dataset's Variables and Attributes</infoTableTitleHtml>
 <infoRequestForm>{0}/info requests must be in the form {0}/info/[datasetID]/index[fileType] .</infoRequestForm>
 
+<inotifyFix>This may be the problem that is solvable in Linux by calling (as root):
+  echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf
+  echo fs.inotify.max_user_instances=1024 | tee -a /etc/sysctl.conf
+  sysctl -p
+Or, use higher numbers if the problem persists.
+The default for watches is 8192. The default for instances is 128.</inotifyFix>
+
 <!-- The justGenerateAndView messages are used for the justGenerateAndView button
 on the Data Access Forms.
 The justGenerateAndViewHtml message can include &protocolName; .
@@ -2238,6 +2245,10 @@ Specify the data vector length (in data units) to be
 <br>(or leave blank for the default).
 ]]></magGSVectorStandardTooltip>
 
+<magGSYAscendingTooltip><![CDATA[
+For graphs (not maps), the Y axis values can be ascending
+<br>(normal order) or descending (i.e., flipped or reversed).
+]]></magGSYAscendingTooltip>
 <magGSYAxisMin>Y Axis Minimum</magGSYAxisMin>
 <magGSYAxisMax>Maximum</magGSYAxisMax>
 
@@ -2393,6 +2404,7 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <notAvailable>Currently, datasetID={0} isn''t available.</notAvailable>
 
 <!-- Xxx is Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
+<noXxx>This dataset isn''t available via {0}.</noXxx>
 <noXxxBecause>This dataset isn''t available via {0} because {1}.</noXxxBecause>
 <noXxxBecause2>{0} isn''t available for this dataset because {1}.</noXxxBecause2>
 <noXxxNotActive>this ERDDAP''s {0} service is not active</noXxxNotActive>
@@ -4016,6 +4028,15 @@ and serve your own data.
 If you have questions, suggestions, or comments about ERDDAP in general (not this specific
 ERDDAP installation), please send an email to <tt>bob dot simons at noaa dot gov</tt>
 and include the ERDDAP URL directly related to your question or comment.
+<br><a name="ERDDAPMailingList">Or,</a>
+you can join the ERDDAP Google Group / Mailing List by visiting
+<a rel="help"
+href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap<img 
+  src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."/></a> 
+and clicking on "Apply for membership". 
+Once you are a member, you can post your question there
+or search to see if the question has already been asked and answered. 
 
 <p>DISCLAIMER: The opinions on this web page are Bob Simons' personal opinions and 
 do not necessarily reflect any position of the 

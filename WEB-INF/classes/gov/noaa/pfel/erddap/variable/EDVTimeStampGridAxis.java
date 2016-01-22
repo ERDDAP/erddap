@@ -112,7 +112,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         sourceTimeFormat = units();
         Test.ensureNotNothing(sourceTimeFormat, 
             errorInMethod + "'units' wasn't found."); //match name in datasets.xml
-        if (sourceTimeFormat.indexOf(" since ") > 0) {
+        if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
             sourceTimeIsNumeric = true;
             double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
             sourceTimeBase = td[0];
@@ -584,11 +584,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * in the units attribute because this class currently doesn't support String times.
      */
     public static boolean hasTimeUnits(String tUnits) {
-        if (tUnits == null)
-            return false;
-        return tUnits.indexOf(" since ") > 0;// ||
-               //tUnits.indexOf("yy") >= 0 ||
-               //tUnits.indexOf("YY") >= 0;
+        return Calendar2.isNumericTimeUnits(tUnits);
     }
 
 

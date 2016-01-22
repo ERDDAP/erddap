@@ -256,7 +256,7 @@ public class LoadDatasets extends Thread {
                                     (System.currentTimeMillis() - oldEdd.creationTimeMillis()) / 60000; 
                                 if (minutesOld < oldEdd.getReloadEveryNMinutes()) {
                                     //it exists and is young
-                                    String2.log("*** skipping datasetID=" + tId + 
+                                    if (reallyVerbose) String2.log("*** skipping datasetID=" + tId + 
                                         ": it already exists and minutesOld=" + minutesOld +
                                         " is less than reloadEvery=" + oldEdd.getReloadEveryNMinutes());
                                     skip = true;
@@ -301,7 +301,7 @@ public class LoadDatasets extends Thread {
                         boolean oldCatInfoRemoved = false;
                         long timeToLoadThisDataset = System.currentTimeMillis();
                         try {
-                            dataset = EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
+                            dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
 
                             //check for interruption right before making changes to Erddap
                             if (isInterrupted()) { //this is a likely place to catch interruption
@@ -508,6 +508,12 @@ public class LoadDatasets extends Thread {
                 } else if (tags.equals("<erddapDatasets></requestBlacklist>")) {
                     EDStatic.setRequestBlacklist(xmlReader.content());
 
+                } else if (tags.equals("<erddapDatasets><slowDownTroubleMillis>")) {
+                } else if (tags.equals("<erddapDatasets></slowDownTroubleMillis>")) {
+                    int tms = String2.parseInt(xmlReader.content());
+                    EDStatic.slowDownTroubleMillis = tms > 10000? 1000 : tms; 
+                    String2.log("slowDownTroubleMillis=" + EDStatic.slowDownTroubleMillis);
+
                 } else if (tags.equals("<erddapDatasets><convertToPublicSourceUrl>")) {
                     String tFrom = xmlReader.attributeValue("from");
                     String tTo   = xmlReader.attributeValue("to");
@@ -630,7 +636,7 @@ public class LoadDatasets extends Thread {
 
                     erddap.lastReportDate = reportDate;
                     String stars = String2.makeString('*', 70);
-                    String subject = "ERDDAP Daily Report " + cDateTimeLocal;
+                    String subject = "Daily Report";
                     StringBuilder contentSB = new StringBuilder(subject + "\n\n");
                     EDStatic.addIntroStatistics(contentSB);
 
@@ -712,13 +718,12 @@ public class LoadDatasets extends Thread {
                     EDStatic.minorLoadDatasetsDistribution24 = new int[String2.DistributionSize];
                     EDStatic.responseTimesDistribution24     = new int[String2.DistributionSize];
 
-                    erddap.todaysNRequests = 0;
                     String2.log("\n" + stars);
                     String2.log(contentSB.toString());
                     String2.log(
                         "\n" + String2.javaInfo() + //Sort of confidential. This info would simplify attacks on ERDDAP.
                         "\n" + stars + 
-                        "\nEnd of ERDDAP Daily Report\n");
+                        "\nEnd of Daily Report\n");
 
                     //after write to log (before email), add URLs to setDatasetFlag (so only in email to admin)
                     contentSB.append("\n" + stars + 
@@ -748,7 +753,7 @@ public class LoadDatasets extends Thread {
                     contentSB.append(
                         "\n" + String2.javaInfo() + //Sort of confidential. This info would simplify attacks on ERDDAP.
                         "\n" + stars + 
-                        "\nEnd of ERDDAP Daily Report\n");
+                        "\nEnd of Daily Report\n");
                     String content = contentSB.toString();
                     String2.log(subject + ":");
                     String2.log(content);
@@ -795,6 +800,8 @@ public class LoadDatasets extends Thread {
                 removeOldLines(EDStatic.memoryUseLoadDatasetsSB,     101, 82);
                 removeOldLines(EDStatic.failureTimesLoadDatasetsSB,  101, 59);
                 removeOldLines(EDStatic.responseTimesLoadDatasetsSB, 101, 59);
+
+                String2.flushLog(); //useful to have this info ASAP
             }
 
         } catch (Throwable t) {

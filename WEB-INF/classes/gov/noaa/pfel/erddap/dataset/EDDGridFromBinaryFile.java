@@ -47,18 +47,21 @@ public class EDDGridFromBinaryFile extends EDDGrid {
     /**
      * NOT FINISHED AND NOT ACTIVE. This constructs an EDDGridFromBinaryFile based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridFromBinaryFile"&gt; 
      *    having just been read.  
      * @return an EDDGridFromBinaryFile.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridFromBinaryFile fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridFromBinaryFile fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridFromBinaryFile(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -103,6 +106,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<onChange>")) {}
@@ -129,7 +134,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 */
-        return new EDDGridFromBinaryFile(tDatasetID, tAccessibleTo, 
+        return new EDDGridFromBinaryFile(tDatasetID, 
+            tAccessibleTo, tAccessibleViaWMS, 
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             new Object[1][3], new Object[1][3], //ttAxisVariables, ttDataVariables,
@@ -160,7 +166,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @throws Throwable if trouble
      */
-    public EDDGridFromBinaryFile(String tDatasetID, String tAccessibleTo,
+    public EDDGridFromBinaryFile(String tDatasetID, 
+        String tAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -179,6 +186,9 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         className = "EDDGridFromBinaryFile"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -452,7 +462,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         String name, tName, axisDapQuery, userDapQuery, results, expected, error;
 
 /*    
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); 
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
 
         //test that bad metadata was removed
         //String2.log(

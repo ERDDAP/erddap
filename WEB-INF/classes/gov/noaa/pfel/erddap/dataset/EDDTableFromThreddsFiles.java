@@ -91,22 +91,21 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
+        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
         boolean tAccessibleViaFiles) throws Throwable {
 
-        super("EDDTableFromThreddsFiles", true, //isLocal is now set to true (copied files)
-            tDatasetID, tAccessibleTo, 
+        super("EDDTableFromThreddsFiles", tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
-            tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -125,7 +124,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      */
     public static void makeDownloadFileTasks(String tDatasetID, 
         String catalogUrl, 
-        String fileNameRegex, boolean recursive, String specialMode) {
+        String fileNameRegex, boolean recursive, String pathRegex, String specialMode) {
 
         if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks from " + catalogUrl +
             "\nfileNameRegex=" + fileNameRegex);
@@ -180,7 +179,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             StringArray sourceFileName  = new StringArray();
             LongArray sourceFileLastMod = new LongArray();             
             boolean completelySuccessful = getThreddsFileInfo(
-                catalogUrl, fileNameRegex, recursive,
+                catalogUrl, fileNameRegex, recursive, pathRegex, 
                 sourceFileDir, sourceFileName, sourceFileLastMod);
 
             //samos-specific:
@@ -248,6 +247,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
                 //get all the existing local files
                 String localFiles[] = recursive?
+                    //pathRegex was applied when downloading, no need for it here.
                     RegexFilenameFilter.recursiveFullNameList(baseDir, fileNameRegex, false) : //directoriesToo
                     RegexFilenameFilter.fullNameList(baseDir, fileNameRegex);
 
@@ -390,12 +390,14 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      *    Url not responding is not an error.
      */
     public static boolean getThreddsFileInfo(String catalogUrl, String fileNameRegex, 
-        boolean recursive,
+        boolean recursive, String pathRegex,
         StringArray fileDir, StringArray fileName, LongArray fileLastMod) {
 
         if (reallyVerbose) String2.log("\n<<< getThreddsFileInfo catalogUrl=" + 
             catalogUrl + " regex=" + fileNameRegex);
         boolean completelySuccessful = true;
+        if (pathRegex == null || pathRegex.length() == 0)
+            pathRegex = ".*";
         long time = System.currentTimeMillis();
 
         try {
@@ -495,9 +497,10 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                                 href = File2.getDirectory(catalogUrl) + href;
                             else href = catalogBase + href.substring(1); //href starts with /
                         }
-                    if (!getThreddsFileInfo(href, fileNameRegex, recursive,
-                        fileDir, fileName, fileLastMod))
-                        completelySuccessful = false;
+                    if (href.matches(pathRegex))
+                        if (!getThreddsFileInfo(href, fileNameRegex, recursive, pathRegex,
+                            fileDir, fileName, fileLastMod))
+                            completelySuccessful = false;
                     }
 
                 //<dataset name="WES001_030MTBD029R00_20080613.nc" ID="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc" urlPath="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc">
@@ -620,6 +623,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
+        if (!String2.isSomething(tLocalDirUrl))
+            throw new IllegalArgumentException("localDirUrl wasn't specified.");
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
         String tPublicDirUrlHtml = tPublicDirUrl;
         String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
@@ -699,15 +704,16 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>0</updateEveryNMillis>\n" +  //files are only added by full reload
             "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/" + tDatasetID + "/ -->\n" +
-            "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
+            "    <recursive>true</recursive>\n" +
+            "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
-            "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
+            "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
             "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
@@ -763,8 +769,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/noaa_nodc_8fcf_be37_cbe4/ -->\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*MTBD.*\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex>_.*$</postExtractRegex>\n" +
@@ -904,7 +911,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
@@ -936,7 +943,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Yearday flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
@@ -949,7 +956,7 @@ directionsForGenerateDatasetsXml() +
 
             /* This won't work because sample file is in testCacheDir (not regular cache dir)
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "noaa_nodc_8fcf_be37_cbe4", "");
             Test.ensureEqual(edd.title(), "WES001 2008", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -986,7 +993,7 @@ directionsForGenerateDatasetsXml() +
         if (deleteCachedInfo) 
             deleteCachedDatasetInfo(id);
 
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         try {
@@ -1283,7 +1290,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         if (deleteCachedInfo)
             deleteCachedDatasetInfo(id);
 
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         try {
@@ -1902,7 +1909,7 @@ expected =
         if (true) {
         getThreddsFileInfo(
             "http://coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
-            "WTEP_2011082.*\\.nc", true, //recursive
+            "WTEP_2011082.*\\.nc", true, "", //recursive, pathRegex
             fileDir, fileName, fileLastMod);
 
         results = fileDir.toNewlineString();
@@ -1956,7 +1963,7 @@ expected =
         fileLastMod.clear();        
         getThreddsFileInfo(
             "http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml", 
-            "SMS.*_2004.*\\.nc", true, //recursive
+            "SMS.*_2004.*\\.nc", true, "", //recursive, pathRegex
             fileDir, fileName, fileLastMod);
 
         results = fileDir.toNewlineString();

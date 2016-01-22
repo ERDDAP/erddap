@@ -4579,18 +4579,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
         out.println(error);
 
         //add the actual diagnostic info  
-        if (oneOf.displayDiagnosticInfo()) {
-            StringBuffer logSB = String2.getLogStringBuffer();
-            if (logSB != null) {
-                out.println("<p>Diagnostic info:<pre>");
-                out.println(logSB.toString());
-                //out.println("\nUsage Info:");
-                //out.println(getUsageInfo());
-                //clear the String2.logStringBuffer
-                logSB.setLength(0); 
-            }
-            out.println("</pre>"); 
-        }
+        //if (oneOf.displayDiagnosticInfo()) {
+        //    was from logStringBuilder 
+        //}
 
         out.println(oneOf.endHtmlBody());
         out.println("</html>");
@@ -4933,7 +4924,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             oneOf.legendTitle2(),
             oneOf.fullContextDirectory() + "images/", 
             oneOf.lowResLogoImageFile(),
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, 
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true,
             true, false, //x/yIsTimeAxis
             graphDataLayers,
             g2D,
@@ -5081,7 +5072,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 oneOf.legendTitle2(),
                 oneOf.fullContextDirectory() + "images/", 
                 oneOf.lowResLogoImageFile(),
-                Double.NaN, Double.NaN, Double.NaN, Double.NaN, 
+                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, 
                 true, false, //x/yIsTimeAxis
                 graphDataLayers,
                 g2D,
@@ -5230,7 +5221,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 oneOf.legendTitle2(),
                 oneOf.fullContextDirectory() + "images/", 
                 oneOf.lowResLogoImageFile(),
-                Double.NaN, Double.NaN, Double.NaN, Double.NaN, 
+                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, 
                 true, false, //x/yIsTimeAxis
                 graphDataLayers,
                 g2D,
@@ -5395,17 +5386,15 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
         try {
             String tName = "coverage.kml";
             File2.delete(testDir + tName);
-            SSR.downloadFile(
-                "http://coastwatch.pfeg.noaa.gov/cwexperimental/CWBrowserWW360.jsp?" +
+            String url = "http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserWW360.jsp?" +
                 "get=gridData&dataSet=TMBchla&timePeriod=8day&centeredTime=2006-01-23T00:00:00" +
-                "&maxLat=50&minLon=220&maxLon=250&minLat=20&fileType=GoogleEarth",
-                testDir + tName, true);
+                "&maxLat=50&minLon=220&maxLon=250&minLat=20&fileType=GoogleEarth";
+            SSR.downloadFile(url, testDir + tName, true);
             SSR.displayInBrowser("file://" + testDir + tName);
             String2.pressEnterToContinue("Is GoogleEarth showing a coverage? \n" +
                 "Close it, then..."); 
         } catch (Exception e) {
-            Test.knownProblem(
-                "THIS TEST REQUIRES cwexperimental CWBrowserWW360, so I usually skip it.",
+            String2.pressEnterToContinue("Unexpected error:\n" +
                 MustBe.throwableToString(e)); 
         }
 
@@ -5413,7 +5402,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String tName = "station.kml";
             File2.delete(testDir + tName);
             SSR.downloadFile(
-                "http://coastwatch.pfeg.noaa.gov/cwexperimental/CWBrowserWW360.jsp?" +
+                "http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserWW360.jsp?" +
                 "get=stationData&dataSet=PNBwtmp&timePeriod=8day&beginTime=2008-08-26T22:00:00" +
                 "&endTime=2008-09-26T22:00:00&minLon=220.0&maxLon=250.0&minLat=20.0&maxLat=50.0" +
                 "&minDepth=0&maxDepth=0&fileType=GoogleEarth",
@@ -5422,8 +5411,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String2.pressEnterToContinue("Is GoogleEarth showing stations? \n" +
                 "Close it, then..."); 
         } catch (Exception e) {
-            Test.knownProblem(
-                "THIS TEST REQUIRES cwexperimental CWBrowserWW360, so I usually skip it.",
+            String2.pressEnterToContinue("Unexpected error:\n" +
                 MustBe.throwableToString(e)); 
         }
 

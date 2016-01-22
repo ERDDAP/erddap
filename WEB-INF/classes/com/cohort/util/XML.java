@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import javax.xml.xpath.XPath;   //requires java 1.5
@@ -34,7 +35,7 @@ public class XML {
 
     /** For each character 0 - 255, these indicate how the character
      * should appear in HTML content. 
-     * See HTML & XHTML book, Appendix F.
+     * See HTML &amp; XHTML book, Appendix F.
      * &quot; and &#39; are encoded to be safe (see encodeAsXML comments)
      * and consistent with encodeAsXML.
      */
@@ -75,6 +76,15 @@ public class XML {
 "&otilde;","&ouml;","&divide;","&oslash;","&ugrave;",//245..
 "&uacute;","&ucirc;","&uuml;","&yacute;","&thorn;",//250
 "&yuml;"}; //255  
+    
+    public static HashMap<String,Character> ENTITY_TO_CHAR_HASHMAP = new HashMap();
+    static {
+        for (int i = 0; i < 256; i++) {
+            String ent = HTML_ENTITIES[i];
+            if (ent.length() > 0)
+                ENTITY_TO_CHAR_HASHMAP.put(ent, new Character((char)i));
+        }
+    }
 
     /**
      * This returns a String with the HTML tags removed and
@@ -165,7 +175,7 @@ public class XML {
 
 
     /**
-     * This replaces '&', '<', '>', '"', ''' in the string with 
+     * This replaces '&amp;', '&lt;', '&gt;', '"', ''' in the string with 
      * "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#39;" so plainText can be safely
      * stored as a quoted string within XML.
      *
@@ -278,7 +288,7 @@ public class XML {
     /**
      * This replaces HTML character entities (and the XML subset)
      * (e.g., "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", etc.) in the string
-     * with characters (e.g., '&', '<', '>', '"', etc.) 
+     * with characters (e.g., '&amp;', '&lt;', '&gt;', '"', etc.) 
      * so the original string can be recovered.
      * "&amp;nbsp;" is decoded to regular ' '.
      * Unrecognized/invalid entities are left intact so appear as e.g., &amp;#A;.
@@ -296,7 +306,7 @@ public class XML {
 
             if (ch == '&') {
                 int po = s.indexOf(';', i);
-                if (po > 0) {
+                if (po > 0 && po < i + 80) {
                     String entity = s.substring(i-1, po+1);
                     if (entity.charAt(1) == '#') {  //e.g., &#37;
                         String num = entity.substring(2, entity.length() - 1);
@@ -310,22 +320,16 @@ public class XML {
                             v == 160? " " :  //nbsp
                             v < Character.MAX_VALUE? "" + (char)v : 
                             entity); //show intact original entity as plain text
-                    //check for common entities first
-                    } else if (entity.equals("&amp;"))  { output.append('&');
-                    } else if (entity.equals("&quot;")) { output.append('"');
-                    } else if (entity.equals("&lt;"))   { output.append('<');
-                    } else if (entity.equals("&gt;"))   { output.append('>');
                     } else {
                         //search HTML_ENTITIES
-                        //make faster: store in hashmap  (but these are less common)
-                        int which = String2.indexOf(HTML_ENTITIES, entity);
-                        if (which >= 0) 
-                            output.append((char)which);
-                        else 
-                            output.append(entity); //leave intact                         
+                        Character CH = ENTITY_TO_CHAR_HASHMAP.get(entity);
+                        if (CH == null) 
+                            output.append(entity); //leave intact
+                        else //do separately to avoid promoting to String
+                            output.append(CH.charValue()); 
                     }
                     i = po + 1;
-                } else { //no closing ';'!  leave & in place
+                } else { //no closing ';' close by!  leave & in place
                     output.append(ch);
                 }
             } else output.append(ch);
@@ -466,11 +470,11 @@ public class XML {
      * comments. So it is best to remove comments first.
      *
      * @param template an XML document template with some elements
-     *    e.g., <tagA><!-- put something here --></tagA>  
+     *    e.g., &lt;tagA&gt;&lt;!-- put something here --&gt;&lt;/tagA&gt;  
      *    The results are put in here.
-     * @param substitutions Each line is in the form: <tag1><tag2>data,
+     * @param substitutions Each line is in the form: &lt;tag1&gt;&lt;tag2&gt;data,
      *   where there may be 1 or more elements. 
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static void substitute(StringBuilder template, String substitutions[]) {
 
@@ -522,7 +526,7 @@ public class XML {
      * This removes any comments from the XML document.
      *
      * @param document
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static void removeComments(StringBuilder document) {
         int startPo = document.indexOf("<!--");

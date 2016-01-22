@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -303,11 +303,30 @@ public class FloatArray extends PrimitiveArray {
     /**
      * This adds an element from another PrimitiveArray.
      *
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the source PA
+     * @param otherIndex the start index in otherPA
+     * @param nValues the number of values to be added
+     * @return 'this' for convenience
      */
-    public void addFromPA(PrimitiveArray otherPA, int otherIndex) {
-        add(otherPA.getFloat(otherIndex));
+    public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
+
+        //add from same type
+        if (otherPA.elementClass() == elementClass()) {
+            if (otherIndex + nValues > otherPA.size)
+                throw new IllegalArgumentException(String2.ERROR + 
+                    " in CharArray.addFromPA: otherIndex=" + otherIndex + 
+                    " + nValues=" + nValues + 
+                    " > otherPA.size=" + otherPA.size);
+            ensureCapacity(size + nValues);            
+            System.arraycopy(((FloatArray)otherPA).array, otherIndex, array, size, nValues);
+            size += nValues;
+            return this;
+        }
+
+        //add from different type
+        for (int i = 0; i < nValues; i++)
+            add(otherPA.getFloat(otherIndex++)); //does error checking
+        return this;
     }
 
     /**
@@ -541,6 +560,8 @@ public class FloatArray extends PrimitiveArray {
         return Math2.roundToInt(get(index));
     }
 
+    //getRawInt(index) uses default getInt(index) since missingValue must be converted
+
     /**
      * Set a value in the array as an int.
      * 
@@ -618,6 +639,20 @@ public class FloatArray extends PrimitiveArray {
      */
     public double getNiceDouble(int index) {
         return Math2.floatToDouble(get(index));
+    }
+
+    /**
+     * Return a value from the array as a double.
+     * FloatArray converts float to double via Math2.floatToDouble.
+     * This is fine if e.g., 32.0000000001 becomes 32.0,
+     * but not great if 32.83333 becomes 32.8333.
+     * 
+     * @param index the index number 0 .. size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public double getRawNiceDouble(int index) {
+        return getNiceDouble(index);
     }
 
     /**
@@ -931,21 +966,43 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /**
-     * This appends the data in another primitiveArray to the current data.
-     * WARNING: information may be lost from the incoming primitiveArray if this
+     * This appends the data in another pa to the current data.
+     * WARNING: information may be lost from the incoming pa if this
      * primitiveArray is of a simpler type.
      *
-     * @param primitiveArray primitiveArray must be the same or a narrower 
-     *  data type, or the data will be narrowed with Math2.doubleToFloatNaN(primitiveArray.getDouble).
+     * @param pa pa must be the same or a narrower 
+     *  data type, or the data will be narrowed with Math2.doubleToFloatNaN(pa.getDouble).
      */
-    public void append(PrimitiveArray primitiveArray) {
-        int otherSize = primitiveArray.size(); //this avoids infinite loop if primitiveArray == this
+    public void append(PrimitiveArray pa) {
+        int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (primitiveArray instanceof FloatArray) {
-            System.arraycopy(((FloatArray)primitiveArray).array, 0, array, size, otherSize);
+        if (pa instanceof FloatArray) {
+            System.arraycopy(((FloatArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = Math2.doubleToFloatNaN(primitiveArray.getDouble(i)); //this converts mv's
+                array[size + i] = Math2.doubleToFloatNaN(pa.getDouble(i)); //this converts mv's
+        }
+        size += otherSize; //do last to minimize concurrency problems
+    }    
+
+    /**
+     * This appends the data in another pa to the current data.
+     * This "raw" variant leaves missingValue from smaller data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * WARNING: information may be lost from the incoming pa if this
+     * primitiveArray is of a simpler type.
+     *
+     * @param pa pa must be the same or a narrower 
+     *  data type, or the data will be narrowed with Math2.doubleToFloatNaN(pa.getDouble).
+     */
+    public void rawAppend(PrimitiveArray pa) {
+        int otherSize = pa.size(); 
+        ensureCapacity(size + (long)otherSize);
+        if (pa instanceof FloatArray) {
+            System.arraycopy(((FloatArray)pa).array, 0, array, size, otherSize);
+        } else {
+            for (int i = 0; i < otherSize; i++)
+                array[size + i] = Math2.doubleToFloatNaN(pa.getRawDouble(i)); //this DOESN'T convert mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1256,6 +1313,62 @@ public class FloatArray extends PrimitiveArray {
 
         //** test default constructor and many of the methods
         FloatArray anArray = new FloatArray();
+        Test.ensureEqual(anArray.isIntegerType(), false, "");
+        Test.ensureEqual(anArray.missingValue(), Double.NaN, "");
+        anArray.addString("");
+        Test.ensureEqual(anArray.get(0),               Float.NaN, "");
+        Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawDouble(0),      Double.NaN, "");
+        Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  Float.NaN, "");
+        Test.ensureEqual(anArray.getRawString(0),      "", "");
+        Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
+        Test.ensureEqual(anArray.getString(0), "", "");
+        anArray.clear();
+
+        anArray.add(0.1f);
+        Test.ensureEqual(anArray.getDouble(0),         0.10000000149011612, "");
+        Test.ensureEqual(anArray.getNiceDouble(0),     0.1, "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  0.1, "");
+        anArray.clear();
+
+        //unsignedFactory, which uses unsignedAppend
+        anArray = (FloatArray)unsignedFactory(float.class, 
+            new FloatArray(new float[] 
+            {0, 1, Float.MAX_VALUE, -Float.MAX_VALUE, Float.MIN_VALUE, Float.NaN, -1}));
+        Test.ensureEqual(anArray.toString(), 
+            "0.0, 1.0, 3.4028235E38, -3.4028235E38, 1.4E-45, NaN, -1.0", ""); // -> mv
+        anArray.clear();        
+
+        anArray = (FloatArray)unsignedFactory(float.class, 
+            new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 127.0, 128.0, 255.0", "");
+        anArray.clear();        
+
+        anArray = (FloatArray)unsignedFactory(float.class, 
+            new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
+        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
+        anArray.clear();        
+
+        anArray = (FloatArray)unsignedFactory(float.class, 
+            new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
+        anArray.clear();        
+
+        anArray = (FloatArray)unsignedFactory(float.class, 
+            new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), 
+            // 0, 1,    2147483647,   2147483648,   4294967295
+            "0.0, 1.0, 2.14748365E9, 2.14748365E9, 4.2949673E9", ""); //rounded/imprecise
+        anArray.clear();        
+
+        anArray = (FloatArray)unsignedFactory(float.class, 
+            new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), 
+            "0.0, 1.0, 9.223372E18, 9.223372E18, 1.8446744E19", ""); //rounded/imprecise
+        anArray.clear();        
+
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add(1e34f);
         Test.ensureEqual(anArray.size(), 1, "");

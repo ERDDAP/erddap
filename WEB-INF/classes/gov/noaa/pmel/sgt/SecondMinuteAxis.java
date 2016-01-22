@@ -51,7 +51,7 @@ public class SecondMinuteAxis implements TimeAxisStyle {
     return prev;
   }
   public void computeDefaults(GeoDate delta) {
-    long msec = delta.getTime() % GeoDate.MSECS_IN_DAY;
+    long msec = Math.abs(delta.getTime()) % GeoDate.MSECS_IN_DAY;
     //System.out.println(">>range msec=" + msec);
     if(msec > 100000) {
       defaultMinorLabelInterval_ = 15;

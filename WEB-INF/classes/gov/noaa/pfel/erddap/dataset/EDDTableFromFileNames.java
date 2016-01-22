@@ -25,6 +25,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -50,11 +51,18 @@ import java.util.regex.Pattern;
 public class EDDTableFromFileNames extends EDDTable{ 
 
     protected String fileDir; //has forward slashes and trailing slash 
-    protected String fileNameRegex;
+    protected String fileNameRegex, pathRegex;
     protected boolean recursive;
     protected String extractRegex[];        
     protected byte extractGroup[];        
     protected boolean useCachedDNLSInfo = false; //DNLS info with directoriesToo=false
+    /**
+     * filesAreLocal true if files are on a local hard drive or false if files are remote.
+     * 1) A failure when reading a local file, causes file to be marked as bad and dataset reloaded;
+     *   but a remote failure doesn't.
+     * 2) For remote files, the bad file list is rechecked every time dataset is reloaded.
+     */
+    protected boolean filesAreLocal;
 
     //standard variable names
     public final static String URL          = FileVisitorDNLS.URL;          //"url";
@@ -68,13 +76,15 @@ public class EDDTableFromFileNames extends EDDTable{
     /**
      * This constructs an EDDTableFromFileNames based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromFileNames"&gt; 
      *    having just been read.  
      * @return an EDDTableFromFileNames.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromFileNames fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromFileNames fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromFileNames(xmlReader)...");
@@ -86,6 +96,7 @@ public class EDDTableFromFileNames extends EDDTable{
         String tFileDir = null;
         String tFileNameRegex = null;
         boolean tRecursive = false;
+        String tPathRegex = ".*";
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -132,6 +143,8 @@ public class EDDTableFromFileNames extends EDDTable{
             else if (localTags.equals("</fileNameRegex>")) tFileNameRegex = content; 
             else if (localTags.equals( "<recursive>")) {}
             else if (localTags.equals("</recursive>")) tRecursive = String2.parseBoolean(content); 
+            else if (localTags.equals( "<pathRegex>")) {}
+            else if (localTags.equals("</pathRegex>")) tPathRegex = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -144,7 +157,7 @@ public class EDDTableFromFileNames extends EDDTable{
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
-            tReloadEveryNMinutes, tFileDir, tFileNameRegex, tRecursive);
+            tReloadEveryNMinutes, tFileDir, tFileNameRegex, tRecursive, tPathRegex);
 
     }
 
@@ -228,7 +241,8 @@ public class EDDTableFromFileNames extends EDDTable{
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
-        String tFileDir, String tFileNameRegex, boolean tRecursive) throws Throwable {
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex)
+        throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDTableFromFileNames " + tDatasetID); 
@@ -252,10 +266,15 @@ public class EDDTableFromFileNames extends EDDTable{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         fileDir = tFileDir;
         fileNameRegex = tFileNameRegex;
-        Test.ensureNotNull(fileDir,       "fileDir");
+
+        if (!String2.isSomething(fileDir))
+            throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
+        fileDir = File2.addSlash(String2.replaceAll(fileDir, '\\', '/')); //for consistency when generating urls for users
+        filesAreLocal = !String2.isRemote(fileDir);
         Test.ensureNotNull(fileNameRegex, "fileNameRegex");
-        fileDir = File2.addSlash(String2.replaceAll(fileDir, '\\', '/')); 
+
         recursive = tRecursive;
+        pathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
 
         //let standardizeResultsTable handle all constraints
         sourceCanConstrainNumericData = CONSTRAIN_NO; 
@@ -275,7 +294,7 @@ public class EDDTableFromFileNames extends EDDTable{
 
         //useCachedInfo?
         Table tCachedDNLSTable = null;
-        useCachedDNLSInfo = File2.isRemote(fileDir);
+        useCachedDNLSInfo = !filesAreLocal;
         if (useCachedDNLSInfo) {
             String qrName = quickRestartFullFileName();
 
@@ -291,13 +310,6 @@ public class EDDTableFromFileNames extends EDDTable{
                     String2.log("  quickRestart " + tDatasetID + " previous=" + 
                         Calendar2.millisToIsoZuluString(tCreationTime) + "Z");
 
-                //Ensure quickRestart information is recent.
-                //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
-                ensureQuickRestartInfoIsRecent(tDatasetID, 
-                    tReloadEveryNMinutes == Integer.MAX_VALUE? DEFAULT_RELOAD_EVERY_N_MINUTES : 
-                        tReloadEveryNMinutes, 
-                    tCreationTime, qrName);
-
                 //use cached info
                 tCachedDNLSTable = getCachedDNLSTable();
             } 
@@ -306,7 +318,7 @@ public class EDDTableFromFileNames extends EDDTable{
 
                 //get the info to be cached
                 tCachedDNLSTable = FileVisitorDNLS.oneStep(fileDir, fileNameRegex,
-                    recursive, false); //tDirectoriesToo
+                    recursive, pathRegex, false); //tDirectoriesToo
                 tCachedDNLSTable.setColumn(2, new DoubleArray(tCachedDNLSTable.getColumn(2))); //long -> double
                 tCachedDNLSTable.setColumn(3, new DoubleArray(tCachedDNLSTable.getColumn(3))); //long -> double
                 if (tCachedDNLSTable.nRows() == 0)
@@ -333,7 +345,8 @@ public class EDDTableFromFileNames extends EDDTable{
                 fileDir, 
                 EDStatic.erddapUrl(null) + "/files/" + datasetID + "/"); //loggedInAs=null doesn't matter here
         } else {
-            sourceBasicTable = getBasicTable(fileDir, fileNameRegex, recursive, 
+            sourceBasicTable = getBasicTable(fileDir, fileNameRegex, recursive,
+                pathRegex, 
                 null, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
         }
 
@@ -461,6 +474,7 @@ public class EDDTableFromFileNames extends EDDTable{
     public String fileDir() {return fileDir;}
     public String fileNameRegex() {return fileNameRegex;}
     public boolean recursive() {return recursive;}
+    public String pathRegex() {return pathRegex;}
 
     /** 
      * This gets the cached DNLS file table (last_mod and size are longs). 
@@ -487,7 +501,8 @@ public class EDDTableFromFileNames extends EDDTable{
         try {
             return useCachedDNLSInfo?
                 getCachedDNLSTable() :
-                FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, false); //dirToo=false
+                FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
+                    false); //dirToo=false
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             return null;
@@ -500,9 +515,10 @@ public class EDDTableFromFileNames extends EDDTable{
      * @throws Exception if trouble, e.g., 0 matching files
      */
     public static Table getBasicTable(String fileDir, String fileNameRegex, 
-        boolean recursive, String loggedInAs, String datasetID) throws Exception {
+        boolean recursive, String pathRegex, String loggedInAs, 
+        String datasetID) throws Exception {
         Table table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
-            fileDir, fileNameRegex, recursive, 
+            fileDir, fileNameRegex, recursive, pathRegex,
             EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
         int nRows = table.nRows();
         if (nRows == 0)
@@ -542,7 +558,7 @@ public class EDDTableFromFileNames extends EDDTable{
                 fileDir, 
                 EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
         } else {
-            table = getBasicTable(fileDir, fileNameRegex, recursive, 
+            table = getBasicTable(fileDir, fileNameRegex, recursive, pathRegex,
                 loggedInAs, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
         }
         int nRows = table.nRows();
@@ -591,6 +607,7 @@ public class EDDTableFromFileNames extends EDDTable{
      * @param tFileDir
      * @param tFileNameRegex
      * @param tRecursive
+     * @param tPathRegex
      * @param externalGlobalAttributes globalAttributes gleaned from external 
      *    sources, e.g., a THREDDS catalog.xml file.
      *    These have priority over other sourceGlobalAttributes.
@@ -600,27 +617,30 @@ public class EDDTableFromFileNames extends EDDTable{
      *   If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(
-        String tFileDir, String tFileNameRegex, boolean tRecursive,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, 
         int tReloadEveryNMinutes, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalGlobalAttributes) throws Throwable {
 
         String2.log("EDDTableFromFileNames.generateDatasetsXml" +
             "\n  tFileDir=" + tFileDir);
-        tFileDir = File2.addSlash(String2.replaceAll(tFileDir, '\\', '/'));
+        if (!String2.isSomething(tFileDir))
+            throw new IllegalArgumentException("fileDir wasn't specified.");
+        tFileDir = File2.addSlash(String2.replaceAll(tFileDir, '\\', '/')); //important for consistency with urls for users
+        String tPathRegex = ".*";
         String tDatasetID = suggestDatasetID(
             //if awsS3, important that it start with tFileDir
             File2.addSlash(tFileDir) + tFileNameRegex +
             //distinguish from e.g., EDDGridFromNcFiles for same files
             "(EDDTableFromFileNames)"); 
-        boolean remoteFiles = File2.isRemote(tFileDir);
+        boolean tFilesAreLocal = !String2.isRemote(tFileDir);
         if (tReloadEveryNMinutes < suggestReloadEveryNMinutesMin ||
             tReloadEveryNMinutes > suggestReloadEveryNMinutesMax) 
-            tReloadEveryNMinutes = remoteFiles? 120 : DEFAULT_RELOAD_EVERY_N_MINUTES;
+            tReloadEveryNMinutes = tFilesAreLocal? DEFAULT_RELOAD_EVERY_N_MINUTES : 120;
 
         //make the sourceTable and addTable
         Table sourceTable = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
-            tFileDir, tFileNameRegex, tRecursive, 
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex,
             EDStatic.erddapUrl(null) + "/files/" + tDatasetID + "/");
 
         Table addTable = new Table();
@@ -632,7 +652,7 @@ public class EDDTableFromFileNames extends EDDTable{
             .add("history", "null")
             .add("infoUrl",     String2.isSomething(tInfoUrl    )? tInfoUrl     : "???")
             .add("institution", String2.isSomething(tInstitution)? tInstitution : "???")
-            .add("sourceUrl", "(" + (remoteFiles? "remote" : "local") + " files)")
+            .add("sourceUrl", "(" + (tFilesAreLocal? "local" : "remote") + " files)")
             .add("summary",     String2.isSomething(tSummary    )? tSummary     : "???")
             .add("title",       String2.isSomething(tTitle      )? tTitle       : "???");
         int nCols = sourceTable.nColumns();
@@ -657,9 +677,10 @@ public class EDDTableFromFileNames extends EDDTable{
             "-->\n\n" +
             "<dataset type=\"EDDTableFromFileNames\" datasetID=\"" + tDatasetID + 
                 "\" active=\"true\">\n" +
-            "    <fileDir>" + tFileDir + "</fileDir>\n" +
+            "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>" + tRecursive + "</recursive>\n" +
+            "    <pathRegex>" + XML.encodeAsXML(tPathRegex) + "</pathRegex>\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n");
         sb.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     addTable.globalAttributes(), "    "));
@@ -727,6 +748,7 @@ directionsForGenerateDatasetsXml() +
 "    <fileDir>" + tDir + "/</fileDir>\n" +
 "    <fileNameRegex>.*\\.png</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
@@ -818,8 +840,8 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "    -->\n" +
 "</dataset>\n\n\n";
-        String results = generateDatasetsXml(tDir, tRegex, tRecursive, -1, 
-            tInfoUrl, tInstitution, tSummary, tTitle, null) + "\n";
+        String results = generateDatasetsXml(tDir, tRegex, tRecursive, 
+            -1, tInfoUrl, tInstitution, tSummary, tTitle, null) + "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //GenerateDatasetsXml
@@ -833,7 +855,7 @@ directionsForGenerateDatasetsXml() +
 
         //ensure it is ready-to-use by making a dataset from it
         String2.log("results=\n" + results);
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), tTitle, "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -872,6 +894,7 @@ directionsForGenerateDatasetsXml() +
 "    <fileDir>" + tDir + "/</fileDir>\n" +
 "    <fileNameRegex>" + tRegex + "</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <reloadEveryNMinutes>120</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
@@ -978,7 +1001,7 @@ directionsForGenerateDatasetsXml() +
 
         //ensure it is ready-to-use by making a dataset from it
         String2.log("results=\n" + results);
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), tTitle, "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -1002,7 +1025,7 @@ directionsForGenerateDatasetsXml() +
         String dir = EDStatic.fullTestCacheDirectory;
         String results, expected, query, tName;
 
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("testFileNames");
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "testFileNames");
 
         //.dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
@@ -1136,7 +1159,7 @@ directionsForGenerateDatasetsXml() +
         String dir = EDStatic.fullTestCacheDirectory;
         String results, expected, query, tName;
 
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("testFileNamesAwsS3");
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "testFileNamesAwsS3");
 
         //.dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 

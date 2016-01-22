@@ -50,8 +50,8 @@ public class HourDayAxis implements TimeAxisStyle {
     return prev;
   }
   public void computeDefaults(GeoDate delta) {
-    long days = delta.getTime()/GeoDate.MSECS_IN_DAY;
-    long msec = delta.getTime() % GeoDate.MSECS_IN_DAY;
+    long days = Math.abs(delta.getTime())/GeoDate.MSECS_IN_DAY;
+    long msec = Math.abs(delta.getTime()) % GeoDate.MSECS_IN_DAY;
     if(days >= 6) {
       defaultMinorLabelInterval_ = 12;
     } else if (days >= 2) {
