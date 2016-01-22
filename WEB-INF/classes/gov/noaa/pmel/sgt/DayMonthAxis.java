@@ -48,7 +48,7 @@ public class DayMonthAxis implements TimeAxisStyle {
     return prev; //(prev + now)*0.5;
   }
   public void computeDefaults(GeoDate delta) {
-    long days = delta.getTime()/GeoDate.MSECS_IN_DAY;
+    long days = Math.abs(delta.getTime())/GeoDate.MSECS_IN_DAY;
     if(days > 30) {
       defaultMinorLabelInterval_ = 5;
     } else if(days > 10) {

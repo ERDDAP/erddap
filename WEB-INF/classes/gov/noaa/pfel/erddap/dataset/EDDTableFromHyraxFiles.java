@@ -82,8 +82,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
+        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -91,14 +91,13 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromHyraxFiles", true, //isLocal is now set to true (copied files)
-            tDatasetID, tAccessibleTo, 
+        super("EDDTableFromHyraxFiles", tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
-            tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -117,7 +116,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * This won't throw an exception.
      */
     public static void makeDownloadFileTasks(String tDatasetID, 
-        String catalogUrl, String fileNameRegex, boolean recursive) {
+        String catalogUrl, String fileNameRegex, boolean recursive, String pathRegex) {
 
         if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks from " + catalogUrl +
             "\nfileNameRegex=" + fileNameRegex);
@@ -158,7 +157,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             DoubleArray sourceFileLastMod = new DoubleArray();             
             LongArray fSize = new LongArray();
             boolean completelySuccessful = FileVisitorDNLS.addToHyraxUrlList(
-                catalogUrl, fileNameRegex, recursive, false, //dirsToo
+                catalogUrl, fileNameRegex, recursive, pathRegex, false, //dirsToo
                 sourceFileName, sourceFileLastMod, fSize);
 
             //Rename local files that shouldn't exist?
@@ -184,7 +183,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 }
 
                 //get all the existing local files
-                String localFiles[] = recursive?
+                String localFiles[] = recursive?      
+                    //pathRegex was applied to get files, so no need to apply here
                     RegexFilenameFilter.recursiveFullNameList(baseDir, fileNameRegex, false) : //directoriesToo
                     RegexFilenameFilter.fullNameList(baseDir, fileNameRegex);
 
@@ -365,6 +365,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String2.log("EDDTableFromHyraxFiles.generateDatasetsXml" +
             "\n  tLocalDirUrl=" + tLocalDirUrl + 
             "\n  oneFileDapUrl=" + oneFileDapUrl);
+        if (!String2.isSomething(tLocalDirUrl))
+            throw new IllegalArgumentException("localDirUrl wasn't specified.");
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
@@ -454,15 +456,16 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>0</updateEveryNMillis>\n" +  //files are only added by full reload
             "    <fileDir></fileDir>\n" +
-            "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
+            "    <recursive>true</recursive>\n" +
+            "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
-            "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
+            "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
             "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
@@ -504,8 +507,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>2880</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>pentad.*\\.nc\\.gz</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
@@ -722,7 +726,7 @@ directionsForGenerateDatasetsXml() +
 
             /* *** This doesn't work. Usually no files already downloaded. 
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "nasa_jpl_ae1a_8793_8b49", "");
             Test.ensureEqual(edd.title(), "Atlas FLK v1.1 derived surface winds (level 3.5)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -781,7 +785,7 @@ directionsForGenerateDatasetsXml() +
 
             /* *** This doesn't work. Usually no files already downloaded. 
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "nasa_jpl_ae1a_8793_8b49", "");
             Test.ensureEqual(edd.title(), "Atlas FLK v1.1 derived surface winds (level 3.5)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -823,7 +827,7 @@ directionsForGenerateDatasetsXml() +
             File2.delete(EDStatic.fullCopyDirectory + id + "/" + deletedFile);
         }
 
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         if (deleteCachedInfoAndOneFile) {
             String2.pressEnterToContinue(
@@ -832,7 +836,7 @@ directionsForGenerateDatasetsXml() +
                 "The background task to re-download it should have already started.\n" +
                 "The remote dataset is really slow.\n" +
                 "Wait for it to finish background tasks.\n\n");
-            eddTable = (EDDTable)oneFromDatasetXml(id); //redownload the dataset
+            eddTable = (EDDTable)oneFromDatasetsXml(null, id); //redownload the dataset
         }
 
 

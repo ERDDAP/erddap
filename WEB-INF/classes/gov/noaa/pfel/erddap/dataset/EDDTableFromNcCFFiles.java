@@ -69,8 +69,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
+        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -78,14 +78,13 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromNcCFFiles", 
-            true, //tIsLocal, 
+        super("EDDTableFromNcCFFiles",  
             tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
             tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,  //irrelevant
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, //irrelevant
@@ -157,6 +156,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
 
         String2.log("EDDTableFromNcCFFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
+        if (!String2.isSomething(tFileDir))
+            throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
@@ -189,7 +190,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
-            "(" + (File2.isRemote(tFileDir)? "remote" : "local") + " files)");
+            "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
@@ -224,15 +225,16 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
             "</updateEveryNMillis>\n" +  
-            "    <fileDir>" + tFileDir + "</fileDir>\n" +
-            "    <recursive>true</recursive>\n" +
+            "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(suggestedRegex) + "</fileNameRegex>\n" +
+            "    <recursive>true</recursive>\n" +
+            "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
-            "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <columnNameForExtract>" + XML.encodeAsXML(tColumnNameForExtract) + "</columnNameForExtract>\n" +
+            "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
             "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
@@ -296,8 +298,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>" + EDStatic.unitTestDataDir + "nccf/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>ncCF1b\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
 "    <postExtractRegex></postExtractRegex>\n" +
@@ -508,7 +511,7 @@ directionsForGenerateDatasetsXml() +
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "nccf_8867_6a37_8e8f", "");
             Test.ensureEqual(edd.title(), "CalCOFI Fish Larvae Count, 1984-2004", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -533,13 +536,13 @@ directionsForGenerateDatasetsXml() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         String id = "testNcCF1b";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
 
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
 
         //.csv    for one lat,lon,time
@@ -589,10 +592,10 @@ directionsForGenerateDatasetsXml() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         String id = "testKevin20130109";
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
         
         //test time <    first time is 2011-02-15T00:00:00Z
         userDapQuery = "traj,obs,time,longitude,latitude,temp,ve,vn&traj<26.5&time<2011-02-15T00:05";
@@ -638,7 +641,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n****************** EDDTableFromNcCFFiles.testNoAttName() *****************\n");
 
         try {
-            EDDTable eddTable = (EDDTable)oneFromDatasetXml("testNoAttName1"); 
+            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "testNoAttName1"); 
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             String msg = t.toString();
@@ -648,7 +651,7 @@ directionsForGenerateDatasetsXml() +
         }
 
         try {
-            EDDTable eddTable = (EDDTable)oneFromDatasetXml("testNoAttName1"); 
+            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "testNoAttName1"); 
             throw new SimpleException("shouldn't get here");
         } catch (Throwable t) {
             String msg = t.toString();
@@ -671,7 +674,7 @@ directionsForGenerateDatasetsXml() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         Table table;
 
         table = new Table();
@@ -684,7 +687,7 @@ directionsForGenerateDatasetsXml() +
 
         String id = "UMaineAccB01";
         deleteCachedDatasetInfo(id);
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         try {
             //.dds    

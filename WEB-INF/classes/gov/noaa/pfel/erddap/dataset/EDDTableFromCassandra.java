@@ -32,6 +32,7 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -110,13 +111,15 @@ public class EDDTableFromCassandra extends EDDTable{
      * a[0], b[0], c[0], ... MUST all be related, and 
      * a[1], b[1], c[1], ... MUST all be related, ...
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromCassandra"&gt; 
      *    having just been read.  
      * @return an EDDTableFromCassandra.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromCassandra fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromCassandra fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromCassandra(xmlReader)...");
@@ -1458,8 +1461,8 @@ public class EDDTableFromCassandra extends EDDTable{
             "-->\n\n" +
             "<dataset type=\"EDDTableFromCassandra\" datasetID=\"cass" + 
                 //Cass identifiers are [a-zA-Z0-9_]*
-                ( keyspace.startsWith("_")? "" : "_") + keyspace + 
-                (tableName.startsWith("_")? "" : "_") + tableName +
+                ( keyspace.startsWith("_")? "" : "_") + XML.encodeAsXML(keyspace) + 
+                (tableName.startsWith("_")? "" : "_") + XML.encodeAsXML(tableName) +
                 "\" active=\"true\">\n" +
             "    <sourceUrl>" + url + "</sourceUrl>\n");
         for (int i = 0; i < tConnectionProperties.length; i += 2) 
@@ -1467,11 +1470,11 @@ public class EDDTableFromCassandra extends EDDTable{
                 "    <connectionProperty name=\"" + XML.encodeAsXML(tConnectionProperties[i]) + "\">" + 
                     XML.encodeAsXML(tConnectionProperties[i+1]) + "</connectionProperty>\n");
         sb.append(
-            "    <keyspace>" + keyspace + "</keyspace>\n" +  //safe since Cass identifiers are [a-zA-Z0-9_]*
-            "    <tableName>" + tableName + "</tableName>\n" +  //safe
-            "    <partitionKeySourceNames>" + partitionKeySA.toString() + "</partitionKeySourceNames>\n" + 
-            "    <clusterColumnSourceNames>" + clusterColumnSA.toString() + "</clusterColumnSourceNames>\n" + 
-            "    <indexColumnSourceNames>" + indexColumnSA.toString() + "</indexColumnSourceNames>\n" + 
+            "    <keyspace>" + XML.encodeAsXML(keyspace) + "</keyspace>\n" +  //safe since Cass identifiers are [a-zA-Z0-9_]*
+            "    <tableName>" + XML.encodeAsXML(tableName) + "</tableName>\n" +  //safe
+            "    <partitionKeySourceNames>" + XML.encodeAsXML(partitionKeySA.toString()) + "</partitionKeySourceNames>\n" + 
+            "    <clusterColumnSourceNames>" + XML.encodeAsXML(clusterColumnSA.toString()) + "</clusterColumnSourceNames>\n" + 
+            "    <indexColumnSourceNames>" + XML.encodeAsXML(indexColumnSA.toString()) + "</indexColumnSourceNames>\n" + 
             "    <maxRequestFraction>1</maxRequestFraction>\n" + 
             "    <columnNameQuotes></columnNameQuotes>\n" + //default = empty string
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n");
@@ -2104,11 +2107,11 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, results, expected;
         int po;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDatasetID = "cass_bobKeyspace_bobTable";
 
         try {
-            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
+            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetsXml(null, tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2651,11 +2654,11 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, results, expected;
         int po;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDatasetID = "cassTestFraction";
 
         try {
-            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
+            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetsXml(null, tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
                 String2.pressEnterToContinue("\nDataset constructed."); 
@@ -2746,11 +2749,11 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, results, expected;
         int po;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDatasetID = "cass1Device";
 
         try {
-            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
+            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetsXml(null, tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3137,11 +3140,11 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, results, expected;
         int po;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDatasetID = "cass_bobKeyspace_staticTest";
 
         try {
-            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetXml(tDatasetID); 
+            EDDTableFromCassandra tedd = (EDDTableFromCassandra)oneFromDatasetsXml(null, tDatasetID); 
             cumTime = System.currentTimeMillis();
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(

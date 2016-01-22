@@ -90,11 +90,10 @@ public class EDVGridAxis extends EDV {
         }
 
         //test for ties (after isAscending and isDescending)
-        int firstTie = sourceValues.firstTie();
-        if (firstTie >= 0)
+        StringBuilder sb = new StringBuilder();
+        if (sourceValues.removeDuplicates(false, sb) > 0)
             throw new RuntimeException("AxisVariable=" + destinationName + 
-                " has tied values: #" + firstTie + " and #" + (firstTie + 1) + 
-                " both equal " + sourceValues.getNiceDouble(firstTie) + ".");
+                " has tied values:\n" + sb.toString());
 
         //test if evenly spaced
         resetIsEvenlySpaced();

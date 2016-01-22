@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -30,7 +30,7 @@ public class RowComparator implements Comparator {
      * @param ascending an array of booleans corresponding to the keys
      *    indicating if the arrays are to be sorted by a given key in 
      *    ascending or descending order.
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public RowComparator(List table, int keys[], boolean[] ascending) {
         String errorInMethod = String2.ERROR + " in RowComparator constructor:\n";

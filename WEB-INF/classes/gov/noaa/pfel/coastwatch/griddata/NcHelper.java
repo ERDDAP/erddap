@@ -62,6 +62,12 @@ public class NcHelper  {
      */
     public static boolean reallyVerbose = false;
 
+    /**
+     * Set this to true (by calling debugMode=true in your program, not by changing the code here)
+     * if you want lots and lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean debugMode = false;
+
     /** 
      * varName + StringLengthSuffix is used to create the name for the char dimension 
      * of a String variable. "_strlen" is what netcdf-java uses.
@@ -724,7 +730,7 @@ public class NcHelper  {
                 List dimensions = variable.getDimensions();
                 PrimitiveArray units = getVariableAttribute(variable, "units");
                 if (units != null && units.size() > 0 && 
-                    units.getString(0).indexOf(" since ") > 0 && dimensions.size() > 0) {
+                    Calendar2.isNumericTimeUnits(units.getString(0)) && dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
                     if (reallyVerbose) 
                         String2.log("NcHelper.findVariables found a time variable with dimension: " + 
@@ -940,7 +946,7 @@ public class NcHelper  {
      */
     public static PrimitiveArray getAttributePA(String varName, ucar.nc2.Attribute att) {
         if (att == null) {
-            if (reallyVerbose)
+            if (debugMode)
                 String2.log("Warning: NcHelper.getAttributePA " + varName + " att=null");
             return null;
         } else if (String2.isSomething(att.getFullName())) {
@@ -972,6 +978,53 @@ public class NcHelper  {
         return getAttributePA(variable.getFullName(), variable.findAttribute(attributeName)); 
     }
 
+    /**
+     * This gets the first element of one attribute from a netcdf variable as a String.
+     *
+     * @param variable
+     * @param attributeName
+     * @return the value of the attribute (or null if none).
+     *   Note that if pa is integerType and value is cohort missingValue (e.g., 127),
+     *   this will return cohort missingValue.
+     */
+    public static String getRawStringVariableAttribute(Variable variable, String attributeName) {
+        PrimitiveArray pa = getVariableAttribute(variable, attributeName);
+        if (pa == null || pa.size() == 0)
+            return null;
+        return pa.getRawString(0);
+    }
+
+    /**
+     * This gets the first element of one attribute from a netcdf variable as a double.
+     *
+     * @param variable
+     * @param attributeName
+     * @return the value of the attribute (or NaN if no such attribute).
+     *   Note that if pa is integerType, it is treated as being unsigned 
+     *   (so -1B becomes 255).
+     */
+    public static double getUnsignedDoubleVariableAttribute(Variable variable, String attributeName) {
+        PrimitiveArray pa = getVariableAttribute(variable, attributeName);
+        if (pa == null || pa.size() == 0)
+            return Double.NaN;
+        return pa.getUnsignedDouble(0);
+    }
+
+    /**
+     * This gets the first element of one attribute from a netcdf variable as a double.
+     *
+     * @param variable
+     * @param attributeName
+     * @return the value of the attribute (or NaN if no such attribute).
+     *   Note that if pa is integerType and value is cohort missingValue (e.g., 127),
+     *   this will return cohort missingValue.
+     */
+    public static double getRawDoubleVariableAttribute(Variable variable, String attributeName) {
+        PrimitiveArray pa = getVariableAttribute(variable, attributeName);
+        if (pa == null || pa.size() == 0)
+            return Double.NaN;
+        return pa.getRawDouble(0);
+    }
 
     /**
      * This gets one global attribute from a netcdf variable.
@@ -982,6 +1035,20 @@ public class NcHelper  {
      */
     public static PrimitiveArray getGlobalAttribute(NetcdfFile netcdfFile, String attributeName) {
         return getAttributePA("global", netcdfFile.findGlobalAttribute(attributeName)); 
+    }
+
+    /**
+     * This gets the first element of one global attribute as a String.
+     *
+     * @param netcdfFile
+     * @param attributeName
+     * @return the attribute (or null if none)
+     */
+    public static String getStringGlobalAttribute(NetcdfFile netcdfFile, String attributeName) {
+        PrimitiveArray pa = getGlobalAttribute(netcdfFile, attributeName);
+        if (pa == null || pa.size() == 0)
+            return null;
+        return pa.getString(0);
     }
 
     /**
@@ -1047,6 +1114,220 @@ public class NcHelper  {
         for (int att = 0; att < variableAttList.size(); att++) 
             addAttribute(variableName, (ucar.nc2.Attribute)variableAttList.get(att), attributes);
     }
+
+    /**
+     * If the variable is packed with scale_factor and/or add_offset, 
+     *  this will unpack the packed attributes of the variable: 
+     *   _FillValue, actual_range, data_max, data_min, missing_value,
+     *   valid_max, valid_min, valid_range.
+     *
+     * @param sAtts the sourceAtts (which will be modified)
+     */
+    public static void unpackAttributes(Variable var, Attributes sAtts) {
+
+        //deal with numeric time units
+        String tUnits = sAtts.getString("units");
+        if (Calendar2.isTimeUnits(tUnits)) 
+            sAtts.set("units", Calendar2.SECONDS_SINCE_1970); //AKA EDV.TIME_UNITS
+            //presumably, String time var doesn't have units
+
+        PrimitiveArray unsignedPA = sAtts.remove("_Unsigned");
+        boolean unsigned = unsignedPA != null && "true".equals(unsignedPA.toString());         
+        PrimitiveArray scalePA = sAtts.remove("scale_factor");
+        PrimitiveArray addPA   = sAtts.remove("add_offset");
+        if (!unsigned && scalePA == null && addPA == null)
+            return; //var isn't packed
+
+        //var is packed, so unpack all packed numeric attributes
+        //lookForStringTimes is false because these are all attributes of numeric variables
+        if (debugMode) 
+            String2.log(">  before unpack " + var.getFullName() + 
+                " unsigned="      + unsigned +
+                " scale_factor="  + scalePA + 
+                " add_offset="    + addPA + 
+                " _FillValue="    + sAtts.get("_FillValue") + 
+                " actual_range="  + sAtts.get("actual_range") + 
+                " data_max="      + sAtts.get("data_max") + 
+                " data_min="      + sAtts.get("data_min") +
+                " missing_value=" + sAtts.get("missing_value") + 
+                " valid_max="     + sAtts.get("valid_max") + 
+                " valid_min="     + sAtts.get("valid_min") +
+                " valid_range="   + sAtts.get("valid_range"));
+
+        //attributes are never unsigned
+        sAtts.set("_FillValue",    unpackPA(var, sAtts.get("_FillValue"),    false, false)); 
+        sAtts.set("actual_range",  unpackPA(var, sAtts.get("actual_range"),  false, false)); 
+        sAtts.set("data_max",      unpackPA(var, sAtts.get("data_max"),      false, false)); 
+        sAtts.set("data_min",      unpackPA(var, sAtts.get("data_min"),      false, false));
+        sAtts.set("missing_value", unpackPA(var, sAtts.get("missing_value"), false, false)); 
+        sAtts.set("valid_max",     unpackPA(var, sAtts.get("valid_max"),     false, false)); 
+        sAtts.set("valid_min",     unpackPA(var, sAtts.get("valid_min"),     false, false));
+        sAtts.set("valid_range",   unpackPA(var, sAtts.get("valid_range"),   false, false)); 
+
+        if (debugMode) 
+            String2.log(">  after  unpack " + var.getFullName() + 
+                " unsigned="      + unsigned +               
+                " _FillValue="    + sAtts.get("_FillValue") + 
+                " actual_range="  + sAtts.get("actual_range") + 
+                " data_max="      + sAtts.get("data_max") + 
+                " data_min="      + sAtts.get("data_min") +
+                " missing_value=" + sAtts.get("missing_value") + 
+                " valid_max="     + sAtts.get("valid_max") + 
+                " valid_min="     + sAtts.get("valid_min") +
+                " valid_range="   + sAtts.get("valid_range"));
+    }
+
+    /**
+     * If the var has time units, or scale_factor and add_offset, the values in the dataPa
+     * will be unpacked (time will be epochSeconds).
+     *
+     * @param var this method gets the info it needs
+     *   (_Unsigned, scale_factor, add_offset, units, _FillValue, missingvalue)
+     *    from the var (not tAtts).
+     * @param lookForUnsigned should be true for the main PA, but false when converting attribute PA's.
+     * @return dataPa or a different PA or null (if dataPa = null)
+     */
+    public static PrimitiveArray unpackPA(Variable var, PrimitiveArray dataPa,
+        boolean lookForStringTimes, boolean lookForUnsigned) {
+
+        if (dataPa == null)
+            return null;
+        Class dataPaClass = dataPa.elementClass();
+        if (debugMode)
+            String2.log(">NcHelper.unpackPA name=" + var.getFullName() + " " + dataPa.elementClassString());
+
+        //any of these may be null
+        PrimitiveArray scalePA = getVariableAttribute(var, "scale_factor");
+        PrimitiveArray addPA   = getVariableAttribute(var, "add_offset");
+        String tUnits          = getRawStringVariableAttribute(var, "units");         
+        boolean unsigned       = lookForUnsigned && "true".equals(
+            getRawStringVariableAttribute(var, "_Unsigned"));         
+        //_FillValue and missing_value should be unsigned if _Unsigned=true, but in practice sometimes aren't
+        //see EDDGridFromNcFilesUnpacked.testUInt16File()
+        double dFillValue      = unsigned?
+            getUnsignedDoubleVariableAttribute(var, "_FillValue") :   //so -1B becomes 255
+            getRawDoubleVariableAttribute(     var, "_FillValue");    //so e.g., 127 stays as 127
+        double dMissingValue   = unsigned?
+            getUnsignedDoubleVariableAttribute(var, "missing_value") ://so -1B becomes 255
+            getRawDoubleVariableAttribute(     var, "missing_value"); //so e.g., 127 stays as 127
+if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
+
+        //scale and add_offset -- done first, before check for numeric time
+        if (unsigned || scalePA != null || addPA != null) {
+
+            //figure out new data type indicated by scale_factor or add_offset 
+            double scale = 1;
+            double add = 0;
+            Class tClass = null; //null is important, tests if set below
+            if (scalePA != null) {  
+                scale = scalePA.getNiceDouble(0);
+                if (Double.isNaN(scale))
+                    scale = 1;
+                tClass = scalePA.elementClass();
+            }
+            if (addPA != null) {
+                add = addPA.getNiceDouble(0);
+                if (Double.isNaN(add))
+                    add = 0;
+                if (tClass == null)
+                    tClass = addPA.elementClass();
+            }
+            if (tClass == null) //might be
+                tClass = dataPaClass;
+            //or data type needed by '_Unsigned'
+            if (unsigned && tClass == dataPaClass) {
+                if      (tClass == byte.class)  tClass = short.class;
+                else if (tClass == short.class) tClass = int.class;
+                else if (tClass == int.class)   tClass = double.class; //longs are trouble
+                else if (tClass == long.class)  tClass = double.class;
+            }
+
+            //switch data type
+            PrimitiveArray dataPa2 = 
+                //if stated missing_value or _FillValue is same as cohort missingValue...
+                unsigned? 
+                    PrimitiveArray.unsignedFactory(tClass, dataPa) : //unsigned 
+                    dataPa.isIntegerType() &&
+                        (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
+                         dFillValue    == dataPa.missingValue())?
+                        PrimitiveArray.factory(        tClass, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
+                        PrimitiveArray.rawFactory(     tClass, dataPa);  //missingValues (e.g., 127) AREN'T changed
+if (debugMode) String2.log(
+    ">> source="   + dataPaClass + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
+    ">> dataPa2= " + tClass      + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+
+
+            //convert other dMissingValue and dFillValue (e.g., -128)
+            if (dataPa.isIntegerType()) {
+                //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
+                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue())
+                    dataPa2.switchFromTo(      "" + dMissingValue, "");
+                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue())
+                    dataPa2.switchFromTo(      "" + dFillValue,    "");
+            }
+
+            //apply scaleAddOffset
+            dataPa2.scaleAddOffset(scale, add); //it checks for (1,0)
+            if (debugMode)
+                String2.log(
+                    ">> NcHelper.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
+                    ">> unpacked=" + tClass + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+            return dataPa2;
+        }
+
+        //numeric times (we know scale_factor and add_offset aren't used)
+        if (Calendar2.isNumericTimeUnits(tUnits)) {
+ 
+            //interpred tUnits
+            double[] baseFactor = null;
+            try {
+                baseFactor = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+            } catch (Exception e) {
+                String2.log(tUnits.toString());
+                return PrimitiveArray.factory(double.class, dataPa.size(), "");   //i.e. uninterpretable
+            }
+
+            //switch data type
+            PrimitiveArray dataPa2 = 
+                //if stated missing_value or _FillValue is same as cohort missingValue...
+                unsigned?
+                    PrimitiveArray.unsignedFactory(double.class, dataPa) :
+                    dataPa.isIntegerType() &&
+                        (dMissingValue == dataPa.missingValue() ||  //e.g., 127 == 127
+                         dFillValue    == dataPa.missingValue())?
+                        PrimitiveArray.factory(        double.class, dataPa) : //missingValues (e.g., 127) are    changed
+                        PrimitiveArray.rawFactory(     double.class, dataPa);  //missingValues (e.g., 127) AREN'T changed
+
+            //convert other dMissingValue and dFillValue (e.g., -128)
+            if (dataPa.isIntegerType()) {
+                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue())
+                    dataPa2.switchFromTo(      "" + dMissingValue, "");
+                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue())
+                    dataPa2.switchFromTo(      "" + dFillValue,    "");
+            }
+
+            //convert numeric time to epochSeconds
+            dataPa2.scaleAddOffset(baseFactor[1], baseFactor[0]);
+            if (debugMode)
+                String2.log(
+                    ">> numeric time as epochSeconds: " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+            return dataPa2;
+        } 
+        
+        //string times?  no units, so units aren't helpful. 
+        if (lookForStringTimes && dataPa instanceof StringArray) {
+            StringArray sa = (StringArray)dataPa;
+            String format = Calendar2.suggestDateTimeFormat(sa);
+            if (format.length() > 0) {
+                if (verbose) String2.log("  " + var.getFullName() + " has String times format=" + format);
+                dataPa = Calendar2.toEpochSeconds(sa, format);
+            }
+            return dataPa;
+        }
+        
+        return dataPa;
+    }
+
 
     /**
      * This returns the double value of an attribute.

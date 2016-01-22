@@ -43,26 +43,28 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
 
     /** The constructor just calls the super constructor. */
-    public EDDGridFromMatFiles(String tDatasetID, String tAccessibleTo,
+    public EDDGridFromMatFiles(String tDatasetID, 
+        String tAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, 
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, boolean tEnsureAxisValuesAreExactlyEqual, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDGridFromMatFiles", tDatasetID, tAccessibleTo, 
+        super("EDDGridFromMatFiles", tDatasetID, 
+            tAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, 
             tAddGlobalAttributes,
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tEnsureAxisValuesAreExactlyEqual, 
             tFileTableInMemory, tAccessibleViaFiles);
     }
@@ -84,7 +86,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (e.g., invalid file, or a sourceAxisName or sourceDataName not found).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public void getSourceMetadata(String fileDir, String fileName, 
+    public void lowGetSourceMetadata(String fileDir, String fileName, 
         StringArray sourceAxisNames,
         StringArray sourceDataNames, String sourceDataTypes[],
         Attributes sourceGlobalAttributes, 
@@ -147,7 +149,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (e.g., invalid file).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public PrimitiveArray[] getSourceAxisValues(String fileDir, String fileName, 
+    public PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName, 
         StringArray sourceAxisNames) throws Throwable {
 /*
         NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
@@ -207,7 +209,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (notably, WaitThenTryAgainException).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public PrimitiveArray[] getSourceDataFromFile(String fileDir, String fileName, 
+    public PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName, 
         EDV tDataVariables[], IntArray tConstraints) throws Throwable {
 
 /*
@@ -292,6 +294,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
         String2.log("EDDGridFromMatFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
+        if (!String2.isSomething(tFileDir))
+            throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
@@ -404,9 +408,10 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
                 "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
                 "</updateEveryNMillis>\n" +  
-                "    <fileDir>" + tFileDir + "</fileDir>\n" +
-                "    <recursive>true</recursive>\n" +
+                "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
                 "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
+                "    <recursive>true</recursive>\n" +
+                "    <pathRegex>.*</pathRegex>\n" +
                 "    <metadataFrom>last</metadataFrom>\n" +
                 "    <fileTableInMemory>false</fileTableInMemory>\n");
 
@@ -667,7 +672,7 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), "erdQSwind1day_52db_1ed3_22ce", "");
         Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -694,7 +699,7 @@ directionsForGenerateDatasetsXml() +
         String id = "testGriddedMatFiles";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");

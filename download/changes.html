@@ -42,6 +42,224 @@
 <table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
   cellspacing="0"> 
 
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
+<h2><a name="changes1.66">Changes</a> in ERDDAP version 1.66 (released 2016-01-19)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <ul>
+  <li>Graphs (not maps) can now have descending values on the axes. 
+    To get this when using a Make A Graph web page, change 
+    new <tt>Y Axis : ascending</tt> setting (the default) to <tt>descending</tt>.
+    Or, in a URL that requests a graph, 
+    use the new optional 3rd '|' parameter for the     
+    <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
+    ><tt>&amp;.xRange</tt> and/or <tt>&amp;.yRange</tt> switches</a>,
+    which can be nothing (the default), <tt>true</tt>, or <tt>t</tt> to get 
+    ascending values, or use <tt>false</tt> or <tt>f</tt> to get descending values. 
+    The true|false values are case insensitive.
+    Thanks to John Kerfoot, Luke Campbell, and Cara Wilson.
+  <li>Users can now specify the background color for graphs by adding
+    a <tt>&amp;.bgColor=0x<i>AARRGGBB</i></tt> switch to the URL which requests the graph. See 
+    <tt>.bgColor</tt> in the Graphics Commands section of the 
+    <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
+    >griddap</a> 
+    and
+    <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands"
+    >tabledap</a> documentation.
+    Thanks to John Kerfoot and Luke Campbell.
+  <li>For tabular datasets, constraints can now refer to 
+    <tt>min(<i>someVariableName</i>)</tt> or <tt>max(<i>someVariableName</i>)</tt> .
+    See 
+    <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#min"
+    >min() and max()</a>.
+    Thanks to John Kerfoot.
+  <li>For tabular datasets, time constraints that use 
+    <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now"
+    ><tt>now</tt></a> can now
+    specify time units of <tt>milliseconds</tt> or <tt>millis</tt>.
+  <li>A request for an image of a tabular dataset now makes a map (not a graph) 
+    if the x and y variables are longitude-like and latitude-like variables 
+    (compatible units).
+    Thanks to Rich Signell.
+  <li>Bug fix: Time axis labels and ticks sometimes had odd irregularities
+    when requesting multiple graphs simultaneously (e.g., on a web page).
+    The problem was a bug in the SGT graphics library that ERDDAP uses
+    (one variable was "static" that shouldn't have been).
+    Thanks to Bradford Butman.
+    <br>&nbsp;
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>It is a security risk to put your email password in a plain text file like setup.xml.
+    To mitigate that problem, we strongly recommend that you:
+    <ol>
+    <li> Set up an email account just for ERDDAP's use, e.g., 
+       erddap@yourInstitution.org .
+       That has other benefits as well; notably, more than one ERDDAP administrator 
+       can then be given access to that email account.
+    <li> Make the permissions of the setup.xml file rw (read+write) for the user who 
+       will run Tomcat and ERDDAP (user=tomcat?) and no permissions (not read or
+       write) for the group and other users.
+    </ol>
+    Thanks to Filipe Rocha Freire.
+
+  <li>The new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset"
+    >ArchiveADataset</a> 
+    tool simplifies making a .tar.gz archive with a 
+    subset of a dataset in a way that is suitable for archiving (notably, at NOAA's NCEI).
+    This should be useful for many ERDDAP administrators in many situations, 
+    but especially for groups within NOAA.
+
+  <li>The new dataset type 
+<a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromNcFilesUnpacked"
+>EDDGridFromNcFilesUnpacked</a>    
+is a variant of EDDGridFromNcFiles.
+The difference is that this class unpacks
+each data file before EDDGridFromFiles looks at the files: 
+  <ul>
+  <li>It unpacks packed variables that use <tt>scale_factor</tt> and/or <tt>add_offset</tt>.
+  <li>It promotes integer variables that have <tt>_Unsigned=true</tt> attributes
+      to a larger integer data type so that the values appear as the unsigned values.
+      For example, an <tt>_Unsigned=true</tt> byte (8 bit) variable becomes a signed short 
+      (16 bit) variable.
+  <li>It converts <tt>_FillValue</tt> and <tt>missing_value</tt> values to be NaN's
+      (or MAX_VALUE for integer data types).
+  </ul>
+The big advantage of this class is that it provides a way to deal 
+with different values of 
+<tt>scale_factor, add_offset, _FillValue,</tt> or <tt>missing_value</tt> 
+in different files in a collection.
+Otherwise, you would have to use a tool like 
+<a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NcML"
+>NcML</a>
+or
+<a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO"
+>NCO</a>
+to modify each file
+to remove the differences so that the files could be handled by 
+EDDGridFromNcFiles.
+For this class to work properly, the files must follow the CF standards for the
+related attributes.
+Thanks to Philippe Makowski.
+
+  <li>The new dataset type 
+<a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridLonPM180"
+>EDDGridLonPM180</a>
+    lets you change datasets 
+    that have some longitude values greater than 180 (e.g., the range 0 to 360)
+    into datasets with longitude values within the range -180 to 180 
+    (Longitude Plus or Minus 180, hence the name).
+    The big advantage to offering datasets with longitude values in the range -180 to 180
+    is that OGC services (e.g., WMS) require longitude values in this range.
+    Thanks to Lynne Tablewski, Fabien Guichard, Philippe Makowski, and Martin Spel.
+
+  <li>In 
+<a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#GenerateDatasetsXml"
+>GenerateDatasetsXml</a>, a new special dataset type, EDDGridLonPM180FromErddapCatalog,
+    lets you generate the datasets.xml for EDDGridLonPM180 datasets
+    from all of the EDDGrid datasets in an ERDDAP
+    that have any longitude values greater than 180.
+
+  <li>For all EDDGrid datasets, in datasets.xml you can now use the 
+    optional 
+<br><a rel="help" 
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleViaWMS"
+><tt>&lt;accessibleViaWMS&gt;true|false&lt;/accessibleViaWMS&gt;</tt></a> (default=true).
+    Setting this to false forcibly disables the WMS service for this dataset.
+    If true, the dataset may still not be accessible via WMS for other reasons
+    (e.g., no lat or lon axes).
+    This is particularly useful for datasets that exist on their own and wrapped
+    by EDDGridLonPM180, so that only the LonPM180 version is accessible via WMS.  
+
+  <li>In setup.xml, you can specify a different default color for the 
+    background of graphs. 
+    The color is specified as a 8 digit hexadecimal value in the form 0x<i>AARRGGBB</i>,
+    where AA, RR, GG, and BB are the opacity, red, green and blue components, 
+    respectively, specified as 2-digit hexadecimal numbers. 
+    Note that the canvas is always opaque white, so a (semi-)transparent graph
+    background color blends into the white canvas.
+    The default is light blue: 
+    <br><tt>&lt;graphBackgroundColor&gt;0xffccccff&lt;/graphBackgroundColor&gt;</tt>
+    <br>Thanks to John Kerfoot and Luke Campbell.
+
+  <li>In setup.xml, you can now specify the maximum size for the 
+    <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log"
+    >log file</a>
+    (when it is renamed to log.txt.previous and a new log.txt is created), in MegaBytes.
+    The minimum allowed is 1. The maximum allowed is 2000. The default is 20 (MB).
+    For example:
+    <br><tt>&lt;logMaxSizeMB&gt;20&lt;/logMaxSizeMB&gt;</tt>
+
+  <li>In datasets.xml, 
+    <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#fgdcFile"
+    ><tt>&lt;fgdcFile&gt;</tt></a>
+     or 
+    <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#iso19115File"
+    ><tt>&lt;iso19115File&gt;</tt></a>     
+    can now be a local file (as before)
+    or a URL (which will be downloaded so there is a local copy).
+    If ERDDAP is unable to download the file, the loading of the dataset will continue
+    but the dataset won't have an fgdc or iso19115 file.
+  <li>EDDGridFromFiles and EDDTableFromFiles datasets can now do a quickRestart
+    (the system that ERDDAP tries to use when datasets are first loaded when 
+    ERDDAP is restarted). This speeds up restarting ERDDAP.
+  <li>A general improvement to the quickRestart system allows ERDDAP to
+    load datasets faster when ERDDAP is restarted.
+  <li>The default for <tt>&lt;partialRequestMaxBytes&gt;</tt> in setup.xml is now 490000000 
+    (~490 MB).
+    This avoids some problems/timeouts related to getting data from THREDDS data servers.
+    Thanks to Leslie Thorne.
+  <li>A small change to the log system should allow ERDDAP to be more 
+    responsive when it is very, very busy.
+  <li>Bug fix related to inotify and the 
+    <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+    ><tt>&lt;updateEveryNMillis&gt;</tt></a> system for EDDGridFromFiles
+    and EDDTableFromFiles datasets: It is no longer necessary to 
+    specify a large of fs.inotify.max_user_watches or fs.inotify.max_user_instances.
+    There is a bug in Java that causes some parts of Java's inotify/WatchDirectory 
+    system to be not garbage collected when they are finalized; eventually,
+    the number of zombie inotify watches or instances would exceed the
+    maximum number specified.
+    ERDDAP now works around this Java bug.
+    <br>Also, the number of inotify threads is listed on the status.html web page,
+    so you can keep an eye on its usage. Typically, there is 1 inotify thread
+    per EDDGridFromFiles and EDDTableFromFiles dataset.
+  <li>Bug fix: in many places, instead of an error being rethrown, 
+    a new error was generated which only included a short version of
+    the original error message and without the stack trace.
+    Now, when a new error is generated, it properly includes the entire original exception
+    e.g., <tt>throw new Exception("some new message", e);</tt>
+    <br>Thanks to Susan Perkins.
+  <li>Bug fix: until recently (v1.64?), if a .../datasetID URL was requested, 
+    ERDDAP would add .html to the URL.
+    In v1.64, this failed (an incorrectly formatted URL was generated and then failed).
+    Now this works again.
+    Thanks to Chris Fullilove.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
 <!-- ****************************************************************************** -->
 <tr>
 <td>
@@ -303,10 +521,13 @@
     (occasionally or consistently) with the error message:
     "IOException: User limit of inotify instances reached or too many open files".
     If so, you can fix this problem by calling (as root):<tt>
-    <br>    echo 20000 > /proc/sys/fs/inotify/max_user_watches
-    <br>    echo 500 > /proc/sys/fs/inotify/max_user_instances</tt>
+    <br>    echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf
+    <br>    echo fs.inotify.max_user_instances=1024 | tee -a /etc/sysctl.conf
+    <br>    sysctl -p</tt>
     <br>Or, use higher numbers if the problem persists.
     The default for watches is 8192. The default for instances is 128.
+    [UPDATE: There is a bug in Java which causes inotify instances to be not garbage collected. This problem is avoided in ERDDAP v1.66 and higher. 
+    So the better solution is to switch to the latest version of ERDDAP.]
   <li>NoSuchFileException Bug Fix: 
     <br>There was a bug that could cause datasets of type=EDDGridFromFiles, 
     EDDTableFromFiles, EDDGridCopy, EDDTableCopy, or their subclasses
@@ -2701,7 +2922,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.62
+<p>ERDDAP, Version 1.66
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

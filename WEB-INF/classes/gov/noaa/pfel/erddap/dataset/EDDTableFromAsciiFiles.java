@@ -8,8 +8,11 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -21,12 +24,15 @@ import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
+import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /** 
@@ -57,7 +63,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex,
         String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
@@ -67,12 +73,12 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, 
+        super("EDDTableFromAsciiFiles", tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -87,7 +93,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, 
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
@@ -97,12 +103,12 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super(tClassName, true, tDatasetID, tAccessibleTo, 
+        super(tClassName, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tRecursive, tFileNameRegex, 
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, 
             tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
@@ -211,6 +217,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         String2.log("EDDTableFromAsciiFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
+        if (!String2.isSomething(tFileDir))
+            throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
@@ -232,7 +240,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
-            "(" + (File2.isRemote(tFileDir)? "remote" : "local") + " files)");
+            "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
         boolean dateTimeAlreadyFound = false;
@@ -301,9 +309,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
             "</updateEveryNMillis>\n" +  
-            "    <fileDir>" + tFileDir + "</fileDir>\n" +
-            "    <recursive>true</recursive>\n" +
+            "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
+            "    <recursive>true</recursive>\n" +
+            "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <charset>" + charset + "</charset>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
@@ -312,8 +321,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
             "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
-            "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
+            "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n" +
             "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
@@ -374,8 +383,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>" + EDStatic.unitTestDataDir + "asciiNdbc/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*\\.csv</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
@@ -477,7 +487,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
+"            <att name=\"units\">yyyy-MM</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -550,7 +560,7 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             //2014-12-24 no longer: this will fail with a specific error which is caught below
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -589,7 +599,7 @@ directionsForGenerateDatasetsXml() +
         String id = "testTableAscii";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromAsciiFiles test das and dds for entire dataset\n");
@@ -852,7 +862,7 @@ expected =
         for (int test = 0; test < 2; test++) {
             //!fixedValue variable is the only subsetVariable
             String id = test == 0? "testWTDLwSV" : "testWTDLwoSV"; //with and without subsetVariables
-            EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
             //test getting das for entire dataset
             tName = eddTable.makeNewFileForDapQuery(null, null, "", 
@@ -978,7 +988,7 @@ expected =
 
         String id = "testTableAscii2";
         deleteCachedDatasetInfo(id);
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //does aBoolean know it's a boolean?
         Test.ensureTrue(eddTable.findVariableByDestinationName("aBoolean").isBoolean(), 
@@ -1154,6 +1164,700 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromAsciiFiles.testBasic2() finished successfully\n");
+    }
+
+
+
+    /** 
+     * This generates a chunk of datasets.xml from info in an inport.xml file.
+     * InPort Users guide is at
+     * http://ias.pifsc.noaa.gov/inp/docs/inp_userguide_web.pdf
+     *
+     * @param typeCodeRegex e.g., .*, ENT, DS, 
+     * @param datasetTypeRegex e.g., .*, Database, .*[Ff]ile.*.
+     *   null appears as a "" (a 0-length String).
+     *   Tally results: "": 583, Database: 118, Mixed: 53, Other: 28, Files: 22, 
+     *   SAS files: 2, CSV Files: 1, GIS: 1.
+     */
+    public static String generateDatasetsXmlFromInPort(String xmlFileName, 
+        String typeCodeRegex, String datasetTypeRegex) throws Throwable {
+        String2.log("\n*** inPortGenerateDatasetsXml(" + xmlFileName + ")");
+
+        String2.log("Here's what is in the InPort .xml file:");
+        {
+            String readXml[] = String2.readFromFile(xmlFileName, "UTF-8", 1);
+            if (readXml[0].length() > 0)
+                throw new RuntimeException(readXml[0]);
+            String2.log(readXml[1]);
+        }
+
+        //check parameters
+        int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
+        String catID = File2.getNameNoExtension(xmlFileName);
+
+        //create tables to hold results
+        Table sourceTable = new Table();
+        Table addTable    = new Table();
+        Attributes sourceAtts = sourceTable.globalAttributes();
+        Attributes addAtts    = addTable.globalAttributes();
+        Attributes inPortAtts = new Attributes();
+        boolean isFgdcPOC = false;
+        boolean isSupportRoleOriginator = false;
+        String creatorName2 = null, creatorName3 = null;
+        String creatorEmail2 = null, creatorEmail3 = null;
+        String metaCreatedBy = "???";
+        String metaCreated = "???";
+        String metaLastMod = "???";
+        String dataPublicationDate = "???";
+        String acronym = "???";  //institution acronym
+        String title = "???";  
+        String securityClass = "";
+        //accumulate results from some tags
+        StringBuilder background = new StringBuilder();
+        int nChildEntities = 0;
+        StringBuilder childEntities = new StringBuilder();
+        StringBuilder dataQuality = new StringBuilder();
+        StringBuilder dataset = new StringBuilder();
+        int nDownloads = 0;
+        StringBuilder downloads = new StringBuilder();
+        int nFaqs = 0;
+        StringBuilder faqs = new StringBuilder();
+        StringBuilder history = new StringBuilder();
+        int nIssues = 0;
+        StringBuilder issues = new StringBuilder();
+        HashSet<String> keywords = new HashSet();
+        StringBuilder license = new StringBuilder();
+        String lineageStepN = "", lineageName = "", lineageEmail = "", lineageDescription = "";
+        int nRelatedItems = 0;
+        StringBuilder relatedItems = new StringBuilder();
+        int nUrls = 0;
+        StringBuilder urls = new StringBuilder();
+
+        HashMap<String,String> typesHM = new HashMap();
+        typesHM.put("LIB", "Library");
+        typesHM.put("PRJ", "Project");
+        typesHM.put("DS",  "Data Set");
+        typesHM.put("ENT", "Data Entity");
+        typesHM.put("DOC", "Document");
+        typesHM.put("PRC", "Procedure");
+        
+        HashMap<String,String> relationHM = new HashMap();
+        relationHM.put("HI", "child");
+        relationHM.put("RI", "other");
+
+        //attributes that InPort doesn't help with
+        String inportXmlUrl = "https://inport.nmfs.noaa.gov/inport-metadata/" +
+            xmlFileName.substring("/u00/data/points/inportXml/".length()); 
+        inPortAtts.add("cdm_data_type", "Point");
+        inPortAtts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
+        inPortAtts.add("InPort_catalog_URL", inportXmlUrl);
+        inPortAtts.add("keywords_vocabulary", "GCMD Science Keywords");
+        inPortAtts.add("standard_name_vocabulary", "CF Standard Name Table v29");
+
+        //process the inport.xml file 
+        SimpleXMLReader xmlReader = new SimpleXMLReader(
+            new FileInputStream(xmlFileName));
+        xmlReader.nextTag();
+        String tags = xmlReader.allTags();
+        String startTag = "<catalog-item>";
+        Test.ensureEqual(tags, startTag, 
+            "Unexpected first tag"); 
+        int startTagLength = startTag.length();
+
+        //process the tags
+//references?
+        while (true) {
+            xmlReader.nextTag();
+            tags = xmlReader.allTags();
+            int nTags = xmlReader.stackSize();
+            String content = xmlReader.content();
+            //if (debugMode) String2.log(">>  tags=" + tags + content);
+            if (xmlReader.stackSize() == 1) 
+                break; //the startTag
+            String topTag = xmlReader.tag(nTags - 1);
+            boolean hasContent = content.length() > 0 && !content.equals("NA");
+            String localTags = tags.substring(startTagLength);
+            String attName = String2.replaceAll(localTags, '-', '_');
+            attName = String2.replaceAll(attName, "<", "");
+            attName = String2.replaceAll(attName, '>', '_');
+            attName = attName.substring(0, attName.length() - 1);
+            if (debugMode) 
+                String2.log(">>  attName=" + attName + (hasContent? "=" + content : ""));
+            String attNameNoSlash = String2.replaceAll(attName, "/", "");
+ 
+            //special cases: convert some InPort names to ERDDAP names
+            //The order here matches the order in the files.
+
+            //common_information
+            if (attName.equals("common_information_/cat_id")) {                
+                Test.ensureEqual(content, catID, "cat_id != fileName");
+                inPortAtts.add("InPort_catalog_ID", content);
+            } else if (attName.equals("common_information_/cat_type_code")) {                
+                if (!content.matches(typeCodeRegex))
+                    throw new RuntimeException("cat_type_code=" + content + 
+                        " doesn't match regex=" + typeCodeRegex);
+                String tType = typesHM.get(content);                      
+                inPortAtts.add("InPort_catalog_type", tType == null? content : tType);
+            } else if (attName.equals("common_information_/is-do-not-publish")) {                
+                Test.ensureEqual(content, "N", "Unexpected id-do-not-publish content.");
+            } else if (attName.equals("common_information_/title") && hasContent) {
+                       inPortAtts.add("title", content); 
+                       title = content;
+            } else if (attName.equals("common_information_/abstract") && hasContent) {
+                       inPortAtts.add("summary", content); 
+            } else if (attName.equals("common_information_/purpose") && hasContent) {
+                       inPortAtts.add("purpose", content); 
+            //common_information_notes has info re InPort metadata creation
+            } else if (attName.equals("common_information_/created_by") && hasContent) {
+                       metaCreatedBy = content;
+            } else if (attName.equals("common_information_/record_created") && hasContent) {
+                       metaCreated = content;
+            } else if (attName.equals("common_information_/record_last_modified") && hasContent) {
+                       metaLastMod = content;
+            } else if (attName.equals("common_information_/owner_org_acro") && hasContent) {
+                       inPortAtts.add("institution", 
+                xmlFileName.indexOf("/NOAA/NMFS/") > 0? "NOAA NMFS " + content: //e.g., SWFSC
+                xmlFileName.indexOf("/NOAA/")      > 0? "NOAA " + content: 
+                content); 
+                acronym = content;
+            } else if (attName.equals("common_information_/data_set_publication_date") && hasContent) {
+                       inPortAtts.add("date_created", content); 
+                       dataPublicationDate = content;
+            } else if (attName.equals("common_information_/parent_title") && hasContent) {
+                       //parent_title is often better than title
+                       title = content + (title.equals("???")? "" : ", " + title);
+            } else if (attName.equals("common_information_/notes") && hasContent) {
+                       inPortAtts.add("comment", content); 
+
+            //physical_location  org, city, state-province, country  see 1132
+            //} else if (attName.startsWith("physical_location")) {
+
+            //data_set   see /u00/data/points/InPortXML/NOAA/NMFS/AFSC/inport/xml/10657.xml
+            //This info is relevant to the source, not after it's in ERDDAP.
+            //So, don't add to ERDDAP meatadata. 
+            } else if (attName.equals("data_set") && xmlReader.attributeValue("type") != null) {
+                //Tally: "": 583, Database: 118, Mixed: 53, Other: 28, Files: 22, 
+                //  SAS files: 2, CSV Files: 1, GIS: 1
+                String dsType = xmlReader.attributeValue("type");
+                if (dsType == null)
+                    dsType = "";
+                if (!dsType.matches(datasetTypeRegex))
+                    throw new RuntimeException("data-set type=" + dsType + 
+                        " doesn't match regex=" + datasetTypeRegex);
+                       background.append("data_set_type=" + dsType + "\n");
+            } else if (attName.equals("data_set_/maintenance_frequency") && hasContent) {
+                       background.append("data_set_maintenance_frequency=" + content + "\n");
+            } else if (attName.equals("data_set_/source_media_type") && hasContent) {
+                       background.append("data_set_source_media=" + content + "\n");
+            } else if (attName.equals("data_set_/entity_attribute_overview") && hasContent) {
+                       background.append("data_set_overview=" + content + "\n");
+            } else if (attName.equals("data_set_/distribution_liability") && hasContent) {
+                                 license.append("Distribution Liability: " + content + "\n"); 
+            } else if (attName.equals("data_set_/data_set_credit") && hasContent) {
+                       inPortAtts.add("acknowledgment", content); 
+
+            //keywords see 10657
+            } else if ((attName.equals("keywords_theme_keywords_/keyword_list") ||
+                        attName.equals("keywords_spatial_keywords_/keyword_list") ||
+                        attName.equals("keywords_stratum_keywords_/keyword_list") ||
+                        attName.equals("keywords_temporal_keywords_/keyword_list")) && hasContent) {
+                chopUpCsvAddAllAndParts(content, keywords);
+
+            //data_attributes  //this ASSUMES that EVERY attribute has a <name>
+            } else if (attName.equals("data_attributes_attribute_/name") && hasContent) {
+                StringArray sa = new StringArray();
+                sourceTable.addColumn(content, sa);
+                addTable.addColumn(content, sa);
+            } else if (attName.equals("data_attributes_attribute_/data_storage_type") && hasContent) {
+                //vs                                             general_data_type?
+                int col = addTable.nColumns() - 1;
+                Test.ensureTrue(col != -1, "attribute data-storage-type found before name");
+                PrimitiveArray pa = null;
+                String lcContent = content.toLowerCase();
+                if        (String2.indexOf(new String[]{
+                    "boolean", "logical"}, lcContent) >= 0) {
+                    pa = new ByteArray();
+                } else if (String2.indexOf(new String[]{
+                    "smallint"}, lcContent) >= 0) {
+                    pa = new ShortArray();
+                } else if (String2.indexOf(new String[]{
+                    "integer", "int", "year", "long integer"}, lcContent) >= 0) {
+                    pa = new IntArray();
+                //} else if (String2.indexOf(new String[]{
+                //    "long integer"}, lcContent) >= 0) {
+                //    pa = new LongArray();
+                } else if (String2.indexOf(new String[]{
+                    "float"}, lcContent) >= 0) {
+                    pa = new FloatArray();
+                } else if (String2.indexOf(new String[]{
+                    "double", "numeric", "number", "numger", "currency"}, lcContent) >= 0) {
+                    pa = new DoubleArray();
+                } else if (String2.indexOf(new String[]{
+                    "date", "date/time", "datetime", "time"}, lcContent) >= 0) {
+                    //String time
+                    addTable.columnAttributes(col).add("units", EDV.TIME_UNITS); //a guess/ a placeholder
+                } //otherwise, leave as String    long->clob!, yes/no?
+                if (pa != null) {
+                    sourceTable.setColumn(col, pa);
+                    addTable.setColumn(   col, pa);
+                }
+            } else if (attName.equals("data_attributes_attribute_/scale") && hasContent) { 
+                //It isn't scale_factor. e.g., 0, 2, 1, 3, 5, 6, 9
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "scale", content);
+            } else if (attName.equals("data_attributes_attribute_/max_length") && hasContent) {
+                //e.g., 0(?!), 22, 1, 8, 100, 4000 (longest)
+                int maxLen = String2.parseInt(content);
+                if (maxLen > 0 && maxLen < 10000)
+                    addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "max_length", "" + maxLen);
+            } else if (attName.equals("data_attributes_attribute_/is_pkey") && hasContent) {
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "is_pkey", content);
+            } else if (attName.equals("data_attributes_attribute_/description") && hasContent) {
+                //widely used  (Is <description> used another way?)
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "description", content);
+            } else if (attName.equals("data_attributes_attribute_/units") && hasContent) {
+                //e.g., Decimal degrees, animal, KM, degrees celcius(sic), AlphaNumeric
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "units", content);
+            } else if (attName.equals("data_attributes_attribute_/format_mask") && hasContent) {
+                //e.g., $999,999.99, MM/DD/YYYY, HH:MM:SS, mm/dd/yyyy, HHMM
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "format_mask", content);
+            } else if (attName.equals("data_attributes_attribute_/null_repr") && hasContent) {
+                //no examples!
+                int col = addTable.nColumns() - 1;
+                PrimitiveArray pa = addTable.getColumn(col);
+                double d = String2.parseDouble(content);
+                if (pa instanceof ByteArray)
+                    addTable.columnAttributes(col).add("missing_value", Math2.roundToByte(d));
+                else if (pa instanceof ShortArray)
+                    addTable.columnAttributes(col).add("missing_value", Math2.roundToShort(d));
+                else if (pa instanceof IntArray)
+                    addTable.columnAttributes(col).add("missing_value", Math2.roundToInt(d));
+                else if (pa instanceof LongArray)
+                    addTable.columnAttributes(col).add("missing_value", String2.parseLong(content));
+                else if (pa instanceof FloatArray)
+                    addTable.columnAttributes(col).add("missing_value", Math2.doubleToFloatNaN(d));
+                else if (pa instanceof DoubleArray)
+                    addTable.columnAttributes(col).add("missing_value", d);
+                //else string?!
+            } else if (attName.equals("data_attributes_attribute_/null_meaning") && hasContent) {
+                //e.g., 1=Yes, The fish length is unknown or was not recorded.
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "null_meaning", content);
+            } else if (attName.equals("data_attributes_attribute_/allowed_values") && hasContent) {
+                //e.g., No domain defined., unknown, Free entry text field., text, "1, 2, 3", "False, True"
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "allowed_values", content);
+            } else if (attName.equals("data_attributes_attribute_/derivation") && hasContent) {
+                //no examples
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "derivation", content);
+            } else if (attName.equals("data_attributes_attribute_/validation_rules") && hasContent) {
+                //e.g., Gear must be a NMFS Gear Code
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "validation_rules", content);
+            } else if (attName.equals("data_attributes_attribute_/version") && hasContent) {
+                //no examples
+                addTable.columnAttributes(addTable.nColumns() - 1).add(
+                        "version", content);
+
+            //support_roles  e.g., see 10657
+            //Use role=Originator as backup for creator_name, creator_email
+            } else if (attName.startsWith("support_roles")) {
+                if (attName.equals("support_roles_support_role")) {
+                    isSupportRoleOriginator = false;
+                } else if (attName.equals("support_roles_support_role_/role") && hasContent) {
+                    isSupportRoleOriginator = "Originator".equals(content);
+                } else if (attName.equals("support_roles_support_role_person_contact_info_/name") && hasContent) {
+                    int po = content.indexOf(", ");
+                    creatorName3 = po > 0?    //any role
+                        content.substring(po + 2) + " " + content.substring(0, po) :
+                        content; 
+                    if (isSupportRoleOriginator)
+                        creatorName2 = creatorName3;
+                        
+                } else if (attName.equals("support_roles_support_role_person_contact_info_/email") && hasContent) {
+                    creatorEmail3 = content;  //any role
+                    if (isSupportRoleOriginator)
+                        creatorEmail2 = creatorEmail3;
+                }
+                continue;  //multiple support_roles, so don't write just one to datasets.xml
+
+            //geog_area
+            } else if (attName.equals("geog_area_/description") && hasContent) {
+                       inPortAtts.add("geospatial_description", content); 
+            } else if (attName.equals("geog_area_/west_bound") && hasContent) {
+                       inPortAtts.add("geospatial_lon_min", String2.parseDouble(content)); 
+            } else if (attName.equals("geog_area_/east_bound") && hasContent) {
+                       inPortAtts.add("geospatial_lon_max", String2.parseDouble(content)); 
+            } else if (attName.equals("geog_area_/south_bound") && hasContent) {
+                       inPortAtts.add("geospatial_lat_min", String2.parseDouble(content)); 
+            } else if (attName.equals("geog_area_/north_bound") && hasContent) {
+                       inPortAtts.add("geospatial_lat_max", String2.parseDouble(content)); 
+
+            //time_frame
+            } else if (attName.equals("time_frames_time_frame_/start") && hasContent) {
+                       inPortAtts.add("time_coverage_start", content); 
+            } else if (attName.equals("time_frames_time_frame_/end") && hasContent) {
+                       inPortAtts.add("time_coverage_end", content); 
+
+            //access_info    see AFSC/inport/xml/10657.xml
+            } else if (attName.equals("access_info_/security_class") && hasContent) {
+                license.append("Security class: " + content + "\n"); 
+                inPortAtts.add("security_class", content);
+                securityClass = content;
+            } else if (attName.equals("access_info_/security_classification_system") && hasContent) {
+                                    license.append("Security classification system: " + content + "\n"); 
+            } else if (attName.equals("access_info_/data_access_policy") && hasContent) {
+                                    license.append("Data access policy: " + content + "\n"); 
+            } else if (attName.equals("access_info_/data_access_constraints") && hasContent) {
+                                    license.append("Data access constraints: " + content + "\n"); 
+            } else if (attName.equals("access_info_/data_access_procedure") && hasContent) {
+                                    license.append("Data use procedure: " + content + "\n"); 
+            } else if (attName.equals("access_info_/data_use_constraints") && hasContent) {
+                                    license.append("Data use constraints: " + content + "\n"); 
+            } else if (attName.equals("access_info_/metadata_access_constraints") && hasContent) {
+                                    license.append("Metadata access constraints: " + content + "\n"); 
+            } else if (attName.equals("access_info_/metadata_use_constraints") && hasContent) {
+                                    license.append("Metadata use constraints: " + content + "\n"); 
+
+            //urls   see 10657
+            } else if (attName.startsWith("urls")) {
+                if        (attName.equals("urls_url")) {
+                              urls.append("URL #" + ++nUrls);
+                } else if (attName.equals("urls_url_/link") && hasContent) {
+                    //!!!???how know which url is best for infoUrl?  heuristic: always use first?
+                    if (inPortAtts.get("infoUrl") == null)
+                        inPortAtts.add("infoUrl", content); 
+                    urls.append(": " + content + "\n");
+                } else if (attName.equals("urls_url_/url_type") && hasContent) {
+                    String2.addNewlineIfNone(urls).append("Type: " + content + "\n");
+                } else if (attName.equals("urls_url_/description") && hasContent) {
+                    String2.addNewlineIfNone(urls).append("Description: " + content + "\n");
+                } else if (attName.equals("urls_/url")) {
+                    String2.addNewlineIfNone(urls).append("\n");
+                }
+                continue; //multiple url's, so don't write just one to datasets.xml
+
+            //activity_log -- just InPort activity
+
+            //issues see /u00/data/points/InPortXML/NOAA/NMFS/PIFSC/inport/xml/18143.xml
+            } else if (attName.startsWith("issues")) {
+                if        (attName.equals("issues_issue")) {
+                            issues.append("Issue #" + ++nIssues);
+                } else if (attName.equals("issues_issue_/date") && hasContent) {
+                            issues.append(": date=" + content);
+                } else if (attName.equals("issues_issue_/author") && hasContent) {
+                            issues.append(", author=" + content + "\n");
+                } else if (attName.equals("issues_issue_/summary") && hasContent) {
+                    String2.addNewlineIfNone(issues).append("Summary: " + content + "\n");
+                } else if (attName.equals("issues_/issue")) {
+                    String2.addNewlineIfNone(issues).append("\n");
+                }
+                continue; //multiple issues's, so don't write just one to datasets.xml
+
+            //technical-environment  #10657
+            } else if (attName.equals("technical_environment_/description") && hasContent) {
+                       inPortAtts.add("technical_environment", content);
+
+            //data_quality #10657
+            } else if (attName.equals("data_quality_/representativeness") && hasContent) {
+                                 dataQuality.append("Representativeness: " + content + "\n");
+            } else if (attName.equals("data_quality_/accuracy") && hasContent) {
+                                 dataQuality.append("Accuracy: " + content + "\n");
+
+            //lineage /u00/data/points/InPortXML/NOAA/NMFS/AFSC/inport/xml/17218.xml
+            } else if (attName.startsWith("lineage")) {
+                if        (attName.equals("lineage_lineage_process_step")) {
+                           lineageStepN = null; 
+                           lineageName = null;
+                           lineageEmail = null;
+                           lineageDescription = null;
+                } else if (attName.equals("lineage_lineage_process_step_/seq_no") && hasContent) {
+                           lineageStepN = content;
+                } else if (attName.equals("lineage_lineage_process_step_/contact_name") && hasContent) {
+                           lineageName = content;
+                } else if (attName.equals("lineage_lineage_process_step_/email_address") && hasContent) {
+                           lineageEmail = content;
+                } else if (attName.equals("lineage_lineage_process_step_/description") && hasContent) {
+                           lineageDescription = content;
+                } else if (attName.equals("lineage_/lineage_process_step") &&
+                    (lineageName != null || lineageEmail != null || lineageDescription != null)) {
+                           history.append("Lineage Step #" + 
+                               (lineageStepN == null? "?" : lineageStepN) + 
+                               (lineageName  == null? "" : ", " + lineageName) +
+                               (lineageEmail == null? "" : " <" + lineageEmail + ">") +
+                               (lineageDescription == null? "" : ": " + lineageDescription) +
+                               "\n");
+                }
+                continue; //multiple lineage's, so don't write just one to datasets.xml
+
+            //acronyms -- no files have it
+
+            //glossary_terms -- no files have it
+
+            //faqs /u00/data/points/InPortXML/NOAA/NMFS/SEFSC/inport/xml/7332.xml
+            } else if (attName.startsWith("faqs")) {
+                if        (attName.equals("faqs_faq")) {
+                              faqs.append("FAQ #" + ++nFaqs);
+                } else if (attName.equals("faqs_faq_/faq_date") && hasContent) {
+                              faqs.append(": date=" + content);
+                } else if (attName.equals("faqs_faq_/faq_author") && hasContent) {
+                              faqs.append(", author=" + content + "\n");
+                } else if (attName.equals("faqs_faq_/question") && hasContent) {
+                    String2.addNewlineIfNone(faqs).append("Question: " + content + "\n");
+                } else if (attName.equals("faqs_faq_/answer") && hasContent) {
+                    String2.addNewlineIfNone(faqs).append("Answer: " + content + "\n");
+                } else if (attName.equals("faqs_/faq")) {
+                    String2.addNewlineIfNone(faqs).append("\n");
+                }
+                continue; //multiple faqs, so don't write just one to datasets.xml
+
+            //downloads  #10657
+            } else if (attName.startsWith("downloads")) {
+                if        (attName.equals("downloads_download")) {
+                         downloads.append("Download #" + ++nDownloads);
+                } else if (attName.equals("downloads_download_/file_type") && hasContent) {
+                         downloads.append(": file type=" + content + "\n");
+                } else if (attName.equals("downloads_download_/description") && hasContent) {
+                    String2.addNewlineIfNone(downloads).append("Description: " + content + "\n");
+                } else if (attName.equals("downloads_download_/download_url") && hasContent) {
+                    String2.addNewlineIfNone(downloads).append("URL: " + content + "\n");
+                } else if (attName.equals("downloads_/download")) {
+                    String2.addNewlineIfNone(downloads).append("\n");
+                }
+                continue; //multiple downloads, so don't write just one to datasets.xml
+
+            //related_items  see 10657
+            } else if (attName.startsWith("related_items")) {
+                if        (attName.equals("related_items_item")) {
+                      //catch e.g., <item cat-id="10661" cat-type="ENT" relation-type="HI">
+                      String tTypeCode = xmlReader.attributeValue("cat-type");
+                      String tType = typesHM.get(tTypeCode);                    
+                      String tRelationCode = xmlReader.attributeValue("relation-type");
+                      String tRelation = relationHM.get(tRelationCode);
+                      relatedItems.append("Related Item #" + ++nRelatedItems + 
+                          ": InPort catalog ID=" + xmlReader.attributeValue("cat-id") +
+                          ", catalog type=" + (tType == null? tTypeCode : tType) + 
+                          ", relation=" + (tRelation == null? tRelationCode : tRelation) + "\n");
+                } else if (attName.equals("related_items_item_/title") && hasContent) {
+                                          relatedItems.append("Title: " + content + "\n");
+                } else if (attName.equals("related_items_item_/abstract") && hasContent) {
+                                          relatedItems.append("Abstract: " + content + "\n");
+                //} else if (attName.equals("related_items_item_relation-note")) {
+                //    No, this is inport log info.
+                //         downloads.append("Relation Note: " + content + "\n");
+                } else if (attName.equals("related_items_/item")) {
+                     relatedItems.append('\n');
+                }
+                continue; //multiple related_items, so don't write just one to datasets.xml
+
+            //fgdc_contacts   See 10657
+            } else if (attName.startsWith("fgdc_contacts")) {
+                //multiple fgdc contacts
+                //need to catch role and just keep if "Point of Contact"
+                if (attName.equals("fgdc_contacts_fgdc_contact")) {
+                    isFgdcPOC = "Point of Contact".equals(xmlReader.attributeValue("role"));
+                }
+                if (isFgdcPOC) {
+                    if (attName.equals("fgdc_contacts_fgdc_contact_/contact_person_name") && hasContent) {
+                        int po = content.indexOf(", ");
+                        inPortAtts.add("creator_name", po > 0? 
+                            content.substring(po + 2) + " " + content.substring(0, po) :
+                            content); 
+                    } else if (attName.equals("fgdc_contacts_fgdc_contact_/email") && hasContent) {
+                        inPortAtts.add("creator_email", content);
+                    }
+                } else {
+                   continue; //multiple fgdc_contacts. Just write Point of Contact to datasets.xml
+                }
+
+            //fgdc_time_period   see 10657     same as info above
+
+            //publisher  see 10657
+            } else if (attName.equals("publisher_person_contact_info_/name") && hasContent &&
+                       inPortAtts.get("publisher_name") == null) {
+                       int po = content.indexOf(", ");
+                       inPortAtts.add("publisher_name", po > 0? 
+                           content.substring(po + 2) + " " + content.substring(0, po) :
+                           content); 
+            } else if (attName.equals("publisher_person_contact_info_/email") && hasContent &&
+                       inPortAtts.get("publisher_email") == null) {
+                       inPortAtts.add("publisher_email", content);
+
+            //child-entities   see 10657
+            } else if (attName.startsWith("child_entities")) {
+                if        (attName.equals("child_entities_child_entity")) {
+                     childEntities.append("Child Entity #" + ++nChildEntities);
+                } else if (attName.equals("child_entities_child_entity_common_information_/cat_id") && hasContent) {                       
+                     childEntities.append(": InPort CatalogID=" + content);
+                } else if (attName.equals("child_entities_child_entity_common_information_/cat_type_code") && hasContent) {
+                     String tType = typesHM.get(content);                     
+                     childEntities.append(", catalog type=" + (tType == null? content : tType) + "\n");
+                } else if (attName.equals("child_entities_child_entity_common_information_/title") && hasContent) {
+                    String2.addNewlineIfNone(childEntities).append("Title: " + content + "\n");
+                } else if (attName.equals("child_entities_child_entity_common_information_/abstract") && hasContent) {
+                    String2.addNewlineIfNone(childEntities).append("Abstract: " + content + "\n");
+                } else if (attName.equals("child_entities_/child_entity")) {
+                    String2.addNewlineIfNone(childEntities).append('\n');
+                }
+                continue; //multiple child_entities, so don't write just one to datasets.xml
+            }
+
+            //***** ??? do generic conversion for everything not explicitly 'continue'd above
+            if (hasContent) {
+                //inPortAtts.add(attNameNoSlash, content);
+            }
+        }
+
+        //cleanup childEntitles
+        if (childEntities.length() > 0)
+            inPortAtts.add("child_entities", childEntities.toString());
+
+        //cleanup creator info
+        //String2.pressEnterToContinue(
+        //    "creator_name=" + inPortAtts.get("creator_name") + ", " + creatorName2 + ", " + creatorName3 + "\n" +
+        //    "creator_email=" + inPortAtts.get("creator_email") + ", " + creatorEmail2 + ", " + creatorEmail3 + "\n");
+        if (inPortAtts.get("creator_name") == null) {
+            if      (creatorName2 != null) 
+                inPortAtts.set("creator_name", creatorName2);
+            else if (creatorName3 != null) 
+                inPortAtts.set("creator_name", creatorName3);
+        }
+
+        if (inPortAtts.get("creator_email") == null) {
+            if      (creatorEmail2 != null) 
+                inPortAtts.set("creator_email", creatorEmail2);
+            else if (creatorEmail3 != null) 
+                inPortAtts.set("creator_email", creatorEmail3);
+        }
+
+        if (inPortAtts.get("creator_url") == null &&
+            !acronym.equals("???")) {
+            String cu = 
+                "AFSC".equals( acronym)? "http://www.afsc.noaa.gov/":
+                "GARFO".equals(acronym)? "http://www.greateratlantic.fisheries.noaa.gov/":
+                "NWFSC".equals(acronym)? "http://www.nwfsc.noaa.gov/":
+                "OSF".equals(  acronym)? "http://www.nmfs.noaa.gov/sfa/":
+                "OST".equals(  acronym)? "https://www.st.nmfs.noaa.gov/":
+                "PIFSC".equals(acronym)? "http://www.pifsc.noaa.gov/":
+                "SEFSC".equals(acronym)? "http://www.sefsc.noaa.gov/":
+                "SERO".equals( acronym)? "http://sero.nmfs.noaa.gov/":
+                "SWFSC".equals(acronym)? "https://swfsc.noaa.gov/": 
+                "";
+            if (!cu.equals(""))
+                inPortAtts.add("creator_url", cu);
+        }
+
+        //cleanup dataQuality
+        if (dataQuality.length() > 0)
+            inPortAtts.add("data_quality", dataQuality.toString());
+
+        //cleanup downloads
+        if (downloads.length() > 0)
+            inPortAtts.add("downloads", downloads.toString());
+
+        //cleanup faqs
+        if (faqs.length() > 0)
+            inPortAtts.add("faqs", faqs.toString());
+
+        //cleanup history (add to lineage info gathered above)
+        if (!metaCreated.equals("???"))
+            history.append(metaCreated +
+                (metaCreatedBy.equals("???")? "" : " " + metaCreatedBy) +
+                " originally created InPort metadata cat-id#" + catID + ".\n");
+        if (!metaLastMod.equals("???"))
+            history.append(metaLastMod +
+                (metaCreatedBy.equals("???")? "" : " " + metaCreatedBy) +
+                " last modified InPort metadata cat-id#" + catID + ".\n");
+        if (history.length() == 0)
+            history.append(
+                (metaCreatedBy.equals("???")? "" : metaCreatedBy + " created ") +
+                "InPort metadata cat-id#" + catID + ".\n");
+        if (!dataPublicationDate.equals("???"))
+            history.append(dataPublicationDate + " data set originally published.\n"); //???really???
+        history.append( 
+            Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10) +
+            " Bob Simons <bob.simons@noaa.gov> at NOAA NMFS SWFSC ERD converted " +
+            "InPort metadata from " + inportXmlUrl + " into ERDDAP dataset metadata.\n");
+        inPortAtts.add("history", history.toString());
+
+        //cleanup issues
+        if (issues.length() > 0)
+            inPortAtts.add("issues", issues.toString());
+
+        //cleanup keywords
+        inPortAtts.add("keywords", String2.toCSSVString(keywords));
+
+        //cleanup license
+        if (license.indexOf("Security class: Unclassified") >= 0 && //if Unclassified
+            license.indexOf("Data access constraints: ") < 0 &&  //and no other info
+            license.indexOf("Data access policy: ") < 0 &&
+            license.indexOf("Data use constraints: ") < 0) 
+            license.append("[standard]");
+        else if (license.length() == 0)
+            license.append("???");
+        inPortAtts.add("license", license.toString());
+
+        //cleanup relatedItems
+        if (relatedItems.length() > 0)
+            inPortAtts.add("related_items", relatedItems.toString());
+
+        //cleanup urls
+        if (urls.length() > 0)
+            inPortAtts.add("urls", urls.toString());
+
+        //*** makeReadyToUseGlobalAtts
+        addAtts.set(makeReadyToUseAddGlobalAttributesForDatasetsXml(
+            sourceAtts, "Point", //better cdm_data_type?
+            "(local files)", //???
+            inPortAtts, 
+            suggestKeywords(sourceTable, addTable)));
+
+        //use original title, with InPort # added
+        if (!title.equals("???"))
+            addAtts.add("title", title + " (InPort #" + catID + ")"); //catID ensures it is unique
+
+        //fgdc and iso19115
+        String fgdcFile     = String2.replaceAll(xmlFileName, "/inport/", "/fgdc/");
+        String iso19115File = String2.replaceAll(xmlFileName, "/inport/", "/iso19115/");
+        if (!File2.isFile(fgdcFile))
+            fgdcFile     = ""; //if so, don't serve an fgdc file
+        if (!File2.isFile(iso19115File))
+            iso19115File = ""; //if so, don't serve an iso19115 file
+
+        //write datasets.xml
+        StringBuilder results = new StringBuilder();
+        results.append(
+            "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + 
+                acronym.toLowerCase() + "IP" + catID + "\" active=\"true\">\n" +
+            "    <sourceUrl>" + XML.encodeAsXML("tLocalSourceUrl???") + "</sourceUrl>\n" +
+            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+            "    <fgdcFile>" + fgdcFile + "</fgdcFile>\n" +
+            "    <iso19115File>" + iso19115File + "</iso19115File>\n");
+        results.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
+        results.append(writeAttsForDatasetsXml(true,  addTable.globalAttributes(),    "    "));
+
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        results.append(writeVariablesForDatasetsXml(sourceTable, addTable, 
+            "dataVariable", true, true, false));
+        results.append(
+            "</dataset>\n" +
+            "\n");        
+
+        //background
+        String2.log("\n-----");
+        if (background.length() > 0)
+            String2.log("Background for ERDDAP: " + background.toString());
+        if (!"Unclassified".equals(securityClass))
+            String2.log("WARNING! Security_class = " + securityClass);
+        String2.log("generateDatasetsXml finished successfully.\n-----");
+        return results.toString();
     }
 
 

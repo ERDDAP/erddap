@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -34,6 +34,21 @@ public class IntArray extends PrimitiveArray {
      * the PrimitiveArray will use a different array for storage.
      */
     public int[] array;
+
+    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+     * The integer type classes override this.
+     */
+    public boolean isIntegerType() {
+        return true;
+    }
+
+    /** 
+     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * expressed as a double. FloatArray and StringArray return Double.NaN. 
+     */
+    public double missingValue() {
+        return Integer.MAX_VALUE;
+    }
 
     /**
      * A constructor for a capacity of 8 elements. The initial 'size' will be 0.
@@ -319,11 +334,30 @@ public class IntArray extends PrimitiveArray {
     /**
      * This adds an element from another PrimitiveArray.
      *
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the source PA
+     * @param otherIndex the start index in otherPA
+     * @param nValues the number of values to be added
+     * @return 'this' for convenience
      */
-    public void addFromPA(PrimitiveArray otherPA, int otherIndex) {
-        add(otherPA.getInt(otherIndex));
+    public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
+
+        //add from same type
+        if (otherPA.elementClass() == elementClass()) {
+            if (otherIndex + nValues > otherPA.size)
+                throw new IllegalArgumentException(String2.ERROR + 
+                    " in CharArray.addFromPA: otherIndex=" + otherIndex + 
+                    " + nValues=" + nValues + 
+                    " > otherPA.size=" + otherPA.size);
+            ensureCapacity(size + nValues);            
+            System.arraycopy(((IntArray)otherPA).array, otherIndex, array, size, nValues);
+            size += nValues;
+            return this;
+        }
+
+        //add from different type
+        for (int i = 0; i < nValues; i++)
+            add(otherPA.getInt(otherIndex++)); //does error checking
+        return this;
     }
 
     /**
@@ -579,6 +613,8 @@ public class IntArray extends PrimitiveArray {
         return get(index);
     }
 
+    //getRawInt(index) uses default getInt(index) 
+
     /**
      * Set a value in the array as an int.
      * 
@@ -651,6 +687,34 @@ public class IntArray extends PrimitiveArray {
     }
 
     /**
+     * Return a value from the array as a double.
+     * FloatArray converts float to double in a simplistic way.
+     * For this variant: Integer source values will be treated as unsigned.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public double getUnsignedDouble(int index) {
+        return Integer.toUnsignedLong(get(index));
+    }
+
+    /**
+     * Return a value from the array as a double.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     *
+     * <p>All integerTypes override this.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public double getRawDouble(int index) {
+        return get(index);
+    }
+
+    /**
      * Set a value in the array as a double.
      * 
      * @param index the index number 0 .. size-1
@@ -670,6 +734,22 @@ public class IntArray extends PrimitiveArray {
     public String getString(int index) {
         int b = get(index);
         return b == Integer.MAX_VALUE? "" : String.valueOf(b);
+    }
+
+    /**
+     * Return a value from the array as a String.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * FloatArray and DoubleArray return "" if the stored value is NaN. 
+     *
+     * <p>All integerTypes override this.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public String getRawString(int index) {
+        return String.valueOf(get(index));
     }
 
     /**
@@ -976,21 +1056,43 @@ public class IntArray extends PrimitiveArray {
     }
     
     /**
-     * This appends the data in another primitiveArray to the current data.
-     * WARNING: information may be lost from the incoming primitiveArray if this
+     * This appends the data in another pa to the current data.
+     * WARNING: information may be lost from the incoming pa if this
      * primitiveArray is of a simpler type.
      *
-     * @param primitiveArray primitiveArray must be the same or a narrower 
-     *  data type, or the data will be narrowed with primitiveArray.getInt.
+     * @param pa pa must be the same or a narrower 
+     *  data type, or the data will be narrowed with pa.getInt.
      */
-    public void append(PrimitiveArray primitiveArray) {
-        int otherSize = primitiveArray.size(); //this avoids infinite loop if primitiveArray == this
+    public void append(PrimitiveArray pa) {
+        int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (primitiveArray instanceof IntArray) {
-            System.arraycopy(((IntArray)primitiveArray).array, 0, array, size, otherSize);
+        if (pa instanceof IntArray) {
+            System.arraycopy(((IntArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = primitiveArray.getInt(i);  //this converts mv's
+                array[size + i] = pa.getInt(i);  //this converts mv's
+        }
+        size += otherSize; //do last to minimize concurrency problems
+    }    
+
+    /**
+     * This appends the data in another pa to the current data.
+     * This "raw" variant leaves missingValue from smaller data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * WARNING: information may be lost from the incoming pa if this
+     * primitiveArray is of a simpler type.
+     *
+     * @param pa pa must be the same or a narrower 
+     *  data type, or the data will be narrowed with pa.getInt.
+     */
+    public void rawAppend(PrimitiveArray pa) {
+        int otherSize = pa.size(); 
+        ensureCapacity(size + (long)otherSize);
+        if (pa instanceof IntArray) {
+            System.arraycopy(((IntArray)pa).array, 0, array, size, otherSize);
+        } else {
+            for (int i = 0; i < otherSize; i++)
+                array[size + i] = pa.getRawInt(i);  //this DOESN'T convert mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1205,6 +1307,46 @@ public class IntArray extends PrimitiveArray {
 
         //** test default constructor and many of the methods
         IntArray anArray = new IntArray();
+        Test.ensureEqual(anArray.isIntegerType(), true, "");
+        Test.ensureEqual(anArray.missingValue(), Integer.MAX_VALUE, "");
+        anArray.addString("");
+        Test.ensureEqual(anArray.get(0),               Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawDouble(0),      Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getUnsignedDouble(0), Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawString(0), "" + Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
+        Test.ensureEqual(anArray.getString(0), "", "");
+
+        anArray.set(0, -2147483648); Test.ensureEqual(anArray.getUnsignedDouble(0), 2147483648L, "");
+        anArray.set(0, -2147483647); Test.ensureEqual(anArray.getUnsignedDouble(0), 2147483649L, "");
+        anArray.set(0,          -1); Test.ensureEqual(anArray.getUnsignedDouble(0), 4294967295L, "");
+        anArray.clear();
+
+        //unsignedFactory, which uses unsignedAppend
+        anArray = (IntArray)unsignedFactory(int.class, 
+            new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0, 1, 2147483647, 2147483647, 2147483647", ""); // -> mv
+        anArray.clear();        
+
+        anArray = (IntArray)unsignedFactory(int.class, 
+            new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0, 1, 127, 128, 255", "");
+        anArray.clear();        
+
+        anArray = (IntArray)unsignedFactory(int.class, 
+            new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
+        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
+        anArray.clear();        
+
+        anArray = (IntArray)unsignedFactory(int.class, 
+            new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535", "");
+        anArray.clear();        
+
+
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add(2000000000);
         Test.ensureEqual(anArray.size(), 1, "");

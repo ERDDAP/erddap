@@ -20,6 +20,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 import java.sql.Connection;
@@ -51,14 +52,16 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
     /**
      * This constructs an EDDTableFromPostDatabase based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromPostDatabase"&gt; 
      *    having just been read.  
      * @return an EDDTableFromPostDatabase.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromPostDatabase fromXml(SimpleXMLReader xmlReader) throws Throwable {
-        return (EDDTableFromPostDatabase)lowFromXml(xmlReader, "Post");
+    public static EDDTableFromPostDatabase fromXml(Erddap erddap,
+        SimpleXMLReader xmlReader) throws Throwable {
+        return (EDDTableFromPostDatabase)lowFromXml(erddap, xmlReader, "Post");
     }
 
     /**
@@ -500,9 +503,9 @@ boolean addTestPostUser = false;
         long eTime;
         int po;
         String tQuery, tName, results, expected;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         try {
-            EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetXml("postSurg3"); 
+            EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, "postSurg3"); 
  
             //das
             tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1009,9 +1012,9 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
         testVerboseOn();
         long eTime;
         String tQuery, tName, results, expected;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         try {
-            EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetXml("postDet3"); 
+            EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, "postDet3"); 
 /* */
             //das
             tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1335,9 +1338,9 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
         testVerboseOn();
         long eTime;
         String tQuery, tName, results, expected;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         try {
-            EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetXml(
+            EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, 
                 "testPostDet3"); 
 
             tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -1399,7 +1402,7 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
         String tName, tQuery, results, expected;
         Table table;
         try {
-            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetXml("testPostSurg3"); 
+            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testPostSurg3"); 
 
             tName = tedd.makeNewFileForDapQuery(null, null, "&PI=\"DAVID WELCH\"", 
                 dir, tedd.className() + "_ps3_Data", ".nc"); 

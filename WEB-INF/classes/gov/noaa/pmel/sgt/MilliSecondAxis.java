@@ -51,7 +51,7 @@ public class MilliSecondAxis implements TimeAxisStyle {
     return prev;
   }
   public void computeDefaults(GeoDate delta) {
-    long msec = delta.getTime() % GeoDate.MSECS_IN_DAY;
+    long msec = Math.abs(delta.getTime()) % GeoDate.MSECS_IN_DAY;
     incrementValue__ = 1.0;  //default
     if (msec > 4000) {
       defaultMinorLabelInterval_ = 1000;  //labels every 1000 msec

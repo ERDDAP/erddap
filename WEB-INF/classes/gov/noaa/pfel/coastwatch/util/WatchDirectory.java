@@ -12,6 +12,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
@@ -41,19 +42,19 @@ public class WatchDirectory {
     public final static WatchEvent.Kind OVERFLOW = StandardWatchEventKinds.OVERFLOW;
 
     /** things set by constructor */
-    private String watchDir;
+    private String watchDir, pathRegex;
     private boolean recursive;
     private WatchService watchService;
-    private ConcurrentHashMap keyToDirMap = new ConcurrentHashMap(); 
+    private ConcurrentHashMap<WatchKey,String> keyToDirMap = new ConcurrentHashMap(); 
 
 
     /** 
      * A convenience method to construct a WatchDirectory for all events 
      * (CREATE, DELETE, and MODIFY).  (OVERFLOW is automatically included.)
      */
-    public static WatchDirectory watchDirectoryAll(String dir, boolean recursive) 
-        throws IOException {
-        return new WatchDirectory(dir, recursive, new WatchEvent.Kind[]{
+    public static WatchDirectory watchDirectoryAll(String dir, boolean recursive,
+        String pathRegex) throws IOException {
+        return new WatchDirectory(dir, recursive, pathRegex, new WatchEvent.Kind[]{
             CREATE, DELETE, MODIFY});
     }
 
@@ -63,16 +64,18 @@ public class WatchDirectory {
      * @param tWatchDir the starting directory, with \\ or /, with or without trailing slash.  
      *    The results will contain dirs with matching slashes.
      * @param tRecursive
+     * @param tPathRegex
      * @param events some combination of CREATE, DELETE, MODIFY, e.g.,
      *   new WatchEvent.Kind[]{CREATE, DELETE, MODIFY}
      *   OVERFLOW events are always automatically included -- don't specify them here.
      * @throws various Exceptions if trouble
      */
-    public WatchDirectory(String tWatchDir, boolean tRecursive, WatchEvent.Kind events[]) 
-        throws IOException {
+    public WatchDirectory(String tWatchDir, boolean tRecursive, String tPathRegex,
+        WatchEvent.Kind events[]) throws IOException {
 
         watchDir = File2.addSlash(tWatchDir);
         recursive = tRecursive;
+        pathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
         char toSlash = watchDir.indexOf('\\') >= 0? '\\' : '/';
         char fromSlash = toSlash == '/'? '\\' : '/';        
 
@@ -81,12 +84,16 @@ public class WatchDirectory {
             throw new RuntimeException("Directory not found: " + watchDir);
 
         //make the WatchService 
-        watchService = watchPath.getFileSystem().newWatchService();
+        FileSystem fs = watchPath.getFileSystem();
+        if (fs == null)
+            throw new RuntimeException(
+                "getFileSystem returned null for the " + watchDir + " path.");
+        watchService = fs.newWatchService();
         if (watchService == null)
             throw new RuntimeException(
                 "The OS doesn't support WatchService for that file system.");
         if (recursive) {
-            StringArray alps = FileVisitorSubdir.oneStep(watchDir); 
+            StringArray alps = FileVisitorSubdir.oneStep(watchDir, pathRegex); 
             int n = alps.size();
             for (int i = 0; i < n; i++) {
                 WatchKey key = Paths.get(alps.get(i)).register(watchService, events);
@@ -122,9 +129,11 @@ public class WatchDirectory {
     public int getEvents(ArrayList<WatchEvent.Kind> eventKinds, StringArray contexts) {
         eventKinds.clear();
         contexts.clear();
+        if (watchService == null) //perhaps close() was called
+            return 0;
         WatchKey key = watchService.poll(); 
         while (key != null) {
-            String tDir = (String)keyToDirMap.get(key);
+            String tDir = keyToDirMap.get(key);
             for (WatchEvent event : key.pollEvents()) {
                 eventKinds.add(event.kind());
                 contexts.add(tDir +
@@ -135,6 +144,35 @@ public class WatchDirectory {
         }
         return eventKinds.size();
     }
+
+    /**
+     * This explicitly closes this WatchDirectory and frees resources (threads).
+     * This won't throw an exception.
+     */
+    public void close() {
+        try {
+            if (watchService != null) 
+                watchService.close();
+        } catch (Throwable t1) {
+            //do nothing, so nothing can go wrong.
+        }
+
+        watchService = null;  //safe, and encourages gc
+        keyToDirMap = null;   //safe, and encourages gc
+    }
+
+
+    /** 
+     * Users of this class shouldn't call this -- use cancel() if you need/want to 
+     * explicitly shutdown this WatchDirectory.
+     * In normal use, this will be called by the Java garbage collector. 
+     */
+    protected void finalize() throws Throwable {
+        close(); //apparently, Java garbage colloector doesn't do this by itself!
+        super.finalize();
+    }
+    
+
 
 
     /** 
@@ -161,7 +199,7 @@ public class WatchDirectory {
         //delete all files in watchDir and subdir  
         RegexFilenameFilter.regexDelete(watchDir, ".*", true);       
         Math2.sleep(sleep);
-        WatchDirectory wd = watchDirectoryAll(watchDir, false);
+        WatchDirectory wd = watchDirectoryAll(watchDir, false, null); //recursive, pathRegex
 
         //programmatic test: copy files into dirs
         File2.copy(sourceDir + file1, watchDir + file1);
@@ -208,7 +246,7 @@ public class WatchDirectory {
         String2.log("test recursive " + CREATE);
         RegexFilenameFilter.regexDelete(watchDir, ".*", true);       
         Math2.sleep(sleep);
-        wd = watchDirectoryAll(watchDir, true);
+        wd = watchDirectoryAll(watchDir, true, ""); //recursive, pathRegex
 
         //programmatic test: copy files into dirs
         File2.copy(sourceDir + file1, watchDir + file1);
@@ -248,17 +286,24 @@ public class WatchDirectory {
 
         //*** test creating a huge number 
         //This is allowed on Windows. It doesn't appear to have max number.
-// ADVICE TO ADMINS: 2015-03-10
+// ADVICE TO ADMINS: 2015-03-10 [revised 2015-09-01]
 //  On Linux computers, 
 //  if you are using <updateEveryNMillis> with EDDGridFromFiles or EDDTableFromFiles
 //  classes, you may see a problem where a dataset fails to load with the 
 //  error message:
 //  "IOException: User limit of inotify instances reached or too many open files".
-//  If so, you can fix this problem by calling (as root):
-//    echo 10000 > /proc/sys/fs/inotify/max_user_watches
-//    echo 10000 > /proc/sys/fs/inotify/max_user_instances
+//  see messages.xml: <inotifyFix>
+//  You can fix this problem by calling (as root):
+//    echo fs.inotify.max_user_watches=524288 | tee -a /etc/sysctl.conf
+//    echo fs.inotify.max_user_instances=2048 | tee -a /etc/sysctl.conf
+//    sysctl -p
 //  Or, use higher numbers if the problem persists.
 //  The default for watches is 8192. The default for instances is 128.
+//***
+//see current limit
+//cat /proc/sys/fs/inotify/max_user_watches
+//cat /proc/sys/fs/inotify/max_user_instances
+//from https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
         //VERY SLOW! NOT USUALLY DONE:
         //String2.log("test all dirs on this computer: watchDirectoryAll(\"/\", true)");
         //wd = watchDirectoryAll("/", true);
@@ -276,7 +321,7 @@ public class WatchDirectory {
         //*** interactive test
         RegexFilenameFilter.regexDelete(watchDir, ".*", true);       
         Math2.sleep(sleep);
-        wd = watchDirectoryAll(watchDir, true);
+        wd = watchDirectoryAll(watchDir, true, ""); //recursive, pathRegex
         while (doInteractiveTest) {  
             String s = String2.getStringFromSystemIn(
                 "WatchDirectory interactive test (recursive):\n" +

@@ -119,12 +119,18 @@ public class SgtGraph  {
      *    or null for none.
      * @param minX the min value for the X axis. Use Double.NaN to tell makeGraph to set it.
      *    If xIsTimeAxis, specify minX in epochSeconds.
+     *    Here (and inside this method), minX < maxX.
      * @param maxX the max value for the X axis. Use Double.NaN to tell makeGraph to set it.
      *    If xIsTimeAxis, specify minX in epochSeconds.
+     * @param xAscending if true, the axis will be drawn low to high; else it will be flipped.
+     *    The current minX maxX order is irrelevant.
      * @param minY the min value for the Y axis. Use Double.NaN to tell makeGraph to set it.
      *    If yIsTimeAxis, specify minY in epochSeconds. 
+     *    Here (and inside this method), minY < maxY.
      * @param maxY the max value for the Y axis. Use Double.NaN to tell makeGraph to set it.
      *    If yIsTimeAxis, specify minY in epochSeconds. 
+     * @param yAscending if true, the axis will be drawn low to high; else it will be flipped.
+     *    The current minY maxY order is irrelevant.
      * @param xIsTimeAxis   note that SGT doesn't allow x and y to be time axes
      * @param yIsTimeAxis
      * @param graphDataLayers an ArrayList of GraphDataLayers with the data to be plotted; 
@@ -154,7 +160,8 @@ public class SgtGraph  {
         String xAxisTitle, String yAxisTitle,
         int legendPosition, String legendTitle1, String legendTitle2,
         String imageDir, String logoImageFile,
-        double minX, double maxX, double minY, double maxY, 
+        double minX, double maxX, boolean xAscending, 
+        double minY, double maxY, boolean yAscending,
         boolean xIsTimeAxis, boolean yIsTimeAxis,
         ArrayList graphDataLayers,
         Graphics2D g2,
@@ -221,6 +228,8 @@ public class SgtGraph  {
             
             //if minX maxX not specified, calculate x axis ranges
             if (Math2.isFinite(minX) && Math2.isFinite(maxX)) {
+                //ensure minX < maxX
+                if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
             } else {
                 double tMinX = Double.MAX_VALUE;
                 double tMaxX = -Double.MAX_VALUE;
@@ -306,7 +315,10 @@ public class SgtGraph  {
             }
 
             //if minY maxY not specified, calculate y axis ranges
-            if (!Math2.isFinite(minY) || !Math2.isFinite(maxY)) {
+            if (Math2.isFinite(minY) && Math2.isFinite(maxY)) {
+                //ensure minY < maxY
+                if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
+            } else {
                 double tMinY = Double.MAX_VALUE;
                 double tMaxY = -Double.MAX_VALUE;
                 for (int i = 0; i < tables.length; i++) {
@@ -405,10 +417,16 @@ public class SgtGraph  {
 
             //figure out the params needed to make the graph
             String error = "";
+            //make doubly sure min < max
             if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
             if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
             double xRange = maxX - minX; 
             double yRange = maxY - minY; 
+            double beginX = xAscending? minX: maxX;
+            double endX   = xAscending? maxX: minX;
+            double beginY = yAscending? minY: maxY;
+            double endY   = yAscending? maxY: minY;
+
             double rangeScaler = 1;  //bigger -> fewer labels
             if (imageWidthPixels <= 180) {
                 rangeScaler *= 2; //adjust for tiny graphs, 
@@ -627,8 +645,8 @@ public class SgtGraph  {
                 "  graphWidth=" + graphWidthPixels + " narrowX=" + narrowXGraph +
                 " graphHeight=" + graphHeightPixels + " narrowY=" + narrowYGraph);
             CartesianProjection cp = new CartesianProjection(
-                minX * scaleXIfTime, maxX * scaleXIfTime, 
-                minY * scaleYIfTime, maxY * scaleYIfTime, 
+                beginX * scaleXIfTime, endX * scaleXIfTime, 
+                beginY * scaleYIfTime, endY * scaleYIfTime, 
                 graphX1, graphX2, graphY1, graphY2);
             DoubleObject dox1 = new DoubleObject(0);
             DoubleObject doy1 = new DoubleObject(0);
@@ -640,10 +658,10 @@ public class SgtGraph  {
             returnIntWESN.add(graphY1);
             returnIntWESN.add(graphY2);
 
-            returnDoubleWESN.add(minX);
-            returnDoubleWESN.add(maxX);
-            returnDoubleWESN.add(minY);
-            returnDoubleWESN.add(maxY);
+            returnDoubleWESN.add(beginX);
+            returnDoubleWESN.add(endX);
+            returnDoubleWESN.add(beginY);
+            returnDoubleWESN.add(endY);
 
             if (!transparent) {
                 //draw the graph background color 
@@ -672,20 +690,20 @@ public class SgtGraph  {
                 baseULXPixel/dpi + imageWidthInches, 
                 baseULYPixel/dpi + imageHeightInches);
 
-            //redefine some graph parts for this graph with SoT objects -- real min max
+            //redefine some graph parts for this graph with SoT objects -- minX vs beginX
             SoTRange xUserRange = xIsTimeAxis?
-                (SoTRange)new SoTRange.Time((long)(minX * scaleXIfTime), (long)(maxX * scaleXIfTime)):
-                (SoTRange)new SoTRange.Double(minX, maxX, xDivisions[0]);
+                (SoTRange)new SoTRange.Time((long)(beginX * scaleXIfTime), (long)(endX * scaleXIfTime)):
+                (SoTRange)new SoTRange.Double(beginX, endX, (xAscending? 1 : -1) * xDivisions[0]);
             SoTRange yUserRange = yIsTimeAxis?
-                (SoTRange)new SoTRange.Time((long)(minY * scaleYIfTime), (long)(maxY * scaleYIfTime)):
-                (SoTRange)new SoTRange.Double(minY, maxY, yDivisions[0]);
+                (SoTRange)new SoTRange.Time((long)(beginY * scaleYIfTime), (long)(endY * scaleYIfTime)):
+                (SoTRange)new SoTRange.Double(beginY, endY, (yAscending? 1 : -1) * yDivisions[0]);
             gov.noaa.pmel.sgt.LinearTransform xt = 
                 new gov.noaa.pmel.sgt.LinearTransform(xPhysRange, xUserRange);
             gov.noaa.pmel.sgt.LinearTransform yt = 
                 new gov.noaa.pmel.sgt.LinearTransform(yPhysRange, yUserRange);
-            SoTPoint origin2 = new SoTPoint(
-                xIsTimeAxis? (SoTValue)new SoTValue.Time((long)(minX * scaleXIfTime)) : (SoTValue)new SoTValue.Double(minX), 
-                yIsTimeAxis? (SoTValue)new SoTValue.Time((long)(minY * scaleYIfTime)) : (SoTValue)new SoTValue.Double(minY));
+            SoTPoint origin2 = new SoTPoint( //where are axes drawn?
+                xIsTimeAxis? (SoTValue)new SoTValue.Time((long)(beginX * scaleXIfTime)) : (SoTValue)new SoTValue.Double(beginX), 
+                yIsTimeAxis? (SoTValue)new SoTValue.Time((long)(beginY * scaleYIfTime)) : (SoTValue)new SoTValue.Double(beginY));
 
             //draw the point layers 
             int nTotalValid = 0;
@@ -1878,7 +1896,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, false, //x/yIsTimeAxis,
             graphDataLayers1,
             g21, 0, 0, 300, 300, 2, //graph width/height
@@ -1886,7 +1904,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, false, //x/yIsTimeAxis,
             graphDataLayers1,
             g2, 0, 0, //upperLeft
@@ -1898,7 +1916,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 2,", "no time, no data.",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             false, false, //x/yIsTimeAxis,
             graphDataLayers2,
             g22, 0, 0, 300, 300, 2, //graph width/height
@@ -1906,7 +1924,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 2,", "no time, no data.",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             false, false, //x/yIsTimeAxis,
             graphDataLayers2,
             g2, width/2 + 10, 0, //upper Right
@@ -1918,7 +1936,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 3,", "stick graph",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, false, //x/yIsTimeAxis,
             graphDataLayers3,
             g23, 0, 0, 300, 300, 2, //graph width/height
@@ -1926,7 +1944,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 3,", "stick graph",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, false, //x/yIsTimeAxis,
             graphDataLayers3,
             g2, 0, height/3, //mid Left
@@ -1938,7 +1956,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 4,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, false, //x/yIsTimeAxis,
             graphDataLayers4,
             g24, 0, 0, 300, 300, 2, //graph width/height
@@ -1946,7 +1964,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 4,", "x is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, false, //x/yIsTimeAxis,
             graphDataLayers4,
             g2, width/2 + 10, height/3, //mid Right
@@ -1958,7 +1976,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 5,", "2 time axis! y->not",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, true, //x/yIsTimeAxis,
             graphDataLayers5,
             g25, 0, 0, 300, 300, 2, //graph width/height
@@ -1966,7 +1984,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 5,", "2 time axis! y->not",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             true, true, //x/yIsTimeAxis,
             graphDataLayers5,
             g2, 0, height*2/3, //low left
@@ -1978,7 +1996,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(true, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 6,", "y is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             false, true, //x/yIsTimeAxis,
             graphDataLayers6,
             g26, 0, 0, 300, 300, 2, //graph width/height
@@ -1986,7 +2004,7 @@ public class SgtGraph  {
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
             SgtUtil.LEGEND_BELOW, "Graph 6,", "y is TimeAxis",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             false, true, //x/yIsTimeAxis,
             graphDataLayers6,
             g2, width/2 + 10, height*2/3, //low right
@@ -2121,7 +2139,7 @@ public class SgtGraph  {
             sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
                 SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
                 imageDir, "noaa20.gif",
-                Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
                 true, false, //x/yIsTimeAxis,
                 graphDataLayers1,
                 g21, 0, 0, //upperLeft
@@ -2206,21 +2224,49 @@ public class SgtGraph  {
         graphDataLayers1.add(graphDataLayer);
 
         //draw the graph with data
-        BufferedImage bufferedImage = SgtUtil.getBufferedImage(width, height);
+        BufferedImage bufferedImage = SgtUtil.getBufferedImage(width*2, height*2);
         Graphics2D g2 = (Graphics2D)bufferedImage.getGraphics();
 
-        //graph 1
-        String2.log("Graph 1");
         sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
-            SgtUtil.LEGEND_BELOW, "Graph 1,", "some text",
+            SgtUtil.LEGEND_BELOW, "Standard,", "some text",
             imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
             false, false, //x/yIsTimeAxis,
             graphDataLayers1,
             g2, 0, 0, //upperLeft
             width, height, 2, //graph width/height
             new Color(0x808080), 1); //gray, fontScale
         
+        sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
+            SgtUtil.LEGEND_BELOW, "Flip X,", "some text",
+            imageDir, "noaa20.gif",
+            Double.NaN, Double.NaN, false, Double.NaN, Double.NaN, true, //predefined min/maxX/Y
+            false, false, //x/yIsTimeAxis,
+            graphDataLayers1,
+            g2, width, 0, //upperLeft
+            width, height, 2, //graph width/height
+            new Color(0x808080), 1); //gray, fontScale
+
+        sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
+            SgtUtil.LEGEND_BELOW, "Flip Y", "some text",
+            imageDir, "noaa20.gif",
+            Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, false, //predefined min/maxX/Y
+            false, false, //x/yIsTimeAxis,
+            graphDataLayers1,
+            g2, 0, height, //upperLeft
+            width, height, 2, //graph width/height
+            new Color(0x808080), 1); //gray, fontScale
+
+        sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
+            SgtUtil.LEGEND_BELOW, "Flip X & Y,", "some text",
+            imageDir, "noaa20.gif",
+            Double.NaN, Double.NaN, false, Double.NaN, Double.NaN, false, //predefined min/maxX/Y
+            false, false, //x/yIsTimeAxis,
+            graphDataLayers1,
+            g2, width, height, //upperLeft
+            width, height, 2, //graph width/height
+            new Color(0x808080), 1); //gray, fontScale
+
         //save image
         String fileName = tempDir + "SgtGraphTestSurface.png";
         SgtUtil.saveImage(bufferedImage, fileName);

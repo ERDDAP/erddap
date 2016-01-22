@@ -25,6 +25,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
@@ -35,6 +36,7 @@ import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
+import java.text.MessageFormat;
 
 /** 
  * This class represents a grid dataset with Etopo bathymetry data.
@@ -64,34 +66,42 @@ public class EDDGridFromEtopo extends EDDGrid {
     /**
      * This constructs an EDDGridFromEtopo based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridFromEtopo"&gt; 
      *    having just been read.  
      * @return an EDDGridFromEtopo.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridFromEtopo fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridFromEtopo fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridFromEtopo(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
+        boolean tAccessibleViaWMS = true;
 
         //process the tags
         int startOfTagsN = xmlReader.stackSize();
+        String startOfTags = xmlReader.allTags();
+        int startOfTagsLength = startOfTags.length();
         while (true) {
             xmlReader.nextTag();
             if (xmlReader.stackSize() == startOfTagsN) 
                 break; //the </dataset> tag
+            String tags = xmlReader.allTags();
+            String content = xmlReader.content();
+            String localTags = tags.substring(startOfTagsLength);
 
             //try to make the tag names as consistent, descriptive and readable as possible
 
             //no support for active, since always active
             //no support for accessibleTo, since accessible to all
             //no support for onChange since dataset never changes
-
-            xmlReader.unexpectedTagException();
+            if      (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
+            else xmlReader.unexpectedTagException();
         }
 
-        return new EDDGridFromEtopo(tDatasetID);
+        return new EDDGridFromEtopo(tDatasetID, tAccessibleViaWMS);
     }
 
     /**
@@ -99,7 +109,7 @@ public class EDDGridFromEtopo extends EDDGrid {
      *
      * @throws Throwable if trouble
      */
-    public EDDGridFromEtopo(String tDatasetID) throws Throwable {
+    public EDDGridFromEtopo(String tDatasetID, boolean tAccessibleViaWMS) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromEtopo " + tDatasetID); 
@@ -112,6 +122,9 @@ public class EDDGridFromEtopo extends EDDGrid {
         is180 = datasetID.equals("etopo180");
         Test.ensureTrue(is180 || datasetID.equals("etopo360"),
             errorInMethod + "datasetID must be \"etopo180\" or \"etopo360\".");
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
 
         sourceGlobalAttributes = new Attributes();
         sourceGlobalAttributes.add("acknowledgement", "NOAA NGDC");
@@ -433,8 +446,8 @@ public class EDDGridFromEtopo extends EDDGrid {
         GridDataAccessor.reallyVerbose = true;
         String name, tName, axisDapQuery, userDapQuery, results, expected, error;
         int tPo;
-        EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180");
-        EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360");
+        EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180", true);
+        EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360", true);
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
 

@@ -54,498 +54,60 @@ import ucar.ma2.*;
  * This class represents gridded data aggregated from a collection of 
  * NetCDF .nc (http://www.unidata.ucar.edu/software/netcdf/),
  * GRIB .grb (http://en.wikipedia.org/wiki/GRIB),
- * (and related) data files.
+ * (and related) NetcdfFiles.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2009-01-05
  */
-public class EDDGridFromNcFiles extends EDDGridFromFiles { 
+public class EDDGridFromNcFiles extends EDDGridFromNcLow { 
 
-    /** Used by Bob only. Don't set this to true here -- do it in the calling code. */
-    public static boolean generateDatasetsXmlCoastwatchErdMode = false;
+    /** subclasses have different classNames. */
+    public String subClassName() {
+        return "EDDGridFromNcFiles";
+    }
+    
+    /** 
+     * Subclasses override this: 
+     * EDDGridFromNcFilesUnpacked applies scale_factor and add_offset and
+     * converts times variables to epochSeconds. */
+    public boolean unpack() {
+        return false;
+    } 
 
+    /** subclasses call lower version */
+    public static String generateDatasetsXml(
+        String tFileDir, String tFileNameRegex, String sampleFileName, 
+        int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
 
+        return generateDatasetsXml("EDDGridFromNcFiles",
+            tFileDir, tFileNameRegex, sampleFileName, 
+            tReloadEveryNMinutes, externalAddGlobalAttributes);
+    }
+    
     /** The constructor just calls the super constructor. */
-    public EDDGridFromNcFiles(String tDatasetID, String tAccessibleTo,
+    public EDDGridFromNcFiles(String tDatasetID, 
+        String tAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
+        String tFileDir, String tFileNameRegex, 
+        boolean tRecursive, String tPathRegex, String tMetadataFrom,
         int tMatchAxisNDigits, boolean tFileTableInMemory,
-        boolean tAccessibleViaFiles) 
-        throws Throwable {
+        boolean tAccessibleViaFiles) throws Throwable {
 
-        super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, 
+        super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, 
             tAddGlobalAttributes,
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tMatchAxisNDigits, tFileTableInMemory,
             tAccessibleViaFiles);
     }
-
-
-    /**
-     * This gets sourceGlobalAttributes and sourceDataAttributes from the specified 
-     * source file.
-     *
-     * @param fileDir
-     * @param fileName
-     * @param sourceAxisNames
-     * @param sourceDataNames the names of the desired source data columns.
-     * @param sourceDataTypes the data types of the desired source columns 
-     *    (e.g., "String" or "float") 
-     * @param sourceGlobalAttributes should be an empty Attributes. It will be populated by this method
-     * @param sourceAxisAttributes should be an array of empty Attributes. It will be populated by this method
-     * @param sourceDataAttributes should be an array of empty Attributes. It will be populated by this method
-     * @throws Throwable if trouble (e.g., invalid file, or a sourceAxisName or sourceDataName not found).
-     *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
-     */
-    public void getSourceMetadata(String fileDir, String fileName, 
-        StringArray sourceAxisNames,
-        StringArray sourceDataNames, String sourceDataTypes[],
-        Attributes sourceGlobalAttributes, 
-        Attributes sourceAxisAttributes[],
-        Attributes sourceDataAttributes[]) throws Throwable {
-
-        NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
-        String getWhat = "globalAttributes";
-        try {
-            NcHelper.getGlobalAttributes(ncFile, sourceGlobalAttributes);
-
-            for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
-                getWhat = "axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi);
-                Variable var = ncFile.findVariable(sourceAxisNames.get(avi));  
-                if (var == null) {
-                    //it will be null for dimensions without corresponding coordinate axis variable
-                    sourceAxisAttributes[avi].add("units", "count"); //"count" is udunits;  "index" isn't, but better?
-                } else {
-                    NcHelper.getVariableAttributes(var, sourceAxisAttributes[avi]);
-                }
-            }
-
-            for (int dvi = 0; dvi < sourceDataNames.size(); dvi++) {
-                getWhat = "dataAttributes for dvi=" + dvi + " name=" + sourceDataNames.get(dvi);
-                Variable var = ncFile.findVariable(sourceDataNames.get(dvi));  //null if not found
-                if (var == null)
-                    String2.log("  var not in file: " + getWhat);
-                else 
-                    NcHelper.getVariableAttributes(var, sourceDataAttributes[dvi]);
-            }
-
-            //I care about this exception
-            ncFile.close();
-
-        } catch (Throwable t) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Throwable t2) {
-                //don't care
-            }
-            throw new RuntimeException("Error in EDDGridFromNcFiles.getSourceMetadata" +
-                "\nwhile getting " + getWhat + 
-                "\nfrom " + fileDir + fileName + 
-                "\nCause: " + MustBe.throwableToShortString(t),
-                t);
-        }
-    }
-
-
-    /**
-     * This gets source axis values from one file.
-     *
-     * @param fileDir
-     * @param fileName
-     * @param sourceAxisNames the names of the desired source axis variables.
-     * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
-     *   It needn't set sourceGlobalAttributes or sourceDataAttributes
-     *   (but see getSourceMetadata).
-     * @throws Throwable if trouble (e.g., invalid file).
-     *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
-     */
-    public PrimitiveArray[] getSourceAxisValues(String fileDir, String fileName, 
-        StringArray sourceAxisNames) throws Throwable {
-
-        NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
-        String getWhat = "globalAttributes";
-        try {
-            PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
-
-            for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
-                String avName = sourceAxisNames.get(avi);
-                getWhat = "axisAttributes for variable=" + avName;
-                Variable var = ncFile.findVariable(avName);  //null if not found
-                if (var == null) {
-                    //there is no corresponding coordinate variable; make pa of indices, 0...
-                    Dimension dim = ncFile.findDimension(avName);
-                    int dimSize1 = dim.getLength() - 1;
-                    avPa[avi] = avi > 0 && dimSize1 < 32000? 
-                        new ShortArray(0, dimSize1) :
-                        new IntArray(0, dimSize1);
-                } else {
-                    avPa[avi] = NcHelper.getPrimitiveArray(var); 
-                }
-            }
-
-            //I care about this exception
-            ncFile.close();
-            return avPa;
-
-        } catch (Throwable t) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Throwable t2) {
-                //don't care
-            }
-            throw new RuntimeException("Error in EDDGridFromNcFiles.getSourceAxisValues" +
-                "\nwhile getting " + getWhat + 
-                "\nfrom " + fileDir + fileName + 
-                "\nCause: " + MustBe.throwableToShortString(t),
-                t);
-        }
-    }
-
-    /**
-     * This gets source data from one file.
-     *
-     * @param fileDir
-     * @param fileName
-     * @param tDataVariables the desired data variables
-     * @param tConstraints  where the first axis variable's constraints
-     *   have been customized for this file.
-     * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
-     *   <br>The dataValues are straight from the source, not modified.
-     *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,
-     *     but can be any type. EDDGridFromFiles will convert to the sourceDataTypeClass.
-     *   <br>Note the lack of axisVariable values!
-     * @throws Throwable if trouble (notably, WaitThenTryAgainException).
-     *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
-     */
-    public PrimitiveArray[] getSourceDataFromFile(String fileDir, String fileName, 
-        EDV tDataVariables[], IntArray tConstraints) throws Throwable {
-
-        //make the selection spec  and get the axis values
-        int nav = axisVariables.length;
-        int ndv = tDataVariables.length;
-        PrimitiveArray[] paa = new PrimitiveArray[ndv];
-        StringBuilder selectionSB = new StringBuilder();
-        for (int avi = 0; avi < nav; avi++) {
-            selectionSB.append((avi == 0? "" : ",") +
-                tConstraints.get(avi*3  ) + ":" + 
-                tConstraints.get(avi*3+2) + ":" + 
-                tConstraints.get(avi*3+1)); //start:stop:stride !
-        }
-        String selection = selectionSB.toString();
-
-        NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
-        try {
-
-            for (int dvi = 0; dvi < ndv; dvi++) {
-                Variable var = ncFile.findVariable(tDataVariables[dvi].sourceName());  
-                if (var == null) 
-                    throw new RuntimeException(
-                        MessageFormat.format(EDStatic.errorNotFoundIn,
-                            "dataVariableSourceName=" + tDataVariables[dvi].sourceName(),
-                            fileName)); //don't show directory    
-                String tSel = selection;
-                if (tDataVariables[dvi].sourceDataTypeClass() == String.class) 
-                    tSel += ",0:" + (var.getShape(var.getRank() - 1) - 1);
-                Array array = var.read(tSel);
-                Object object = NcHelper.getArray(array);
-                paa[dvi] = PrimitiveArray.factory(object); 
-                //String2.log("!EDDGridFrimNcFiles.getSourceDataFromFile " + tDataVariables[dvi].sourceName() +
-                //    "[" + selection + "]\n" + paa[dvi].toString());
-            }
-
-            //I care about this exception
-            ncFile.close();
-            return paa;
-
-        } catch (Throwable t) {
-            //make sure it is explicitly closed
-            try {   
-                ncFile.close();    
-            } catch (Throwable t2) {
-                String2.log("Error while trying to close " + fileDir + fileName +
-                    "\n" + MustBe.throwableToShortString(t2));
-            }  
-
-            throw t;
-        }
-    }
-
-    /**
-     * This makes a sibling dataset, based on the new sourceUrl.
-     *
-     * @throws Throwable always (since this class doesn't support sibling())
-     */
-    public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
-        int matchAxisNDigits, boolean shareInfo) throws Throwable {
-        throw new SimpleException("Error: " + 
-            "EDDGridFromNcFiles doesn't support method=\"sibling\".");
-
-    }
-
-    /** 
-     * This does its best to generate a clean, ready-to-use datasets.xml entry 
-     * for an EDDGridFromNcFiles.
-     * The XML can then be edited by hand and added to the datasets.xml file.
-     *
-     * <p>This can't be made into a web service because it would allow any user
-     * to looks at (possibly) private .nc files on the server.
-     *
-     * @param tFileDir the starting (parent) directory for searching for files
-     * @param tFileNameRegex  the regex that each filename (no directory info) must match 
-     *    (e.g., ".*\\.nc")  (usually only 1 backslash; 2 here since it is Java code). 
-     * @param sampleFileName full file name of one of the files in the collection
-     * @param externalAddGlobalAttributes  These are given priority. Use null if none available.
-     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
-     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
-     *    If no trouble, then a valid dataset.xml chunk has been returned.
-     */
-    public static String generateDatasetsXml(
-        String tFileDir, String tFileNameRegex, String sampleFileName, 
-        int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
-
-        String2.log("EDDGridFromNcFiles.generateDatasetsXml" +
-            "\n  sampleFileName=" + sampleFileName);
-        if (tFileDir.endsWith("/catalog.html")) //thredds catalog
-            tFileDir = tFileDir.substring(0, tFileDir.length() - 12);
-        else if (tFileDir.endsWith("/catalog.xml")) //thredds catalog
-            tFileDir = tFileDir.substring(0, tFileDir.length() - 11);
-        else if (tFileDir.endsWith("/contents.html")) //hyrax catalog
-            tFileDir = tFileDir.substring(0, tFileDir.length() - 11);
-        else tFileDir = File2.addSlash(tFileDir); //otherwise, assume tFileDir is missing final slash
-
-        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
-            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
-
-        String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
-        String2.log(NcHelper.dumpString(sampleFileName, false));
-
-        NetcdfFile ncFile = NcHelper.openFile(sampleFileName); //may throw exception
-
-        //make table to hold info
-        Table axisSourceTable = new Table();  
-        Table dataSourceTable = new Table();  
-        Table axisAddTable = new Table();
-        Table dataAddTable = new Table();
-        StringBuilder sb = new StringBuilder();
-
-        //get source global Attributes
-        Attributes globalSourceAtts = axisSourceTable.globalAttributes();
-        NcHelper.getGlobalAttributes(ncFile, globalSourceAtts);
-
-        try {
-            //look at all variables with dimensions, find ones which share same max nDim
-            List allVariables = ncFile.getVariables(); 
-            int maxDim = 0;
-            int nGridsAtSource = 0;
-            for (int v = 0; v < allVariables.size(); v++) {
-                Variable var = (Variable)allVariables.get(v);
-                String varName = var.getFullName();
-                List dimensions = var.getDimensions();
-                if (dimensions == null || dimensions.size() <= 1) 
-                    continue;
-                nGridsAtSource++;
-                Class tClass = NcHelper.getElementClass(var.getDataType());
-                if      (tClass == char.class)    tClass = String.class;
-                else if (tClass == boolean.class) tClass = byte.class; 
-                PrimitiveArray pa = PrimitiveArray.factory(tClass, 1, false);
-                int nDim = dimensions.size() - (tClass == String.class? 1 : 0);
-                if (nDim < maxDim) {
-                    continue;
-                } else if (nDim > maxDim) {
-                    //clear previous vars 
-                    axisSourceTable.removeAllColumns();
-                    dataSourceTable.removeAllColumns();
-                    axisAddTable.removeAllColumns();
-                    dataAddTable.removeAllColumns();
-                    maxDim = nDim;
-
-                    //store the axis vars
-                    for (int avi = 0; avi < maxDim; avi++) {
-                        Dimension tDim = ((Dimension)dimensions.get(avi));
-//String2.log(">>varName=" + varName + " avi=" + avi + " dim=" + tDim.toString());
-//String2.log(">>name=" + tDim.getName()); 
-                        //work-around bug in netcdf-java: for anonymous dim,
-                        //  getName() returns null, but getFullName() throws Exception.
-                        String axisName = tDim.getName();
-                        if (axisName != null) 
-                            axisName = tDim.getFullName();  
-                        Attributes sourceAtts = new Attributes();
-                        if (axisName != null) {
-                            Variable axisVariable = ncFile.findVariable(axisName);
-                            if (axisVariable != null) //it will be null for dimension without same-named coordinate axis variable
-                                NcHelper.getVariableAttributes(axisVariable, sourceAtts);
-                        }
-                        axisSourceTable.addColumn(avi, axisName, new DoubleArray(), //type doesn't matter
-                            sourceAtts); 
-                        String destName = String2.modifyToBeVariableNameSafe(axisName);
-                        axisAddTable.addColumn(   avi, destName, new DoubleArray(), //type doesn't matter
-                            makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                globalSourceAtts,
-                                sourceAtts, destName, false, true)); //addColorBarMinMax, tryToFindLLAT
-
-                    }
-
-                } else { 
-                    //nDim == maxDim
-                    //if axes are different, reject this var
-                    boolean ok = true;
-                    for (int avi = 0; avi < maxDim; avi++) {
-                        String axisName = ((Dimension)dimensions.get(avi)).getFullName();
-                        String expectedName = axisSourceTable.getColumnName(avi);
-                        if (!axisName.equals(expectedName)) {
-                            if (verbose) String2.log("variable=" + varName + 
-                                " has the right nDimensions=" + nDim + 
-                                ", but axis#=" + avi + "=" + axisName + 
-                                " != " + expectedName);
-                            ok = false;
-                            continue;
-                        }
-                    }
-                }
-
-
-                //add the dataVariable
-                Attributes sourceAtts = new Attributes();
-                NcHelper.getVariableAttributes(var, sourceAtts);
-                dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, 
-                    sourceAtts);
-                String destName = String2.modifyToBeVariableNameSafe(varName);
-                dataAddTable.addColumn(   dataAddTable.nColumns(),   destName, pa, 
-                    makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        globalSourceAtts,
-                        sourceAtts, destName, true, false)); //addColorBarMinMax, tryToFindLLAT
-            }
-
-            if (dataAddTable.nColumns() == 0)
-                throw new RuntimeException("No dataVariables found.");
-
-            //after dataVariables known, add global attributes in the axisAddTable
-            Attributes globalAddAtts = axisAddTable.globalAttributes();
-            globalAddAtts.set(
-                makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                    globalSourceAtts, 
-                    "Grid",  //another cdm type could be better; this is ok
-                    tFileDir, externalAddGlobalAttributes, 
-                    EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
-                        suggestKeywords(dataSourceTable, dataAddTable))));
-
-            //gather the results 
-            String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
-            boolean accViaFiles = false;
-            int tMatchNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
-
-            if (generateDatasetsXmlCoastwatchErdMode) {
-                accViaFiles = true;
-                tMatchNDigits = 15;
-                //  /u00/satellite/AT/ssta/1day/
-                Pattern pattern = Pattern.compile("/u00/satellite/([^/]+)/([^/]+)/([^/]+)day/");
-                Matcher matcher = pattern.matcher(tFileDir); 
-                String m12, m1_2; //ATssta  AT_ssta
-                String cl; //composite length
-                if (matcher.matches()) {
-                    m12 = matcher.group(1) + matcher.group(2);
-                    m1_2 = matcher.group(1) + "_" + matcher.group(2);
-                    cl = matcher.group(3);
-                } else {
-                    //  /u00/satellite/MPIC/1day/
-                    pattern = Pattern.compile("/u00/satellite/([^/]+)/([^/]+)day/");
-                    matcher = pattern.matcher(tFileDir); 
-                    if (matcher.matches()) {
-                        m12 = matcher.group(1);
-                        m1_2 = m12;
-                        cl = matcher.group(2);
-                    } else {
-                        throw new RuntimeException(tFileDir + " doesn't match the pattern!");
-                    }
-                }
-
-                tDatasetID = "erd" + m12 + cl + "day";
-                globalAddAtts.set("creator_name", "NOAA NMFS SWFSC ERD");
-                globalAddAtts.set("creator_email", "erd.data@noaa.gov");
-                globalAddAtts.set("creator_url", "http://www.pfeg.noaa.gov");
-                globalAddAtts.set("publisher_name", "NOAA NMFS SWFSC ERD");
-                globalAddAtts.set("publisher_email", "erd.data@noaa.gov");
-                globalAddAtts.set("publisher_url", "http://www.pfeg.noaa.gov");
-                globalAddAtts.set("id", "null");
-                globalAddAtts.set("infoUrl", "http://coastwatch.pfeg.noaa.gov/infog/" +
-                    m1_2 + "_las.html");
-                globalAddAtts.set("institution", "NOAA NMFS SWFSC ERD");
-                globalAddAtts.set("license", "[standard]");
-                globalAddAtts.remove("summary");
-                globalAddAtts.set("title", 
-                    globalSourceAtts.getString("title") + " (" + 
-                    (cl.equals("h")? "Single Scan" : 
-                     cl.equals("m")? "Monthly Composite" : 
-                                     cl + " Day Composite") + 
-                    ")");
-
-                for (int dv = 0; dv < dataSourceTable.nColumns(); dv++) {
-                    dataAddTable.columnAttributes(dv).set("long_name", "!!! FIX THIS !!!");
-                    if (dataSourceTable.columnAttributes(dv).get("actual_range") != null)
-                           dataAddTable.columnAttributes(dv).set("actual_range", "null");
-                }
-
-            } else {
-                sb.append(directionsForGenerateDatasetsXml());
-            }
-
-            if (nGridsAtSource > dataAddTable.nColumns())
-                sb.append(
-                    "!!! The source for " + tDatasetID + " has nGridVariables=" + nGridsAtSource + ",\n" +
-                    "but this dataset will only serve " + dataAddTable.nColumns() + 
-                    " because the others use different dimensions.\n");
-            sb.append(
-                (generateDatasetsXmlCoastwatchErdMode? "": "-->\n") +
-                "\n" +
-                "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + tDatasetID +                      
-                    "\" active=\"true\">\n" +
-                "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-                "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
-                "</updateEveryNMillis>\n" +  
-                "    <fileDir>" + tFileDir + "</fileDir>\n" +
-                "    <recursive>true</recursive>\n" +
-                "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
-                "    <metadataFrom>last</metadataFrom>\n" +
-                "    <matchAxisNDigits>" + tMatchNDigits + "</matchAxisNDigits>\n" +
-                "    <fileTableInMemory>false</fileTableInMemory>\n" +
-                "    <accessibleViaFiles>" + accViaFiles + "</accessibleViaFiles>\n");
-
-            sb.append(writeAttsForDatasetsXml(false, globalSourceAtts, "    "));
-            sb.append(writeAttsForDatasetsXml(true,  globalAddAtts,    "    "));
-            
-            //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
-            sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, true,  false));
-            sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true,  false, false));
-            sb.append(
-                "</dataset>\n" +
-                "\n");
-
-            //I care about this exception
-            ncFile.close();
-
-        String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-
-        } catch (Throwable t) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Throwable t2) {
-                //don't care
-            }
-            throw t;
-        }
-        return sb.toString();        
-
-    }
-
 
 
     /** This tests generateDatasetsXml. 
@@ -556,7 +118,8 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml");
 
         String results = generateDatasetsXml(
-            EDStatic.unitTestDataDir + "erdQSwind1day/", ".*_03\\.nc", 
+            EDStatic.unitTestDataDir + "erdQSwind1day/", 
+            ".*_03\\.nc", 
             EDStatic.unitTestDataDir + "erdQSwind1day/erdQSwind1day_20080101_03.nc",
             DEFAULT_RELOAD_EVERY_N_MINUTES, null) + "\n";
         String suggDatasetID = suggestDatasetID(
@@ -580,8 +143,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>" + EDStatic.unitTestDataDir + "erdQSwind1day/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_03\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -786,7 +350,7 @@ directionsForGenerateDatasetsXml() +
             "\nresults=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
         Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -820,8 +384,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTestBig/geosgrib/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -979,7 +544,7 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        //EDD edd = oneFromXmlFragment(results);
+        //EDD edd = oneFromXmlFragment(null, results);
         //Test.ensureEqual(edd.datasetID(), "erdQSwind1day_52db_1ed3_22ce", "");
         //Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
         //Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -995,6 +560,7 @@ directionsForGenerateDatasetsXml() +
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
+        try {
 
         String dir = "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
         String regex = ".*_CESM1-CAM5_.*\\.nc";
@@ -1021,8 +587,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir>http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_CESM1-CAM5_.*\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -1074,6 +641,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">rama.nemani@nasa.gov</att>\n" +
 "        <att name=\"creator_name\">Rama Nemani</att>\n" +
 "        <att name=\"creator_url\">http://www.nasa.gov/</att>\n" +
+"        <att name=\"driving_data_tracking_ids\">null</att>\n" +
 "        <att name=\"infoUrl\">http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</att>\n" +
 "        <att name=\"keywords\">800m, air, air_temperature, ames, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
@@ -1172,13 +740,18 @@ directionsForGenerateDatasetsXml() +
             "\nresults=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
         Test.ensureEqual(edd.title(), "800m Downscaled NEX CMIP5 Climate Projections for the Continental US", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "tasmin", "");
 
         String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3 passed the test.");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nExpected error: Have you updated your AWS credentials lately?\n"); 
+        }
     }
 
     /**
@@ -1189,14 +762,16 @@ directionsForGenerateDatasetsXml() +
     public static void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
         testVerboseOn();
+        try {
+
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDVGridAxis edvga;
         String id = "testAwsS3";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDir = EDStatic.fullTestCacheDirectory;
 
         //*** test getting das for entire dataset
@@ -1402,6 +977,11 @@ expected =
             tDir, "testAwsS3", ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
 
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nExpected error: Have you updated your AWS credentials lately?\n"); 
+        }
+
     }
 
     /**
@@ -1418,8 +998,8 @@ expected =
         String id = "testGriddedNcFiles";
         String dataDir = EDStatic.unitTestDataDir + "erdQSwind1day/";
         deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
@@ -1770,7 +1350,7 @@ tsvExpected;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         try {
 
         //generateDatasetsXml
@@ -1779,7 +1359,7 @@ tsvExpected;
         String id = "testGribFiles_42";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb test das dds for entire dataset\n");
@@ -1971,7 +1551,7 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         String2.log(NcHelper.dumpString("/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2", false));
 
@@ -1980,7 +1560,7 @@ expected =
         String id = "testGrib2_42";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb2 test das dds for entire dataset\n");
@@ -2491,7 +2071,7 @@ expected=
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         try {
 
         //generateDatasetsXml
@@ -2500,7 +2080,7 @@ expected=
         String id = "testGribFiles_43";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb test das dds for entire dataset\n");
@@ -2690,7 +2270,7 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         //generateDatasetsXml
         //file dir is EDStatic.unitTestDataDir: /erddapTest/
@@ -2698,7 +2278,7 @@ expected =
         String id = "testGrib2_43";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb2 test das dds for entire dataset\n");
@@ -3159,7 +2739,7 @@ expected=
         String id = "testCwHdf";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
         String2.log("\n*** testCwHdf test das dds for entire dataset\n");
@@ -3328,7 +2908,7 @@ expected =
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = false;
         String tName;
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testGriddedNcFiles"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
         String userDapQuery = "y_wind[(1.1999664e9)][0][][0:719]"; //719 avoids esriAsc cross lon=180
         String dir = EDStatic.fullTestCacheDirectory;
         String extensions[] = new String[]{
@@ -3357,7 +2937,7 @@ expected =
         int bytes[]    = new int[]   {
             5875592, 23734053, 23734063, 23733974, 
             6006, 303, 2085486, 4701074, 
-            53173, 51428, 14770799, 
+            60787, 51428, 14770799, 
             31827797, 2085800, 
             2090600, 5285, 
             24337084, 23734053, 23734063, 23733974, 90604796, 
@@ -3472,7 +3052,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.testAVDVSameSource() *****************\n");
         String error = "shouldn't happen";
         try {
-            EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testAVDVSameSource"); 
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testAVDVSameSource"); 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
@@ -3493,7 +3073,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.test2DVSameSource() *****************\n");
         String error = "shouldn't happen";
         try {
-            EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("test2DVSameSource"); 
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test2DVSameSource"); 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
@@ -3514,7 +3094,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.testAVDVSameDestination() *****************\n");
         String error = "shouldn't happen";
         try {
-            EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testAVDVSameDestination"); 
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testAVDVSameDestination"); 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
@@ -3535,7 +3115,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.test2DVSameDestination() *****************\n");
         String error = "shouldn't happen";
         try {
-            EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("test2DVSameDestination"); 
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test2DVSameDestination"); 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
@@ -3553,7 +3133,7 @@ expected =
      */
     public static void testTimePrecisionMillis() throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testTimePrecisionMillis() *****************\n");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testTimePrecisionMillis"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testTimePrecisionMillis"); 
         String tDir = EDStatic.fullTestCacheDirectory;
         String aq = "[(1984-02-01T12:00:59.001Z):1:(1984-02-01T12:00:59.401Z)]";
         String userDapQuery = "ECEF_X" + aq + ",IB_time" + aq;
@@ -3778,7 +3358,7 @@ expected =
      */
     public static void testSimpleTestNc() throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testSimpleTestNc() *****************\n");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testSimpleTestNc"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testSimpleTestNc"); 
         String tDir = EDStatic.fullTestCacheDirectory;
         String userDapQuery = "hours[1:2],minutes[1:2],seconds[1:2],millis[1:2],bytes[1:2]," +
             "shorts[1:2],ints[1:2],floats[1:2],doubles[1:2],Strings[1:2]";
@@ -4238,7 +3818,7 @@ expected =
      */
     public static void testSimpleTestNc2() throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testSimpleTestNc2() *****************\n");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testSimpleTestNc"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testSimpleTestNc"); 
         String tDir = EDStatic.fullTestCacheDirectory;
         String userDapQuery = "bytes[2:3],doubles[2:3],Strings[2:3]";
         String fName = "testSimpleTestNc2";
@@ -4504,7 +4084,7 @@ directionsForGenerateDatasetsXml() +
             "\nresults=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), "erdQSwind1day_52db_1ed3_22ce", "");
         Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -4520,7 +4100,7 @@ directionsForGenerateDatasetsXml() +
      */
     public static void testUpdate() throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testUpdate() *****************\n");
-        EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles)oneFromDatasetXml("testGriddedNcFiles"); 
+        EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
         String dataDir = eddGrid.fileDir;
         String tDir = EDStatic.fullTestCacheDirectory;
         String axisQuery = "time[]";
@@ -4742,6 +4322,331 @@ directionsForGenerateDatasetsXml() +
     }
 
     /**
+     * This tests quickRestart().
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testQuickRestart() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testQuickRestart() *****************\n");
+        EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
+        String dataDir = eddGrid.fileDir;
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String axisQuery = "time[]";
+        String dataQuery = "x_wind[][][100][100]";
+        String tName, results, expected;
+        int po;
+
+        //expected values
+        String originalDas1 = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.1991888e+9, 1.1999664e+9;\n" +
+"    String axis \"T\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Centered Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  altitude {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"up\";\n" +
+"    Float64 actual_range 0.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Altitude\";\n" +
+"    String positive \"up\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range -89.875, 89.875;\n" +
+"    String axis \"Y\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 2;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 0.125, 359.875;\n" +
+"    String axis \"X\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 2;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  x_wind {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum -15.0;\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Zonal Wind\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String standard_name \"x_wind\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  y_wind {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum -15.0;\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Meridional Wind\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String standard_name \"y_wind\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  mod {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 18.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String colorBarPalette \"WhiteRedBlack\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Modulus of Wind\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String composite \"true\";\n" +
+"    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
+"    String contributor_role \"Source of level 2 data.\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String creator_email \"dave.foley@noaa.gov\";\n" +
+"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String date_created \"2008-08-29Z\";\n" +
+"    String date_issued \"2008-08-29Z\";\n" +
+"    Float64 Easternmost_Easting 359.875;\n" +
+"    Float64 geospatial_lat_max 89.875;\n" +
+"    Float64 geospatial_lat_min -89.875;\n" +
+"    Float64 geospatial_lat_resolution 0.25;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 359.875;\n" +
+"    Float64 geospatial_lon_min 0.125;\n" +
+"    Float64 geospatial_lon_resolution 0.25;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"up\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"Remote Sensing Systems, Inc\n" +
+"2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n";
+//2015-09-09T22:18:53Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day
+//2015-09-09T22:18:53Z 
+    String originalDas2 = 
+"http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
+"    String infoUrl \"http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
+"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    Float64 Northernmost_Northing 89.875;\n" +
+"    String origin \"Remote Sensing Systems, Inc\";\n" +
+"    String processing_level \"3\";\n" +
+"    String project \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"    String projection \"geographic\";\n" +
+"    String projection_type \"mapped\";\n" +
+"    String references \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
+"    String satellite \"QuikSCAT\";\n" +
+"    String sensor \"SeaWinds\";\n" +
+"    String source \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+"    String sourceUrl \"http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
+"    Float64 Southernmost_Northing -89.875;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+"    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
+"    String time_coverage_start \"2008-01-01T12:00:00Z\";\n" +
+"    String title \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\";\n" +
+"    Float64 Westernmost_Easting 0.125;\n" +
+"  }\n" +
+"}\n";
+        String originalExpectedAxis = 
+"time\n" +
+"UTC\n" +
+"2008-01-01T12:00:00Z\n" +
+"2008-01-02T12:00:00Z\n" +
+"2008-01-03T12:00:00Z\n" +
+"2008-01-04T12:00:00Z\n" +
+"2008-01-05T12:00:00Z\n" +
+"2008-01-06T12:00:00Z\n" +
+"2008-01-07T12:00:00Z\n" +
+"2008-01-08T12:00:00Z\n" +
+"2008-01-09T12:00:00Z\n" +
+"2008-01-10T12:00:00Z\n";      
+        String originalExpectedData = 
+"time,altitude,latitude,longitude,x_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"2008-01-01T12:00:00Z,0.0,-64.875,25.125,-3.24724\n" +
+"2008-01-02T12:00:00Z,0.0,-64.875,25.125,6.00287\n" +
+"2008-01-03T12:00:00Z,0.0,-64.875,25.125,NaN\n" +
+"2008-01-04T12:00:00Z,0.0,-64.875,25.125,-3.0695\n" +
+"2008-01-05T12:00:00Z,0.0,-64.875,25.125,-7.76223\n" +
+"2008-01-06T12:00:00Z,0.0,-64.875,25.125,-12.8834\n" +
+"2008-01-07T12:00:00Z,0.0,-64.875,25.125,4.782275\n" +
+"2008-01-08T12:00:00Z,0.0,-64.875,25.125,9.80197\n" +
+"2008-01-09T12:00:00Z,0.0,-64.875,25.125,-7.5635605\n" +
+"2008-01-10T12:00:00Z,0.0,-64.875,25.125,-7.974725\n";      
+
+        String oldMinTime   = "2008-01-01T12:00:00Z";
+        String oldMinMillis = "1.1991888E9";
+        String newMinTime   = "2008-01-04T12:00:00Z";
+        String newMinMillis = "1.199448E9";
+        String oldMaxTime   = "2008-01-10T12:00:00Z";
+        String oldMaxMillis = "1.1999664E9";
+
+
+        //*** read the original data
+        String2.log("\n*** read original data\n");     
+        long oCreationTimeMillis = eddGrid.creationTimeMillis();
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+            eddGrid.className() + "_qr_1das", ".das"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
+
+        po = results.indexOf(originalDas2.substring(0, 80));
+        Test.ensureEqual(results.substring(po), originalDas2, "\nresults=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            eddGrid.className() + "_qr_1a", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            eddGrid.className() + "_qr_1d", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+            oldMinTime, "av[0].destinationMin");
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+            oldMaxTime, "av[0].destinationMax");
+        Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+            oldMinMillis + ", " + oldMaxMillis, "actual_range");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+            oldMinTime, "time_coverage_start");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+            oldMaxTime, "time_coverage_end");
+
+
+        try {
+            //*** rename a data file so it doesn't match regex
+            //set testQuickRestart=true
+            //and reload dataset
+            String2.log("\n*** testQuickRestart=true\n");       
+            File2.rename(dataDir, "erdQSwind1day_20080101_03.nc", "erdQSwind1day_20080101_03.nc2");
+            Math2.sleep(1000);
+            EDDGridFromFiles.testQuickRestart = true;
+            eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
+
+            //some responses are same
+            Test.ensureEqual(eddGrid.creationTimeMillis(), oCreationTimeMillis, "");
+
+            tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+                eddGrid.className() + "_qr_2das", ".das"); 
+            results = new String((new ByteArray(tDir + tName)).toArray());
+            Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
+
+            po = results.indexOf(originalDas2.substring(0, 80));
+            Test.ensureEqual(results.substring(po), originalDas2, "\nresults=\n" + results);
+
+            tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+                eddGrid.className() + "_qr_2a", ".csv"); 
+            results = new String((new ByteArray(tDir + tName)).toArray());
+            Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+            Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+                oldMinTime, "av[0].destinationMin");
+            Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+                oldMaxTime, "av[0].destinationMax");
+            Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+                oldMinMillis + ", " + oldMaxMillis, "actual_range");
+            Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+                oldMinTime, "time_coverage_start");
+            Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+                oldMaxTime, "time_coverage_end");
+
+            //but request for data should fail
+            try {
+                tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+                    eddGrid.className() + "_qr_2d", ".csv"); 
+                results = "shouldn't happen";
+            } catch (Throwable t2) {
+                results = t2.getMessage();
+            }
+            expected = 
+"There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)\n" +
+"(Cause: java.io.FileNotFoundException: \\erddapTest\\erdQSwind1day\\erdQSwind1day_20080101_03.nc (The system cannot find the file specified))";      
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        } finally {
+            //rename it back to original
+            String2.log("\n*** rename it back to original\n");       
+            File2.rename(dataDir, "erdQSwind1day_20080101_03.nc2", "erdQSwind1day_20080101_03.nc");
+            Math2.sleep(1000);
+            //ensure testQuickRestart is set back to false
+            EDDGridFromFiles.testQuickRestart = false;
+        }
+
+        //*** redo original tests
+        String2.log("\n*** redo original tests\n");       
+        eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
+
+        //creationTime should have changed
+        Test.ensureNotEqual(eddGrid.creationTimeMillis(), oCreationTimeMillis, "");
+
+        //but everything else should be back to original
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+            eddGrid.className() + "_qr_3das", ".das"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
+
+        po = results.indexOf(originalDas2.substring(0, 80));
+        Test.ensureEqual(results.substring(po), originalDas2, "\nresults=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            eddGrid.className() + "_qr_3a", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            eddGrid.className() + "_qr_3d", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+            oldMinTime, "av[0].destinationMin");
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+            oldMaxTime, "av[0].destinationMax");
+        Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+            oldMinMillis + ", " + oldMaxMillis, "actual_range");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+            oldMinTime, "time_coverage_start");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+            oldMaxTime, "time_coverage_end");
+
+    }
+
+    /**
      * !!! NOT FINISHED/TESTABLE: this test server doesn't support byte ranges!!!
      *
      * This tests if netcdf-java can work with remote Hyrax files
@@ -4758,7 +4663,7 @@ directionsForGenerateDatasetsXml() +
 
         results = generateDatasetsXml( //dir is a HYRAX catalog.html URL!
             dir + "contents.html", 
-            ".*\\.nc", 
+            ".*\\.nc",  
             dir + "ersst.201401.nc", 
             -1, null);
         //String2.log(results);
@@ -4959,7 +4864,7 @@ expected =
         //file is a /thredds/fileServer/... not compressed data file.
         results = generateDatasetsXml( 
             dir, 
-            "sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc",
+            "sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc", 
             //sample file is a thredds/fileServer/.../...nc URL!
             "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2011.nc", 
             -1, null);
@@ -5001,8 +4906,9 @@ String2.setClipboardString(results);
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir>http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
@@ -5168,7 +5074,7 @@ String2.setClipboardString(results);
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String id = "testRemoteThreddsFiles";  //from generateDatasetsXml above but different datasetID
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id);
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id);
 
         //*** test getting das for entire dataset
         String2.log("\n*** test das dds for entire dataset\n");
@@ -5275,7 +5181,7 @@ expected =
 "    String references \"Aquarius users guide, V6.0, PO.DAAC, JPL/NASA. Jun 2, 2014\";\n" +
 "    String sensor \"Aquarius\";\n" +
 "    String source \"Jet Propulsion Laboratory, California Institute of Technology\";\n" +
-"    String sourceUrl \"(local files)\";\n" +
+"    String sourceUrl \"(remote files)\";\n" +
 "    Float64 Southernmost_Northing -89.5;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average\";\n" +
@@ -5367,7 +5273,7 @@ expected =
         String error = "";
         int po;
         String id = "erdATssta3day"; 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id);
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id);
         Table table;
         PrimitiveArray pa1, pa2;
 
@@ -5425,8 +5331,345 @@ expected =
         String2.log("pa1[0:10]=" + pa1.subset(0, 1, 10).toString());
         Test.ensureEqual(pa1.testEquals(pa2), "", "");
 
+    }
+
+    /**
+     * Test file created from 
+     * http://thredds.jpl.nasa.gov/thredds/ncss/grid/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml/dataset.html
+     * and stored in /erddapTest/unsigned/
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testUInt16File() throws Throwable {
+        String2.log("\n*** testUInt16File");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery;
+        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+        String fileDir = EDStatic.unitTestDataDir + "unsigned/";
+        String fileName = "9km_aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.nc";
+
+        //DumpString
+        results = NcHelper.dumpString(fileDir + fileName, false);
+        expected = 
+"netcdf 9km_aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.nc {\n" +
+"  dimensions:\n" +
+"    time = 1;\n" +
+"    lat = 2160;\n" +
+"    lon = 25;\n" +
+"  variables:\n" +
+"    short l3m_data(time=1, lat=2160, lon=25);\n" +
+"      :_Unsigned = \"true\";\n" +
+"      :long_name = \"l3m_data\";\n" +
+"      :scale_factor = 7.17185E-4f; // float\n" + //32768-> 23.50071808, so many values are higher
+"      :add_offset = -2.0f; // float\n" +
+"      :_FillValue = -1S; // short\n" + //technically wrong: cf says it should be actual value: 65535(int)
+"      :Scaling = \"linear\";\n" +
+"      :Scaling_Equation = \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
+"      :Slope = 7.17185E-4f; // float\n" +
+"      :Intercept = -2.0f; // float\n" +
+"      :coordinates = \"time Number_of_Lines Number_of_Columns lat lon\";\n" +
+"\n" +
+"    int time(time=1);\n" +
+"      :standard_name = \"time\";\n" +
+"      :axis = \"T\";\n" +
+"      :units = \"days since 2002-01-01\";\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"\n" +
+"    float Number_of_Lines(lat=2160);\n" + //note that ncss knows this is lat, but didn't rename it
+"      :long_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"\n" +
+"    float Number_of_Columns(lon=25);\n" + //note that ncss knows this is lon, but didn't rename it
+"      :long_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"\n" +
+"    byte l3m_qual(time=1, lat=2160, lon=25);\n" +
+"      :_Unsigned = \"true\";\n" +
+"      :long_name = \"l3m_qual\";\n" +
+"      :scale_factor = 7.17185E-4f; // float\n" +
+"      :add_offset = -2.0f; // float\n" +
+"      :valid_range = 0, 2; // int\n" +
+"      :coordinates = \"time Number_of_Lines Number_of_Columns lat lon\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :Product_Name = \"A20092652009272.L3m_8D_SST_9\";\n" +
+"  :Sensor_Name = \"MODISA\";\n" +
+"  :Sensor = \"\";\n" +
+"  :Title = \"MODISA Level-3 Standard Mapped Image\";\n" +
+"  :Data_Center = \"\";\n" +
+"  :Station_Name = \"\";\n" +
+"  :Station_Latitude = 0.0f; // float\n" +
+"  :Station_Longitude = 0.0f; // float\n" +
+"  :Mission = \"\";\n" +
+"  :Mission_Characteristics = \"\";\n" +
+"  :Sensor_Characteristics = \"\";\n" +
+"  :Product_Type = \"8-day\";\n" +
+"  :Replacement_Flag = \"ORIGINAL\";\n" +
+"  :Software_Name = \"smigen\";\n" +
+"  :Software_Version = \"4.0\";\n" +
+"  :Processing_Time = \"2009282201111000\";\n" +
+"  :Input_Files = \"A20092652009272.L3b_8D_SST.main\";\n" +
+"  :Processing_Control = \"smigen par=A20092652009272.L3m_8D_SST_9.param\";\n" +
+"  :Input_Parameters = \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
+"  :L2_Flag_Names = \"LAND,HISOLZ\";\n" +
+"  :Period_Start_Year = 2009S; // short\n" +
+"  :Period_Start_Day = 265S; // short\n" +
+"  :Period_End_Year = 2009S; // short\n" +
+"  :Period_End_Day = 270S; // short\n" +
+"  :Start_Time = \"2009265000008779\";\n" +
+"  :End_Time = \"2009271030006395\";\n" +
+"  :Start_Year = 2009S; // short\n" +
+"  :Start_Day = 265S; // short\n" +
+"  :Start_Millisec = 8779; // int\n" +
+"  :End_Year = 2009S; // short\n" +
+"  :End_Day = 271S; // short\n" +
+"  :End_Millisec = 10806395; // int\n" +
+"  :Start_Orbit = 0; // int\n" +
+"  :End_Orbit = 0; // int\n" +
+"  :Orbit = 0; // int\n" +
+"  :Map_Projection = \"Equidistant Cylindrical\";\n" +
+"  :Latitude_Units = \"degrees North\";\n" +
+"  :Longitude_Units = \"degrees East\";\n" +
+"  :Northernmost_Latitude = 90.0f; // float\n" +
+"  :Southernmost_Latitude = -90.0f; // float\n" +
+"  :Westernmost_Longitude = -180.0f; // float\n" +
+"  :Easternmost_Longitude = 180.0f; // float\n" +
+"  :Latitude_Step = 0.083333336f; // float\n" +
+"  :Longitude_Step = 0.083333336f; // float\n" +
+"  :SW_Point_Latitude = -89.958336f; // float\n" +
+"  :SW_Point_Longitude = -179.95833f; // float\n" +
+"  :Data_Bins = 14234182; // int\n" +
+"  :Number_of_Lines = 2160; // int\n" +
+"  :Number_of_Columns = 4320; // int\n" +
+"  :Parameter = \"Sea Surface Temperature\";\n" +
+"  :Measure = \"Mean\";\n" +
+"  :Units = \"deg-C\";\n" +
+"  :Scaling = \"linear\";\n" +
+"  :Scaling_Equation = \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
+"  :Slope = 7.17185E-4f; // float\n" +
+"  :Intercept = -2.0f; // float\n" +
+"  :Scaled_Data_Minimum = -2.0f; // float\n" +
+"  :Scaled_Data_Maximum = 45.0f; // float\n" +
+"  :Data_Minimum = -1.999999f; // float\n" +
+"  :Data_Maximum = 36.915f; // float\n" +
+"  :start_date = \"2002-07-04 UTC\";\n" +
+"  :start_time = \"00:00:00 UTC\";\n" +
+"  :stop_date = \"2015-03-06 UTC\";\n" +
+"  :stop_time = \"23:59:59 UTC\";\n" +
+"  :Conventions = \"CF-1.0\";\n" +
+"  :History = \"Translated to CF-1.0 Conventions by Netcdf-Java CDM (NetcdfCFWriter)\n" +
+"Original Dataset = file:/usr/ftp/ncml/catalog_ncml/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml; Translation Date = Fri Oct 30 09:44:07 GMT-08:00 2015\";\n" +
+"  :geospatial_lat_min = -89.95833587646484; // double\n" +
+"  :geospatial_lat_max = 89.95833587646484; // double\n" +
+"  :geospatial_lon_min = -136.04165649414062; // double\n" +
+"  :geospatial_lon_max = -134.04165649414062; // double\n" +
+" data:\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //one time
+        //String2.log(generateDatasetsXml(fileDir, fileName, fileDir + fileName,
+        //    DEFAULT_RELOAD_EVERY_N_MINUTES, null));        
+
+        //ensure files are reread
+        File2.deleteAllFiles(datasetDir("testUInt16File"));
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16File"); 
+        //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
+
+//re-pack apparent missing value
+//45.000717 +2=> 47.000717 /7.17185E-4=> 65535
+
+        //.das     das isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0257408e+9, 1.0257408e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 89.95834, -89.95834;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range -136.0417, -134.0417;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  sst {\n" +
+"    Float32 _FillValue 45.000717;\n" +   //important test of UInt16
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Surface Temperature\";\n" +
+"    String standard_name \"sea_surface_temperature\";\n" +
+"    String units \"deg_C\";\n" +
+"  }\n" +
+"  sst_quality {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Sea Surface Temperature Quality\";\n" +
+"    String units \"deg_C\";\n" +  // ??? did ERDDAP add that?
+"    Float32 valid_range -2.0, -1.9985657;\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    Float64 Easternmost_Easting -134.0417;\n" +
+"    Float64 geospatial_lat_max 89.95834;\n" +
+"    Float64 geospatial_lat_min -89.95834;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -134.0417;\n" +
+"    Float64 geospatial_lon_min -136.0417;\n" +
+"    Float64 geospatial_lon_resolution 0.08333333333333333;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"Translated to CF-1.0 Conventions by Netcdf-Java CDM (NetcdfCFWriter)\n" +
+"Original Dataset = file:/usr/ftp/ncml/catalog_ncml/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml; Translation Date = Fri Oct 30 09:44:07 GMT-08:00 2015\n";
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+       
+expected = 
+//"2015-10-30T18:17:10Z (local files)
+//2015-10-30T18:17:10Z http://127.0.0.1:8080/cwexperimental/griddap/testUInt16File.das";
+"    String infoUrl \"???\";\n" +
+"    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" +
+"    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
+"    String institution \"???\";\n" +
+"    String keywords \"aqua, data, image, imaging, L3, l3m_data, l3m_qual, mapped, moderate, modis, modis a, ocean, oceans,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"quality, resolution, sea, sea_surface_temperature, smi, spectroradiometer, standard, surface, temperature, time\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String L2_Flag_Names \"LAND,HISOLZ\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Map_Projection \"Equidistant Cylindrical\";\n" +
+"    String Measure \"Mean\";\n" +
+"    Float64 Northernmost_Northing 89.95834;\n" +
+"    String Processing_Control \"smigen par=A20092652009272.L3m_8D_SST_9.param\";\n" +
+"    String Processing_Time \"2009282201111000\";\n" +
+"    String Product_Name \"A20092652009272.L3m_8D_SST_9\";\n" +
+"    String Product_Type \"8-day\";\n" +
+"    String Replacement_Flag \"ORIGINAL\";\n" +
+"    Float32 Scaled_Data_Maximum 45.0;\n" +
+"    Float32 Scaled_Data_Minimum -2.0;\n" +
+"    String Sensor_Name \"MODISA\";\n" +
+"    String Software_Name \"smigen\";\n" +
+"    String Software_Version \"4.0\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -89.95834;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image\";\n" +
+"    String time_coverage_end \"2002-07-04T00:00:00Z\";\n" +
+"    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
+"    String title \"MODISA L3 SMI,\";\n" +
+"    Float64 Westernmost_Easting -136.0417;\n" +
+"  }\n" +
+"}\n";
+        int tpo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
+
+
+        //.dds     dds isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = //difference from testUInt16Dap: lat lon are float here, not double
+"Dataset {\n" +
+"  Float64 time[time = 1];\n" +
+"  Float32 latitude[latitude = 2160];\n" +
+"  Float32 longitude[longitude = 25];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sst[time = 1][latitude = 2160][longitude = 25];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1];\n" +
+"      Float32 latitude[latitude = 2160];\n" +
+"      Float32 longitude[longitude = 25];\n" +
+"  } sst;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sst_quality[time = 1][latitude = 2160][longitude = 25];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 1];\n" +
+"      Float32 latitude[latitude = 2160];\n" +
+"      Float32 longitude[longitude = 25];\n" +
+"  } sst_quality;\n" +
+"} testUInt16File;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv data values
+        userDapQuery = "sst[0][0:100:2159][(-134.95833513)]"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = //difference from testUInt16Dap: lat lon are float here, not double
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,deg_C\n" +
+"2002-07-04T00:00:00Z,89.958336,-134.95833,-0.84102905\n" +
+"2002-07-04T00:00:00Z,81.62501,-134.95833,-1.6371044\n" +
+"2002-07-04T00:00:00Z,73.291664,-134.95833,-0.11021753\n" +
+"2002-07-04T00:00:00Z,64.958336,-134.95833,NaN\n" + //_FillValue's correctly caught
+"2002-07-04T00:00:00Z,56.625008,-134.95833,NaN\n" +
+"2002-07-04T00:00:00Z,48.291664,-134.95833,12.6406145\n" +
+"2002-07-04T00:00:00Z,39.958336,-134.95833,17.95137\n" +
+"2002-07-04T00:00:00Z,31.625,-134.95833,20.432829\n" +
+"2002-07-04T00:00:00Z,23.291664,-134.95833,19.664007\n" +
+"2002-07-04T00:00:00Z,14.958336,-134.95833,24.482773\n" +
+"2002-07-04T00:00:00Z,6.625,-134.95833,29.068455\n" +
+"2002-07-04T00:00:00Z,-1.7083359,-134.95833,27.240349\n" +
+"2002-07-04T00:00:00Z,-10.041664,-134.95833,27.210228\n" +
+"2002-07-04T00:00:00Z,-18.375,-134.95833,26.713936\n" +
+"2002-07-04T00:00:00Z,-26.708336,-134.95833,21.580326\n" +
+"2002-07-04T00:00:00Z,-35.041668,-134.95833,15.789774\n" +
+"2002-07-04T00:00:00Z,-43.375,-134.95833,NaN\n" +
+"2002-07-04T00:00:00Z,-51.708336,-134.95833,6.1673026\n" +
+"2002-07-04T00:00:00Z,-60.041668,-134.95833,0.40400413\n" +
+"2002-07-04T00:00:00Z,-68.375,-134.95833,NaN\n" +
+"2002-07-04T00:00:00Z,-76.708336,-134.95833,NaN\n" +
+"2002-07-04T00:00:00Z,-85.04167,-134.95833,NaN\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //display the image
+        String2.log("\n\n* PNG ");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][][]&.land=under", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
     }
+
 
 
     /**
@@ -5449,11 +5692,13 @@ expected =
         test2DVSameSource();
         testAVDVSameDestination();
         test2DVSameDestination();
+        testUInt16File();
         testTimePrecisionMillis();
         testSimpleTestNc();
         testSimpleTestNc2();
 //finish this        testRTechHdf();
         testUpdate();
+        testQuickRestart();
 
         //tests of remote sources on-the-fly
         testGenerateDatasetsXmlAwsS3();

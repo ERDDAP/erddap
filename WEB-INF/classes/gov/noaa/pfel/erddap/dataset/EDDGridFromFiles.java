@@ -26,6 +26,7 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.EDUnits;
 import gov.noaa.pfel.erddap.variable.*;
@@ -33,6 +34,7 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.nio.file.WatchEvent;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -49,7 +51,7 @@ import java.util.regex.*;
  *    the values must be sorted ascending, with no ties.
  * <br>The outer dimension values in different files can't overlap.
  * <br>The presumption is that the entire dataset can be read reasonable quickly
- *   (from the local files, unlike remote data) and all variable's min and max info
+ *   (if the files are remote, access will obviously be slower) and all variable's min and max info
  *   can be gathered (for each file) 
  *   and cached (facilitating handling constraints in data requests).
  * <br>And file data can be cached and reused because each file has a lastModified
@@ -62,8 +64,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public final static String MF_FIRST = "first", MF_LAST = "last";
     public static int suggestedUpdateEveryNMillis = 10000;
     public static int suggestUpdateEveryNMillis(String tFileDir) {
-        return File2.isRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
+        return String2.isRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
     }
+    /** Don't set this to true here.  Some test methods set this to true temporarily. */
+    protected static boolean testQuickRestart = false;
 
     /** Columns in the File Table */
     protected final static int 
@@ -77,11 +81,20 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     //set by constructor
     protected String fileDir;
     protected boolean recursive;
-    protected String fileNameRegex;
+    protected String fileNameRegex, pathRegex;
     protected String metadataFrom;       
     protected StringArray sourceDataNames;
     protected StringArray sourceAxisNames;
+    protected boolean hasSpecialSourceAxisName = false;
+    protected HashMap<String,String[]> parsedSpecialSourceAxisNames;
     protected String sourceDataTypes[];
+    /**
+     * filesAreLocal true if files are on a local hard drive or false if files are remote.
+     * 1) A failure when reading a local file, causes file to be marked as bad and dataset reloaded;
+     *   but a remote failure doesn't.
+     * 2) For remote files, the bad file list is rechecked every time dataset is reloaded.
+     */
+    protected boolean filesAreLocal;
 
     protected boolean haveValidSourceInfo = false; //if true, following 3 are correctly set 
     protected Attributes sourceAxisAttributes[];
@@ -107,19 +120,21 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /**
      * This constructs an EDDGridFromFiles based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="[subclassName]"&gt; 
      *    having just been read.  
      * @return an EDDGridFromFiles.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridFromFiles fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridFromFiles fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridFromFiles(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         String tType = xmlReader.attributeValue("type"); 
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         boolean tFileTableInMemory = false;
         String tFgdcFile = null;
@@ -130,8 +145,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         int tUpdateEveryNMillis = 0;
         String tFileDir = null;
-        boolean tRecursive = false;
         String tFileNameRegex = ".*";
+        boolean tRecursive = false;
+        String tPathRegex = ".*";
         boolean tAccessibleViaFiles = false;
         String tMetadataFrom = MF_LAST;       
         int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
@@ -160,16 +176,20 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<updateEveryNMillis>")) {}
             else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis = String2.parseInt(content); 
             else if (localTags.equals( "<fileDir>")) {} 
             else if (localTags.equals("</fileDir>")) tFileDir = content; 
-            else if (localTags.equals( "<recursive>")) {}
-            else if (localTags.equals("</recursive>")) tRecursive = String2.parseBoolean(content); 
             else if (localTags.equals( "<fileNameRegex>")) {}
             else if (localTags.equals("</fileNameRegex>")) tFileNameRegex = content; 
+            else if (localTags.equals( "<recursive>")) {}
+            else if (localTags.equals("</recursive>")) tRecursive = String2.parseBoolean(content); 
+            else if (localTags.equals( "<pathRegex>")) {}
+            else if (localTags.equals("</pathRegex>")) tPathRegex = content; 
             else if (localTags.equals( "<accessibleViaFiles>")) {}
             else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals( "<metadataFrom>")) {}
@@ -207,23 +227,33 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (tType == null)
             tType = "";
         if (tType.equals("EDDGridFromNcFiles")) 
-            return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo,
+            return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis,
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
+                tMatchAxisNDigits, tFileTableInMemory, 
+                tAccessibleViaFiles);
+        else if (tType.equals("EDDGridFromNcFilesUnpacked")) 
+            return new EDDGridFromNcFilesUnpacked(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+                tOnChange, tFgdcFile, tIso19115File,
+                tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
+                ttAxisVariables,
+                ttDataVariables,
+                tReloadEveryNMinutes, tUpdateEveryNMillis,
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
                 tMatchAxisNDigits, tFileTableInMemory, 
                 tAccessibleViaFiles);
         else if (tType.equals("EDDGridFromMergeIRFiles")) 
-            return new EDDGridFromMergeIRFiles(tDatasetID, tAccessibleTo,
+            return new EDDGridFromMergeIRFiles(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis,
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
                 tMatchAxisNDigits, tFileTableInMemory, 
                 tAccessibleViaFiles);
         else throw new Exception("type=\"" + tType + 
@@ -303,13 +333,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @param tFileDir the base directory where the files are located
-     * @param tRecursive if true, this class will look for files in the
-     *    fileDir and all subdirectories
      * @param tFileNameRegex the regex which determines which files in 
      *    the directories are to be read.
      *    <br>You can use .* for all, but it is better to be more specific.
      *        For example, .*\.nc will get all files with the extension .nc.
      *    <br>All files must have all of the axisVariables and all of the dataVariables.
+     * @param tRecursive if true, this class will look for files in the
+     *    fileDir and all subdirectories
      * @param tMetadataFrom this indicates the file to be used
      *    to extract source metadata (first/last based on file list sorted by minimum axis #0 value).
      *    Valid values are "first", "penultimate", "last".
@@ -319,14 +349,15 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *    &gt;18 does an exact test. Default is 20.
      * @throws Throwable if trouble
      */
-    public EDDGridFromFiles(String tClassName, String tDatasetID, String tAccessibleTo,
+    public EDDGridFromFiles(String tClassName, String tDatasetID, 
+        String tAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, 
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom, int tMatchAxisNDigits, 
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
@@ -334,7 +365,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromFiles " + tDatasetID); 
         long constructionStartMillis = System.currentTimeMillis();
-        String errorInMethod = "Error in ERDDAP EDDGridFromFiles(" + 
+        String errorInMethod = "Error in EDDGridFromFiles(" + 
             tDatasetID + ") constructor:\n";
             
         //save some of the parameters
@@ -348,6 +379,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String fileTableFileName = datasetDir() + FILE_TABLE_FILENAME;
 
         setAccessibleTo(tAccessibleTo);
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -360,15 +394,17 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         setUpdateEveryNMillis(tUpdateEveryNMillis);
         fileTableInMemory = tFileTableInMemory;
         fileDir = tFileDir;
-        recursive = tRecursive;
         fileNameRegex = tFileNameRegex;
+        recursive = tRecursive;
+        pathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
         metadataFrom = tMetadataFrom;
         matchAxisNDigits = tMatchAxisNDigits;
         int nav = tAxisVariables.length;
         int ndv = tDataVariables.length;
 
-        if (fileDir == null || fileDir.length() == 0)
+        if (!String2.isSomething(fileDir))
             throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
+        filesAreLocal = !String2.isRemote(fileDir);
         if (fileNameRegex == null || fileNameRegex.length() == 0) 
             fileNameRegex = ".*";
         if (metadataFrom == null) metadataFrom = "";
@@ -382,8 +418,30 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (tAxisVariables.length == 0) 
             throw new IllegalArgumentException("No axisVariables were specified.");
         sourceAxisNames = new StringArray();
-        for (int av = 0; av < nav; av++) 
-            sourceAxisNames.add((String)tAxisVariables[av][0]);
+        for (int av = 0; av < nav; av++) {
+            String sn = (String)tAxisVariables[av][0];
+            if (!String2.isSomething(sn))
+                throw new IllegalArgumentException("axisVariable[" + av + 
+                    "].sourceName wasn't specified.");                
+            sn = sn.trim();
+            sourceAxisNames.add(sn);
+            /* not yet finished
+            if (sn.charAt(0) == '=') {
+                //parse the special axis sourceName / make sure it is valid
+                try {
+                    String parts[] = parseSpecialSourceAxisName(sn);
+                    if (parsedSpecialSourceAxisNames == null)
+                        parsedSpecialSourceAxisNames = new HashMap();
+                    parsedSpecialSourceAxisNames.put(sn, parts);
+
+                } catch (Throwable t) {
+                    throw new IllegalArgumentException("axisVariable[" + av + 
+                        "] special sourceName isn't valid: " + sn, t);                
+                } 
+                hasSpecialSourceAxisName = true;
+            }
+            */
+        }
         if (reallyVerbose) String2.log("sourceAxisNames=" + sourceAxisNames);
 
         //note sourceDataNames, sourceDataTypes
@@ -520,299 +578,329 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         }
         //initially there are no files, so haveValidSourceInfo will still be false
 
-        //get tAvailableFiles with available data files
-        //and make tDirIndex and tFileList
-        long elapsedTime = System.currentTimeMillis();
-        //was tAvailableFiles with dir+name
-        Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive);
-        if (updateEveryNMillis > 0) {
-            try {
-                watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, recursive);
-            } catch (Throwable t) {
-                String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
-                String msg = MustBe.throwableToString(t);
-                if (msg.indexOf("inotify instances") >= 0)
-                    msg +=
-                      "This may be the problem that is solvable by calling (as root):\n" +
-                      "  echo 20000 > /proc/sys/fs/inotify/max_user_watches\n" +
-                      "  echo 500 > /proc/sys/fs/inotify/max_user_instances\n" +
-                      "Or, use higher numbers if the problem persists.\n" +
-                      "The default for watches is 8192. The default for instances is 128.";
-                EDStatic.email(EDStatic.adminEmail, subject, msg);
-            }
-        }
-        StringArray tFileDirPA     = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
-        StringArray tFileNamePA    = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.NAME));
-        LongArray   tFileLastModPA = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
-        LongArray   tFileSizePA    = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.SIZE));
-        tFileTable.removeColumn(FileVisitorDNLS.SIZE);
-        int ntft = tFileNamePA.size();
-        String msg = ntft + " files found in " + fileDir + 
-            "\nregex=" + fileNameRegex + " recursive=" + recursive + 
-            " time=" + (System.currentTimeMillis() - elapsedTime) + "ms";
-        if (ntft == 0)
-            //Just exit. Don't delete the dirTable and fileTable files!
-            //The problem may be that a drive isn't mounted.
-            throw new RuntimeException(msg); 
-        if (verbose) String2.log(msg);
+        //doQuickRestart? 
+        boolean doQuickRestart = haveValidSourceInfo && 
+            (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()));
+        if (verbose)
+            String2.log("doQuickRestart=" + doQuickRestart);
+        String msg = "";
 
-        //remove "badFiles" if they no longer exist (in tAvailableFiles)
-        {
-            //make hashset with all tAvailableFiles
-            HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
-            for (int i = 0; i < ntft; i++)
-                tFileSet.add(tFileDirPA.get(i) + tFileNamePA.get(i));
+        if (doQuickRestart) {
+            msg = "\nQuickRestart";
 
-            Object badFileNames[] = badFileMap.keySet().toArray();
-            int nMissing = 0;
-            int nbfn = badFileNames.length;
-            for (int i = 0; i < nbfn; i++) {
-                 Object name = badFileNames[i];
-                 if (!tFileSet.contains(name)) {
-                     if (reallyVerbose) 
-                        String2.log("previously bad file now missing: " + name);
-                     nMissing++;
-                     badFileMap.remove(name);
-                 }
-            }
-            if (verbose) String2.log(
-                "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
-        } 
+        } else {
+            //!doQuickRestart
 
-        //switch to dir indexes
-        ShortArray tFileDirIndexPA = new ShortArray(ntft, false);  
-        tFileTable.removeColumn(0);  //tFileDirPA col
-        tFileTable.addColumn(0, "dirIndex", tFileDirIndexPA); //col 0, matches fileTable
-        tFileTable.setColumnName(1, "fileList"); //col 1, matches fileTable
-        String lastDir = "\u0000";
-        int lastPo = -1;
-        for (int i = 0; i < ntft; i++) {
-            String tDir = tFileDirPA.get(i);
-            int po = lastPo;
-            if (!tDir.equals(lastDir)) {    //rare
-                po = dirList.indexOf(tDir); //linear search, but should be short list
-                if (po < 0) {
-                    po = dirList.size();
-                    dirList.add(tDir);
-                }
-                lastDir = tDir;
-                lastPo = po;
-            }
-            tFileDirIndexPA.addInt(po);
-        }
-        tFileDirPA = null; //allow gc
-        
-        //sort fileTable and tFileTable based on dirIndex and file names
-        elapsedTime = System.currentTimeMillis();
-        fileTable.leftToRightSort(2); 
-        tFileTable.leftToRightSort(2);
-        if (verbose) String2.log("sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
-
-        //remove any files in fileTable not in tFileTable  (i.e., the file was deleted)
-        //I can step through fileTable and tFileTable since both sorted same way
-        {
-            int nft = ftFileList.size();
-            BitSet keepFTRow = new BitSet(nft);  //all false
-            int nFilesMissing = 0;
-            int tPo = 0;
-            for (int ftPo = 0; ftPo < nft; ftPo++) {
-                int dirI       = ftDirIndex.get(ftPo);
-                String fileS   = ftFileList.get(ftPo);
-
-                //skip through tDir until it is >= ftDir
-                while (tPo < ntft && tFileDirIndexPA.get(tPo) < dirI)
-                    tPo++;
-
-                //if dirs match, skip through tFile until it is >= ftFile
-                boolean keep;
-                if (tPo < ntft && tFileDirIndexPA.get(tPo) == dirI) {               
-                    while (tPo < ntft && tFileDirIndexPA.get(tPo) == dirI && 
-                        tFileNamePA.get(tPo).compareTo(fileS) < 0)
-                        tPo++;
-                    keep = tPo < ntft && tFileDirIndexPA.get(tPo) == dirI &&
-                        tFileNamePA.get(tPo).equals(fileS);
-                } else {
-                    keep = false;
-                }
-
-                //deal with keep
-                if (keep)
-                    keepFTRow.set(ftPo, true);
-                else {
-                    nFilesMissing++;
-                    if (reallyVerbose) 
-                        String2.log("previously valid file now missing: " + 
-                            dirList.get(dirI) + fileS);
+            //get tAvailableFiles with available data files
+            //and make tDirIndex and tFileList
+            long elapsedTime = System.currentTimeMillis();
+            //was tAvailableFiles with dir+name
+            Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
+            if (updateEveryNMillis > 0) {
+                try {
+                    watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
+                        recursive, pathRegex);
+                } catch (Throwable t) {
+                    updateEveryNMillis = 0; //disable the inotify system for this instance
+                    String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
+                    String tmsg = MustBe.throwableToString(t);
+                    if (tmsg.indexOf("inotify instances") >= 0)
+                        tmsg += EDStatic.inotifyFix;
+                    EDStatic.email(EDStatic.adminEmail, subject, tmsg);
                 }
             }
-            if (verbose)
-                String2.log("old fileTable size=" + nft + "   nFilesMissing=" + nFilesMissing);  
-            fileTable.justKeep(keepFTRow);
-        }
+            StringArray tFileDirPA     = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
+            StringArray tFileNamePA    = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.NAME));
+            LongArray   tFileLastModPA = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
+            LongArray   tFileSizePA    = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.SIZE));
+            tFileTable.removeColumn(FileVisitorDNLS.SIZE);
+            int ntft = tFileNamePA.size();
+            msg = ntft + " files found in " + fileDir + 
+                "\nregex=" + fileNameRegex + " recursive=" + recursive + 
+                " pathRegex=" + pathRegex + 
+                " time=" + (System.currentTimeMillis() - elapsedTime) + "ms";
+            if (ntft == 0)
+                //Just exit. Don't delete the dirTable and fileTable files!
+                //The problem may be that a drive isn't mounted.
+                throw new RuntimeException(msg); 
+            if (verbose) String2.log(msg);
+            msg = "";
 
-        //update fileTable  by processing tFileTable
-        int fileListPo = 0;  //next one to look at
-        int tFileListPo = 0; //next one to look at
-        int nReadFile = 0, nNoLastMod = 0, nNoSize = 0;
-        long readFileCumTime = 0;
-        long removeCumTime = 0;
-        int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
-        elapsedTime = System.currentTimeMillis();
-        while (tFileListPo < tFileNamePA.size()) {
-            int tDirI     = tFileDirIndexPA.get(tFileListPo);
-            String tFileS = tFileNamePA.get(tFileListPo);
-            int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
-            String fileS   = fileListPo < ftFileList.size()? ftFileList.get(fileListPo) : "\uFFFF";
-            double lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Double.MAX_VALUE;
-            double size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Double.MAX_VALUE;
-            if (reallyVerbose) String2.log("#" + tFileListPo + 
-                " file=" + dirList.get(tDirI) + tFileS);
+            //remove "badFiles" if they no longer exist (in tAvailableFiles)
+            {
+                //make hashset with all tAvailableFiles
+                HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+                for (int i = 0; i < ntft; i++)
+                    tFileSet.add(tFileDirPA.get(i) + tFileNamePA.get(i));
 
-            //is tLastMod available for tFile?
-            long tLastMod = tFileLastModPA.get(tFileListPo);
-            if (tLastMod == 0) { //0=trouble
-                nNoLastMod++;
-                String2.log("#" + tFileListPo + " reject because unable to get lastMod time: " + 
-                    dirList.get(tDirI) + tFileS);                
-                tFileListPo++;
-                addBadFile(badFileMap, tDirI, tFileS, tLastMod, "Unable to get lastMod time.");
-                continue;
-            }
+                Object badFileNames[] = badFileMap.keySet().toArray();
+                int nMissing = 0;
+                int nbfn = badFileNames.length;
+                for (int i = 0; i < nbfn; i++) {
+                     Object name = badFileNames[i];
+                     if (!tFileSet.contains(name)) {
+                         if (reallyVerbose) 
+                            String2.log("previously bad file now missing: " + name);
+                         nMissing++;
+                         badFileMap.remove(name);
+                     }
+                }
+                if (verbose) String2.log(
+                    "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
+            } 
 
-            //is tSize available for tFile?
-            long tSize = tFileSizePA.get(tFileListPo);
-            if (tSize < 0) { //-1=trouble
-                nNoSize++;
-                String2.log("#" + tFileListPo + " reject because unable to get size: " + 
-                    dirList.get(tDirI) + tFileS);                
-                tFileListPo++;
-                addBadFile(badFileMap, tDirI, tFileS, tLastMod, "Unable to get size.");
-                continue;
-            }
-
-            //is tFile in badFileMap?
-            Object bfi = badFileMap.get(tDirI + "/" + tFileS);
-            if (bfi != null) {
-                //tFile is in badFileMap
-                Object bfia[] = (Object[])bfi;
-                double bfLastMod = ((Double)bfia[0]).doubleValue();
-                if (bfLastMod == tLastMod) {
-                    //file hasn't been changed; it is still bad
-                    tFileListPo++;
-                    if (tDirI == dirI && tFileS.equals(fileS)) {
-                        //remove it from cache   (Yes, a file may be marked bad (recently) and so still be in cache)
-                        nRemoved++;
-                        removeCumTime -= System.currentTimeMillis();
-                        fileTable.removeRow(fileListPo);
-                        removeCumTime += System.currentTimeMillis();
+            //switch to dir indexes
+            ShortArray tFileDirIndexPA = new ShortArray(ntft, false);  
+            tFileTable.removeColumn(0);  //tFileDirPA col
+            tFileTable.addColumn(0, "dirIndex", tFileDirIndexPA); //col 0, matches fileTable
+            tFileTable.setColumnName(1, "fileList"); //col 1, matches fileTable
+            String lastDir = "\u0000";
+            int lastPo = -1;
+            for (int i = 0; i < ntft; i++) {
+                String tDir = tFileDirPA.get(i);
+                int po = lastPo;
+                if (!tDir.equals(lastDir)) {    //rare
+                    po = dirList.indexOf(tDir); //linear search, but should be short list
+                    if (po < 0) {
+                        po = dirList.size();
+                        dirList.add(tDir);
                     }
-                    //go on to next tFile
+                    lastDir = tDir;
+                    lastPo = po;
+                }
+                tFileDirIndexPA.addInt(po);
+            }
+            tFileDirPA = null; //allow gc
+            
+            //sort fileTable and tFileTable based on dirIndex and file names
+            elapsedTime = System.currentTimeMillis();
+            fileTable.leftToRightSort(2);   //lexical sort so can walk through below
+            tFileTable.leftToRightSort(2);  //lexical sort so can walk through below
+            if (verbose) String2.log("sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
+
+            //remove any files in fileTable not in tFileTable  (i.e., the file was deleted)
+            //I can step through fileTable and tFileTable since both sorted same way
+            {
+                int nft = ftFileList.size();
+                BitSet keepFTRow = new BitSet(nft);  //all false
+                int nFilesMissing = 0;
+                int tPo = 0;
+                for (int ftPo = 0; ftPo < nft; ftPo++) {
+                    int dirI       = ftDirIndex.get(ftPo);
+                    String fileS   = ftFileList.get(ftPo);
+
+                    //skip through tDir until it is >= ftDir
+                    while (tPo < ntft && tFileDirIndexPA.get(tPo) < dirI)
+                        tPo++;
+
+                    //if dirs match, skip through tFile until it is >= ftFile
+                    boolean keep;
+                    if (tPo < ntft && tFileDirIndexPA.get(tPo) == dirI) {               
+                        while (tPo < ntft && tFileDirIndexPA.get(tPo) == dirI && 
+                            tFileNamePA.get(tPo).compareTo(fileS) < 0)
+                            tPo++;
+                        keep = tPo < ntft && tFileDirIndexPA.get(tPo) == dirI &&
+                            tFileNamePA.get(tPo).equals(fileS);
+                    } else {
+                        keep = false;
+                    }
+
+                    //deal with keep
+                    if (keep)
+                        keepFTRow.set(ftPo, true);
+                    else {
+                        nFilesMissing++;
+                        if (reallyVerbose) 
+                            String2.log("previously valid file now missing: " + 
+                                dirList.get(dirI) + fileS);
+                    }
+                }
+                if (verbose)
+                    String2.log("old fileTable size=" + nft + "   nFilesMissing=" + nFilesMissing);  
+                fileTable.justKeep(keepFTRow);
+            }
+
+            //update fileTable  by processing tFileTable
+            int fileListPo = 0;  //next one to look at
+            int tFileListPo = 0; //next one to look at
+            int nReadFile = 0, nNoLastMod = 0, nNoSize = 0;
+            long readFileCumTime = 0;
+            long removeCumTime = 0;
+            int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
+            elapsedTime = System.currentTimeMillis();
+            while (tFileListPo < tFileNamePA.size()) {
+                int tDirI     = tFileDirIndexPA.get(tFileListPo);
+                String tFileS = tFileNamePA.get(tFileListPo);
+                int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
+                String fileS   = fileListPo < ftFileList.size()? ftFileList.get(fileListPo) : "\uFFFF";
+                double lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Double.MAX_VALUE;
+                double size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Double.MAX_VALUE;
+                if (reallyVerbose) String2.log("#" + tFileListPo + 
+                    " file=" + dirList.get(tDirI) + tFileS);
+
+                //is tLastMod available for tFile?
+                long tLastMod = tFileLastModPA.get(tFileListPo);
+                if (tLastMod == 0) { //0=trouble
+                    nNoLastMod++;
+                    String2.log("#" + tFileListPo + " reject because unable to get lastMod time: " + 
+                        dirList.get(tDirI) + tFileS);                
+                    tFileListPo++;
+                    addBadFile(badFileMap, tDirI, tFileS, tLastMod, "Unable to get lastMod time.");
                     continue;
+                }
+
+                //is tSize available for tFile?
+                long tSize = tFileSizePA.get(tFileListPo);
+                if (tSize < 0 || tSize == Long.MAX_VALUE) { //-1=trouble
+                    nNoSize++;
+                    String2.log("#" + tFileListPo + " reject because unable to get size: " + 
+                        dirList.get(tDirI) + tFileS);                
+                    tFileListPo++;
+                    addBadFile(badFileMap, tDirI, tFileS, tLastMod, "Unable to get size.");
+                    continue;
+                }
+
+                //is tFile in badFileMap?
+                Object bfi = badFileMap.get(tDirI + "/" + tFileS);
+                if (bfi != null) {
+                    //tFile is in badFileMap
+                    Object bfia[] = (Object[])bfi;
+                    double bfLastMod = ((Double)bfia[0]).doubleValue();
+                    if (bfLastMod == tLastMod) {
+                        //file hasn't been changed; it is still bad
+                        tFileListPo++;
+                        if (tDirI == dirI && tFileS.equals(fileS)) {
+                            //remove it from cache   (Yes, a file may be marked bad (recently) and so still be in cache)
+                            nRemoved++;
+                            removeCumTime -= System.currentTimeMillis();
+                            fileTable.removeRow(fileListPo);
+                            removeCumTime += System.currentTimeMillis();
+                        }
+                        //go on to next tFile
+                        continue;
+                    } else {
+                        //file has been changed since being marked as bad; remove from badFileMap
+                        badFileMap.remove(tDirI + "/" + tFileS);
+                        //and continue processing this file
+                    }
+                }
+
+                //is tFile already in cache?
+                if (tDirI == dirI && tFileS.equals(fileS) && tLastMod == lastMod && 
+                    (tSize == size || !filesAreLocal)) { //remote file's size may be approximate, e.g., 11K
+                    if (reallyVerbose) String2.log("#" + tFileListPo + " already in cache");
+                    nUnchanged++;
+                    tFileListPo++;
+                    fileListPo++;
+                    continue;
+                }
+
+                //file in cache no longer exists: remove from fileTable
+                if (dirI < tDirI ||
+                    (dirI == tDirI && fileS.compareTo(tFileS) < 0)) {
+                    if (verbose) String2.log("#" + tFileListPo + " file no longer exists: remove from cache: " +
+                        dirList.get(dirI) + fileS);
+                    nRemoved++;
+                    removeCumTime -= System.currentTimeMillis();
+                    fileTable.removeRow(fileListPo);
+                    removeCumTime += System.currentTimeMillis();
+                    //tFileListPo isn't incremented, so it will be considered again in next iteration
+                    continue;
+                }
+
+                //tFile is new, or tFile is in ftFileList but time is different
+                if (dirI == tDirI && fileS.equals(tFileS)) {
+                    if (verbose) String2.log("#" + tFileListPo + 
+                        " already in cache (but time changed): " + dirList.get(tDirI) + tFileS);
+                    nDifferentModTime++;
                 } else {
-                    //file has been changed since being marked as bad; remove from badFileMap
-                    badFileMap.remove(tDirI + "/" + tFileS);
-                    //and continue processing this file
+                    //if new, add row to fileTable
+                    if (verbose) String2.log("#" + tFileListPo + " inserted in cache");
+                    nNew++;
+                    fileTable.insertBlankRow(fileListPo);
+                }
+
+                //gather file's info
+                try {
+                    ftDirIndex.setInt(fileListPo, tDirI);
+                    ftFileList.set(fileListPo, tFileS);
+                    ftLastMod.set(fileListPo, tLastMod);
+                    ftSize.set(fileListPo, tSize);
+
+                    //read axis values
+                    nReadFile++;
+                    long rfcTime = System.currentTimeMillis();
+                    PrimitiveArray[] tSourceAxisValues = getSourceAxisValues(
+                        dirList.get(tDirI), tFileS, sourceAxisNames);
+                    readFileCumTime += System.currentTimeMillis() - rfcTime;
+
+                    //test that all axisVariable and dataVariable units are identical
+                    //this also tests if all dataVariables are present
+                    Attributes tSourceGlobalAttributes = new Attributes();
+                    Attributes tSourceAxisAttributes[] = new Attributes[nav];
+                    Attributes tSourceDataAttributes[] = new Attributes[ndv];
+                    for (int avi = 0; avi < nav; avi++) tSourceAxisAttributes[avi] = new Attributes();
+                    for (int dvi = 0; dvi < ndv; dvi++) tSourceDataAttributes[dvi] = new Attributes();
+                    getSourceMetadata(dirList.get(tDirI), tFileS,
+                        sourceAxisNames, sourceDataNames, sourceDataTypes,
+                        tSourceGlobalAttributes, tSourceAxisAttributes, tSourceDataAttributes);
+                    validateCompareSet( //throws Exception if not
+                        dirList.get(tDirI), tFileS,
+                        tSourceGlobalAttributes,
+                        tSourceAxisAttributes, tSourceAxisValues,
+                        tSourceDataAttributes);
+
+                    //store n, min, max, values
+                    int tnValues = tSourceAxisValues[0].size();
+                    ftNValues.set(fileListPo, tnValues);
+                    ftMin.set(fileListPo, tSourceAxisValues[0].getNiceDouble(0));
+                    ftMax.set(fileListPo, tSourceAxisValues[0].getNiceDouble(tnValues - 1));
+                    ftCsvValues.set(fileListPo, tSourceAxisValues[0].toString());
+
+                    tFileListPo++;
+                    fileListPo++;
+
+                } catch (Throwable t) {
+                    String fullName = dirList.get(tDirI) + tFileS;
+                    msg = "#" + tFileListPo + " bad file: removing fileTable row for " + 
+                        fullName + "\n" +
+                        MustBe.throwableToString(t);
+                    String2.log(msg);
+                    msg = "";
+                    nRemoved++;
+                    removeCumTime -= System.currentTimeMillis();
+                    fileTable.removeRow(fileListPo);
+                    removeCumTime += System.currentTimeMillis();
+                    tFileListPo++;
+                    if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE) 
+                        //>30 minutes old, so not still being ftp'd, so add to badFileMap
+                        addBadFile(badFileMap, tDirI, tFileS, tLastMod, MustBe.throwableToShortString(t));
                 }
             }
+            if (verbose) String2.log("fileTable updated; time=" + (System.currentTimeMillis() - elapsedTime) + "ms");
 
-            //is tFile already in cache?
-            if (tDirI == dirI && tFileS.equals(fileS) && tLastMod == lastMod && tSize == size) {
-                if (reallyVerbose) String2.log("#" + tFileListPo + " already in cache");
-                nUnchanged++;
-                tFileListPo++;
-                fileListPo++;
-                continue;
-            }
+            //sort fileTable by FT_MIN_COL
+            elapsedTime = System.currentTimeMillis();
+            fileTable.sort(new int[]{FT_MIN_COL}, new boolean[]{true});
+            if (verbose) String2.log("2nd sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
 
-            //file in cache no longer exists: remove from fileTable
-            if (dirI < tDirI ||
-                (dirI == tDirI && fileS.compareTo(tFileS) < 0)) {
-                if (verbose) String2.log("#" + tFileListPo + " file no longer exists: remove from cache: " +
-                    dirList.get(dirI) + fileS);
-                nRemoved++;
-                removeCumTime -= System.currentTimeMillis();
-                fileTable.removeRow(fileListPo);
-                removeCumTime += System.currentTimeMillis();
-                //tFileListPo isn't incremented, so it will be considered again in next iteration
-                continue;
-            }
+            msg = "\n  tFileNamePA.size=" + tFileNamePA.size() + 
+                "\n  dirTable.nRows=" + dirTable.nRows() +
+                "\n  fileTable.nRows=" + fileTable.nRows() + 
+                "\n    fileTableInMemory=" + fileTableInMemory + 
+                "\n    nUnchanged=" + nUnchanged + 
+                "\n    nRemoved=" + nRemoved + " (nNoLastMod=" + nNoLastMod + 
+                     ", nNoSize=" + nNoSize + ")" +
+                "\n    nReadFile=" + nReadFile + 
+                       " (nDifferentModTime=" + nDifferentModTime + " nNew=" + nNew + ")" +
+                       " readFileCumTime=" + Calendar2.elapsedTimeString(readFileCumTime) +
+                       " avg=" + (readFileCumTime / Math.max(1,nReadFile)) + "ms";
+            if (verbose) String2.log(msg);
 
-            //tFile is new, or tFile is in ftFileList but time is different
-            if (dirI == tDirI && fileS.equals(tFileS)) {
-                if (verbose) String2.log("#" + tFileListPo + 
-                    " already in cache (but time changed): " + dirList.get(tDirI) + tFileS);
-                nDifferentModTime++;
-            } else {
-                //if new, add row to fileTable
-                if (verbose) String2.log("#" + tFileListPo + " inserted in cache");
-                nNew++;
-                fileTable.insertBlankRow(fileListPo);
-            }
-
-            //gather file's info
-            try {
-                ftDirIndex.setInt(fileListPo, tDirI);
-                ftFileList.set(fileListPo, tFileS);
-                ftLastMod.set(fileListPo, tLastMod);
-                ftSize.set(fileListPo, tSize);
-
-                //read axis values
-                nReadFile++;
-                long rfcTime = System.currentTimeMillis();
-                PrimitiveArray[] tSourceAxisValues = getSourceAxisValues(
-                    dirList.get(tDirI), tFileS, sourceAxisNames);
-                readFileCumTime += System.currentTimeMillis() - rfcTime;
-
-                //test that all axisVariable and dataVariable units are identical
-                //this also tests if all dataVariables are present
-                Attributes tSourceGlobalAttributes = new Attributes();
-                Attributes tSourceAxisAttributes[] = new Attributes[nav];
-                Attributes tSourceDataAttributes[] = new Attributes[ndv];
-                for (int avi = 0; avi < nav; avi++) tSourceAxisAttributes[avi] = new Attributes();
-                for (int dvi = 0; dvi < ndv; dvi++) tSourceDataAttributes[dvi] = new Attributes();
-                getSourceMetadata(dirList.get(tDirI), tFileS,
-                    sourceAxisNames, sourceDataNames, sourceDataTypes,
-                    tSourceGlobalAttributes, tSourceAxisAttributes, tSourceDataAttributes);
-                validateCompareSet( //throws Exception if not
-                    dirList.get(tDirI), tFileS,
-                    tSourceGlobalAttributes,
-                    tSourceAxisAttributes, tSourceAxisValues,
-                    tSourceDataAttributes);
-
-                //store n, min, max, values
-                int tnValues = tSourceAxisValues[0].size();
-                ftNValues.set(fileListPo, tnValues);
-                ftMin.set(fileListPo, tSourceAxisValues[0].getNiceDouble(0));
-                ftMax.set(fileListPo, tSourceAxisValues[0].getNiceDouble(tnValues - 1));
-                ftCsvValues.set(fileListPo, tSourceAxisValues[0].toString());
-
-                tFileListPo++;
-                fileListPo++;
-
-            } catch (Throwable t) {
-                String fullName = dirList.get(tDirI) + tFileS;
-                msg = "#" + tFileListPo + " bad file: removing fileTable row for " + 
-                    fullName + "\n" +
-                    MustBe.throwableToString(t);
-                String2.log(msg);
-                nRemoved++;
-                removeCumTime -= System.currentTimeMillis();
-                fileTable.removeRow(fileListPo);
-                removeCumTime += System.currentTimeMillis();
-                tFileListPo++;
-                if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE) 
-                    //>30 minutes old, so not still being ftp'd, so add to badFileMap
-                    addBadFile(badFileMap, tDirI, tFileS, tLastMod, MustBe.throwableToShortString(t));
-            }
+            //end !doQuickRestart
         }
-        if (verbose) String2.log("fileTable updated; time=" + (System.currentTimeMillis() - elapsedTime) + "ms");
 
-        //sort fileTable by FT_MIN_COL
-        elapsedTime = System.currentTimeMillis();
-        fileTable.sort(new int[]{FT_MIN_COL}, new boolean[]{true});
-        if (verbose) String2.log("2nd sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
-
-        //finish up, validate, and save dirTable, fileTable, badFileMap
+        //finish up, validate, and (if !quickRestart) save dirTable, fileTable, badFileMap
         PrimitiveArray sourceAxisValues0 = PrimitiveArray.factory(
             sourceAxisValues[0].elementClass(), 
             ftDirIndex.size(), //size is a guess: the minimum possible, but usually correct
@@ -820,20 +908,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         updateValidateFileTable(dirList, ftDirIndex, ftFileList,
             ftMin, ftMax, ftStartIndex, ftNValues, ftCsvValues, 
             sourceAxisValues0);
-        saveDirTableFileTableBadFiles(dirTable, fileTable, badFileMap); //throws Throwable
+        if (!doQuickRestart) 
+            saveDirTableFileTableBadFiles(dirTable, fileTable, badFileMap); //throws Throwable
 
-        msg = "\n  tFileNamePA.size=" + tFileNamePA.size() + 
-            "\n  dirTable.nRows=" + dirTable.nRows() +
-            "\n  fileTable.nRows=" + fileTable.nRows() + 
-            "\n    fileTableInMemory=" + fileTableInMemory + 
-            "\n    nUnchanged=" + nUnchanged + 
-            "\n    nRemoved=" + nRemoved + " (nNoLastMod=" + nNoLastMod + 
-                 ", nNoSize=" + nNoSize + ")" +
-            "\n    nReadFile=" + nReadFile + 
-                   " (nDifferentModTime=" + nDifferentModTime + " nNew=" + nNew + ")" +
-                   " readFileCumTime=" + Calendar2.elapsedTimeString(readFileCumTime) +
-                   " avg=" + (readFileCumTime / Math.max(1,nReadFile)) + "ms";
-        if (verbose) String2.log(msg);
+        //set creationTimeMillis to fileTable lastModified 
+        //(either very recent or (if quickRestart) from previous full restart)
+        creationTimeMillis = File2.getLastModified(datasetDir() + FILE_TABLE_FILENAME);
+
         if (!badFileMap.isEmpty()) {
             StringBuilder emailSB = new StringBuilder();
             emailSB.append(badFileMapToString(badFileMap, dirList));
@@ -869,7 +950,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (combinedGlobalAttributes.getString("cdm_data_type") == null)
             combinedGlobalAttributes.add("cdm_data_type", "Grid");
         if (combinedGlobalAttributes.get("sourceUrl") == null) {
-            localSourceUrl = "(" + (File2.isRemote(localSourceUrl)? "remote" : "local") + " files)"; //keep location private
+            localSourceUrl = "(" + (filesAreLocal? "local" : "remote") + " files)"; //keep location private
             addGlobalAttributes.set(     "sourceUrl", localSourceUrl);
             combinedGlobalAttributes.set("sourceUrl", localSourceUrl);
         }
@@ -1026,11 +1107,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         }
 
         //test for ties
-        int firstTie = tSourceAxisValues[0].firstTie();
-        if (firstTie >= 0)
+        StringBuilder sb = new StringBuilder();
+        if (tSourceAxisValues[0].removeDuplicates(false, sb) > 0)
             throw new RuntimeException("AxisVariable=" + sourceAxisNames.get(0) + 
-                " has tied values: #" + firstTie + " and #" + (firstTie + 1) + 
-                " both equal " + tSourceAxisValues[0].getNiceDouble(firstTie) + ".");
+                " has tied values:\n" + sb.toString());
 
         if (haveValidSourceInfo) {
             //compare incoming to expected
@@ -1047,8 +1127,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 String eqError = exp.almostEqual(obs, matchAxisNDigits);
                 if (eqError.length() > 0)
                     throw new RuntimeException(
-                        "Test of matchAxisNDigits=" + matchAxisNDigits +
-                        " failed for axis[" + av + "]=" + sourceAxisNames.get(av) + " failed:\n" + eqError);
+                        "axis[" + av + "]=" + sourceAxisNames.get(av) +
+                        " is different than expected (matchAxisNDigits=" + matchAxisNDigits + 
+                        "):\n" + eqError);
             }
 
             //compare axisAttributes
@@ -1138,6 +1219,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
 
         //Most of this lowUpdate code is identical in EDDGridFromFiles and EDDTableFromFiles
+        if (watchDirectory == null)
+            return false;  //no changes
 
         //get the file events
         ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
@@ -1166,7 +1249,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         contexts.removeDuplicates();
         nEvents = contexts.size();
 
-        //remove events for files that don't match fileNameRegex
+        //remove events for files that don't match fileNameRegex or pathRegex
         BitSet keep = new BitSet(nEvents); //initially all false
         for (int evi = 0; evi < nEvents; evi++) {
             String fullName = contexts.get(evi);
@@ -1174,13 +1257,15 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             String fileName = File2.getNameAndExtension(fullName);
 
             //if not a directory and fileName matches fileNameRegex, keep it
-            if (fileName.length() > 0 && fileName.matches(fileNameRegex))
+            if (fileName.length() > 0 && fileName.matches(fileNameRegex) &&
+                (!recursive || dirName.matches(pathRegex)))
                 keep.set(evi);
         }
         contexts.justKeep(keep);        
         nEvents = contexts.size();
         if (nEvents == 0) {
-            if (verbose) String2.log(msg + "found 0 events related to files matching fileNameRegex.");
+            if (verbose) String2.log(msg + 
+                "found 0 events related to files matching fileNameRegex+recursive+pathRegex.");
             return false; //no changes
         }
 
@@ -1425,6 +1510,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         return nChanges > 0;
     }
 
+
     /**
      * This is the default implementation of getFileInfo, which
      * gets file info from a locally accessible directory.
@@ -1435,10 +1521,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @return a table with columns with DIR, NAME, LASTMOD, and SIZE columns;
      * @throws Throwable if trouble
      */
-    public Table getFileInfo(String fileDir, String fileNameRegex, boolean recursive) 
-        throws Throwable {
+    public Table getFileInfo(String fileDir, String fileNameRegex, boolean recursive, 
+        String pathRegex) throws Throwable {
         //String2.log("EDDTableFromFiles getFileInfo");
-        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, false); //dirsToo
+        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
+            false); //dirsToo
     }
 
     /** 
@@ -1508,8 +1595,39 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
 
     /**
+     * This parses a special axis sourceName that starts with '='.
+     * This throws runtimeException if not a valid special sourceAxisName.
+     * 
+     * @return the parts of the sourceName
+     */
+    public String[] parseSpecialSourceAxisName(String sn) {
+        if (sn.startsWith("=fileNameRegex#")) {
+            //=fileNameRegex#1=regex -> ["fileNameRegex", "1", regex]
+            int numPo = 9;
+            int eqPo = sn.indexOf('=', numPo + 1);
+            Test.ensureTrue(eqPo >= 0, "Second '=' not found.");
+            int num = String2.parseInt(sn.substring(numPo + 1, eqPo));
+            Test.ensureBetween(num, 0, 20, "Number after '#' is invalid.");
+            String regex = sn.substring(eqPo + 1);
+            Test.ensureTrue(String2.isSomething(regex), "regex is missing.");
+            return new String[]{"fileNameRegex", "" + num, regex};
+        }
+        
+        if (sn.startsWith("=fixedValue=")) {
+            //=fixedValue=value -> ["fileName", value]
+            String value = sn.substring(12);
+            if (Double.isNaN(String2.parseDouble(value)))
+                throw new RuntimeException("The value must be a finite number.");
+            return new String[]{"fixedValue", value};
+        }
+
+        throw new RuntimeException("Unrecognized type of special axis sourceName.");
+    }
+
+    /**
      * This gets sourceGlobalAttributes and sourceDataAttributes from the specified 
      * source file (or does nothing if that isn't possible).
+     * This is a high-level request that handles axis manipulation.
      *
      * @param fileDir
      * @param fileName
@@ -1523,7 +1641,40 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @throws Throwable if trouble (e.g., invalid file, or a sourceAxisName or sourceDataName not found).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public abstract void getSourceMetadata(String fileDir, String fileName, 
+    public void getSourceMetadata(String fileDir, String fileName, 
+        StringArray sourceAxisNames,
+        StringArray sourceDataNames, String sourceDataTypes[],
+        Attributes sourceGlobalAttributes, 
+        Attributes sourceAxisAttributes[],
+        Attributes sourceDataAttributes[]) throws Throwable {
+
+        //handle no special axis names
+        if (!hasSpecialSourceAxisName) {
+            lowGetSourceMetadata(fileDir, fileName, 
+                sourceAxisNames, sourceDataNames, sourceDataTypes,
+                sourceGlobalAttributes, sourceAxisAttributes, sourceDataAttributes);
+            return;
+        }
+
+        /* not yet finished
+        //make temporary input data structures
+        StringArray tSourceAxisNames = new StringArray(sourceAxisNames);
+        StringArray tSourceDataNames = new StringArray(sourceDataNames); 
+        StringArray tSourceDataTypes = new StringArray(sourceDataTypes);       
+        
+        //do changes before getting file info
+        int nAxes = sourceAxisNames.size();
+        for (int ai = 0; ai < nAxes; ai++) {
+
+
+            String parts[] = parseSourceName(String sn);
+        }
+        */
+
+    }
+
+    /** This is the low-level request corresponding to what is actually in the file. */
+    public abstract void lowGetSourceMetadata(String fileDir, String fileName, 
         StringArray sourceAxisNames,
         StringArray sourceDataNames, String sourceDataTypes[],
         Attributes sourceGlobalAttributes, 
@@ -1532,6 +1683,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
     /**
      * This gets source axis values from one file.
+     * This is a high-level request that handles axis manipulation.
      *
      * @param fileDir
      * @param fileName
@@ -1542,11 +1694,25 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @throws Throwable if trouble (e.g., invalid file).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public abstract PrimitiveArray[] getSourceAxisValues(String fileDir, String fileName, 
+    public PrimitiveArray[] getSourceAxisValues(String fileDir, String fileName, 
+        StringArray sourceAxisNames) throws Throwable {
+
+        //handle no special axis names
+        if (!hasSpecialSourceAxisName) 
+            return lowGetSourceAxisValues(fileDir, fileName, sourceAxisNames);
+
+        //deal with specialSourceAxisName
+        //not finished
+        return new PrimitiveArray[0];
+    }
+
+    /** This is the low-level request corresponding to what is actually in the file. */
+    public abstract PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName, 
         StringArray sourceAxisNames) throws Throwable;
 
     /**
      * This gets source data from one file.
+     * This is a high-level request that handles axis manipulation.
      *
      * @param fileDir
      * @param fileName
@@ -1561,7 +1727,21 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @throws Throwable if trouble (e.g., invalid file).
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public abstract PrimitiveArray[] getSourceDataFromFile(String fileDir, String fileName, 
+    public PrimitiveArray[] getSourceDataFromFile(String fileDir, String fileName, 
+        EDV tDataVariables[], IntArray tConstraints) throws Throwable {
+
+        //handle no special axis names
+        if (!hasSpecialSourceAxisName) 
+            return lowGetSourceDataFromFile(fileDir, fileName, 
+                tDataVariables, tConstraints);
+
+        //deal with specialSourceAxisName
+        //not finished
+        return new PrimitiveArray[0];
+    }
+
+    /** This is the low-level request corresponding to what is actually in the file. */
+    public abstract PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName, 
         EDV tDataVariables[], IntArray tConstraints) throws Throwable;
 
     /** 

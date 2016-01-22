@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -229,7 +229,7 @@ public class NDimensionalIndex {
      * @param tIndex the new position in the 1 dimensional array
      * @return the new current position in the nDimensional array
      *   (the internal array, so don't change it).
-     * @throws Exception if tIndex &lt; 0 or &gt;= size 
+     * @throws RuntimeException if tIndex &lt; 0 or &gt;= size 
      */
     public int[] setIndex(long tIndex) {
         if (tIndex < 0 || tIndex >= size)
@@ -251,7 +251,7 @@ public class NDimensionalIndex {
      * @param tCurrent the new position in the n dimensional array
      *   (the tCurrent array isn't kept; the values are copied).
      * @return the new current position in the 1 dimensional array
-     * @throws Exception if any index is invalid
+     * @throws RuntimeException if any index is invalid
      */
     public long setCurrent(int[] tCurrent) {
         index = 0;
@@ -396,14 +396,14 @@ public class NDimensionalIndex {
             throw new Exception("");            
         } catch (Exception e) {
             if (e.toString().indexOf("nDimensions=0") < 0) 
-                throw new Exception("originalError=" + e.toString());
+                throw e;
         }
         try {
             NDimensionalIndex b = new NDimensionalIndex(new int[]{2,0});
             throw new Exception("");            
         } catch (Exception e) {
             if (e.toString().indexOf("value less than 1") < 0) 
-                throw new Exception("originalError=" + e.toString());
+                throw e;
         }
 
         try {
@@ -411,21 +411,21 @@ public class NDimensionalIndex {
             throw new Exception("");            
         } catch (Exception e) {
             if (e.toString().indexOf("less than 0") < 0) 
-                throw new Exception("originalError=" + e.toString());
+                throw e;
         }
         try {
             a.setCurrent(new int[]{1,1});
             throw new Exception("");            
         } catch (Exception e) {
             if (e.toString().indexOf("isn't 3") < 0) 
-                throw new Exception("originalError=" + e.toString());
+                throw e;
         }
         try {
             a.setCurrent(new int[]{1,-1,1});
             throw new Exception("");            
         } catch (Exception e) {
             if (e.toString().indexOf("is invalid") < 0) 
-                throw new Exception("originalError=" + e.toString());
+                throw e;
         }
 
         //test get/set index/current

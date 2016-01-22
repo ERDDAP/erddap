@@ -3369,7 +3369,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 globalAttributes);
         } catch (Exception e) {
             File2.delete(hdfFileName + ".hdf");
-            throw new Exception(e);
+            throw e;
         }
         
         if (verbose) String2.log("  Grid.saveAsHDF done. TIME=" + 

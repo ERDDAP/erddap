@@ -57,13 +57,15 @@ public class EDDTableFromMWFS extends EDDTable{
     /**
      * This constructs an EDDTableFromMWFS based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromMWFS"&gt;
      *    having just been read.  
      * @return an EDDTableFromMWFS.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromMWFS fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromMWFS fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromMWFS(xmlReader)...");
@@ -560,7 +562,7 @@ public class EDDTableFromMWFS extends EDDTable{
         reallyVerbose = true;
         SSR.verbose = true;
         SSR.reallyVerbose = true;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         try {
 
 /*
@@ -613,7 +615,7 @@ time series data.</att>
 
 */
         //EDDTable mwfs = testDataset(); //should work
-        EDDTable mwfs = (EDDTable)oneFromDatasetXml("cscWT"); //should work
+        EDDTable mwfs = (EDDTable)oneFromDatasetsXml(null, "cscWT"); //should work
 
         double tLon, tLat;
         String name, tName, results, expected, userDapQuery;

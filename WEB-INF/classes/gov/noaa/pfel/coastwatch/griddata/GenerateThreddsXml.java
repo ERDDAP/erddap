@@ -174,6 +174,8 @@ public class GenerateThreddsXml {
         StringArray allShortTitles = new StringArray();
         StringArray longShortTitles = new StringArray();
         StringArray warnings = new StringArray();
+        String skipTwoName[] = {"G1", "GR", "MW"}; //these are in ERDDAP, but not CWBrowsers
+
         for (int twoNameI = 0; twoNameI < twoNames.length; twoNameI++) {
             twoName = twoNames[twoNameI];
             if (verbose) String2.log("twoName=" + twoName);
@@ -185,7 +187,7 @@ public class GenerateThreddsXml {
             }
             char ch1 = twoName.charAt(0);
             char ch2 = twoName.charAt(1);
-            if (twoName.equals("G1") || twoName.equals("GR")) {
+            if (String2.indexOf(skipTwoName, twoName) >= 0) {
                 String warning = "WARNING! Skipping directory '" + twoName + "'. It is on the skip list.";
                 String2.log(warning);
                 warnings.add(warning);

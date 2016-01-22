@@ -1015,17 +1015,9 @@ public class CWUser extends User  {
                     mapScreen.hiddenInputStillPending) + "\n" +
                 "<p>&nbsp;<hr>\n" +
                 "<pre>Details:\n" +
-                "\n");
-
-            //add the actual diagnostic info  
-            StringBuffer logSB = String2.getLogStringBuffer();
-            if (logSB == null) 
-                logSB = new StringBuffer("[logStringBuffer is null.]");
-            htmlSB.append(logSB.toString());
-            htmlSB.append("\n" + tError); //always in htmlSB
-            htmlSB.append("</pre>\n"); 
-            //clear the String2.logStringBuffer
-            logSB.setLength(0); 
+                "\n" + 
+                tError +
+                "</pre>\n"); 
 
             //send email
             oneOf.email(oneOf.emailEverythingTo(), 
@@ -1033,20 +1025,8 @@ public class CWUser extends User  {
 
         } //end of 'catch'
 
-        //display diagnostic information during development
         if (oneOf.verbose()) String2.log("************ getHTMLForm done. TOTAL TIME=" + 
             (System.currentTimeMillis() - startTime));
-        StringBuffer logSB = String2.getLogStringBuffer();
-        if (oneOf.displayDiagnosticInfo()) {
-            htmlSB.append("<p>Diagnostic Info = <pre>");
-            htmlSB.append(logSB == null? "[logStringBuffer is null.]" : logSB.toString());
-            htmlSB.append("</pre>\n");        
-        }
-
-        //clear the String2.logStringBuffer
-        if (logSB != null) {
-            logSB.setLength(0); 
-        }
 
         return succeeded;
 
@@ -1786,7 +1766,7 @@ public class CWUser extends User  {
                 oneOf.legendTitle2(),
                 oneOf.fullContextDirectory() + "images/", 
                 logoFileName,
-                Double.NaN, Double.NaN, Double.NaN, Double.NaN, 
+                Double.NaN, Double.NaN, true, Double.NaN, Double.NaN, true, 
                 gpl0.xIsTimeAxis, gpl0.yIsTimeAxis, 
                 graphGDLs,
                 g2D,
@@ -1833,8 +1813,8 @@ public class CWUser extends User  {
                 oneOf.fullContextDirectory() + "images/", 
                 logoFileName,
                 gdl.xIsTimeAxis? minTime : Double.NaN, 
-                gdl.xIsTimeAxis? maxTime : Double.NaN, 
-                Double.NaN, Double.NaN, 
+                gdl.xIsTimeAxis? maxTime : Double.NaN, true,
+                Double.NaN, Double.NaN, true,
                 gdl.xIsTimeAxis, gdl.yIsTimeAxis,
                 tArrayList,
                 g2D,

@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.ema;
 
@@ -58,7 +58,7 @@ import javax.servlet.http.HttpSession;
  *     specifies how the options will be displayed:
  *     "column" (display the options as checkboxes in a column),
  *     "row" (display the options as radio buttons in a row),
- *     or an integer >= 3 indicating the number of rows always visible.
+ *     or an integer &gt;= 3 indicating the number of rows always visible.
  *     The default is 4.
  * <li> name+".enterSubmitsForm" ("true" or "false", default = "false"),
  *     specifies if the HTML form should be submitted if the

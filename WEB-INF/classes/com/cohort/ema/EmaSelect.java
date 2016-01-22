@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.ema;
 
@@ -39,7 +39,7 @@ import javax.servlet.http.HttpSession;
  * <li> name+".required" ("true" or "false", default = true) 
  *     indicates if a value must be provided for this attribute
  *     to be considered valid. If false, a value of "" is considered valid.
- *     If "display" is < 1, "required" is forced to be true,
+ *     If "display" is &lt; 1, "required" is forced to be true,
  *     since HTML radio buttons always force an item to be picked.
  * <li> name+".label" (an HTML text string, default = "")
  *      is the label on the HTML form
@@ -67,7 +67,7 @@ import javax.servlet.http.HttpSession;
  *       enterSubmitsForm=true),
  *     "column" (display the options as radio buttons in a column),
  *     "row" (display the options as radio buttons in a row),
- *     or an integer > 0 indicating the number of rows always visible.
+ *     or an integer &gt; 0 indicating the number of rows always visible.
  *     The default is 1, which generates a dropdown list.
  *     Display=tabs is based on ideas from
  *     http://www.johanneslerch.at/space/html+tabs+with+css+and+javascript .

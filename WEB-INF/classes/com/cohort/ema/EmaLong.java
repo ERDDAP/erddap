@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.ema;
 
@@ -38,7 +38,7 @@ import javax.servlet.http.HttpSession;
  *     The default is "".
  * <li> name+".value" (a long, default = 0) 
  *      is the initial value stored by this object
- * <li> name+".size" (an int > 0, default = 20)
+ * <li> name+".size" (an int &gt; 0, default = 20)
  *      is the width of the textField (in em-spaces).
  *      This matches the HTML attribute name.
  * <li> name+".min" (a long, default = Long.MIN_VALUE) 

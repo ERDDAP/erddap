@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * A HashMap/cache where, when size > tMaxSize and a new element is added, 
+ * A HashMap/cache where, when size &gt; tMaxSize and a new element is added, 
  *     the Least-Recently-Used element will be removed.
  *
  * <p>This not thread-safe. To make it thread-safe, use
@@ -21,7 +21,7 @@ public class LRUCache extends LinkedHashMap {
  
     /** Constructor 
      * @param tMaxSize the maximum number of elements you want this to cache.
-     *     When size > tMaxSize and a new element is added, 
+     *     When size &gt; tMaxSize and a new element is added, 
      *     the Least-Recently-Used element will be removed.
      */
     public LRUCache(int tMaxSize) {

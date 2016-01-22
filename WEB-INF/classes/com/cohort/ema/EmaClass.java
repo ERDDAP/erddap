@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.ema;
 
@@ -576,7 +576,7 @@ public class EmaClass extends HttpServlet {
 
     /** 
      * This lets you change the HTML code for beginning a row of 
-     * the table (normally <tr align="left">). 
+     * the table (normally &lt;tr align="left"&gt;). 
      */
     public void setBeginRow(String code) {
         beginRow = code;
@@ -584,7 +584,7 @@ public class EmaClass extends HttpServlet {
 
     /** 
      * This returns the current HTML code for beginning a row of 
-     * the table (normally <tr>). 
+     * the table (normally &lt;tr&gt;). 
      */
     public String getBeginRow() {
         return beginRow;
@@ -592,7 +592,7 @@ public class EmaClass extends HttpServlet {
 
     /** 
      * This lets you change the HTML code for ending a row of 
-     * the table (normally </tr>). 
+     * the table (normally &lt;/tr&gt;). 
      */
     public void setEndRow(String code) {
         endRow = code;
@@ -600,7 +600,7 @@ public class EmaClass extends HttpServlet {
 
     /** 
      * This returns the current HTML code for ending a row of 
-     * the table (normally <tr>). 
+     * the table (normally &lt;tr&gt;). 
      */
     public String getEndRow() {
         return endRow;

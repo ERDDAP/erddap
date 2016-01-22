@@ -74,7 +74,8 @@ public class PlainAxis2 extends PlainAxis {
     String labelText;
     SGLabel title = getTitle();
     if(!visible_) return;
-    if(Double.isNaN(delta)) delta = (uRange_.end - uRange_.start)/10.0;
+    if(Double.isNaN(delta)) 
+        delta = (uRange_.end - uRange_.start)/10.0;
     if(title != null) title.setLayer(graph_.getLayer());
     //
     if(lineColor_ == null) {
@@ -101,6 +102,7 @@ public class PlainAxis2 extends PlainAxis {
       g.drawLine(xloc, yloc, xend, yloc);
       //
       dir = delta > 0? 1.0: -1.0;
+      //System.out.println(">PlainAxis2 horizontal delta=" + delta);
       xt = (int)((uRange_.start/delta + (dir*uRange_.start > 0? 1.0: -1.0)*0.00001))*delta; //safe? Denbo code
       if(dir*xt < dir*uRange_.start) xt += delta;  
       istop = (int)((uRange_.end - xt)/delta + 0.00001); //safe? Denbo code
@@ -182,6 +184,7 @@ public class PlainAxis2 extends PlainAxis {
       g.drawLine(xloc, yloc, xloc, yend);
       //
       dir = delta > 0? 1.0: -1.0;
+      //System.out.println(">PlainAxis2 vertical delta=" + delta);
       yt = (int)((uRange_.start/delta) + (dir*uRange_.start > 0? 1.0: -1.0)*0.00001)*delta;
       if(dir*yt < dir*uRange_.start) yt += delta;
       istop = (int)((uRange_.end - yt)/delta + 0.00001);

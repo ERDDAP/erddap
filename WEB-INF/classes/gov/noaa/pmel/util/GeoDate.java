@@ -53,7 +53,7 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   private int JDay_;
   private boolean EPICTimeDone_;
   private boolean relativeTime_ = false;
-  private static Calendar cal_ = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+  private Calendar cal_ = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //2015-09-02 was static!
   /** Increment or decrement in days. */
   public static final int DAYS = 1;
   /** Increment or decrement in months.  */

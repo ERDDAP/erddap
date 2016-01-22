@@ -31,6 +31,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -39,6 +40,7 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -74,13 +76,14 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     /**
      * This constructs an EDDGridFromErddap based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridFromErddap"&gt; 
      *    having just been read.  
      * @return an EDDGridFromErddap.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridFromErddap fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridFromErddap fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridFromErddap(xmlReader)...");
@@ -88,6 +91,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         int tUpdateEveryNMillis = 0;
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -123,6 +127,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //else if (localTags.equals( "<accessibleTo>")) {}
             //else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
 
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
             else if (localTags.equals( "<onChange>")) {}
@@ -138,7 +144,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
             else xmlReader.unexpectedTagException();
         }
-        return new EDDGridFromErddap(tDatasetID, tAccessibleTo, 
+        return new EDDGridFromErddap(tDatasetID, tAccessibleTo,  tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tLocalSourceUrl);
@@ -163,7 +169,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
      * @throws Throwable if trouble
      */
-    public EDDGridFromErddap(String tDatasetID, String tAccessibleTo,
+    public EDDGridFromErddap(String tDatasetID, 
+        String tAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
@@ -179,6 +186,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         className = "EDDGridFromErddap"; 
         datasetID = tDatasetID;
         //setAccessibleTo(tAccessibleTo);  disabled. see above.
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -212,12 +222,6 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
             creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
-
-            //Ensure quickRestart information is recent.
-            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
-            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
-                creationTimeMillis, quickRestartFullFileName());
-
         }
 
         //open the connection to the opendap source
@@ -382,7 +386,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //  and if flagKeyKey changes, the new tFlagUrl will be sent.
         //There is analogous code in EDDTableFromErddap.
         try {
-            if (String2.isSomething(EDStatic.emailSubscriptionsFrom)) {
+            if (!datasetID.endsWith("_LowLonPM180") && //if hidden EDDGridLomPM180 child dataset, subscribing will always fail, so don't try
+                String2.isSomething(EDStatic.emailSubscriptionsFrom)) { //subscription system is active
                 int gpo = tLocalSourceUrl.indexOf("/griddap/");
                 String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
                     "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
@@ -492,7 +497,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
                 " < oldSize=" + oldSize + ")"); 
         if (newSize == oldSize) {
-            if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
+            if (reallyVerbose) String2.log(msg + "leftmost dimension size hasn't changed");
             return false;  //finally{} below sets lastUpdate = startUpdateMillis
         }
 
@@ -671,7 +676,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //make the sibling
         EDDGridFromErddap newEDDGrid = new EDDGridFromErddap(
             tDatasetID, 
-            String2.toSSVString(accessibleTo),
+            String2.toSSVString(accessibleTo), false, //accessibleViaWMS
             shareInfo? onChange : (StringArray)onChange.clone(), 
             "", "", "", "", //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
             getReloadEveryNMinutes(), getUpdateEveryNMillis(), tLocalSourceUrl);
@@ -933,12 +938,20 @@ expected =
                 "\nTHIS TEST REQUIRES rMHchla8day TO BE ACTIVE ON THE localhost ERDDAP.");
 
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);    
-            //!!!the first dataset will vary, depending on which are currently active!!!
-            Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)", "");
-            Test.ensureEqual(edd.datasetID(), "0_0_1eed_1be2_4073", "");
-            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "chlorophyll", "");
+            try {
+                EDD edd = oneFromXmlFragment(null, results);    
+                String2.log(
+                    "\n!!! The first dataset will vary, depending on which are currently active!!!\n" +
+                    "title=" + edd.title() + "\n" +
+                    "datasetID=" + edd.datasetID() +
+                    "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
+                Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL (Monthly Composite), Lon+/-180", "");
+                Test.ensureEqual(edd.datasetID(), "0_0_f195_5e9d_3212", "");
+                Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+                    "chlorophyll", "");
+            } catch (Exception e) {
+                String2.pressEnterToContinue(MustBe.throwableToString(e));
+            }
 
 
         } catch (Throwable t) {
@@ -954,7 +967,7 @@ expected =
         EDDGridFromErddap gridDataset;
         String name, tName, axisDapQuery, query, results, expected, expected2, error;
         int tPo;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String userDapQuery  = "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)]";
         String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]"; 
         String mapDapQuery   = "chlorophyll[200][][(29):(50)][(225):(247)]"; //stride irrelevant 
@@ -964,7 +977,7 @@ expected =
 
         try {
 
-            gridDataset = (EDDGridFromErddap)oneFromDatasetXml("rMHchla8day"); 
+            gridDataset = (EDDGridFromErddap)oneFromDatasetsXml(null, "rMHchla8day"); 
 
             //*** test getting das for entire dataset
             String2.log("\n****************** EDDGridFromErddap test entire dataset\n");
@@ -1629,7 +1642,7 @@ expected2 =
 
     public static void testDataVarOrder() throws Throwable {
         String2.log("\n*** EDDGridFromErddap.testDataVarOrder()");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testDataVarOrder"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDataVarOrder"); 
         String results = String2.toCSSVString(eddGrid.dataVariableDestinationNames());
         String expected = "SST, mask, analysis_error";
         Test.ensureEqual(results, expected, "RESULTS=\n" + results);
@@ -1642,7 +1655,7 @@ expected2 =
 
         //not active because no test dataset
         //this failed because trajectory didn't have ioos_category
-        //EDDGrid edd = (EDDGrid)oneFromDatasetXml("testGridNoIoosCat"); 
+        //EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testGridNoIoosCat"); 
 
     }
 
@@ -1657,7 +1670,7 @@ expected2 =
         String2.log("\n****************** EDDGridFromErddap.test() *****************\n");
 
         //standard tests 
-/* */
+        /* */
         testBasic(false);
         testBasic(true);
         testGenerateDatasetsXml();

@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 /** The Java DAP classes.  */
 import dods.dap.*;
@@ -26,6 +27,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -74,13 +76,15 @@ public class EDDTableFromDapSequence extends EDDTable{
     /**
      * This constructs an EDDTableFromDapSequence based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromDapSequence"&gt; 
      *    having just been read.  
      * @return an EDDTableFromDapSequence.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromDapSequence fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromDapSequence fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromDapSequence(xmlReader)...");
@@ -341,11 +345,6 @@ public class EDDTableFromDapSequence extends EDDTable{
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
             creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
-
-            //Ensure quickRestart information is recent.
-            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
-            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
-                creationTimeMillis, quickRestartFullFileName());
         }
       
         //DAS
@@ -690,7 +689,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             //if no data, convert to ERDDAP standard message
             String tToString = t.toString();
             if (tToString.indexOf("Your Query Produced No Matching Results.") >= 0) //the DAP standard
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (says DAP)");
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (says DAP)", t);
 
             //if too much data, rethrow t
             if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
@@ -741,7 +740,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
             throw new SimpleException("Error while getting DAS from " + tLocalSourceUrl + ".das .\n" +
-                t.getMessage());
+                t.getMessage(), t);
         }
 //String2.log("das.getNames=" + String2.toCSSVString(das.getNames()));
 //AttributeTable att = OpendapHelper.getAttributeTable(das, outerSequenceName);
@@ -817,18 +816,20 @@ public class EDDTableFromDapSequence extends EDDTable{
                         if (sourceAtts.size() == 0)
                             OpendapHelper.getAttributes(das, 
                                 outerSequenceName + "." + varName, sourceAtts);
+                        Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                            dataSourceTable.globalAttributes(),
+                            sourceAtts, varName, true, true); //addColorBarMinMax, tryToFindLLAT
                         //just outer vars get added to subsetVariables
-                        tSubsetVariables.add(suggestDestinationName(
-                            varName, 
+                        String destName = suggestDestinationName(
+                            varName, sourceAtts, addAtts,
                             sourceAtts.getString("units"), 
                             sourceAtts.getString("positive"), 
-                            sourceAtts.getFloat("scale_factor"), true)); 
-                        dataSourceTable.addColumn(nOuterVars, varName, new StringArray(), 
+                            sourceAtts.getFloat("scale_factor"), true);
+                        tSubsetVariables.add(destName); 
+                        dataSourceTable.addColumn(nOuterVars,  varName, new StringArray(), 
                             sourceAtts);
-                        dataAddTable.addColumn(   nOuterVars, varName, new StringArray(), 
-                            makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                dataSourceTable.globalAttributes(),
-                                sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                        dataAddTable.addColumn(   nOuterVars, destName, new StringArray(), 
+                            addAtts);
                         nOuterVars++;
                     }
                 }
@@ -857,11 +858,11 @@ public class EDDTableFromDapSequence extends EDDTable{
             "<dataset type=\"EDDTableFromDapSequence\" datasetID=\"" + 
                 suggestDatasetID(tPublicSourceUrl) + 
                 "\" active=\"true\">\n" +
-            "    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
-            "    <outerSequenceName>" + outerSequenceName + "</outerSequenceName>\n" +
+            "    <sourceUrl>" + XML.encodeAsXML(tLocalSourceUrl) + "</sourceUrl>\n" +
+            "    <outerSequenceName>" + XML.encodeAsXML(outerSequenceName) + "</outerSequenceName>\n" +
 
                 (innerSequenceName == null? "" : 
-            "    <innerSequenceName>" + innerSequenceName + "</innerSequenceName>\n") +
+            "    <innerSequenceName>" + XML.encodeAsXML(innerSequenceName) + "</innerSequenceName>\n") +
 
             "    <skipDapperSpacerRows>" + isDapper + "</skipDapperSpacerRows>\n" +
             "    <sourceCanConstrainStringEQNE>" + !isDapper + "</sourceCanConstrainStringEQNE>\n" + //DAPPER doesn't support string constraints
@@ -1112,7 +1113,7 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             /* This fails because time variable has no units.
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "dyndns_cimt_8cad_5f3b_717e", "");
             Test.ensureEqual(edd.title(), "zztop", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -1132,7 +1133,7 @@ directionsForGenerateDatasetsXml() +
 
         if (true) {
             //get empiricalMinMax
-            EDDTable tedd = (EDDTable)oneFromDatasetXml("pmelArgoAll"); 
+            EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelArgoAll"); 
             tedd.getEmpiricalMinMax(null, "2007-08-01", "2007-08-10", false, true);
             String tq = "longitude,latitude,id&time>=2008-06-17T16:04:12Z&time<=2008-06-24T16:04:12Z" +
                 "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|||";
@@ -1143,13 +1144,13 @@ directionsForGenerateDatasetsXml() +
     
         if (false) {
             //get summary string
-            EDDTable tedd = (EDDTable)oneFromDatasetXml("nwioosGroundfish"); 
+            EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "nwioosGroundfish"); 
             String2.log(String2.annotatedString(tedd.combinedGlobalAttributes().getString("summary")));
         }
 
         if (false) { 
             //graph colorbar range
-            EDDTable tedd = (EDDTable)oneFromDatasetXml("pmelArgoAll"); 
+            EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelArgoAll"); 
             String tq = "longitude,latitude,temp_adjusted&time>=2008-06-27T00:00:00Z" +
                 "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|0|30|30";
             tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
@@ -1172,7 +1173,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("getDDS");
         DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
 
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("pmelArgoAll"); 
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelArgoAll"); 
         String tq = "longitude,latitude,id&id<=1000000&.draw=markers&.marker=4|5&.color=0x000000&.colorBar=|C|Linear|||";
         String tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".png"); 
@@ -1199,7 +1200,7 @@ directionsForGenerateDatasetsXml() +
             String results, query, tName;
             String baseQuery = "time,longitude,latitude,depth,station,waterTemperature,salinity" +
                 "&latitude=36.692"; 
-            EDDTable tedd = (EDDTable)oneFromDatasetXml("cimtPsdac");
+            EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cimtPsdac");
             String expected = 
     "time,longitude,latitude,depth,station,waterTemperature,salinity\n" +
     "UTC,degrees_east,degrees_north,m,,degrees_Celsius,Presumed Salinity Units\n" +
@@ -1333,7 +1334,7 @@ directionsForGenerateDatasetsXml() +
         testVerboseOn();
         String results, query, tName, expected;
         String baseQuery = "&time>=2006-08-07T00&time<2006-08-08"; 
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("erdlasNewportCtd");
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdlasNewportCtd");
 
         //the basicQuery
         try {
@@ -1402,7 +1403,7 @@ directionsForGenerateDatasetsXml() +
         testVerboseOn();
         String results, query, tName, expected;
         String baseQuery = "&time>=2006-01-01"; 
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("erdlasCalCatch");
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdlasCalCatch");
 
         //the basicQuery
 //http://las.pfeg.noaa.gov/cgi-bin/ERDserver/calcatch.sql?time,area,block,Comments,Description,imported,mark_cat,NominalSpecies,pounds,region,RegionName,SpeciesGroup&time>="2006-01-01%2000:00:00"
@@ -1467,7 +1468,7 @@ try {
     public static void testMemory() throws Throwable {
         testVerboseOn();
         String results, query, tName, expected;
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("pmelWOD5np");
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelWOD5np");
 
         try {
             tName = tedd.makeNewFileForDapQuery(null, null, "s", EDStatic.fullTestCacheDirectory, 
@@ -1494,7 +1495,7 @@ try {
         testVerboseOn();
         String results, query, tName, expected;
         try {
-            EDDTable edd = (EDDTable)oneFromDatasetXml("nwioosGroundfish"); 
+            EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nwioosGroundfish"); 
 
             //the basicQuery
             //[was: test a TableWriter that doesn't convert time to iso format
@@ -1504,19 +1505,19 @@ try {
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_FP_EQ", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-            expected = //pre 2013-05-28 wasn't sorted
+            expected = //pre 2015-12-28 was sorted lexically, now case insensitive. pre 2013-05-28 wasn't sorted
 "longitude,latitude,time,common_name\n" +
 "degrees_east,degrees_north,UTC,\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Dover sole\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,English sole\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Pacific ocean perch\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,arrowtooth flounder\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,bocaccio\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,canary rockfish\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,chilipepper\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,cowcod\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,darkblotched rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Dover sole\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,English sole\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,longspine thornyhead\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Pacific ocean perch\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,petrale sole\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,sablefish\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,shortspine thornyhead\n" +
@@ -1527,8 +1528,7 @@ try {
            
         } catch (Throwable t) {
             String2.pressEnterToContinue("\n" + MustBe.throwableToString(t) + 
-                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS."); 
-                //Unexpected error for testSourceNeedsExpandedFP_EQ.");
+                "Unexpected error.");
         }
     }
 
@@ -1541,7 +1541,7 @@ try {
         String yesterday = Calendar2.epochSecondsToIsoStringT(Calendar2.backNDays(2, Double.NaN));
 
         try {
-            EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsRWL"); 
+            EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsRWL"); 
 
             //*** test a TableWriter that doesn't convert time to iso format
             query = "&station=\"1612340\"&datum=\"MLLW\"&beginTime=" + yesterday + "&endTime=" + today;             
@@ -1583,7 +1583,7 @@ try {
     public static void testSubsetVariablesGraph() throws Exception {
         String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesGraph\n");
         try {
-            EDDTable edd = (EDDTable)oneFromDatasetXml("nwioosCoral"); 
+            EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nwioosCoral"); 
 
             String tName = edd.makeNewFileForDapQuery(null, null, 
                 "longitude,latitude,time&time=%221992-01-01T00:00:00Z%22" +
@@ -1606,7 +1606,7 @@ try {
 
         //before I fixed this, time had destinationMin/Max = NaN
         try {
-        EDDTable edd = (EDDTable)oneFromDatasetXml("nwioosCoral"); 
+        EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nwioosCoral"); 
         EDV edvTime = edd.dataVariables()[edd.timeIndex];
         Test.ensureEqual(edvTime.destinationMin(), 3.155328E8,  "");
         Test.ensureEqual(edvTime.destinationMax(), 1.1045376E9, "");

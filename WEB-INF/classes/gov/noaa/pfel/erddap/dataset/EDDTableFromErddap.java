@@ -26,6 +26,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
@@ -71,13 +72,14 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     /**
      * This constructs an EDDTableFromErddap based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromErddap"&gt; 
      *    having just been read.  
      * @return an EDDTableFromErddap.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromErddap fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromErddap fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromErddap(xmlReader)...");
@@ -224,11 +226,6 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
             creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
-
-            //Ensure quickRestart information is recent.
-            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
-            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
-                creationTimeMillis, quickRestartFullFileName());
         }
      
         //DAS
@@ -625,7 +622,7 @@ try {
 
             //ensure it is ready-to-use by making a dataset from it
             //BUT THE DATASET VARIES depending on what is running in ERDDAP localhost
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             if (edd.title().equals("GLOBEC NEP Rosette Bottle Data (2002)")) {
                 Test.ensureEqual(edd.datasetID(), "0_0_4b4a_d1d6_068b", "");
                 Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -667,7 +664,7 @@ try {
 
         try {
 
-            EDDTable globecBottle = (EDDTableFromErddap)oneFromDatasetXml("rGlobecBottle"); //should work
+            EDDTable globecBottle = (EDDTableFromErddap)oneFromDatasetsXml(null, "rGlobecBottle"); //should work
 
             //*** test getting das for entire dataset
             String2.log("\n****************** EDDTableFromErddap.test das dds for entire dataset\n");
@@ -1564,7 +1561,7 @@ String tHeader2 =
      */
     public static void testFromErddapFromErddap() throws Throwable {
         String2.log("\n*** testFromErddapFromErddap");
-        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testFromErddapFromErddap"); 
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testFromErddapFromErddap"); 
         String2.log(edd.toString());
     }
 
@@ -1579,7 +1576,7 @@ String tHeader2 =
         //String expected = "zztop";
         //Test.ensureEqual(results, expected, "results=\n" + results);
 
-        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testCalcofiSurFromErddap"); 
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testCalcofiSurFromErddap"); 
         String2.log(edd.toString());
 
     }
@@ -1588,7 +1585,7 @@ String tHeader2 =
     public static void testApostrophe() throws Throwable {
         String2.log("\n*** EDDTableFromErddap.testApostrophe");
 
-        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testWTEY"); 
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testWTEY"); 
         String2.log("title=" + edd.title());
         String tName = edd.makeNewFileForDapQuery(null, null, 
             "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
@@ -1602,7 +1599,7 @@ String tHeader2 =
         String2.log("\n*** EDDTableFromErddap.testTableNoIoosCat");
 
         //this failed because trajectory didn't have ioos_category
-        EDDTable edd = (EDDTable)oneFromDatasetXml("testTableNoIoosCat"); 
+        EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "testTableNoIoosCat"); 
 
     }
 
@@ -1610,7 +1607,7 @@ String tHeader2 =
     public static void testQuotes() throws Throwable {
         String2.log("\n*** EDDTableFromErddap.testQuotes");
 
-        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testQuotes"); 
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testQuotes"); 
         String results = edd.defaultGraphQuery;
         String expected =  
 //backslash was actual character in the string, now just encoding here

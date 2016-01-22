@@ -23,6 +23,7 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -194,13 +195,15 @@ public class EDDTableFromNWISDV extends EDDTable{
     /**
      * This constructs an EDDTableFromNWISDV based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromNWISDV"&gt; 
      *    having just been read.  
      * @return an EDDTableFromNWISDV.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromNWISDV fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromNWISDV fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         if (verbose) String2.log("\n*** constructing EDDTableFromNWISDV(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
@@ -1298,12 +1301,11 @@ public class EDDTableFromNWISDV extends EDDTable{
         StringArray nonQualifierVars = new StringArray();
         for (int col = 0; col < nCols; col++) { 
            String sourceName = dataSourceTable.getColumnName(col);
-           Attributes addAtts = (Attributes)dataSourceTable.columnAttributes(col).clone();
-           dataSourceTable.columnAttributes(col).clear();
-           String destName = suggestDestinationName(sourceName, 
-               addAtts.getString("units"), 
-               addAtts.getString("positive"), 
-               Float.NaN, true);
+
+           //move atts from "source" to addAtts
+           Attributes sourceAtts = dataSourceTable.columnAttributes(col);
+           Attributes addAtts = (Attributes)sourceAtts.clone();
+           sourceAtts.clear();
 
            //constructor won't read source atts
            //so put all atts in add atts
@@ -1312,8 +1314,13 @@ public class EDDTableFromNWISDV extends EDDTable{
                addAtts, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
            addAtts.add(tAtts);  //tAtts have precedence
 
+           String destName = suggestDestinationName(sourceName, sourceAtts, addAtts,
+               addAtts.getString("units"), 
+               addAtts.getString("positive"), 
+               Float.NaN, true);
+
            //add a similar column to dataAddTable
-           dataAddTable.addColumn(col, destName, 
+           dataAddTable.addColumn(col, destName,
                PrimitiveArray.factory(dataSourceTable.getColumn(col).elementClass(), 1, false),
                addAtts); 
 
@@ -1411,7 +1418,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             (includeInstructions? directionsForGenerateDatasetsXml() + "-->\n\n" : "") +
             "<dataset type=\"EDDTableFromNWISDV\" datasetID=\"" + tDatasetID + 
                 "\" active=\"true\">\n" +
-            "    <sourceUrl>" + tLocalWaterMLUrl + "</sourceUrl>\n" +
+            "    <sourceUrl>" + XML.encodeAsXML(tLocalWaterMLUrl) + "</sourceUrl>\n" +
             "    <reloadEveryNMinutes>1000000000</reloadEveryNMinutes>\n"); //no point in reloading
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         //sb.append(cdmSuggestion());  //no, this method does a good job of setting up cdm
@@ -1436,7 +1443,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      */
     public static void bobGenerateNWISDVDatasetsXml() throws Throwable {
         String2.log("\n*** bobGenerateNWISDVDatasetsXml()");
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String dataStationsDir    = "c:/data/waterML/briarDatasetStations/";
         String paramCodesFileName = "c:/data/waterML/nwisParametercodes.tsv";
         String outputFileName     = "c:/data/waterML/NWISDVDatasets" + today + ".xml";
@@ -2042,12 +2049,12 @@ directionsForGenerateDatasetsXml() +
         String firstSite, String lastSite) throws Throwable {
 
         String siteInfoService = "http://waterdata.usgs.gov/nwis/inventory/";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String outputFile = "c:/data/waterML/scrapeNWISStations" + today + ".json";
         String logFile = "c:/data/waterML/logScrapeNWIS" + 
             String2.replaceAll(today, "-", "") + ".txt";
         if (justAgency != null) 
-            String2.setupLog(true, false, logFile, false, false, 1000000000);
+            String2.setupLog(true, false, logFile, false, 1000000000);
         String2.log("*** EDDTableFromNWISDV bobScrapeNWISStations " + today + "\n" +
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());
@@ -2382,10 +2389,10 @@ directionsForGenerateDatasetsXml() +
         String siteInfoService = "http://waterdata.usgs.gov/nwis/inventory";
         String paramCodesFileName = "c:/data/waterML/nwisParametercodes.tsv";
         String dsDir   = "c:/data/waterML/briarDatasetStations/";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String logFile = "c:/data/waterML/logNWISDatasets" + 
             String2.replaceAll(today, "-", "") + ".txt";
-        String2.setupLog(true, false, logFile, false, false, 1000000000);
+        String2.setupLog(true, false, logFile, false, 1000000000);
         String2.log("*** EDDTableFromNWISDV bobMakeNWISDatasets " + today + "\n" +
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());
@@ -2750,10 +2757,10 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToCSVString());
 
     /** This runs some basic tests of a dataset from this class. */
     public static void testBasic() throws Throwable {
-        EDD edd = EDD.oneFromDatasetXml("usgs_waterservices_f8b2_b8b1_96dd");
+        EDD edd = EDD.oneFromDatasetsXml(null, "usgs_waterservices_f8b2_b8b1_96dd");
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, query, tRestuls, results[], expected;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         Table table;
 
         //dds
@@ -3173,7 +3180,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
      */
     public static void testAvoidStackOverflow() throws Throwable {
         try {
-            EDD edd = EDD.oneFromDatasetXml("testAvoidStackOverflow");
+            EDD edd = EDD.oneFromDatasetsXml(null, "testAvoidStackOverflow");
             String2.pressEnterToContinue(
                 "You shouldn't have gotten here!\n" + 
                 "A specific exception should have been thrown."); 

@@ -131,7 +131,8 @@ public class NetCheck  {
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
 
-        String2.setupLog(true, false, xmlFileName + ".log", false, true, 1000000);
+        String2.setupLog(true, false, xmlFileName + ".log", 
+            true, String2.logFileDefaultMaxSize); //append
         String2.log("*** Starting NetCheck " + 
             Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
             "logFile=" + String2.logFileName() + "\n" +

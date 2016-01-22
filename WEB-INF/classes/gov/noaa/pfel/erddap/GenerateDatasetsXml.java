@@ -86,8 +86,7 @@ public class GenerateDatasetsXml {
         }
         String2.setupLog(true, false,  //toSystemOut, toSystemErr
             logFileName,
-            false, //logToStringBuffer
-            false, 20000000);  //append
+            false, String2.logFileDefaultMaxSize);  //append
         GregorianCalendar gcLocal = Calendar2.newGCalendarLocal();
         String localIsoTime     = Calendar2.formatAsISODateTimeT(gcLocal);
         String localCompactTime = Calendar2.formatAsCompactDateTime(gcLocal);
@@ -147,7 +146,9 @@ public class GenerateDatasetsXml {
             "EDDGridFromErddap",
             "EDDGridFromMergeIRFiles",
             "EDDGridFromNcFiles",
+            "EDDGridFromNcFilesUnpacked",
             "EDDGridFromThreddsCatalog",
+            "EDDGridLonPM180FromErddapCatalog",
             "EDDTableFromAsciiFiles",
             "EDDTableFromAwsXmlFiles",
             "EDDTableFromCassandra",
@@ -197,14 +198,14 @@ public class GenerateDatasetsXml {
 
                 //EDDGrid
                 if (eddType.equals("EDDGridAggregateExistingDimension")) {
-                    s1  = get(args,  1 , s1, "Server type (hyrax or thredds)");          
+                    s1  = get(args,  1 , s1, "Server type (hyrax, thredds, or WAF)");          
                     s2  = get(args,  2 , s2, "Parent URL (e.g., for hyrax, ending in \"contents.html\"; " +
-                                                             " for thredds, ending in \"catalog.xml\")");          
+                        " for thredds, ending in \"catalog.xml\"; for WAF, ending in '/')");          
                     s3  = get(args,  3,  s3, "File name regex (e.g., \".*\\.nc\")");
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
                     String2.log("working...");
                     printToBoth(EDDGridAggregateExistingDimension.generateDatasetsXml(
-                        s1, s2, s3, true, 
+                        s1, s2, s3, 
                         String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES)));
 
                 } else if (eddType.equals("EDDGridFromDap")) {
@@ -250,8 +251,18 @@ public class GenerateDatasetsXml {
                         s2.length() == 0? ".*\\.nc" : s2, 
                         s3, String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
+                } else if (eddType.equals("EDDGridFromNcFilesUnpacked")) {
+                    s1  = get(args,  1,  s1, "Parent directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
+                    s3  = get(args,  3,  s3, "Full file name of one file");                  
+                    s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
+                    String2.log("working...");
+                    printToBoth(EDDGridFromNcFilesUnpacked.generateDatasetsXml(s1, 
+                        s2.length() == 0? ".*\\.nc" : s2, 
+                        s3, String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
+
                 } else if (eddType.equals("EDDGridFromThreddsCatalog")) {
-                    s1  = get(args,  1,  s1, "URL (usually ending in /catalog.xml)");         
+                    s1  = get(args,  1,  s1, "URL (usually ending in \"/catalog.xml\")");         
                     s2  = get(args,  2,  s2, "Dataset name regex (e.g., \".*\")");  //for now, always .*
                     s3  = get(args,  3,  s3, "ReloadEveryNMinutes (e.g., " + 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ", recommended: -1 generates suggested values)");
@@ -263,6 +274,13 @@ public class GenerateDatasetsXml {
                         resultsFileName, s1, s2, 
                         String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES));
                     printToBoth(String2.readFromFile(resultsFileName)[1]);
+
+                } else if (eddType.equals("EDDGridLonPM180FromErddapCatalog")) {
+                    s1  = get(args,  1,  s1, "URL (ending in \"/erddap/\")");         
+                    s2  = get(args,  2,  s2, "Dataset name regex (usually \".*\")");  
+                    String2.log("working...");
+                    printToBoth(EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(
+                        s1, s2));
 
                 //EDDTable
                 } else if (eddType.equals("EDDTableFromAsciiFiles")) {
