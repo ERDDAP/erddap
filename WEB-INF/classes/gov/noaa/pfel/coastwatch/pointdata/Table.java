@@ -5976,6 +5976,10 @@ Dataset {
             //Match it to values in CF standard table 9.1.
             NcHelper.getGlobalAttributes(ncFile, globalAttributes());
             String featureType = globalAttributes().getString("featureType");
+            if (featureType == null) //cdm allows these aliases
+                featureType = globalAttributes().getString("CF:featureType");
+            if (featureType == null)
+                featureType = globalAttributes().getString("CF:feature_type");
             featureType = featureType == null? "null" : featureType.toLowerCase(); //case insensitive
             boolean pointType = featureType.equals("point");
             boolean profileType = featureType.equals("profile");
@@ -16749,7 +16753,8 @@ String2.log(table.dataToCSVString());
             results = t.toString();
         }
         Test.ensureEqual(results, 
-            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now-2dayss\" is invalid.", 
+            "com.cohort.util.SimpleException: Query error: Invalid \"now\" constraint: \"now-2dayss\". " +
+            "Timestamp constraints with \"now\" must be in the form \"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units).", 
             "results=" + results);
 
         results = "invalid now option -";
@@ -16759,7 +16764,8 @@ String2.log(table.dataToCSVString());
             results = t.toString();
         }
         Test.ensureEqual(results, 
-            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now-\" is invalid.", 
+            "com.cohort.util.SimpleException: Query error: Invalid \"now\" constraint: \"now-\". " +
+            "Timestamp constraints with \"now\" must be in the form \"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units).", 
             "results=" + results);
 
         results = "invalid now option -+";
@@ -16769,7 +16775,8 @@ String2.log(table.dataToCSVString());
             results = t.toString();
         }
         Test.ensureEqual(results, 
-            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now-+4seconds\" is invalid.", 
+            "com.cohort.util.SimpleException: Query error: Invalid \"now\" constraint: \"now-+4seconds\". " +
+            "Timestamp constraints with \"now\" must be in the form \"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units).", 
             "results=" + results);
 
         results = "invalid now option +-";
@@ -16779,7 +16786,8 @@ String2.log(table.dataToCSVString());
             results = t.toString();
         }
         Test.ensureEqual(results, 
-            "com.cohort.util.SimpleException: Query error: Timestamp constraints with \"now\" must be in the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\" (or singular units).  \"now+-4seconds\" is invalid.", 
+            "com.cohort.util.SimpleException: Query error: Invalid \"now\" constraint: \"now+-4seconds\". " +
+            "Timestamp constraints with \"now\" must be in the form \"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units).", 
             "results=" + results);
 
         results = "invalid now option";
@@ -16982,7 +16990,8 @@ String2.log(table.dataToCSVString());
     /**
      * If two or more adjacent rows are duplicates, this removes
      * the duplicates (leaving the original row).
-     * Presumably, the file is sorted in a way to make identical rows adjacent.
+     * Presumably, the file is sorted in a way to make identical rows adjacent,
+     * so simple sort() or sortIgnoreCase() are both okay.
      *
      * @return the number of duplicates removed
      */
@@ -19646,7 +19655,7 @@ String2.log(table.dataToCSVString());
             File2.delete(fullFileName);
 
 
-            throw new Exception(e);
+            throw e;
         }
 
     }
@@ -19705,7 +19714,7 @@ String2.log(table.dataToCSVString());
             //delete any existing file
             File2.delete(fullFileName);
 
-            throw new Exception(e);
+            throw e;
         }
 
     }
@@ -20472,6 +20481,7 @@ touble: because table is JsonObject, info may not be in expected order
      * This mimics the a simple directory listing web page created by Apache.
      * <br>It mimics http://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
      * stored on Bob's computer as c:/programs/apache/listing.html
+     * The hr's on that page cause HTML warnings, but this sticks with mimicking Apache.
      *  See also http://www.ndbc.noaa.gov/data/realtime2/?C=N;O=A
      * <br>***WARNING*** The URL that got the user to this page MUST be a 
      *   directoryURL ending in '/', or the links don't work (since they are implied

@@ -31,7 +31,7 @@ import gov.noaa.pmel.util.IllegalTimeValue;
  */
 public class CenturyAxis implements TimeAxisStyle {
   static final int DECADE_TEST__ = 1000;
-  static final String defaultMinorLabelFormat__ = "yyyy"; //was "yy" 
+  static final String defaultMinorLabelFormat__ = "yyy"; //was "yy" 
   //  static final String defaultMajorLabelFormat__ = "yyyy";
   static final String defaultMajorLabelFormat__ = ""; //was "decade"
   int defaultMinorLabelInterval_ = 2;
@@ -48,7 +48,7 @@ public class CenturyAxis implements TimeAxisStyle {
   }
   public void computeDefaults(GeoDate delta) {
     //bob changed this 2013-02-27
-    long years = delta.getTime()/(365*GeoDate.MSECS_IN_DAY);
+    long years = Math.abs(delta.getTime())/(365*GeoDate.MSECS_IN_DAY);
     if (years > 80000) {
       defaultMinorLabelInterval_ = 20000;
     } else if (years > 40000) {

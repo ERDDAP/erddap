@@ -1092,7 +1092,7 @@ public class SSR {
         SSR.cShell("setenv DISPLAY $OLDDISPLAY", 1); 
 
         if (e != null)
-            throw new Exception(e);
+            throw e;
     }
 
     /**
@@ -1432,46 +1432,75 @@ public class SSR {
             in.close();
             return sb.toString();
         } catch (Exception e) {
-            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
+            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
         }
     } 
 
 
     /**
-     * This downloads a file as bytes from a Url and saves it as a file.
-     * If there is a failure, this doesn't try to delete the parially written file.
+     * This downloads a file as bytes from a Url and saves it as a temporary file,
+     * then renames it to the final name if successful.
+     * If there is a failure, this deletes the parially written file.
      * If the file is zipped, it will stay zipped.
      * Note that you may get a error-404-file-not-found error message stored in the file.
      *
-     * @param urlString urlString pointing to the information.  
+     * @param urlString urlString (or file name) pointing to the information.  
      *   The query MUST be already percentEncoded as needed.
      *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
+     *   <br>This can be a url or a local file (with or without file://).
      * @param fullFileName the full name for the file to be created.
      *   If the directory doesn't already exist, it will be created.
      * @param tryToUseCompression If true, the request indicates compression
      *   is acceptable and the input stream will do the decompression.
      *   'false' is safer if the file may be already compressed (e.g., .gz or .zip)
      *   because this won't try to unzip the file.
-     * @throws Exception if trouble
+     * @throws Exception if trouble (and the temporary file will have been deleted,
+     *   (but the original fullFileName, if any, will still exist).
      */
     public static void downloadFile(String urlString,
             String fullFileName, boolean tryToUseCompression) throws Exception {
-        //first, ensure dir exists
-        File2.makeDirectory(File2.getDirectory(fullFileName));
-        InputStream in = tryToUseCompression? 
-            getUrlInputStream(urlString) :             
-            getUncompressedUrlInputStream(urlString);  
-        OutputStream out = new FileOutputStream(fullFileName);
-        byte buffer[] = new byte[32768];
-        int nBytes = in.read(buffer);
-        while (nBytes > 0) {
-            out.write(buffer, 0, nBytes);
-            nBytes = in.read(buffer);
+        //if 'url' is really just a local file, just copy it into place
+        if (!String2.isUrl(urlString)) {
+            if (!File2.copy(urlString, fullFileName))
+                throw new IOException(String2.ERROR + ": Unable to copy " + 
+                    urlString + " to " + fullFileName);
         }
-        in.close();
-        out.flush();
-        out.close();
+
+        //download from Url
+        //first, ensure dir exists
+        int random = Math2.random(Integer.MAX_VALUE);
+        InputStream in = null;  
+        OutputStream out = null;
+        try {
+            File2.makeDirectory(File2.getDirectory(fullFileName));
+            in = tryToUseCompression? 
+                getUrlInputStream(urlString) :             
+                getUncompressedUrlInputStream(urlString);  
+            out = new FileOutputStream(fullFileName + random);
+            byte buffer[] = new byte[32768];
+            int nBytes;
+            while ((nBytes = in.read(buffer)) > 0) 
+                out.write(buffer, 0, nBytes);
+            in.close();  in = null;
+            out.close(); out = null;
+            File2.rename(fullFileName + random, fullFileName); //exception if trouble
+
+        } catch (Exception e) {
+            try {
+                if (in != null)
+                    in.close();
+            } catch (Exception e2) {
+            }
+            try {
+                if (out != null) 
+                    out.close();
+            } catch (Exception e2) {
+            }
+            File2.delete(fullFileName + random);
+            throw new IOException(String2.ERROR + " while downloading " + urlString,
+                e);
+        }
     }
 
     /**
@@ -1541,6 +1570,7 @@ public class SSR {
      * This tries to use compression.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
+     *   This can be a url or a local file (with or without file://).
      *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a String[] with the response (one string per line of the file).
@@ -1548,6 +1578,9 @@ public class SSR {
      */
     public static String[] getUrlResponse(String urlString) throws Exception {
         try {
+            if (!String2.isUrl(urlString))
+                return String2.readLinesFromFile(urlString, "ISO-8859-1", 2);
+
             InputStream is = getUrlInputStream(urlString); 
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
             ArrayList<String> al = new ArrayList();
@@ -1558,7 +1591,7 @@ public class SSR {
             in.close();
             return al.toArray(new String[0]);
         } catch (Exception e) {
-            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
+            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
         }
     } 
 
@@ -1603,7 +1636,7 @@ public class SSR {
             return ba.toArray();
         } catch (Exception e) {
             //String2.log(e.toString());
-            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
+            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
         }
     } 
 
@@ -1637,7 +1670,7 @@ public class SSR {
             return baos.toByteArray();
         } catch (Exception e) {
             //String2.log(e.toString());
-            throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString());
+            throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString(), e);
         } finally {
             if (is != null) {
                 try {
@@ -2006,8 +2039,6 @@ public class SSR {
                     i + " (" + commandAr[i] + ").");
             }
 
-        } catch (Exception e) {
-            throw new Exception(e);            
         } finally {
             //close the session
             if (sftp != null) 

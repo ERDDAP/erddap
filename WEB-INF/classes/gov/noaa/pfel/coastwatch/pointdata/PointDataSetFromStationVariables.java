@@ -358,7 +358,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                     String timeUnits = tAttributes.getString("units");
                     Test.ensureTrue(
                         tDimensionName.toLowerCase().indexOf("time") >= 0 ||
-                        (timeUnits != null && timeUnits.indexOf(" since ") > 0),
+                        Calendar2.isNumericTimeUnits(timeUnits),
                         //errorInMethod added below 
                         "The time variable's name (" + tDimensionName +
                             ") doesn't contain \"time\".");

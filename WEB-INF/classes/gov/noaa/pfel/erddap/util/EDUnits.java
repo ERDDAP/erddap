@@ -110,10 +110,10 @@ public class EDUnits {
             String2.log("  udunits=" + udunits);
 
         //is it a point in time? e.g., seconds since 1970-01-01T00:00:00T
-        int sincePo = udunits.indexOf(" since ");
-        if (sincePo > 0) {
+        if (Calendar2.isNumericTimeUnits(udunits)) {
             try {
                 //test if really appropriate
+                int sincePo = udunits.toLowerCase().indexOf(" since ");
                 double baf[] = Calendar2.getTimeBaseAndFactor(udunits); //throws exception if trouble
 
                 //use 'factor', since it is more forgiving than udunitsToUcum converter

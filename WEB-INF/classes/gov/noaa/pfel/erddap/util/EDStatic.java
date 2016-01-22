@@ -37,6 +37,7 @@ import gov.noaa.pfel.erddap.*;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -136,8 +137,9 @@ public class EDStatic {
      * <br>1.60 released on 2015-03-12
      * <br>1.62 released on 2015-06-08
      * <br>1.64 released on 2015-08-19
+     * <br>1.66 released on 2016-01-19
      */   
-    public static String erddapVersion = "1.64";  
+    public static String erddapVersion = "1.66";  
 
     /** 
      * This is almost always false.  
@@ -196,6 +198,7 @@ public static boolean developmentMode = false;
     public static StringBuffer failureTimesLoadDatasetsSB  = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static StringBuffer responseTimesLoadDatasetsSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static HashSet requestBlacklist = null;
+    public static volatile int slowDownTroubleMillis = 1000;
     public static long startupMillis = System.currentTimeMillis();
     public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocal();
     public static int nGridDatasets = 0;  
@@ -408,6 +411,7 @@ public static boolean developmentMode = false;
         lowResLogoImageFileWidth,  lowResLogoImageFileHeight,
         highResLogoImageFileWidth, highResLogoImageFileHeight,
         googleEarthLogoFileWidth,  googleEarthLogoFileHeight;
+    public static Color graphBackgroundColor;
     private static String legal, PostIndex1Html, PostIndex2Html, PostIndex3Html;
     private static int   ampLoginInfoPo = -1;
     /** These are special because other loggedInAs must be String2.justPrintable
@@ -433,8 +437,9 @@ public static boolean developmentMode = false;
     public static boolean categoryIsGlobal[];
     public static int variableNameCategoryAttributeIndex = -1;
     public static int 
+        logMaxSizeMB,
         unusualActivity = 10000,
-        partialRequestMaxBytes = 100000000, 
+        partialRequestMaxBytes = 490000000, //this is just below tds default <opendap><binLimit> of 500MB
         partialRequestMaxCells = 100000;
     public static long cacheMillis, loadDatasetsMinMillis, loadDatasetsMaxMillis;
     private static String
@@ -462,8 +467,9 @@ public static boolean developmentMode = false;
         fullWmsCacheDirectory,
 
         imageDirUrl,
-        imageDirHttpsUrl;
-        //downloadDirUrl;
+        imageDirHttpsUrl,
+        //downloadDirUrl,
+        computerName; //e.g., coastwatch (or "")
     public static Subscriptions subscriptions;
 
 
@@ -808,6 +814,7 @@ public static boolean developmentMode = false;
         infoAboutFrom,
         infoTableTitleHtml,
         infoRequestForm,
+        inotifyFix,
         justGenerateAndView,
         justGenerateAndViewHtml,
         justGenerateAndViewUrl,
@@ -892,6 +899,7 @@ public static boolean developmentMode = false;
         magGSLandMaskTooltipTable,
         magGSVectorStandard,
         magGSVectorStandardTooltip,
+        magGSYAscendingTooltip,
         magGSYAxisMin,
         magGSYAxisMax,
         magGSYRangeMinTooltip,
@@ -942,6 +950,7 @@ public static boolean developmentMode = false;
         notAllowed,
         notAuthorized,
         notAvailable,
+        noXxx,
         noXxxBecause,
         noXxxBecause2,
         noXxxNotActive,
@@ -1279,7 +1288,8 @@ public static boolean developmentMode = false;
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
         unitTestDataDir = setup.getString("unitTestDataDir", "[specify <unitTestDataDir> in setup.xml]"); 
         unitTestDataDir = File2.addSlash(unitTestDataDir);
-        Table.unitTestDataDir = unitTestDataDir;
+        String2.unitTestDataDir = unitTestDataDir;
+        Table.unitTestDataDir   = unitTestDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = setup.getString("emailSmtpHost",  null);
@@ -1322,9 +1332,9 @@ public static boolean developmentMode = false;
 
         Test.ensureTrue(File2.isDirectory(fullPaletteDirectory),  
             "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
-        errorInMethod = "ERROR while creating directories.";
+        errorInMethod = "ERROR while creating directories."; //File2.makeDir throws exception if failure
         File2.makeDirectory(fullPublicDirectory);  //make it, because Git doesn't track empty dirs
-        File2.makeDirectory(fullDatasetDirectory);
+        File2.makeDirectory(fullDatasetDirectory); 
         File2.makeDirectory(fullCacheDirectory);
         File2.makeDirectory(fullResetFlagDirectory);
         File2.makeDirectory(fullLogsDirectory);
@@ -1551,6 +1561,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         flagKeyKey                 = setup.getString(          "flagKeyKey",                 "");
         if (flagKeyKey == null || flagKeyKey.length() == 0)  flagKeyKey = "flagKeyKey";
         fontFamily                 = setup.getString(          "fontFamily",                 "SansSerif");
+        graphBackgroundColor = new Color(String2.parseInt(
+                                     setup.getString(          "graphBackgroundColor",       "0xffccccff")), true); //hasAlpha
         googleEarthLogoFile        = setup.getNotNothingString("googleEarthLogoFile",        "");
         highResLogoImageFile       = setup.getNotNothingString("highResLogoImageFile",       "");
         legendTitle1               = setup.getString(          "legendTitle1",               null);
@@ -1559,6 +1571,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         loadDatasetsMinMillis      = Math.max(1,setup.getInt(  "loadDatasetsMinMinutes",     15)) * 60000L;
         loadDatasetsMaxMillis      = setup.getInt(             "loadDatasetsMaxMinutes",     60) * 60000L;
         loadDatasetsMaxMillis      = Math.max(loadDatasetsMinMillis * 2, loadDatasetsMaxMillis);
+        logMaxSizeMB               = Math2.minMax(1, 2000, setup.getInt("logMaxSizeMB", 20));  //2048MB=2GB
         lowResLogoImageFile        = setup.getNotNothingString("lowResLogoImageFile",        "");
         partialRequestMaxBytes     = setup.getInt(             "partialRequestMaxBytes",     partialRequestMaxBytes);
         partialRequestMaxCells     = setup.getInt(             "partialRequestMaxCells",     partialRequestMaxCells);
@@ -1574,7 +1587,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         theShortDescriptionHtml    = setup.getNotNothingString("theShortDescriptionHtml",    "");
         unusualActivity            = setup.getInt(             "unusualActivity",            unusualActivity);
         variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory", true);
-        warName                    = setup.getNotNothingString("warName",                    "");
+        warName                    = setup.getString(          "warName",                    "erddap");
 
         //use Lucence?
         if (searchEngine.equals("lucene")) {
@@ -2000,6 +2013,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         infoAboutFrom              = messages.getNotNothingString("infoAboutFrom",              "");
         infoTableTitleHtml         = messages.getNotNothingString("infoTableTitleHtml",         "");
         infoRequestForm            = messages.getNotNothingString("infoRequestForm",            "");
+        inotifyFix                 = messages.getNotNothingString("inotifyFix",                 "");
         justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        "");
         justGenerateAndViewHtml    = messages.getNotNothingString("justGenerateAndViewHtml",    "");
         justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     "");
@@ -2084,6 +2098,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         magGSLandMaskTooltipTable  = messages.getNotNothingString("magGSLandMaskTooltipTable",  "");
         magGSVectorStandard        = messages.getNotNothingString("magGSVectorStandard",        "");
         magGSVectorStandardTooltip = messages.getNotNothingString("magGSVectorStandardTooltip", "");
+        magGSYAscendingTooltip     = messages.getNotNothingString("magGSYAscendingTooltip",     "");
         magGSYAxisMin              = messages.getNotNothingString("magGSYAxisMin",              "");
         magGSYAxisMax              = messages.getNotNothingString("magGSYAxisMax",              "");
         magGSYRangeMinTooltip      = messages.getNotNothingString("magGSYRangeMinTooltip",      ""); 
@@ -2143,6 +2158,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         notAllowed                 = messages.getNotNothingString("notAllowed",                 "");
         notAuthorized              = messages.getNotNothingString("notAuthorized",              "");
         notAvailable               = messages.getNotNothingString("notAvailable",               "");
+        noXxx                      = messages.getNotNothingString("noXxx",                      "");
         noXxxBecause               = messages.getNotNothingString("noXxxBecause",               "");
         noXxxBecause2              = messages.getNotNothingString("noXxxBecause2",              "");
         noXxxNotActive             = messages.getNotNothingString("noXxxNotActive",             "");
@@ -2428,6 +2444,21 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "&requestFormatExamplesHtml;",    requestFormatExamplesHtml);
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "&resultsFormatExamplesHtml;",    resultsFormatExamplesHtml);
         postShortDescriptionActive = theShortDescriptionHtml.indexOf("[standardPostDescriptionHtml]") >= 0;
+
+        try {
+            computerName = System.getenv("COMPUTERNAME");  //windows 
+            if (computerName == null)
+                computerName = System.getenv("HOSTNAME");  //linux
+            if (computerName == null)
+                computerName = java.net.InetAddress.getLocalHost().getHostName(); //coastwatch.pfeg.noaa.gov
+            if (computerName == null)
+                computerName = "";
+            int dotPo = computerName.indexOf('.');
+            if (dotPo > 0)
+                computerName = computerName.substring(0, dotPo);
+        } catch (Throwable t2) {
+            computerName = "";
+        }
 
         //**************************************************************** 
         //other initialization
@@ -2747,7 +2778,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *   (bigParentDirectory)/emailLog2009-01.txt
      *
      * @param emailAddresses   each e.g., john.doe@company.com
-     * @param subject If error, recommended: "Error in ERDDAP".
+     * @param subject If error, recommended: "Error in [someClass]".
      * @param content If error, recommended: MustBe.throwableToString(t);
      * @return an error message ("" if no error).
      *     If emailAddresses is null or length==0, this logs the message and returns "".
@@ -2757,10 +2788,11 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         //write the email to the log
         String emailAddressesCSSV = String2.toCSSVString(emailAddresses);
         String localTime = Calendar2.getCurrentISODateTimeStringLocal();
+        subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + subject;
         String fullMessage = 
             "\n==== BEGIN =====================================================================" +
             "\n     To: " + emailAddressesCSSV + 
-            "\nSubject: " + erddapUrl + " " + subject +  //always non-https url
+            "\nSubject: " + subject +  //always non-https url
             "\n   Date: " + localTime + 
             "\n--------------------------------------------------------------------------------" +
             "\n" + erddapUrl + " reports:" +  //always non-https url
@@ -2830,7 +2862,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             if (errors.length() == 0)
                 SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
                     emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
-                    erddapUrl + " " + subject, //always non-https url
+                    subject, 
                     erddapUrl + " reports:\n" + content); //always non-https url
         } catch (Throwable t) {
             String msg = "Error: Sending email to " + emailAddressesCSSV + " failed";

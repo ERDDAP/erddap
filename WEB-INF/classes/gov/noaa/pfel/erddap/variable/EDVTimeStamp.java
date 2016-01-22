@@ -37,13 +37,6 @@ import org.joda.time.format.*;
  */
 public class EDVTimeStamp extends EDV { 
 
-    /** Format for ISO date time without a suffix (assumed to be UTC) */
-    public final static String ISO8601T_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss"; 
-    public final static String ISO8601T3_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"; 
-
-    /** special case format supports suffix 'Z' or +/-HH:MM */
-    public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
-    public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
 
     /** Set by the constructor. */
     protected String sourceTimeFormat; 
@@ -52,7 +45,7 @@ public class EDVTimeStamp extends EDV {
     protected boolean sourceTimeIsNumeric;
     protected double sourceTimeBase = Double.NaN;  //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
-    protected boolean parseISOWithCalendar2;
+    protected boolean parseISOWithCalendar2; //specifically, Calendar2.parseISODateTimeZulu(); else parse with Joda. 
     protected DateTimeFormatter dateTimeFormatter; //set if !sourceTimeIsNumeric
     protected String time_precision;  //see Calendar2.epochSecondsToLimitedIsoStringT
  
@@ -71,9 +64,13 @@ public class EDVTimeStamp extends EDV {
      *      ISO 8601 formatted date time string (YYYY-MM-DDThh:mm:ss).
      *    <li> a org.joda.time.format.DateTimeFormat string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
-     *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ss.SSSZ", see 
+     *      string times. Any format that starts with "yyyy-MM", e.g., 
+     *      Calendar2.ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ",
+     *      will be parsed with Calendar2.parseISODateTimeZulu().
+     *      See
      *      http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
      *      http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *      Any format that starts with "yyyy-MM" will be parsed with 
      *    </ul>
      * This constructor gets/sets actual_range from actual_range, data_min, or data_max metadata.
      * If present, they should have the source min and max times in 'units' format.
@@ -141,7 +138,7 @@ public class EDVTimeStamp extends EDV {
             combinedAttributes.set("long_name", longName);
         }
 
-        if (sourceTimeFormat.indexOf(" since ") > 0) {
+        if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
             sourceTimeIsNumeric = true;
             double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
             sourceTimeBase = td[0];
@@ -154,17 +151,15 @@ public class EDVTimeStamp extends EDV {
                 throw new RuntimeException(errorInMethod + 
                     "For String source times, scale_factor and add_offset MUST NOT be used.");
 
-            parseISOWithCalendar2 = 
-                sourceTimeFormat.equals(ISO8601T_FORMAT)  ||
-                sourceTimeFormat.equals(ISO8601TZ_FORMAT) ||
-                sourceTimeFormat.equals(ISO8601T3_FORMAT) ||
-                sourceTimeFormat.equals(ISO8601T3Z_FORMAT); 
+            parseISOWithCalendar2 = sourceTimeFormat.startsWith("yyyy-MM");
             if (verbose) String2.log("parseISOWithCalendar2=" + parseISOWithCalendar2);
 
-            //dateTimeFormatter: sometimes for reading, always for writing
-            String tSTF = parseISOWithCalendar2? //so pattern is only for writing 
-                String2.replaceAll(sourceTimeFormat, "Z", "'Z'") : //force write 'Z' not +0000
-                sourceTimeFormat;
+            //dateTimeFormatter: sometimes for parsing, always for writing
+            String tSTF = sourceTimeFormat;
+            if (parseISOWithCalendar2 && //so pattern is only for writing 
+                tSTF.endsWith("Z")) //not 'Z'
+                //force write 'Z' not +0000
+                tSTF = String2.replaceAll(tSTF, "Z", "'Z'"); 
             dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(DateTimeZone.UTC);
         }
 
@@ -569,7 +564,7 @@ public class EDVTimeStamp extends EDV {
         String2.log("\n*** test with Z");
         EDVTimeStamp eta = new EDVTimeStamp("sourceName", "time",
             null, 
-            (new Attributes()).add("units", ISO8601TZ_FORMAT).
+            (new Attributes()).add("units", Calendar2.ISO8601TZ_FORMAT).
                 add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00Z", "2007-01-01T00:00:00Z"})),
             "String"); //this constructor gets source / sets destination actual_range
 
@@ -590,7 +585,7 @@ public class EDVTimeStamp extends EDV {
         String2.log("\n*** test with 3Z");
         eta = new EDVTimeStamp("sourceName", "time",
             null, 
-            (new Attributes()).add("units", ISO8601T3Z_FORMAT).
+            (new Attributes()).add("units", Calendar2.ISO8601T3Z_FORMAT).
                 add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00.000Z", "2007-01-01T00:00:00.000Z"})),
             "String");
 
@@ -610,7 +605,7 @@ public class EDVTimeStamp extends EDV {
         //*** no Z
         String2.log("\n*** test no Z");
         eta = new EDVTimeStamp("sourceName", "myTimeStamp",
-            null, (new Attributes()).add("units", ISO8601T_FORMAT).  //without Z
+            null, (new Attributes()).add("units", Calendar2.ISO8601T_FORMAT).  //without Z
                 add("actual_range", new StringArray(new String[]{
                     "1970-01-01T00:00:00", "2007-01-01T00:00:00"})),  //without Z
             "String");
@@ -625,7 +620,7 @@ public class EDVTimeStamp extends EDV {
         //*** 3, no Z
         String2.log("\n*** test 3, no Z");
         eta = new EDVTimeStamp("sourceName", "myTimeStamp",
-            null, (new Attributes()).add("units", ISO8601T3_FORMAT).  //without Z
+            null, (new Attributes()).add("units", Calendar2.ISO8601T3_FORMAT).  //without Z
                 add("actual_range", new StringArray(new String[]{
                     "1970-01-01T00:00:00.000", "2007-01-01T00:00:00.000"})),  //without Z
             "String");

@@ -22,9 +22,11 @@ import gov.noaa.pfel.coastwatch.sgt.SgtGraph;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -64,13 +66,14 @@ public class EDDGridSideBySide extends EDDGrid {
      * Only the global attributes from the first dataset are used for the composite
      * dataset.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridSideBySide"&gt; 
      *    having just been read.  
      * @return an EDDGridSideBySide.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridSideBySide fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridSideBySide fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         if (verbose) String2.log("\n*** constructing EDDGridSideBySide(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
@@ -79,6 +82,7 @@ public class EDDGridSideBySide extends EDDGrid {
         ArrayList tChildDatasets = new ArrayList();
         StringBuilder messages = new StringBuilder();
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -103,7 +107,7 @@ public class EDDGridSideBySide extends EDDGrid {
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
                 try {
-                    EDD edd = EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
+                    EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
                     if (edd instanceof EDDGrid) {
                         tChildDatasets.add(edd);
                     } else {
@@ -137,6 +141,8 @@ public class EDDGridSideBySide extends EDDGrid {
                 tMatchAxisNDigits = String2.parseBoolean(content)? 20 : 0;
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
@@ -150,7 +156,7 @@ public class EDDGridSideBySide extends EDDGrid {
         }
         if (messages.length() > 0) {
             EDStatic.email(EDStatic.emailEverythingToCsv, 
-                "Error in ERDDAP EDDGridSideBySide constructor for " + tDatasetID, 
+                "Error in EDDGridSideBySide constructor for " + tDatasetID, 
                 messages.toString());
         }
 
@@ -159,7 +165,7 @@ public class EDDGridSideBySide extends EDDGrid {
             tcds[c] = (EDDGrid)tChildDatasets.get(c);
 
         //make the main dataset based on the information gathered
-        return new EDDGridSideBySide(tDatasetID, tAccessibleTo, 
+        return new EDDGridSideBySide(tDatasetID, tAccessibleTo, tAccessibleViaWMS, 
             tMatchAxisNDigits, tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tcds);
 
@@ -185,7 +191,8 @@ public class EDDGridSideBySide extends EDDGrid {
      * @param tChildDatasets
      * @throws Throwable if trouble
      */
-    public EDDGridSideBySide(String tDatasetID, String tAccessibleTo,
+    public EDDGridSideBySide(String tDatasetID, 
+        String tAccessibleTo, boolean tAccessibleViaWMS,
         int tMatchAxisNDigits, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -200,6 +207,9 @@ public class EDDGridSideBySide extends EDDGrid {
         className = "EDDGridSideBySide"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -534,7 +544,7 @@ public class EDDGridSideBySide extends EDDGrid {
         String dapQuery;
 
         //*** NDBC  is also IMPORTANT UNIQUE TEST of >1 variable in a file
-        EDDGrid qsWind8 = (EDDGrid)oneFromDatasetXml("erdQSwind8day");
+        EDDGrid qsWind8 = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind8day");
 
         //ensure that attributes are as expected
         Test.ensureEqual(qsWind8.combinedGlobalAttributes().getString("satellite"), "QuikSCAT", "");
@@ -626,13 +636,13 @@ public class EDDGridSideBySide extends EDDGrid {
             //graphics requests with no .specs 
             String2.log("\n****************** EDDGridSideBySide test get vector map\n");
             String vecDapQuery =  //minimal settings
-                "x_wind[200][][(29):(50)][(225):(247)],y_wind[200][][(29):(50)][(225):(247)]"; 
+                "x_wind[2][][(29):(50)][(225):(247)],y_wind[2][][(29):(50)][(225):(247)]"; 
             tName = qsWind8.makeNewFileForDapQuery(null, null, vecDapQuery, EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_Vec1", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             vecDapQuery =  //max settings
-                "x_wind[200][][(29):(50)][(225):(247)],y_wind[200][][(29):(50)][(225):(247)]" +
+                "x_wind[2][][(29):(50)][(225):(247)],y_wind[2][][(29):(50)][(225):(247)]" +
                 "&.color=0xFF9900&.font=1.25&.vec=10"; 
             tName = qsWind8.makeNewFileForDapQuery(null, null, vecDapQuery, EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_Vec2", ".png"); 
@@ -640,7 +650,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //graphics requests with .specs -- lines
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
+                "x_wind[0:20][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=lines&.vars=time|x_wind|&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_lines", ".png"); 
@@ -648,8 +658,8 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //linesAndMarkers              
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]," +
-                "y_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
+                "x_wind[0:20][(10.0)][(22.0)][(225.0)]," +
+                "y_wind[0:20][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=linesAndMarkers&.vars=time|x_wind|y_wind&.marker=5|5&.color=0xFF9900&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_linesAndMarkers", ".png"); 
@@ -657,15 +667,15 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //graphics requests with .specs -- markers              
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
+                "x_wind[0:20][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=markers&.vars=time|x_wind|&.marker=1|5&.color=0xFF9900&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_markers", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //colored markers
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]," +
-                "y_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
+                "x_wind[0:20][(10.0)][(22.0)][(225.0)]," +
+                "y_wind[0:20][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=markers&.vars=time|x_wind|y_wind&.marker=5|5&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_coloredMarkers", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -673,23 +683,23 @@ public class EDDGridSideBySide extends EDDGrid {
             //surface   
 //needs 4 line legend
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-07-01Z)][(10.0)][(-75.0):(75.0)][(10.0):(360.0)]" +
+                "x_wind[2][(10.0)][(-75.0):(75.0)][(10.0):(360.0)]" +
                 "&.draw=surface&.vars=longitude|latitude|x_wind&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_surface", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //sticks
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-24Z):(2000-07-01Z)][(10.0)][(75.0)][(360.0)]," +
-                "y_wind[(2000-06-24Z):(2000-07-01Z)][(10.0)][(75.0)][(360.0)]" +
+                "x_wind[0:10][(10.0)][(75.0)][(360.0)]," +
+                "y_wind[0:10][(10.0)][(75.0)][(360.0)]" +
                 "&.draw=sticks&.vars=time|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_sticks", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //vectors
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-07-01Z)][(10.0)][(22.0):(50.0)][(225.0):(255.0)]," +
-                "y_wind[(2000-07-01Z)][(10.0)][(22.0):(50.0)][(225.0):(255.0)]" +
+                "x_wind[2][(10.0)][(22.0):(50.0)][(225.0):(255.0)]," +
+                "y_wind[2][(10.0)][(22.0):(50.0)][(225.0):(255.0)]" +
                 "&.draw=vectors&.vars=longitude|latitude|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_vectors", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -709,8 +719,8 @@ public class EDDGridSideBySide extends EDDGrid {
         String dapQuery;
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1306736E9), "2005-10-30T12:00:00", "");
 
-        EDDGrid qs1 = (EDDGrid)oneFromDatasetXml("erdQSstress1day");
-        dapQuery = "taux[(1.130328E9):(1.1309328E9)][0][(-20)][(40)],tauy[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
+        EDDGrid qs1 = (EDDGrid)oneFromDatasetsXml(null, "erdQSstress1day");
+        dapQuery = "taux[0:11][0][(-20)][(40)],tauy[0:11][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -718,17 +728,21 @@ public class EDDGridSideBySide extends EDDGrid {
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
 "UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0204974,0.0194982\n" +
-"2005-10-27T12:00:00Z,0.0,-20.0,40.0,-0.08357,0.155034\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.0173238,0.0646148\n" +
-"2005-10-29T12:00:00Z,0.0,-20.0,40.0,-0.0175401,0.0921468\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0110465,0.121438\n" +
-"2005-10-31T12:00:00Z,0.0,-20.0,40.0,-3.6782E-4,0.0166592\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.0040105,0.0141265\n" +
-"2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0481124,-0.0946055\n";
+"1999-07-21T12:00:00Z,0.0,-20.0,40.0,-0.104488,0.208256\n" +
+"1999-07-22T12:00:00Z,0.0,-20.0,40.0,-0.00434009,0.0182522\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.0,-0.023387,0.0169275\n" +
+"1999-07-24T12:00:00Z,0.0,-20.0,40.0,-0.0344483,0.0600279\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.0,-0.0758333,0.122013\n" +
+"1999-07-26T12:00:00Z,0.0,-20.0,40.0,-0.00774623,0.0145094\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.0,0.00791195,0.0160653\n" +
+"1999-07-28T12:00:00Z,0.0,-20.0,40.0,0.00524606,0.00868887\n" +
+"1999-07-29T12:00:00Z,0.0,-20.0,40.0,0.00184722,0.0223571\n" +
+"1999-07-30T12:00:00Z,0.0,-20.0,40.0,-0.00843481,0.00153571\n" +
+"1999-07-31T12:00:00Z,0.0,-20.0,40.0,-0.016016,0.00505983\n" +
+"1999-08-01T12:00:00Z,0.0,-20.0,40.0,-0.0246662,0.00822855\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
-        dapQuery = "taux[(1.130328E9):2:(1.1309328E9)][0][(-20)][(40)],tauy[(1.130328E9):2:(1.1309328E9)][0][(-20)][(40)]";
+        dapQuery = "taux[0:2:10][0][(-20)][(40)],tauy[0:2:10][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2a", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -736,13 +750,15 @@ public class EDDGridSideBySide extends EDDGrid {
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
 "UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0204974,0.0194982\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.0173238,0.0646148\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0110465,0.121438\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.0040105,0.0141265\n";
+"1999-07-21T12:00:00Z,0.0,-20.0,40.0,-0.104488,0.208256\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.0,-0.023387,0.0169275\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.0,-0.0758333,0.122013\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.0,0.00791195,0.0160653\n" +
+"1999-07-29T12:00:00Z,0.0,-20.0,40.0,0.00184722,0.0223571\n" +
+"1999-07-31T12:00:00Z,0.0,-20.0,40.0,-0.016016,0.00505983\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
-        dapQuery = "taux[(2005-10-27T12:00:00Z):2:(1.1309328E9)][0][(-20)][(40)],tauy[(2005-10-27T12:00:00Z):2:(1.1309328E9)][0][(-20)][(40)]";
+        dapQuery = "taux[1:2:11][0][(-20)][(40)],tauy[1:2:11][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2b", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -750,14 +766,16 @@ public class EDDGridSideBySide extends EDDGrid {
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
 "UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
-"2005-10-27T12:00:00Z,0.0,-20.0,40.0,-0.08357,0.155034\n" +
-"2005-10-29T12:00:00Z,0.0,-20.0,40.0,-0.0175401,0.0921468\n" +
-"2005-10-31T12:00:00Z,0.0,-20.0,40.0,-3.6782E-4,0.0166592\n" +
-"2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0481124,-0.0946055\n";
+"1999-07-22T12:00:00Z,0.0,-20.0,40.0,-0.00434009,0.0182522\n" +
+"1999-07-24T12:00:00Z,0.0,-20.0,40.0,-0.0344483,0.0600279\n" +
+"1999-07-26T12:00:00Z,0.0,-20.0,40.0,-0.00774623,0.0145094\n" +
+"1999-07-28T12:00:00Z,0.0,-20.0,40.0,0.00524606,0.00868887\n" +
+"1999-07-30T12:00:00Z,0.0,-20.0,40.0,-0.00843481,0.00153571\n" +
+"1999-08-01T12:00:00Z,0.0,-20.0,40.0,-0.0246662,0.00822855\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test missing time point represents >1 missing value
-        dapQuery = "taux[(1.130328E9):2:(1.1309328E9)][0][(-20)][(40):(40.5)],tauy[(1.130328E9):2:(1.1309328E9)][0][(-20)][(40):(40.5)]";
+        dapQuery = "taux[0:2:6][0][(-20)][(40):(40.5)],tauy[0:2:6][0][(-20)][(40):(40.5)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2c", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -765,26 +783,26 @@ public class EDDGridSideBySide extends EDDGrid {
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
 "UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0204974,0.0194982\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.125,-0.013397,0.0241179\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.25,-0.0073588,0.0304036\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.375,-0.017018,0.0420586\n" +
-"2005-10-26T12:00:00Z,0.0,-20.0,40.5,0.0074961,0.0470117\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.0173238,0.0646148\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.125,-0.0345203,0.0789654\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.25,-0.0363615,0.115381\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.375,-0.0537272,0.133791\n" +
-"2005-10-28T12:00:00Z,0.0,-20.0,40.5,-0.0626239,0.133823\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0110465,0.121438\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.125,-0.00235985,0.137055\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.25,-0.0088645,0.137093\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.375,-0.0196206,0.135083\n" +
-"2005-10-30T12:00:00Z,0.0,-20.0,40.5,-0.044424,0.160418\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.0040105,0.0141265\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.125,-0.00600515,0.0118363\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.25,-0.010433,0.0160705\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.375,-0.0243944,0.021086\n" +
-"2005-11-01T12:00:00Z,0.0,-20.0,40.5,-0.0408028,0.028469\n";
+"1999-07-21T12:00:00Z,0.0,-20.0,40.0,-0.104488,0.208256\n" +
+"1999-07-21T12:00:00Z,0.0,-20.0,40.125,-0.158432,0.0866751\n" +
+"1999-07-21T12:00:00Z,0.0,-20.0,40.25,-0.128333,0.118635\n" +
+"1999-07-21T12:00:00Z,0.0,-20.0,40.375,-0.124832,0.0660782\n" +
+"1999-07-21T12:00:00Z,0.0,-20.0,40.5,-0.130721,0.132997\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.0,-0.023387,0.0169275\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.125,-0.0133533,0.029415\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.25,-0.0217007,0.0307251\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.375,-0.0148099,0.0284445\n" +
+"1999-07-23T12:00:00Z,0.0,-20.0,40.5,-0.021766,0.0333703\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.0,-0.0758333,0.122013\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.125,-0.0832932,0.120377\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.25,-0.0537047,0.115615\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.375,-0.0693455,0.140338\n" +
+"1999-07-25T12:00:00Z,0.0,-20.0,40.5,-0.066977,0.135431\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.0,0.00791195,0.0160653\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.125,0.0107321,0.0135699\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.25,0.00219832,0.0106224\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.375,-9.002E-4,0.0100063\n" +
+"1999-07-27T12:00:00Z,0.0,-20.0,40.5,-0.00168578,0.0117416\n";
         Test.ensureEqual(results, expected, "results=\n" + results);   
     }
 
@@ -804,7 +822,7 @@ public class EDDGridSideBySide extends EDDGrid {
         //lowestValue=1.1309328E9 297 298
 
         /* not active; needs work
-        EDDGrid qsx1 = (EDDGrid)oneFromDatasetXml("erdQStaux1day");
+        EDDGrid qsx1 = (EDDGrid)oneFromDatasetsXml(null, "erdQStaux1day");
         dapQuery = "taux[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
         tName = qsx1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsz1.className() + "sbsx", ".csv"); 
@@ -823,7 +841,7 @@ public class EDDGridSideBySide extends EDDGrid {
 "2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0597476\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        EDDGrid qsy1 = (EDDGrid)oneFromDatasetXml("erdQStauy1day");
+        EDDGrid qsy1 = (EDDGrid)oneFromDatasetsXml(null, "erdQStauy1day");
         dapQuery = "tauy[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
         tName = qsy1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsy1.className() + "sbsy", ".csv"); 
@@ -846,38 +864,38 @@ public class EDDGridSideBySide extends EDDGrid {
 
  /*
         //test creation of sideBySide datasets
-        EDDGrid ta1  = (EDDGrid)oneFromDatasetXml("erdTAgeo1day");
-        EDDGrid j110 = (EDDGrid)oneFromDatasetXml("erdJ1geo10day");
-        EDDGrid tas  = (EDDGrid)oneFromDatasetXml("erdTAssh1day");
+        EDDGrid ta1  = (EDDGrid)oneFromDatasetsXml(null, "erdTAgeo1day");
+        EDDGrid j110 = (EDDGrid)oneFromDatasetsXml(null, "erdJ1geo10day");
+        EDDGrid tas  = (EDDGrid)oneFromDatasetsXml(null, "erdTAssh1day");
 
-        EDDGrid qs1  = (EDDGrid)oneFromDatasetXml("erdQSwind1day");
-        EDDGrid qs3  = (EDDGrid)oneFromDatasetXml("erdQSwind3day");
-        EDDGrid qs4  = (EDDGrid)oneFromDatasetXml("erdQSwind4day");       
-        EDDGrid qs8  = (EDDGrid)oneFromDatasetXml("erdQSwind8day");
-        EDDGrid qs14 = (EDDGrid)oneFromDatasetXml("erdQSwind14day");
-        EDDGrid qsm  = (EDDGrid)oneFromDatasetXml("erdQSwindmday");
+        EDDGrid qs1  = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind1day");
+        EDDGrid qs3  = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind3day");
+        EDDGrid qs4  = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind4day");       
+        EDDGrid qs8  = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind8day");
+        EDDGrid qs14 = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind14day");
+        EDDGrid qsm  = (EDDGrid)oneFromDatasetsXml(null, "erdQSwindmday");
 
-        EDDGrid qss1  = (EDDGrid)oneFromDatasetXml("erdQSstress1day");
-        EDDGrid qss3  = (EDDGrid)oneFromDatasetXml("erdQSstress3day");
-        EDDGrid qss8  = (EDDGrid)oneFromDatasetXml("erdQSstress8day");
-        EDDGrid qss14 = (EDDGrid)oneFromDatasetXml("erdQSstress14day");
-        EDDGrid qssm  = (EDDGrid)oneFromDatasetXml("erdQSstressmday");
+        EDDGrid qss1  = (EDDGrid)oneFromDatasetsXml(null, "erdQSstress1day");
+        EDDGrid qss3  = (EDDGrid)oneFromDatasetsXml(null, "erdQSstress3day");
+        EDDGrid qss8  = (EDDGrid)oneFromDatasetsXml(null, "erdQSstress8day");
+        EDDGrid qss14 = (EDDGrid)oneFromDatasetsXml(null, "erdQSstress14day");
+        EDDGrid qssm  = (EDDGrid)oneFromDatasetsXml(null, "erdQSstressmday");
 
-        EDDGrid qse7  = (EDDGrid)oneFromDatasetXml("erdQSekm7day");
-        EDDGrid qse8  = (EDDGrid)oneFromDatasetXml("erdQSekm8day");
+        EDDGrid qse7  = (EDDGrid)oneFromDatasetsXml(null, "erdQSekm7day");
+        EDDGrid qse8  = (EDDGrid)oneFromDatasetsXml(null, "erdQSekm8day");
 // */  
 
 
 /* 
         //test if datasets can be aggregated side-by-side
         EDDGrid n1Children[] = new EDDGrid[]{
-            (EDDGrid)oneFromDatasetXml("erdCAusfchday"),
-            (EDDGrid)oneFromDatasetXml("erdCAvsfchday"),
-            (EDDGrid)oneFromDatasetXml("erdQSumod1day"),
-            (EDDGrid)oneFromDatasetXml("erdQStmod1day"),
-            (EDDGrid)oneFromDatasetXml("erdQScurl1day"),
-            (EDDGrid)oneFromDatasetXml("erdQStaux1day"),
-            (EDDGrid)oneFromDatasetXml("erdQStauy1day")
+            (EDDGrid)oneFromDatasetsXml(null, "erdCAusfchday"),
+            (EDDGrid)oneFromDatasetsXml(null, "erdCAvsfchday"),
+            (EDDGrid)oneFromDatasetsXml(null, "erdQSumod1day"),
+            (EDDGrid)oneFromDatasetsXml(null, "erdQStmod1day"),
+            (EDDGrid)oneFromDatasetsXml(null, "erdQScurl1day"),
+            (EDDGrid)oneFromDatasetsXml(null, "erdQStaux1day"),
+            (EDDGrid)oneFromDatasetsXml(null, "erdQStauy1day")
             };
         new EDDGridSideBySide("erdQSwind1day", n1Children);
         */
@@ -892,7 +910,7 @@ public class EDDGridSideBySide extends EDDGrid {
         String name, tName, userDapQuery, results, expected, error;
         String dapQuery;
 
-        EDDGrid qsWind8 = (EDDGrid)oneFromDatasetXml("erdQSwind8day");
+        EDDGrid qsWind8 = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind8day");
 /* */
 
         //surface  map

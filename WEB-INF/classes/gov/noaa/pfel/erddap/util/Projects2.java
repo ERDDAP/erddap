@@ -314,11 +314,11 @@ public class Projects2  {
      *    which has contents.html
      * @param localDir  e.g., F:/data/wod/monthly/
      */
-    public static void copyHyraxFiles(String urlDir, String fileNameRegex, String localDir,
-        String logFileName)  throws Throwable {
+    public static void copyHyraxFiles(String urlDir, String fileNameRegex, 
+        String localDir, String pathRegex, String logFileName)  throws Throwable {
 
         if (logFileName != null && logFileName.length() > 0)
-            String2.setupLog(true, false, logFileName, false, true, Integer.MAX_VALUE);
+            String2.setupLog(true, false, logFileName, true, 1000000000);
         String2.log("*** Projects2.copyHyraxFiles " + Calendar2.getCurrentISODateTimeStringLocal() +
             "\nlogFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage() + "\n  " + 
@@ -329,7 +329,7 @@ public class Projects2  {
         DoubleArray lastModified = new DoubleArray();
         LongArray fSize = new LongArray();
         FileVisitorDNLS.addToHyraxUrlList(
-            urlDir + "contents.html", fileNameRegex, true, false, //recursive, dirsToo
+            urlDir + "contents.html", fileNameRegex, true, pathRegex, false, //recursive, dirsToo
             childUrls, lastModified, fSize);
 
         //copy the files

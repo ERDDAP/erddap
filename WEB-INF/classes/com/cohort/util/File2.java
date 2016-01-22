@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -260,7 +260,7 @@ public class File2 {
      * @param dir the directory containing the file (with a trailing slash)
      * @param oldName the old name of the file
      * @param newName the new name of the file
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static void rename(String dir, String oldName, String newName) 
             throws RuntimeException {
@@ -274,7 +274,7 @@ public class File2 {
      *
      * @param fullOldName the complete old name of the file
      * @param fullNewName the complete new name of the file
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static void rename(String fullOldName, String fullNewName) 
             throws RuntimeException {
@@ -333,7 +333,7 @@ public class File2 {
      *
      * @param fullOldName the complete old name of the file
      * @param fullNewName the complete new name of the file
-     * @throws Exception if trouble
+     * @throws RuntimeException if trouble
      */
     public static void renameIfNewDoesntExist(String fullOldName, String fullNewName) 
             throws RuntimeException {
@@ -677,6 +677,7 @@ public class File2 {
     
     /**
      * This makes a copy of a file.
+     * !!!If the source might be remote, use SSR.downloadFile(source, dest, false) instead.
      *
      * @param source the full file name of the source file
      * @param destination the full file name of the destination file.
@@ -696,7 +697,8 @@ public class File2 {
             out = new FileOutputStream(destination);
             success = copy(source, out);
         } catch (Exception e) {
-            String2.log(MustBe.throwable(String2.ERROR + " in File2.copy", e));
+            String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + 
+                e.toString());
         }
         try { 
             if (out != null) out.close();
@@ -851,21 +853,6 @@ public class File2 {
         return dir + slash;
     }
 
-    /** 
-     * This returns true if the dir starts with http://, https://, ftp://, sftp://,
-     * or smb://.
-     * If dir is null or "", this returns false.
-     */
-    public static boolean isRemote(String dir) {
-        if (dir == null)
-            return false;
-        return 
-            dir.startsWith("http://") ||
-            dir.startsWith("https://") ||
-            dir.startsWith("ftp://") ||
-            dir.startsWith("sftp://") ||
-            dir.startsWith("smb://");
-    }
 
 
 }

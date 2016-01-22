@@ -1914,8 +1914,45 @@ public abstract class EDDTable extends EDD {
 
             if (debugMode) String2.log(">>constraint: " + tName + OPERATORS[op] + tValue);
 
-            //convert <time><op><isoString> to <time><op><epochSeconds>   
-            if (conEdvIsTimeStamp) {
+            if (OPERATORS[op] != PrimitiveArray.REGEX_OP &&
+                (tValue.startsWith("min(") ||
+                 tValue.startsWith("max("))) {
+                //min() and max()
+                try {
+                    String mmString = tValue.substring(0, 3);
+                    int cpo = tValue.indexOf(')');
+                    if (cpo < 0) 
+                        throw new SimpleException(EDStatic.queryError +
+                            "')' not found after \"" + mmString + "(\".");
+                    String mVarName = tValue.substring(4, cpo);
+                    EDV mVar = findDataVariableByDestinationName(mVarName); //throws Exception
+                    conValueD = tValue.startsWith("min(")?
+                        mVar.destinationMin() : //time will be epochSeconds
+                        mVar.destinationMax(); 
+                    if (Double.isNaN(conValueD))
+                        throw new SimpleException(EDStatic.queryError +
+                            "\"" + mmString + "(" + mVarName + ")\" is not allowed because the " + 
+                            mmString + "imum value isn't known.");
+                    if (cpo != tValue.length() - 1) {
+                        //there's more, e.g., min(var1)-25days
+                        conValueD = Calendar2.parseMinMaxString( //throws Exception
+                            tValue, conValueD, mVar instanceof EDVTimeStamp);
+                    }
+                    constraintValues.set(constraintValues.size() - 1, "" + conValueD);
+                } catch (Exception me) {
+                    if (repair) {
+                        String2.log("repairing conValue=\"" + tValue + "\" by discarding it");
+                        constraintVariables.remove(constraintVariables.size() - 1);
+                        constraintOps.remove(      constraintOps.size() - 1);
+                        constraintValues.remove(   constraintValues.size() - 1);
+                        continue;
+                    } else {
+                        throw me;
+                    }
+                }
+
+            } else if (conEdvIsTimeStamp) {
+                //convert <time><op><isoString> to <time><op><epochSeconds>   
                 //this isn't precise!!!   should it be required??? or forbidden???
                 if (debugMode) String2.log(">>isTimeStamp=true");
                 if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
@@ -1939,7 +1976,6 @@ public abstract class EDDTable extends EDD {
                                  (double)Math2.hiDiv(System.currentTimeMillis(), 1000));
                         else conValueD = Calendar2.nowStringToEpochSeconds(tValue);
                         constraintValues.set(constraintValues.size() - 1, "" + conValueD);
-
 
                     } else {
                         //it must be a number (epochSeconds)
@@ -2270,6 +2306,15 @@ public abstract class EDDTable extends EDD {
                 constraintValues[i]);  //!!!bug??? Strings should be String2.toJson() so within " "
         
         return sb.toString();
+    }
+
+    /**
+     * This is an alternate formatAsDapQuery that works with StringArrays.
+     */
+    public static String formatAsDapQuery(StringArray resultsVariables,
+        StringArray constraintVariables, StringArray constraintOps, StringArray constraintValues) {
+        return formatAsDapQuery(resultsVariables.toArray(), 
+            constraintVariables.toArray(), constraintOps.toArray(), constraintValues.toArray());
     }
 
     /** 
@@ -2786,7 +2831,7 @@ public abstract class EDDTable extends EDD {
      *    corresponding to the request
      * @throws Throwable if trouble
      */
-    protected Table makeEmptyDestinationTable(String requestUrl, String userDapQuery, 
+    public Table makeEmptyDestinationTable(String requestUrl, String userDapQuery, 
         boolean withAttributes) throws Throwable {
         if (reallyVerbose) String2.log("  makeEmptyDestinationTable...");
 
@@ -3237,26 +3282,26 @@ public abstract class EDDTable extends EDD {
                 false);
             if (debugMode) String2.log("saveAsImage 2");
 
-            EDV xVar, yVar, zVar = null, tVar = null; 
             if (resultsVariables.size() < 2)
                 throw new SimpleException(EDStatic.queryError +
                     MessageFormat.format(EDStatic.queryError2Var, fileTypeName));
-            //if lon and lat requested, it's a map
-            boolean isMap =
-                resultsVariables.indexOf(EDV.LON_NAME) >= 0 &&
-                resultsVariables.indexOf(EDV.LON_NAME) < 2  &&
-                resultsVariables.indexOf(EDV.LAT_NAME) >= 0 &&
-                resultsVariables.indexOf(EDV.LAT_NAME) < 2;
-            if (isMap) {
-                xVar = dataVariables[lonIndex]; 
-                yVar = dataVariables[latIndex]; 
-            } else {
-                //xVar,yVar are 1st and 2nd request variables
-                xVar = findVariableByDestinationName(resultsVariables.get(0)); 
-                yVar = findVariableByDestinationName(resultsVariables.get(1)); 
-                if (yVar instanceof EDVTimeStamp) { //prefer time on x axis
-                    EDV edv = xVar; xVar = yVar; yVar = edv;
-                }
+            //xVar,yVar are 1st and 2nd request variables
+            EDV xVar = findVariableByDestinationName(resultsVariables.get(0)); 
+            EDV yVar = findVariableByDestinationName(resultsVariables.get(1)); 
+            EDV zVar = null, tVar = null; 
+            String xUnits = xVar.units(); //may be null
+            String yUnits = yVar.units();
+            boolean isMap = false;
+            if (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, xUnits) >= 0 &&
+                String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, yUnits) >= 0) {
+                isMap = true;
+            } else if (
+                String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, yUnits) >= 0 &&
+                String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, xUnits) >= 0) {
+                isMap = true;
+                //force x=lon, y=lat
+                EDV    e = xVar;   xVar   = yVar;   yVar   = e;
+                String s = xUnits; xUnits = yUnits; yUnits = s;
             }
             if (resultsVariables.size() >= 3)
                 zVar = findVariableByDestinationName(resultsVariables.get(2));
@@ -3278,10 +3323,10 @@ public abstract class EDDTable extends EDD {
             int yColN = table.findColumnNumber(yVar.destinationName());
             int zColN = zVar == null? -1 : table.findColumnNumber(zVar.destinationName());
             int tColN = tVar == null? -1 : table.findColumnNumber(tVar.destinationName());
-            String xUnits = xVar instanceof EDVTimeStamp? "UTC" : table.columnAttributes(xColN).getString("units");
-            String yUnits = yVar instanceof EDVTimeStamp? "UTC" : table.columnAttributes(yColN).getString("units");
-            String zUnits = zColN < 0? null : zVar instanceof EDVTimeStamp? "UTC" : table.columnAttributes(zColN).getString("units");
-            String tUnits = tColN < 0? null : tVar instanceof EDVTimeStamp? "UTC" : table.columnAttributes(tColN).getString("units");
+            if (xVar instanceof EDVTimeStamp) xUnits = "UTC";
+            if (yVar instanceof EDVTimeStamp) yUnits = "UTC";
+            String zUnits = zVar == null? null : zVar instanceof EDVTimeStamp? "UTC" : zVar.units();
+            String tUnits = tVar == null? null : tVar instanceof EDVTimeStamp? "UTC" : tVar.units();
             xUnits = xUnits == null? "" : " (" + xUnits + ")";
             yUnits = yUnits == null? "" : " (" + yUnits + ")";
             zUnits = zUnits == null? "" : " (" + zUnits + ")";
@@ -3311,17 +3356,26 @@ public abstract class EDDTable extends EDD {
             ts = zVar == null? null : zVar.combinedAttributes().getString("colorBarContinuous");
             boolean continuous = String2.parseBoolean(ts); //defaults to true
 
+            //x/yMin < x/yMax
             double xMin = Double.NaN, xMax = Double.NaN, yMin = Double.NaN, yMax = Double.NaN;
+            boolean xAscending = true, yAscending = true; //this is what controls flipping of the axes
             double fontScale = 1, vectorStandard = Double.NaN;
             int drawLandAsMask = 0;  //holds the .land setting: 0=default 1=under 2=over
             StringBuilder title2 = new StringBuilder();
+            Color bgColor = EDStatic.graphBackgroundColor;
             String ampParts[] = Table.getDapQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
             for (int ap = 0; ap < ampParts.length; ap++) {
                 String ampPart = ampParts[ap];
                 if (debugMode) String2.log("saveAsImage 4 " + ap);
 
+                //.bgColor
+                if (ampPart.startsWith(".bgColor=")) {
+                    String pParts[] = String2.split(ampPart.substring(9), '|');
+                    if (pParts.length > 0 && pParts[0].length() > 0) 
+                        bgColor = new Color(String2.parseInt(pParts[0]), true); //hasAlpha
+
                 //.colorBar defaults: palette=""|continuous=C|scale=Linear|min=NaN|max=NaN|nSections=-1
-                if (ampPart.startsWith(".colorBar=")) {
+                } else if (ampPart.startsWith(".colorBar=")) {
                     String pParts[] = String2.split(ampPart.substring(10), '|');
                     if (pParts == null) pParts = new String[0];
                     if (pParts.length > 0 && pParts[0].length() > 0) palette    = pParts[0];
@@ -3434,22 +3488,28 @@ public abstract class EDDTable extends EDD {
                         String2.log(".vec " + vectorStandard);
 
                 //.xRange   (supported, but currently not created by the Make A Graph form)
-                //  prefer set via xVar constratints
+                //  this is more powerful than xVar constraints
                 } else if (ampPart.startsWith(".xRange=")) {
                     String pParts[] = String2.split(ampPart.substring(8), '|');
                     if (pParts.length > 0) xMin = String2.parseDouble(pParts[0]);
                     if (pParts.length > 1) xMax = String2.parseDouble(pParts[1]);
+                    if (pParts.length > 2) 
+                        //if the param slot is there, the param determines Ascending
+                        xAscending = String2.parseBoolean(pParts[2]); //"" -> true(the default)
                     if (reallyVerbose)
-                        String2.log(".xRange min=" + xMin + " max=" + xMax);
+                        String2.log(".xRange min=" + xMin + " max=" + xMax + " ascending=" + xAscending);
 
-                //.yRange   (supported, but currently not created by the Make A Graph form)
-                //  prefer set via yVar constratints
+                //.yRange   
+                //  this is more powerful than yVar constraints
                 } else if (ampPart.startsWith(".yRange=")) {
                     String pParts[] = String2.split(ampPart.substring(8), '|');
                     if (pParts.length > 0) yMin = String2.parseDouble(pParts[0]);
                     if (pParts.length > 1) yMax = String2.parseDouble(pParts[1]);
+                    if (pParts.length > 2) 
+                        //if the param slot is there, the param determines Ascending
+                        yAscending = String2.parseBoolean(pParts[2]); //"" -> true(the default)
                     if (reallyVerbose)
-                        String2.log(".yRange min=" + yMin + " max=" + yMax);
+                        String2.log(".yRange min=" + yMin + " max=" + yMax + " ascending=" + yAscending);
     
                 //ignore any unrecognized .something 
                 } else if (ampPart.startsWith(".")) {
@@ -3762,6 +3822,9 @@ public abstract class EDDTable extends EDD {
                     }
                 }
 
+                //unlike graphs, maps still force xMin < xMax, and yMin < yMax
+                if (xMin > xMax) {double d = xMin; xMin = xMax; xMax = d;}
+                if (yMin > yMax) {double d = yMin; yMin = yMax; yMax = d;}                
 
                 int predicted[] = SgtMap.predictGraphSize(1, imageWidth, imageHeight, 
                     xMin, xMax, yMin, yMax);
@@ -3825,12 +3888,12 @@ public abstract class EDDTable extends EDD {
                     png && drawLegend.equals(LEGEND_ONLY)? "." : yLabel, //avoid running into legend
                     SgtUtil.LEGEND_BELOW, EDStatic.legendTitle1, EDStatic.legendTitle2,
                     EDStatic.imageDir, logoImageFile,
-                    xMin, xMax, yMin, yMax, 
+                    xMin, xMax, xAscending, yMin, yMax, yAscending,
                     xVar instanceof EDVTimeStamp, //x/yIsTimeAxis,
                     yVar instanceof EDVTimeStamp, 
                     graphDataLayers,
                     g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
-                    SgtGraph.DefaultBackgroundColor, fontScale); 
+                    bgColor, fontScale); 
 
                 writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
             }
@@ -6183,6 +6246,9 @@ public abstract class EDDTable extends EDD {
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
             "  <br>After the data download to the web page has finished, the data is accessible to the JavaScript\n" +
             "  <br>script via that JavaScript function.\n" +
+            "  <br>Here is an example using \n" +
+            "  <a rel=\"bookmark\" href=\"http://jsfiddle.net/jpatterson/mo7cbfz8/\">jsonp with ERDDAP and jQuery" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> (thanks to Jenn Patterson of CenCOOS).\n" +
             "\n" +
             //matlab
             "  <p><b><a rel=\"bookmark\" href=\"http://www.mathworks.com/products/matlab/\">MATLAB" +
@@ -6771,6 +6837,23 @@ public abstract class EDDTable extends EDD {
             "      <br>Note that a '+' in the URL is percent-decoded as ' ', so you should\n" +
             "      <br>percent-encode '+' as %2B.  However, ERDDAP interprets <tt>\"now \"</tt> as <tt>\"now+\"</tt>,\n" +
             "      <br>so in practice you don't have to percent-encode it.\n" +
+            "    <li><a name=\"min\">tabledap</a> <a name=\"max\">extends</a> the OPeNDAP standard to allow you to refer to <tt>min(<i>variableName</i>)</tt> or\n" +
+            "      <br><tt>max(<i>variableName</i>)</tt> in the righthand part of a constraint.\n" +
+            "      <ul>\n" +
+            "      <li>If <i>variableName</i> is a timestamp variable, the constraint must be in the form:\n" +
+            "        <br><tt>min|max(<i>variableName</i>)[+|-<i>positiveInteger</i>[millis|seconds|minutes|hours|days|months|years]]</tt>\n" +
+            "        <br>(or singular units). If time units aren't supplied, \"seconds\" are assumed.\n" +
+            "        <br>For example, <tt>&amp;time&gt;max(time)-10minutes</tt>\n" +
+            "      <li>If <i>variableName</i> is a non-timestamp variable, the constraint must be in the form:\n" +
+            "        <br><tt>min|max(<i>variableName</i>)[+|-<i>positiveNumber</i>]</tt>\n" +
+            "        <br>For example, <tt>&amp;pressure&lt;min(pressure)+10.5</tt>\n" +
+            "      <li>Usually, <i>variableName</i> will be the same as the variable you are constraining,\n" +
+            "        <br>but it doesn't have to be.\n" +
+            "      <li>If <i>variableName</i>'s minimum (or maximum) isn't known, min() (or max()) will throw an error.\n" +
+            "      <li>min() and max() will almost always be used to constrain numeric (including timestamp)\n" +
+            "        <br>variables, but it is technically possible to constrain string variables.\n" +
+            "      <li>min() and max() can't be used with regex constraints (=~).\n" +
+            "      </ul>\n" + 
             "    </ul>\n" +
             "  <li><a name=\"functions\"><b>Server-side Functions</b></a> - The OPeNDAP standard supports the idea of\n" +
             "    <br>server-side functions, but doesn't define any.\n" +
@@ -6869,6 +6952,16 @@ public abstract class EDDTable extends EDD {
             "    <br>If the value has sub-values, they are separated by the '|' character. \n" +
             "    <br>The commands are:\n" +
             "    <ul>\n" +
+            "     <li><tt>&amp;.bgColor=<i>bgColor</i></tt>\n" +
+            "       <br>This specifies the background color of a graph (not a map).\n" +
+            "       <br>The color is specified as a 8 digit hexadecimal value in the form 0x<i>AARRGGBB</i>,\n" +
+            "       <br>where AA, RR, GG, and BB are the opacity, red, green and blue components, respectively.\n" +
+            "       <br>The canvas is always opaque white, so a (semi-)transparent graph background color\n" +
+            "       <br>blends into the white canvas.\n" +
+            "       <br>The color value string is not case sensitive.\n" +
+            "       <br>For example, a fully opaque (ff) greenish-blue color with red=22, green=88, blue=ee\n" +
+            "       <br>would be 0xff2288ee. Opaque white is 0xffffffff. Opaque light blue is 0xffccccff.\n" +
+            "       <br>The default on this ERDDAP is " + String2.to0xHexString(EDStatic.graphBackgroundColor.getRGB(), 8) + ".\n" +
             "    <li><tt>&amp;.colorBar=<i>palette</i>|<i>continuous</i>|<i>scale</i>|<i>min</i>|<i>max</i>|<i>nSections</i></tt> \n" +
             "      <br>This specifies the settings for a color bar.  The sub-values are:\n" +
             "      <ul>\n" +
@@ -6897,7 +6990,7 @@ public abstract class EDDTable extends EDD {
             "    <li><tt>&amp;.color=<i>value</i></tt>\n" +
             "        <br>This specifies the color for data lines, markers, vectors, etc.  The value must\n" +
             "        <br>be specified as an 0xRRGGBB value (e.g., 0xFF0000 is red, 0x00FF00 is green).\n" +
-            "        <br>The default is 0x000000 (black).\n" +
+            "        <br>The color value string is not case sensitive. The default is 0x000000 (black).\n" +
             "    <li><tt>&amp;.draw=<i>value</i></tt> \n" +
             "        <br>This specifies how the data will be drawn, as <tt>lines</tt>,\n" +
             "        <br><tt>linesAndMarkers</tt>, <tt>markers</tt> (default), <tt>sticks</tt>, or <tt>vectors</tt>. \n" +
@@ -6943,10 +7036,14 @@ public abstract class EDDTable extends EDD {
             "    <li><tt>&amp;.vec=<i>value</i></tt>\n" +
             "      <br>This specifies the data vector length (in data units) to be scaled to the size\n" +
             "      <br>of the sample vector in the legend. The default varies based on the data.\n" +
-            "    <li><tt>&amp;.xRange=<i>min</i>|<i>max</i></tt>\n" +
-            "      <br>This specifies the min|max for the X axis. The default varies based on the data.\n" +
-            "    <li><tt>&amp;.yRange=<i>min</i>|<i>max</i></tt>\n" +
-            "      <br>This specifies the min|max for the Y axis. The default varies based on the data.\n" +
+            "    <li><tt>&amp;.xRange=<i>min</i>|<i>max</i>|<i>ascending</i></tt>\n" +
+            "      <br><tt>&amp;.yRange=<i>min</i>|<i>max</i>|<i>ascending</i></tt>\n" +
+            "      <br><tt>min</tt> and <tt>max</tt> specify the range of the X and Y axes. They can be numeric values or\n" +
+            "      <br>nothing (the default, which tells ERDDAP to use an appropriate value based on the data).\n" +
+            "      <br><i>ascending</i> specifies whether the axis is drawn the normal way, or reversed (flipped).\n" +
+            "      <br><i>ascending</i> can be nothing or <tt>true, t, false, </tt>or<tt> f</tt>. These values are case insensitive.\n" +
+            "      <br>The default is <tt>true</tt>.\n" +
+            "      <br><i>ascending</i> applies to graphs only, not maps.\n" +
             "    </ul>\n" +
             "    <br><a name=\"sampleGraphURL\">A sample graph URL is</a> \n" +
             "    <br><a href=\"" + EDStatic.phEncode(fullGraphExample) + "\">" + 
@@ -6990,10 +7087,15 @@ public abstract class EDDTable extends EDD {
             "    <br>Each data variable has data of one specific type.\n" +
             "    <br>The supported types are (int8, uint16, int16, int32, int64, float32, float64, and \n" +
             "    <br>String of any length).\n" +
-            "    <br>Any cell in the table may have a no value (i.e., a missing value).\n" +
             "    <br>Each data variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n" +
             "    <br>characters (A-Z, a-z, 0-9, _).\n" +
             "    <br>Each data variable has metadata which is a set of Key=Value pairs.\n" +
+            "    <br>The maximum number of columns is 2147483647, but datasets with greater than\n" +
+            "    <br>about 100 columns will be awkward for users.\n" +
+            "  <li>The maximum number of rows for a dataset is probably about 9e18.\n" +
+            "    <br>In some cases, individual sources within a dataset (e.g., files) are limited to\n" +
+            "    <br>2147483647 rows, but that is a limitation of the file type, not ERDDAP.\n" +
+            "  <li>Any cell in the table may have no value (i.e., a missing value).\n" +
             "  <li>Each dataset has global metadata which is a set of Key=Value pairs.\n" +
             "  <li>Note about metadata: each variable's metadata and the global metadata is a set of 0\n" +
             "    <br>or more Key=Value pairs.\n" +
@@ -7046,6 +7148,17 @@ public abstract class EDDTable extends EDD {
             "<li>" + OutputStreamFromHttpResponse.acceptEncodingHtml(tErddapUrl) +
             "    <br>&nbsp;\n" +
             "</ul>\n" +
+            "<h2><a name=\"contact\">Contact Us</a></h2>\n" +
+            "If you have questions, suggestions, or comments about ERDDAP in general (not this specific\n" +
+            "<br>ERDDAP installation or its datasets), please send an email to <tt>bob dot simons at noaa dot gov</tt>\n" +
+            "<br>and include the ERDDAP URL directly related to your question or comment.\n" +
+            "<br><a name=\"ERDDAPMailingList\">Or,</a> you can join the ERDDAP Google Group / Mailing List by visiting\n" +
+            "<br><a rel=\"help\" href=\"https://groups.google.com/forum/#!forum/erddap\">https://groups.google.com/forum/#!forum/erddap<img \n" +
+            "  src=\"" + tErddapUrl + "/images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
+            "  title=\"This link to an external web site does not constitute an endorsement.\"/></a> \n" +
+            "and clicking on \"Apply for membership\". \n" +
+            "<br>Once you are a member, you can post your question there or search to see if the question\n" +
+            "<br>has already been asked and answered.\n" +
             "<br>&nbsp;\n");
 
         writer.flush(); 
@@ -8324,8 +8437,24 @@ public abstract class EDDTable extends EDD {
                 }
             }
 
+            //bgColor
+            Color bgColor = EDStatic.graphBackgroundColor;
+            String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
+            if (tBGColor != null) {
+                String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
+                if (tBGColorAr.length > 0 && tBGColorAr[0].length() > 0) {
+                    bgColor = new Color(String2.parseInt(tBGColorAr[0]), true); //hasAlpha
+                }
+            }
+            //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
+            String bgcs = "&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8);
+            graphQuery.append(bgcs);
+            graphQueryNoLatLon.append(bgcs);
+            graphQueryNoTime.append(bgcs);
+
             //yRange
             String yRange[] = new String[]{"", ""};
+            boolean yAscending = true;
             if (true) {
                 paramName = "yRange";
                 String tyRange = String2.stringStartsWith(queryParts, partName = ".yRange=");
@@ -8337,11 +8466,14 @@ public abstract class EDDTable extends EDD {
                             yRange[i] = Double.isNaN(td)? "" : String2.genEFormat10(td);
                         }
                     }
+                    if (tyRangeAr.length > 2) 
+                        //if the param slot is there, the param determines Ascending
+                        yAscending = String2.parseBoolean(tyRangeAr[2]); //"" -> true(the default)
                 }
                 writer.write(
                     "  <tr>\n" +
-                    "    <td nowrap>" + EDStatic.magGSYAxisMin + ":&nbsp;</td>\n" +
-                    "    <td nowrap width=\"90%\">\n");
+                    "    <td colspan=\"2\" align=\"left\" nowrap>" + 
+                        EDStatic.magGSYAxisMin + ":\n");
                 writer.write(widgets.textField("yRangeMin", 
                     EDStatic.magGSYRangeMinTooltip + EDStatic.magGSYRangeTooltip, 
                    10, 20, yRange[0], ""));
@@ -8349,13 +8481,16 @@ public abstract class EDDTable extends EDD {
                 writer.write(widgets.textField("yRangeMax", 
                     EDStatic.magGSYRangeMaxTooltip + EDStatic.magGSYRangeTooltip, 
                    10, 20, yRange[1], ""));
+                writer.write(widgets.select("yRangeAscending", 
+                    EDStatic.magGSYAscendingTooltip, 
+                    1, new String[]{"ascending", "descending"}, yAscending? 0 : 1, "")); 
                 writer.write(
                     "    </td>\n" +
                     "  </tr>\n");
 
                 //add to graphQuery
-                if (yRange[0].length() > 0 || yRange[1].length() > 0) {
-                    String ts = "&.yRange=" + yRange[0] + "|" + yRange[1];
+                if (yRange[0].length() > 0 || yRange[1].length() > 0 || !yAscending) {
+                    String ts = "&.yRange=" + yRange[0] + "|" + yRange[1] + "|" + yAscending;
                     graphQuery.append(ts);
                     graphQueryNoLatLon.append(ts);
                     graphQueryNoTime.append(ts);
@@ -8430,8 +8565,12 @@ public abstract class EDDTable extends EDD {
             if (true) writer.write(
                 "    var yRMin=d.f1.yRangeMin.value; \n" +
                 "    var yRMax=d.f1.yRangeMax.value; \n" +
-                "    if (yRMin.length > 0 || yRMax.length > 0)\n" +
-                "      q2 += \"\\x26.yRange=\" + yRMin + \"|\" + yRMax; \n");
+                "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n" +
+                "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1)\n" +
+                "      q2 += \"\\x26.yRange=\" + yRMin + \"|\" + yRMax + \"|\" + (yRAsc==0); \n");
+            //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
+            writer.write(
+                "    q2 += \"&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8) + "\"; \n");
             writer.write(
                 "    return q1 + q2; \n" +
                 "  } catch (e) { \n" +
@@ -16789,7 +16928,7 @@ writer.write(
      */
     public static void testSosNdbcMet() throws Throwable {
         String2.log("\n*** EDDTable.testSosNdbcMet()");
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml("cwwcNDBCMet"); 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String sosQuery, fileName, results, expected;
         java.io.StringWriter writer;
@@ -18896,7 +19035,7 @@ writer.write(
     public static void testSosCurrents() throws Throwable {
         try {
             String2.log("\n*** EDDTable.testSosCurrents()");
-            EDDTable eddTable = (EDDTable)oneFromDatasetXml("ndbcSosCurrents"); 
+            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "ndbcSosCurrents"); 
             String dir = EDStatic.fullTestCacheDirectory;
             String sosQuery, fileName, results, expected;
             java.io.StringWriter writer;
@@ -19111,7 +19250,7 @@ writer.write(
     public static void testSosGomoos() throws Throwable {
         try {
             String2.log("\n*** EDDTable.testSosGomoos()");
-            EDDTable eddTable = (EDDTable)oneFromDatasetXml("gomoosBuoy"); 
+            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "gomoosBuoy"); 
             String dir = EDStatic.fullTestCacheDirectory;
             String sosQuery, fileName, results, expected;
             java.io.StringWriter writer;
@@ -19158,7 +19297,7 @@ writer.write(
     public static void testSosOostethys() throws Throwable {
         try {
             String2.log("\n*** EDDTable.testSosOostethys()");
-            EDDTable eddTable = (EDDTable)oneFromDatasetXml("cwwcNDBCMet"); 
+            EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
             String dir = EDStatic.fullTestCacheDirectory;
             String sosQuery, fileName, results, expected;
             java.io.StringWriter writer;
@@ -19324,7 +19463,6 @@ writer.write(
         }
 
     }
-
 
 
     /** This tests some EDDTable-specific things. */

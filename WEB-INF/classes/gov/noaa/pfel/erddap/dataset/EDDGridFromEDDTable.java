@@ -24,12 +24,14 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -41,6 +43,7 @@ import java.util.Arrays;
 public class EDDGridFromEDDTable extends EDDGrid { 
 
     protected EDDTable eddTable;
+
     protected int gapThreshold;
     final static int defaultGapThreshold = 1000;
     //for precision of axis value matching 
@@ -52,19 +55,22 @@ public class EDDGridFromEDDTable extends EDDGrid {
     /**
      * This constructs an EDDGridFromEDDTable based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridFromEDDTable"&gt; 
      *    having just been read.  
      * @return an EDDGridFromEDDTable.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridFromEDDTable fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridFromEDDTable fromXml(Erddap erddap, 
+        SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridFromEDDTable(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -106,7 +112,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                     throw new SimpleException(
                         "The inner eddTable datasetID must be different from the " +
                         "outer EDDGridFromEDDTable datasetID.");
-                tEDDTable = (EDDTable)EDD.fromXml(tType, xmlReader);
+                tEDDTable = (EDDTable)EDD.fromXml(erddap, tType, xmlReader);
 
             } else if (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
@@ -116,6 +122,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<updateEveryNMillis>")) {}
@@ -145,7 +153,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDGridFromEDDTable(tDatasetID, tAccessibleTo,
+        return new EDDGridFromEDDTable(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
@@ -234,7 +242,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridFromEDDTable(
-        String tDatasetID, String tAccessibleTo, 
+        String tDatasetID, String tAccessibleTo, boolean tAccessibleViaWMS, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -254,6 +262,9 @@ public class EDDGridFromEDDTable extends EDDGrid {
         className = "EDDGridFromEDDTable"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -574,6 +585,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         TableWriterAll twa = new TableWriterAll(cacheDirectory(), 
             suggestFileName(loggedInAs, datasetID, ".twa")); //twa adds a random number
         twa.normalFinish = false;
+        int qn = 0;
         outerLoop:
         while (outerNDIndex.increment()) { //updates outerNDCurrent
 
@@ -605,7 +617,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                     "&" + sn + "<=" + sv.getDouble(stop[av]));
             }
             String query = querySB.toString();
-            //if (debugMode) String2.log("query for eddTable=" + query);
+            if (verbose) String2.log("query#" + qn++ + " for eddTable=" + query);
 
             //get the tabular results
             String requestUrl = "/erddap/tabledap/" + datasetID + 
@@ -633,6 +645,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         int oAxisIndex[] = new int[nav]; //all 0's
         int axisIndex[]  = new int[nav]; //all 0's
         int dataIndex = 0; //index for the data results[] PAs
+        int nMatches = 0;
         rowLoop: 
         for (long row = 0; row < nRows; row++) {
             //read all of the twa values for this row
@@ -678,6 +691,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
             }
 
             //all axes have a match! so copy data values into results[]
+            nMatches++;
             if (debugMode) 
                 String2.log("  axisIndex=" + String2.toCSSVString(axisIndex) + 
                     " dataIndex=" + dataIndex);
@@ -692,6 +706,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
             twaDIS[col].close();
         twa.releaseResources();
 
+        String2.log("EDDGridFromEDDTable nMatches=" + nMatches + 
+            " out of TableWriterAll nRows=" + nRows);
         return results;
     }
 
@@ -722,7 +738,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         Table addDataTable = new Table();
 
         //get the eddTable
-        EDDTable eddTable = (EDDTable)oneFromDatasetXml(eddTableID);
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, eddTableID);
         Attributes sourceGAtts = sourceDataTable.globalAttributes();
         Attributes destGAtts   = addDataTable.globalAttributes();
         if (externalAddGlobalAttributes != null)
@@ -1010,7 +1026,7 @@ directionsForGenerateDatasetsXml() +
         String name, tName, query, results, expected, error;
         String testDir = EDStatic.fullTestCacheDirectory;
         int po;
-        EDDGrid edd = (EDDGrid)oneFromDatasetXml("testGridFromTable"); //should work
+        EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testGridFromTable"); //should work
 
         //get dds
         String2.log("\nget .dds\n");

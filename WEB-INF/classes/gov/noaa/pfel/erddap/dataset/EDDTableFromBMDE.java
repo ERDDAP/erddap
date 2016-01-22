@@ -71,13 +71,14 @@ public class EDDTableFromBMDE extends EDDTable{
     /**
      * This constructs an EDDTableFromBMDE based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromBMDE"&gt;
      *    having just been read.  
      * @return an EDDTableFromBMDE.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromBMDE fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromBMDE fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromBMDE(xmlReader)...");
@@ -543,7 +544,7 @@ public class EDDTableFromBMDE extends EDDTable{
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         //one time get inventory  
         //String2.log(DigirHelper.getBmdeInventoryString(
@@ -552,7 +553,7 @@ public class EDDTableFromBMDE extends EDDTable{
         //if (true) System.exit(0);
 
         try {
-        EDDTable prbo = (EDDTable)oneFromDatasetXml("prbo05Bmde"); 
+        EDDTable prbo = (EDDTable)oneFromDatasetsXml(null, "prbo05Bmde"); 
 
         //one time getEmpiricalMinMax 
         //prbo.getEmpiricalMinMax("2002-07-01", "2002-09-01", false, true);

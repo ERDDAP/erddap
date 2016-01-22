@@ -46,6 +46,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
 
     /** things set by constructor */
     public String dir;  //with \\ or / separators. With trailing slash (to match).
+    public String pathRegex;
 
     public ArrayList<Path> results = new ArrayList();
 
@@ -56,16 +57,18 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
      */
-    public FileVisitorSubdir(String tDir) {
+    public FileVisitorSubdir(String tDir, String tPathRegex) {
         super();
         dir = File2.addSlash(tDir);
+        pathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
     }
 
     /** Invoked before entering a directory. */
     public FileVisitResult preVisitDirectory(Path tPath, BasicFileAttributes attrs)
         throws IOException {
         
-        results.add(tPath);
+        if (tPath.toString().matches(pathRegex))
+            results.add(tPath);
         return FileVisitResult.CONTINUE;    
     }
 
@@ -90,21 +93,23 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
      * @return a StringArray with dir and subdir names 
      *   (with the OS's slashes -- \\ for Windows!).
      */
-    public static StringArray oneStep(String tDir) 
+    public static StringArray oneStep(String tDir, String tPathRegex) 
         throws IOException {
         long time = System.currentTimeMillis();
 
-        //Is it an S3 bucket with "files"?
-        //http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
-        if (File2.addSlash(tDir).matches(String2.AWS_S3_REGEX)) { //forcing trailing slash avoids problems
-            Table table = FileVisitorDNLS.oneStep(tDir, "/", //regex that won't match any files 
-                true, true); //tRecursive, tDirectoriesToo
-            StringArray dirNames = (StringArray)table.getColumn(FileVisitorDNLS.DIRECTORY);
-            return dirNames;
+        tPathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
+
+        //is this tDir an http url?  then use get info via FileVisitorDNLS
+        if (tDir.matches(FileVisitorDNLS.HTTP_REGEX)) {
+            Table table = FileVisitorDNLS.oneStep(tDir, 
+                "/", //a regex that won't match any fileNames 
+                true, tPathRegex, true); //tRecursive, tPathRegex, tDirectoriesToo
+            StringArray dirs = (StringArray)table.getColumn(FileVisitorDNLS.DIRECTORY);
+            return dirs;
         }            
 
         //do local file system
-        FileVisitorSubdir fv = new FileVisitorSubdir(tDir);
+        FileVisitorSubdir fv = new FileVisitorSubdir(tDir, tPathRegex);
         Files.walkFileTree(FileSystems.getDefault().getPath(tDir), fv);
         int n = fv.results.size();
         StringArray dirNames = new StringArray(n, false);
@@ -125,7 +130,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         StringArray alps;
         long time;
 
-        alps = oneStep(contextDir + "WEB-INF/classes/com/cohort"); 
+        alps = oneStep(contextDir + "WEB-INF/classes/com/cohort", null); 
         String results = alps.toNewlineString();
         String expected = 
 "C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\n" +
@@ -134,7 +139,9 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
 "C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\util\n";
         Test.ensureEqual(results, expected, "results=\\n" + results);
 
-        alps = oneStep(String2.replaceAll(contextDir + "WEB-INF/classes/com/cohort/", '/', '\\')); 
+        alps = oneStep(
+            String2.replaceAll(contextDir + "WEB-INF/classes/com/cohort/", '/', '\\'),
+            null); 
         results = alps.toNewlineString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -153,12 +160,12 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         try {
 
         verbose = true;
-        String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
         StringArray alps;
         long time;
 
         alps = oneStep(
-            "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/"); 
+            "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
+            ""); 
         String results = alps.toNewlineString();
         String expected = 
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/\n" +
@@ -173,6 +180,37 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         }
     }
 
+    /** 
+     * This tests a WAF and pathRegex.
+     */
+    public static void testWAF() throws Throwable {
+        String2.log("\n*** FileVisitorSubdir.testWAF");
+        try {
+
+        verbose = true;
+        StringArray alps;
+        long time;
+
+        alps = oneStep("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
+            ".*/NMFS/(|SWFSC/|NWFSC/)(|inport/)(|xml/)"); //tricky!
+        String results = alps.toNewlineString();
+        String expected = 
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport/\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/SWFSC/inport/xml/\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        String2.log("\n*** FileVisitorSubdir.testWAF finished.");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
+    }
+
     /**
      * This tests the methods in this class.
      *
@@ -184,6 +222,9 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         //always done        
         testLocal();
         testAWSS3();
+        testWAF();
+
+        //future: FTP?
     }
 
 

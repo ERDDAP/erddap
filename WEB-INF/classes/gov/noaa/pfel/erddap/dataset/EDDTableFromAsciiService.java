@@ -19,6 +19,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -47,13 +48,14 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
     /**
      * This constructs an EDDTableFromAsciiServiceNOS based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromAsciiServiceNOS"&gt; 
-     *    having just been read.  
+     *    having just been read.  /
      * @return an EDDTableFromAsciiServiceNOS.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromAsciiService fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromAsciiService fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromAsciiService(xmlReader)...");

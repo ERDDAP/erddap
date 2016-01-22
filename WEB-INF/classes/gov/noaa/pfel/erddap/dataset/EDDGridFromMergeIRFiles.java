@@ -17,6 +17,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -60,26 +61,28 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
     /**
      * The constructor just calls the super constructor.
      */
-    public EDDGridFromMergeIRFiles(String tDatasetID, String tAccessibleTo,
+    public EDDGridFromMergeIRFiles(String tDatasetID, 
+            String tAccessibleTo, boolean tAccessibleViaWMS,
             StringArray tOnChange, String tFgdcFile, String tIso19115File,
             String tDefaultDataQuery, String tDefaultGraphQuery,
             Attributes tAddGlobalAttributes,
             Object[][] tAxisVariables,
             Object[][] tDataVariables,
-            int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-            String tFileDir, boolean tRecursive, String tFileNameRegex, 
+            int tReloadEveryNMinutes, int tUpdateEveryNMillis, String tFileDir, 
+            String tFileNameRegex, boolean tRecursive, String tPathRegex, 
             String tMetadataFrom, int tMatchAxisNDigits, 
             boolean tFileTableInMemory, boolean tAccessibleViaFiles)
             throws Throwable {
 
-        super("EDDGridFromMergeIRFiles", tDatasetID, tAccessibleTo,
+        super("EDDGridFromMergeIRFiles", tDatasetID, 
+                tAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery,
                 tAddGlobalAttributes,
                 tAxisVariables,
                 tDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis,
-                tFileDir, tRecursive, tFileNameRegex, 
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, 
                 tMetadataFrom, tMatchAxisNDigits, 
                 tFileTableInMemory, tAccessibleViaFiles);
 
@@ -106,7 +109,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * sourceDataName not found). If there is trouble, this doesn't call
      * addBadFile or requestReloadASAP().
      */
-    public void getSourceMetadata(String fileDir, String fileName,
+    public void lowGetSourceMetadata(String fileDir, String fileName,
             StringArray sourceAxisNames,
             StringArray sourceDataNames, 
             String sourceDataTypes[],
@@ -191,7 +194,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (e.g., invalid file). If there is trouble,
      * this doesn't call addBadFile or requestReloadASAP().
      */
-    public PrimitiveArray[] getSourceAxisValues(String fileDir, String fileName,
+    public PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName,
             StringArray sourceAxisNames) throws Throwable {
 
         String getWhat = "globalAttributes";
@@ -291,7 +294,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @throws Throwable if trouble (notably, WaitThenTryAgainException). If
      * there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
-    public PrimitiveArray[] getSourceDataFromFile(String fileDir, String fileName,
+    public PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName,
             EDV tDataVariables[], IntArray tConstraints) throws Throwable {
         
         if (verbose) String2.log("getSourceDataFromFile(" + fileDir + ", " + fileName + ", " + tDataVariables + ", " + tConstraints + ")");
@@ -479,6 +482,8 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         int tReloadEveryNMinutes) throws Throwable {
         
         String2.log("EDDGridFromMergeIRFiles.generateDatasetsXml");
+        if (!String2.isSomething(tFileDir))
+            throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes < 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //daily. More often than usual default.
@@ -496,9 +501,10 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"" + tDatasetID +  "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +  
-            "    <fileDir>" + tFileDir + "</fileDir>\n" +
+            "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <recursive>true</recursive>\n" +
-            "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+            "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <fileTableInMemory>false</fileTableInMemory>\n");
          
@@ -615,8 +621,9 @@ directionsForGenerateDatasetsXml() +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/mergeIR/</fileDir>\n" +
-"    <recursive>true</recursive>\n" +
 "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.gz</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <addAttributes>\n" +
@@ -699,7 +706,7 @@ directionsForGenerateDatasetsXml() +
             "\nresults=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
-        EDD edd = oneFromXmlFragment(results);
+        EDD edd = oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.className(), "EDDGridFromMergeIRFiles", "className");
         Test.ensureEqual(edd.title(), "NCEP/CPC 4km Global (60N - 60S) IR Dataset", "title");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -714,9 +721,9 @@ directionsForGenerateDatasetsXml() +
 
         String2.log("\n*** testMergeIRgz\n");
         testVerboseOn();
-        EDDGrid edd   = (EDDGrid)oneFromDatasetXml("mergeIR");   //from uncompressed files
-        EDDGrid eddZ  = (EDDGrid)oneFromDatasetXml("mergeIRZ");  //from .Z files
-        EDDGrid eddgz = (EDDGrid)oneFromDatasetXml("mergeIRgz"); //from .gz files
+        EDDGrid edd   = (EDDGrid)oneFromDatasetsXml(null, "mergeIR");   //from uncompressed files
+        EDDGrid eddZ  = (EDDGrid)oneFromDatasetsXml(null, "mergeIRZ");  //from .Z files
+        EDDGrid eddgz = (EDDGrid)oneFromDatasetsXml(null, "mergeIRgz"); //from .gz files
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, results, expected, dapQuery;
         int po;

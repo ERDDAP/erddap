@@ -35,6 +35,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -46,6 +47,7 @@ import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -83,19 +85,21 @@ public class EDDGridFromDap extends EDDGrid {
     /**
      * This constructs an EDDGridFromDap based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridFromDap"&gt; 
      *    having just been read.  
      * @return an EDDGridFromDap.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridFromDap fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridFromDap fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDGridFromDap(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
         String tAccessibleTo = null;
+        boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -131,6 +135,8 @@ public class EDDGridFromDap extends EDDGrid {
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<accessibleViaWMS>")) {}
+            else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<updateEveryNMillis>")) {}
@@ -160,7 +166,8 @@ public class EDDGridFromDap extends EDDGrid {
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDGridFromDap(tDatasetID, tAccessibleTo,
+        return new EDDGridFromDap(tDatasetID, 
+            tAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
@@ -245,7 +252,7 @@ public class EDDGridFromDap extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridFromDap(
-        String tDatasetID, String tAccessibleTo, 
+        String tDatasetID, String tAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -265,6 +272,9 @@ public class EDDGridFromDap extends EDDGrid {
         className = "EDDGridFromDap"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        if (!tAccessibleViaWMS) 
+            accessibleViaWMS = String2.canonical(
+                MessageFormat.format(EDStatic.noXxx, "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -296,12 +306,7 @@ public class EDDGridFromDap extends EDDGrid {
 
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
-            creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
-                       
-            //Ensure quickRestart information is recent.
-            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
-            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
-                creationTimeMillis, quickRestartFullFileName());
+            creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");                      
         }
 
         //open the connection to the opendap source
@@ -720,7 +725,7 @@ public class EDDGridFromDap extends EDDGrid {
         //make the sibling
         EDDGridFromDap newEDDGrid = new EDDGridFromDap(
             tDatasetID, 
-            String2.toSSVString(accessibleTo),
+            String2.toSSVString(accessibleTo), false, //accessibleViaWMS
             shareInfo? onChange : (StringArray)onChange.clone(), 
             "", "", "", "",  //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
             addGlobalAttributes,
@@ -1087,7 +1092,7 @@ public class EDDGridFromDap extends EDDGrid {
                     //accumulate namesInBrackets
                     sourceNamesInBrackets.append("[" + aName + "]");
                     destNamesInBrackets.append("[" + 
-                        suggestDestinationName(aName, 
+                        suggestDestinationName(aName, sourceAtts, addAtts, 
                             sourceAtts.getString("units"), 
                             sourceAtts.getString("positive"), 
                             sourceAtts.getFloat("scale_factor"), true) +  //lookForLLAT
@@ -1205,6 +1210,11 @@ public class EDDGridFromDap extends EDDGrid {
                     throw new SimpleException(String2.ERROR + ": unsorted axis: " + 
                         tLocalSourceUrl + "?" + tSourceName + " : " + error + "  " + error2);
             }
+            //ensure no duplicates
+            StringBuilder sb = new StringBuilder();
+            if (axisPAs[av].removeDuplicates(false, sb) > 0)
+                throw new SimpleException(String2.ERROR + ": duplicates in axis: " + 
+                    tLocalSourceUrl + "?" + tSourceName + "\n" + sb.toString());
 
             //ensure no missing values or values > 1e20
             double stats[] = axisPAs[av].calculateStats();
@@ -1283,7 +1293,7 @@ public class EDDGridFromDap extends EDDGrid {
         //write the information
         results.append(
             "<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
-            "    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
+            "    <sourceUrl>" + XML.encodeAsXML(tLocalSourceUrl) + "</sourceUrl>\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n");
         results.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
         results.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
@@ -1384,7 +1394,8 @@ public class EDDGridFromDap extends EDDGrid {
      *    so there is no duplication
      */
     public static void recursivelyGenerateDatasetsXmlFromThreddsCatalog(String tLocalSourceUrl, 
-        String datasetNameRegex, boolean recursive, String parentName, int tReloadEveryNMinutes, 
+        String datasetNameRegex, boolean recursive, String pathRegex, 
+        String parentName, int tReloadEveryNMinutes, 
         boolean justURLs, Writer results, StringBuilder summary,
         int catalogXmlTimes[], int datasetSuccessTimes[], int datasetFailureTimes[],
         HashSet alreadyDone) {
@@ -1401,8 +1412,19 @@ public class EDDGridFromDap extends EDDGrid {
             String2.log(ts);
             return;
         }
+if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
+    (tLocalSourceUrl.indexOf("/ncml_aggregation/Chlorophyll/modis/ARCHIVED") >= 0 ||
+     tLocalSourceUrl.indexOf("/ncml_aggregation/Chlorophyll/modis/PENDING") >= 0)) {
+    String ts = ">skipping " + tLocalSourceUrl;
+    summary.append(ts);
+    String2.log(ts);
+    return;
+}
+
         if (parentName == null)
             parentName = "";
+        if (pathRegex == null || pathRegex.length() == 0)
+            pathRegex = ".*";
         HashMap opendapServices = new HashMap();
         String parentServiceName = "";
         int datasetCount = 0;
@@ -1516,12 +1538,13 @@ public class EDDGridFromDap extends EDDGrid {
                             } else 
                                 href = catalogBase + href.substring(1); //href starts with /
                         }
-                        recursivelyGenerateDatasetsXmlFromThreddsCatalog(href,
-                            datasetNameRegex, recursive, 
-                            cLevel < 0? "" : name[cLevel],  //cLevel=-1 was parentName, now ""
-                            tReloadEveryNMinutes, justURLs, results,
-                            summary, catalogXmlTimes,
-                            datasetSuccessTimes, datasetFailureTimes, alreadyDone);
+                        if (href.matches(pathRegex))
+                            recursivelyGenerateDatasetsXmlFromThreddsCatalog(href,
+                                datasetNameRegex, recursive, pathRegex,
+                                cLevel < 0? "" : name[cLevel],  //cLevel=-1 was parentName, now ""
+                                tReloadEveryNMinutes, justURLs, results,
+                                summary, catalogXmlTimes,
+                                datasetSuccessTimes, datasetFailureTimes, alreadyDone);
                     }
 
                 //catch services  (this supports 1 or 2 levels) 
@@ -1706,9 +1729,10 @@ public class EDDGridFromDap extends EDDGrid {
 
                         if (alreadyDone.add(tUrlPath)) {
                             String tName = File2.getNameAndExtension(tUrlPath);
-                            if (tName.startsWith("catalog") && tName.endsWith(".html")) {
+                            if (tName.startsWith("catalog") && 
+                                (tName.endsWith(".html") || tName.endsWith(".xml"))) {
                                 //UAF clean catalog has these when no valid dataset in directory
-                                String ts = indent[cLevel] + "  Skipping UAF catalog.html dataset: " + tUrlPath + "\n";
+                                String ts = indent[cLevel] + "  Skipping UAF placeholder catalog: " + tUrlPath + "\n";
                                 summary.append(ts);
                                 String2.log(ts);
                             } else if (justURLs) {
@@ -1848,7 +1872,7 @@ public class EDDGridFromDap extends EDDGrid {
 
      */
     public static String[] getUrlsFromThreddsCatalog(String startUrl, 
-        String datasetNameRegex, boolean recursive) {
+        String datasetNameRegex, boolean recursive, String pathRegex) {
 
         if (verbose) String2.log("getUrlsFromThreddsCatalog regex=" + datasetNameRegex);
         Writer results = new StringWriter();
@@ -1858,7 +1882,7 @@ public class EDDGridFromDap extends EDDGrid {
         int datasetFailureTimes[] = new int[String2.DistributionSize]; //irrelevant; none created
 
         recursivelyGenerateDatasetsXmlFromThreddsCatalog(
-            startUrl, datasetNameRegex, recursive, "", 1440, true, //justURLs
+            startUrl, datasetNameRegex, recursive, pathRegex, "", 1440, true, //justURLs
             results, summary, catalogXmlTimes, 
             datasetSuccessTimes, datasetFailureTimes, new HashSet());
 
@@ -1903,7 +1927,7 @@ public class EDDGridFromDap extends EDDGrid {
         //test for problem with threddsBaseUrl  found 2011-11  
         results = getUrlsFromThreddsCatalog(
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/catalog.xml", 
-            "air\\.sig995\\.20[0-9]{2}\\.nc", false);
+            "air\\.sig995\\.20[0-9]{2}\\.nc", false, "");
         expected = new String[]{
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2000.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2001.nc",
@@ -1920,13 +1944,14 @@ public class EDDGridFromDap extends EDDGrid {
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2012.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2013.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2014.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2015.nc"};
+            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2015.nc",
+            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2016.nc"};
         Test.ensureEqual(results, expected, "results0=" + String2.toNewlineString(results));
 
         //test no regex
         results = getUrlsFromThreddsCatalog(
             "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
-            ".*", true);
+            ".*", true, null);
         expected = new String[]{
             "http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day",
             "http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day",
@@ -1936,7 +1961,7 @@ public class EDDGridFromDap extends EDDGrid {
         //test regex
         results = getUrlsFromThreddsCatalog(
             "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
-            "8.*", true);
+            "8.*", true, "");
         expected = new String[]{
             "http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day"};
         Test.ensureEqual(results, expected, "results2=" + String2.toNewlineString(results));
@@ -2011,7 +2036,7 @@ public class EDDGridFromDap extends EDDGrid {
         String logFileName = oLogFileName;
         if (oLogFileName == null) {
             logFileName = resultsFileName + ".log.txt";
-            String2.setupLog(false, false, logFileName, false, false, 1000000000);
+            String2.setupLog(false, false, logFileName, false, 1000000000);
             String2.log("*** Starting runGenerateDatasetsXmlFromThreddsCatalog " + 
                 Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
                 "logFile=" + String2.logFileName() + "\n" +
@@ -2030,7 +2055,7 @@ public class EDDGridFromDap extends EDDGrid {
             oLocalSourceUrl == null? 
                 "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml" :
                 oLocalSourceUrl, 
-            datasetNameRegex, true, "", tReloadEveryNMinutes, false, //justURLs
+            datasetNameRegex, true, ".*", "", tReloadEveryNMinutes, false, //justURLs
             results, summary, catalogXmlTimes, 
             datasetSuccessTimes, datasetFailureTimes, new HashSet());
 
@@ -2438,7 +2463,7 @@ String expected2 =
     public static void testForCarleton() throws Throwable {
         //test for Charles Carleton   .nc request failed; others ok
         testVerboseOn();
-        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetXml("NCOM_Region7_2D"); //should work
+        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "NCOM_Region7_2D"); //should work
         String tName = gridDataset.makeNewFileForDapQuery(null, null,
             "surf_el[(2008-06-12T00:00:00):1:(2008-06-12T00:00:00)][(10.0):100:(65.0)][(-150.0):100:(-100.0)]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Carleton", ".nc"); 
@@ -2474,7 +2499,7 @@ String expected2 =
         //String tid = "cwAMchlaD61";
         //String tid = "cwAMchlaG";
         //String tid = "cwAMchlaAnG";
-        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetXml(tid);
+        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, tid);
 
         String2.log("\n\n***** DDS");
         String tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -2512,7 +2537,7 @@ String expected2 =
         StringArray destinationNames = new StringArray();
         IntArray constraints = new IntArray();
 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); //should work
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); //should work
 
 
 /* */   //just comment out to work on some other test
@@ -2658,7 +2683,7 @@ String expected2 =
             "error=" + error);
 
         //test error message from dataset that doesn't load
-        //EDDGrid tGrid = (EDDGrid)oneFromDatasetXml("erdAGtanm3day"); //should fail
+        //EDDGrid tGrid = (EDDGrid)oneFromDatasetsXml(null, "erdAGtanm3day"); //should fail
         //String2.log("tGrid==null = " + (tGrid == null));
         //if (true) System.exit(0);
 
@@ -2932,7 +2957,7 @@ String expected2 =
         StringArray destinationNames = new StringArray();
         IntArray constraints = new IntArray();
 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); //should work
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); //should work
         //just comment out to work on some other test
 
 
@@ -3478,7 +3503,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         StringArray destinationNames = new StringArray();
         IntArray constraints = new IntArray();
 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); //should work
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); //should work
         //just comment out to work on some other test
 
         //******************************************** test GridDataRandomAccessor
@@ -4076,7 +4101,7 @@ pre 2012-08-17 was
 
         //test " in attributes
         try {
-            EDDGrid tedg = (EDDGridFromDap)oneFromDatasetXml("erdSGchla8day");
+            EDDGrid tedg = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSGchla8day");
             String2.log("\n***raw references=" + tedg.addGlobalAttributes.getString("references"));
             tName = tedg.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedg.className() + "Quotes", ".das"); 
@@ -4094,12 +4119,12 @@ pre 2012-08-17 was
 
 
         //test loading other datasets
-        oneFromDatasetXml("erdAGssta1day");
-        //oneFromDatasetXml("erdAGssta8day"); 
-        //oneFromDatasetXml("erdAGsstamday"); 
-        //oneFromDatasetXml("erdPHssta1day"); 
-        //oneFromDatasetXml("erdPHssta8day");
-        //oneFromDatasetXml("erdPHsstamday"); 
+        oneFromDatasetsXml(null, "erdAGssta1day");
+        //oneFromDatasetsXml(null, "erdAGssta8day"); 
+        //oneFromDatasetsXml(null, "erdAGsstamday"); 
+        //oneFromDatasetsXml(null, "erdPHssta1day"); 
+        //oneFromDatasetsXml(null, "erdPHssta8day");
+        //oneFromDatasetsXml(null, "erdPHsstamday"); 
         // */
 
     }
@@ -4107,7 +4132,7 @@ pre 2012-08-17 was
 
     public static void testGraphics() throws Throwable {
         testVerboseOn();
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); 
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String graphDapQuery = "chlorophyll[0:10:200][][(29)][(225)]"; 
         String mapDapQuery   = "chlorophyll[200][][(29):(45)][(225):(247)]"; //stride irrelevant 
         String tName, results;
@@ -4261,7 +4286,7 @@ boolean testAll = true;
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Map", ".geotif"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-            EDDGrid agssta8 = (EDDGridFromDap)oneFromDatasetXml("erdAGssta8day"); //should work
+            EDDGrid agssta8 = (EDDGridFromDap)oneFromDatasetsXml(null, "erdAGssta8day"); //should work
 //        tName = agssta8.makeNewFileForDapQuery(null, null, dataIndexExample, 
 //            EDStatic.fullTestCacheDirectory, agssta8.className() + "std1", ".csv"); 
 //        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -4557,7 +4582,7 @@ boolean testAll = true;
 
             EDDGrid eddGrid2 = new EDDGridFromDap(
                 "erddapChlorophyll", //String tDatasetID, 
-                null,
+                null, true,
                 null, null, null, null, null, null,
                 null,  
                 new Object[][] {
@@ -4733,7 +4758,7 @@ directionsForGenerateDatasetsXml() +
                 "Unexpected results from GenerateDatasetsXml.doIt.");
 
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);   //only returns the first dataset defined in results
+            EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
             Test.ensureEqual(edd.datasetID(), "noaa_gfdl_ef1f_43bf_0c26", "");
             Test.ensureEqual(edd.title(), 
                 "IPCC AR4 CM2.0 R1 20C3M-0 monthly atmos 18610101-20001231 [lev]", "");
@@ -4990,7 +5015,7 @@ String expected2 =
         testVerboseOn();
         int tPo;
         try {
-            EDDGrid amsr = (EDDGridFromDap)oneFromDatasetXml("ncdcOisst2AmsrAgg"); //should work
+            EDDGrid amsr = (EDDGridFromDap)oneFromDatasetsXml(null, "ncdcOisst2AmsrAgg"); //should work
             String tName = amsr.makeNewFileForDapQuery(null, null, "", 
                 EDStatic.fullTestCacheDirectory, amsr.className() + "amsr", ".das"); 
             String results = new String((new ByteArray(
@@ -5128,18 +5153,18 @@ String expected2 =
 
     public static void testOneTime() throws Throwable {
 
-        //gridDataset = (EDDGridFromDap)oneFromDatasetXml("pmelOscar"); 
+        //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "pmelOscar"); 
         //if (true) System.exit(0);
 
         //one time stuff
-        //gridDataset = (EDDGridFromDap)oneFromDatasetXml("ncdcOisstAmsrAgg"); 
+        //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "ncdcOisstAmsrAgg"); 
         //tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
         //    gridDataset.className() + "ncdc", ".das"); 
         //String results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
 
         //soda
-        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdSoda202d"); //should work
+        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda202d"); //should work
         String tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_soda202d", ".das"); 
         String results = new String((new ByteArray(
@@ -5170,14 +5195,14 @@ String expected2 =
         String2.log(results);
 
 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdSoda202s"); //should work
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda202s"); //should work
         tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_soda202s", ".das"); 
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdSoda203d"); //should work
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda203d"); //should work
         tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda203d", ".das"); 
@@ -5185,7 +5210,7 @@ String expected2 =
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdSoda203s"); //should work
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda203s"); //should work
         tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda203s", ".das"); 
@@ -5208,7 +5233,7 @@ String expected2 =
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         try {
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("pmelOscar"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "pmelOscar"); 
         EDVGridAxis edvga;
 
         //***test some edvga things
@@ -5644,7 +5669,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         try {
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("usgsCeCrm10"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
         // if need a different test dataset in the future: 
         EDVGridAxis edvga;
         int tpo;
@@ -5937,7 +5962,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("mb-7201adc"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "mb-7201adc"); 
 
         //.das     das isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
@@ -6268,7 +6293,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         testVerboseOn();         
       try {
         //soda 2.2.4
-        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetXml("hawaii_d90f_20ee_c4cb"); 
+        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb"); 
         String query = 
             //Dave had (-500):(-5.01) which succeeded for .htmlTable but failed for .mat 
             //but I had already fixed/cleaned up erddap's handling of descending axis vars 
@@ -6535,7 +6560,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         EDDGridFromDap gridDataset;
         
         //test erdBAssta5day
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdBAssta5day"); 
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
 
         //time
         results = gridDataset.axisVariables[0].sliderCsvValues();
@@ -6665,7 +6690,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testVerboseOn();
         try {
 
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdBAssta5day"); 
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String name, tName, results, expected;
 
         //overall kml
@@ -6934,7 +6959,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         */
 
         //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("hawaii_d90f_20ee_c4cb");         
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");         
         tName = gridDataset.makeNewFileForDapQuery(null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".das"); 
         results = new String((new ByteArray(
@@ -7171,7 +7196,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             "results=\n" + results);
 
         //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("testGridWithDepth");         
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "testGridWithDepth");         
         tName = gridDataset.makeNewFileForDapQuery(null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".das"); 
         results = new String((new ByteArray(
@@ -7368,7 +7393,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z"
 
         try{
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testNoAxisVariable"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testNoAxisVariable"); 
 
         //.das     das isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
@@ -7519,7 +7544,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String name, tName, results, tResults, expected, userDapQuery;
 
         try {
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("ncdcOwClm9505"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); 
         userDapQuery = "u[(1995-12-30)][][(22)][(225)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_clim", ".csv"); 
@@ -7539,7 +7564,7 @@ EDStatic.startBodyHtml(null) + "\n" +
     /** This tests accessibleTo. */
     public static void testAccessibleTo() throws Throwable {
         testVerboseOn();
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("erdBAssta5day"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String roleNull[] = null;
         String roleNone[] = new String[0];
         String roleBob[] = new String[]{"bob"};
@@ -7593,7 +7618,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             "\n nTimePoints=" + nTimePoints +
             " estimated nPartialRequests=" + 
             Math2.hiDiv(nTimePoints * 22000000, EDStatic.partialRequestMaxBytes));
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("erdBAssta5day"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String tName = eddGrid.makeNewFileForDapQuery(null, null, 
             "sst[0:" + (nTimePoints - 1) + "][][][]", 
@@ -7654,7 +7679,7 @@ EDStatic.startBodyHtml(null) + "\n" +
     public static void testSpeedDAF() throws Throwable {
         //setup and warmup
         EDD.testVerbose(false);
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); 
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String fileName = EDStatic.fullTestCacheDirectory + "gridTestSpeedDAF.txt";
         Writer writer = new FileWriter(fileName);
         gridDataset.writeDapHtmlForm(null, "", writer);
@@ -7676,7 +7701,7 @@ EDStatic.startBodyHtml(null) + "\n" +
     public static void testSpeedMAG() throws Throwable {
         //setup and warmup
         EDD.testVerbose(false);
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdMHchla8day"); 
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String fileName = EDStatic.fullTestCacheDirectory + "gridTestSpeedMAG.txt";
         OutputStreamSource oss = new OutputStreamSourceSimple(new FileOutputStream(fileName));
         gridDataset.respondToGraphQuery(null, null, "", "", oss, null, null, null);
@@ -7701,7 +7726,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         //regular load dataset
         File2.delete(quickRestartFullFileName(tDatasetID)); //force regular load
         long time1 = System.currentTimeMillis();
-        EDD edd1 = oneFromDatasetXml(tDatasetID);
+        EDD edd1 = oneFromDatasetsXml(null, tDatasetID);
         String searchString1 = String2.utf8ToString(edd1.searchBytes());
         time1 = System.currentTimeMillis() - time1;
 
@@ -7709,7 +7734,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         EDStatic.memoryUseLoadDatasetsSB.setLength(0); //so EDStatic.initialLoadDatasets() will be true
         Test.ensureTrue(EDStatic.initialLoadDatasets(), "");
         long time2 = System.currentTimeMillis();
-        EDD edd2 = oneFromDatasetXml(tDatasetID);
+        EDD edd2 = oneFromDatasetsXml(null, tDatasetID);
         String searchString2 = String2.utf8ToString(edd2.searchBytes());
         time2 = System.currentTimeMillis() - time2;
 
@@ -7725,7 +7750,7 @@ EDStatic.startBodyHtml(null) + "\n" +
     public static void testGeotif() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testGeotif");
         EDD.testVerbose(false);
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdBAssta5day");  
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day");  
         String mapDapQuery   = "sst[200][][(20):(50)][(220):(250)]"; 
         String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
             EDStatic.fullTestCacheDirectory, "testGeotif", ".geotif"); 
@@ -7744,7 +7769,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String tName; 
 /* */
         //descending Lat axis
-        gridDataset = (EDDGrid)oneFromDatasetXml("usgsCeCrm10"); 
+        gridDataset = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
         tName = gridDataset.makeNewFileForDapQuery(null, null, 
             "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
             EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
@@ -7752,7 +7777,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         //NOT FINISHED ADDING FEATURE
         //descending Lat axis AND &.size=width|height
-        //gridDataset = (EDDGridFromDap)oneFromDatasetXml("usgsCeCrm10"); 
+        //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "usgsCeCrm10"); 
         //tName = gridDataset.makeNewFileForDapQuery(null, null, 
         //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
         //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
@@ -7772,7 +7797,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         //test lon can't be below and above 180
         String error = "shoudn't happen";
         try {
-            gridDataset = (EDDGrid)oneFromDatasetXml("jplAmsreSstMon"); 
+            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "jplAmsreSstMon"); 
             tName = gridDataset.makeNewFileForDapQuery(null, null, 
                 "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
                 "&.draw=surface&.vars=longitude|latitude|tos", 
@@ -7796,7 +7821,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         //  although error is odd: java.lang.IllegalArgumentException: Must have 1D x and y axes for tos)
         error = "shouldn't happen";
         try {
-            gridDataset = (EDDGrid)oneFromDatasetXml("gfdlCM2120C3M5OS"); 
+            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "gfdlCM2120C3M5OS"); 
             tName = gridDataset.makeNewFileForDapQuery(null, null, 
                 "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
                 "&.draw=surface&.vars=longitude|latitude|tos", 
@@ -7823,7 +7848,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testVerboseOn();
         try {
 
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdBAssta5day"); 
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String name, tName, results, expected;
 
         tName = gridDataset.makeNewFileForDapQuery(null, null, "",
@@ -8195,7 +8220,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testVerboseOn();
         try {
             String mapDapQuery = "sst[last][0][0:last][0:last]&.land=under"; //stride irrelevant 
-            EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("ncepRtofsG2DNowDailyProg"); //should work
+            EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "ncepRtofsG2DNowDailyProg"); //should work
             String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_434_Map", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -8218,7 +8243,7 @@ EDStatic.startBodyHtml(null) + "\n" +
     public static void testMapAntialiasing() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testMapAntialiasing\n");
         testVerboseOn();
-        EDDGrid gridDataset = (EDDGrid)oneFromDatasetXml("etopo360"); 
+        EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "etopo360"); 
 
         //most color backgrounds don't have a problem
         String mapDapQuery = "altitude" +
@@ -8245,13 +8270,14 @@ EDStatic.startBodyHtml(null) + "\n" +
     public static void testTimeErrorMessage() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testTimeErrorMessage\n");
         testVerboseOn();
-        EDDGrid gridDataset = (EDDGrid)oneFromDatasetXml("erdSWchla8day"); 
+        EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String results = "shouldn't be this", expected;
+        int po;
 
         //start <
         try {
-            String dapQuery = "chlorophyll[(1980-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+            String dapQuery = "sst[(2002-07-05)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
@@ -8260,15 +8286,16 @@ EDStatic.startBodyHtml(null) + "\n" +
         }
         expected = 
 "SimpleException: Your query produced no matching results. Query error: " +
-"For variable=chlorophyll axis#0=time Constraint=\"[(1980-12-07)]\": " +
-"Start=\"1980-12-07\" is less than the axis minimum=1997-09-02T00:00:00Z " +
-"(and even 1997-08-28T17:50:30Z).";
-        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+"For variable=sst axis#0=time Constraint=\"[(2002-07-05)]\": Start=\"2002-07-05\" " +
+"is less than the axis minimum=2002-07-06T12:00:00Z (and even 2002-07-05T22:49:16Z).";
+        po = results.indexOf("SimpleException");
+        String2.log("intentional error=\n" + results);
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
 
         //start >
         results = "shouldn't be this";
         try {
-            String dapQuery = "chlorophyll[(2014-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+            String dapQuery = "sst[(2014-03-07)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
@@ -8277,16 +8304,17 @@ EDStatic.startBodyHtml(null) + "\n" +
         }
         expected = 
 "SimpleException: Your query produced no matching results. Query error: " +
-"For variable=chlorophyll axis#0=time Constraint=\"[(2014-12-07)]\": " +
-"Start=\"2014-12-07\" is greater than the axis maximum=2010-12-07T00:00:00Z " +
-"(and even 2010-12-11T06:09:29Z).";
-        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+"For variable=sst axis#0=time Constraint=\"[(2014-03-07)]\": Start=\"2014-03-07\" " +
+"is greater than the axis maximum=2014-03-05T12:00:00Z (and even 2014-03-06T01:10:43Z).";
+        po = results.indexOf("SimpleException");
+        String2.log("intentional error=\n" + results);
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
 
         //end <
         results = "shouldn't be this";
         try {
             String dapQuery = 
-                "chlorophyll[(2000-12-07):(1980-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+                "sst[(2014-03-01):(2014-02-01)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
@@ -8294,17 +8322,15 @@ EDStatic.startBodyHtml(null) + "\n" +
             results = MustBe.throwableToString(t);
         }
         expected = 
-"SimpleException: Your query produced no matching results. Query error: " +
-"For variable=chlorophyll axis#0=time Constraint=\"[(2000-12-07):(1980-12-07)]\": " +
-"Stop=\"1980-12-07\" is less than the axis minimum=1997-09-02T00:00:00Z " +
-"(and even 1997-08-28T17:50:30Z).";
+"SimpleException: Query error: For variable=sst axis#0=time " +
+"Constraint=\"[(2014-03-01):(2014-02-01)]\": StartIndex=3877 is greater than StopIndex=3850.";
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
         //end >
         results = "shouldn't be this";
         try {
             String dapQuery = 
-                "chlorophyll[(2000-12-07):(2014-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+                "sst[(2014-03-03):(2014-03-07)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
@@ -8313,17 +8339,19 @@ EDStatic.startBodyHtml(null) + "\n" +
         }
         expected = 
 "SimpleException: Your query produced no matching results. Query error: " +
-"For variable=chlorophyll axis#0=time Constraint=\"[(2000-12-07):(2014-12-07)]\": " +
-"Stop=\"2014-12-07\" is greater than the axis maximum=2010-12-07T00:00:00Z " +
-"(and even 2010-12-11T06:09:29Z).";
-        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+"For variable=sst axis#0=time Constraint=\"[(2014-03-03):(2014-03-07)]\": " +
+"Stop=\"2014-03-07\" is greater than the axis maximum=2014-03-05T12:00:00Z " +
+"(and even 2014-03-06T01:10:43Z).";
+        po = results.indexOf("SimpleException");
+        String2.log("intentional error=\n" + results);
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
     }
 
     /** This tests creation of surface graphs (e.g., x,y axes, not lon,lat axes). */
     public static void testSurfaceGraph() throws Throwable {
         testVerboseOn();
         //qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest blue 
-        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetXml("hycom_GLBa008_tyx");
+        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hycom_GLBa008_tyx");
         String tName, result, dir = EDStatic.fullTestCacheDirectory;
 
         //minimal request
@@ -8380,7 +8408,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
      
         //*** 
-        gridDataset = (EDDGridFromDap)oneFromDatasetXml("hawaii_d90f_20ee_c4cb");
+        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");
         // depth on Y axis
         tName = gridDataset.makeNewFileForDapQuery(null, null, 
             "temp[(2010-12-15)][][(-30.75)][]&.draw=surface&.vars=longitude|depth|temp", 
@@ -8397,7 +8425,7 @@ EDStatic.startBodyHtml(null) + "\n" +
     /** Ensure that packed source atts valid_min, valid_max are unpacked when dataset is loaded. */
     public static void testValidMinMax() throws Throwable {
         String2.log("\n\n*** EDDGridFromDap.testValidMinMax");
-        EDDGrid edd = (EDDGrid)oneFromDatasetXml("nodcPH2sstd1day"); //should work
+        EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "nodcPH2sstd1day"); //should work
         String results, expected, tName;
 
         tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -8420,6 +8448,801 @@ EDStatic.startBodyHtml(null) + "\n" +
         int po = results.indexOf("  sea_surface_temperature {");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, "RESULTS=\n" + results);
+
+    }
+
+    /** 
+     * This tests many things in generateDatasetsXml,
+     * notably, conversion of units from kelvin to degree_C.
+     */
+    public static void testGenerateDatasetsXml4() throws Throwable {
+        String2.log("*** EDDGridFromDap.testKelvinToDegreeC");
+        try {
+        String results = generateDatasetsXml(false, 
+            "http://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc", 
+            null, null, null, 10080, null);
+        String expected = 
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_dfcd_429a_212c\" active=\"true\">\n" +
+"    <sourceUrl>http://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc</sourceUrl>\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"acknowledgment\">In case SAF data (pre-operational or operational) has been used for the study described in a paper the following sentence would be an appropriate reference to the funding coming from EUMETSAT: The data from the EUMETSAT Satellite Application Facility on Ocean &amp; Sea Ice  used in this study are accessible through the SAF&#39;s homepage http://www.osi-saf.org</att>\n" +
+"        <att name=\"cdm_data_type\">grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.4</att>\n" +
+"        <att name=\"creator_email\">helpdesk@osi-saf.org</att>\n" +
+"        <att name=\"creator_name\">O&amp;SI SAF</att>\n" +
+"        <att name=\"creator_url\">http://www.osi-saf.org</att>\n" +
+"        <att name=\"date_created\">20151123T194451Z</att>\n" + //this changes, test with regex?
+"        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
+"        <att name=\"file_quality_level\" type=\"int\">3</att>\n" +
+"        <att name=\"gds_version_id\">2.0</att>\n" +
+"        <att name=\"geospatial_lat_resolution\" type=\"double\">0.05</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
+"        <att name=\"geospatial_lon_resolution\" type=\"double\">0.05</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
+"        <att name=\"history\">METEO-FRANCE/CMS SAFOA processor</att>\n" +
+"        <att name=\"id\">AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0</att>\n" +
+"        <att name=\"institution\">OSISAF</att>\n" +
+"        <att name=\"keywords\">Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature</att>\n" +
+"        <att name=\"keywords_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords</att>\n" +
+"        <att name=\"license\">All intellectual property rights of the Ocean &amp; Sea Ice SAF products belong to EUMETSAT. The use of these products is granted to every user, free of charge. If users wish to use these products, EUMETSAT&#39;s copyright credit must be shown by displaying the words &#39;Copyright EUMETSAT&#39; under each of the products shown. EUMETSAT offers no warranty and accepts no liability in respect of the Ocean &amp; Sea Ice SAF products. EUMETSAT neither commits to nor guarantees the continuity, availability, or quality or suitability for any purpose of, the Ocean &amp; Sea Ice SAF products.</att>\n" +
+"        <att name=\"Metadata_Conventions\">Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"metadata_link\">N/A</att>\n" +
+"        <att name=\"naming_authority\">org.ghrsst</att>\n" +
+"        <att name=\"netcdf_version_id\">4.2.1.1</att>\n" +
+"        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
+"        <att name=\"platform\">METOP_A</att>\n" +
+"        <att name=\"processing_level\">L3C</att>\n" +
+"        <att name=\"product_version\">1.0</att>\n" +
+"        <att name=\"project\">Group for High Resolution Sea Surface Temperature</att>\n" +
+"        <att name=\"publisher_email\">ghrsst-po@nceo.ac.uk</att>\n" +
+"        <att name=\"publisher_name\">The GHRSST Project Office</att>\n" +
+"        <att name=\"publisher_url\">http://www.ghrsst.org</att>\n" +
+"        <att name=\"references\">Low Earth Orbiter Sea Surface Temperature Product User Manual, http://www.osi-saf.org</att>\n" +
+"        <att name=\"sensor\">AVHRR</att>\n" +
+"        <att name=\"source\">AVHRR</att>\n" +
+"        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" +
+"        <att name=\"spatial_resolution\">0.05 degree</att>\n" +
+"        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n" +
+"        <att name=\"start_time\">20151123T060534Z</att>\n" +  //changes. test with regex?
+"        <att name=\"stop_time\">20151123T175959Z</att>\n" +   //changes. test with regex?
+"        <att name=\"summary\">The GLB L3C product derived from METOP A AVHRR brightness temperatures.</att>\n" +
+"        <att name=\"time_coverage_end\">20151123T175959Z</att>\n" + //changes
+"        <att name=\"time_coverage_start\">20151123T060534Z</att>\n" + //changes
+"        <att name=\"title\">Sea Surface Temperature</att>\n" +
+"        <att name=\"uuid\">A93D777C-921A-11E5-A63C-0024E836CC1A</att>\n" + //changes
+"        <att name=\"westernmost_longitude\" type=\"float\">-180.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"easternmost_longitude\">null</att>\n" +
+"        <att name=\"gds_version_id\">null</att>\n" +
+"        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/dataset/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0</att>\n" +
+"        <att name=\"keywords\">10m, adi, adi_dtime_from_sst, advanced, aerosol, aerosol_dynamic_indicator, analysis, angle, application, area, atmosphere,\n" +
+"Atmosphere &gt; Atmospheric Radiation &gt; Incoming Solar Radiation,\n" +
+"Atmosphere &gt; Atmospheric Radiation &gt; Solar Irradiance,\n" +
+"Atmosphere &gt; Atmospheric Radiation &gt; Solar Radiation,\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"atmospheric, avhrr, bias, climatology, cryosphere,\n" +
+"Cryosphere &gt; Sea Ice &gt; Ice Extent,\n" +
+"data, deviation, difference, distribution, dt_analysis, dynamic, error, estimate, extent, facility, flags, fraction, glb, glb-osisaf-l3c-v1.0, high, ice, ice distribution, incoming, indicator, irradiance, l2p, l2p_flags, l3c, level, measurement, metop, ocean, oceans,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"Oceans &gt; Sea Ice &gt; Ice Extent,\n" +
+"optical, optical properties, osisaf, pixel, properties, quality, quality_level, radiation, radiometer, reference, resolution, satellite, satellite_zenith_angle, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_subskin_temperature, sea_surface_temperature, sensor, single, solar, solar_zenith_angle, sources, sources_of_adi, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, subskin, surface, temperature, time, v1.0, very, vhrr, wind, wind_speed, winds, zenith</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"Metadata_Conventions\">null</att>\n" +
+"        <att name=\"metadata_link\">null</att>\n" +
+"        <att name=\"northernmost_latitude\">null</att>\n" +
+"        <att name=\"southernmost_latitude\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"start_time\">null</att>\n" +
+"        <att name=\"stop_time\">null</att>\n" +
+"        <att name=\"summary\">Sea Surface Temperature. The GLB L3C product derived from METOP A Advanced Very High Resolution Radiometer (AVHRR) brightness temperatures.</att>\n" +
+"        <att name=\"title\">SST (AVHRR SST METOP A GLB-OSISAF-L3C-v1.0)</att>\n" +
+"        <att name=\"westernmost_longitude\">null</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"int\">1</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"comment\">includes leap seconds since 1981</att>\n" +
+"            <att name=\"long_name\">reference time of sst file</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">seconds since 1981-01-01 00:00:00</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"int\">3600</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"comment\">geographical coordinates, WGS84 projection</att>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"            <att name=\"valid_max\" type=\"float\">90.0</att>\n" +
+"            <att name=\"valid_min\" type=\"float\">-90.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"int\">7200</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"comment\">geographical coordinates, WGS84 projection</att>\n" +
+"            <att name=\"long_name\">longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"            <att name=\"valid_max\" type=\"float\">180.0</att>\n" +
+"            <att name=\"valid_min\" type=\"float\">-180.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sea_surface_temperature</sourceName>\n" +
+"        <destinationName>sea_surface_temperature</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1200 2400</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">273.15</att>\n" +
+"            <att name=\"comment\">Temperature of the subskin of the ocean</att>\n" +
+"            <att name=\"depth\">1 millimeter</att>\n" +
+"            <att name=\"long_name\">sea surface subskin temperature</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"source\">AVHRR_METOP_A</att>\n" +
+"            <att name=\"standard_name\">sea_surface_subskin_temperature</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"short\">4500</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-300</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sst_dtime</sourceName>\n" +
+"        <destinationName>sst_dtime</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1200 2400</att>\n" +
+"            <att name=\"_FillValue\" type=\"int\">-2147483648</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">time plus sst_dtime gives seconds after 00:00:00 UTC January 1, 1981</att>\n" +
+"            <att name=\"long_name\">time difference from reference time</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" +
+"            <att name=\"units\">seconds</att>\n" +
+"            <att name=\"valid_max\" type=\"int\">2147483647</att>\n" +
+"            <att name=\"valid_min\" type=\"int\">-2147483647</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sses_bias</sourceName>\n" +
+"        <destinationName>sses_bias</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Bias estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html</att>\n" +
+"            <att name=\"long_name\">SSES bias estimate</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sses_standard_deviation</sourceName>\n" +
+"        <destinationName>sses_standard_deviation</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">1.0</att>\n" +
+"            <att name=\"comment\">Standard deviation estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html</att>\n" +
+"            <att name=\"long_name\">SSES standard deviation</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>dt_analysis</sourceName>\n" +
+"        <destinationName>dt_analysis</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">The difference between this SST and the previous day&#39;s SST analysis</att>\n" +
+"            <att name=\"long_name\">deviation from SST analysis or reference climatology</att>\n" +
+"            <att name=\"reference\">OSTIA</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.1</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wind_speed</sourceName>\n" +
+"        <destinationName>wind_speed</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">These wind speeds were created by the ECMWF and represent winds at 10 metres above the sea surface</att>\n" +
+"            <att name=\"height\">10 m</att>\n" +
+"            <att name=\"long_name\">10m wind speed</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" +
+"            <att name=\"source\">WSP-ECMWF-Forecast</att>\n" +
+"            <att name=\"standard_name\">wind_speed</att>\n" +
+"            <att name=\"time_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"units\">m s-1</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sea_ice_fraction</sourceName>\n" +
+"        <destinationName>sea_ice_fraction</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Fractional sea ice cover from OSISAF ice concentration product</att>\n" +
+"            <att name=\"long_name\">sea ice fraction</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"source\">ICE-OSISAF</att>\n" +
+"            <att name=\"standard_name\">sea_ice_area_fraction</att>\n" +
+"            <att name=\"time_offset\" type=\"double\">-24.0</att>\n" + //changes
+"            <att name=\"valid_max\" type=\"byte\">100</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Ice Distribution</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aerosol_dynamic_indicator</sourceName>\n" +
+"        <destinationName>aerosol_dynamic_indicator</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"long_name\">aerosol dynamic indicator</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.1</att>\n" +
+"            <att name=\"source\">sources_of_adi</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Optical Properties</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>adi_dtime_from_sst</sourceName>\n" +
+"        <destinationName>adi_dtime_from_sst</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Difference in hours between the ADI and SST data</att>\n" +
+"            <att name=\"long_name\">time difference of ADI data from sst measurement</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.1</att>\n" +
+"            <att name=\"units\">hour</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sources_of_adi</sourceName>\n" +
+"        <destinationName>sources_of_adi</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"comment\">This variable provides a pixel by pixel description of where aerosol optical depth were derived from.</att>\n" +
+"            <att name=\"flag_meanings\">no_data AOD-NAAPS-ADI SDI-OSISAF-ADI</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2</att>\n" +
+"            <att name=\"long_name\">sources of aerosol dynamic indicator</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">2</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">2.5</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Optical Properties</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>l2p_flags</sourceName>\n" +
+"        <destinationName>l2p_flags</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1200 2400</att>\n" +
+"            <att name=\"comment\">These flags are important to properly use the data.</att>\n" +
+"            <att name=\"flag_masks\" type=\"shortList\">1 2 4 8</att>\n" +
+"            <att name=\"flag_meanings\">microwave land ice lake</att>\n" +
+"            <att name=\"long_name\">L2P flags</att>\n" +
+"            <att name=\"valid_max\" type=\"short\">15</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>quality_level</sourceName>\n" +
+"        <destinationName>quality_level</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"comment\">These are the overall quality indicators and are used for all GHRSST SSTs</att>\n" +
+"            <att name=\"flag_meanings\">no_data bad_data worst_quality low_quality acceptable_quality best_quality</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5</att>\n" +
+"            <att name=\"long_name\">quality level of SST pixel</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">5</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">6.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>satellite_zenith_angle</sourceName>\n" +
+"        <destinationName>satellite_zenith_angle</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">The satellite zenith angle at the time of the SST observations.</att>\n" +
+"            <att name=\"long_name\">satellite zenith angle</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" +
+"            <att name=\"units\">angular_degree</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">90</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-90</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>solar_zenith_angle</sourceName>\n" +
+"        <destinationName>solar_zenith_angle</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSize\" type=\"intList\">1 1800 3600</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">90.0</att>\n" +
+"            <att name=\"comment\">The solar zenith angle at the time of the SST observations.</att>\n" +
+"            <att name=\"long_name\">solar zenith angle</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" +
+"            <att name=\"units\">angular_degree</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">90</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-90</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"standard_name\">solar_zenith_angle</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);    
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error.\n"); 
+        }
+
+    }
+
+    /**
+     * This test UInt16 data.
+     * There was trouble with map with ERDDAP 1.64, but already fixed in 1.65.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testUInt16Dap() throws Throwable {
+        String2.log("\n*** testUInt16");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery;
+        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+
+        //ensure files are reread
+        File2.deleteAllFiles(datasetDir("testUInt16Dap"));
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16Dap"); 
+        //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
+ 
+        //.das from source
+        results = SSR.getUrlResponseString(
+            "http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml.das");
+        expected = 
+"Attributes {\n" +
+"    Number_of_Lines {\n" +
+"        String long_name \"latitude\";\n" +
+"        String units \"degrees_north\";\n" +
+"    }\n" +
+"    Number_of_Columns {\n" +
+"        String long_name \"longitude\";\n" +
+"        String units \"degrees_east\";\n" +
+"    }\n" +
+"    time {\n" +
+"        String standard_name \"time\";\n" +
+"        String axis \"T\";\n" +
+"        String units \"days since 2002-01-01\";\n" +
+"    }\n" +
+"    l3m_data {\n" +
+"        String _Unsigned \"true\";\n" +
+"        String long_name \"l3m_data\";\n" +
+"        Float32 scale_factor 7.17185E-4;\n" + //32768-> 23.50071808, so many values are higher
+"        Float32 add_offset -2.0;\n" +
+"        Int16 _FillValue -1;\n" + //technically wrong: cf says it should be actual value: 65535(int)
+//"        Int16 Fill -1;\n" + //appeared 2015-12-28, disappeared 2016-01-19
+"        String Scaling \"linear\";\n" +
+"        String Scaling_Equation \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
+"        Float32 Slope 7.17185E-4;\n" +
+"        Float32 Intercept -2.0;\n" +
+"        String coordinates \"Number_of_Lines Number_of_Columns\";\n" +
+"    }\n" +
+"    l3m_qual {\n" +
+"        String _Unsigned \"true\";\n" +
+"        String long_name \"l3m_qual\";\n" +
+"        Float32 scale_factor 7.17185E-4;\n" +  //I suspect that is incorrect
+"        Float32 add_offset -2.0;\n" +          //I suspect that is incorrect
+"        Int32 valid_range 0, 2;\n" +
+"        String coordinates \"Number_of_Lines Number_of_Columns\";\n" +
+"    }\n" +
+"    lat {\n" +
+"        String standard_name \"latitude\";\n" +
+"        String axis \"Y\";\n" +
+"        String units \"degrees_north\";\n" +
+"    }\n" +
+"    lon {\n" +
+"        String standard_name \"longitude\";\n" +
+"        String axis \"X\";\n" +
+"        String units \"degrees_east\";\n" +
+"    }\n" +
+"    NC_GLOBAL {\n";
+// odd flip flop changes below?
+/*"        String Product_Name \"A20130332013040.L3m_8D_SST_9\";\n" + //changes
+"        String Sensor_Name \"HMODISA\";\n" +
+"        String Sensor \"\";\n" +
+"        String Title \"HMODISA Level-3 Standard Mapped Image\";\n" +
+"        String Data_Center \"\";\n" +
+"        String Station_Name \"\";\n" +
+"        Float32 Station_Latitude 0.0;\n" +
+"        Float32 Station_Longitude 0.0;\n" +
+"        String Mission \"\";\n" +
+"        String Mission_Characteristics \"\";\n" +
+"        String Sensor_Characteristics \"\";\n" +
+"        String Product_Type \"other\";\n" +
+"        String Processing_Version \"Unspecified\";\n" +
+"        String Software_Name \"smigen\";\n" +
+"        String Software_Version \"4.17\";\n" +
+"        String Processing_Time \"2013051002503000\";\n" + //changes
+"        String Input_Files \"A20130332013040.L3b_8D_SST.main\";\n" + //changes
+"        String Processing_Control \"smigen par=A20130332013040.L3m_8D_SST_9.param\";\n" + //changes and line below
+"        String Input_Parameters \"IFILE = /data4/sdpsoper/vdc/vpu3/workbuf/A20130332013040.L3b_8D_SST.main|OFILE = A20130332013040.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|PROCESSING VERSION = 2012.0|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
+"        String L2_Flag_Names \"LAND,HISOLZ\";\n" +
+"        Int16 Period_Start_Year 2009;\n" +
+"        Int16 Period_Start_Day 265;\n" +
+"        Int16 Period_End_Year 2009;\n" +
+"        Int16 Period_End_Day 270;\n" +
+"        String Start_Time \"2009265000008779\";\n" +
+"        String End_Time \"2009271030006395\";\n" +
+"        Int16 Start_Year 2009;\n" +
+"        Int16 Start_Day 265;\n" +
+"        Int32 Start_Millisec 8779;\n" +
+"        Int16 End_Year 2009;\n" +
+"        Int16 End_Day 271;\n" +
+"        Int32 End_Millisec 10806395;\n" +
+"        Int32 Start_Orbit 0;\n" +
+"        Int32 End_Orbit 0;\n" +
+"        Int32 Orbit 0;\n" +
+"        String Map_Projection \"Equidistant Cylindrical\";\n" +
+"        String Latitude_Units \"degrees North\";\n" +
+"        String Longitude_Units \"degrees East\";\n" +
+"        Float32 Northernmost_Latitude 90.0;\n" +
+"        Float32 Southernmost_Latitude -90.0;\n" +
+"        Float32 Westernmost_Longitude -180.0;\n" +
+"        Float32 Easternmost_Longitude 180.0;\n" +
+"        Float32 Latitude_Step 0.083333336;\n" +
+"        Float32 Longitude_Step 0.083333336;\n" +
+"        Float32 SW_Point_Latitude -89.958336;\n" +
+"        Float32 SW_Point_Longitude -179.95833;\n" +
+"        Int32 Data_Bins 14234182;\n" +
+"        Int32 Number_of_Lines 2160;\n" +
+"        Int32 Number_of_Columns 4320;\n" +
+"        String Parameter \"Sea Surface Temperature\";\n" +
+"        String Measure \"Mean\";\n" +
+"        String Units \"deg-C\";\n" +
+"        String Scaling \"linear\";\n" +
+"        String Scaling_Equation \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
+"        Float32 Slope 7.17185E-4;\n" +
+"        Float32 Intercept -2.0;\n" +
+"        Float32 Scaled_Data_Minimum -2.0;\n" +
+"        Float32 Scaled_Data_Maximum 45.0;\n" +
+"        Float32 Data_Minimum -1.999999;\n" +
+"        Float32 Data_Maximum 36.915;\n" +
+"        String start_date \"2002-07-04 UTC\";\n" +
+"        String start_time \"00:00:00 UTC\";\n" +
+"        String stop_date \"2015-03-06 UTC\";\n" +
+"        String stop_time \"23:59:59 UTC\";\n" +
+"    }\n" +
+"}\n";*/
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//re-pack apparent missing value
+//45.000717 +2=> 47.000717 /7.17185E-4=> 65535
+
+        //.das     das isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0257408e+9, 1.4256e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 89.95833333, -89.95832613999998;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -179.95833333, 179.95831894;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  sst {\n" +
+"    Float32 _FillValue 45.000717;\n" + //important test of UInt16
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Surface Temperature\";\n" +
+"    String standard_name \"sea_surface_temperature\";\n" +
+"    String units \"deg_C\";\n" +
+"  }\n" +
+"  sst_quality {\n" +
+"    Float64 colorBarMaximum 150.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String long_name \"Sea Surface Temperature Quality\";\n" +
+"    String units \"deg_C\";\n" + //??? did ERDDAP add that?
+"    Float32 valid_range -2.0, -1.9985657;\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String creator_name \"NASA JPL\";\n" +
+"    String creator_url \"http://www.jpl.nasa.gov/\";\n" +
+"    Float64 Easternmost_Easting 179.95831894;\n" +
+"    Float64 geospatial_lat_max 89.95833333;\n" +
+"    Float64 geospatial_lat_min -89.95832613999998;\n" +
+"    Float64 geospatial_lat_resolution 0.08333333;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.95831894;\n" +
+"    Float64 geospatial_lon_min -179.95833333;\n" +
+"    Float64 geospatial_lon_resolution 0.08333333;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"";
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//odd flip flop changes from source       
+//        T18:46:21Z http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml\n" +
+//"2015-10-28T18:46:21Z http://127.0.0.1:8080/cwexperimental/griddap/testUInt16.das\";\n" +
+/*expected = 
+"    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME\";\n" +
+"    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" + //changes and below
+"    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
+"    String institution \"NASA JPL\";\n" +
+"    String keywords \"8day, 9km, aqua, data, day, daytime, image, imaging, jet, jpl, L3, l3m_data, l3m_qual, laboratory, mapped, moderate, modis, modisa, nasa, ocean, oceans,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"propulsion, quality, resolution, sea, sea_surface_temperature, smi, spectroradiometer, sst, standard, surface, temperature, thermal, time\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String L2_Flag_Names \"LAND,HISOLZ\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Map_Projection \"Equidistant Cylindrical\";\n" +
+"    String Measure \"Mean\";\n" +
+"    Float64 Northernmost_Northing 89.95833333;\n" +
+"    String Processing_Control \"smigen par=A20092652009272.L3m_8D_SST_9.param\";\n" + //changes
+"    String Processing_Time \"2009282201111000\";\n" + //changes
+"    String Product_Name \"A20092652009272.L3m_8D_SST_9\";\n" + //changes
+"    String Product_Type \"8-day\";\n" +
+"    String Replacement_Flag \"ORIGINAL\";\n" +
+"    Float32 Scaled_Data_Maximum 45.0;\n" +
+"    Float32 Scaled_Data_Minimum -2.0;\n" +
+"    String Sensor_Name \"MODISA\";\n" +
+"    String Software_Name \"smigen\";\n" +
+"    String Software_Version \"4.0\";\n" +
+"    String sourceUrl \"http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml\";\n" +
+"    Float64 Southernmost_Northing -89.95832613999998;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) THERMAL 8DAY 9KM DAYTIME)\";\n" +
+"    String time_coverage_end \"2015-03-06T00:00:00Z\";\n" +
+"    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
+"    String title \"MODIS AQUA L3 SST THERMAL 8DAY 9KM DAYTIME\";\n" +
+"    Float64 Westernmost_Easting -179.95833333;\n" +
+"  }\n" +
+"}\n";
+        int tpo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
+*/
+
+        //.dds     dds isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = //difference from testUInt16File: lat lon are double here, not float
+"Dataset {\n" +
+"  Float64 time[time = 579];\n" +
+"  Float64 latitude[latitude = 2160];\n" +
+"  Float64 longitude[longitude = 4320];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sst[time = 579][latitude = 2160][longitude = 4320];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 579];\n" +
+"      Float64 latitude[latitude = 2160];\n" +
+"      Float64 longitude[longitude = 4320];\n" +
+"  } sst;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 sst_quality[time = 579][latitude = 2160][longitude = 4320];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 579];\n" +
+"      Float64 latitude[latitude = 2160];\n" +
+"      Float64 longitude[longitude = 4320];\n" +
+"  } sst_quality;\n" +
+"} testUInt16Dap;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv data values
+        userDapQuery = "sst[0][0:100:2159][(-134.95833513)]"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = //difference from testUInt16File: lat lon are double here, not float
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,deg_C\n" +
+"2002-07-04T00:00:00Z,89.95833333,-134.95833513,-0.84102905\n" +
+"2002-07-04T00:00:00Z,81.62500033,-134.95833513,-1.6371044\n" +
+"2002-07-04T00:00:00Z,73.29166733,-134.95833513,-0.11021753\n" +
+"2002-07-04T00:00:00Z,64.95833433,-134.95833513,NaN\n" +   //_FillValue's correctly caught
+"2002-07-04T00:00:00Z,56.62500133,-134.95833513,NaN\n" +
+"2002-07-04T00:00:00Z,48.29166833,-134.95833513,12.6406145\n" +
+"2002-07-04T00:00:00Z,39.958335330000004,-134.95833513,17.95137\n" +
+"2002-07-04T00:00:00Z,31.62500233,-134.95833513,20.432829\n" +
+"2002-07-04T00:00:00Z,23.291669330000005,-134.95833513,19.664007\n" +
+"2002-07-04T00:00:00Z,14.958336330000009,-134.95833513,24.482773\n" +
+"2002-07-04T00:00:00Z,6.625003329999998,-134.95833513,29.068455\n" +
+"2002-07-04T00:00:00Z,-1.7083296699999977,-134.95833513,27.240349\n" +
+"2002-07-04T00:00:00Z,-10.041662669999994,-134.95833513,27.210228\n" +
+"2002-07-04T00:00:00Z,-18.37499566999999,-134.95833513,26.713936\n" +
+"2002-07-04T00:00:00Z,-26.70832867,-134.95833513,21.580326\n" +
+"2002-07-04T00:00:00Z,-35.041661669999996,-134.95833513,15.789774\n" +
+"2002-07-04T00:00:00Z,-43.37499466999999,-134.95833513,NaN\n" +
+"2002-07-04T00:00:00Z,-51.70832767,-134.95833513,6.1673026\n" +
+"2002-07-04T00:00:00Z,-60.041660669999985,-134.95833513,0.40400413\n" +
+"2002-07-04T00:00:00Z,-68.37499367,-134.95833513,NaN\n" +
+"2002-07-04T00:00:00Z,-76.70832667,-134.95833513,NaN\n" +
+"2002-07-04T00:00:00Z,-85.04165966999999,-134.95833513,NaN\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //display the image
+        String2.log("\n\n* PNG ");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][][]&.land=under", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
     }
 
@@ -8447,6 +9270,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
         testGenerateDatasetsXml3();
+        testGenerateDatasetsXml4();
         testGenerateDatasetsXmlFromThreddsCatalog();
         testGetUrlsFromThreddsCatalog();
         testScaleFactor();
@@ -8471,6 +9295,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testTimeErrorMessage();
         testSurfaceGraph();
         testValidMinMax();
+        testUInt16Dap();
         /* */
 
         //not regularly done

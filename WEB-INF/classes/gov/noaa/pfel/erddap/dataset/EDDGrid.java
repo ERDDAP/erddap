@@ -1784,7 +1784,7 @@ public abstract class EDDGrid extends EDD {
             } catch (Throwable t) {
                 throw new SimpleException(EDStatic.queryError + 
                     MessageFormat.format(EDStatic.queryErrorLastPMInteger, 
-                        name + "=" + ossValue));
+                        name + "=" + ossValue), t);
             }
         }
     }
@@ -3371,9 +3371,22 @@ public abstract class EDDGrid extends EDD {
                     graphQuery.append("&.land=" + (tLand == 1? "under" : "over"));
             }
 
+            //bgColor
+            Color bgColor = EDStatic.graphBackgroundColor;
+            String tBGColor = String2.stringStartsWith(queryParts, partName = ".bgColor=");
+            if (tBGColor != null) {
+                String tBGColorAr[] = String2.split(tBGColor.substring(partName.length()), '|');
+                if (tBGColorAr.length > 0 && tBGColorAr[0].length() > 0) {
+                    bgColor = new Color(String2.parseInt(tBGColorAr[0]), true); //hasAlpha
+                }
+            }
+            //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
+            graphQuery.append("&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8));
+
             //yRange
             String yRange[] = new String[]{"", ""};
-            if (!drawSurface) { //?? && !drawVector ??
+            boolean yAscending = true;
+            if (true) { //?? && !drawVector ??
                 paramName = "yRange";
                 String tyRange = String2.stringStartsWith(queryParts, partName = ".yRange=");
                 if (tyRange != null) {
@@ -3384,11 +3397,14 @@ public abstract class EDDGrid extends EDD {
                             yRange[i] = Double.isNaN(td)? "" : String2.genEFormat10(td);
                         }
                     }
+                    if (tyRangeAr.length > 2) 
+                        //if the param slot is there, the param determines Ascending
+                        yAscending = String2.parseBoolean(tyRangeAr[2]); //"" -> true(the default)
                 }
                 writer.write(
                     "  <tr>\n" +
-                    "    <td nowrap>" + EDStatic.magGSYAxisMin + ":&nbsp;</td>\n" +
-                    "    <td nowrap width=\"90%\">\n");
+                    "    <td colspan=\"2\" align=\"left\" nowrap>" + 
+                        EDStatic.magGSYAxisMin + ":\n");
                 writer.write(widgets.textField("yRangeMin", 
                     EDStatic.magGSYRangeMinTooltip + EDStatic.magGSYRangeTooltip, 
                    10, 20, yRange[0], ""));
@@ -3396,13 +3412,16 @@ public abstract class EDDGrid extends EDD {
                 writer.write(widgets.textField("yRangeMax", 
                     EDStatic.magGSYRangeMaxTooltip + EDStatic.magGSYRangeTooltip, 
                    10, 20, yRange[1], ""));
+                writer.write(widgets.select("yRangeAscending", 
+                    EDStatic.magGSYAscendingTooltip, 
+                    1, new String[]{"ascending", "descending"}, yAscending? 0 : 1, "")); 
                 writer.write(
                     "    </td>\n" +
                     "  </tr>\n");
 
                 //add to graphQuery
-                if (yRange[0].length() > 0 || yRange[1].length() > 0) 
-                    graphQuery.append("&.yRange=" + yRange[0] + "|" + yRange[1]);
+                if (yRange[0].length() > 0 || yRange[1].length() > 0 || !yAscending) 
+                    graphQuery.append("&.yRange=" + yRange[0] + "|" + yRange[1] + "|" + yAscending);
             }
 
 
@@ -3475,13 +3494,17 @@ public abstract class EDDGrid extends EDD {
             if (drawSurface && isMap) writer.write(
                 "    if (d.f1.land.selectedIndex > 0) " +
                     "q += \"&.land=\" + (d.f1.land.selectedIndex==1? \"under\" : \"over\"); \n");
-            if (!drawSurface) writer.write(
+            if (true) writer.write(
                 "    var yRMin=d.f1.yRangeMin.value; \n" +
                 "    var yRMax=d.f1.yRangeMax.value; \n" +
-                "    if (yRMin.length > 0 || yRMax.length > 0)\n" +
-                "      q += \"\\x26.yRange=\" + yRMin + \"|\" + yRMax; \n");
+                "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n" +
+                "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1)\n" +
+                "      q += \"\\x26.yRange=\" + yRMin + \"|\" + yRMax + \"|\" + (yRAsc==0); \n");
             if (zoomTime) writer.write(
                 "    q += \"&.timeRange=\" + d.f1.timeN.value + \",\" + d.f1.timeUnits.value; \n");
+            //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
+            writer.write(
+                "    q += \"&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8) + "\"; \n");
             writer.write(
                 "    return q; \n" +
                 "  } catch (e) { \n" +
@@ -4997,7 +5020,9 @@ Attributes {
             String continuousS = "";
             int nSections = Integer.MAX_VALUE;
 
+            //minX/Y < maxX/Y
             double minX = Double.NaN, maxX = Double.NaN, minY = Double.NaN, maxY = Double.NaN;
+            boolean xAscending = true, yAscending = true; //this is what controls flipping of the axes
             int nVars = 4;
             EDV vars[] = null; //set by .vars or lower
             int axisVarI[] = null, dataVarI[] = null; //set by .vars or lower
@@ -5007,11 +5032,18 @@ Attributes {
             int markerSize = GraphDataLayer.MARKER_SIZE_SMALL;
             double fontScale = 1, vectorStandard = Double.NaN;
             int drawLandAsMask = 0;  //holds the .land setting: 0=default 1=under 2=over
+            Color bgColor = EDStatic.graphBackgroundColor;
             for (int ap = 0; ap < ampParts.length; ap++) {
                 String ampPart = ampParts[ap];
 
+                //.bgColor
+                if (ampPart.startsWith(".bgColor=")) {
+                    String pParts[] = String2.split(ampPart.substring(9), '|');
+                    if (pParts.length > 0 && pParts[0].length() > 0) 
+                        bgColor = new Color(String2.parseInt(pParts[0]), true); //hasAlpha
+
                 //.colorBar defaults: palette=""|continuous=C|scale=Linear|min=NaN|max=NaN|nSections=-1
-                if (ampPart.startsWith(".colorBar=")) {
+                } else if (ampPart.startsWith(".colorBar=")) {
                     String pParts[] = String2.split(ampPart.substring(10), '|'); //subparts may be ""; won't be null
                     if (pParts == null) pParts = new String[0];
                     if (pParts.length > 0 && pParts[0].length() > 0) palette = pParts[0];  
@@ -5033,7 +5065,7 @@ Attributes {
                     if (iColor < Integer.MAX_VALUE) {
                         color = new Color(iColor);
                         if (reallyVerbose)
-                            String2.log(".color=0x" + Integer.toHexString(iColor));
+                            String2.log(".color=" + String2.to0xHexString(iColor, 0));
                     }
 
                 //.draw 
@@ -5141,22 +5173,28 @@ Attributes {
                         String2.log(".vec " + vectorStandard);
 
                 //.xRange   (supported, but currently not created by the Make A Graph form)
-                //  prefer set via xVar constratints
+                //  prefer set via xVar constraints
                 } else if (ampPart.startsWith(".xRange=")) {
                     String pParts[] = String2.split(ampPart.substring(8), '|');
                     if (pParts.length > 0) minX = String2.parseDouble(pParts[0]);
                     if (pParts.length > 1) maxX = String2.parseDouble(pParts[1]);
+                    if (pParts.length > 2) 
+                        //if the param slot is there, the param determines Ascending
+                        xAscending = String2.parseBoolean(pParts[2]); //"" -> true(the default)
                     if (reallyVerbose)
-                        String2.log(".xRange min=" + minX + " max=" + maxX);
+                        String2.log(".xRange min=" + minX + " max=" + maxX + " ascending=" + xAscending);
 
                 //.yRange   (supported, as of 2010-10-22 it's on the Make A Graph form)
-                //  prefer set via yVar range
+                //  prefer set via yVar constraints
                 } else if (ampPart.startsWith(".yRange=")) {
                     String pParts[] = String2.split(ampPart.substring(8), '|');
                     if (pParts.length > 0) minY = String2.parseDouble(pParts[0]);
                     if (pParts.length > 1) maxY = String2.parseDouble(pParts[1]);
+                    if (pParts.length > 2) 
+                        //if the param slot is there, the param determines Ascending
+                        yAscending = String2.parseBoolean(pParts[2]); //"" -> true(the default)
                     if (reallyVerbose)
-                        String2.log(".yRange min=" + minY + " max=" + maxY);
+                        String2.log(".yRange min=" + minY + " max=" + maxY + " ascending=" + yAscending);
 
                 //just to be clear: ignore any unrecognized .something 
                 } else if (ampPart.startsWith(".")) {
@@ -5391,13 +5429,13 @@ Attributes {
             int minYIndex = -1, maxYIndex = -1;
             EDVGridAxis yAxisVar = yAxisIndex >= 0? axisVariables[yAxisIndex] : null;
             double minData = Double.NaN, maxData = Double.NaN;
-             
+
             if (drawSurface || drawVectors) {  
                 minYIndex = constraints.get(yAxisIndex * 3);
                 maxYIndex = constraints.get(yAxisIndex * 3 + 2);
                 if (Double.isNaN(minY)) minY = yAxisVar.destinationValue(minYIndex).getNiceDouble(0); 
                 if (Double.isNaN(maxY)) maxY = yAxisVar.destinationValue(maxYIndex).getNiceDouble(0); 
-                if (minY > maxY) {
+                if (minY > maxY) { 
                     double d = minY; minY = maxY; maxY = d;}
 
                 if (transparentPng && drawSurface && !customSize) {
@@ -5922,9 +5960,17 @@ Attributes {
                 g2.fillRect(0, 0, imageWidth, imageHeight);
             }
 
+            if (isMap) {
+                //for maps, ignore xAscending and yAscending
+                //ensure minX < maxX and minY < maxY
+                if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
+                if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
+            }
+
             if (drawSurface && isMap) {
+
+                //draw the map
                 if (transparentPng) {
-                    //draw the map
                     SgtMap.makeCleanMap(minX, maxX, minY, maxY,
                         false,
                         grid, 1, 1, 0, //double gridScaleFactor, gridAltScaleFactor, gridAltOffset,
@@ -5935,6 +5981,7 @@ Attributes {
                 } else {
                     if (drawLandAsMask == 0) 
                         drawLandAsMask = vars[2].drawLandMask(defaultDrawLandMask())? 2 : 1;
+
                     ArrayList mmal = SgtMap.makeMap(false, 
                         SgtUtil.LEGEND_BELOW,
                         EDStatic.legendTitle1, EDStatic.legendTitle2,
@@ -5987,14 +6034,16 @@ Attributes {
                         png && drawLegend.equals(LEGEND_ONLY)? "." : graphDataLayer.yAxisTitle, //avoid running into legend
                         SgtUtil.LEGEND_BELOW, EDStatic.legendTitle1, EDStatic.legendTitle2,
                         EDStatic.imageDir, logoImageFile,
-                        minX, maxX, minY, maxY, xIsTimeAxis, yIsTimeAxis, 
+                        minX, maxX, xAscending, minY, maxY, yAscending, xIsTimeAxis, yIsTimeAxis, 
                         graphDataLayers,
                         g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
                         drawSurface?
-                            (palette.equals("BlackWhite") || palette.equals("WhiteBlack")? 
-                                SgtGraph.DefaultBackgroundColor : //blue
-                                new Color(0x808080)) : //gray
-                            SgtGraph.DefaultBackgroundColor, //blue
+                            (!bgColor.equals(EDStatic.graphBackgroundColor)? 
+                                bgColor : 
+                            palette.equals("BlackWhite") || palette.equals("WhiteBlack")? 
+                                new Color(0xccccff)  : //opaque light blue
+                                new Color(0x808080)) : //opaque gray
+                            bgColor, 
                         fontScale); 
 
                 writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
@@ -7898,6 +7947,9 @@ Attributes {
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
             "  <br>After the data download to the web page has finished, the data is accessible to the\n" +
             "  <br>JavaScript script via that JavaScript function.\n" +
+            "  <br>Here is an example using \n" +
+            "  <a rel=\"bookmark\" href=\"http://jsfiddle.net/jpatterson/mo7cbfz8/\">jsonp with ERDDAP and jQuery" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> (thanks to Jenn Patterson of CenCOOS).\n" +
             "\n" + 
             //matlab
             "  <p><b><a rel=\"bookmark\" href=\"http://www.mathworks.com/products/matlab/\">MATLAB" +
@@ -8413,6 +8465,16 @@ Attributes {
             "     <br>If the value has sub-values, they are separated by the '|' character. \n" +
             "     <br>The commands are:\n" +
             "     <ul>\n" +
+            "     <li><tt>&amp;.bgColor=<i>bgColor</i></tt>\n" +
+            "       <br>This specifies the background color of a graph (not a map).\n" +
+            "       <br>The color is specified as a 8 digit hexadecimal value in the form 0x<i>AARRGGBB</i>,\n" +
+            "       <br>where AA, RR, GG, and BB are the opacity, red, green and blue components, respectively.\n" +
+            "       <br>The canvas is always opaque white, so a (semi-)transparent graph background color\n" +
+            "       <br>blends into the white canvas.\n" +
+            "       <br>The color value string is not case sensitive.\n" +
+            "       <br>For example, a fully opaque (ff) greenish-blue color with red=22, green=88, blue=ee\n" +
+            "       <br>would be 0xff2288ee. Opaque white is 0xffffffff. Opaque light blue is 0xffccccff.\n" +
+            "       <br>The default on this ERDDAP is " + String2.to0xHexString(EDStatic.graphBackgroundColor.getRGB(), 8) + ".\n" +
             "     <li><tt>&amp;.colorBar=<i>palette</i>|<i>continuous</i>|<i>scale</i>|<i>min</i>|<i>max</i>|<i>nSections</i></tt> \n" +
             "       <br>This specifies the settings for a color bar.  The sub-values are:\n" +
             "        <ul>\n" +
@@ -8441,7 +8503,7 @@ Attributes {
             "      <li><tt>&amp;.color=<i>value</i></tt>\n" +
             "          <br>This specifies the color for data lines, markers, vectors, etc. The value must\n" + 
             "          <br>be specified as an 0xRRGGBB value (e.g., 0xFF0000 is red, 0x00FF00 is green).\n" + 
-            "          <br>The default is 0x000000 (black).\n" +
+            "          <br>The color value string is not case sensitive. The default is 0x000000 (black).\n" +
             "      <li><tt>&amp;.draw=<i>value</i></tt> \n" +
             "          <br>This specifies how the data will be drawn, as <tt>lines</tt>, <tt>linesAndMarkers</tt>,\n" + 
             "          <br><tt>markers</tt>, <tt>sticks</tt>, <tt>surface</tt>, or <tt>vectors</tt>. \n" +
@@ -8485,10 +8547,14 @@ Attributes {
             "      <li><tt>&amp;.vec=<i>value</i></tt>\n" +
             "        <br>This specifies the data vector length (in data units) to be scaled to the\n" + 
             "        <br>size of the sample vector in the legend. The default varies based on the data.\n" +
-            "      <li><tt>&amp;.xRange=<i>min</i>|<i>max</i></tt>\n" +
-            "        <br>This specifies the min|max for the X axis. The default varies based on the data.\n" +
-            "      <li><tt>&amp;.yRange=<i>min</i>|<i>max</i></tt>\n" +
-            "        <br>This specifies the min|max for the Y axis. The default varies based on the data.\n" +
+            "      <li><tt>&amp;.xRange=<i>min</i>|<i>max</i>|<i>ascending</i></tt>\n" +
+            "        <br><tt>&amp;.yRange=<i>min</i>|<i>max</i>|<i>ascending</i></tt>\n" +
+            "        <br><tt>min</tt> and <tt>max</tt> specify the range of the X and Y axes. They can be numeric values or\n" +
+            "        <br>nothing (the default, which tells ERDDAP to use an appropriate value based on the data).\n" +
+            "        <br><i>ascending</i> specifies whether the axis is drawn the normal way, or reversed (flipped).\n" +
+            "        <br><i>ascending</i> can be nothing or <tt>true, t, false, </tt>or<tt> f</tt>. These values are case insensitive.\n" +
+            "        <br>The default is <tt>true</tt>.\n" +
+            "        <br><i>ascending</i> applies to graphs only, not maps.\n" +
             "      </ul>\n" +
             "    <br><a name=\"sampleGraphURL\">A sample graph URL is</a> \n" +
             "    <br><a href=\"" + fullGraphExample + "\"><tt>" + 
@@ -8525,11 +8591,15 @@ Attributes {
             "<ul>\n" +
             "<li><a name=\"dataModel\"><b>Data Model</b></a> - Each griddap dataset can be represented as:\n" + 
             "  <ul>\n" +
-            "  <li>An ordered list of one or more 1-dimensional axis variables.\n" +
+            "  <li>An ordered list of one or more 1-dimensional axis variables, each of which has an\n" +
+            "      <br>associated dimension with the same name.\n" +
             "      <br>Each axis variable has data of one specific type.\n" +
             "      <br>If the data source has a dimension with a size but no values, ERDDAP uses the values\n" +
             "      <br>0, 1, 2, ...\n" +
             "      <br>The supported types are int8, uint16, int16, int32, int64, float32, and float64.\n" +
+            "      <br>The maximum number of axis variables is 2147483647, but most datasets have 4 or fewer.\n" +
+            "      <br>The maximum size of a dimension is 2147483647 values.\n" +
+            "      <br>The maximum product of all dimension sizes is, in theory, about ~9e18.\n" +
             "      <br>Missing values are not allowed.\n" +
             "      <br>The values MUST be sorted in either ascending (recommended) or descending order.\n" +
             "      <br>Unsorted values are not allowed because <tt>[(start):(stop)]</tt> requests must\n" +
@@ -8538,7 +8608,7 @@ Attributes {
             "      <br>translate unambiguously to one index.\n" +
             "      <br>Each axis variable has a name composed of a letter (A-Z, a-z) and then 0 or more\n" +
             "      <br>characters (A-Z, a-z, 0-9, _).\n" +
-            "      <br>Each axis variable has metadata which is a set of Key=Value pairs.\n" +
+            "      <br>Each axis variable has metadata which is a set of Key=Value pairs.\n" +            
             "  <li>A set of one or more n-dimensional data variables.\n" +
             "      <br>All data variables use all of the axis variables, in order, as their dimensions.\n" +
             "      <br>Each data variable has data of one specific type.\n" +
@@ -8547,6 +8617,8 @@ Attributes {
             "      <br>Missing values are allowed.\n" +
             "      <br>Each data variable has a name composed of a letter (A-Z, a-z) and then 0\n" +
             "      <br>or more characters (A-Z, a-z, 0-9, _).\n" +
+            "      <br>The maximum number of data variables in a dataset is 2147483647, but datasets with\n" +
+            "      <br>greater than about 100 data variables will be awkward for users.\n" +
             "      <br>Each data variable has metadata which is a set of Key=Value pairs.\n" +
             "  <li>The dataset has Global metadata which is a set of Key=Value pairs.\n" +
             "  <li>Note about metadata: each variable's metadata and the global metadata is a set of 0\n" +
@@ -8590,6 +8662,17 @@ Attributes {
             "  </ul>\n" +
             "<li>" + OutputStreamFromHttpResponse.acceptEncodingHtml(tErddapUrl) +
             "</ul>\n" +
+            "<h2><a name=\"contact\">Contact Us</a></h2>\n" +
+            "If you have questions, suggestions, or comments about ERDDAP in general (not this specific\n" +
+            "<br>ERDDAP installation or its datasets), please send an email to <tt>bob dot simons at noaa dot gov</tt>\n" +
+            "<br>and include the ERDDAP URL directly related to your question or comment.\n" +
+            "<br><a name=\"ERDDAPMailingList\">Or,</a> you can join the ERDDAP Google Group / Mailing List by visiting\n" +
+            "<br><a rel=\"help\" href=\"https://groups.google.com/forum/#!forum/erddap\">https://groups.google.com/forum/#!forum/erddap<img \n" +
+            "  src=\"" + tErddapUrl + "/images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
+            "  title=\"This link to an external web site does not constitute an endorsement.\"/></a> \n" +
+            "and clicking on \"Apply for membership\". \n" +
+            "<br>Once you are a member, you can post your question there or search to see if the question\n" +
+            "<br>has already been asked and answered.\n" +
             "<br>&nbsp;\n");
     }                   
 
@@ -10073,7 +10156,7 @@ Attributes {
      */
     public static void testWcsBAssta() throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testWcsBAssta()");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("erdBAssta5day"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String wcsQuery, fileName, results, expected;
         java.io.StringWriter writer;
         ByteArrayOutputStream baos;

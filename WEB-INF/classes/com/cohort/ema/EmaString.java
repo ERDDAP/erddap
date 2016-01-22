@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.ema;
 
@@ -37,12 +37,12 @@ import com.cohort.util.XML;
  *     The default is "".
  * <li> name+".value" (a String, default = "")
  *      is the initial value for the String stored by this object
- * <li> name+".size" (an int > 0, default = 20 which matches the HTML default)
+ * <li> name+".size" (an int &gt; 0, default = 20 which matches the HTML default)
  *      is the width of the textField (in em-spaces) (20 is common).
  *      This matches the HTML attribute name.
- * <li> name+".minlength" (an int >= 0, default = 0)
+ * <li> name+".minlength" (an int &gt;= 0, default = 0)
  *      is the minimum number of characters to be considered valid
- * <li> name+".maxlength" (an int > 0, default = 256)
+ * <li> name+".maxlength" (an int &gt; 0, default = 256)
  *      is the maximum number of characters allowed in the textfield
  *      This matches the HTML attribute name.
  * <li> name+".regex" (a String, default = "")

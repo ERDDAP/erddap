@@ -73,7 +73,7 @@ public class GeoDateDialog extends JDialog
   private SimpleDateFormat dateFormatter;
   private SimpleDateFormat sdf;
   private SimpleDateFormat tsdf = new SimpleDateFormat("dd MMM yyyy ");
-  private static TimeZone tz = TimeZone.getTimeZone("GMT");
+  private TimeZone tz = TimeZone.getTimeZone("GMT"); //2015-09-02 was static
 
   private int result_;
   public static int OK_RESPONSE = 1;

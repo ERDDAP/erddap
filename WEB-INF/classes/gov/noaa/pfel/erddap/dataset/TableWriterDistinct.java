@@ -130,7 +130,7 @@ public class TableWriterDistinct extends TableWriterAll {
 
     private void sortAndRemoveDuplicates(Table table) {
         //sort
-        table.leftToRightSort(table.nColumns());
+        table.leftToRightSortIgnoreCase(table.nColumns()); 
 
         //removeDuplicates
         table.removeDuplicates();

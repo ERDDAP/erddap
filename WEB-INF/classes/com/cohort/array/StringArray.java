@@ -1,6 +1,6 @@
-/* Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -494,11 +494,30 @@ public class StringArray extends PrimitiveArray {
     /**
      * This adds an element from another PrimitiveArray.
      *
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the source PA
+     * @param otherIndex the start index in otherPA
+     * @param nValues the number of values to be added
+     * @return 'this' for convenience
      */
-    public void addFromPA(PrimitiveArray otherPA, int otherIndex) {
-        add(otherPA.getString(otherIndex));
+    public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
+
+        //add from same type
+        if (otherPA.elementClass() == elementClass()) {
+            if (otherIndex + nValues > otherPA.size)
+                throw new IllegalArgumentException(String2.ERROR + 
+                    " in CharArray.addFromPA: otherIndex=" + otherIndex + 
+                    " + nValues=" + nValues + 
+                    " > otherPA.size=" + otherPA.size);
+            ensureCapacity(size + nValues);            
+            System.arraycopy(((StringArray)otherPA).array, otherIndex, array, size, nValues);
+            size += nValues;
+            return this;
+        }
+
+        //add from different type
+        for (int i = 0; i < nValues; i++)
+            add(otherPA.getString(otherIndex++)); //does error checking
+        return this;
     }
 
     /**
@@ -725,6 +744,8 @@ public class StringArray extends PrimitiveArray {
     public int getInt(int index) {
         return String2.parseInt(get(index));
     }
+
+    //getRawInt(index) uses default getInt(index) since no smaller data types
 
     /**
      * Set a value in the array as an int.
@@ -1102,7 +1123,6 @@ public class StringArray extends PrimitiveArray {
     public int compareIgnoreCase(int index1, int index2) {
         String s1 = array[index1];
         String s2 = array[index2];
-//        int c = s1.toUpperCase().compareTo(s2.toUpperCase());
         int c = s1.compareToIgnoreCase(s2);
         if (c != 0) 
             return c;
@@ -1267,18 +1287,37 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This appends the data in another primitiveArray to the current data.
+     * This appends the data in another pa to the current data.
      *
-     * @param primitiveArray 
+     * @param pa 
      */
-    public void append(PrimitiveArray primitiveArray) {
-        int otherSize = primitiveArray.size(); //this avoids infinite loop if primitiveArray == this
+    public void append(PrimitiveArray pa) {
+        int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (primitiveArray instanceof StringArray) {
-            System.arraycopy(((StringArray)primitiveArray).array, 0, array, size, otherSize);
+        if (pa instanceof StringArray) {
+            System.arraycopy(((StringArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = String2.canonical(primitiveArray.getString(i)); //this converts mv's
+                array[size + i] = String2.canonical(pa.getString(i)); //this converts mv's
+        }
+        size += otherSize; //do last to minimize concurrency problems
+    }    
+
+    /**
+     * This appends the data in another pa to the current data.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS (e.g., "127").
+     *
+     * @param pa the pa to be appended
+     */
+    public void rawAppend(PrimitiveArray pa) {
+        int otherSize = pa.size(); 
+        ensureCapacity(size + (long)otherSize);
+        if (pa instanceof StringArray) {
+            System.arraycopy(((StringArray)pa).array, 0, array, size, otherSize);
+        } else {
+            for (int i = 0; i < otherSize; i++)
+                array[size + i] = String2.canonical(pa.getRawString(i)); //this DOESN'T convert mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1881,6 +1920,55 @@ public class StringArray extends PrimitiveArray {
 
         //** test default constructor and many of the methods
         StringArray anArray = new StringArray();
+        Test.ensureEqual(anArray.isIntegerType(), false, "");
+        Test.ensureEqual(anArray.missingValue(), Double.NaN, "");
+        anArray.addString("");
+        Test.ensureEqual(anArray.get(0),               "", "");
+        Test.ensureEqual(anArray.getRawInt(0),         Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getRawDouble(0),      Double.NaN, "");
+        Test.ensureEqual(anArray.getUnsignedDouble(0), Double.NaN, "");
+        Test.ensureEqual(anArray.getRawString(0),      "", "");
+        Test.ensureEqual(anArray.getRawNiceDouble(0),  Double.NaN, "");
+        Test.ensureEqual(anArray.getInt(0),            Integer.MAX_VALUE, "");
+        Test.ensureEqual(anArray.getDouble(0),         Double.NaN, "");
+        Test.ensureEqual(anArray.getString(0), "", "");
+        anArray.clear();
+
+        //unsignedFactory, which uses unsignedAppend
+        anArray = (StringArray)unsignedFactory(String.class, 
+            new ByteArray(new byte[] {0, 1, Byte.MAX_VALUE, Byte.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 127.0, 128.0, 255.0", "");
+        anArray.clear();        
+
+        anArray = (StringArray)unsignedFactory(String.class, 
+            new CharArray(new char[] {(char)0, (char)1, '\u7FFF', '\u8000', '\uFFFF'}));
+        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
+        anArray.clear();        
+
+        anArray = (StringArray)unsignedFactory(String.class, 
+            new ShortArray(new short[] {0, 1, Short.MAX_VALUE, Short.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), "0.0, 1.0, 32767.0, 32768.0, 65535.0", "");
+        anArray.clear();        
+
+        anArray = (StringArray)unsignedFactory(String.class, 
+            new IntArray(new int[] {0, 1, Integer.MAX_VALUE, Integer.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), 
+            // 0, 1,    2147483647,    2147483648,    4294967295
+            "0.0, 1.0, 2.147483647E9, 2.147483648E9, 4.294967295E9", ""); //precise
+        anArray.clear();        
+
+        anArray = (StringArray)unsignedFactory(String.class, 
+            new LongArray(new long[] {0, 1, Long.MAX_VALUE, Long.MIN_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), 
+            "0.0, 1.0, 9.223372036854776E18, 9.223372036854776E18, 1.8446744073709552E19", ""); //rounded/imprecise
+        anArray.clear();        
+
+        anArray = (StringArray)unsignedFactory(String.class, 
+            new FloatArray(new float[] {0, 1, Float.MAX_VALUE, -Float.MAX_VALUE, -1}));
+        Test.ensureEqual(anArray.toString(), 
+            "0.0, 1.0, 3.4028235E38, -3.4028235E38, -1.0", ""); 
+        anArray.clear();        
+
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add("1234.5");
         Test.ensureEqual(anArray.size(), 1, "");
@@ -2005,6 +2093,7 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(cic.compareIgnoreCase(0, 1), -32, "");
         Test.ensureEqual(cic.compareIgnoreCase(1, 2), -2, "");
         Test.ensureEqual(cic.compareIgnoreCase(2, 3), -32, "");
+        Test.ensureEqual(cic.compareIgnoreCase(1, 3), -2, "");
 
         //test toString
         Test.ensureEqual(anArray.toString(), "0, 2, 4, 6, 8", "");
@@ -2307,9 +2396,16 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(0), "\u0000", "");
         Test.ensureEqual(anArray.getString(1), anArray.maxValue(), "");
 
+        //sort
+        anArray = fromCSV("AB, AB, Ab, Ab, ABC, ABc, AbC, aB, aB, ab, ab");
+        anArray.sort();
+        //note that short sort before long when identical
+        Test.ensureEqual(anArray.toString(), "AB, AB, ABC, ABc, Ab, Ab, AbC, aB, aB, ab, ab", "");
+
         //sortIgnoreCase
-        anArray = fromCSV("AB, AB, Ab, Ab, aB, aB, ab, ab, ABC, ABc, AbC");
+        anArray = fromCSV("AB, AB, Ab, Ab, ABC, ABc, AbC, aB, aB, ab, ab");
         anArray.sortIgnoreCase();
+        //note that all short ones sort before all long ones
         Test.ensureEqual(anArray.toString(), "AB, AB, Ab, Ab, aB, aB, ab, ab, ABC, ABc, AbC", "");
 
         //numbers

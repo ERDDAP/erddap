@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -144,7 +145,7 @@ public class Erddap extends HttpServlet {
     // ************** END OF STATIC VARIABLES *****************************
 
     protected RunLoadDatasets runLoadDatasets;
-    public int todaysNRequests, totalNRequests;
+    public AtomicInteger totalNRequests  = new AtomicInteger();
     public String lastReportDate = "";
 
     /** Set by loadDatasets. */
@@ -180,6 +181,7 @@ public class Erddap extends HttpServlet {
         long constructorMillis = System.currentTimeMillis();
 
         //rename log.txt to preserve it so it can be analyzed if there was trouble before restart
+        //In timestamp, change ':' to '.' so suitable for file names
         String timeStamp = String2.replaceAll(Calendar2.getCurrentISODateTimeStringLocal(), ":", ".");
         String newLogTxt = EDStatic.fullLogsDirectory  + "log.txt";
         String BPD = EDStatic.bigParentDirectory;
@@ -216,10 +218,9 @@ public class Erddap extends HttpServlet {
 
         //open String2 log system and log to BPD/logs/log.txt
         String2.setupLog(false, false, //tLogToSystemOut, tLogToSystemErr,
-            newLogTxt, false, true, 20000000); //logToStringBuffer, append, maxSize
-        String2.logFileFlushEveryNth = 2; //faster logging
+            newLogTxt, true, EDStatic.logMaxSizeMB * Math2.BytesPerMB); //fileName, append, maxSize
         String2.log("\n\\\\\\\\**** Start Erddap constructor at " + timeStamp + "\n" +
-            "logFile=" + String2.logFileName() + "\n" +
+            "logFile=" + String2.logFileName() + " logMaxSizeMB=" + EDStatic.logMaxSizeMB + "\n" +
             String2.standardHelpAboutMessage() + "\n" +
             "verbose=" + verbose + " reallyVerbose=" + reallyVerbose + "\n" +
             "bigParentDirectory=" + BPD + "\n" +
@@ -237,7 +238,7 @@ public class Erddap extends HttpServlet {
                 try {
                     RegexFilenameFilter.recursiveDelete(EDStatic.fullCacheDirectory + fd);
                 } catch (Throwable t) {
-                    String2.log(t.toString());
+                    String2.log("WARNING: " + MustBe.throwableToString(t));
                 }
             }
         }
@@ -412,8 +413,7 @@ public class Erddap extends HttpServlet {
         throws ServletException, IOException {
 
         long doGetTime = System.currentTimeMillis();
-        todaysNRequests++;
-        int requestNumber = totalNRequests++;
+        int requestNumber = totalNRequests.incrementAndGet();
 
         try {
 
@@ -499,6 +499,8 @@ public class Erddap extends HttpServlet {
                 EDStatic.tally.add("Requester's IP Address (Blocked) (since last daily report)", ipAddress);
                 EDStatic.tally.add("Requester's IP Address (Blocked) (since startup)", ipAddress);
                 String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
+                if (EDStatic.slowDownTroubleMillis > 0)
+                    Math2.sleep(EDStatic.slowDownTroubleMillis);
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
                     MessageFormat.format(EDStatic.blacklistMsg, EDStatic.adminEmail));
                 return;
@@ -508,22 +510,6 @@ public class Erddap extends HttpServlet {
             EDStatic.tally.add("Requester's IP Address (Allowed) (since last Major LoadDatasets)", ipAddress);
             EDStatic.tally.add("Requester's IP Address (Allowed) (since last daily report)", ipAddress);
             EDStatic.tally.add("Requester's IP Address (Allowed) (since startup)", ipAddress);
-
-            //look for Chinese guy getting SODA data
-            if (ipAddress.equals("121.106.212.91")) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
-                    "I see you want SODA data, but you ask for too much at once. Let's work together to find a better way. Email me: bob.simons@noaa.gov .");
-                return;
-            }
-
-            //look for double trouble in query (since java version may be old)
-            //Remove this some day in the future (2014?).
-            if (String2.isDoubleTrouble(userQuery)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
-                    "Oy!  Some numbers shouldn't be used in polite company!  Go bug some other web site.");
-                return;
-            }            
-
 
             //requestUrl should start with /erddap/
             //deal with /erddap
@@ -644,26 +630,26 @@ public class Erddap extends HttpServlet {
         } catch (Throwable t) {
 
             try {
-                String message = MustBe.throwableToString(t);
                 
                 //Don't email common, unimportant exceptions   e.g., ClientAbortException
                 //Are there others I don't need to see?
+                int slowdown = 0;
                 if (EDStatic.isClientAbortException(t)) {
                     String2.log("#" + requestNumber + " Error: ClientAbortException");
 
-                } else if (message.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) {
-                    String2.log("#" + requestNumber + " " + message);
-
                 } else {
-                    String q = request.getQueryString(); //not decoded
-                    message = "#" + requestNumber + " Error for url=" + 
-                        request.getRequestURI() + EDStatic.questionQuery(q) + 
-                        "\nerror=" + message;
-                    String2.log(message);
-                    if (reallyVerbose) 
-                        EDStatic.email(EDStatic.emailEverythingToCsv, 
-                            String2.ERROR, 
-                            message);
+                    String message = MustBe.throwableToString(t); //takes significant time
+                    slowdown = EDStatic.slowDownTroubleMillis;
+
+                    if (message.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) {
+                        String2.log("#" + requestNumber + " " + message);
+
+                    } else {
+                        String2.log("#" + requestNumber + " Error for url=" + 
+                            request.getRequestURI() + 
+                                EDStatic.questionQuery(request.getQueryString()) + //not decoded
+                            "\nerror=" + message);
+                    }
                 }
 
                 //"failure" includes clientAbort and there is no data
@@ -672,6 +658,8 @@ public class Erddap extends HttpServlet {
                 String2.distribute(responseTime, EDStatic.failureTimesDistribution24);
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);
                 if (verbose) String2.log("}}}}#" + requestNumber + " FAILURE. TIME=" + responseTime + "\n");
+                if (slowdown > 0)
+                    Math2.sleep(slowdown);
 
             } catch (Throwable t2) {
                 String2.log("Error while handling error:\n" + MustBe.throwableToString(t2));
@@ -3861,8 +3849,7 @@ writer.write(
                 if (endOfRequestUrl.equals(""))
                     endOfRequestUrl = "index";
                 sendRedirect(response, 
-                    EDStatic.baseUrl(loggedInAs) + protocol + "/" + 
-                    endOfRequestUrl + ".html" +
+                    tErddapUrl + "/" + protocol + "/" + endOfRequestUrl + ".html" +
                     (endOfRequestUrl.equals("index")? 
                         "?" + EDStatic.passThroughPIppQueryPage1(request) : ""));  
                 return;               
@@ -7774,7 +7761,7 @@ writer.write(
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             throw new SimpleException("HTTP " + httpErrorNumber + " Error:\n" + 
-                message + " (" + details + ")");
+                message + " (" + details + ")", t);
         }
     }
 
@@ -8712,7 +8699,7 @@ breadCrumbs + endBreadCrumbs +
     /** 
      * This is the lower level version of doTransfer.
      *
-     * @param localDir the actual hard disk directory, ending in '/'
+     * @param localDir the actual hard disk directory (or url dir), ending in '/'
      * @param webDir the apparent directory, ending in '/' (e.g., "public/"),
      *    for error message only
      * @param fileNameAndExt e.g., wms_29847362839.png
@@ -8721,34 +8708,13 @@ breadCrumbs + endBreadCrumbs +
     public static void doTransfer(HttpServletRequest request, HttpServletResponse response,
             String localDir, String webDir, String fileNameAndExt, 
             OutputStream outputStream) throws Throwable {
+
         if (verbose) String2.log("doTransfer " + localDir + fileNameAndExt);
-
-        //To deal with problems in multithreaded apps 
-        //(when deleting and renaming files, for an instant no file with that name exists),
-        int maxAttempts = 3;
-        String localFullName = localDir + fileNameAndExt;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-
-            //ok, copy it
-            if (SSR.copy(localFullName, outputStream)) { //handles file or URL source
-                outputStream.close();
-                return;
-            }
-
-            String2.log("WARNING #" + attempt + 
-                ": ERDDAP.doTransfer is having trouble. It will try again to transfer " + 
-                localDir + fileNameAndExt);
-            if (attempt == maxAttempts) {
-                //failure
-                String2.log("Error: Unable to transfer " + localDir + fileNameAndExt); //localDir
-                throw new SimpleException("Error: Unable to transfer " + webDir + fileNameAndExt); //webDir
-            } else if (attempt == 1) {
-                Math2.gcAndWait();  //trouble in doTransfer: gc and sleep may help  (works for me)
-            } else {
-                Math2.sleep(1000);  //trouble in doTransfer: but no need to call gc more than once
-            }
+        try {
+            SSR.copy(localDir + fileNameAndExt, outputStream);  //handles file or URL source
+        } finally {
+            outputStream.close();
         }
-
     }
 
     /** 
@@ -10751,7 +10717,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                    throw new SimpleException(EDStatic.searchNotAvailable);
+                    throw new SimpleException(EDStatic.searchNotAvailable, t);
                 }
 
             } else {
@@ -12255,8 +12221,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     EDStatic.fipsCountyTable(), "FipsCountyCodes", fileTypeName);
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                String2.log(MustBe.throwableToString(t));
-                throw new SimpleException("The FIPS county service is not available on this ERDDAP.");
+                throw new SimpleException("The FIPS county service is not available on this ERDDAP.", t);
             }
             return;
 
@@ -12271,8 +12236,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     EDStatic.oceanicAtmosphericAcronymsTable(), "OceanicAtmosphericAcronyms", fileTypeName);
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                String2.log(MustBe.throwableToString(t));
-                throw new SimpleException("The oceanic/atmospheric acronyms service is not available on this ERDDAP.");
+                throw new SimpleException("The oceanic/atmospheric acronyms service is not available on this ERDDAP.", t);
             }
             return;
 
@@ -12287,8 +12251,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     EDStatic.oceanicAtmosphericVariableNamesTable(), "OceanicAtmosphericVariableNames", fileTypeName);
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                String2.log(MustBe.throwableToString(t));
-                throw new SimpleException("The oceanic/atmospheric variable names service is not available on this ERDDAP.");
+                throw new SimpleException("The oceanic/atmospheric variable names service is not available on this ERDDAP.", t);
             }
             return;
 
@@ -12398,7 +12361,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
-            throw new SimpleException("The FIPS county service is not available on this ERDDAP.");
+            throw new SimpleException("The FIPS county service is not available on this ERDDAP.", t);
         }
         if (toCode) {
             //process code=,   a toCode query
@@ -12596,7 +12559,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
-            throw new SimpleException("The oceanic/atmospheric acronym service is not available on this ERDDAP.");
+            throw new SimpleException("The oceanic/atmospheric acronym service is not available on this ERDDAP.", t);
         }
         StringArray acronymSA  = (StringArray)(oaTable.getColumn(0));
         StringArray fullNameSA = (StringArray)(oaTable.getColumn(1));
@@ -12797,7 +12760,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
-            throw new SimpleException("The oceanic/atmospheric variable name service is not available on this ERDDAP.");
+            throw new SimpleException("The oceanic/atmospheric variable name service is not available on this ERDDAP.", t);
         }
         StringArray variableNameSA  = (StringArray)(oaTable.getColumn(0));
         StringArray fullNameSA      = (StringArray)(oaTable.getColumn(1));
@@ -14699,7 +14662,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 EDStatic.resourceNotFound + " " + message);
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            throw new SimpleException(EDStatic.resourceNotFound + " " + message);
+            throw new SimpleException(EDStatic.resourceNotFound + " " + message, t);
         }
     }
 

@@ -199,7 +199,8 @@ public class SdsReader  {
         //    String2.writeToFile(dir + "mini.hdf.hexDump", File2.hexDump(dir + "mini.hdf", 7262)), 
         //    "", "Grid.miniTestSaveAsHDF error message");
 
-        String2.setupLog(true, false, dir + "mini.hdf.dump", false, false, 1000000);
+        String2.setupLog(true, false, dir + "mini.hdf.dump", 
+            false, String2.logFileDefaultMaxSize); //append
         SdsReader.verbose = true;
         SdsReader sdsReader = new SdsReader(dir + "mini.hdf");
     }

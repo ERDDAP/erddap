@@ -273,7 +273,7 @@ public class OneOf {
             //set up log (after bigParentDirectory is known)
             String2.setupLog(false, false, 
                 bigParentDirectory + "log.txt",
-                true, true, 5000000);
+                true, String2.logFileDefaultMaxSize); //append?
             Math2.gcAndWait();  //before get memoryString() in OneOf constructor
             String2.log("*** Constructing OneOf for " + shortClassName + " at " + 
                 Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
@@ -937,7 +937,7 @@ public class OneOf {
             try {
                 catalog = SSR.getUrlResponseString(dataServerCatalogUrl);
             } catch (Exception e) {
-                throw new Exception(error + e);
+                throw new Exception(error + e, e);
             }
             error += "catalog=" + catalog + "\n";
             

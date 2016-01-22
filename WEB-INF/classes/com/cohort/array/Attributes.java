@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -16,7 +16,7 @@ import java.util.Iterator;
  * and value is a PrimitiveArray). 
  * The backing datastructure (ConcurrentHashMap) is thread-safe.
  *
- * @author Bob Simons (info@cohort.com)
+ * @author Bob Simons (CoHortSoftware@gmail.com)
  */
 public class Attributes {
     //FUTURE: implement as ArrayString for names and ArrayList for values?
@@ -171,6 +171,49 @@ public class Attributes {
     /**
      * A convenience method which returns the first element of the attribute's 
      * value PrimitiveArray as a double, regardless of the type used to store it.
+     * In this "unsigned" variant, if pa isIntegerType, then the value
+     * is interpreted as an unsigned value (two's compliment, e.g., -1B becomes 255).
+     * Note that the native cohort missing value (e.g., 127B) is treated as a value,
+     * not a missing value.
+     *
+     * @param name the name of an attribute
+     * @return the attribute as a double or Double.NaN if trouble (e.g., not found)
+     */
+    public double getUnsignedDouble(String name) {
+        try {
+            PrimitiveArray pa = get(name);
+            if (pa == null || pa.size() == 0)
+                return Double.NaN;
+            return pa.getUnsignedDouble(0);
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * A convenience method which returns the first element of the attribute's 
+     * value PrimitiveArray as a double, regardless of the type used to store it.
+     * In this "raw" variant, if pa isIntegerType, then the cohort missingValue 
+     * (e.g., ByteArray missingValue=127) is left intact 
+     * and NOT converted to new pa's missingValue (e.g., Double.NaN).
+     *
+     * @param name the name of an attribute
+     * @return the attribute as a double or Double.NaN if trouble (e.g., not found)
+     */
+    public double getRawDouble(String name) {
+        try {
+            PrimitiveArray pa = get(name);
+            if (pa == null || pa.size() == 0)
+                return Double.NaN;
+            return pa.getRawDouble(0);
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * A convenience method which returns the first element of the attribute's 
+     * value PrimitiveArray as a double, regardless of the type used to store it.
      * If the type was float, this returns Math2.floatToDouble(value).
      *
      * @param name the name of an attribute
@@ -236,6 +279,27 @@ public class Attributes {
             if (pa == null || pa.size() == 0)
                 return Integer.MAX_VALUE;
             return pa.getInt(0);
+        } catch (Exception e) {
+            return Integer.MAX_VALUE;
+        }
+    }
+
+    /**
+     * A convenience method which returns the first element of the attribute's 
+     * value PrimitiveArray as an int, regardless of the type used to store it.
+     * In this "raw" variant, if pa isIntegerType, then the cohort missingValue 
+     * (e.g., ByteArray missingValue=127) is left intact 
+     * and NOT converted to new pa's missingValue (e.g., Double.NaN).
+     *
+     * @param name the name of an attribute
+     * @return the attribute as an int or Integer.MAX_VALUE if trouble (e.g., not found)
+     */
+    public int getRawInt(String name) {
+        try {
+            PrimitiveArray pa = get(name);
+            if (pa == null || pa.size() == 0)
+                return Integer.MAX_VALUE;
+            return pa.getRawInt(0);
         } catch (Exception e) {
             return Integer.MAX_VALUE;
         }

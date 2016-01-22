@@ -15,6 +15,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.DigirHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -22,6 +23,7 @@ import gov.noaa.pfel.coastwatch.pointdata.TableXmlHandler;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
@@ -198,13 +200,14 @@ public class EDDTableFromOBIS extends EDDTable{
     /**
      * This constructs an EDDTableFromOBIS based on the information in an .xml file.
      * 
+     * @param erddap if known in this context, else null
      * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDTableFromOBIS"&gt;
      *    having just been read.  
      * @return an EDDTableFromOBIS.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDTableFromOBIS fromXml(SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDTableFromOBIS fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
         //data to be obtained (or not)
         if (verbose) String2.log("\n*** constructing EDDTableFromOBIS(xmlReader)...");
@@ -509,7 +512,7 @@ public class EDDTableFromOBIS extends EDDTable{
             boolean isTimeStamp = tSourceType.equals("dateTime");
             if (isTimeStamp) {
                 tSourceType = "String";
-                tAddAtt.add("units", EDVTimeStamp.ISO8601TZ_FORMAT);
+                tAddAtt.add("units", Calendar2.ISO8601TZ_FORMAT);
             }
 
             //get sourceAtt
@@ -733,8 +736,8 @@ directionsForGenerateDatasetsXml() +
 "-->\n\n" +
 "<dataset type=\"EDDTableFromOBIS\" datasetID=\"" + suggestDatasetID(tPublicSourceUrl) +
         "\" active=\"true\">\n" +
-"    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
-"    <sourceCode>" + tSourceCode + "</sourceCode>\n" +
+"    <sourceUrl>" + XML.encodeAsXML(tLocalSourceUrl) + "</sourceUrl>\n" +
+"    <sourceCode>" + XML.encodeAsXML(tSourceCode) + "</sourceCode>\n" +
 "    <sourceNeedsExpandedFP_EQ>true</sourceNeedsExpandedFP_EQ>\n" + //always safe to use true
 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +
 //"    <longitudeSourceMinimum>...</longitudeSourceMinimum>     //all of the Min and Max are optional
@@ -812,7 +815,7 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //ensure it is ready-to-use by making a dataset from it
-            EDD edd = oneFromXmlFragment(results);
+            EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "rutgers_6cb4_a970_1d67", "");
             Test.ensureEqual(edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS (DiGIR.php)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -855,14 +858,14 @@ directionsForGenerateDatasetsXml() +
 
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         //Is Rutgers obis down/not responding?
         //Send an email to obissupport@marine.rutgers.edu, for example:
         //  I note that http://iobis.marine.rutgers.edu/digir2/DiGIR.php recently started to return a Proxy Error message instead of an xml response. Has the OBIS server moved, or is it down, or...?
         //  Thank you for looking into this. 
         try {
-        EDDTable obis = (EDDTable)oneFromDatasetXml("rutgersGhmp"); //should work
+        EDDTable obis = (EDDTable)oneFromDatasetsXml(null, "rutgersGhmp"); //should work
 
         //getEmpiricalMinMax just do once
         //globecBottle.getEmpiricalMinMax("2002-07-01", "2002-09-01", false, true);
@@ -1239,10 +1242,10 @@ so standardize results table removes all but 1 record.
 
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         try {
-        EDDTable fishbase = (EDDTable)oneFromDatasetXml("fishbaseObis"); //should work
+        EDDTable fishbase = (EDDTable)oneFromDatasetsXml(null, "fishbaseObis"); //should work
         userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
         tName = fishbase.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             fishbase.className() + "FishBaseGraph", ".csv"); 
@@ -1311,7 +1314,7 @@ so standardize results table removes all but 1 record.
 
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
       /*
       <dataset type="EDDTableFromOBIS" datasetID="dukeSeamap">
@@ -1385,7 +1388,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
 
 
         try {
-            EDDTable dukeSeamap = (EDDTable)oneFromDatasetXml("dukeSeamap"); 
+            EDDTable dukeSeamap = (EDDTable)oneFromDatasetsXml(null, "dukeSeamap"); 
             userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
             tName = dukeSeamap.makeNewFileForDapQuery(null, null, userDapQuery, 
                 EDStatic.fullTestCacheDirectory, dukeSeamap.className() + "duke", ".csv"); 
@@ -1420,9 +1423,9 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
 
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
-        EDDTable argos = (EDDTable)oneFromDatasetXml("aadcArgos"); 
+        EDDTable argos = (EDDTable)oneFromDatasetsXml(null, "aadcArgos"); 
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01"; 
         tName = argos.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             argos.className() + "Argos", ".csv"); 

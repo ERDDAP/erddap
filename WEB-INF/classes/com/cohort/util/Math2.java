@@ -1,6 +1,6 @@
-/* This file is Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+/* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -29,6 +29,7 @@ public class Math2 {
     public static final double TwoPi = 2 * Math.PI; //are these double precision?
     public static final double ln10 = Math.log(10.0); //2.302585092994046;
     public static final double ln2 = Math.log(2.0);
+    public static final double kelvinToC = -273.15;
     public static final int Binary0 = -2000; //less than -980-980
     public static final int BinaryLimit = 980; //2^980 = ~1e295
     public static final int BytesPerKB = 1024;
@@ -92,7 +93,7 @@ public class Math2 {
      *  US_survey_feetS US_survey_foot# alias
      *  US_survey_mileP 5280 US_survey_feet# exact
      *  US_statute_mileP US_survey_mile# alias
-     *  so convert  nMiles * 5280 ft/mile * 1200/3927 m/ft * .001 km/m -> km
+     *  so convert  nMiles * 5280 ft/mile * 1200/3927 m/ft * .001 km/m -&gt; km
      */
     public final static double meterPerFoot = 1200.0 / 3927.0;
     public final static double mPerMile = 5280 * meterPerFoot;
@@ -144,7 +145,7 @@ public class Math2 {
      * @param d a double value
      * @return the log base 10 of d.
      *     d=0 returns Double.NEGATIVE_INFINITY. 
-     *     d<0 returns NaN.
+     *     d&lt;0 returns NaN.
      *     d=Double.POSITIVE_INFINITY returns Double.POSITIVE_INFINITY. 
      *     d=NaN returns NaN. 
      */
@@ -206,7 +207,7 @@ public class Math2 {
      * since -0.0175=-1.75*10^-2).
      * It handles 0, +, and - numbers.
      * 0 and NaN returns Integer.MAX_VALUE.
-     * WARNING: round off problems cause 100 -> 10 *10^1, not 1*10^2!
+     * WARNING: round off problems cause 100 -&gt; 10 *10^1, not 1*10^2!
      *
      * <p>See the similar String2.toRational()
      * 
@@ -228,7 +229,7 @@ public class Math2 {
      * This returns the double exponent of a double (e.g., -0.0175 returns 0.01
      * since -0.0175=-1.75*0.01).
      * It handles 0, +, and - numbers.
-     * WARNING: round off problems cause 100 -> 10 *10^1, not 1*10^2!
+     * WARNING: round off problems cause 100 -&gt; 10 *10^1, not 1*10^2!
      * 
      * @param d a double value
      * @return the exponent of the number. d=0 returns 1.
@@ -418,7 +419,7 @@ public class Math2 {
     /**
      * Asks the garbage collector to run and the current
      *   thread to sleep for a specified number of milliseconds
-     *   (usually >500, but may be 0).
+     *   (usually &gt;500, but may be 0).
      * Although more than one thread might call this,
      *   I don't think it needs to be synchronized. Each thread
      *   should be free to call System.gc (I don't think it
@@ -461,7 +462,7 @@ public class Math2 {
      */
     public static void ensureMemoryAvailable(long nBytes, String attributeTo) {
 
-        if (nBytes < ensureMemoryAvailableTrigger) //e.g., 8GB -> maxSafe=6GB  /8=750MB    //2014-09-05 was 10MB!
+        if (nBytes < ensureMemoryAvailableTrigger) //e.g., 8GB -&gt; maxSafe=6GB  /8=750MB    //2014-09-05 was 10MB!
             return;
         String attributeToParen = 
             attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
@@ -510,7 +511,7 @@ public class Math2 {
      * @param tSize
      * @param attributeTo for a WARNING or ERROR message, this is the string 
      *   to which this not-enough-memory issue should be attributed.
-     * @throws Exception if tSize >= Integer.MAX_VALUE.  
+     * @throws RuntimeException if tSize &gt;= Integer.MAX_VALUE.  
      *  (equals is forbidden for safety since I often use if as missing value / trouble)
      */
     public static void ensureArraySizeOkay(long tSize, String attributeTo) { 
@@ -579,7 +580,7 @@ public class Math2 {
      * </UL>
      *
      * @param d any double
-     * @return true if Math.abs(d) < dEps. 
+     * @return true if Math.abs(d) &lt; dEps. 
      *     NaN and Infinity correctly return false.
      */
     public static final boolean almost0(double d) {
@@ -968,7 +969,7 @@ public class Math2 {
     /**
      * Safely converts a byte (-128..127) to char (0..255).
      * Note that reverse is easy: (byte)ch works (for 0..255) because
-     * narrowing just saves the low order bits, so >127 becomes negative bytes.
+     * narrowing just saves the low order bits, so &gt;127 becomes negative bytes.
      * 
      * @param b a byte (-128 .. 127)  (or char, short, or int where you just 
      *     want the lower 8 bits stored as 0..255)
@@ -981,7 +982,7 @@ public class Math2 {
     /**
      * Safely converts a signed byte (-128..127) to an unsigned byte (0..255).
      * Note that reverse is easy: (byte)ch works (for 0..255) because
-     * narrowing just saves the low order bits, so >127 becomes negative bytes.
+     * narrowing just saves the low order bits, so &gt;127 becomes negative bytes.
      * 
      * @param b a byte (-128 .. 127)  (or char, short, or int where you just 
      *     want the lower 8 bits stored as 0..255)
@@ -993,8 +994,8 @@ public class Math2 {
 
 
     /**
-     * This converts an angle (in degrees) into the range >=0 to
-     *   <360.
+     * This converts an angle (in degrees) into the range &gt;=0 to
+     *   &lt;360.
      * <UL>
      * <LI> If isMV(angle), it returns 0.
      * </UL>
@@ -1013,11 +1014,11 @@ public class Math2 {
     }
 
     /**
-     * This converts an angle (in degrees) into the range >= 0 to <=360  
+     * This converts an angle (in degrees) into the range &gt;= 0 to &lt;=360  
      * (note 360 is valid).
      *
      * @param degrees an angle (in degrees) 
-     * @return the angle (in degrees) in the range >=0 to <=360.
+     * @return the angle (in degrees) in the range &gt;=0 to &lt;=360.
      *    A non-finite degrees returns the original value.
      */
     public static final double looserAngle0360(double degrees) {
@@ -1034,7 +1035,7 @@ public class Math2 {
      * to Math-style degrees (East is 0, North is 90, ...).
      *
      * @param compass
-     * @return degrees always >=0 and <360  (compass=NaN -> 0).
+     * @return degrees always &gt;=0 and &lt;360  (compass=NaN -&gt; 0).
      */
     public static final double compassToMathDegrees(double compass) {
         return angle0360(90 - compass);
@@ -1045,17 +1046,17 @@ public class Math2 {
      * compass heading (where North is 0, East is 90, ...).
      *
      * @param math
-     * @return degrees always >=0 and <360  (compass=NaN -> 0).
+     * @return degrees always &gt;=0 and &lt;360  (compass=NaN -&gt; 0).
      */
     public static final double mathToCompassDegrees(double math) {
         return compassToMathDegrees(math); //they work the same! so reuse compassToMath
     }
 
     /**
-     * This converts an angle (in degrees) into the range >=-180 to <180 
+     * This converts an angle (in degrees) into the range &gt;=-180 to &lt;180 
      * (180 becomes -180).
      * @param degrees an angle (in degrees) 
-     * @return the angle (in degrees) in the range >=-180 to <180.
+     * @return the angle (in degrees) in the range &gt;=-180 to &lt;180.
      *   If isMV(angle), it returns 0.
      */
     public static final double anglePM180(double degrees) {
@@ -1074,11 +1075,11 @@ public class Math2 {
     }
 
     /**
-     * This converts an angle (in degrees) into the range >=-180 to <=180  
+     * This converts an angle (in degrees) into the range &gt;=-180 to &lt;=180  
      * (note 180 is valid).
      *
      * @param degrees an angle (in degrees) 
-     * @return the angle (in degrees) in the range >=-180 to <=180.
+     * @return the angle (in degrees) in the range &gt;=-180 to &lt;=180.
      *    A non-finite degrees returns the original value.
      */
     public static final double looserAnglePM180(double degrees) {
@@ -1092,8 +1093,8 @@ public class Math2 {
 
  
     /**
-     * This converts an angle (in radians) into the range >=0 to
-     *   <2PI.
+     * This converts an angle (in radians) into the range &gt;=0 to
+     *   &lt;2PI.
      * <UL>
      * <LI> If !isFinite(angle), it returns 0.
      * </UL>
@@ -1142,8 +1143,8 @@ public class Math2 {
      * Looks for a fraction very close to some decimal value.
      * <UL>
      * <LI> Tries denominators 1..1000.  So answer is at least accurate
-     *   to within 1/1000th.  For example, .33333 -> 1/3.
-     * <LI> For example: -1.75 -> whole=-1, numerator=-3 denominator=4
+     *   to within 1/1000th.  For example, .33333 -&gt; 1/3.
+     * <LI> For example: -1.75 -&gt; whole=-1, numerator=-3 denominator=4
      * <LI> Results stored in int3[0=whole, 1=num, 2=den].
      * <LI> Slow if no good match found,
      *   but this does a good approximate job that gcd() might miss.
@@ -1262,8 +1263,8 @@ public class Math2 {
     }
 
     /**
-     * Safely tries to un-bruise a double (8.999999999 -> 9.0,
-     *   or 1.000000001 -> 1.0).
+     * Safely tries to un-bruise a double (8.999999999 -&gt; 9.0,
+     *   or 1.000000001 -&gt; 1.0).
      * <UL>
      * <LI> nDigits specifies how many digits.
      *   Use 7 for converting float to double.
@@ -1597,10 +1598,10 @@ public class Math2 {
         else if (man10100 <= 25)
             exp /= 2;
 
-        //for example, 1,9 -> man10100=80 exp=1 -> exp=2
-        //for example, 1,5 -> man10100=40 exp=1 -> exp=1
-        //for example, 1,2 -> man10100=10 exp=1 -> exp=0.5
-        //Sometimes a class <=12 would be nice, but not always.  Don't do it.
+        //for example, 1,9 -&gt; man10100=80 exp=1 -&gt; exp=2
+        //for example, 1,5 -&gt; man10100=40 exp=1 -&gt; exp=1
+        //for example, 1,2 -&gt; man10100=10 exp=1 -&gt; exp=0.5
+        //Sometimes a class &lt;=12 would be nice, but not always.  Don't do it.
         //System.err.println("suggestLowHigh "+low+" "+high+" exp="+exp); //diagnostic
         //The ((xxx/exp)+-0.1) prevents dt or fn right at suggestLow,High
         // by making a buffer zone of 1/20 of exp
@@ -1624,7 +1625,7 @@ public class Math2 {
      *    and [1]=suggested minor division distance.
      *    If range isn't finite, this returns 2 Double.NaN's.
      *    If range == 0, this returns 1 and .5.
-     *    If range < 0, this uses Math.abs(range).
+     *    If range &lt; 0, this uses Math.abs(range).
      */
     public static double[] suggestDivisions(double range) {
         double results[] = new double[2];

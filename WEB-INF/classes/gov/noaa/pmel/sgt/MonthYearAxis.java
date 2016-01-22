@@ -33,7 +33,7 @@ import gov.noaa.pmel.util.IllegalTimeValue;
 public class MonthYearAxis implements TimeAxisStyle {
   static final int YEAR_TEST__ = 31;
   static final String defaultMinorLabelFormat__ = "MMM";
-  static final String defaultMajorLabelFormat__ = "yyyy";
+  static final String defaultMajorLabelFormat__ = "yyy";
   static final int defaultNumSmallTics__ = 0;
   int defaultMinorLabelInterval_ = 2;
   int defaultMajorLabelInterval_ = 1;
@@ -50,7 +50,7 @@ public class MonthYearAxis implements TimeAxisStyle {
     return prev; //(prev + now)*0.5;
   }
   public void computeDefaults(GeoDate delta) {
-    if(delta.getTime()/GeoDate.MSECS_IN_DAY > 240) {
+    if(Math.abs(delta.getTime())/GeoDate.MSECS_IN_DAY > 240) {
       defaultMinorLabelInterval_ = 2;
     } else {
       defaultMinorLabelInterval_ = 1;

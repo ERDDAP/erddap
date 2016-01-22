@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
- * Copyright (c) 2005 Robert Alten Simons (info@cohort.com).
+ * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact info@cohort.com.
+ * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.array;
 
@@ -162,7 +162,7 @@ public abstract class PrimitiveArray {
      *
      * @param elementClass e.g., float.class
      * @param capacity
-     * @param active if true, size will be set to capacity, else size = 0.
+     * @param active if true, size will be set to capacity (filled with 0's), else size = 0.
      * @return a PrimitiveArray
      */
     public static PrimitiveArray factory(Class elementClass, int capacity, boolean active) {
@@ -187,25 +187,54 @@ public abstract class PrimitiveArray {
      * @return a PrimitiveArray
      */
     public static PrimitiveArray factory(Class elementClass, PrimitiveArray pa) {
-        if (elementClass == double.class) 
-            return pa.elementClass() == double.class? pa : new DoubleArray(pa);
-        if (elementClass == float.class)  
-            return pa.elementClass() == float.class?  pa : new FloatArray(pa);
-        if (elementClass == long.class)   
-            return pa.elementClass() == long.class?   pa : new LongArray(pa);
-        if (elementClass == int.class)    
-            return pa.elementClass() == int.class?    pa : new IntArray(pa);
-        if (elementClass == short.class)  
-            return pa.elementClass() == short.class?  pa : new ShortArray(pa);
-        if (elementClass == byte.class)   
-            return pa.elementClass() == byte.class?   pa : new ByteArray(pa);
-        if (elementClass == char.class)   
-            return pa.elementClass() == char.class?   pa : new CharArray(pa);
-        if (elementClass == String.class) 
-            return pa.elementClass() == String.class? pa : new StringArray(pa);
+        if (pa.elementClass() == elementClass)
+            return pa;
+        if (elementClass == double.class) return new DoubleArray(pa);
+        if (elementClass == float.class)  return new FloatArray(pa);
+        if (elementClass == long.class)   return new LongArray(pa);
+        if (elementClass == int.class)    return new IntArray(pa);
+        if (elementClass == short.class)  return new ShortArray(pa);
+        if (elementClass == byte.class)   return new ByteArray(pa);
+        if (elementClass == char.class)   return new CharArray(pa);
+        if (elementClass == String.class) return new StringArray(pa);
 
         throw new IllegalArgumentException(String2.ERROR + 
             " in PrimitiveArray.factory: unexpected elementClass: " + elementClass);
+    }
+
+    /**
+     * This returns the current pa (if already correct type) 
+     * or a new pa of a specified type.
+     * In this "raw" variant, if pa isIntegerType, then the cohort missingValue 
+     * (e.g., ByteArray missingValue=127) is left intact 
+     * and NOT converted to new pa's missingValue (e.g., Double.NaN).
+     *
+     * @param elementClass e.g., float.class
+     * @return a PrimitiveArray
+     */
+    public static PrimitiveArray rawFactory(Class elementClass, PrimitiveArray pa) {
+        if (pa.elementClass() == elementClass)
+            return pa;
+        PrimitiveArray newPa = factory(elementClass, pa.size(), false); //not active            
+        newPa.rawAppend(pa);
+        return newPa;
+    }
+
+    /**
+     * This always returns a new pa of a specified type.
+     * In this "unsigned" variant, if pa isIntegerType, 
+     * the values in pa are treated as unsigned (being added to a new signed PrimitiveArray). 
+     * E.g., incoming ByteArray -1 is interpreted as 255.
+     * Int type to same int type causes negative values to become missingValues
+     * (so don't do it).
+     *
+     * @param elementClass e.g., float.class
+     * @return a PrimitiveArray
+     */
+    public static PrimitiveArray unsignedFactory(Class elementClass, PrimitiveArray pa) {
+        PrimitiveArray newPa = factory(elementClass, pa.size(), false); //not active            
+        newPa.unsignedAppend(pa);
+        return newPa;
     }
 
     /** 
@@ -295,18 +324,6 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < n; i++)
             pa.addString(sa[i]);
         return pa;
-
-        /* retired 2010-10-13
-        if (elementClass == String.class) 
-            return StringArray.fromCSV(csv);
-
-        String[] sa = String2.split(csv, ',');
-        int n = sa.length;
-        PrimitiveArray pa = factory(elementClass, n, false);
-        for (int i = 0; i < n; i++)
-            pa.addString(sa[i]);
-        return pa;
-        */
     }
 
     /**
@@ -564,6 +581,13 @@ public abstract class PrimitiveArray {
              return new StringArray(); 
     }
 
+    /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
+     * The integer type classes override this.
+     */
+    public boolean isIntegerType() {
+        return false;
+    }
+
     /**
      * This indicates if a given type (e.g., short.class) can be contained in a long.
      *
@@ -579,8 +603,17 @@ public abstract class PrimitiveArray {
             type == char.class;
     }
 
+    /** 
+     * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
+     * expressed as a double. FloatArray and StringArray return Double.NaN. 
+     */
+    public double missingValue() {
+        return Double.NaN;
+    }
+
     /**
-     * This returns for missing value for a given element type (e.g., byte.class).
+     * This returns for missing value for a given element type (e.g., byte.class),
+     * expressed as a double.
      *
      * @param type an element type (e.g., byte.class)
      * @return the string representation of the element type (e.g., Byte.MAX_VALUE).
@@ -589,7 +622,7 @@ public abstract class PrimitiveArray {
      *   StringArray supports several incoming missing values, but
      *   "" is used as the outgoing missing value.
      */
-    public static double getMissingValue(Class type) {
+    public static double missingValue(Class type) {
         if (type == double.class) return Double.NaN;
         if (type == float.class)  return Double.NaN;
         if (type == long.class)   return Long.MAX_VALUE;
@@ -679,10 +712,17 @@ public abstract class PrimitiveArray {
     /**
      * This adds an element from another PrimitiveArray.
      *
-     * @param otherPA
-     * @param otherIndex
+     * @param otherPA the source PA
+     * @param otherIndex the start index in otherPA
+     * @param nValues the number of values to be added
+     * @return 'this' for convenience
      */
-    abstract public void addFromPA(PrimitiveArray otherPA, int otherIndex);
+    abstract public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues);
+
+    /** This is like the other addFromPA, with nValues=1. */
+    public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex) {
+        return addFromPA(otherPA, otherIndex, 1);
+    }
 
     /**
      * This sets an element from another PrimitiveArray.
@@ -770,6 +810,23 @@ public abstract class PrimitiveArray {
     abstract public int getInt(int index);
 
     /**
+     * Return a value from the array as an int.
+     * This "raw" variant leaves missingValue from smaller data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * Floating point values are rounded.
+     *
+     * <p>ByteArray, CharArray, ShortArray override this.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as an int. String values are parsed
+     *   with String2.parseInt and so may return Integer.MAX_VALUE.
+     */
+    public int getRawInt(int index) {
+        return getInt(index);
+    }
+
+
+    /**
      * Set a value in the array as an int.
      * 
      * @param index the index number 0 .. size-1
@@ -828,6 +885,34 @@ public abstract class PrimitiveArray {
 
     /**
      * Return a value from the array as a double.
+     * FloatArray converts float to double in a simplistic way.
+     * For this variant: Integer source values will be treated as unsigned.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public double getUnsignedDouble(int index) {
+        return getDouble(index); 
+    }
+
+    /**
+     * Return a value from the array as a double.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     *
+     * <p>All integerTypes override this.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public double getRawDouble(int index) {
+        return getDouble(index);
+    }
+
+    /**
+     * Return a value from the array as a double.
      * FloatArray converts float to double via Math2.floatToDouble.
      * 
      * @param index the index number 0 ... size-1
@@ -836,6 +921,20 @@ public abstract class PrimitiveArray {
      */
     public double getNiceDouble(int index) {
         return getDouble(index);
+    }
+
+    /**
+     * Return a value from the array as a double.
+     * FloatArray converts float to double via Math2.floatToDouble.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public double getRawNiceDouble(int index) {
+        return getRawDouble(index);
     }
 
     /**
@@ -854,6 +953,22 @@ public abstract class PrimitiveArray {
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
      */
     abstract public String getString(int index);
+
+    /**
+     * Return a value from the array as a String.
+     * This "raw" variant leaves missingValue from integer data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * FloatArray and DoubleArray return "" if the stored value is NaN. 
+     *
+     * <p>All integerTypes override this.
+     * 
+     * @param index the index number 0 ... size-1
+     * @return the value as a double. String values are parsed
+     *   with String2.parseDouble and so may return Double.NaN.
+     */
+    public String getRawString(int index) {
+        return getString(index);
+    }
 
     /**
      * Set a value in the array as a String.
@@ -1542,7 +1657,7 @@ public abstract class PrimitiveArray {
         
     /**
      * Given a sorted PrimitiveArray, stored to a randomAccessFile,
-     * this finds the index of the first element >= value. 
+     * this finds the index of the first element &gt;= value. 
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -1715,7 +1830,7 @@ public abstract class PrimitiveArray {
      *     (or -index-1 where it should be inserted, with extremes of
      *     -lowPo-1 and -(highPo+1)-1).
      *     [So insert at -response-1.]
-     * @throws Exception if lowPo &gt; highPo.
+     * @throws RuntimeException if lowPo &gt; highPo.
      */
     public int binarySearch(int lowPo, int highPo, double value) {
         
@@ -2087,6 +2202,49 @@ public abstract class PrimitiveArray {
     abstract public void append(PrimitiveArray primitiveArray);
     
     /**
+     * This appends the data in another pa to the current data.
+     * This "unsigned" variant treats incoming integer types as unsigned values
+     * (e.g., ByteArray -1 is interpreted as 255,
+     * IntArray -1 is interpreted as 4294967295).
+     * WARNING: information may be lost from the incoming pa if this
+     * primitiveArray is of a simpler type.
+     *
+     * @param pa pa must be the same or a narrower 
+     *  data type, or the data will be narrowed with Math2.narrowToByte.
+     */
+    public void unsignedAppend(PrimitiveArray pa) {
+        //this code is used by all subclasses; it isn't over-ridden
+
+        if (pa.isIntegerType()) {
+            int otherSize = pa.size(); 
+            ensureCapacity(size + (long)otherSize);
+            if (pa.elementClass() == elementClass()) { //both are the same integer type
+                for (int i = 0; i < otherSize; i++) {
+                    long tl = pa.getLong(i);
+                    addLong(tl >= 0? tl : Long.MAX_VALUE);
+                }
+            } else {
+                for (int i = 0; i < otherSize; i++)
+                    addDouble(pa.getUnsignedDouble(i)); 
+            }
+        } else {
+            append(pa);
+        }
+    }    
+
+    /**
+     * This appends the data in another primitiveArray to the current data.
+     * This "raw" variant leaves missingValue from smaller data types 
+     * (e.g., ByteArray missingValue=127) AS IS.
+     * WARNING: information may be lost from the incoming primitiveArray if this
+     * primitiveArray is of a simpler type.
+     *
+     * @param primitiveArray primitiveArray must be a narrower data type,
+     *  or the data will be rounded.
+     */
+    abstract public void rawAppend(PrimitiveArray primitiveArray);
+    
+    /**
      * Given table[], keys[], and ascending[],
      * this creates an int[] with the ranks the rows of the table. 
      *
@@ -2206,7 +2364,20 @@ public abstract class PrimitiveArray {
      * @return the number of duplicates removed
      */
     public int removeDuplicates(boolean logDuplicates) {
+        return removeDuplicates(logDuplicates, null);
+    }
 
+    /**
+     * Given a sorted (plain or sortIgnoreCase) PrimitiveArray List,
+     * this looks for adjacent identical rows of data and removes the duplicates.
+     *
+     * @param logDuplicates if true, this prints duplicates to String2.log
+     * @param sb if not null, duplicates are appended to sb
+     * @return the number of duplicates removed
+     */
+    public int removeDuplicates(boolean logDuplicates, StringBuilder sb) {
+
+        boolean logActive = logDuplicates || sb != null;
         int nRows = size;
         if (nRows <= 1) 
             return 0;
@@ -2215,7 +2386,15 @@ public abstract class PrimitiveArray {
             //does it equal row above?
             boolean equal = compare(row - 1, row) == 0;
             if (equal) {
-                if (logDuplicates) String2.log("  duplicate=" + getString(row));
+                if (logActive) {
+                    String msg = "Duplicates at [" + (row - 1) + "] and [" + row + 
+                        "] = " + getString(row);
+                    if (logDuplicates) 
+                        String2.log(msg);
+                    if (sb != null) {
+                        sb.append(msg); sb.append('\n'); 
+                    }
+                }
             } else {
                 //not equal? copy row 'row' to row 'nUnique'
                 if (row != nUnique) 
@@ -2447,7 +2626,7 @@ public abstract class PrimitiveArray {
 
 
     /**
-     * For all values, this multiplies by scale and then adds addOffset.
+     * For all values, this unpacks the values by multipling by scale and then adding addOffset.
      * Calculations are done as doubles then, if necessary, rounded and stored.
      *
      * @param scale
@@ -2461,7 +2640,7 @@ public abstract class PrimitiveArray {
     }
      
     /**
-     * For all values, this adds addOffset then multiplies by scale.
+     * For all values, this packs the values by adding addOffset then multipling by scale.
      * Calculations are done as doubles then, if necessary, rounded and stored.
      *
      * @param scale
@@ -2473,36 +2652,52 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < size; i++)
             setDouble(i, (getDouble(i) + addOffset) * scale); //NaNs remain NaNs
     }
-     
+    
+    /**
+     * This variant assumes sourceIsUnsigned=false.
+     */
+    public PrimitiveArray scaleAddOffset(Class destElementClass, 
+        double scale, double addOffset) {
+        return scaleAddOffset(false, destElementClass, scale, addOffset);
+    }
+
     /**
      * This returns a new (always) PrimitiveArray of type elementClass
-     * which has had the scale and addOffset values applied.
+     * which has unpacked values (scale then addOffset values applied).
      * Calculations are done as doubles then, if necessary, rounded and stored.
      *
-     * @param elementClass 
+     * @param destElementClass 
+     * @param sourceIsUnsigned if true, integer-type source values will be 
+     *    interpreted as unsigned values.
      * @param scale
      * @param addOffset
      * @return a new (always) PrimitiveArray
      */
-    public PrimitiveArray scaleAddOffset(Class elementClass, double scale, double addOffset) {
-        PrimitiveArray pa = factory(elementClass, size, true);
-        for (int i = 0; i < size; i++)
-            pa.setDouble(i, getDouble(i) * scale + addOffset); //NaNs remain NaNs
+    public PrimitiveArray scaleAddOffset(boolean sourceIsUnsigned, 
+        Class destElementClass, double scale, double addOffset) {
+        PrimitiveArray pa = factory(destElementClass, size, true);
+        if (sourceIsUnsigned) {
+            for (int i = 0; i < size; i++)
+                pa.setDouble(i, getUnsignedDouble(i) * scale + addOffset); //NaNs remain NaNs
+        } else {
+            for (int i = 0; i < size; i++)
+                pa.setDouble(i, getDouble(i) * scale + addOffset); //NaNs remain NaNs
+        }
         return pa;
     }
      
     /**
-     * This returns a new (always) PrimitiveArray of type elementClass
-     * which has had the addOffset and scale values applied.
+     * This returns a new (always) PrimitiveArray of type destElementClass
+     * which has had the packed values (addOffset then scale values applied).
      * Calculations are done as doubles then, if necessary, rounded and stored.
      *
-     * @param elementClass 
+     * @param destElementClass 
      * @param addOffset
      * @param scale
      * @return a new (always) PrimitiveArray
      */
-    public PrimitiveArray addOffsetScale(Class elementClass, double addOffset, double scale) {
-        PrimitiveArray pa = factory(elementClass, size, true);
+    public PrimitiveArray addOffsetScale(Class destElementClass, double addOffset, double scale) {
+        PrimitiveArray pa = factory(destElementClass, size, true);
         for (int i = 0; i < size; i++)
             pa.setDouble(i, (getDouble(i) + addOffset) * scale); //NaNs remain NaNs
         return pa;
@@ -2774,7 +2969,7 @@ public abstract class PrimitiveArray {
      * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
      * @return a new PrimitiveArray with the desired subset.
      *    It will have a new backing array with a capacity equal to its size.
-     *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
+     *    If stopIndex &lt; startIndex, this returns a PrimitiveArray with size=0;
      */
     public abstract PrimitiveArray subset(int startIndex, int stride, int stopIndex);
 
@@ -3002,7 +3197,7 @@ public abstract class PrimitiveArray {
         //int types
         long value2l = String2.parseLong(value2);
         if (value2l != Long.MAX_VALUE &&   //value2 parsed cleanly as a long
-            isIntegerType(elementClass())) {
+            isIntegerType()) {
             //String2.log("applyConstraint(long)");
             int nStillGood = 0;
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
@@ -3661,6 +3856,28 @@ public abstract class PrimitiveArray {
         ia = new IntArray(new int[]{0,1,2,3,Integer.MAX_VALUE});
         ia.scaleAddOffset(1.5, 10);
         Test.ensureEqual(ia.toString(), "10, 12, 13, 15, 2147483647", "");
+
+        //addFromPA(
+        DoubleArray other = (DoubleArray)csvFactory(double.class, "11.1, 22.2, 33.3");
+        Test.ensureEqual(csvFactory(byte.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(double.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(float.class,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(int.class,    "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(long.class,   "1, 2"    ).addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(short.class,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(String.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(String.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(ia.addFromPA(other, 2).toString(), "10, 12, 13, 15, 2147483647, 33", "");
+
+        Test.ensureEqual(csvFactory(byte.class,   "1.1, 2.2").addFromPA(csvFactory(byte.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(csvFactory(char.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(double.class, "1.1, 2.2").addFromPA(csvFactory(double.class, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(float.class,  "1.1, 2.2").addFromPA(csvFactory(float.class,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
+        Test.ensureEqual(csvFactory(int.class,    "1.1, 2.2").addFromPA(csvFactory(int.class,    "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(long.class,   "1, 2"    ).addFromPA(csvFactory(long.class,   "11, 22, 33"      ), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(short.class,  "1.1, 2.2").addFromPA(csvFactory(short.class,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(String.class, "1.1, 2.2").addFromPA(csvFactory(String.class, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
 
         String2.log("PrimitiveArray.testBasic finished successfully.");
     }

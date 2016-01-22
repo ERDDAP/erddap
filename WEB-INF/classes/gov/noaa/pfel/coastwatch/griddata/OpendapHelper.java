@@ -1241,14 +1241,14 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
             throw new SimpleException("Error while getting DAS from " + dapUrl + ".das .\n" +
-                (debug? MustBe.throwableToString(t) : t.getMessage()));
+                t.getMessage(), t);
         }
         try {
             if (debug) String2.log(String2.annotatedString(SSR.getUrlResponseString(dapUrl + ".dds")));
             dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
             throw new SimpleException("Error while getting DDS from " + dapUrl + ".dds .\n" +
-                (debug? MustBe.throwableToString(t) : t.getMessage()));
+                t.getMessage(), t);
         }
 
         //find all vars
@@ -2514,8 +2514,8 @@ expected =
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2010-04-18Z\";\n" +
-"  :date_issued = \"2010-04-18Z\";\n" +
+"  :date_created = \"2010-07-02Z\";\n" +
+"  :date_issued = \"2010-07-02Z\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
 "  :Easternmost_Easting = 360.0; // double\n" +
 "  :geospatial_lat_max = 75.0; // double\n" +
@@ -2531,15 +2531,17 @@ expected =
 "  :geospatial_vertical_positive = \"up\";\n" +
 "  :geospatial_vertical_units = \"m\";\n" +
 "  :history = \"Remote Sensing Systems, Inc.\n" +
-"2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+"2010-07-02T15:36:22Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 today + "T";  // + time " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 String expected2 = 
 "  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"  :keywords = \"altitude, atmosphere,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"atmospheric, coast, coastwatch, data, degrees, global, noaa, node, ocean, oceans,\n" +
 "Oceans > Ocean Winds > Surface Winds,\n" +
-"atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
+"QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2562,13 +2564,13 @@ String expected2 =
 "  :satellite = \"QuikSCAT\";\n" +
 "  :sensor = \"SeaWinds\";\n" +
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
+"  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
-"  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+"  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-"  :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
+"  :title = \"Wind, QuikSCAT SeaWinds, 0.25°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 " data:\n" +
 "time =\n" +
@@ -2729,8 +2731,8 @@ y_wind.y_wind[1][1][7][15]
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2010-04-18Z\";\n" +
-"  :date_issued = \"2010-04-18Z\";\n" +
+"  :date_created = \"2010-07-02Z\";\n" +
+"  :date_issued = \"2010-07-02Z\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
 "  :Easternmost_Easting = 360.0; // double\n" +
 "  :geospatial_lat_max = 75.0; // double\n" +
@@ -2746,15 +2748,17 @@ y_wind.y_wind[1][1][7][15]
 "  :geospatial_vertical_positive = \"up\";\n" +
 "  :geospatial_vertical_units = \"m\";\n" +
 "  :history = \"Remote Sensing Systems, Inc.\n" +
-"2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+"2010-07-02T15:36:22Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 today + "T"; //time http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
 //today + time " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 expected2 = 
 "  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"  :keywords = \"altitude, atmosphere,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"atmospheric, coast, coastwatch, data, degrees, global, noaa, node, ocean, oceans,\n" +
 "Oceans > Ocean Winds > Surface Winds,\n" +
-"atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
+"QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2777,13 +2781,13 @@ expected2 =
 "  :satellite = \"QuikSCAT\";\n" +
 "  :sensor = \"SeaWinds\";\n" +
 "  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
-"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
+"  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.0; // double\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
-"  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+"  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-"  :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
+"  :title = \"Wind, QuikSCAT SeaWinds, 0.25°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 " data:\n" +
 "}\n";
@@ -2903,13 +2907,13 @@ expected2 =
     public static void test() throws Throwable{
         String2.log("\n*** OpendapHelper.test...");
 
-/* */
+/* 
         testGetAttributes();
         testParseStartStrideStop();
         testFindVarsWithSharedDimensions();
         testFindAllScalarOrMultiDimVars();
         testDapToNcDArray();
-        testDapToNcDGrid();
+   */     testDapToNcDGrid();
         testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test
 
         String2.log("\n***** OpendapHelper.test finished successfully");
