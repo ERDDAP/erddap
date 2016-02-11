@@ -414,6 +414,7 @@ public class Erddap extends HttpServlet {
 
         long doGetTime = System.currentTimeMillis();
         int requestNumber = totalNRequests.incrementAndGet();
+        String ipAddress = "NotSetYet";
 
         try {
 
@@ -429,7 +430,7 @@ public class Erddap extends HttpServlet {
             //get requester's ip addresses (x-forwarded-for)
             //getRemoteHost(); returns our proxy server (never changes)
             //For privacy reasons, don't tally full individual IP address; the 4th ip number is removed.
-            String ipAddress = request.getHeader("x-forwarded-for");  
+            ipAddress = request.getHeader("x-forwarded-for");  
             if (ipAddress == null) {
                 ipAddress = "";
             } else {
@@ -495,9 +496,9 @@ public class Erddap extends HttpServlet {
                 (EDStatic.requestBlacklist.contains(ipAddress) ||
                  (periodPo >= 0 && EDStatic.requestBlacklist.contains(ipAddress.substring(0, periodPo+1) + "*")))) {
                 //use full ipAddress, to help id user                //odd capitilization sorts better
-                EDStatic.tally.add("Requester's IP Address (Blocked) (since last Major LoadDatasets)", ipAddress);
-                EDStatic.tally.add("Requester's IP Address (Blocked) (since last daily report)", ipAddress);
-                EDStatic.tally.add("Requester's IP Address (Blocked) (since startup)", ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
                 String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
                 if (EDStatic.slowDownTroubleMillis > 0)
                     Math2.sleep(EDStatic.slowDownTroubleMillis);
@@ -654,6 +655,9 @@ public class Erddap extends HttpServlet {
 
                 //"failure" includes clientAbort and there is no data
                 long responseTime = System.currentTimeMillis() - doGetTime;
+                EDStatic.tally.add("Requester's IP Address (Failed) (since last Major LoadDatasets)", ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Failed) (since last daily report)", ipAddress);
+                EDStatic.tally.add("Requester's IP Address (Failed) (since startup)", ipAddress);
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionLoadDatasets);
                 String2.distribute(responseTime, EDStatic.failureTimesDistribution24);
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);

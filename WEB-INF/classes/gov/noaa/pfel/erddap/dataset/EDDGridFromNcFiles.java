@@ -5670,6 +5670,721 @@ expected =
 
     }
 
+    /**
+     * This tests special axis0 with time.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testSpecialAxis0Time() throws Throwable {
+        String2.log("\n************* EDDGridFromNcFiles.testSpecialAxis0Time() ************\n");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "erdSW1chlamday";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String testName = "EDDGridFromNcFiles_Axis0Time";
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .nc test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            tDir, testName + "_Entire", ".das"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 8.849088e+8, 8.875872e+8;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Centered Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float32 actual_range 89.95834, -89.95834;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float32 actual_range -179.9583, 179.9584;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  chlorophyll {\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float64 colorBarMaximum 30.0;\n" +
+"    Float64 colorBarMinimum 0.03;\n" +
+"    String colorBarScale \"Log\";\n" +
+"    String ioos_category \"Ocean Color\";\n" +
+"    String long_name \"Chlorophyll Concentration, OCI Algorithm\";\n" +
+"    String reference \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"    String units \"mg m^-3\";\n" +
+"    Float32 valid_max 100.0;\n" +
+"    Float32 valid_min 0.001;\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _lastModified \"2015-10-02T00:07:10.000Z\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
+"    Float64 Easternmost_Easting 179.9584;\n" +
+"    Float64 geospatial_lat_max 89.95834;\n" +
+"    Float64 geospatial_lat_min -89.95834;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.9584;\n" +
+"    Float64 geospatial_lon_min -179.9583;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String history \"smigen par=S19980011998031.L3m_MO_CHL_chlor_a_9km.nc.param\n" +
+today; // (local files)
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = 
+//    "    String id "S19980011998031.L3b_MO_CHL.nc/L3/S19980011998031.L3b_MO_CHL.nc";
+"    String identifier_product_doi \"http://dx.doi.org\";\n" +
+"    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
+"    String infoUrl \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"SeaWiFS\";\n" +
+"    String keywords \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, field, field-of-view, flight, goddard, group, gsfc, image, L3, level, level-3, mapped, nasa, noaa, obpg, ocean, ocean color, oceans,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Optics > Ocean Color,\n" +
+"oci, optics, orbview, orbview-2, palette, processing, sea, sea-wide, seawater, seawifs, sensor, smi, space, standard, view, water, wide\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String license \"http://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"\n" +
+"Please cite: NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group; (2014): SeaWiFS Ocean Color Data; NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group. http://dx.doi.org/10.5067/ORBVIEW-2/SEAWIFS_OC.2014.0\n" +
+"\n" +
+"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    Float64 Northernmost_Northing 89.95834;\n" +
+"    String platform \"Orbview-2\";\n" +
+"    String processing_control_input_parameters_datamax \"20.000000\";\n" +
+"    String processing_control_input_parameters_datamin \"0.010000\";\n" +
+"    String processing_control_input_parameters_deflate \"4\";\n" +
+"    String processing_control_input_parameters_gap_fill \"0\";\n" +
+"    String processing_control_input_parameters_ifile \"S19980011998031.L3b_MO_CHL.nc\";\n" +
+"    String processing_control_input_parameters_latnorth \"90.000000\";\n" +
+"    String processing_control_input_parameters_latsouth \"-90.000000\";\n" +
+"    String processing_control_input_parameters_loneast \"180.000000\";\n" +
+"    String processing_control_input_parameters_lonwest \"-180.000000\";\n" +
+"    String processing_control_input_parameters_meas \"1\";\n" +
+"    String processing_control_input_parameters_minobs \"0\";\n" +
+"    String processing_control_input_parameters_ofile \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+"    String processing_control_input_parameters_oformat \"netCDF4\";\n" +
+"    String processing_control_input_parameters_palfile \"/sdps/sdpsoper/Science/OCSSW/V2015.3/data/common/palette/default.pal\";\n" +
+"    String processing_control_input_parameters_precision \"F\";\n" +
+"    String processing_control_input_parameters_processing \"2014.0\";\n" +
+"    String processing_control_input_parameters_prod \"chlor_a\";\n" +
+"    String processing_control_input_parameters_projection \"RECT\";\n" +
+"    String processing_control_input_parameters_resolution \"9km\";\n" +
+"    String processing_control_input_parameters_seam_lon \"-180.000000\";\n" +
+"    String processing_control_input_parameters_stype \"2\";\n" +
+"    String processing_control_l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String processing_control_software_name \"smigen\";\n" +
+"    String processing_control_software_version \"5.04\";\n" +
+"    String processing_control_source \"S19980011998031.L3b_MO_CHL.nc\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"2014.0\";\n" +
+"    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"    String publisher_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String references \"SeaWiFS information: http://oceancolor.gsfc.nasa.gov/SeaWiFS/ . NASA Ocean\n" +
+"Color information: http://oceancolor.gsfc.nasa.gov/\n" +
+"Processing reference: O'Reilly, J.E., Maritorena, S., Mitchell, B.G., Siegel, D.A., Carder, K.L., Garver, S.A., Kahru, M. and McClain, C. (1998). Ocean color chlorophyll algorithms for SeaWiFS. J. Geophys. Res., 103: 24, 937-24, 953.\n" +
+"Processing reference: O'Reilly, J. E., and 21 others. 2000. Ocean color chlorophyll a algorithms for SeaWiFS, OC2 and OC4: Version 4. SeaWiFS Postlaunch Calibration and Validation Analyses, part 3. NASA SeaWiFS technical report series. pp. 8 226 22.\n" +
+"Processing reference: Fu, G., Baith, K. S., and McClain, C. R. (1998). SeaDAS: The SeaWiFS Data Analysis System. Proceedings of \\\\\"The 4th Pacific Ocean Remote Sensing Conference\\\\\", Qingdao, China, July 28-31, 1998, 73-79.\n" +
+"Validation reference: Hooker, S.B., and C.R. McClain (2000). The Calibration and Validation of SeaWiFS Data. Prog. Oceanogr., 45, 427-465.\n" +
+"R2014.0 processing reference: Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -89.95834;\n" +
+"    String spatialResolution \"9.20 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"NASA GSFC Ocean Color Web distributes science-quality chlorophyll-a\n" +
+"concentration data from the Sea-viewing Wide Field-of-view Sensor (SeaWiFS)\n" +
+"on the Orbview-2 satellite. This version is the 2014.0 Reprocessing (R2014.0).\n" +
+"\n" +
+"The SeaWiFS instrument was launched by Orbital Sciences Corporation on the\n" +
+"OrbView-2 (a.k.a. SeaStar) satellite in August 1997, and collected data from\n" +
+"September 1997 until the end of mission in December 2010. SeaWiFS had 8\n" +
+"spectral bands from 412 to 865 nm. It collected global data at 4 km\n" +
+"resolution, and local data (limited onboard storage and direct broadcast)\n" +
+"at 1 km. The mission and sensor were optimized for ocean color measurements,\n" +
+"with a local noon (descending) equator crossing time orbit, fore-and-aft\n" +
+"tilt capability, full dynamic range, and low polarization sensitivity.\";\n" +
+"    String temporal_range \"month\";\n" +
+"    String time_coverage_end \"1998-02-16T00:00:00Z\";\n" +
+"    String time_coverage_start \"1998-01-16T00:00:00Z\";\n" +
+"    String title \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1°, Global (Monthly Composite)\";\n" +
+"    Float64 Westernmost_Easting -179.9583;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 25));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            tDir, testName + "_Entire", ".dds"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 2];\n" +
+"  Float32 latitude[latitude = 2160];\n" +
+"  Float32 longitude[longitude = 4320];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 chlorophyll[time = 2][latitude = 2160][longitude = 4320];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 2];\n" +
+"      Float32 latitude[latitude = 2160];\n" +
+"      Float32 longitude[longitude = 4320];\n" +
+"  } chlorophyll;\n" +
+"} erdSW1chlamday;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  with data from one file
+        String2.log("\n*** .nc test read from one file\n");       
+        userDapQuery = "chlorophyll[(1998-02-16T00:00:00Z)][(38):4:(37)][(-123.6):4:(-122.6)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tDir, testName + "_Data1", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time,latitude,longitude,chlorophyll\n" +
+"UTC,degrees_north,degrees_east,mg m^-3\n" +
+"1998-02-16T00:00:00Z,38.041664,-123.625,0.321632\n" +
+"1998-02-16T00:00:00Z,38.041664,-123.291664,2.886503\n" +
+"1998-02-16T00:00:00Z,38.041664,-122.958336,3.058165\n" +
+"1998-02-16T00:00:00Z,38.041664,-122.625,NaN\n" +
+"1998-02-16T00:00:00Z,37.708332,-123.625,0.300352\n" +
+"1998-02-16T00:00:00Z,37.708332,-123.291664,0.374681\n" +
+"1998-02-16T00:00:00Z,37.708332,-122.958336,3.047059\n" +
+"1998-02-16T00:00:00Z,37.708332,-122.625,4.57632\n" +
+"1998-02-16T00:00:00Z,37.374996,-123.625,0.454626\n" +
+"1998-02-16T00:00:00Z,37.374996,-123.291664,0.373263\n" +
+"1998-02-16T00:00:00Z,37.374996,-122.958336,0.810264\n" +
+"1998-02-16T00:00:00Z,37.374996,-122.625,2.5943\n" +
+"1998-02-16T00:00:00Z,37.041664,-123.625,0.32735\n" +
+"1998-02-16T00:00:00Z,37.041664,-123.291664,0.384492\n" +
+"1998-02-16T00:00:00Z,37.041664,-122.958336,0.444622\n" +
+"1998-02-16T00:00:00Z,37.041664,-122.625,1.436202\n";         
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //img
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "chlorophyll[(1998-02-16T00:00:00Z)][(90):(-90)][(-180):(180)]",
+            tDir, testName + "_img", ".png"); 
+        SSR.displayInBrowser("file://" + tDir + tName);
+    }
+
+
+    /**
+     * This tests special axis0 with an integer from the fileName.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testSpecialAxis0FileNameInt() throws Throwable {
+        String2.log("\n************* EDDGridFromNcFiles.testSpecialAxis0FileNameInt() ************\n");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "testSpecialAxis0FileNameInt";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String testName = "EDDGridFromNcFiles_Axis0FileNameInt";
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .nc test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            tDir, testName + "_Entire", ".das"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  myInt {\n" +
+"    Int32 actual_range 1, 32;\n" +
+"    String ioos_category \"Other\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float32 actual_range 89.95834, -89.95834;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float32 actual_range -179.9583, 179.9584;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  chlorophyll {\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float64 colorBarMaximum 30.0;\n" +
+"    Float64 colorBarMinimum 0.03;\n" +
+"    String colorBarScale \"Log\";\n" +
+"    String ioos_category \"Ocean Color\";\n" +
+"    String long_name \"Chlorophyll Concentration, OCI Algorithm\";\n" +
+"    String reference \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"    String units \"mg m^-3\";\n" +
+"    Float32 valid_max 100.0;\n" +
+"    Float32 valid_min 0.001;\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _lastModified \"2015-10-02T00:07:10.000Z\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
+"    Float64 Easternmost_Easting 179.9584;\n" +
+"    Float64 geospatial_lat_max 89.95834;\n" +
+"    Float64 geospatial_lat_min -89.95834;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.9584;\n" +
+"    Float64 geospatial_lon_min -179.9583;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String history \"smigen par=S19980011998031.L3m_MO_CHL_chlor_a_9km.nc.param\n" +
+today; // (local files)
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = 
+//    "    String id "S19980011998031.L3b_MO_CHL.nc/L3/S19980011998031.L3b_MO_CHL.nc";
+"    String identifier_product_doi \"http://dx.doi.org\";\n" +
+"    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
+"    String infoUrl \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"SeaWiFS\";\n" +
+"    String keywords \"algorithm, biology\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    Float64 Northernmost_Northing 89.95834;\n" +
+"    String platform \"Orbview-2\";\n" +
+"    String processing_control_input_parameters_datamax \"20.000000\";\n" +
+"    String processing_control_input_parameters_datamin \"0.010000\";\n" +
+"    String processing_control_input_parameters_deflate \"4\";\n" +
+"    String processing_control_input_parameters_gap_fill \"0\";\n" +
+"    String processing_control_input_parameters_ifile \"S19980011998031.L3b_MO_CHL.nc\";\n" +
+"    String processing_control_input_parameters_latnorth \"90.000000\";\n" +
+"    String processing_control_input_parameters_latsouth \"-90.000000\";\n" +
+"    String processing_control_input_parameters_loneast \"180.000000\";\n" +
+"    String processing_control_input_parameters_lonwest \"-180.000000\";\n" +
+"    String processing_control_input_parameters_meas \"1\";\n" +
+"    String processing_control_input_parameters_minobs \"0\";\n" +
+"    String processing_control_input_parameters_ofile \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+"    String processing_control_input_parameters_oformat \"netCDF4\";\n" +
+"    String processing_control_input_parameters_palfile \"/sdps/sdpsoper/Science/OCSSW/V2015.3/data/common/palette/default.pal\";\n" +
+"    String processing_control_input_parameters_precision \"F\";\n" +
+"    String processing_control_input_parameters_processing \"2014.0\";\n" +
+"    String processing_control_input_parameters_prod \"chlor_a\";\n" +
+"    String processing_control_input_parameters_projection \"RECT\";\n" +
+"    String processing_control_input_parameters_resolution \"9km\";\n" +
+"    String processing_control_input_parameters_seam_lon \"-180.000000\";\n" +
+"    String processing_control_input_parameters_stype \"2\";\n" +
+"    String processing_control_l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String processing_control_software_name \"smigen\";\n" +
+"    String processing_control_software_version \"5.04\";\n" +
+"    String processing_control_source \"S19980011998031.L3b_MO_CHL.nc\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"2014.0\";\n" +
+"    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"    String publisher_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -89.95834;\n" +
+"    String spatialResolution \"9.20 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"summary of testSpecialAxis0FileNameInt\";\n" +
+"    String temporal_range \"month\";\n" +
+"    String title \"title of testSpecialAxis0FileNameInt\";\n" +
+"    Float64 Westernmost_Easting -179.9583;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 25));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            tDir, testName + "_Entire", ".dds"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Int32 myInt[myInt = 2];\n" +
+"  Float32 latitude[latitude = 2160];\n" +
+"  Float32 longitude[longitude = 4320];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 chlorophyll[myInt = 2][latitude = 2160][longitude = 4320];\n" +
+"    MAPS:\n" +
+"      Int32 myInt[myInt = 2];\n" +
+"      Float32 latitude[latitude = 2160];\n" +
+"      Float32 longitude[longitude = 4320];\n" +
+"  } chlorophyll;\n" +
+"} testSpecialAxis0FileNameInt;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  with int values
+        String2.log("\n*** .nc test get myInt[]\n");       
+        userDapQuery = "myInt";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tDir, testName + "_axis0", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"myInt\n" +
+"m\n" +
+"1\n" +
+"32\n";         
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  with data from one file
+        String2.log("\n*** .nc test read from one file\n");       
+        userDapQuery = "chlorophyll[(32)][(38):4:(37)][(-123.6):4:(-122.6)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tDir, testName + "_Data1", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"myInt,latitude,longitude,chlorophyll\n" +
+"m,degrees_north,degrees_east,mg m^-3\n" +
+"32,38.041664,-123.625,0.321632\n" +
+"32,38.041664,-123.291664,2.886503\n" +
+"32,38.041664,-122.958336,3.058165\n" +
+"32,38.041664,-122.625,NaN\n" +
+"32,37.708332,-123.625,0.300352\n" +
+"32,37.708332,-123.291664,0.374681\n" +
+"32,37.708332,-122.958336,3.047059\n" +
+"32,37.708332,-122.625,4.57632\n" +
+"32,37.374996,-123.625,0.454626\n" +
+"32,37.374996,-123.291664,0.373263\n" +
+"32,37.374996,-122.958336,0.810264\n" +
+"32,37.374996,-122.625,2.5943\n" +
+"32,37.041664,-123.625,0.32735\n" +
+"32,37.041664,-123.291664,0.384492\n" +
+"32,37.041664,-122.958336,0.444622\n" +
+"32,37.041664,-122.625,1.436202\n";         
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //img
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "chlorophyll[(32)][(90):(-90)][(-180):(180)]",
+            tDir, testName + "_img", ".png"); 
+        SSR.displayInBrowser("file://" + tDir + tName);
+    }
+
+    /**
+     * This tests special axis0 with a double from a global attribute.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testSpecialAxis0GlobalDouble() throws Throwable {
+        String2.log("\n************* EDDGridFromNcFiles.testSpecialAxis0GlobalDouble() ************\n");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "testSpecialAxis0GlobalDouble";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String testName = "EDDGridFromNcFiles_Axis0GlobalDouble";
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .nc test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            tDir, testName + "_Entire", ".das"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  myDouble {\n" +
+"    Float64 actual_range 1998001.0, 1998032.0;\n" +
+"    String ioos_category \"Other\";\n" +
+"    String units \"kg\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float32 actual_range 89.95834, -89.95834;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float32 actual_range -179.9583, 179.9584;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  chlorophyll {\n" +
+"    Float32 _FillValue -32767.0;\n" +
+"    Float64 colorBarMaximum 30.0;\n" +
+"    Float64 colorBarMinimum 0.03;\n" +
+"    String colorBarScale \"Log\";\n" +
+"    String ioos_category \"Ocean Color\";\n" +
+"    String long_name \"Chlorophyll Concentration, OCI Algorithm\";\n" +
+"    String reference \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"    String units \"mg m^-3\";\n" +
+"    Float32 valid_max 100.0;\n" +
+"    Float32 valid_min 0.001;\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _lastModified \"2015-10-02T00:07:10.000Z\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
+"    Float64 Easternmost_Easting 179.9584;\n" +
+"    Float64 geospatial_lat_max 89.95834;\n" +
+"    Float64 geospatial_lat_min -89.95834;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.9584;\n" +
+"    Float64 geospatial_lon_min -179.9583;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String history \"smigen par=S19980011998031.L3m_MO_CHL_chlor_a_9km.nc.param\n" +
+today; // (local files)
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = 
+//    "    String id "S19980011998031.L3b_MO_CHL.nc/L3/S19980011998031.L3b_MO_CHL.nc";
+"    String identifier_product_doi \"http://dx.doi.org\";\n" +
+"    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
+"    String infoUrl \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"SeaWiFS\";\n" +
+"    String keywords \"algorithm, biology\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    Float64 Northernmost_Northing 89.95834;\n" +
+"    String platform \"Orbview-2\";\n" +
+"    String processing_control_input_parameters_datamax \"20.000000\";\n" +
+"    String processing_control_input_parameters_datamin \"0.010000\";\n" +
+"    String processing_control_input_parameters_deflate \"4\";\n" +
+"    String processing_control_input_parameters_gap_fill \"0\";\n" +
+"    String processing_control_input_parameters_ifile \"S19980011998031.L3b_MO_CHL.nc\";\n" +
+"    String processing_control_input_parameters_latnorth \"90.000000\";\n" +
+"    String processing_control_input_parameters_latsouth \"-90.000000\";\n" +
+"    String processing_control_input_parameters_loneast \"180.000000\";\n" +
+"    String processing_control_input_parameters_lonwest \"-180.000000\";\n" +
+"    String processing_control_input_parameters_meas \"1\";\n" +
+"    String processing_control_input_parameters_minobs \"0\";\n" +
+"    String processing_control_input_parameters_ofile \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+"    String processing_control_input_parameters_oformat \"netCDF4\";\n" +
+"    String processing_control_input_parameters_palfile \"/sdps/sdpsoper/Science/OCSSW/V2015.3/data/common/palette/default.pal\";\n" +
+"    String processing_control_input_parameters_precision \"F\";\n" +
+"    String processing_control_input_parameters_processing \"2014.0\";\n" +
+"    String processing_control_input_parameters_prod \"chlor_a\";\n" +
+"    String processing_control_input_parameters_projection \"RECT\";\n" +
+"    String processing_control_input_parameters_resolution \"9km\";\n" +
+"    String processing_control_input_parameters_seam_lon \"-180.000000\";\n" +
+"    String processing_control_input_parameters_stype \"2\";\n" +
+"    String processing_control_l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String processing_control_software_name \"smigen\";\n" +
+"    String processing_control_software_version \"5.04\";\n" +
+"    String processing_control_source \"S19980011998031.L3b_MO_CHL.nc\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"2014.0\";\n" +
+"    String product_name \"S19980011998031.L3m_MO_CHL_chlor_a_9km.nc\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String publisher_name \"NASA/GSFC/OBPG\";\n" +
+"    String publisher_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -89.95834;\n" +
+"    String spatialResolution \"9.20 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"summary of testSpecialAxis0GlobalDouble\";\n" +
+"    String temporal_range \"month\";\n" +
+"    String title \"title of testSpecialAxis0GlobalDouble\";\n" +
+"    Float64 Westernmost_Easting -179.9583;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 25));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            tDir, testName + "_Entire", ".dds"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Float64 myDouble[myDouble = 2];\n" +
+"  Float32 latitude[latitude = 2160];\n" +
+"  Float32 longitude[longitude = 4320];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 chlorophyll[myDouble = 2][latitude = 2160][longitude = 4320];\n" +
+"    MAPS:\n" +
+"      Float64 myDouble[myDouble = 2];\n" +
+"      Float32 latitude[latitude = 2160];\n" +
+"      Float32 longitude[longitude = 4320];\n" +
+"  } chlorophyll;\n" +
+"} testSpecialAxis0GlobalDouble;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  with int values
+        String2.log("\n*** .nc test get myDouble[]\n");       
+        userDapQuery = "myDouble";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tDir, testName + "_axis0", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"myDouble\n" +
+"kg\n" +
+"1998001.0\n" +
+"1998032.0\n";         
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  with data from one file
+        String2.log("\n*** .nc test read from one file\n");       
+        userDapQuery = "chlorophyll[(1998032)][(38):4:(37)][(-123.6):4:(-122.6)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tDir, testName + "_Data1", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"myDouble,latitude,longitude,chlorophyll\n" +
+"kg,degrees_north,degrees_east,mg m^-3\n" +
+"1998032.0,38.041664,-123.625,0.321632\n" +
+"1998032.0,38.041664,-123.291664,2.886503\n" +
+"1998032.0,38.041664,-122.958336,3.058165\n" +
+"1998032.0,38.041664,-122.625,NaN\n" +
+"1998032.0,37.708332,-123.625,0.300352\n" +
+"1998032.0,37.708332,-123.291664,0.374681\n" +
+"1998032.0,37.708332,-122.958336,3.047059\n" +
+"1998032.0,37.708332,-122.625,4.57632\n" +
+"1998032.0,37.374996,-123.625,0.454626\n" +
+"1998032.0,37.374996,-123.291664,0.373263\n" +
+"1998032.0,37.374996,-122.958336,0.810264\n" +
+"1998032.0,37.374996,-122.625,2.5943\n" +
+"1998032.0,37.041664,-123.625,0.32735\n" +
+"1998032.0,37.041664,-123.291664,0.384492\n" +
+"1998032.0,37.041664,-122.958336,0.444622\n" +
+"1998032.0,37.041664,-122.625,1.436202\n";         
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //img
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "chlorophyll[(1998032)][(90):(-90)][(-180):(180)]",
+            tDir, testName + "_img", ".png"); 
+        SSR.displayInBrowser("file://" + tDir + tName);
+    }
 
 
     /**
@@ -5696,7 +6411,10 @@ expected =
         testTimePrecisionMillis();
         testSimpleTestNc();
         testSimpleTestNc2();
-//finish this        testRTechHdf();
+        testSpecialAxis0Time();
+        testSpecialAxis0FileNameInt();
+        testSpecialAxis0GlobalDouble();
+//unfinished:    testRTechHdf();
         testUpdate();
         testQuickRestart();
 

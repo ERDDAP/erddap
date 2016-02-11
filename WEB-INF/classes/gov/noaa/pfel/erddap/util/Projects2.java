@@ -12,6 +12,7 @@ import gov.noaa.pfel.coastwatch.hdf.*;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.*;
 import gov.noaa.pfel.erddap.dataset.*;
+import gov.noaa.pfel.erddap.variable.EDV;
 
 import java.io.FileWriter;
 import java.io.StringWriter;
@@ -374,6 +375,7 @@ public class Projects2  {
     public static void touchUsgs() throws Throwable {
 SSR.touchUrl("http://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=usgs_waterservices_0125_011b_2920&flagKey=780628796", 60000);
     }
+
 
 }
 

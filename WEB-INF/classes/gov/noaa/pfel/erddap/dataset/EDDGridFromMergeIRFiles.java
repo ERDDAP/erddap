@@ -95,7 +95,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames
+     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns
      * (e.g., "String" or "float")
@@ -121,6 +121,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         
         String getWhat = "globalAttributes";
         try {
+            //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 if (reallyVerbose) String2.log("axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi));
                 switch(sourceAxisNames.get(avi)) {
@@ -188,9 +189,10 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
+     *   If special axis0, this list will be the instances list[1 ... n-1].
      * @return a PrimitiveArray[] with the results (with the requested
-     * sourceDataTypes). It needn't set sourceGlobalAttributes or
-     * sourceDataAttributes (but see getSourceMetadata).
+     *   sourceDataTypes). It needn't set sourceGlobalAttributes or
+     *   sourceDataAttributes (but see getSourceMetadata).
      * @throws Throwable if trouble (e.g., invalid file). If there is trouble,
      * this doesn't call addBadFile or requestReloadASAP().
      */
@@ -202,6 +204,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
+            //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 String avName = sourceAxisNames.get(avi);
                 getWhat = "axisAttributes for variable=" + avName;
@@ -283,16 +286,17 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @param fileName
      * @param tDataVariables the desired data variables
      * @param tConstraints where the first axis variable's constraints have been
-     * customized for this file.
+     *   customized for this file.
+     *   !!! If special axis0, then will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with
-     * the dataValues.
-     * <br>The dataValues are straight from the source, not modified.
-     * <br>The primitiveArray dataTypes are usually the sourceDataTypeClass, but
-     * can be any type. EDDGridFromFiles will convert to the
-     * sourceDataTypeClass.
-     * <br>Note the lack of axisVariable values!
+     *   the dataValues.
+     *   <br>The dataValues are straight from the source, not modified.
+     *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass, but
+     *   can be any type. EDDGridFromFiles will convert to the
+     *   sourceDataTypeClass.
+     *   <br>Note the lack of axisVariable values!
      * @throws Throwable if trouble (notably, WaitThenTryAgainException). If
-     * there is trouble, this doesn't call addBadFile or requestReloadASAP().
+     *   there is trouble, this doesn't call addBadFile or requestReloadASAP().
      */
     public PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName,
             EDV tDataVariables[], IntArray tConstraints) throws Throwable {
@@ -300,7 +304,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         if (verbose) String2.log("getSourceDataFromFile(" + fileDir + ", " + fileName + ", " + tDataVariables + ", " + tConstraints + ")");
         
          //make the selection spec  and get the axis values
-         int nbAxisAvriable = axisVariables.length;         
+         int nbAxisVariable = axisVariables.length;         
          int nbDataVariable = tDataVariables.length;
          PrimitiveArray[] paa = new PrimitiveArray[nbDataVariable];
          StringBuilder selectionSB = new StringBuilder();
@@ -309,7 +313,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
          int minLat = 0, maxLat = 0, strideLat = 0;     
          int minLon = 0, maxLon = 0, strideLon = 0;         
          
-         for (int avi = 0; avi < nbAxisAvriable; avi++) {
+         for (int avi = 0; avi < nbAxisVariable; avi++) {
              switch(axisVariables[avi].sourceName()) {
                  case "latitude" :
                      minLat = tConstraints.get(avi*3);

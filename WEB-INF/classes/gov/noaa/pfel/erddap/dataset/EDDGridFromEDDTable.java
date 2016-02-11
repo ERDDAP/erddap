@@ -101,18 +101,30 @@ public class EDDGridFromEDDTable extends EDDGrid {
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
-                String tType = xmlReader.attributeValue("type");
-                if (tType == null || !tType.startsWith("EDDTable"))
-                    throw new SimpleException(
-                        "type=\"" + tType + "\" is not allowed for the dataset within the EDDGridFromEDDTable. " +
-                        "The type MUST start with \"EDDTable\".");
-                String tableDatasetID = xmlReader.attributeValue("datasetID");
-                if (tDatasetID == null || tableDatasetID == null || 
-                    tDatasetID.equals(tableDatasetID))
-                    throw new SimpleException(
-                        "The inner eddTable datasetID must be different from the " +
-                        "outer EDDGridFromEDDTable datasetID.");
-                tEDDTable = (EDDTable)EDD.fromXml(erddap, tType, xmlReader);
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
+                    while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                           !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                        xmlReader.nextTag();
+                        //String2.log("  skippping tags: " + xmlReader.allTags());
+                    }
+
+                } else {
+                    String tType = xmlReader.attributeValue("type");
+                    if (tType == null || !tType.startsWith("EDDTable"))
+                        throw new SimpleException(
+                            "type=\"" + tType + "\" is not allowed for the dataset within the EDDGridFromEDDTable. " +
+                            "The type MUST start with \"EDDTable\".");
+                    String tableDatasetID = xmlReader.attributeValue("datasetID");
+                    if (tDatasetID == null || tableDatasetID == null || 
+                        tDatasetID.equals(tableDatasetID))
+                        throw new SimpleException(
+                            "The inner eddTable datasetID must be different from the " +
+                            "outer EDDGridFromEDDTable datasetID.");
+                    tEDDTable = (EDDTable)EDD.fromXml(erddap, tType, xmlReader);
+                }
 
             } else if (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
@@ -399,6 +411,10 @@ public class EDDGridFromEDDTable extends EDDGrid {
 
         //ensure the setup is valid
         ensureValid();
+
+        //If the child is a FromErddap, try to subscribe to the remote dataset.
+        if (eddTable instanceof FromErddap) 
+            tryToSubscribeToChildFromErddap(eddTable);
 
         //finally
         if (verbose) String2.log(

@@ -630,7 +630,7 @@ public class EDDTableFromFileNames extends EDDTable{
         String tPathRegex = ".*";
         String tDatasetID = suggestDatasetID(
             //if awsS3, important that it start with tFileDir
-            File2.addSlash(tFileDir) + tFileNameRegex +
+            tFileDir + tFileNameRegex +
             //distinguish from e.g., EDDGridFromNcFiles for same files
             "(EDDTableFromFileNames)"); 
         boolean tFilesAreLocal = !String2.isRemote(tFileDir);

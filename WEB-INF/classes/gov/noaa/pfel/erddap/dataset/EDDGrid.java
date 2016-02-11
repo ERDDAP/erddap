@@ -11107,7 +11107,7 @@ writer.write(
      * This writes the dataset's ISO 19115-2/19139 XML to the writer.
      * <br>The template is initially based on THREDDS ncIso output from
      * <br>http://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day
-     * <br>(stored on Bob's computer as F:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml).
+     * <br>(stored on Bob's computer as c:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml).
      * <br>See also  https://geo-ide.noaa.gov/wiki/index.php?title=NcISO#Questions_and_Answers
      *
      * <p>This is usually just called by the dataset's constructor, 

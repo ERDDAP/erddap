@@ -360,35 +360,6 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             //leave as default: 1.22
         }
 
-        //try to subscribe to the remote dataset
-        //It's ok that this is done every time. 
-        //  emailIfAlreadyValid=false so there won't be excess email confirmations 
-        //  and if flagKeyKey changes, the new tFlagUrl will be sent.
-        //There is analogous code in EDDGridFromErddap.
-        try {
-            if (String2.isSomething(EDStatic.emailSubscriptionsFrom)) {
-                int gpo = tLocalSourceUrl.indexOf("/tabledap/");
-                String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
-                    "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
-                    "&email=" + EDStatic.emailSubscriptionsFrom +
-                    "&emailIfAlreadyValid=false" + 
-                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
-                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
-                SSR.touchUrl(subscriptionUrl, 60000);
-            } else {
-                String2.log(
-                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
-                    "emailEverythingTo wasn't specified in setup.xml.");
-            }
-        } catch (Throwable st) {
-            String2.log(
-                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
-                "If the subscription hasn't been set up already, you may need to\n" + 
-                "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
-                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
-                );
-        }
-
         //save quickRestart info
         if (quickRestartAttributes == null) { //i.e., there is new info
             try {
@@ -403,6 +374,38 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             }
+        }
+
+        //try to subscribe to the remote dataset
+        //It's ok that this is done every time. 
+        //  emailIfAlreadyValid=false so there won't be excess email confirmation requests 
+        //  and if flagKeyKey changes, the new tFlagUrl will be sent.
+        //There is analogous code in EDDGridFromErddap.
+        try {
+            if (String2.isSomething(EDStatic.emailSubscriptionsFrom)) {
+                //this erddap's email system is active
+                //so try to subscribe to dataset on remote erddap
+                int gpo = tLocalSourceUrl.indexOf("/tabledap/"); //"remote" erddap may be a local
+                String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
+                    "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
+                    "&email=" + EDStatic.emailSubscriptionsFrom +
+                    "&emailIfAlreadyValid=false" + 
+                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
+                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
+                SSR.touchUrl(subscriptionUrl, 60000);
+            } else {
+                String2.log(
+                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
+                    "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n" +
+                    "To keep this dataset up-to-date, use a small reloadEveryNMinutes.");
+            }
+        } catch (Throwable st) {
+            String2.log(
+                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
+                "If the subscription hasn't been set up already, you may need to\n" + 
+                "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
+                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
+                );
         }
 
         //finally

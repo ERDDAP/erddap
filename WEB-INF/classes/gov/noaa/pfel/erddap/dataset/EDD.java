@@ -8634,6 +8634,67 @@ public abstract class EDD {
 "    -->\n";
     }
 
+    /** 
+     * Call this in the constructor if this dataset has a child and it is a FromErddap, 
+     * to try to subscribe to the remote ERDDAP's dataset.
+     *
+     * <p>It's ok that this is done every time. 
+     * emailIfAlreadyValid=false so there won't be excess email confirmation requests 
+     * and if flagKeyKey changes, the new tFlagUrl will be sent.
+     *
+     * @param tChild a child dataset that is a fromErddap dataset
+     */
+    public void tryToSubscribeToChildFromErddap(EDD tChild) {
+        String cause = "";
+        try {
+            String tEmail = EDStatic.emailSubscriptionsFrom;
+            String tfeSourceUrl = ((FromErddap)tChild).getLocalSourceErddapUrl(); //"remote" erddap may be local
+            int gpo = tfeSourceUrl.indexOf(tChild instanceof EDDGrid?
+                "/griddap/" : "/tabledap/");
+            String underlyingID = File2.getNameNoExtension(tfeSourceUrl);
+            String tFlagUrl = flagUrl(datasetID);
+
+            if (tfeSourceUrl.startsWith(EDStatic.baseUrl) ||  
+                tfeSourceUrl.startsWith("http://127.0.0.1")) { 
+                //underlying dataset is on this ERDDAP -- subscribe directly!
+                EDStatic.subscriptions.addAndValidate(underlyingID, //throw exception if trouble
+                    String2.isSomething(tEmail)? tEmail : EDStatic.adminEmail, 
+                    tFlagUrl);
+                if (verbose) String2.log("  " + datasetID + 
+                    " successfully subscribed directly to local datasetID=" + underlyingID);
+                return; //success
+
+            } else if (String2.isSomething(tEmail)) { 
+                //this erddap's subscription system is active
+                //so try to subscribe to dataset on remote erddap
+                String subscriptionUrl = tfeSourceUrl.substring(0, gpo + 1) + 
+                        Subscriptions.ADD_HTML + "?" +
+                    "datasetID=" + underlyingID + 
+                    "&email=" + tEmail +
+                    "&emailIfAlreadyValid=false" + 
+                    "&action=" + SSR.minimalPercentEncode(tFlagUrl); // %encode deals with & within flagUrl
+                if (verbose) String2.log("  " + datasetID + 
+                    " is subscribing to underlying fromErddap dataset:\n  " + subscriptionUrl);
+                SSR.touchUrl(subscriptionUrl, 60000);  //may throw exception
+                return; //success
+
+            } else {
+                cause = "\nCause: The subscription system on this ERDDAP isn't set up.";
+            }
+        } catch (Throwable st) {
+            cause = "\nCause: " + MustBe.throwableToString(st); 
+        }
+        //it only gets here if there is trouble
+        String2.log(
+            "\n" +
+            "WARNING: datasetID=" + datasetID + 
+            " failed to subscribe to its child, fromErddap, underlying dataset.\n" + 
+            "If the subscription hasn't been set up already, keep this dataset up-to-date by\n" +
+            "using a small reloadEveryNMinutes, or have the remote ERDDAP admin add an <onChange>." +
+            cause + "\n"); 
+    }
+
+
     /**
      * This is used by subclass's generateDatasetsXml methods to write the
      * attributes to the writer in the datasets.xml format.
@@ -9525,6 +9586,583 @@ public abstract class EDD {
     public static void testVerboseOff() {
         testVerbose(false);
     }
+
+    /**
+     * This method creates the NOAA NMFS InPort XML content for this dataset.
+     * Intro
+     *   https://inport.nmfs.noaa.gov/inport/help/importing-metadata
+     * Info about the xml loader:
+     *   https://inport.nmfs.noaa.gov/inport/help/xml-loader
+     * Sample InPort XML with field descriptions
+     *    https://inport.nmfs.noaa.gov/inport/downloads/inport-xml-sample.xml
+     *    locally: /programs/inport/inport-xml-sample.xml
+     * Metadata Matrix (alternative(!)/definitive(!) field descriptions)
+     *   https://docs.google.com/spreadsheets/d/1vdD7ZL_jlfmpldGlUsIhrbRoosvv7T0OAYdMAsT7_oE/edit#gid=1465720645
+     * This will throw a RuntimeException if trouble.
+     *
+     * @return the InPort XML content
+     */
+    public String getInPortXmlString() {
+        boolean isGrid = this instanceof EDDGrid;
+        EDDGrid  eddGrid  = isGrid? (EDDGrid)this : null;
+        EDDTable eddTable = isGrid? null : (EDDTable)this;
+        Attributes gatts = combinedGlobalAttributes();
+        String now = Calendar2.getCompactCurrentISODateTimeStringLocal();
+
+        ///help/xml-loader says:
+        //An omitted tag causes previous value to be preserved -- sounds like trouble.
+        //An empty tag causes value to be "nulled out" (emptied) -- sounds appropriate -- do this.
+
+        StringBuilder sb = new StringBuilder();       
+sb.append(
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<inport-metadata version=\"1.0\">\n" +
+"  <item-identification>\n" +
+"    <parent-catalog-item-id>???</parent-catalog-item-id>\n" + 
+//To create a new catalog item, enter the catalog item ID of the existing catalog item under which this new item should be created. Do not include this tag if you are updating, and not creating an item. 
+"    <catalog-item-id>???</catalog-item-id>\n" + 
+//To update an existing catalog item, enter its catalog item ID here. Do not include this tag if you are creating a new item, rather than updating an existing item.
+"    <catalog-item-type>Data Set</catalog-item-type>\n" + 
+//Enter the catalog item type of the item being created or updated (e.g. Data Set)
+"    <title>" + XML.encodeAsXML(title()) + "</title>\n" + 
+//Enter the catalog item title. If this upload is updating an existing catalog item, the title here will replace the existing one.
+"    <short-name>" + XML.encodeAsXML(datasetID()) + "</short-name>\n" + 
+//Enter a short name for the catalog item.
+"    <status>Complete</status>\n" + 
+//Enter the status. Must be one of the following values: In Work, Planned, Complete.
+"    <abstract>" + XML.encodeAsXML(summary()) + "</abstract>\n" + 
+//Enter the abstract/description of the catalog item.
+"    <purpose></purpose>\n" + //Enter the purpose.
+"    <notes></notes>\n" + //Enter notes if applicable.
+"    <other-citation-details></other-citation-details>\n" + //Enter other citation details.
+"    <supplemental-information>" + XML.encodeAsXML(infoUrl()) + "</supplemental-information>\n" + 
+//Enter supplemental information if applicable.
+"  </item-identification>\n" +
+"  <physical-location>\n" +
+"    <organization>" + 
+    XML.encodeAsXML(EDStatic.adminInstitution == null? "" : EDStatic.adminInstitution) + 
+   "</organization>\n" + 
+//Enter EITHER the organization name, OR the organization acronym, EXACTLY as it is listed in InPort. The organization must exist in InPort.
+"    <city>" + 
+    XML.encodeAsXML(EDStatic.adminCity == null? "" : EDStatic.adminCity) + 
+   "</city>\n" + 
+//Enter the city.
+"    <state-province>" + 
+    XML.encodeAsXML(EDStatic.adminStateOrProvince == null? "" : EDStatic.adminStateOrProvince) + 
+   "</state-province>\n" + 
+//Enter the state or province (2 letter acronym). Must be a valid state/province.
+"    <country>" + 
+    XML.encodeAsXML(EDStatic.adminCountry == null? "" : EDStatic.adminCountry) + 
+   "</country>\n" + 
+//Enter the country.
+"    <location-description></location-description>\n" + 
+//Enter the location description.
+"  </physical-location>\n" +
+"  <data-set-information>\n" +
+"    <data-presentation-form>" + 
+    XML.encodeAsXML(isGrid? "Document (digital)" : "Table (digital)") + 
+   "</data-presentation-form>\n" +
+//Enter one data presentation form from the following list of possible values: Document (digital), Document (hardcopy), Image (digital), Image (hardcopy), Map (digital), Map (hardcopy), Profile (digital), Profile (hardcopy), Table (digital), Table (hardcopy), Video (digital), Video (hardcopy), Audio, Other
+"    <data-presentation-form-other></data-presentation-form-other>\n" + 
+//If the Data Presentation Form is Other, enter what it is here. This field should not be populated if the Data Presentation Form is not Other.\n" +
+"    <instrument>" + 
+    XML.encodeAsXML(gatts.getString("instrument") != null? gatts.getString("instrument") :
+                    gatts.getString("sensor")     != null? gatts.getString("sensor") : "") +
+   "</instrument>\n" +
+//Enter the name of the instrument used for data collection, if applicable.
+"    <platform>" + 
+    XML.encodeAsXML(gatts.getString("platform")  != null? gatts.getString("platform") :
+                    gatts.getString("satellite") != null? gatts.getString("satellite") : "") + 
+    "</platform>\n" +
+//Enter the name of the platform used for data collection, if applicable.
+"    <physical-collection-fishing-gear></physical-collection-fishing-gear>\n" + 
+//Enter the name of the physical collection or fishing gear used for data collection, if applicable.
+"  </data-set-information>\n" +
+"  <support-roles mode=\"replace\">\n");
+
+//*** role=Metadata Contact from ERDDAP admin
+//??? duplicate to be Distributor, Process Contact(?), Publisher?
+sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Metadata contact</support-role-type>\n" + 
+//Enter Author, Collection Item Originator, Data Set Credit, Data Steward, Distributor, Metadata Contact, Originator, Point of Contact, Process Contact, Publisher
+"      <from-date>" + now.substring(0, 4) + "</from-date>\n" + //unknown start date, so use this year
+//Enter the start date of the support role in ISO 8601 basic format (YYYYMMDD), up to the appropriate granularity which is significant. For example, if the date is significant only up to the month, enter YYYYMM.
+//still in effect, so don't specify: "      <to-date></to-date>\n" + 
+//If the support role is still in effect, do not include this field. Otherwise, enter the end date of the support role in ISO 8601 basic format (YYYYMMDD), up to the appropriate granularity which is significant. For example, if the date is significant only up to the month, enter YYYYMM.
+"      <person-email>" + 
+    XML.encodeAsXML(EDStatic.adminEmail == null? "" : EDStatic.adminEmail) + 
+     "</person-email>\n" + 
+//If the support role is a person, enter the person's email address. The person must exist in InPort. Please contact your librarian is the person is not in InPort.
+"      <organization>" + 
+    XML.encodeAsXML(EDStatic.adminInstitution == null? "" :EDStatic.adminInstitution) + 
+     "</organization>\n" + 
+//If the support role is an organization, enter EITHER the organization name OR the organization acronym, as it is listed in InPort. The organization must exist in InPort.
+"      <contact-instructions>" + 
+    XML.encodeAsXML(EDStatic.adminEmail == null? "" : "email " + EDStatic.adminEmail) + 
+     "</contact-instructions>\n" + 
+//Enter the contact instructions for the person or organization specified for the support role.
+"    </support-role>\n");
+
+//*** role=Author from creator metadata
+//??? duplicate to be Data Set Credit?
+if (gatts.getString("creator_email") != null)
+    sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Author</support-role-type>\n" + 
+//Enter Author, Collection Item Originator, Data Set Credit, Data Steward, Distributor, Metadata Contact, Originator, Point of Contact, Process Contact, Publisher
+"      <from-date>" + now.substring(0, 4) + "</from-date>\n" + //unknown start date, so use this year
+//Enter the start date of the support role in ISO 8601 basic format (YYYYMMDD), up to the appropriate granularity which is significant. For example, if the date is significant only up to the month, enter YYYYMM.
+//still in effect, so don't specify: "      <to-date></to-date>\n" + 
+//If the support role is still in effect, do not include this field. Otherwise, enter the end date of the support role in ISO 8601 basic format (YYYYMMDD), up to the appropriate granularity which is significant. For example, if the date is significant only up to the month, enter YYYYMM.
+"      <person-email>" + 
+     XML.encodeAsXML(gatts.getString("creator_email") == null? "" : gatts.getString("creator_email")) + 
+     "</person-email>\n" + 
+//If the support role is a person, enter the person's email address. 
+//??? The person must exist in InPort. Please contact your librarian is the person is not in InPort.
+"      <organization></organization>\n" + 
+//??? is creator_name person or org?
+//If the support role is an organization, enter EITHER the organization name OR the organization acronym, as it is listed in InPort. The organization must exist in InPort.
+"      <contact-instructions>" + 
+     XML.encodeAsXML(gatts.getString("creator_email") == null? "" : "email " + gatts.getString("creator_email")) + 
+     "</contact-instructions>\n" + 
+//Enter the contact instructions for the person or organization specified for the support role.
+"    </support-role>\n");
+
+//*** Publisher  - give ERDDAP info???
+
+//end of support roles
+sb.append(
+"  </support-roles>\n" +
+"  <extents mode=\"replace\">\n" +
+"    <extent>\n" +
+"      <description></description>\n");
+//Enter a general description of the extent, if any.
+
+//time-frame
+if ((isGrid? eddGrid.timeIndex() : eddTable.timeIndex()) >= 0) {
+    EDV edv = isGrid? eddGrid.axisVariables()[eddGrid.timeIndex()] : 
+                      eddTable.dataVariables()[eddTable.timeIndex()];
+    double start = edv.destinationMin();
+    double stop = edv.destinationMax();
+    if (Math2.isFinite(start)) {
+        String startS = String2.replaceAll(String2.replaceAll(
+            edv.destinationMinString(), "-", ""), ":", "");
+        //if stop is in last 60 days, treat as Continuing 
+        String stopS  = Calendar2.removeSpacesDashesColons(
+            Math2.isFinite(stop) &&
+            System.currentTimeMillis()/1000.0 - stop > 60 * Calendar2.SECONDS_PER_DAY? 
+            edv.destinationMaxString() : "");
+        stopS = String2.replaceAll(String2.replaceAll(stopS, "-", ""), ":", "");
+sb.append(
+"      <time-frames>\n" +
+"        <time-frame>\n" +
+"          <time-frame-type>" + (stopS.length() == 0? "Range" : "Continuing") +
+         "</time-frame-type>\n" + 
+//Enter Continuing, Range or Discrete
+"          <start-date-time>" + startS + 
+         "</start-date-time>\n" + 
+//Enter a start date/time of the catalog item's temporal extent in ISO 8601 basic format (YYYYMMDDTHHMMSS.FFFZ), up to the appropriate granularity which is significant. For example, if the date/time is significant only up to the month, enter YYYYMM. Dates without a time zone component will be interpreted as GMT.
+"          <end-date-time>" + (stopS.length() == 0? "" : stopS) + 
+         "</end-date-time>\n" + 
+//If the time frame is a Range, enter the end date/time of the catalog item's temporal extent in ISO 8601 basic format (YYYYMMDDTHHMMSS.FFFZ), up to the appropriate granularity which is significant. For example, if the date/time is significant only up to the month, enter YYYYMM. Dates without a time zone component will be interpreted as GMT. The end date/time must be later than the start date/time.
+"          <description></description>\n" + 
+//Enter a description of the time frame.
+"        </time-frame>\n" +
+"      </time-frames>\n");
+    }
+}
+
+//geographic area
+if (isGrid? eddGrid.lonIndex()  >= 0 && eddGrid.latIndex()  >= 0 :
+            eddTable.lonIndex() >= 0 && eddTable.latIndex() >= 0) {
+    EDV edv = isGrid? eddGrid.axisVariables()[eddGrid.lonIndex()] : 
+                      eddTable.dataVariables()[eddTable.lonIndex()];
+    double west = edv.destinationMin();
+    double east = edv.destinationMax();
+    edv = isGrid? eddGrid.axisVariables()[eddGrid.latIndex()] : 
+                  eddTable.dataVariables()[eddTable.latIndex()];
+    double south = edv.destinationMin();
+    double north = edv.destinationMax();
+    boolean global = (west <= -179 && east >= 179) || //test before modifying west and east
+                     (west <= 0    && east >= 359);        
+    if (Math2.isFinite(west) && Math2.isFinite(east)) {
+        if (west >= 180) {west -= 360; east -= 360;}
+        if (west < 180 && east > 180)  { //span date line?
+            west = -180; east = 180;}
+    }
+//so don't write any of this if no lat lon vars
+//   do    write this with "" if min max unknown
+//   do    write this with number if min max are known
+sb.append(
+"      <geographic-areas>\n" +
+"        <geographic-area>\n" +
+"          <west-bound>" + (Math2.isFinite(west)? "" + west : "") + 
+         "</west-bound>\n" + 
+//Enter a numeric value between -180 to 180. All bounds must be supplied (no partial bounding boxes).
+"          <east-bound>" + (Math2.isFinite(east)? "" + east : "") +
+         "</east-bound>\n" + 
+//Enter a numeric value  between -180 to 180. All bounds must be supplied (no partial bounding boxes).
+"          <north-bound>" + (Math2.isFinite(north)? "" + north : "") + 
+         "</north-bound>\n" + 
+//Enter a numeric value between -90 to 90. All bounds must be supplied (no partial bounding boxes). The north bound must be greater or equal to the south bound.
+"          <south-bound>" + (Math2.isFinite(south)? "" + south : "") + 
+         "</south-bound>\n" + 
+//Enter a numeric value between -90 to 90. All bounds must be supplied (no partial bounding boxes). The north bound must be greater or equal to the south bound.
+"          <description>" + (global? "global" : "") +
+          "</description>\n" + 
+//Enter a description for the geographic extent.
+"        </geographic-area>\n" +
+"      </geographic-areas>\n");
+}
+
+//vertical extent
+if (false) { //??? OMIT THIS until vertical crs URLs are figured out
+boolean hasAlt   = isGrid? eddGrid.altIndex()   >= 0 : eddTable.altIndex()   >= 0; //prefer
+boolean hasDepth = isGrid? eddGrid.depthIndex() >= 0 : eddTable.depthIndex() >= 0;
+if (hasAlt || hasDepth) {
+    EDV edv = isGrid? eddGrid.axisVariables( )[hasAlt? eddGrid.altIndex( ) : eddGrid.depthIndex()] : 
+                      eddTable.dataVariables()[hasAlt? eddTable.altIndex() : eddTable.depthIndex()];
+    double min = edv.destinationMin();
+    double max = edv.destinationMax();
+sb.append(
+"      <vertical-extents>\n" +
+"        <vertical-extent>\n" +
+"          <min>" + (Math2.isFinite(min)? "" + min : "") + "</min>\n" + 
+//Enter the minimum vertical value (numeric value).
+"          <max>" + (Math2.isFinite(max)? "" + max : "") + "</max>\n" + 
+//Enter the maximum vertical value (numeric value). The maximum must be greater than or equal to the minimum value.
+"          <coordinate-reference-system-url>" +
+           XML.encodeAsXML(hasAlt? "???" : "???" ) + 
+         "</coordinate-reference-system-url>\n" + 
+//Enter the URL that describes the coordinate reference system being used.  The URL must start with http://, https://, or ftp://
+"        </vertical-extent>\n" +
+"      </vertical-extents>\n");
+}}
+
+//end of extents
+if (accessibleTo != null)
+    throw new RuntimeException("This method is only set up for public datasets, " +
+        "but this dataset has accessibleTo limitions."); 
+sb.append(
+"    </extent>\n" +
+"  </extents>\n" +
+"  <access-information>\n" +
+"    <security-class>Unclassified</security-class>\n" + 
+//A value for this field is required for this section. It must be one of the following values: \"Top Secret\", \"Secret\", \"Confidential\", \"Restricted\", \"Sensitive\", \"Unclassified\".
+"    <security-classification-system>???</security-classification-system>\n" + 
+//??? Enter the security classification system.
+"    <security-handling-description></security-handling-description>\n" + 
+//Enter the security handling description.
+"    <data-access-policy>" + XML.encodeAsXML(gatts.getString("license")) + 
+   "</data-access-policy>\n" + 
+//Enter the data access policy.
+"    <data-access-procedure>" + 
+    XML.encodeAsXML(EDStatic.erddapUrl + "/search/index.html?searchFor=datasetID%3D" + datasetID) +
+   "</data-access-procedure>\n" + 
+//Enter the data access procedure.
+"    <data-access-constraints>None</data-access-constraints>\n" + 
+//Enter the data access constraints.
+"    <data-use-constraints>" + 
+    XML.encodeAsXML(gatts.getString("license")) + 
+   "</data-use-constraints>\n" + 
+//Enter the data use constraints.
+"    <metadata-access-constraints>None</metadata-access-constraints>\n" + 
+//Enter the metadata access constraints.
+"    <metadata-use-constraints></metadata-use-constraints>\n" + 
+//Enter the metadata use constraints.
+"  </access-information>\n" +
+"  <data-quality>\n" +
+"    <representativeness></representativeness>\n" + 
+//Enter the representativeness.
+"    <accuracy>" +
+     XML.encodeAsXML(gatts.getString("accuracy") == null? "" : gatts.getString("accuracy")) + 
+   "</accuracy>\n" + 
+//Enter the accuracy.
+"    <analytical-accuracy></analytical-accuracy>\n" + 
+//Enter the analytical accuracy.
+"    <quantitation-limits></quantitation-limits>\n" + 
+//Enter the quantitation limits.
+"    <bias></bias>\n" + 
+//Enter the bias.
+"    <comparability></comparability>\n" + 
+//Enter the comparability.
+"    <completeness-measure></completeness-measure>\n" + 
+//Enter the completeness measure.
+"    <precision>" +
+     XML.encodeAsXML(gatts.getString("precision") == null? "" : gatts.getString("precision")) + 
+   "</precision>\n" + 
+//Enter the precision.
+"    <analytical-precision></analytical-precision>\n" + 
+//Enter the analytical precision.
+"    <field-precision></field-precision>\n" + 
+//Enter the field precision.
+"    <sensitivity></sensitivity>\n" + 
+//Enter the sensitivity.
+"    <detection-limit></detection-limit>\n" + 
+//Enter the detection limit.
+"    <completeness-report></completeness-report>\n" + 
+//Enter the completeness report.
+"    <conceptual-consistency></conceptual-consistency>\n" + 
+//Enter the conceptual consistency.
+"    <quality-control-procedures></quality-control-procedures>\n" + 
+//Enter details quality control procedures employed.
+"  </data-quality>\n");
+
+//Data Management
+sb.append(
+"  <data-management>\n" +
+"    <resources-identified>Yes</resources-identified>\n" + 
+//Enter Yes or No, in regards to whether or not resources for data management have been identified.
+"    <resources-budget-percentage>Unknown</resources-budget-percentage>\n" + 
+//Enter the percentage of the budget for these data devoted to data management. Specify a percentage (e.g. 5%) or Unknown.
+"    <data-access-directive-compliant>Yes</data-access-directive-compliant>\n" + 
+//Enter Yes or No, in regards to whether or not these data comply with the Data Access Directive.
+"    <data-access-directive-waiver></data-access-directive-waiver>\n" + 
+//Enter Yes or No, in regards to whether or not a Data Access Waiver has been filed. This field should only be included if data are not to be made available to the public, or if it is available with limitations.
+//"    <hosting-service-needed></hosting-service-needed>\n" + 
+//Indicate whether a hosting service is needed. This field should only be included if no distributor is currently providing data access.
+"    <delay-collection-dissemination>ASAP</delay-collection-dissemination>\n" + 
+//Enter the approximate delay between data collection and dissemination.
+"    <delay-collection-dissemination-explanation></delay-collection-dissemination-explanation>\n");
+//If the delay between data collection and dissemination is longer than the latency of automated processing, explain under what authority data access is delayed. This field should only be included if the delay is longer than the latency of automated processing.
+
+//default archive info (e.g., for Dave's datasets)
+String arLocation = "", arOther = "", arNone = "";
+if (datasetID.startsWith("erdPP") ||  //seawifs derived
+    datasetID.startsWith("erdMH1") || //seawifs...
+    datasetID.startsWith("erdSA") ||
+    datasetID.startsWith("erdSG") ||
+    datasetID.startsWith("erdSH") ||
+    datasetID.startsWith("erdSW") ||
+    datasetID.startsWith("erdVH") || //viirs
+    datasetID.startsWith("gsfc") ||
+    datasetID.startsWith("jpl") ||
+    institution.indexOf("GSFC") >= 0 ||
+    institution.indexOf("JPL")  >= 0 ||
+    institution.indexOf("NASA") >= 0 ||
+    institution.indexOf("OBPG") >= 0) {
+    arLocation = "Other"; 
+    arOther = "NASA";
+
+} else if (datasetID.startsWith("erdlasFn") ||
+           datasetID.startsWith("hycom") ||
+           datasetID.startsWith("nrl") ||        //but do they actaully archive it???
+           institution.indexOf("FNMOC") >= 0 ||
+           institution.indexOf("Naval Oceanographic") >= 0 ||
+           institution.indexOf("Naval Research") >= 0) {
+    arLocation = "Other"; 
+    arOther = "US Department of Defense"; //???
+
+} else if (datasetID.startsWith("aadc") || //obis
+           datasetID.startsWith("usgs")) { //Coastal Relief Model
+    arLocation = "Other"; 
+    arOther = "USGS"; //???
+
+} else if (datasetID.startsWith("erdCinp")) { //National Park Service
+    arLocation = "Other"; 
+    arOther = "US Department of Interior"; //???
+
+} else if (datasetID.startsWith("aviso") ||
+           datasetID.startsWith("erdTA")) { //aviso
+    arLocation = "World Data Center"; 
+    arOther = "AVISO"; //???
+
+} else if (datasetID.startsWith("esrl") ||
+           institution.indexOf("NGDC") >= 0) {
+    arLocation = "NCEI-CO";  //NGDC
+
+} else if (datasetID.startsWith("gfdl") ||
+           datasetID.startsWith("nodc") ||
+           datasetID.startsWith("pmelTao") ||   //???
+           datasetID.startsWith("scripps") ||  //gliders
+           title.startsWith("Currents, HFRadar,") ||  //???
+           datasetID.startsWith("ucsd") ||         //HFRadar ???
+           datasetID.startsWith("UMD / SODA") ||   //???
+           datasetID.startsWith("gtopp") ||   //???
+           institution.indexOf("CeNCOOS") >= 0 || //IOOS works to archive regional data
+           institution.indexOf("GoMOOS") >= 0 || 
+           institution.indexOf("NERACOOS") >= 0 || 
+           datasetID.startsWith("NWIOOS") ||   
+           institution.indexOf("AOML") >= 0 || 
+           institution.indexOf("FSU") >= 0 ||  //NOAA ship 
+           institution.indexOf("NDBC") >= 0 ||
+           institution.indexOf("NODC") >= 0 ||
+           institution.indexOf("NOS") >= 0) {
+    arLocation = "NCEI-MD";  //NODC
+
+} else if (datasetID.startsWith("ncddc")) {
+    arLocation = "NCEI-MS";  //NCDDC
+
+} else if (datasetID.startsWith("ncdc") ||
+           datasetID.startsWith("ncep") ||
+           institution.indexOf("NCDC") >= 0 ||
+           institution.indexOf("NCEP") >= 0) {
+    arLocation = "NCEI-NC";  //NCDC
+
+} else if (datasetID.startsWith("erdCalCOFI") ||   
+           datasetID.startsWith("siocalcofi") ||  
+           datasetID.startsWith("erdCAMarCat") ||   
+           datasetID.startsWith("erdHadISST") ||   
+           datasetID.startsWith("erdFedRockfish") ||   
+           datasetID.startsWith("erdPrd") ||   
+           datasetID.startsWith("FRDCPS") ||   
+           datasetID.startsWith("fedCalLandings") ||   
+           datasetID.startsWith("LiquidR") ||   
+           datasetID.startsWith("osu") ||   
+           datasetID.startsWith("PRBO") ||  //Farallon Island Seabird data
+           datasetID.startsWith("rt")) {   //Sacramento River
+    arLocation = "To Be Determined";
+    arNone = "We will find out if an archive is interested in this dataset.";
+
+} else {
+    //default archive info (e.g., for Dave's datasets)
+    arLocation = "No Archiving Intended"; 
+    arNone = "This data is derived from data in an archive. " +
+        "The archives only want to archive the source data.";
+}
+//skip: earthCube.*
+
+sb.append(
+"    <archive-location>" + XML.encodeAsXML(arLocation) + 
+   "</archive-location>\n" + 
+//Enter only one of the following fixed values: NCEI-MD, NCEI-CO, NCEI-NC, NCEI-MS, World Data Center (WDC) Facility, Other, To Be Determined, Unable to Archive, No Archiving Intended
+"    <archive-location-explanation-other>" + XML.encodeAsXML(arOther) + 
+   "</archive-location-explanation-other>\n" + 
+//Specify the archive location, if World Data Center (WDC) Facility or Other was entered. This field should only be included if one of those values was entered. 
+"    <archive-location-explanation-none>" + XML.encodeAsXML(arNone) + 
+   "</archive-location-explanation-none>\n" + 
+//Provide an explanation, if To Be Determined, Unable to Archive, or No Archiving Intended was entered.
+"    <delay-collection-archive></delay-collection-archive>\n" + 
+//45 days
+"    <data-protection-plan>Data files are backed up.</data-protection-plan>\n" + 
+//Discuss how the data will be protected from accidental or malicious modification or deletion prior to receipt by the archive. Include relevant information on data back-up, disaster recovery/contingency planning, and off-site data storage relevant to the data collection.
+"  </data-management>\n" +
+"  <lineage>\n" +
+"    <lineage-statement></lineage-statement>\n" + 
+
+//Enter the lineage statement. //This is for a lower level originator. Skip it.
+//"    <lineage-sources>\n" +
+//"      <lineage-source>\n" +
+//"        <citation-title></citation-title>\n" + 
+//Enter the citation title of the lineage source.
+//"        <originator-publisher-type></originator-publisher-type>\n" + 
+//Indicate the type of originator/publisher related to the lineage source citation. The value here must be one of the following values: \"InPort Person\", \"InPort Organization\", or \"Non-InPort Person/Organization\".
+//"        <originator-publisher></originator-publisher>\n" + 
+//If the originator/publisher is a person who exists in InPort, enter their email address here (do not enter their name). If the originator/publisher is an organization that exists in InPort, enter the organization name, exactly as it appears in InPort, here. If the originator/publisher is a person or organization that does not exist in InPort, enter the person/organization name here.\n" +
+//"        <publish-date></publish-date>\n" + 
+//Enter the publication date of the lineage source citation in ISO 8601 basic format (YYYYMMDD).\n" +
+//"        <extent-type></extent-type>\n" + 
+//Enter Continuing, Range or Discrete
+//"        <extent-start-date-time></extent-start-date-time>\n" + 
+//Enter a start date/time of the lineage source's temporal extent in ISO 8601 basic format (YYYYMMDDTHHMMSS), up to the appropriate granularity which is significant. For example, if the date/time is significant only up to the month, enter YYYYMM. Date/times are interpreted as GMT.
+//"        <extent-end-date-time></extent-end-date-time>\n" + 
+//If the time frame is a Range, enter the end date/time of the lineage source's temporal extent in ISO 8601 basic format (YYYYMMDDTHHMMSS), up to the appropriate granularity which is significant. For example, if the date/time is significant only up to the month, enter YYYYMM. Date/times are interpreted as GMT. The end date/time must be later than the start date/time.
+//"        <scale-denominator></scale-denominator>\n" + 
+//Enter the scale denominator of the lineage source as an integer. The value must be greater than zero.
+//"        <citation-url></citation-url>\n" + 
+//Enter the citation URL. The URL must start with http:// or https://.
+//"      </lineage-source>\n" +
+//"    </lineage-sources>\n" +    
+"    <lineage-process-steps>\n");
+
+if (gatts.getString("history") != null) {
+//??? Is history 1 string, so split it at '/n'?
+    String historySA[] = String2.split(gatts.getString("history"), '\n'); 
+    int sequenceNumber = 1;
+    for (int historyi = 0; historyi < historySA.length; historyi++) {
+        //look for date at beginning
+        String th = historySA[historyi].trim();
+        if (th.length() == 0)
+            continue;
+        String tDate = "";
+        int po = th.indexOf(' ');
+        if (po > 0) {
+            //try to extract a data from the first thing on each line
+            String ts = th.substring(0, po);
+            String format = Calendar2.suggestDateTimeFormat(ts);
+            if (format.length() > 0) {
+                double epSec = Calendar2.toEpochSeconds(ts, format);
+                if (Math2.isFinite(epSec)) {
+                    tDate = String2.replaceAll(String2.replaceAll(
+                        Calendar2.epochSecondsToIsoStringT(epSec), "-", ""), ":", "") + "Z";
+                    th = th.substring(po + 1);
+                }
+            }
+        }
+sb.append(
+"      <lineage-process-step>\n" +
+"        <sequence-number>" + sequenceNumber++ + "</sequence-number>\n" + 
+//Enter the sequence number as an integer.
+"        <description>" + XML.encodeAsXML(th) + "</description>\n" + 
+//Enter a description for the process step.
+"        <process-date-time>" + XML.encodeAsXML(tDate) + "</process-date-time>\n" + 
+//Enter the process date/time of the step in ISO 8601 basic format (YYYYMMDDTHHMMSS). Any valid granularity is acceptable, but the value will be stored up to seconds precision, in GMT.
+"        <process-contact-type></process-contact-type>\n" + 
+//Indicate the type of process contact related to the lineage process step. The value here must be one of the following values: \"InPort Person\", \"InPort Organization\", or \"Non-InPort Person/Organization\".
+"        <process-contact></process-contact>\n" + 
+//If the process contact is a person who exists in InPort, enter their email address here (do not enter their name). If the process contact is an organization that exists in InPort, enter the organization name, exactly as it appears in InPort, here. If the process contact is a person or organization that does not exist in InPort, enter the person/organization name here.\n" +
+"        <process-contact-phone></process-contact-phone>\n" + 
+//Only applicable for process contacts that do not exist in InPort. Enter the phone number of the process contact.\n" +
+"        <process-contact-email-address></process-contact-email-address>\n" + 
+//Only applicable for process contacts that do not exist in InPort. Enter the email address of the process contact.\n" +
+"        <source-citation></source-citation>\n" + 
+//Enter the source citation, if any. This must match the citation title of a lineage source exactly, or it will not be included.
+"      </lineage-process-step>\n");
+    }
+}
+
+//end of lineage 
+sb.append(
+"    </lineage-process-steps>\n" +
+"  </lineage>\n" +
+"  <downloads mode=\"replace\">\n" +
+"    <download>\n" +
+"      <download-url></download-url>\n" + 
+//Enter the download URL. The URL must start with http://, https://, or ftp://
+"      <file-name></file-name>\n" + 
+//Enter the file name.
+"      <description></description>\n" + 
+//Enter the download description.
+"      <file-date-time></file-date-time>\n" + 
+//Enter the date/time of the file. The date/time must be specified as YYYYMMDD, YYYYMMDDTHH, YYYYMMDDTHHMM, or YYYYMMDDTHHMMSS.
+"      <file-type></file-type>\n" + 
+//Enter the type of file.
+"      <fgdc-content-type></fgdc-content-type>\n" + 
+//Enter the FGDC content type of the download. Must be one of the following: Applications, Clearinghouses, Downloadable Data, Geographic Activities, Geographic Services, Live Data and Maps, Map Files, Offline Data, Other Documents, Static Map Images
+"      <file-size></file-size>\n" + 
+//Enter the file size of the download.
+"      <application-version></application-version>\n" + 
+//Enter the application version for the download.
+"      <compression></compression>\n" + 
+//Enter the compression status of the download file. Must be one of the following values: Uncompressed, Zip, GZIP, Z, TAR, GTAR, Unknown, no compression applied
+"      <review-status></review-status>\n" + 
+//Enter the review status of the download. Must be one of the following values: Not Chked, Chked MD, Chked Viruses, Chked Inapp Content, Chked Viruses Inapp Content
+"    </download>\n" +
+"  </downloads>\n" +
+"</inport-metadata>\n");
+        return sb.toString();
+    }
+
+    /**
+     * This creates and writes one InPort XML file.
+     * This throws a runtime exception if there is trouble.
+     */
+    public void writeInPortXmlFile(String fullFileName) {
+        String error = String2.writeToFile(fullFileName, getInPortXmlString(), "UTF-8");
+        if (error.length() > 0)
+            throw new RuntimeException(error);
+    }
+
+    public static void testInPortXml() throws Throwable {
+        String dir = EDStatic.fullTestCacheDirectory;
+        String tid = "erdBAssta5day";
+        String error = String2.writeToFile(dir + "ErddapToInPort_" + tid + ".xml", 
+            EDD.oneFromDatasetsXml(null, tid).getInPortXmlString(), "UTF-8");
+        if (error.length() > 0)
+            throw new RuntimeException(error);
+    }
+
 
     /**
      * This sets verbose=on and reallyVerbose=on for this class

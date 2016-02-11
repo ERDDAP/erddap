@@ -1421,7 +1421,7 @@ These datasets were hard to work with:
 
             String id =     "8452660";
             String cityLL = ",Newport,RI,1930-09-11T00:00:00Z,NWPR1,\"NWLON,PORTS\",-71.3267,41.505,"; 
-            String daysAgo = daysAgo40;
+            String daysAgo = daysAgo20;
             query = "&stationID=\"" + id + "\"&time>=" + daysAgo + 
                                         "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
@@ -1460,7 +1460,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsMRF"); 
 
-            String daysAgo = yesterday;
+            String daysAgo = daysAgo70; //yesterday;
             query = "&stationID=\"9752619\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "00:54";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
@@ -1498,7 +1498,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsMRH"); 
 
-            String daysAgo = yesterday;
+            String daysAgo = daysAgo5; //yesterday;
             query = "&stationID=\"9063063\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
@@ -1718,10 +1718,11 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
         String2.log("\n****************** EDDTableFromAsciiServiceNOS.test() *****************\n");
         testVerboseOn();
  
-        //do every 3 months
+        //update nosCoops datasets every 3 months
         //then copy [tomcat]/content/erddap/subset/nosCoops*.json files 
         //  to coastwatch ERDDAP /subset
         //  and UAF       ERDDAP /subset
+        //then flag all the datasets (use the list of flags)
         if (makeSubsetFiles) {
             if (reloadSF) reloadStationsFile();
             makeNosCoopsWLSubsetFiles(false);  //re-download the stations file
@@ -1729,8 +1730,24 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             makeNosActiveCurrentsSubsetFile(reloadSF); //re-download the currents stations file (a different file)
         }
 
-        //always done  
-        testNosCoops(".*");  //test all: ".*"
+        //always done   could test all with testNosCoops(".*"); but troublesome to debug
+        /* */
+        testNosCoops("nosCoopsWLR1");
+        testNosCoops("nosCoopsWLV6");
+        testNosCoops("nosCoopsWLR60");
+        testNosCoops("nosCoopsWLVHL");
+        testNosCoops("nosCoopsWLTPHL");
+        testNosCoops("nosCoopsWLTP60");
+        testNosCoops("nosCoopsMAT");
+        testNosCoops("nosCoopsMBP");
+        testNosCoops("nosCoopsMC");
+        testNosCoops("nosCoopsMRF");
+        testNosCoops("nosCoopsMRH");
+        testNosCoops("nosCoopsMWT");
+        testNosCoops("nosCoopsMW");
+        testNosCoops("nosCoopsMV");
+        testNosCoops("nosCoopsCA");
+  
 
     }
 

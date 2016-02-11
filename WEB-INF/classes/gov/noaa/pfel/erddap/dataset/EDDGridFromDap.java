@@ -818,6 +818,7 @@ public class EDDGridFromDap extends EDDGrid {
                 if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                     throw t;
 
+                String2.log(MustBe.throwableToString(t));
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
                     t); 
@@ -7036,21 +7037,140 @@ EDStatic.startBodyHtml(null) + "\n" +
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
+      } catch (Throwable t) {
+          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+              "\nUnexpected error."); 
+      }
+        
+    }
+
+    /** This tests a depth axis variable. This requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP. */
+    public static void testGridWithDepth2_LonPM180() throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testGridWithDepth2_LonPM180");
+        String results, expected, tName;
+        int po;
+      try{
+
+        //test generateDatasetsXml -- It should catch z variable and convert to altitude.
+        //!!! I don't have a test dataset with real altitude data that isn't already called altitude!
+        /*
+        String url = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/19921014.bodas_ts.nc";
+        results = generateDatasetsXml(true, url, 
+            null, null, null, 10080, null);
+        po = results.indexOf("<sourceName>z</sourceName>");
+        Test.ensureTrue(po >= 0, "results=\n" + results);
+        expected = 
+"<sourceName>z</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"cartesian_axis\">Z</att>\n" +
+"            <att name=\"long_name\">Depth</att>\n" +
+"            <att name=\"positive\">down</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>";
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+        */
+
+        //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
+        EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, 
+            "hawaii_d90f_20ee_c4cb_LonPM180");         
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".das"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        po = results.indexOf("depth {");
+        Test.ensureTrue(po >= 0, "results=\n" + results);
+        expected = 
+  "depth {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"down\";\n" +
+"    Float64 actual_range 5.01, 5375.0;\n" +  //2014-01-17 was 5.0, 5374.0
+"    String axis \"Z\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Depth\";\n" +
+"    String positive \"down\";\n" +
+"    String standard_name \"depth\";\n" +
+"    String units \"m\";\n" +
+"  }";
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
+        //FGDC should deal with depth correctly
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".fgdc"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        po = results.indexOf("<vertdef>");
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
+        expected = 
+  "<vertdef>\n" +
+"      <depthsys>\n" +
+"        <depthdn>Unknown</depthdn>\n" +
+"        <depthres>Unknown</depthres>\n" +
+"        <depthdu>meters</depthdu>\n" +
+"        <depthem>Explicit depth coordinate included with horizontal coordinates</depthem>\n" +
+"      </depthsys>\n" +
+"    </vertdef>\n" +
+"  </spref>";
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
+        //ISO 19115 should deal with depth correctly
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".iso19115"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+
+        po = results.indexOf(
+"codeListValue=\"vertical\">");
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
+        expected = 
+                 "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
+"          </gmd:dimensionName>\n" +
+"          <gmd:dimensionSize>\n" +
+"            <gco:Integer>40</gco:Integer>\n" +
+"          </gmd:dimensionSize>\n" +
+"          <gmd:resolution>\n" +
+"            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n" + //2014-01-17 was 137.66666666666666
+"          </gmd:resolution>\n" +
+"        </gmd:MD_Dimension>\n" +
+"      </gmd:axisDimensionProperties>\n";
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
+        po = results.indexOf(
+"<gmd:EX_VerticalExtent>");
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
+        expected = 
+           "<gmd:EX_VerticalExtent>\n" +
+"              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n" +
+"              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n" +
+"              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" +
+"            </gmd:EX_VerticalExtent>";
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
         //test WMS 1.1.0 service getCapabilities from localhost erddap
         String2.log("\nTest WMS 1.1.0 getCapabilities\n" +
-                      "!!! This test requires hawaii_d90f_20ee_c4cb dataset in localhost ERDDAP!!!");
+                      "!!! This test requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP!!!");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
+            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "service=WMS&request=GetCapabilities&version=1.1.0");
         po = results.indexOf("</Layer>");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
 "</Layer>\n" +
 "      <Layer>\n" +
-"        <Title>SODA - POP 2.2.4 Monthly Means (At Depths)</Title>\n" +
+"        <Title>SODA - POP 2.2.4 Monthly Means (At Depths), Lon+/-180</Title>\n" +
 "        <SRS>EPSG:4326</SRS>\n" +
-"        <LatLonBoundingBox minx=\"0.25\" miny=\"-75.25\" maxx=\"359.75\" maxy=\"89.25\" />\n" +
-"        <BoundingBox SRS=\"EPSG:4326\" minx=\"0.25\" miny=\"-75.25\" maxx=\"359.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
+"        <LatLonBoundingBox minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" />\n" +
+"        <BoundingBox SRS=\"EPSG:4326\" minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
 "        <Dimension name=\"time\" units=\"ISO8601\" />\n" +
 "        <Dimension name=\"elevation\" units=\"EPSG:5030\" />\n" +
           //2014-01-24 default was 2008-12-15
@@ -7069,8 +7189,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 "            xlink:href=\"http://www.atmos.umd.edu/~ocean/\" />\n" +
 "        </Attribution>\n" +
 "        <Layer opaque=\"1\" >\n" +
-"          <Name>hawaii_d90f_20ee_c4cb:temp</Name>\n" +
-"          <Title>SODA - POP 2.2.4 Monthly Means (At Depths) - temp</Title>\n" +
+"          <Name>hawaii_d90f_20ee_c4cb_LonPM180:temp</Name>\n" +
+"          <Title>SODA - POP 2.2.4 Monthly Means (At Depths), Lon+/-180 - temp</Title>\n" +
 "        </Layer>";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
@@ -7079,11 +7199,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2110e5.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb%3Atemp" +
+            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
+            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
             tName, false);
         SSR.displayInBrowser("file://" + tName);
         
@@ -7091,20 +7211,20 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2110edef.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb%3Atemp" +
+            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" + 
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
+            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
             tName, false);
         SSR.displayInBrowser("file://" + tName);
         
 
         //test WMS 1.3.0 service getCapabilities from localhost erddap
         String2.log("\nTest WMS 1.3.0 getCapabilities\n" +
-                      "!!! This test requires hawaii_d90f_20ee_c4cb dataset in localhost ERDDAP!!!");
+                      "!!! This test requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP!!!");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
+            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "service=WMS&request=GetCapabilities&version=1.3.0");
  
         po = results.indexOf("</Layer>");
@@ -7112,16 +7232,16 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected =  
 "</Layer>\n" +
 "      <Layer>\n" +
-"        <Title>SODA - POP 2.2.4 Monthly Means (At Depths)</Title>\n" +
+"        <Title>SODA - POP 2.2.4 Monthly Means (At Depths), Lon+/-180</Title>\n" +
 "        <CRS>CRS:84</CRS>\n" +
 "        <CRS>EPSG:4326</CRS>\n" +
 "        <EX_GeographicBoundingBox>\n" +
-"          <westBoundLongitude>0.25</westBoundLongitude>\n" +
-"          <eastBoundLongitude>359.75</eastBoundLongitude>\n" +
+"          <westBoundLongitude>-179.75</westBoundLongitude>\n" +
+"          <eastBoundLongitude>179.75</eastBoundLongitude>\n" +
 "          <southBoundLatitude>-75.25</southBoundLatitude>\n" +
 "          <northBoundLatitude>89.25</northBoundLatitude>\n" +
 "        </EX_GeographicBoundingBox>\n" +
-"        <BoundingBox CRS=\"EPSG:4326\" minx=\"0.25\" miny=\"-75.25\" maxx=\"359.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
+"        <BoundingBox CRS=\"EPSG:4326\" minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
 "        <Dimension name=\"time\" units=\"ISO8601\" multipleValues=\"0\" nearestValue=\"1\" default=\"2010-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
@@ -7137,11 +7257,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2130e5.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb%3Atemp" +
+            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
+            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
             tName, false);
         SSR.displayInBrowser("file://" + tName);
         
@@ -7149,11 +7269,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2130edef.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb%3Atemp" +
+            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" + 
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
+            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
             tName, false);
         SSR.displayInBrowser("file://" + tName);
       } catch (Throwable t) {
@@ -9280,6 +9400,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testClimatologyTime();
         //testGridWithDepth(); //test dataset no longer available
         testGridWithDepth2(); 
+        testGridWithDepth2_LonPM180(); 
         testBigRequest(2); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
         testBigRequest(4); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
         testBigRequest(6); //use 6 partial requests  (time axis is now driver for multiple requests)

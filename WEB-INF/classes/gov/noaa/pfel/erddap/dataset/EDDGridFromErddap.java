@@ -380,36 +380,6 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //leave as default: 1.22
         }
 
-        //try to subscribe to the remote dataset
-        //It's ok that this is done every time. 
-        //  emailIfAlreadyValid=false so there won't be excess email confirmations 
-        //  and if flagKeyKey changes, the new tFlagUrl will be sent.
-        //There is analogous code in EDDTableFromErddap.
-        try {
-            if (!datasetID.endsWith("_LowLonPM180") && //if hidden EDDGridLomPM180 child dataset, subscribing will always fail, so don't try
-                String2.isSomething(EDStatic.emailSubscriptionsFrom)) { //subscription system is active
-                int gpo = tLocalSourceUrl.indexOf("/griddap/");
-                String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
-                    "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
-                    "&email=" + EDStatic.emailSubscriptionsFrom +
-                    "&emailIfAlreadyValid=false" + 
-                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
-                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
-                SSR.touchUrl(subscriptionUrl, 60000);  
-            } else {
-                String2.log(
-                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
-                    "emailEverythingTo wasn't specified in setup.xml.");
-            }
-        } catch (Throwable st) {
-            String2.log(
-                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
-                "If the subscription hasn't been set up already, you may need to\n" + 
-                "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
-                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
-                );
-        }
-
         //save quickRestart info
         if (quickRestartAttributes == null) { //i.e., there is new info
             try {
@@ -429,6 +399,41 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             }
+        }
+
+        //try to subscribe to the remote dataset
+        //It's ok that this is done every time. 
+        //  emailIfAlreadyValid=false so there won't be excess email confirmation requests 
+        //  and if flagKeyKey changes, the new tFlagUrl will be sent.
+        //There is analogous code in EDDTableFromErddap.
+        try {
+            if (!String2.isSomething(EDStatic.emailSubscriptionsFrom)) { 
+                //this erddap's subscription system isn't active
+                String2.log(
+                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
+                    "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n" +
+                    "To keep this dataset up-to-date, use a small reloadEveryNMinutes.");
+            } else if (datasetID.endsWith("_LonPM180Child") || //if hidden EDDGridLomPM180 child dataset, subscribing will always fail, so don't try
+                       datasetID.endsWith("_LonPM180Low")) {   // name used for child in v1.66 only
+                //no point subscribing if this dataset is publicly accessible
+            } else {
+                //try to subscribe to the dataset on the remote erddap
+                int gpo = tLocalSourceUrl.indexOf("/griddap/"); //the "remote" erddap may be local
+                String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
+                    "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
+                    "&email=" + EDStatic.emailSubscriptionsFrom +
+                    "&emailIfAlreadyValid=false" + 
+                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
+                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
+                SSR.touchUrl(subscriptionUrl, 60000);  
+            }
+        } catch (Throwable st) {
+            String2.log(
+                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
+                "If the subscription hasn't been set up already, you may need to\n" + 
+                "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
+                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
+                );
         }
 
         //finally
@@ -763,6 +768,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     throw t;
 
                 //request should be valid, so any other error is trouble with dataset
+                String2.log(MustBe.throwableToString(t));
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
                     t); 
@@ -945,7 +951,7 @@ expected =
                     "title=" + edd.title() + "\n" +
                     "datasetID=" + edd.datasetID() +
                     "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
-                Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL (Monthly Composite), Lon+/-180", "");
+                Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL (Monthly Composite)", "");
                 Test.ensureEqual(edd.datasetID(), "0_0_f195_5e9d_3212", "");
                 Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                     "chlorophyll", "");

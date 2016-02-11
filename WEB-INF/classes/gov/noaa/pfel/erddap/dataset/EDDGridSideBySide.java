@@ -106,28 +106,40 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
-                try {
-                    EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                    if (edd instanceof EDDGrid) {
-                        tChildDatasets.add(edd);
-                    } else {
-                        throw new RuntimeException("The datasets defined in an " +
-                            "EDDGridSideBySide must be a subclass of EDDGrid.");
-                    }
-                } catch (Throwable t) {
-                    //exceptions for first child are serious (it has parent's metadata)
-                    if (tChildDatasets.size() == 0) 
-                        throw t;
-
-                    //exceptions for others are noted, but construction continues
-                    String2.log(MustBe.throwableToString(t));
-                    messages.append(MustBe.throwableToString(t) + "\n");
-
-                    //read to </dataset>
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
                     while (xmlReader.stackSize() != startOfTagsN + 1 ||
                            !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
                         xmlReader.nextTag();
                         //String2.log("  skippping tags: " + xmlReader.allTags());
+                    }
+
+                } else {
+                    try {
+                        EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+                        if (edd instanceof EDDGrid) {
+                            tChildDatasets.add(edd);
+                        } else {
+                            throw new RuntimeException("The datasets defined in an " +
+                                "EDDGridSideBySide must be a subclass of EDDGrid.");
+                        }
+                    } catch (Throwable t) {
+                        //exceptions for first child are serious (it has parent's metadata)
+                        if (tChildDatasets.size() == 0) 
+                            throw t;
+
+                        //exceptions for others are noted, but construction continues
+                        String2.log(MustBe.throwableToString(t));
+                        messages.append(MustBe.throwableToString(t) + "\n");
+
+                        //read to </dataset>
+                        while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                               !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                            xmlReader.nextTag();
+                            //String2.log("  skippping tags: " + xmlReader.allTags());
+                        }
                     }
                 }
 
@@ -334,6 +346,11 @@ public class EDDGridSideBySide extends EDDGrid {
 
         //ensure the setup is valid
         ensureValid();
+
+        //If any child is a FromErddap, try to subscribe to the remote dataset.
+        for (int c = 0; c < childDatasets.length; c++)
+            if (childDatasets[c] instanceof FromErddap) 
+                tryToSubscribeToChildFromErddap(childDatasets[c]);
 
         //finally
         if (verbose) String2.log(
