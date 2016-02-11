@@ -112,8 +112,8 @@ public class DoubleCenterGrids {
         //validate oldBaseDir and newBaseDir
         String oldBaseDir = args[0];
         String newBaseDir = args[1];
-        File2.addSlash(oldBaseDir);
-        File2.addSlash(newBaseDir);
+        oldBaseDir = File2.addSlash(oldBaseDir);
+        newBaseDir = File2.addSlash(newBaseDir);
         String2.log("(oldBaseDir=" + oldBaseDir + " newBaseDir=" + newBaseDir + ")");
 
         boolean fast = false;

@@ -145,27 +145,39 @@ public class EDDGridCopy extends EDDGrid {
             else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals("<dataset>")) {
 
-                try {
-                    if (checkSourceData) {
-                        //after first time, it's ok if source dataset isn't available
-                        tSourceEdd = (EDDGrid)EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                    } else {
-                        String2.log("WARNING!!! checkSourceData is false, so EDDGridCopy datasetID=" + 
-                            tDatasetID + " is not checking the source dataset!");
-                        int stackSize = xmlReader.stackSize();
-                        do {  //will throw Exception if trouble (e.g., unexpected end-of-file
-                            xmlReader.nextTag();
-                        } while (xmlReader.stackSize() != stackSize); 
-                        tSourceEdd = null;
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
+                    while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                           !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                        xmlReader.nextTag();
+                        //String2.log("  skippping tags: " + xmlReader.allTags());
                     }
 
-                    //was  (so xmlReader in right place)
-                    //if (!checkSourceData) {
-                    //    tSourceEdd = null;
-                    //    throw new RuntimeException("TESTING checkSourceData=false.");
-                    //}
-                } catch (Throwable t) {
-                    String2.log(MustBe.throwableToString(t));
+                } else {
+                    try {
+                        if (checkSourceData) {
+                            //after first time, it's ok if source dataset isn't available
+                            tSourceEdd = (EDDGrid)EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+                        } else {
+                            String2.log("WARNING!!! checkSourceData is false, so EDDGridCopy datasetID=" + 
+                                tDatasetID + " is not checking the source dataset!");
+                            int stackSize = xmlReader.stackSize();
+                            do {  //will throw Exception if trouble (e.g., unexpected end-of-file
+                                xmlReader.nextTag();
+                            } while (xmlReader.stackSize() != stackSize); 
+                            tSourceEdd = null;
+                        }
+
+                        //was  (so xmlReader in right place)
+                        //if (!checkSourceData) {
+                        //    tSourceEdd = null;
+                        //    throw new RuntimeException("TESTING checkSourceData=false.");
+                        //}
+                    } catch (Throwable t) {
+                        String2.log(MustBe.throwableToString(t));
+                    }
                 }
             } 
             else xmlReader.unexpectedTagException();
@@ -449,6 +461,10 @@ public class EDDGridCopy extends EDDGrid {
 
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
+
+        //If the child is a FromErddap, try to subscribe to the remote dataset.
+        if (sourceEdd instanceof FromErddap) 
+            tryToSubscribeToChildFromErddap(sourceEdd);
 
         //finally
         if (verbose) String2.log(

@@ -113,21 +113,33 @@ public class EDDTableCopyPost extends EDDTableCopy {
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
             else if (localTags.equals("<dataset>")) {
-                try {
-                    if (checkSourceData) {
-                        //after first time, it's ok if source dataset isn't available
-                        tSourceEdd = (EDDTable)EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
-                    } else {
-                        String2.log("WARNING!!! checkSourceData is false, so EDDTableCopy datasetID=" + 
-                            tDatasetID + " is not checking the source dataset!");
-                        int stackSize = xmlReader.stackSize();
-                        do {  //will throw Exception if trouble (e.g., unexpected end-of-file
-                            xmlReader.nextTag();
-                        } while (xmlReader.stackSize() != stackSize); 
-                        tSourceEdd = null;
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
+                    while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                           !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                        xmlReader.nextTag();
+                        //String2.log("  skippping tags: " + xmlReader.allTags());
                     }
-                } catch (Throwable t) {
-                    String2.log(MustBe.throwableToString(t));
+
+                } else {
+                    try {
+                        if (checkSourceData) {
+                            //after first time, it's ok if source dataset isn't available
+                            tSourceEdd = (EDDTable)EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
+                        } else {
+                            String2.log("WARNING!!! checkSourceData is false, so EDDTableCopy datasetID=" + 
+                                tDatasetID + " is not checking the source dataset!");
+                            int stackSize = xmlReader.stackSize();
+                            do {  //will throw Exception if trouble (e.g., unexpected end-of-file
+                                xmlReader.nextTag();
+                            } while (xmlReader.stackSize() != stackSize); 
+                            tSourceEdd = null;
+                        }
+                    } catch (Throwable t) {
+                        String2.log(MustBe.throwableToString(t));
+                    }
                 }
             } 
             else xmlReader.unexpectedTagException();

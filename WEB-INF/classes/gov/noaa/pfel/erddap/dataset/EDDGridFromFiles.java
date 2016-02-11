@@ -42,7 +42,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /** 
  * This class represents a virtual table of data from by aggregating the existing outer dimension 
@@ -85,9 +90,22 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     protected String metadataFrom;       
     protected StringArray sourceDataNames;
     protected StringArray sourceAxisNames;
-    protected boolean hasSpecialSourceAxisName = false;
-    protected HashMap<String,String[]> parsedSpecialSourceAxisNames;
+    protected StringArray sourceAxisNamesNoAxis0; //only has content if axis0 is special
     protected String sourceDataTypes[];
+
+    protected final static int 
+        AXIS0_REGULAR = 0,
+        AXIS0_FILENAME = 1,
+        AXIS0_GLOBAL = 2;
+    protected int     axis0Type = AXIS0_REGULAR; 
+    protected String  axis0GlobalAttName = null; //used if AXIS0_GLOBAL
+    protected String  axis0TimeFormat = null;    //used if sourceValue is a time
+    protected DateTimeFormatter axis0JodaFormat = null;
+    protected Class   axis0Class = double.class; //the default
+    protected String  axis0Regex = "(.*)";       //the default
+    protected Pattern axis0RegexPattern = null;  //from regex
+    protected int     axis0CaptureGroup = 1;     //the default
+
     /**
      * filesAreLocal true if files are on a local hard drive or false if files are remote.
      * 1) A failure when reading a local file, causes file to be marked as bad and dataset reloaded;
@@ -414,7 +432,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             throw new IllegalArgumentException("metadataFrom=" + metadataFrom + " must be " + 
                 MF_FIRST + " or " + MF_LAST + ".");
 
-        //note sourceAxisNames
+        //note sourceAxisNames and special axis0
         if (tAxisVariables.length == 0) 
             throw new IllegalArgumentException("No axisVariables were specified.");
         sourceAxisNames = new StringArray();
@@ -425,24 +443,72 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     "].sourceName wasn't specified.");                
             sn = sn.trim();
             sourceAxisNames.add(sn);
-            /* not yet finished
-            if (sn.charAt(0) == '=') {
-                //parse the special axis sourceName / make sure it is valid
+
+            //special axis0?  ***fileName, timeFormat=YYYYMMDD, regex, captureGroup
+            if (av == 0 && sn.startsWith("***")) {
                 try {
-                    String parts[] = parseSpecialSourceAxisName(sn);
-                    if (parsedSpecialSourceAxisNames == null)
-                        parsedSpecialSourceAxisNames = new HashMap();
-                    parsedSpecialSourceAxisNames.put(sn, parts);
+                    StringArray parts = StringArray.fromCSV(sn);
+                    int nParts = parts.size();  //>=1
+                    String part0 = parts.get(0);
+                    if (part0.equals(    "***fileName") ||
+                        part0.startsWith("***global:")) {
+
+                        //part0
+                        if (part0.equals("***fileName")) {
+                            axis0Type = AXIS0_FILENAME; 
+                        } else {
+                            axis0Type = AXIS0_GLOBAL; 
+                            axis0GlobalAttName = part0.substring(10);
+                            if (!String2.isSomething(axis0GlobalAttName))
+                                throw new RuntimeException("Attribute name not specified for axis[0] after \"***global:\".");
+                        }
+
+                        //timeFormat or element class
+                        if (nParts > 1 && String2.isSomething(parts.get(1))) {
+                            String tp = parts.get(1);
+                            if (tp.startsWith("timeFormat=")) {
+                                axis0TimeFormat = tp.substring(11);
+                                axis0JodaFormat = DateTimeFormat.forPattern(axis0TimeFormat).withZone(DateTimeZone.UTC);
+                                tp = "double";
+                            } //otherwise it should be a primitive type, e.g., double
+                            axis0Class = PrimitiveArray.elementStringToClass(tp);
+                            if (axis0Class == String.class)
+                                throw new IllegalArgumentException(
+                                    "Axis variables can't be Strings.");
+                        }
+
+                        //regex
+                        if (nParts > 2 && String2.isSomething(parts.get(2))) 
+                            axis0Regex = parts.get(2);
+                        axis0RegexPattern = Pattern.compile(axis0Regex);
+
+                        //capture group
+                        if (nParts > 3 && String2.isSomething(parts.get(3))) {
+                            axis0CaptureGroup = String2.parseInt(parts.get(3));
+                            if (axis0CaptureGroup < 0 || axis0CaptureGroup == Integer.MAX_VALUE)
+                                throw new IllegalArgumentException(
+                                    "Invalid captureGroup=" + parts.get(3));
+                        }
+                        if (verbose)
+                            String2.log("axis0 " + parts.get(0) + 
+                                " format=" + axis0TimeFormat +
+                                " class=" + axis0Class +
+                                " regex=" + axis0Regex +
+                                " captureGroup=" + axis0CaptureGroup);
+                    } else {
+                        throw new IllegalArgumentException("Invalid =...");
+                    }
 
                 } catch (Throwable t) {
-                    throw new IllegalArgumentException("axisVariable[" + av + 
-                        "] special sourceName isn't valid: " + sn, t);                
+                    throw new IllegalArgumentException(
+                        "axisVariable[0] special sourceName isn't valid: " + sn, t);                
                 } 
-                hasSpecialSourceAxisName = true;
             }
-            */
         }
         if (reallyVerbose) String2.log("sourceAxisNames=" + sourceAxisNames);
+        if (axis0Type != AXIS0_REGULAR)  
+            sourceAxisNamesNoAxis0 = (StringArray)sourceAxisNames.subset(1, 1, 
+                sourceAxisNames.size() - 1);
 
         //note sourceDataNames, sourceDataTypes
         sourceDataNames = new StringArray();
@@ -573,17 +639,34 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             } catch (Throwable t) {
                 String reason = MustBe.throwableToShortString(t); 
                 addBadFile(badFileMap, ftDirIndex.get(i), tName, ftLastMod.get(i), reason);
-                String2.log(String2.ERROR + " in " + datasetID + " constructor while getting metadata for " + tDir + tName + "\n" + reason);
+                String2.log(String2.ERROR + " in " + datasetID + 
+                    " constructor while getting metadata for " + tDir + tName + "\n" + 
+                    MustBe.throwableToString(t));
             }
         }
         //initially there are no files, so haveValidSourceInfo will still be false
+        String msg = "";
+
+        //set up watchDirectory
+        if (updateEveryNMillis > 0) {
+            try {
+                watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
+                    recursive, pathRegex);
+            } catch (Throwable t) {
+                updateEveryNMillis = 0; //disable the inotify system for this instance
+                String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
+                String tmsg = MustBe.throwableToString(t);
+                if (tmsg.indexOf("inotify instances") >= 0)
+                    tmsg += EDStatic.inotifyFix;
+                EDStatic.email(EDStatic.adminEmail, subject, tmsg);
+            }
+        }
 
         //doQuickRestart? 
         boolean doQuickRestart = haveValidSourceInfo && 
             (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()));
         if (verbose)
             String2.log("doQuickRestart=" + doQuickRestart);
-        String msg = "";
 
         if (doQuickRestart) {
             msg = "\nQuickRestart";
@@ -596,19 +679,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             long elapsedTime = System.currentTimeMillis();
             //was tAvailableFiles with dir+name
             Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
-            if (updateEveryNMillis > 0) {
-                try {
-                    watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
-                        recursive, pathRegex);
-                } catch (Throwable t) {
-                    updateEveryNMillis = 0; //disable the inotify system for this instance
-                    String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
-                    String tmsg = MustBe.throwableToString(t);
-                    if (tmsg.indexOf("inotify instances") >= 0)
-                        tmsg += EDStatic.inotifyFix;
-                    EDStatic.email(EDStatic.adminEmail, subject, tmsg);
-                }
-            }
             StringArray tFileDirPA     = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
             StringArray tFileNamePA    = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.NAME));
             LongArray   tFileLastModPA = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
@@ -874,7 +944,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     tFileListPo++;
                     if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE) 
                         //>30 minutes old, so not still being ftp'd, so add to badFileMap
-                        addBadFile(badFileMap, tDirI, tFileS, tLastMod, MustBe.throwableToShortString(t));
+                        addBadFile(badFileMap, tDirI, tFileS, tLastMod, 
+                            MustBe.throwableToShortString(t));
                 }
             }
             if (verbose) String2.log("fileTable updated; time=" + (System.currentTimeMillis() - elapsedTime) + "ms");
@@ -895,7 +966,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                        " (nDifferentModTime=" + nDifferentModTime + " nNew=" + nNew + ")" +
                        " readFileCumTime=" + Calendar2.elapsedTimeString(readFileCumTime) +
                        " avg=" + (readFileCumTime / Math.max(1,nReadFile)) + "ms";
-            if (verbose) String2.log(msg);
+            if (verbose || fileTable.nRows() == 0) 
+                String2.log(msg);
+            if (fileTable.nRows() == 0)
+                throw new RuntimeException("No valid files!");
 
             //end !doQuickRestart
         }
@@ -957,6 +1031,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         //set combined sourceAxisValues[0]
         sourceAxisValues[0] = sourceAxisValues0;
+        //String2.log("\n>>> sourceAxisValues sav0=" + sourceAxisValues[0].toString() + "\n"); 
 
         //make the axisVariables[]
         axisVariables = new EDVGridAxis[nav];
@@ -1069,8 +1144,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     " != expected=" + ftNValues.get(f) + 
                     "\nfor file #" + f + "=" + dirList.get(ftDirIndex.get(f)) + ftFileList.get(f) +
                     "\ncsv=" + ftCsvValues.get(f));
+
             sourceAxisValues0.append(sa);
         }
+        //String2.log("\n>>> sourceAxisValues sav0=" + sourceAxisValues0.toString() + "\n"); 
     }
 
 
@@ -1595,43 +1672,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
 
     /**
-     * This parses a special axis sourceName that starts with '='.
-     * This throws runtimeException if not a valid special sourceAxisName.
-     * 
-     * @return the parts of the sourceName
-     */
-    public String[] parseSpecialSourceAxisName(String sn) {
-        if (sn.startsWith("=fileNameRegex#")) {
-            //=fileNameRegex#1=regex -> ["fileNameRegex", "1", regex]
-            int numPo = 9;
-            int eqPo = sn.indexOf('=', numPo + 1);
-            Test.ensureTrue(eqPo >= 0, "Second '=' not found.");
-            int num = String2.parseInt(sn.substring(numPo + 1, eqPo));
-            Test.ensureBetween(num, 0, 20, "Number after '#' is invalid.");
-            String regex = sn.substring(eqPo + 1);
-            Test.ensureTrue(String2.isSomething(regex), "regex is missing.");
-            return new String[]{"fileNameRegex", "" + num, regex};
-        }
-        
-        if (sn.startsWith("=fixedValue=")) {
-            //=fixedValue=value -> ["fileName", value]
-            String value = sn.substring(12);
-            if (Double.isNaN(String2.parseDouble(value)))
-                throw new RuntimeException("The value must be a finite number.");
-            return new String[]{"fixedValue", value};
-        }
-
-        throw new RuntimeException("Unrecognized type of special axis sourceName.");
-    }
-
-    /**
      * This gets sourceGlobalAttributes and sourceDataAttributes from the specified 
      * source file (or does nothing if that isn't possible).
      * This is a high-level request that handles axis manipulation.
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames
+     * @param sourceAxisNames If special axis0, this will still be the full list.
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
@@ -1648,32 +1695,39 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         Attributes sourceAxisAttributes[],
         Attributes sourceDataAttributes[]) throws Throwable {
 
-        //handle no special axis names
-        if (!hasSpecialSourceAxisName) {
+        if (axis0Type == AXIS0_REGULAR) {
             lowGetSourceMetadata(fileDir, fileName, 
                 sourceAxisNames, sourceDataNames, sourceDataTypes,
                 sourceGlobalAttributes, sourceAxisAttributes, sourceDataAttributes);
             return;
-        }
-
-        /* not yet finished
-        //make temporary input data structures
-        StringArray tSourceAxisNames = new StringArray(sourceAxisNames);
-        StringArray tSourceDataNames = new StringArray(sourceDataNames); 
-        StringArray tSourceDataTypes = new StringArray(sourceDataTypes);       
+        } 
         
-        //do changes before getting file info
-        int nAxes = sourceAxisNames.size();
-        for (int ai = 0; ai < nAxes; ai++) {
-
-
-            String parts[] = parseSourceName(String sn);
+        //special axis0?  ***fileName,       timeFormat=YYYYMMDD, regex, captureGroup
+        //special axis0?  ***global:attName, timeFormat=YYYYMMDD, regex, captureGroup
+        if (axis0Type == AXIS0_FILENAME ||
+            axis0Type == AXIS0_GLOBAL) {
+            int nAxes = sourceAxisAttributes.length;
+            Attributes tSAAtts[] = new Attributes[nAxes - 1];
+            System.arraycopy(sourceAxisAttributes, 1, tSAAtts, 0, nAxes - 1);            
+            lowGetSourceMetadata(fileDir, fileName, 
+                sourceAxisNamesNoAxis0, sourceDataNames, sourceDataTypes,
+                sourceGlobalAttributes, tSAAtts, sourceDataAttributes);
+            if (axis0TimeFormat != null) {
+                Attributes saa0 = sourceAxisAttributes[0];
+                saa0.set("standard_name", EDV.TIME_STANDARD_NAME);
+                saa0.set("units",         EDV.TIME_UNITS);
+            }
+            return;
         }
-        */
 
+        throw new RuntimeException("Invalid axis0Type=" + axis0Type);
     }
 
-    /** This is the low-level request corresponding to what is actually in the file. */
+    /** 
+     * This is the low-level request corresponding to what is actually in the file. 
+     *
+     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     */
     public abstract void lowGetSourceMetadata(String fileDir, String fileName, 
         StringArray sourceAxisNames,
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -1688,6 +1742,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
+     *   If special axis0, this will still be the full list.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -1697,16 +1752,57 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public PrimitiveArray[] getSourceAxisValues(String fileDir, String fileName, 
         StringArray sourceAxisNames) throws Throwable {
 
-        //handle no special axis names
-        if (!hasSpecialSourceAxisName) 
+        if (axis0Type == AXIS0_REGULAR) 
             return lowGetSourceAxisValues(fileDir, fileName, sourceAxisNames);
+        
+        //special axis0?  ***fileName, timeFormat=YYYYMMDD, regex, captureGroup
+        //special axis0?  ***global:attName, timeFormat=YYYYMMDD, regex, captureGroup
+        if (axis0Type == AXIS0_FILENAME ||
+            axis0Type == AXIS0_GLOBAL) {
 
-        //deal with specialSourceAxisName
-        //not finished
-        return new PrimitiveArray[0];
+            //get the axisValues for dimensions[1+]
+            int nAxes = sourceAxisNames.size();
+            PrimitiveArray tsav[] = lowGetSourceAxisValues(fileDir, fileName, sourceAxisNamesNoAxis0);
+            PrimitiveArray nsav[] = new PrimitiveArray[nAxes];
+            System.arraycopy(tsav, 0, nsav, 1, nAxes - 1);            
+            nsav[0] = PrimitiveArray.factory(axis0Class, 1, false);
+
+            //get the sourceString
+            String sourceString;
+            if (axis0Type == AXIS0_FILENAME) {
+                sourceString = fileName;
+            } else {
+                Attributes sGlobalAtts = new Attributes();
+                lowGetSourceMetadata(fileDir, fileName, 
+                    new StringArray(), //sourceAxisNames,
+                    new StringArray(), //sourceDataNames
+                    new String[0],     //sourceDataTypes[],
+                    sGlobalAtts, 
+                    new Attributes[0], new Attributes[0]); //sourceAxisAttributes[], sourceDataAttributes[]
+                sourceString = sGlobalAtts.getString(axis0GlobalAttName);
+                if (!String2.isSomething(sourceString))
+                    throw new RuntimeException("globalAttribute " + axis0GlobalAttName + "=" + sourceString);
+            }   
+
+            //use the sourceString
+            Matcher m = axis0RegexPattern.matcher(sourceString);
+            if (!m.matches()) 
+                throw new RuntimeException("sourceString=" + sourceString + " doesn't match axis0Regex=" + axis0Regex);
+            String cg = m.group(axis0CaptureGroup);
+            nsav[0].addDouble(axis0JodaFormat == null?
+                String2.parseDouble(cg) :
+                axis0JodaFormat.parseMillis(cg) / 1000.0);
+            return nsav;
+        }
+
+        throw new RuntimeException("Invalid axis0Type=" + axis0Type);
     }
 
-    /** This is the low-level request corresponding to what is actually in the file. */
+    /** 
+     * This is the low-level request corresponding to what is actually in the file. 
+     *
+     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     */
     public abstract PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName, 
         StringArray sourceAxisNames) throws Throwable;
 
@@ -1730,17 +1826,24 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public PrimitiveArray[] getSourceDataFromFile(String fileDir, String fileName, 
         EDV tDataVariables[], IntArray tConstraints) throws Throwable {
 
-        //handle no special axis names
-        if (!hasSpecialSourceAxisName) 
+        if (axis0Type == AXIS0_REGULAR) 
             return lowGetSourceDataFromFile(fileDir, fileName, 
                 tDataVariables, tConstraints);
+        
+        //special axis0?  ***fileName, time=YYYYMMDD, regex, captureGroup
+        if (axis0Type == AXIS0_FILENAME ||
+            axis0Type == AXIS0_GLOBAL) {
+            return lowGetSourceDataFromFile(fileDir, fileName, 
+                tDataVariables,             //start, stride, stop
+                (IntArray)tConstraints.subset(3, 1, tConstraints.size() - 1)); //remove the axis0 constraints
+        }
 
-        //deal with specialSourceAxisName
-        //not finished
-        return new PrimitiveArray[0];
+        throw new RuntimeException("Invalid axis0Type=" + axis0Type);
     }
 
-    /** This is the low-level request corresponding to what is actually in the file. */
+    /** This is the low-level request corresponding to what is actually in the file. 
+     * @param tConstraints !!! If special axis0, then will not include constraints for axis0.
+     */
     public abstract PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName, 
         EDV tDataVariables[], IntArray tConstraints) throws Throwable;
 
@@ -1859,6 +1962,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     addBadFileToTableOnDisk(ftDirIndex.get(ftRow), tFileName, 
                         ftLastMod.get(ftRow), MustBe.throwableToShortString(t)); 
                     //an exception here will cause data request to fail (as it should)
+                    String2.log(MustBe.throwableToString(t));
                     throw new WaitThenTryAgainException(t);  //original exception
                 }
             }

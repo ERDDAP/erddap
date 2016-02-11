@@ -76,7 +76,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames
+     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
@@ -93,7 +93,9 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         Attributes sourceAxisAttributes[],
         Attributes sourceDataAttributes[]) throws Throwable {
 
-/*      NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
+/*      REMEMBER to deal with special axis0 
+
+        NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
         String getWhat = "globalAttributes";
         try {
             NcHelper.getGlobalAttributes(ncFile, sourceGlobalAttributes);
@@ -143,6 +145,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
+     *    If special axis0, this list will be the instances list[1 ... n-1].
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -201,6 +204,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @param tDataVariables the desired data variables
      * @param tConstraints  where the first axis variable's constraints
      *   have been customized for this file.
+     *   !!! If special axis0, then will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
      *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,

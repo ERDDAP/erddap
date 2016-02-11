@@ -696,6 +696,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                 throw t;
 
             //any other error is real trouble
+            String2.log(MustBe.throwableToString(t));
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                 "\n(" + EDStatic.errorFromDataSource + tToString + ")", 
                 t); 

@@ -90,12 +90,24 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
-                String tType = xmlReader.attributeValue("type");
-                if (tType == null || !tType.startsWith("EDDGrid"))
-                    throw new SimpleException(
-                        "type=\"" + tType + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. " +
-                        "The type MUST start with \"EDDGrid\".");
-                tEDDGrid = (EDDGrid)EDD.fromXml(erddap, tType, xmlReader);
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
+                    while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                           !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                        xmlReader.nextTag();
+                        //String2.log("  skippping tags: " + xmlReader.allTags());
+                    }
+
+                } else {
+                    String tType = xmlReader.attributeValue("type");
+                    if (tType == null || !tType.startsWith("EDDGrid"))
+                        throw new SimpleException(
+                            "type=\"" + tType + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. " +
+                            "The type MUST start with \"EDDGrid\".");
+                    tEDDGrid = (EDDGrid)EDD.fromXml(erddap, tType, xmlReader);
+                }
 
             } else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
@@ -242,6 +254,10 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
         //ensure the setup is valid
         ensureValid();
+
+        //If the child is a FromErddap, try to subscribe to the remote dataset.
+        if (eddGrid instanceof FromErddap) 
+            tryToSubscribeToChildFromErddap(eddGrid);
 
         //finally
         if (verbose) String2.log(

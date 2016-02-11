@@ -516,6 +516,25 @@ public class String2 {
     }
 
     /**
+     * This returns the specified capture group from s. 
+     *
+     * @param s the source String
+     * @param regex the regular expression, see java.util.regex.Pattern.
+     * @param captureGroupNumber the number of the capture group (0 for entire regex,
+     *    1 for first capture group, 2 for second, etc.)
+     * @return the value of the specified capture group,
+          or null if the s doesn't match the regex
+     * @throws RuntimeException if trouble
+     */
+    public static String extractCaptureGroup(String s, String regex, int captureGroupNumber) {
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(s);
+        if (m.matches()) 
+            return m.group(captureGroupNumber);
+        else return null; 
+    }
+
+    /**
      * Finds the first instance of i at or after fromIndex (0.. ) in iArray.
      *
      * @param iArray

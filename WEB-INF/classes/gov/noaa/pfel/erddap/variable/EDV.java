@@ -341,7 +341,6 @@ public class EDV {
         //extractScaleAddOffset     It sets destinationDataType
         extractScaleAddOffset(); 
         setDestinationMinMaxFromSource(destinationMin, destinationMax); //ensures order is correct
-
         //after extractScaleAddOffset, get sourceMissingValue and sourceFillValue
         //and convert to destinationDataType (from scaleAddOffset)
         //???eek!!! can there be String missing_value or _FillValue?

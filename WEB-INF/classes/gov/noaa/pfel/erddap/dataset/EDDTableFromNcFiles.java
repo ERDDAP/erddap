@@ -4144,7 +4144,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 24672687;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 24919149;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4190,7 +4190,7 @@ expected =
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 _FillValue NaN;\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.45139448e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 6.31152e\\+8, 1.45390068e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4253,7 +4253,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2016-01-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2016-02-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4263,7 +4263,7 @@ expected =
 "    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +                  //2 changes
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2015-12-24&time%3C=2016-01-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2016-01-24&time%3C=2016-02-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4281,9 +4281,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2016-01-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
+"    String history \"2016-02-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2016-01-10 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2016-02-10 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4302,7 +4302,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-01-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-02-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4327,7 +4327,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the December 2015 data\\) but is a subset of the " + //month changes
+    "up to and including the January 2016 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4339,7 +4339,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2015-12-29T13:08:00Z\";\n" + //changes
+"    String time_coverage_end \"2016-01-27T13:18:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -11177,7 +11177,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2016-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2016-02-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -13894,7 +13894,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean doAllGraphicsTests) throws Throwable {
-/* 
+/* */
         test1D(false); //deleteCachedDatasetInfo
         test2D(true); 
         test3D(false);
@@ -13948,7 +13948,7 @@ expected =
         testTimePrecisionMillis();
         testSimpleTestNcTable();
         testSimpleTestNc2Table();
-*/        testUpdate();
+        testUpdate();
         testQuickRestart();
         testNewTime();
         /* */

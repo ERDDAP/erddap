@@ -371,7 +371,7 @@ public class MustBe {
                         (ste0.startsWith("sun.misc.Unsafe.park(Native Method)") ||
                          ste0.startsWith("java.lang.Object.wait(Native Method)"))) {
                         if (ste2.startsWith("org.apache.tomcat.util.threads.ThreadPool") || //linux
-                            String2.lineStartsWith(ste, "org.apache.tomcat.util.threads.TaskQueue.poll(") >= 0 || //linux, added 2015-12-04
+                            String2.lineStartsWith(ste, "org.apache.tomcat.util.threads.TaskQueue.") >= 0 || //linux, added 2015-12-04
                             ste2.startsWith("org.apache.tomcat.util.net.JIoEndpoint$Worker.await(JIoEndpoint.java:") ||  //Mac
                             (threadName.startsWith("http-apr-8080-exec-") && 
                                 "WAITING".equals(t.getState().toString()))) { //windows
@@ -403,11 +403,11 @@ public class MustBe {
 
             //write to StringBuilder
             StringBuilder sb = new StringBuilder();
-            sb.append("Number of " + 
+            sb.append("Number of threads: " + 
                 (hideTomcatWaitingThreads? 
-                    "non-Tomcat-waiting (" + tomcatWaiting + 
-                    ") non-inotify (" + inotify + ") " : "") + 
-                "threads in this JVM = " + count + "\n" +
+                    "Tomcat-waiting=" + tomcatWaiting + 
+                    ", inotify=" + inotify + ", other=" : "") + 
+                count + "\n" +
                 "(format: #threadNumber Thread[threadName,threadPriority,threadGroup] threadStatus)\n\n");
             for (int i = 0; i < count; i++) 
                 sb.append("#" + (i + 1) + " " + sar[i]);

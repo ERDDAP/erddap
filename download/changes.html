@@ -46,6 +46,85 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.68">Changes</a> in ERDDAP version 1.68 (released 2016-02-08)</h2>
+<ul>
+<li><b>New Features (for users):</b> None.
+  <br>&nbsp;
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li><a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
+    >EDDGridFromFiles Aggregation via File Names or Global Metadata</a> - 
+    <br>All variations of EDDGridFromFiles can now aggregate a group of files 
+    by adding a new leftmost
+    dimension, usually time, based on a value derived from each file name
+    or from the value of a global attribute that is in each file.
+  <li>Change: We previously suggested that you might like to create an
+    EDDGridFromErddap dataset in your datasets.xml that referenced and re-served
+    the jplMURSST dataset in our ERDDAP.
+    Since there is now a newer version of that dataset, that dataset is now deprecated.
+    So if you have that dataset in your ERDDAP, please add this new dataset<tt>
+<br>&lt;dataset type="EDDGridFromErddap" datasetID="jplMURSST41" active="true"&gt;
+<br>&nbsp;&nbsp;&lt;!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily --&gt;
+<br>&nbsp;&nbsp;&lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41&lt;/sourceUrl&gt;
+<br>&lt;/dataset&gt;</tt>
+    <br>If you want to remove the old jplMURSST dataset
+    from your ERDDAP (it's your choice), 
+    change its <tt>active</tt> setting from "true" to "false".    
+  <li>Bug fix: Please check the bigParentDirectory that you specified in your setup.xml.
+    If you didn't put a slash at the end of the &lt;bigParentDirectory&gt; name,
+    then ERDDAP will have created several directories by appending words
+    directly to the name that you specified, instead of creating subdirectories.
+    Starting with version 1.68, ERDDAP adds a slash to the end of the directory name
+    if you didn't specify one.
+    So if you previously didn't specify a slash at the end, 
+    then when you install ERDDAP v1.68 you need to move and rename
+    those directories <b>after</b> you shutdown the old ERDDAP and <b>before</b> you startup 
+    the new ERDDAP. 
+    For example, if you mistakenly specified bigParentDirectory as /home/erddapBPD 
+    (no trailing slash)
+    and ERDDAP has mistakenly created directories like
+    <br>/home/erddapBPDcache
+    <br>/home/erddapBPDcopy
+    <br>/home/erddapBPDdataset
+    <br>/home/erddapBPDflag
+    <br>/home/erddapBPDlogs
+    <br>/home/erddapBPDlucene
+    <br>and a file named /home/erddapBPDsubscriptionsV1.txt,
+    <br>then you need to move and rename them to be
+    <br>/home/erddapBPD/cache
+    <br>/home/erddapBPD/copy
+    <br>/home/erddapBPD/dataset
+    <br>/home/erddapBPD/flag
+    <br>/home/erddapBPD/logs
+    <br>/home/erddapBPD/lucene
+    <br>and /home/erddapBPD/subscriptionsV1.txt
+  <li>Bug fix: There were bugs in EDDGridLonPM180 in ERDDAP v1.66 that occurred 
+    when the child dataset is an EDDGridFromErddap.
+  <li>Bug fix: There was a bug in EDDGridFromFiles and EDDTableFromFiles in ERDDAP v1.66
+    that caused <tt>&lt;updateEveryNMillis&gt;</tt> to be ignored the first time 
+    the dataset was loaded after a restart.
+  <li>Bug fix/New Feature: If a child dataset within EDDGridAggregateExistingDimension, 
+    EDDGridCopy, EDDGridFromEDDTable, EDDGridLonPM180, EDDGridSideBySide,
+    EDDTableCopy, or EDDTableFromEDDGrid
+    is a ...FromErddap dataset, that parent dataset now subscribes to the underlying
+    ERDDAP dataset.
+    If the underlying ERDDAP dataset is in the same ERDDAP, the subscription
+    and its validation are done directly; you won't get an email asking you
+    to validate the subscription.
+    Otherwise, if the subscription system for your ERDDAP is turned off, 
+    set the &lt;reloadEveryNMinutes&gt; setting for the parent dataset
+    to a smallish number (60?) so that it stays up-to-date.
+  <li>Bug fix/New Feature: If a child dataset within EDDGridAggregateExistingDimension, 
+    EDDGridCopy, EDDGridFromEDDTable, EDDGridLonPM180, EDDGridSideBySide,
+    EDDTableCopy, or EDDTableFromEDDGrid
+    has active="false", that child dataset is now skipped.
+  </ul>    
+
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.66">Changes</a> in ERDDAP version 1.66 (released 2016-01-19)</h2>
 <ul>
 <li><b>New Features (for users):</b> 
@@ -166,7 +245,9 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDG
     The big advantage to offering datasets with longitude values in the range -180 to 180
     is that OGC services (e.g., WMS) require longitude values in this range.
     Thanks to Lynne Tablewski, Fabien Guichard, Philippe Makowski, and Martin Spel.
-
+    <br>2016-01-26 Update: Eeek! This has a bug that occurs when the child dataset
+    is an EDDGridFromErddap that references a dataset in the same ERDDAP.
+    This bug is fixed in ERDDAP v1.68.
   <li>In 
 <a rel="help"
 href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#GenerateDatasetsXml"
@@ -221,14 +302,28 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
   <li>EDDGridFromFiles and EDDTableFromFiles datasets can now do a quickRestart
     (the system that ERDDAP tries to use when datasets are first loaded when 
     ERDDAP is restarted). This speeds up restarting ERDDAP.
+    <br>2016-01-26 Update: Eeek! This has a bug that causes 
+    <tt>&lt;updateEveryNMillis&gt;</tt> to be ignored the first time the dataset is loaded
+    after a restart. This bug is fixed in ERDDAP v1.68.
   <li>A general improvement to the quickRestart system allows ERDDAP to
     load datasets faster when ERDDAP is restarted.
+  <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now accept a new 
+    &lt;pathRegex&gt; tag, usually specified right below &lt;recursive&gt;.
+    If recursive is "true", only full subdirectory paths which 
+    match the pathRegex (default=".*") will be accepted. 
+    Similarly, a &lt;sourceUrls&gt; tag in an EDDGridAggregateExistingDimension
+    can now include a <tt>pathRegex</tt> attribute (default=".*").    
   <li>The default for <tt>&lt;partialRequestMaxBytes&gt;</tt> in setup.xml is now 490000000 
     (~490 MB).
     This avoids some problems/timeouts related to getting data from THREDDS data servers.
     Thanks to Leslie Thorne.
   <li>A small change to the log system should allow ERDDAP to be more 
     responsive when it is very, very busy.
+    Information is now written to the log file on the disk drive in fairly big chunks. 
+    The advantage is that this is very efficient -- ERDDAP will never block
+    waiting for information to be written to the log file.
+    The disadvantage is that the log will almost always end with a 
+    partial message, which won't be completed until the next chunk is written.
   <li>Bug fix related to inotify and the 
     <a rel="help" 
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"

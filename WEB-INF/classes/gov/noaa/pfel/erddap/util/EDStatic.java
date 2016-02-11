@@ -138,8 +138,9 @@ public class EDStatic {
      * <br>1.62 released on 2015-06-08
      * <br>1.64 released on 2015-08-19
      * <br>1.66 released on 2016-01-19
+     * <br>1.68 released on 2016-02-08
      */   
-    public static String erddapVersion = "1.66";  
+    public static String erddapVersion = "1.68";  
 
     /** 
      * This is almost always false.  
@@ -1283,7 +1284,7 @@ public static boolean developmentMode = false;
         TaskThread.reallyVerbose = reallyVerbose;
 
         bigParentDirectory = setup.getNotNothingString("bigParentDirectory", ""); 
-        File2.addSlash(bigParentDirectory);
+        bigParentDirectory = File2.addSlash(bigParentDirectory);
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
         unitTestDataDir = setup.getString("unitTestDataDir", "[specify <unitTestDataDir> in setup.xml]"); 

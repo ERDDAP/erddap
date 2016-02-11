@@ -637,7 +637,7 @@ public class ArchiveADataset {
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
         String expected = 
-"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         14624\n" +
+"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         1462.\n" +
 "cwwcNDBCMet.dds                                                  " + today + "T.{8}Z           394\n" +
 "READ_ME.txt                                                      " + today + "T.{8}Z           300\n" +
 "data/\n" +

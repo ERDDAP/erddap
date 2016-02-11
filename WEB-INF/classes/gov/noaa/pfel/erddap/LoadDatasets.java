@@ -457,12 +457,25 @@ public class LoadDatasets extends Thread {
 
                                 for (int a = 0; a < actions.size(); a++) {
                                     String tAction = actions.get(a);
-                                    if (reallyVerbose) String2.log("doing action=" + tAction);
+                                    if (verbose) 
+                                        String2.log("doing action[" + a + "]=" + tAction);
                                     try {
                                         if (tAction.startsWith("http://")) {
-                                            //but don't get the input stream! I don't need to, 
-                                            //and it is a big security risk.
-                                            SSR.touchUrl(tAction, 60000);
+                                            if (tAction.indexOf("/" + EDStatic.warName + "/setDatasetFlag.txt?") > 0 &&
+                                                (tAction.startsWith(EDStatic.baseUrl) ||  
+                                                 tAction.startsWith("http://127.0.0.1"))) { 
+                                                //a dataset on this ERDDAP! just set the flag
+                                                //e.g., http://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
+                                                String trDatasetID = String2.extractCaptureGroup(tAction, ".*datasetID=(.+?)&.*", 1);
+                                                if (trDatasetID == null)
+                                                    SSR.touchUrl(tAction, 60000); //fall back; just do it
+                                                else EDD.requestReloadASAP(trDatasetID);
+
+                                            } else {
+                                                //but don't get the input stream! I don't need to, 
+                                                //and it is a big security risk.
+                                                SSR.touchUrl(tAction, 60000);
+                                            }
                                         } else if (tAction.startsWith("mailto:")) {
                                             String tEmail = tAction.substring("mailto:".length());
                                             EDStatic.email(tEmail,
@@ -693,7 +706,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Request refused: not enough memory currently (since last daily report)");
                     EDStatic.tally.remove("Request refused: not enough memory ever (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
-                    EDStatic.tally.remove("Requester's IP Address (Blocked) (since last daily report)");
+                    EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last daily report)");
+                    EDStatic.tally.remove("Requester's IP Address (Failed) (since last daily report)");
                     EDStatic.tally.remove("RequestReloadASAP (since last daily report)");
                     EDStatic.tally.remove("Response Failed    Time (since last daily report)");
                     EDStatic.tally.remove("Response Succeeded Time (since last daily report)");
@@ -777,7 +791,8 @@ public class LoadDatasets extends Thread {
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     EDStatic.addCommonStatistics(sb);
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
-                    sb.append(EDStatic.tally.toString("Requester's IP Address (Blocked) (since last Major LoadDatasets)", 50));
+                    sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
+                    sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));
                     sb.append(traces);
                     String2.log(sb.toString());
 
@@ -794,7 +809,8 @@ public class LoadDatasets extends Thread {
 
                 //after every major loadDatasets
                 EDStatic.tally.remove("Requester's IP Address (Allowed) (since last Major LoadDatasets)");
-                EDStatic.tally.remove("Requester's IP Address (Blocked) (since last Major LoadDatasets)");
+                EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)");
+                EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
                 EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.DistributionSize];
                 EDStatic.responseTimesDistributionLoadDatasets = new int[String2.DistributionSize];
                 removeOldLines(EDStatic.memoryUseLoadDatasetsSB,     101, 82);

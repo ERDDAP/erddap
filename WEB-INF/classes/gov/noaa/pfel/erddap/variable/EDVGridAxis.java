@@ -69,8 +69,8 @@ public class EDVGridAxis extends EDV {
         super(tSourceName, tDestinationName,
             tSourceAttributes, tAddAttributes, 
             tSourceValues.elementClassString(), 
-            tSourceValues.getNiceDouble(0), 
-            tSourceValues.getNiceDouble(tSourceValues.size() - 1));
+            Math.min(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)),
+            Math.max(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)));
         
         sourceValues = tSourceValues;
 
