@@ -87,7 +87,7 @@ public class MakeErdJavaZip  {
         //generate javadocs once so it will be in zip file
         String tDir = baseDir + "docs/ErdJavaDoc"; //dir to hold results
         SSR.dosShell("del /s /q " + //delete (/s=recursive /q=quiet) previous results
-            String2.replaceAll(tDir, "/", "\\"), 20); 
+            String2.replaceAll(tDir, "/", "\\"), 60); 
         String checkNames[] = {
             "/index.html",
             "/com/cohort/array/DoubleArray.html",
@@ -112,7 +112,7 @@ public class MakeErdJavaZip  {
         tDir = SSR.getContextDirectory() + //with / separator and / at the end
             "ErdJavaDoc"; //dir to hold results
         SSR.dosShell("del /s /q " + //delete (/s=recursive /q=quiet) previous results
-            String2.replaceAll(tDir, "/", "\\"), 20); 
+            String2.replaceAll(tDir, "/", "\\"), 60); 
         for (int i = 0; i < checkNames.length; i++)
             Test.ensureTrue(!File2.isFile(tDir + checkNames[i]), errorInMethod + tDir + checkNames[i] + " not deleted.");
         try {

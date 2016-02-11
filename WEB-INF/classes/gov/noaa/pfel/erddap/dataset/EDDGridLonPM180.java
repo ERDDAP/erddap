@@ -25,6 +25,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.text.MessageFormat;
@@ -102,19 +103,31 @@ public class EDDGridLonPM180 extends EDDGrid {
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
-                if (tChildDataset == null) {
-                    EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                    if (edd instanceof EDDGrid) {
-                        tChildDataset = (EDDGrid)edd;
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
+                    while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                           !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                        xmlReader.nextTag();
+                        //String2.log("  skippping tags: " + xmlReader.allTags());
+                    }
+
+                } else {
+                    if (tChildDataset == null) {
+                        EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+                        if (edd instanceof EDDGrid) {
+                            tChildDataset = (EDDGrid)edd;
+                        } else {
+                            throw new RuntimeException("Datasets.xml error: " +
+                                "The dataset defined in an " +
+                                "EDDGridLonPM180 must be a subclass of EDDGrid.");
+                        }
                     } else {
                         throw new RuntimeException("Datasets.xml error: " +
-                            "The dataset defined in an " +
-                            "EDDGridLonPM180 must be a subclass of EDDGrid.");
+                            "There can be only one <dataset> defined within an " +
+                            "EDDGridLonPM180 <dataset>.");
                     }
-                } else {
-                    throw new RuntimeException("Datasets.xml error: " +
-                        "There can be only one <dataset> defined within an " +
-                        "EDDGridLonPM180 <dataset>.");
                 }
 
             } 
@@ -174,7 +187,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        EDDGrid ttChildDataset) throws Throwable {
+        EDDGrid oChildDataset) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridLonPM180 " + tDatasetID); 
@@ -195,18 +208,18 @@ public class EDDGridLonPM180 extends EDDGrid {
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
 
-        if (ttChildDataset == null)
+        if (oChildDataset == null)
             throw new RuntimeException(String2.ERROR + ": childDataset=null!");
         Test.ensureFileNameSafe(datasetID, "datasetID");
-        if (datasetID.equals(ttChildDataset.datasetID()))
+        if (datasetID.equals(oChildDataset.datasetID()))
             throw new RuntimeException(String2.ERROR + 
                 ": This dataset's datasetID must not be the same as the child's datasetID.");
 
-        //is ttChildDataset a fromErddap from this erddap?
+        //is oChildDataset a fromErddap from this erddap?
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDGrid tChildDataset = null;
-        if (tErddap != null && ttChildDataset instanceof EDDGridFromErddap) {
-            EDDGridFromErddap tFromErddap = (EDDGridFromErddap)ttChildDataset;
+        if (tErddap != null && oChildDataset instanceof EDDGridFromErddap) {
+            EDDGridFromErddap tFromErddap = (EDDGridFromErddap)oChildDataset;
             String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
             if (tSourceUrl.startsWith(EDStatic.baseUrl) ||   //normally
                 tSourceUrl.startsWith("http://127.0.0.1")) { //happens during testing
@@ -220,7 +233,6 @@ public class EDDGridLonPM180 extends EDDGrid {
                     //The local dataset will be re-gotten from erddap.gridDatasetHashMap
                     //  whenever it is needed.
                     if (reallyVerbose) String2.log("  found/using localChildDatasetID=" + lcdid);
-                    ttChildDataset = null;
                     tChildDataset = lcd;
                     erddap = tErddap;
                     localChildDatasetID = lcdid;
@@ -228,9 +240,9 @@ public class EDDGridLonPM180 extends EDDGrid {
             }
         }
         if (tChildDataset == null) {
-            //no, use the ttChildDataset supplied to this constructor
-            childDataset  = ttChildDataset; //set instance variable
-            tChildDataset = ttChildDataset;        
+            //no, use the oChildDataset supplied to this constructor
+            childDataset  = oChildDataset; //set instance variable
+            tChildDataset = oChildDataset;        
         }
         //for rest of constructor, use temporary, stable tChildDataset reference.
 
@@ -252,14 +264,11 @@ public class EDDGridLonPM180 extends EDDGrid {
             accessibleViaFilesRecursive = tChildDataset.accessibleViaFilesRecursive();
         }
 
-//use tChildDataset.onChange(?) to set up subscription so this dataset is flagged when tChildDataset is updated
-//how make that durable through tChildDataset reloads?
-
         //make/copy the local globalAttributes
         localSourceUrl           = tChildDataset.localSourceUrl();
-        sourceGlobalAttributes   = tChildDataset.sourceGlobalAttributes();
-        addGlobalAttributes      = tChildDataset.addGlobalAttributes();
-        combinedGlobalAttributes = tChildDataset.combinedGlobalAttributes();
+        sourceGlobalAttributes   = (Attributes)tChildDataset.sourceGlobalAttributes().clone();
+        addGlobalAttributes      = (Attributes)tChildDataset.addGlobalAttributes().clone();
+        combinedGlobalAttributes = (Attributes)tChildDataset.combinedGlobalAttributes().clone();
         combinedGlobalAttributes.set("title", 
              combinedGlobalAttributes.getString("title") + ", Lon+/-180");
 
@@ -322,7 +331,7 @@ if (lonIndex < nAv - 1)
             sloni0 >= 0 &&                         //and if there is a sloni0
             childLonValues.getDouble(sloni0) == 0) //with value == 0
             sloni359--;  //360 is a duplicate of 0, so ignore it        
-        PrimitiveArray newLonValues = childLonValues.subset(sloni180, 1, sloni359);
+        PrimitiveArray newLonValues = childLonValues.subset(sloni180, 1, sloni359); //always a new backing array
         newLonValues.addOffsetScale(-360, 1);  //180 ... 359 -> -180 ... -1
 
         //set dloni: where are sloni after source values are rearranged to dest values
@@ -373,6 +382,11 @@ if (lonIndex < nAv - 1)
 
         //ensure the setup is valid
         ensureValid();
+
+        //If the original childDataset is a FromErddap, try to subscribe to the remote dataset.
+        //Don't use tChildDataset. It may be the local EDDGrid that the fromErddap points to.
+        if (oChildDataset instanceof FromErddap) 
+            tryToSubscribeToChildFromErddap(oChildDataset);
 
         //finally
         if (verbose) String2.log(
@@ -723,11 +737,13 @@ if (lonIndex < nAv - 1)
         StringBuilder sb = new StringBuilder();
         int nRows = table.nRows();
         for (int row = 0; row < nRows; row++) {
+            if (datasetIDPA.getString(row).equals("etopo360"))
+                continue;
 sb.append(
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"" + 
     datasetIDPA.getString(row) + "_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_LonPM180Low\">\n" +
+    datasetIDPA.getString(row) + "_LonPM180Child\">\n" +
 "        <!-- " + XML.encodeAsXML(titlePA.getString(row)) + "\n" +
 "             minLon=" + minLonPA.getString(row) + " maxLon=" + maxLonPA.getString(row) + " -->\n" +
 //set updateEveryNMillis?  frequent if local ERDDAP, less frequent if remote?
@@ -757,7 +773,7 @@ sb.append(
 
         String expected =
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMBsstdmday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_LonPM180Low\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_LonPM180Child\">\n" +
 "        <!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime (Monthly Composite)\n" +
 "             minLon=120.0 maxLon=320.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday</sourceUrl>\n" +
@@ -765,7 +781,7 @@ sb.append(
 "</dataset>\n" +
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMHsstnmday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMHsstnmday_LonPM180Low\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMHsstnmday_LonPM180Child\">\n" +
 "        <!-- SST, Aqua MODIS, NPP, Nighttime (11 microns), DEPRECATED OLDER VERSION (Monthly Composite)\n" +
 "             minLon=0.0 maxLon=360.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday</sourceUrl>\n" +
@@ -773,7 +789,7 @@ sb.append(
 "</dataset>\n" +
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMWchlamday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Low\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Child\">\n" +
 "        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xc2;&#xb0;, West US, EXPERIMENTAL (Monthly Composite)\n" +
 "             minLon=205.0 maxLon=255.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
@@ -781,8 +797,8 @@ sb.append(
 "</dataset>\n" +
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdPHsstamday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdPHsstamday_LonPM180Low\">\n" +
-"        <!-- SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality (Monthly Composite)\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdPHsstamday_LonPM180Child\">\n" +
+"        <!-- SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality (Monthly Composite) DEPRECATED\n" +
 "             minLon=0.02197266 maxLon=359.978 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdPHsstamday</sourceUrl>\n" +
 "    </dataset>\n" +
@@ -816,13 +832,13 @@ sb.append(
 
         EDDGrid eddGrid;
         try {
-            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMWchlamday_LonPM180");       
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMWchlamday_LonPM180");       
         } catch (Throwable t) {
             String2.pressEnterToContinue(
                 "\n" + MustBe.throwableToString(t) +
                 "\nEDDGridLonPM180.testGT180() requires erdMWchlamday in the localhost ERDDAP.\n" +
                 "Make it so and this will try again.");
-            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMWchlamday_LonPM180");       
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMWchlamday_LonPM180");       
         }
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
@@ -843,7 +859,7 @@ sb.append(
 "      Float64 latitude[latitude = 2321];\n" +
 "      Float64 longitude[longitude = 4001];\n" +
 "  } chlorophyll;\n" +
-"} erdMWchlamday_LonPM180;\n";
+"} test_erdMWchlamday_LonPM180;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
@@ -962,15 +978,16 @@ expected =
         //test of /files/ system for fromErddap in local host dataset
         String2.log("\n* Test getting /files/ from local host erddap...");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/files/erdMWchlamday_LonPM180/");
+            "http://127.0.0.1:8080/cwexperimental/files/test_erdMWchlamday_LonPM180/");
         expected = "MW2002182&#x5f;2002212&#x5f;chla&#x2e;nc"; //"MW2002182_2002212_chla.nc";
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
         String2.log("\n*** EDDGridLonPM180.testGT180() finished.");
       } catch (Throwable t) {
-          String2.pressEnterToContinue("\n" + MustBe.throwableToString(t));
-        }
-
+          String2.pressEnterToContinue("\n" +
+              MustBe.throwableToString(t) + "\n" +
+              "EDDGridLonPM180.test1to359() requires erdPHsstamday in the localhost ERDDAP.");
+      }
     }
 
     /**
@@ -988,30 +1005,22 @@ expected =
 
         EDDGrid eddGrid;
       try {
-        try {
-           eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdPHsstamday_LonPM180");       
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                "\n" + MustBe.throwableToString(t) +
-                "\nEDDGridLonPM180.test1to359() requires erdPHsstamday in the localhost ERDDAP.\n" +
-                "Make it so and this will try again.");
-            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdPHsstamday_LonPM180");       
-        }
+        eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdPHsstamday_LonPM180");       
  
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
             eddGrid.className() + "_1to359_Entire", ".dds"); 
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 2];\n" +
+"  Float64 time[time = 340];\n" +
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4096];\n" +
 "  Float64 longitude[longitude = 8192];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 2][altitude = 1][latitude = 4096][longitude = 8192];\n" +
+"      Float32 sst[time = 340][altitude = 1][latitude = 4096][longitude = 8192];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 2];\n" +
+"      Float64 time[time = 340];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4096];\n" +
 "      Float64 longitude[longitude = 8192];\n" +
@@ -1165,14 +1174,16 @@ expected =
         //test of /files/ system for fromErddap in local host dataset
         String2.log("\n* Test getting /files/ from local host erddap...");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/files/erdPHsstamday_LonPM180/");
+            "http://127.0.0.1:8080/cwexperimental/files/test_erdPHsstamday_LonPM180/");
         expected = "PH1981244&#x5f;1981273&#x5f;ssta&#x2e;nc"; //"PH1981244_1981273_ssta.nc";
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
         String2.log("\n*** EDDGridLonPM180.test1to359 finished.");
 
       } catch (Throwable t) {
-          String2.pressEnterToContinue("\n" + MustBe.throwableToString(t));
+          String2.pressEnterToContinue("\n" +
+              MustBe.throwableToString(t) + "\n" +
+              "EDDGridLonPM180.test1to359() requires erdPHsstamday in the localhost ERDDAP.");
       }
 
     }
@@ -1191,7 +1202,7 @@ expected =
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMHsstnmday_LonPM180");       
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMHsstnmday_LonPM180");       
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
             eddGrid.className() + "_0to360_Entire", ".dds"); 
@@ -1211,7 +1222,7 @@ expected =
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8639];\n" +
 "  } sst;\n" +
-"} erdMHsstnmday_LonPM180;\n";
+"} test_erdMHsstnmday_LonPM180;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
@@ -1420,15 +1431,15 @@ expected =
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 62];\n" + //changes
+"  Float64 time[time = 63];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 62][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 63][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 62];\n" +  //changes
+"      Float64 time[time = 63];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +

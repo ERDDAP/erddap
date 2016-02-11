@@ -68,6 +68,7 @@ public class Subscriptions {
     public final static String LIST_HTML     = "subscriptions/list.html";
 
 
+
     //*** things set by constructor 
     /** Has subscription info. */
     protected int maxMinutesPending;

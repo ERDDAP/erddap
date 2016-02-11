@@ -566,6 +566,7 @@ public class GridDataAccessor {
                 throw t;
 
             //rewrap it as WTTAE
+            String2.log(MustBe.throwableToString(t));
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                 "\n(" + EDStatic.errorFromDataSource + tToString + ")", 
                 t); 

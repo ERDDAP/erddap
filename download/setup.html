@@ -388,7 +388,7 @@ or Mac server instead.
      <!-- Use: c:\content\bat\md5.bat erddapContent1.64.zip -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.66, size=25,887 bytes, MD5=70B46B5E96DD17F4DCEAC27CC95BDFBB, dated 2016-01-19)
+    (version 1.64, size=24,996 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2015-08-19)
 
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
@@ -406,9 +406,6 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.62.zip">1.62</a>
     (size=25,035 bytes, MD5=4B17A93CE52087C53AF6AEA905391418, dated 2015-06-08)
-    <br><a rel="bookmark"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.64.zip">1.64</a>
-    (size=24,996 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2015-08-19)
     ]
 
   <p>Then,
@@ -456,7 +453,7 @@ or Mac server instead.
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.66, size=512,007,729 bytes, MD5=71CB248B05F0340BE6CF4CF71F3BD8E6, dated 2016-01-19)
+    (version 1.64, size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
 
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
@@ -473,9 +470,6 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.62.war">1.62</a> 
     (size=491,038,285 bytes, MD5=1FDF3F349EC7D87A4A88AD14A7B5F41A, dated 2015-06-09)
-    <br><a rel="bookmark"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.64.war">1.64</a> 
-    (size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
     ]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
@@ -916,6 +910,11 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
       You can control how much information is logged with <tt>&lt;logLevel&gt;</tt> in 
         <a rel="help" href="#setup.xml">setup.xml</a>.
     </ul>
+  <li>Information is written to the log file on the disk drive in fairly big chunks. 
+    The advantage is that this is very efficient -- ERDDAP will never block
+    waiting for information to be written to the log file.
+    The disadvantage is that the log will almost always end with a 
+    partial message, which won't be completed until the next chunk is written.
   <li>When the log.txt files gets to 20 MB, 
     <br>the file is renamed log.txt.previous and a new log.txt file is created.
     So log files don't accumulate.

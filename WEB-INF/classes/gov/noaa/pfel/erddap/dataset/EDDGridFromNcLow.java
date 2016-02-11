@@ -111,7 +111,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames
+     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
@@ -133,6 +133,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         try {
             NcHelper.getGlobalAttributes(ncFile, sourceGlobalAttributes);
 
+            //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 getWhat = "axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi);
                 Variable var = ncFile.findVariable(sourceAxisNames.get(avi));  
@@ -188,6 +189,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
+     *    If special axis0, this list will be the instances list[1 ... n-1].
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -202,6 +204,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
+            //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 String avName = sourceAxisNames.get(avi);
                 getWhat = "axisAttributes for variable=" + avName;
@@ -249,6 +252,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param tDataVariables the desired data variables
      * @param tConstraints  where the first axis variable's constraints
      *   have been customized for this file.
+     *   !!! If special axis0, then will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
      *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,
@@ -261,7 +265,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         EDV tDataVariables[], IntArray tConstraints) throws Throwable {
 
         //make the selection spec  and get the axis values
-        int nav = axisVariables.length;
+        int nav = tConstraints.size() / 3; //deals with special axis0
         int ndv = tDataVariables.length;
         PrimitiveArray[] paa = new PrimitiveArray[ndv];
         StringBuilder selectionSB = new StringBuilder();

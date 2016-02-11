@@ -100,19 +100,31 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
-                if (firstChild == null) {
-                    EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                    if (edd instanceof EDDGrid) {
-                        firstChild = (EDDGrid)edd;
+                if ("false".equals(xmlReader.attributeValue("active"))) {
+                    //skip it - read to </dataset>
+                    if (verbose) String2.log("  skipping " + xmlReader.attributeValue("datasetID") + 
+                        " because active=\"false\".");
+                    while (xmlReader.stackSize() != startOfTagsN + 1 ||
+                           !xmlReader.allTags().substring(startOfTagsLength).equals("</dataset>")) {
+                        xmlReader.nextTag();
+                        //String2.log("  skippping tags: " + xmlReader.allTags());
+                    }
+
+                } else {
+                    if (firstChild == null) {
+                        EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
+                        if (edd instanceof EDDGrid) {
+                            firstChild = (EDDGrid)edd;
+                        } else {
+                            throw new RuntimeException("Datasets.xml error: " +
+                                "The dataset defined in an " +
+                                "EDDGridAggregateExistingDimension must be a subclass of EDDGrid.");
+                        }
                     } else {
                         throw new RuntimeException("Datasets.xml error: " +
-                            "The dataset defined in an " +
-                            "EDDGridAggregateExistingDimension must be a subclass of EDDGrid.");
+                            "There can be only one <dataset> defined within an " +
+                            "EDDGridAggregateExistingDimension <dataset>.");
                     }
-                } else {
-                    throw new RuntimeException("Datasets.xml error: " +
-                        "There can be only one <dataset> defined within an " +
-                        "EDDGridAggregateExistingDimension <dataset>.");
                 }
 
             } 
@@ -305,6 +317,11 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         //ensure the setup is valid
         ensureValid();
+
+        //If any child is a FromErddap, try to subscribe to the remote dataset.
+        for (int c = 0; c < childDatasets.length; c++)
+            if (childDatasets[c] instanceof FromErddap) 
+                tryToSubscribeToChildFromErddap(childDatasets[c]);
 
         //finally
         if (verbose) String2.log(

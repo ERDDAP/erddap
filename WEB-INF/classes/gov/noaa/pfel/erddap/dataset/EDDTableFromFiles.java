@@ -908,13 +908,29 @@ public abstract class EDDTableFromFiles extends EDDTable{
         DoubleArray ftLastMod       = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL); //2
         DoubleArray ftSize          = (DoubleArray)fileTable.getColumn(FT_SIZE_COL); //3
         DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //4
+        String msg = "";
+
+        //set up WatchDirectory
+        if (updateEveryNMillis > 0) {
+            try {
+                watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
+                    recursive, pathRegex);
+            } catch (Throwable t) {
+                updateEveryNMillis = 0; //disable the inotify system for this instance
+                String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
+                msg = MustBe.throwableToString(t);
+                if (msg.indexOf("inotify instances") >= 0)
+                    msg += EDStatic.inotifyFix;
+                EDStatic.email(EDStatic.adminEmail, subject, msg);
+                msg = "";
+            }
+        }
 
         //doQuickRestart? 
         boolean doQuickRestart = fileTable.nRows() > 0 && 
             (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()));
         if (verbose)
             String2.log("doQuickRestart=" + doQuickRestart);
-        String msg = "";
 
         if (doQuickRestart) {
             msg = "\nQuickRestart";
@@ -922,36 +938,18 @@ public abstract class EDDTableFromFiles extends EDDTable{
         } else {
             //!doQuickRestart
 
-            if (EDStatic.quickRestart && EDStatic.initialLoadDatasets()) {
-                //if quickRestart, don't throw away list of bad files
-            } else {
-                if (!filesAreLocal) {
-                    //if files are not local, throw away list of bad files,
-                    //so each will be retried again.
-                    //One failure shouldn't be considered permanent.
-                    //Downside: persistently bad files/urls will be rechecked repeatedly -- probably slow!
-                    badFileMap = newEmptyBadFileMap();
-                }
+            if (!filesAreLocal) {
+                //if files are not local, throw away list of bad files,
+                //so each will be retried again.
+                //One failure shouldn't be considered permanent.
+                //Downside: persistently bad files/urls will be rechecked repeatedly -- probably slow!
+                badFileMap = newEmptyBadFileMap();
             }
 
             //get tFileList of available data files
             long elapsedTime = System.currentTimeMillis();
             //was tFileNames with dir+name
             Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive, pathRegex);
-            if (updateEveryNMillis > 0) {
-                try {
-                    watchDirectory = WatchDirectory.watchDirectoryAll(fileDir, 
-                        recursive, pathRegex);
-                } catch (Throwable t) {
-                    updateEveryNMillis = 0; //disable the inotify system for this instance
-                    String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
-                    msg = MustBe.throwableToString(t);
-                    if (msg.indexOf("inotify instances") >= 0)
-                        msg += EDStatic.inotifyFix;
-                    EDStatic.email(EDStatic.adminEmail, subject, msg);
-                    msg = "";
-                }
-            }
             StringArray tFileDirPA     = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.DIRECTORY));
             StringArray tFileNamePA    = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.NAME));
             LongArray   tFileLastModPA = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.LASTMODIFIED));
@@ -1336,7 +1334,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                        " (nDifferentModTime=" + nDifferentModTime + " nNew=" + nNew + ")" +
                        " readFileCumTime=" + Calendar2.elapsedTimeString(readFileCumTime) +
                        " avg=" + (readFileCumTime / Math.max(1,nReadFile)) + "ms";
-            if (verbose) String2.log(msg);
+            if (verbose || fileTable.nRows() == 0) 
+                String2.log(msg);
+            if (fileTable.nRows() == 0)
+                throw new RuntimeException("No valid files!");
 
             if (nReadFile > 0 || nRemoved > 0) 
                 filesChanged = 
@@ -2986,6 +2987,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                             MustBe.throwableToShortString(t));
                     }
                     //an exception here will cause data request to fail (as it should)
+                    String2.log(MustBe.throwableToString(t));
                     throw new WaitThenTryAgainException(t); //refer to the original exception
                 }
             }

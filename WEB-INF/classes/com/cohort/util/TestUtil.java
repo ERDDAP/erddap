@@ -1442,6 +1442,11 @@ public class TestUtil {
         Test.ensureEqual(String2.toCSSVString(sar), 
             "\"url=\\\"first\\\"\", \"url=\\\"second\\\"\"", "sar=" + String2.toCSSVString(sar));
 
+        //extractCaptureGroup
+        String2.log("test extractRegex");
+        Test.ensureEqual(String2.extractCaptureGroup("bc&a&", "b(\\w+)&.*", 1), "c", "a");
+        Test.ensureEqual(String2.extractCaptureGroup("bedad", "b(.+?)d.*", 1),  "e", "b"); //reluctant
+
         //indexOfIgnoreCase(s)
         String2.log("test indexOfIgnoreCase(s)");
         s = "ABCDEFGHIJK";

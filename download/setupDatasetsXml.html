@@ -321,9 +321,27 @@ After you finish, I'll contact you to work out the final details.
 
       <p>When you use the GenerateDatasetsXml program:
       <ul>
-      <li>GenerateDatasetsXml asks you a series of questions so that it can
-        access the dataset's source.
-        Often, one of your answers won't be what GenerateDatasetsXml needs.
+      <li>GenerateDatasetsXml first asks you to specify the EDDType 
+        (Erd Dap Dataset Type)
+        of the dataset.  See the 
+        <a rel="help" href="#datasetTypes">List of Dataset Types</a> 
+        (in this document)
+        to figure out which is type appropriate for the dataset you are working on.
+        In addition to the regular EDDTypes, there are also a few 
+        <a rel="help" href="#SpecialPsuedoDatasetTypes">Special/Psuedo Dataset Types</a>
+        (e.g., one which crawls a THREDDS catalog to generate a chunk of 
+        datasets.xml for each of the datasets in the catalog).
+        
+      <li>GenerateDatasetsXml then asks you a series of questions 
+        specific to that EDDType. 
+        The questions gather the information needed for ERDDAP to access the 
+        dataset's source.
+        To understand what ERDDAP is asking for, 
+        see the documentation for the EDDType that you specified 
+        by clicking on the same dataset type in the
+        <a rel="help" href="#datasetTypes">List of Dataset Types</a>.
+
+      <li>Often, one of your answers won't be what GenerateDatasetsXml needs.
         You can then try again, with revised answers to the questions, 
         until GenerateDatasetsXml can successfully find and understand the source data.
       <li>If you answer the questions correctly, GenerateDatasetsXml will connect
@@ -354,6 +372,9 @@ After you finish, I'll contact you to work out the final details.
       <li>If you have problems that you can't solve, 
         <a rel="help" href="#diagnoseProblems">send an email to Bob</a> with as much 
         information as possible.
+        Similarly, if it seems like the appropriate EDDType for a given dataset
+        doesn't work with that dataset, or if there is no appropriate EDDType,
+        please send an email to Bob with the details (and a sample file if relevant).
       <li>You can then use DasDds (see below) to repeatedly test the XML for that dataset
         to ensure that the resulting dataset appears as you want it to in ERDDAP.
       <li>Feel free to make small changes by hand, for example, supply a better <tt>infoUrl,
@@ -406,9 +427,12 @@ After you finish, I'll contact you to work out the final details.
       ADD TO ERDDAP'S datasets.xml FILE.
 
 
-      <p>Special Dataset Types
+      <p><a name="SpecialPsuedoDatasetTypes">Special/Psuedo Dataset Types</a>
       <br>In general, the EDDType options in GenerateDatasetsXml 
-      match of the EDD types described in this document and
+      match of the EDD types described in this document 
+      (see the 
+        <a rel="help" href="#datasetTypes">List of Dataset Types</a>) 
+      and
       generate one datasets.xml chunk to create one dataset from one specific data source.
       There are a few exceptions:
       <ul>
@@ -1706,7 +1730,10 @@ allows fast random access to the data, and is already supported by ERDDAP.
 <p><a name="EDDGridFromFiles_Details">Details</a> - 
 The following information applies to all of the subclasses of EDDGridFromFiles.
 <ul>
-<li><a name="EDDGridFromFiles_Aggregation"><b>Aggregation</b></a> - This class aggregates data from local files. 
+<li><a name="EDDGridFromFiles_Aggregation"><b>Aggregation of an Existing Dimension</b></a> - 
+  <br>All variations of EDDGridFromFiles can 
+  aggregate data from local files, where each file has 1 (or more)
+  different values for the leftmost dimension, usually [time], which will be aggregated. 
   For example, the dimensions might be [time][altitude][latitude][longitude], 
     and the files might have the data for one (or a few) time value(s) per file.
   The resulting dataset appears as if all of the file's data had been combined.
@@ -1740,6 +1767,148 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     <a rel="help" href="#NCO">NCO</a>
     to fix the problem.
   </ul>
+<li><a name="EDDGridFromFiles_AggregationViaFileNames"><b>Aggregation via File Names
+or Global Metadata</b></a> - 
+  <br>All variations of EDDGridFromFiles can also aggregate a group of files 
+    by adding a new leftmost
+    dimension, usually time, based on a value derived from each file name
+    or from the value of a global attribute that is in each file.
+    For example, the file name might include the time value for the data
+    in the file. ERDDAP would then create a new time dimension.
+
+  <p>Unlike the similar feature in THREDDS, ERDDAP always creates
+    an axisVariable with numeric values (as required by CF), never String values 
+    (which are not allowed by CF). 
+    Also, ERDDAP will sort 
+    the files in the aggregation based on the numeric axisVariable value which
+    is assigned to each file, so that the axis variable will always have
+    sorted values as required by CF.
+    The THREDDS approach of doing a lexicographic sort based on the file names
+    leads to aggregations where the axis values aren't sorted (which is not allowed by CF)
+    when the file names sort differently than the derived axisVariable values.
+
+  <p>To set up one of these aggregations in ERDDAP, you will define a new leftmost (first) 
+    <a rel="help" href="#axisVariable">axisVariable</a> with a special, psuedo
+    <tt>&lt;sourceName&gt;</tt>, which tells ERDDAP where and how to find
+    the value for the new dimension from each file. 
+    <br>The format for the psuedo sourceName which gets the value from a file name is
+    <br><tt>***fileName,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></tt>
+    <br>The format for the psuedo sourceName which gets the value from a global attribute is
+    <br><tt>***global:<i>attributeName</i>,<i>dataType</i>,<i>extractRegex</i>,<i>captureGroupNumber</i></tt>
+    <br>The descriptions of the parts you need to provide are:
+    <ul>
+    <li><i>attributeName</i> - the name of the global attribute which
+      is in each file and which contains the dimension value.
+    <li><i>dataType</i> - This specifies the dataType
+      that will be used to store the values.  The allowed dataTypes are 
+      double (64-bit floating point), float (32-bit floating point), 
+      long (64-bit signed integer, discouraged), int (32-bit signed integer), 
+      short (16-bit signed integer), 
+      byte (8-bit signed integer), 
+      and char (essentially: 16-bit unsigned integer, strongly discouraged),
+      which is slightly different than the standard list of 
+      <a rel="help" href="#dataType">dataTypes</a> that ERDDAP supports.
+
+      <p>There is an additional psuedo dataType, <tt>timeFormat=<i>stringTimeFormat</i></tt>, 
+      which tells ERDDAP that the value is a String timeStamp in the format
+      specified by the <a rel="help" href="#timeUnits"><i>stringTimeFormat</i></a>,
+      which is a 
+      <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html"
+      >Joda DateTimeFormat<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>.
+      In most cases, the stringTimeFormat you need will be a variation of one of these 
+      two formats:
+      <ul>
+      <li><tt>yyyyMMddHHmmss</tt> - which is the compact version of the ISO 8601
+        date time format. You will often need a shortened version of this, e.g.,
+        yyyyMMdd.
+      <li><tt>yyyyDDD</tt> - which is the year plus the zero-padded day of the year 
+        (e.g, 001 = Jan 1, 365 = Dec 31 in a non-leap year).
+      </ul>
+
+    <li><i>extractRegex</i> - This is the 
+      <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html"
+      >regular expression<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+      (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html"
+      >tutorial<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>)
+      which includes a capture group (in parentheses) which 
+      describes how to extract the value from the file name or global attribute value.
+      For example, given a file name like S19980011998031.L3b_MO_CHL.nc,
+      capture group #1, "\d{7}", in the regular expression 
+      <tt>S(\d{7})\d{7}\.L3b.*</tt>
+      will capture the first 7 digits after 'S': 1998001.
+
+    <li><i>captureGroupNumber</i> - This is the number of the capture group
+      (within a pair of parentheses) in the regular expression 
+      which contains the information of interest.
+      It is usually 1, the first capture group. Sometimes you need to 
+      use capture groups for other purposes in the regex, so then the
+      important capture group number will be 2 (the second capture group) 
+      or 3 (the third), etc.
+    </ul>
+
+    <p>A full example of an axisVariable which 
+    makes an aggregated dataset with a new time axis 
+    which gets the time values from the file name of each file is
+    <pre>
+    &lt;axisVariable&gt;
+        &lt;sourceName&gt;***fileName,timeFormat=yyyyDDD,S(\d{7})\.L3m.*,1&lt;/sourceName&gt;
+        &lt;destinationName&gt;time&lt;/destinationName&gt;
+    &lt;/axisVariable&gt;</pre>
+    When you use the "timeFormat=" psuedo dataType, ERDDAP will add 2 attributes
+    to the axisVariable so that they appear to be coming from the source:<tt>
+    <br>&lt;att name="standard_name"&gt;time&lt;/att&gt;
+    <br>&lt;att name="units"&gt;seconds since 1970-01-01T00:00:00Z&lt;/att&gt;</tt>
+    <br>So in this case, ERDDAP will create a new axis named "time"
+    with double values (seconds since 1970-01-01T00:00:00Z) by extracting the 7 digits 
+    after 'S' and before ".L3m" in the file name
+    and interpreting those as time values formatted as yyyyDDD.
+
+    <p>You can override the default base time (1970-01-01T00:00:00Z) by adding an 
+    <a rel="help" href="#addAttributes">addAttribute</a> which 
+    specifies a different units attribute with a different base time.
+    A common situation is: there are group of data files,
+    each with a 1 day composite of a satellite dataset,
+    where you want the time value to be noon of the day mentioned in the file name
+    (the centered time of each day) and want the variable's long_name to be 
+    "Centered Time". An example which does this is: 
+    <pre>
+    &lt;axisVariable&gt;
+        &lt;sourceName&gt;***fileName,timeFormat=yyyyDDD,S(\d{7})\.L3m.*,1&lt;/sourceName&gt;
+        &lt;destinationName&gt;time&lt;/destinationName&gt;
+        &lt;addAttributes&gt;
+            &lt;att name="long_name"&gt;Centered Time&lt;/att&gt;
+            &lt;att name="units"&gt;seconds since 1970-01-01T12:00:00Z&lt;/att&gt;
+        &lt;/addAttributes&gt;
+    &lt;/axisVariable&gt;</pre>
+    Note hours=12 in the base time, which adds 12 hours relative to the 
+    original base time of 1970-01-01T00:00:00Z.
+
+    <p>A full example of an axisVariable which 
+    makes an aggregated dataset with a new "run" axis (with int values)
+    which gets the run values from the "runID" global attribute
+    in each file (with values like "r17_global", where 17 is the run number) is
+    <pre>
+    &lt;axisVariable&gt; 
+        &lt;sourceName&gt;***global:runID,int,(r|s)(\d+)_global,2&lt;/sourceName&gt;
+        &lt;destinationName&gt;run&lt;/destinationName&gt;
+        &lt;addAttributes&gt;
+            &lt;att name="ioos_category"&gt;Other&lt;/att&gt;
+            &lt;att name="units"&gt;count&lt;/att&gt;
+        &lt;/addAttributes&gt;
+    &lt;/axisVariable&gt;</pre>
+    Note the use of the capture group number 2 to capture the digits which
+    occur after 'r' or 's', and before "_global".
+    This example also shows how to add additional attributes 
+    (e.g., ioos_category and units) to the axis variable.
+    <br>&nbsp;
+
+
 <li><a name="EDDGridFromFiles_SortedDimensionValues"><b>Sorted Dimension Values</b></a> -
    The values for each dimension MUST be in sorted order (ascending or descending,
    except for the first (left-most) dimension which must be ascending). 
@@ -1886,9 +2055,11 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
-  &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;-- Indicates if subdirectories
+  &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;!-- 0 or 1. Indicates if subdirectories
     of fileDir have data files, too. --&gt;
-  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- A <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. If recursive is "true", only full path
+    names which match the pathRegex (default=".*") will be accepted. --&gt;
+  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
     (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
@@ -2023,6 +2194,12 @@ by EDDGridFromNcFiles.
 For this class to work properly, the files must follow the CF standards for the
 related attributes.
 
+<p>If try to make an EDDGridFromNcFilesUnpacked from a group of files
+with which you previously tried and failed to use EDDGridFromNcFiles,
+cd to 
+<br><tt><i>bigParentDirectory</i>/dataset/<i>last2Letters</i>/<i>datasetID</i>/</tt>
+<br>where <tt><i>last2Letters</i></tt> is the last 2 letters of the datasetID,
+<br>and delete all of the files in that directory.
 
 <p><a name="EDDGridLonPM180"><b>EDDGridLonPM180</b></a> 
 modifies the longitude values of a child (enclosed) EDDGrid dataset 
@@ -2081,7 +2258,7 @@ they are in the range -180 to 180 (Longitude Plus or Minus 180, hence the name).
       plus "_LonPM180".
     <br>For example,
 <pre>&lt;dataset type="EDDGridLonPM180" datasetID="erdMBsstdmday_LonPM180" active="true"&gt;
-    &lt;dataset type="EDDGridFromErddap" datasetID="erdMBsstdmday_LonPM180Low"&gt;
+    &lt;dataset type="EDDGridFromErddap" datasetID="erdMBsstdmday_LonPM180Child"&gt;
         &lt;!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime (Monthly Composite)
              minLon=120.0 maxLon=320.0 --&gt;
         &lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday&lt;/sourceUrl&gt;
@@ -2097,11 +2274,35 @@ they are in the range -180 to 180 (Longitude Plus or Minus 180, hence the name).
     dataset is more convenient. 
 
 <li>If you offer two versions of a dataset, for example, one with longitude 0 to 360 and
-    one with longitude -180 to 180, you can use the optional 
+    one with longitude -180 to 180:
+  <ul>
+  <li>You can use the optional 
     <a rel="help"
 href="#accessibleViaWMS"><tt>&lt;accessibleViaWMS&gt;false&lt;/accessibleViaWMS&gt;</tt></a> 
 with the 0-360 dataset to forcibly disable the WMS service for that dataset.
-    Then, only the LonPM180 version of the dataset will be accessible via WMS.  
+    Then, only the LonPM180 version of the dataset will be accessible via WMS. 
+  <li>There are a couple of ways to keep the LonPM180 dataset up-to-date
+    with changes to the underlying dataset:
+    <ul>
+    <li>If the child dataset is a EDDGridFromErddap dataset that references
+      a dataset in the same ERDDAP, the LonPM180 dataset will try to 
+      directly subscribe to the underlying dataset so that it is always up-to-date.
+      Direct subscriptions don't generate emails asking you to validate the subscription -
+      validation should be done automatically.
+    <li>If the child dataset is not an EDDGridFromErddap dataset that is
+      on the same ERDDAP, the LonPM180 dataset will try to use
+      the regular subscription system to subscribe to the underlying dataset.
+      If you have the subscription system in your ERDDAP turned on, 
+      you should get emails asking you to validate the subscription. Please do so.
+    <li>If you have the subscription system in your ERDDAP turned off,
+      the LonPM180 dataset may sometimes have outdated metadata until the
+      LonPM180 dataset is reloaded. So if the subscription system is turned off,
+      you should set the 
+      <a rel="help" href="#reloadEveryNMinutes"><tt>&lt;reloadEveryNMinutes&gt;</tt></a>
+      setting of the LonPM180 dataset to a smaller number, so that it is more 
+      likely to catch changes to the child dataset sooner.
+    </ul>
+  </ul>
 
 <li><a name="EDDGridLonPM180SkeletonXML">The</a> skeleton XML for an 
   EDDGridLonPM180 dataset is:
@@ -2234,7 +2435,7 @@ dimension and another child might have 365 values (for 2005) for the time dimens
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt; &lt;!-- 0 or many; the sourceUrls for 
     other children.  These children must be listed in order of ascending values 
     for the aggregated dimension. --&gt;
-  &lt;sourceUrls serverType="..." regex="..." recursive="true" 
+  &lt;sourceUrls serverType="..." regex="..." recursive="true" pathRegex=".*"
     &gt;http://<i>someServer/someDirectory/someSubdirectory</i>/catalog.xml&lt;/sourceUrls&gt; 
     &lt;!-- 0 or 1. This specifies how to find the other children, instead 
     of using separate sourceUrl tags for each child.  The advantage of this
@@ -2247,6 +2448,8 @@ dimension and another child might have 365 values (for 2005) for the time dimens
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>) is .*\.nc 
     recursive can be "true" or "false".  
+    If recursive is "true", only full path names which match the pathRegex (default=".*") 
+      will be accepted. 
     An example of a thredds catalogUrl is
     <a href="http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml"
       >http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml<img 
@@ -4259,14 +4462,16 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   way to get the desired results.  
     <br>&nbsp;
 <li><b><a name="globalSourceNames"><tt>global:</tt></a> sourceNames</b> - 
-  Global metadata attributes in each file can be promoted to be data.
+  Global metadata attributes in each source data file can be promoted to be data.
   If a variable's <tt>&lt;<a rel="help" href="#sourceName">sourceName</a>&gt;</tt>
-  has the format <tt>global:<i>attributeName</i></tt> (for example, <tt>global:PI</tt>),
+  has the format <tt>global:<i>attributeName</i></tt>,
   then when ERDDAP is reading the data from a file, 
   ERDDAP will look for a global attribute of that name (for example, <tt>PI</tt>) and 
   create a column filled with the attribute's value.
   This is useful when the attribute has different values in different files,
   because otherwise, users would only see one of those values for the whole dataset.
+  For example,
+  <br><tt>&lt;sourceName&gt;global:PI&lt;/sourceName&gt;</tt>
 
   <p>When you promote an attribute to be data, ERDDAP removes the corresponding attribute.
   If you want, you can add a new value for the attribute for the whole dataset by adding
@@ -4339,9 +4544,11 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     doesn't use this information to get the data, but does display the information 
     to users. So I usually use "(local files)". --&gt;
   &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
-  &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;-- Indicates if subdirectories
+  &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;!-- 0 or 1. Indicates if subdirectories
     of fileDir have data files, too. --&gt;
-  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- A <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. If recursive is "true", only full path
+    names which match the pathRegex (default=".*") will be accepted. --&gt;
+  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
     (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
@@ -4690,6 +4897,19 @@ on how this class works and how to use this class.
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
+
+  <p>DimensionsCSV - GenerateDatasetsXml will ask for a "DimensionsCSV" string.
+  This is a comma-separated-value list of source names of some set of dimensions. 
+  GenerateDatasetsXml will find the data variables in the .nc files which use that
+  list of dimensions and make the dataset from those data variables. 
+  If you specify nothing (an empty string), GenerateDatasetsXml will look for 
+  the variables with the most dimensions, on the theory that they will be
+  the most interesting, but there may be times when you will want to 
+  make a dataset from some other group of data variables that uses some
+  other group of dimensions. (Install and use "ncdump -h <i>fileName</i>" 
+  to view an overiew of the contents of the file so you can see what your
+  options are.)
+
 <li>1D Example:
   1D files are somewhat different from 2D, 3D, 4D, ... files.
   <ul>
@@ -6813,6 +7033,8 @@ for more information.
         <li>If a title is longer than 80 characters, only the first and last 40 characters will be 
           visible in the list of datasets (but the whole title can be seen by putting the mouse
           cursor over the adjacent "?" icon).
+        <li>If the title contains the word "DEPRECATED" (all capital letters),
+          then the dataset will get a lower ranking in searches.
           <br>&nbsp;
         </ul>
       </ul> <!-- end of global attributes -->
