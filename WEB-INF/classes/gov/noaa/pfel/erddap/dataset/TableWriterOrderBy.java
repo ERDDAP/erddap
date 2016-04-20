@@ -44,25 +44,32 @@ public class TableWriterOrderBy extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderBy(String tDir, String tFileNameNoExt, 
-          TableWriter tOtherTableWriter, String tOrderByCsv) {
+    public TableWriterOrderBy(EDD tEdd, String tNewHistory, String tDir, 
+        String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tDir, tFileNameNoExt); 
+        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
+        String err = EDStatic.queryError +
+               "No column names were specified for 'orderBy'.";
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
-            throw new SimpleException(EDStatic.queryError +
-               "No column names were specified for 'orderBy'.");
+            throw new SimpleException(err);
         orderBy = String2.split(tOrderByCsv, ',');
+        if (orderBy.length == 0)
+            throw new SimpleException(err);
     }
 
 
 
     /**
      * This sorts cumulativeTable, then writes it to otherTableWriter
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         super.finish();
 
         Table cumulativeTable = cumulativeTable();
@@ -77,6 +84,11 @@ public class TableWriterOrderBy extends TableWriterAll {
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
+        if (ignoreFinish) {
+            writeSome(tCumulativeTable);
+            tCumulativeTable.removeAllRows();
+            return;
+        }
         sort(tCumulativeTable);
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
         otherTableWriter = null;

@@ -95,20 +95,25 @@ public class PersistentTable {
      *     that every update to the file's content be written synchronously to the 
      *     underlying storage device. 
      *   </ul>
-     *   See http://docs.oracle.com/javase/7/docs/api/java/io/RandomAccessFile.html#mode
+     *   See info about mode at
+     *     http://docs.oracle.com/javase/8/docs/api/index.html?java/io/RandomAccessFile.html
      *   <br> Reading data is equally fast in all modes.
      *   <br> Writing data in "rw" is 10X to 40X faster than "rws" and "rwd" modes.
-     *   <br> For writing data in "rw" mode, text and binary methods are equally fast (text is perhaps slightly faster!).
-     *   <br> For writing data in "rws" and "rwd" modes, text is 5X to 10X FASTER than binary (!!!).
+     *   <br> For writing data in "rw" mode, text and binary methods are equally fast 
+     *     (text is perhaps slightly faster!).
+     *   <br> For writing data in "rws" and "rwd" modes, text is 5X to 10X FASTER 
+     *     than binary (!!!).
      *   <br> String read/write is surprisingly fast in all modes.
      *   <br> Using "rw" and flush() after each group of writes is slower than rw, 
      *      but faster than rws and rwd, and closest to making groups of action atomic.
      *   <br> Advice: if file integrity is very important, use "rw"+flush or "rws".
      * @param columnWidths (in bytes) For numeric columns, use the XXX_LENGTH constants.
      *   <br>For Strings, use whatever value you want.
-     *    Strings are always converted to utf-8 then stored, so reserve extra space if chars above #128 expected.
+     *    Strings are always converted to utf-8 then stored, so reserve extra 
+     *    space if chars above #128 expected.
      */
-    public PersistentTable(String fullFileName, String mode, int columnWidths[]) throws IOException {
+    public PersistentTable(String fullFileName, String mode, int columnWidths[]) 
+            throws IOException {
         this.fullFileName = fullFileName;
         this.columnWidths = columnWidths;
         columnStartAt = new int[columnWidths.length];
@@ -124,7 +129,8 @@ public class PersistentTable {
         long longNRows = raf.length() / nBytesPerRow; //integer division causes partial row at end to be ignored 
         EDStatic.ensureArraySizeOkay(longNRows, "PersistentTable");
         nRows = (int)longNRows; //save since checked above
-        if (verbose) String2.log("PersistentTable " + fullFileName + " is open.\n  mode=" + mode + " nRows=" + nRows);
+        if (verbose) String2.log("PersistentTable " + fullFileName + " is open.\n" +
+            "mode=" + mode + " nRows=" + nRows);
     }
 
     /** 

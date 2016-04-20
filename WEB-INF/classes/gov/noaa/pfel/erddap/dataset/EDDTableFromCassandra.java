@@ -2,13 +2,186 @@
  * EDDTableFromCassandra Copyright 2014, NOAA.
  * See the LICENSE.txt file in this file's directory.
  * 
- * <p>Working with C*: 
+ * <p>Original 2013(?): Working with C*: 
  * http://www.datastax.com/documentation/cassandra/2.0/cassandra/gettingStartedCassandraIntro.html
  * and
  * http://www.datastax.com/documentation/cql/3.1/cql/cql_using/start_cql_win_t.html
  * Bob's C* bin dir: cd "C:\Program Files\DataStax Community\apache-cassandra\bin"
  * Startup cqlsh: cqlsh          
- * For Bob, Cassandra is at localhost:9160 -> 127.0.0.1:9160 
+ * For Bob, Cassandra is at localhost:9160
+
+UPDATE CASSANDRA:
+2016:
+* http://cassandra.apache.org/download/
+  2016 update: I got apache-cassandra-3.3-bin.tar.gz 
+  decompressed it
+  and moved the contents (bin, conf, ...)
+  into /Program Files/DataStax-DDC/apache-cassandra/  (previous location)
+    after deleting the previous contents 
+    (FUTURE: leave /data and see instructructions to update)
+  So it isn't a Windows installed program with registry keys. It's just a bunch of files.
+* http://wiki.apache.org/cassandra/GettingStarted
+
+RUN CASSANDRA:
+2016:
+* Start it up: cd /Program Files/DataStax-DDC/apache-cassandra/bin
+  type: cassandra.bat -f
+  For Java version changes: change JAVA_HOME in cassandra.bat
+* Shut it down: ^C
+* CQL Shell (3.4.0): same directory, run or double click on cqlsh.bat
+(It requires Python 2, so I installed it 
+  and changed "python" in cqlsh.bat to "C:\Python2710\python".)
+
+TEST TABLES:
+2016: 
+create keyspace bobKeyspace with replication = {'class':'SimpleStrategy', 'replication_factor':'2'};
+use bobKeyspace;
+CREATE TABLE bobkeyspace.bobtable (
+    deviceid int,
+    date timestamp,
+    sampletime timestamp,
+    cascii ascii,
+    cboolean boolean,
+    cbyte int,
+    cdecimal double,
+    cdouble double,
+    cfloat float,
+    cint int,
+    clong bigint,
+    cmap map<text, double>,
+    cset set<text>,
+    cshort int,
+    ctext text,
+    cvarchar text,
+    depth list<float>,
+    u list<float>,
+    v list<float>,
+    w list<float>,
+    PRIMARY KEY ((deviceid, date), sampletime)
+) WITH read_repair_chance = 0.0
+   AND dclocal_read_repair_chance = 0.1
+   AND gc_grace_seconds = 864000
+   AND bloom_filter_fp_chance = 0.01
+   AND comment = ''
+   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy' }
+   AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }
+   AND default_time_to_live = 0
+   AND speculative_retry = '99.0PERCENTILE';
+CREATE INDEX ctext_index ON bobkeyspace.bobtable (ctext);
+
+CREATE TABLE bobkeyspace.statictest (
+    deviceid int,
+    date timestamp,
+    sampletime timestamp,
+    depth list<float>,
+    lat float static,
+    lon float static,
+    u list<float>,
+    v list<float>,
+    PRIMARY KEY ((deviceid, date), sampletime)
+) WITH read_repair_chance = 0.0
+   AND dclocal_read_repair_chance = 0.1
+   AND gc_grace_seconds = 864000
+   AND bloom_filter_fp_chance = 0.01
+   AND comment = ''
+   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy' }
+   AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }
+   AND default_time_to_live = 0
+   AND speculative_retry = '99.0PERCENTILE';
+
+ADD DATA:
+2016:  
+optional delete if make a mistake, e.g.,
+DELETE FROM bobkeyspace.bobtable WHERE deviceid = 1001 AND date = '2014-11-01T00:00:00Z';
+---
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1001,'2014-11-01T00:00:00Z','2014-11-01T01:02:03Z','ascii1',FALSE,1,1.00001,1.001,1.1,1000000,
+1000000000000,{'map11':1.1, 'map12':1.2, 'map13':1.3, 'map14':1.4},
+{'set11', 'set12', 'set13', 'set14', 'set15'},1000,'text1','cvarchar1',
+[10.1,20.1,30.1],[-0.11,0,0.11],[-0.12,0,0.12],[-0.13,0,0.13]); 
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1001,'2014-11-01T00:00:00Z','2014-11-01T02:02:03Z','ascii2',FALSE,2,2.00001,2.001,2.1,2000000,
+2000000000000,{'map21':2.1, 'map22':2.2, 'map23':2.3, 'map24':2.4},
+{'set21', 'set22', 'set23', 'set24', 'set25'},2000,'text2','cvarchar2',
+[10.2,20.2,30.2],[-2.11,0,2.11],[-2.12,0,2.12],[-2.13,0,2.13]);
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1001,'2014-11-01T00:00:00Z','2014-11-01T03:02:03Z','ascii3',FALSE,3,3.00001,3.001,3.1,3000000,
+3000000000000,{'map31':3.1, 'map32':3.2, 'map33':3.3, 'map34':3.4},
+{'set31', 'set32', 'set33', 'set34', 'set35'},3000,'text3','cvarchar3',
+[10.3,20.3,30.3],[-3.11,0,3.11],[-3.12,0,3.12],[-3.13,0,3.13]);
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1001,'2014-11-02T00:00:00Z','2014-11-02T01:02:03Z','ascii1',FALSE,1,1.00001,1.001,1.1,1000000,
+1000000000000,{'map11':1.1, 'map12':1.2, 'map13':1.3, 'map14':1.4},
+{'set11', 'set12', 'set13', 'set14', 'set15'},1000,'text1','cvarchar1',
+[10.1,20.1,30.1],[-0.11,0,0.11],[-0.12,0,0.12],[-0.13,0,0.13]);
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1001,'2014-11-02T00:00:00Z','2014-11-02T02:02:03Z',null,TRUE,null,NaN,NaN,NaN,null,
+null,{'map11':-99, '':1.2, 'map13':1.3, 'map14':1.4},
+{'set11', '', 'set13', 'set14', 'set15'},null,null,null,
+[10.2,20.2,-99],[-99,0,0.11],[-0.12,0,0.12],[-0.13,0,-99]);
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1007,'2014-11-07T00:00:00Z','2014-11-07T01:02:03Z','ascii7',FALSE,7,7.00001,7.001,7.1,7000000,
+7000000000000,{'map71':7.1, 'map72':7.2, 'map73':7.3, 'map74':7.4},
+{'set71', 'set72', 'set73', 'set74', 'set75'},7000,'text7','cvarchar7',
+[10.7,20.7,30.7],[-7.11,0,7.11],[-7.12,NaN,7.12],[-7.13,0,7.13]); 
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1008,'2014-11-08T00:00:00Z','2014-11-08T01:02:03Z','ascii8',FALSE,8,8.00001,8.001,8.1,8000000,
+8000000000000,{'map81':8.1, 'map82':8.2, 'map83':8.3, 'map84':8.4},
+{'set81', 'set82', 'set83', 'set84', 'set85'},8000,'text8','cvarchar8',
+[10.8,20.8,30.8],[-8.11,0,8.11],[-8.12,NaN,8.12],[-8.13,0,8.13]); 
+
+INSERT INTO bobkeyspace.bobtable
+(deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,
+clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w)
+VALUES 
+(1009,'2014-11-09T00:00:00Z','2014-11-09T01:02:03Z',null,null,null,NaN,NaN,NaN,null,
+null,null, null,null, null, null, null, null, null, null);
+
+====== bobKeyspace.staticTest, lat and lon are static
+//This shows that lat and lon just have different values for each combination of the
+//partition key (deviceid+date).
+
+INSERT INTO bobkeyspace.statictest (deviceid,date,lat,lon) VALUES
+(1001,'2014-11-01T00:00:00Z',33.0,-123.0);
+INSERT INTO bobkeyspace.statictest (deviceid,date,lat,lon) VALUES
+(1001,'2014-11-02T00:00:00Z',34.0,-124.0);
+
+INSERT INTO bobkeyspace.statictest (deviceid,date,sampletime,depth,u,v) VALUES
+(1001,'2014-11-01T00:00:00Z','2014-11-01T01:02:03Z',[10.1,20.1,30.1],[-0.11,0.0,0.11],[-0.12,0.0,0.12]);
+INSERT INTO bobkeyspace.statictest (deviceid,date,sampletime,depth,u,v) VALUES
+(1001,'2014-11-01T00:00:00Z','2014-11-01T02:02:03Z',[10.1,20.1,30.1],[-0.11,0.0,0.11],[-0.12,0.0,0.12]);
+INSERT INTO bobkeyspace.statictest (deviceid,date,sampletime,depth,u,v) VALUES
+(1001,'2014-11-01T00:00:00Z','2014-11-01T03:03:03Z',[10.1,20.1,30.1],[-0.31,0.0,0.31],[-0.32,0.0,0.32]);
+INSERT INTO bobkeyspace.statictest (deviceid,date,sampletime,depth,u,v) VALUES
+(1001,'2014-11-02T00:00:00Z','2014-11-02T01:02:03Z',[10.1,20.1,30.1],[-0.41,0.0,0.41],[-0.42,0.0,0.42]);
+
  */
 package gov.noaa.pfel.erddap.dataset;
 
@@ -41,11 +214,12 @@ import gov.noaa.pfel.erddap.variable.*;
 //  http://www.datastax.com/documentation/developer/java-driver/2.0/java-driver/reference/settingUpJavaProgEnv_r.html?scroll=settingUpJavaProgEnv_r__dependencies-list
 //  is for cassandra-driver-core-2.0.1.jar. (Mine is newer.)
 //See setup.html Credits for information about dependencies. 
-//  Recommended for C* Java 2.0 driver:
-//  netty 3.8, guava-16.0.1.jar, metrics-core-3.0.2.jar, 
-//  slf4j-api-1.7.5.jar  (I use the one in netcdf-all.jar),
-//  net.jpountz.lz4
-//  snappy-java....jar
+//  Recommended/needed for C* Java driver:
+//  netty.jar, guava.jar, metrics-core.jar, 
+//  slf4j.jar   //slf4j-simple-xxx.jar is needed in my /lib 
+//  lz4.jar, snappy-java.jar
+//Changes to Java driver:
+//  https://github.com/datastax/java-driver/tree/3.0/upgrade_guide
 import com.datastax.driver.core.*;
 
 import java.util.ArrayList;
@@ -72,7 +246,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
     /** set by the constructor */
     private Session session;
-    private int protocolVersion = -1;
+    private ProtocolVersion protocolVersion = ProtocolVersion.NEWEST_SUPPORTED; //but may be changed below
     protected String keyspace; 
     protected String tableName;
     protected int nPartitionKeys;
@@ -94,7 +268,7 @@ public class EDDTableFromCassandra extends EDDTable{
     protected boolean isListDV[]; //true if this dataVariable is a list dataType, e.g., doubleList
 
     //public static String testUser = "postgres";
-    //public static String testUrl = "jdbc:postgresql://127.0.0.1:5432/mydatabase";
+    //public static String testUrl = "jdbc:postgresql://localhost:5432/mydatabase";
     //public static String testDriver = "org.postgresql.Driver";
 
     /**
@@ -128,6 +302,7 @@ public class EDDTableFromCassandra extends EDDTable{
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -165,6 +340,8 @@ public class EDDTableFromCassandra extends EDDTable{
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
@@ -207,7 +384,8 @@ public class EDDTableFromCassandra extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDTableFromCassandra(tDatasetID, tAccessibleTo, 
+        return new EDDTableFromCassandra(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery, 
                 tGlobalAttributes,
@@ -230,7 +408,8 @@ public class EDDTableFromCassandra extends EDDTable{
      * 
      * @throws Throwable if trouble
      */
-    public EDDTableFromCassandra(String tDatasetID, String tAccessibleTo, 
+    public EDDTableFromCassandra(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -255,6 +434,7 @@ public class EDDTableFromCassandra extends EDDTable{
         className = "EDDTableFromCassandra"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -424,7 +604,8 @@ public class EDDTableFromCassandra extends EDDTable{
         int resultsDVI[] = new int[nPartitionKeys];
         EDV rvToResultsEDV[] = new EDV[nPartitionKeys];
         File2.makeDirectory(datasetDir()); 
-        TableWriterAll twa = new TableWriterAll(datasetDir(), "tPKDistinct");
+        TableWriterAll twa = new TableWriterAll(null, null, //metadata not relevant
+            datasetDir(), "tPKDistinct");
         partitionKeyEDV = new EDV[nPartitionKeys];
         StringArray pkRelated = new StringArray();
         for (int pki = 0; pki < nPartitionKeys; pki++) {
@@ -733,7 +914,7 @@ public class EDDTableFromCassandra extends EDDTable{
      * http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/select_r.html
      *
      * <p>The method prevents CQL Injection Vulnerability
-     * (see http://en.wikipedia.org/wiki/SQL_injection) by using
+     * (see https://en.wikipedia.org/wiki/SQL_injection) by using
      * QueryBuilder (so String values are properly escaped and
      * numbers are assured to be numbers). See
      * http://www.datastax.com/documentation/developer/java-driver/2.0/pdf/javaDriver20.pdf
@@ -975,7 +1156,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
             //Make the BoundStatement
             //***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
-            //(see http://en.wikipedia.org/wiki/SQL_injection) by using
+            //(see https://en.wikipedia.org/wiki/SQL_injection) by using
             //preparedStatements (so String values are properly escaped and
             //numbers are assured to be numbers).
             //*** Plus, the statement is reused many times (so Prepared is recommended).
@@ -993,7 +1174,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
                 //handle special cases first
                 if (edv instanceof EDVTimeStamp) {
-                    boundStatement.setDate(i, //partition key value won't be nan/null                
+                    boundStatement.setTimestamp(i, //partition key value won't be nan/null                
                         new Date(Math.round(
                             (usePK? pa.getDouble(pkdRow) : String2.parseDouble(conVal)) 
                             * 1000))); //round to nearest milli
@@ -1081,6 +1262,7 @@ public class EDDTableFromCassandra extends EDDTable{
         int nRv = resultsDVI.length;
         int rvToRsCol[]= new int[nRv]; //stored as 0..
         DataType rvToCassDataType[] = new DataType[nRv];
+        TypeCodec rvToTypeCodec[] = new TypeCodec[nRv];
         for (int rv = 0; rv < nRv; rv++) {
             //find corresponding resultSet column (may not be 1:1) and other info
             ////stored as 0..   -1 if not found
@@ -1095,6 +1277,9 @@ public class EDDTableFromCassandra extends EDDTable{
                     tsa.toString() + "\".");
             }
             rvToCassDataType[rv] = columnDef.getType(rvToRsCol[rv]);
+
+            if (rvToResultsEDV[rv].sourceDataTypeClass() == String.class)
+                rvToTypeCodec[rv] = CodecRegistry.DEFAULT_INSTANCE.codecFor(rvToCassDataType[rv]);
         }
         int triggerNRows = EDStatic.partialRequestMaxCells / nRv;
         PrimitiveArray paArray[] = new PrimitiveArray[nRv];
@@ -1104,6 +1289,7 @@ public class EDDTableFromCassandra extends EDDTable{
         //process the resultSet rows of data
         Row row;
         int maxNRows = -1;
+        boolean toStringErrorShown = false;
         while ((row = rs.one()) != null) {
             stats[1]++;
             int listSizeDVI = -1;
@@ -1174,13 +1360,32 @@ public class EDDTableFromCassandra extends EDDTable{
                     if (edv.isBoolean()) { //special case
                         pa.addInt(row.getBool(rsCol)? 1 : 0);
                     } else if (edv instanceof EDVTimeStamp) { //zulu millis -> epoch seconds
-                        pa.addDouble(row.getDate(rsCol).getTime() / 1000.0); 
+                        pa.addDouble(row.getTimestamp(rsCol).getTime() / 1000.0); 
                     } else if (tClass == String.class) {
-                        //getString doesn't return the String form of any type
+                        //v2: getString doesn't return the String form of any type
                         //https://datastax-oss.atlassian.net/browse/JAVA-135
-                        Object value = rvToCassDataType[rv].
-                            deserialize(row.getBytesUnsafe(rsCol), protocolVersion);
-                        pa.addString(value.toString()); 
+                        //Object value = rvToCassDataType[rv].
+                        //    deserialize(row.getBytesUnsafe(rsCol), protocolVersion);
+                        //pa.addString(value.toString()); 
+
+                        //v3:
+                        //https://datastax.github.io/java-driver/upgrade_guide/
+                        String s = "[?]";
+                        try {
+                            TypeCodec codec = rvToTypeCodec[rv];
+                            if (codec != null) {
+                                java.nio.ByteBuffer bytes = row.getBytesUnsafe(rsCol);
+                                s = bytes == null? "" : 
+                                    codec.deserialize(bytes, protocolVersion).toString();
+                            }                            
+
+                        } catch (Throwable t) {
+                            if (!toStringErrorShown) {
+                                String2.log("First toString error:\n" + MustBe.throwableToString(t));
+                                toStringErrorShown = true;
+                            }
+                        }
+                        pa.addString(s); 
                     } else if (tClass == double.class) {
                         pa.addDouble(row.getDouble(rsCol)); 
                     } else if (tClass == float.class) {
@@ -1253,7 +1458,7 @@ public class EDDTableFromCassandra extends EDDTable{
      * The dataVariable sourceNames are always in sorted order. That's the
      * order that 
      *
-     * @param url the Cassandra URL, e.g., 127.0.0.1   (assumed port=9160)
+     * @param url the Cassandra URL, e.g., #.#.#.# or localhost   (assumed port=9160)
      * @param connectionProperties  see description for class constructor
      * @param keyspace the keyspace name 
      *    or use "!!!LIST!!!" to get a list of keyspaces.
@@ -1296,8 +1501,9 @@ public class EDDTableFromCassandra extends EDDTable{
                 conProp.put(tKey, tValue);  //<String,String>
         }
 
-
         //make/get the session (and hold local reference)
+        //For line below, I got com.datastax.driver.core.exceptions.NoHostAvailableException
+        //Solution: Make sure Cassandra is running.
         Session session = getSession(url, conProp);
         //int protocolVersion = session.getCluster().getConfiguration().getProtocolOptions().getProtocolVersion();
 
@@ -1354,11 +1560,14 @@ public class EDDTableFromCassandra extends EDDTable{
                     subsetVariablesSourceNameSA.add(sourceName);
             }
             
-            if (cm.getIndex() != null) {
-                //indexed columns are only constrainable with '=')
-                if (indexColumnSA.indexOf(sourceName) < 0)
-                    indexColumnSA.add(sourceName);
-            }
+            //2016-04-07 Removed because no more .getIndex 
+            //  because column <-> index is no longer 1:1.
+            //  see https://datastax-oss.atlassian.net/browse/JAVA-1008
+            //if (cm.getIndex() != null) {
+            //    //indexed columns are only constrainable with '=')
+            //    if (indexColumnSA.indexOf(sourceName) < 0)
+            //        indexColumnSA.add(sourceName);
+            //}
             
             //Cass identifiers are [a-zA-Z0-9_]*
             String destName = 
@@ -1393,7 +1602,8 @@ public class EDDTableFromCassandra extends EDDTable{
             }
             //time units already done above for all timestamp vars
 
-            isList[col] = cassType.asJavaClass() == List.class;
+            //http://stackoverflow.com/questions/34160748/upgrading-calls-to-datastax-java-apis-that-are-gone-in-3
+            isList[col] = cassType.getName() == DataType.Name.LIST;
             //String2.log(sourceName + " isList=" + isList[col] + " javaClass=" + cassType.asJavaClass());
             if (isList[col])
                 cassType = cassType.getTypeArguments().get(0); //the element type
@@ -1524,7 +1734,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
         String2.log("\n*** EDDTableFromCassandra.testGenerateDatasetsXml");
         testVerboseOn();
-        String url="127.0.0.1";  //:9160
+        String url="127.0.0.1";  //implied: v3 :9042, v2 :9160
         String props[] = {};
         String keyspace = "bobKeyspace";
         String tableName = "bobTable";
@@ -1537,15 +1747,21 @@ public class EDDTableFromCassandra extends EDDTable{
         String results, expected;
 
         //get the list of keyspaces
+//Cassandra not running?
+//As of 2016-04-06, I start Cassandra manually and leave it running in foreground:
+//Start it up: cd /Program Files/DataStax-DDC/apache-cassandra/bin
+//  type: cassandra.bat -f
+//Shut it down: ^C
         results = generateDatasetsXml(url, props, LIST, "", 
             tReloadEveryNMinutes, tInfoUrl, tInstitution, 
             tSummary, tTitle, new Attributes());
 expected = 
-"CREATE KEYSPACE \"OpsCenter\" WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1' } AND DURABLE_WRITES = true;\n" +
 "CREATE KEYSPACE bobkeyspace WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2' } AND DURABLE_WRITES = true;\n" +
 "CREATE KEYSPACE system_traces WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2' } AND DURABLE_WRITES = true;\n" +
 "CREATE KEYSPACE system WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.LocalStrategy' } AND DURABLE_WRITES = true;\n" +
-"CREATE KEYSPACE demodb WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.NetworkTopologyStrategy', 'datacenter1': '3' } AND DURABLE_WRITES = true;\n";
+"CREATE KEYSPACE system_distributed WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3' } AND DURABLE_WRITES = true;\n" +
+"CREATE KEYSPACE system_schema WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.LocalStrategy' } AND DURABLE_WRITES = true;\n" +
+"CREATE KEYSPACE system_auth WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1' } AND DURABLE_WRITES = true;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get the metadata for all tables in a keyspace
@@ -1579,16 +1795,17 @@ expected =
 "    PRIMARY KEY ((deviceid, date), sampletime)\n" +
 ") WITH read_repair_chance = 0.0\n" +
 "   AND dclocal_read_repair_chance = 0.1\n" +
-"   AND replicate_on_write = true\n" +
 "   AND gc_grace_seconds = 864000\n" +
 "   AND bloom_filter_fp_chance = 0.01\n" +
-"   AND caching = 'KEYS_ONLY'\n" +
+"   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
 "   AND comment = ''\n" +
-"   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy' }\n" +
-"   AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
+"   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
+"   AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
 "   AND default_time_to_live = 0\n" +
-"   AND speculative_retry = '99.0PERCENTILE'\n" +
-"   AND index_interval = 128;\n" +
+"   AND speculative_retry = '99PERCENTILE'\n" +
+"   AND min_index_interval = 128\n" +
+"   AND max_index_interval = 2048\n" +
+"   AND crc_check_chance = 1.0;\n" +
 "CREATE INDEX ctext_index ON bobkeyspace.bobtable (ctext);\n" +
 "\n" +
 "CREATE TABLE bobkeyspace.statictest (\n" +
@@ -1603,16 +1820,17 @@ expected =
 "    PRIMARY KEY ((deviceid, date), sampletime)\n" +
 ") WITH read_repair_chance = 0.0\n" +
 "   AND dclocal_read_repair_chance = 0.1\n" +
-"   AND replicate_on_write = true\n" +
 "   AND gc_grace_seconds = 864000\n" +
 "   AND bloom_filter_fp_chance = 0.01\n" +
-"   AND caching = 'KEYS_ONLY'\n" +
+"   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
 "   AND comment = ''\n" +
-"   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy' }\n" +
-"   AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
+"   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
+"   AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
 "   AND default_time_to_live = 0\n" +
-"   AND speculative_retry = '99.0PERCENTILE'\n" +
-"   AND index_interval = 128;\n";
+"   AND speculative_retry = '99PERCENTILE'\n" +
+"   AND min_index_interval = 128\n" +
+"   AND max_index_interval = 2048\n" +
+"   AND crc_check_chance = 1.0;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //generate the datasets.xml for one table
@@ -1658,7 +1876,7 @@ expected =
 "    <tableName>bobTable</tableName>\n" +
 "    <partitionKeySourceNames>deviceid, date</partitionKeySourceNames>\n" +
 "    <clusterColumnSourceNames>sampletime</clusterColumnSourceNames>\n" +
-"    <indexColumnSourceNames>ctext</indexColumnSourceNames>\n" +
+"    <indexColumnSourceNames></indexColumnSourceNames>\n" + //!!! 2016-04 ERDDAP can't detect indexes in C* v3
 "    <maxRequestFraction>1</maxRequestFraction>\n" + 
 "    <columnNameQuotes></columnNameQuotes>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
@@ -2265,7 +2483,7 @@ expected =
                 "\nresults=\n" + results);
     
 //    \"2014-11-15T15:05:05Z (Cassandra)
-//2014-11-15T15:05:05Z http://127.0.0.1:8080/cwexperimental/tabledap/cass_bobKeyspace_bobTable.das\";
+//2014-11-15T15:05:05Z http://localhost:8080/cwexperimental/tabledap/cass_bobKeyspace_bobTable.das\";
 expected = 
     "String infoUrl \"http://www.oceannetworks.ca/\";\n" +
 "    String institution \"Ocean Networks Canada\";\n" +
@@ -2301,15 +2519,15 @@ expected =
 "1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,10.2,-2.11,-2.12,-2.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,30.2,0.11,2.12,2.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,30.2,2.11,2.12,2.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,10.3,-3.11,-3.12,-3.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,20.3,0.0,0.0,0.0\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,30.3,3.11,3.12,3.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
 "1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,10.7,-7.11,-7.12,-7.13\n" +
 "1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,20.7,0.0,NaN,0.0\n" +
@@ -2318,6 +2536,7 @@ expected =
 "1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,cvarchar8,20.8,0.0,NaN,0.0\n" +
 "1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,cvarchar8,30.8,8.11,8.12,8.13\n" +
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2483,8 +2702,8 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -2501,8 +2720,8 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
 "1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -2534,8 +2753,8 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
@@ -2599,7 +2818,7 @@ expected =
 "2014-11-01T01:02:03Z,30.1,0.11\n" +
 "2014-11-01T02:02:03Z,10.2,-2.11\n" +
 "2014-11-01T02:02:03Z,20.2,0.0\n" +
-"2014-11-01T02:02:03Z,30.2,0.11\n"; 
+"2014-11-01T02:02:03Z,30.2,2.11\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2907,7 +3126,7 @@ expected =
                 "\nresults=\n" + results);
     
 //    \"2014-11-15T15:05:05Z (Cassandra)
-//2014-11-15T15:05:05Z http://127.0.0.1:8080/cwexperimental/tabledap/cass_bobKeyspace_bobTable.das\";
+//2014-11-15T15:05:05Z http://localhost:8080/cwexperimental/tabledap/cass_bobKeyspace_bobTable.das\";
 expected = 
     "String infoUrl \"http://www.oceannetworks.ca/\";\n" +
 "    String institution \"Ocean Networks Canada\";\n" +
@@ -2943,15 +3162,15 @@ expected =
 "1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,10.2,-2.11,-2.12,-2.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,30.2,0.11,2.12,2.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,30.2,2.11,2.12,2.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,10.3,-3.11,-3.12,-3.13\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,20.3,0.0,0.0,0.0\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,30.3,3.11,3.12,3.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
 "1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
@@ -3264,7 +3483,7 @@ expected =
                 "\nresults=\n" + results);
     
 //    \"2014-11-15T15:05:05Z (Cassandra)
-//2014-11-15T15:05:05Z http://127.0.0.1:8080/cwexperimental/tabledap/cass_bobKeyspace_bobTable.das\";
+//2014-11-15T15:05:05Z http://localhost:8080/cwexperimental/tabledap/cass_bobKeyspace_bobTable.das\";
 expected = 
    "String infoUrl \"http://www.oceannetworks.ca/\";\n" +
 "    String institution \"Ocean Networks Canada\";\n" +
@@ -3296,16 +3515,16 @@ expected =
                 tedd.className() + "_staticAll", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
             expected =  
-//This shows that lat and lon just have different values for each combinations of the
+//This shows that lat and lon just have different values for each combination of the
 //partition key (deviceid+date).
 "deviceid,date,time,depth,latitude,longitude,u,v\n" +
 ",UTC,UTC,m,degrees_north,degrees_east,,\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,10.1,33.0,-123.0,-0.11,-0.12\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,20.1,33.0,-123.0,0.0,0.0\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,30.1,33.0,-123.0,0.11,0.12\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:02Z,10.1,33.0,-123.0,-0.21,-0.22\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:02Z,20.1,33.0,-123.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:02Z,30.1,33.0,-123.0,0.21,0.22\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,10.1,33.0,-123.0,-0.11,-0.12\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,20.1,33.0,-123.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,30.1,33.0,-123.0,0.11,0.12\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:03:03Z,10.1,33.0,-123.0,-0.31,-0.32\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:03:03Z,20.1,33.0,-123.0,0.0,0.0\n" +
 "1001,2014-11-01T00:00:00Z,2014-11-01T03:03:03Z,30.1,33.0,-123.0,0.31,0.32\n" +

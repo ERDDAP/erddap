@@ -391,7 +391,7 @@ String reference3=
 
         //delete the log file
 
-        File2.delete("c:/programs/tomcat/webapps/cwexperimental/WEB-INF/DoubleCenterGrids.log");
+        File2.delete("c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/DoubleCenterGrids.log");
 
     }
 }

@@ -69,7 +69,7 @@ public class EDVTimeStamp extends EDV {
      *      will be parsed with Calendar2.parseISODateTimeZulu().
      *      See
      *      http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *      http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *      http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      Any format that starts with "yyyy-MM" will be parsed with 
      *    </ul>
      * This constructor gets/sets actual_range from actual_range, data_min, or data_max metadata.
@@ -309,7 +309,7 @@ public class EDVTimeStamp extends EDV {
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
      *      http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *      http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *      http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    <li> null if this can be procured from the "units" source metadata.
      *    </ul>
      * Examples: 

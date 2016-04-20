@@ -133,10 +133,10 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         alps = oneStep(contextDir + "WEB-INF/classes/com/cohort", null); 
         String results = alps.toNewlineString();
         String expected = 
-"C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\n" +
-"C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\array\n" +
-"C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\ema\n" +
-"C:\\programs\\tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\util\n";
+"C:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\n" +
+"C:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\array\n" +
+"C:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\ema\n" +
+"C:\\programs\\_tomcat\\webapps\\cwexperimental\\WEB-INF\\classes\\com\\cohort\\util\n";
         Test.ensureEqual(results, expected, "results=\\n" + results);
 
         alps = oneStep(

@@ -22,7 +22,7 @@
 
 commandLine=$0
 thisDir=`echo $commandLine | dirname $0`
-cp0="$thisDir/classes:$thisDir/lib/netcdfAll-latest.jar"
+cp0="classes:lib/netcdfAll-latest.jar:lib/slf4j.jar"
 
 java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.pointdata.ConvertTable "$1" $2 $3 $4 $5
 

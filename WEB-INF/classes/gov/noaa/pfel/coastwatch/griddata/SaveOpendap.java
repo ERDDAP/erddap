@@ -14,6 +14,7 @@ import com.cohort.util.Test;
 
 //import java.net.URL;
 import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,12 +62,12 @@ public class SaveOpendap  {
      */
     public static String ncDumpString(String fullFileName, 
             boolean printData) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        //NCdump.printHeader(fullFileName, baos);
-        NCdump.print(fullFileName, baos, 
-            printData, false /*print only coord variables*/, false /*ncml*/, false,
+        //changed with switch to netcdf-java 4.6.4
+        StringWriter writer = new StringWriter();
+        NCdumpW.print(fullFileName, writer,             
+            printData, false /*print only coord variables*/, false /*ncml*/, false, //strict
             "" /*varNames*/, null /*cancel*/);
-        return String2.replaceAll(baos.toString(), "\r", "");
+        return String2.replaceAll(writer.toString(), "\r", "");
     }
 
     /**
@@ -252,7 +253,7 @@ public class SaveOpendap  {
     String shouldBe =         
 "{\n" +
 "  dimensions:\n" +
-"    time = UNLIMITED;   // (803 currently\n" +
+"    time = UNLIMITED;   // (803 currently)\n" +
 "    latitude = 1;\n" +
 "    longitude = 1;\n" +
 "  variables:\n" +
@@ -365,6 +366,7 @@ public class SaveOpendap  {
 "      :short_name = \"time\";\n" +
 "      :standard_name = \"time\";\n" +
 "      :units = \"seconds since 1970-01-01 00:00:00 UTC\";\n" +
+"      :calendar = \"gregorian\";\n" + //appeared with switch to netcdf-java 4.6.4
 "      :_CoordinateAxisType = \"Time\";\n" +
 "\n" +
 "    float latitude(latitude=1);\n" +

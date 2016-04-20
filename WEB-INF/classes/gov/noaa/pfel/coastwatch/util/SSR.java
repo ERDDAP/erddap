@@ -1101,9 +1101,13 @@ public class SSR {
      *           "re: dinner", "How about at 7?");
      * </pre>
      *
+     * <p>THREAD SAFE? SYNCHRONIZED? 
+     * I don't think use of this needs to be synchronized. I could be wrong.
+     * I haven't tested.
+     *
      * <p>This code uses /libs/mail.jar from the JavaMail API (currently 1.5.1).
      * This requires additions to javac's and java's -cp: 
-     * ";C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\mail.jar"
+     * ";C:\programs\_tomcat\webapps\cwexperimental\WEB-INF\lib\mail.jar"
      * The mail.jar files are available from Sun
      * (see http://www.oracle.com/technetwork/java/javamail/index.html).
      * The software is copyrighted by Sun, but Sun grants anyone 
@@ -1270,7 +1274,8 @@ public class SSR {
 */
 
     /**
-     * This does minimal percentEncoding for form item names and values in urls.
+     * This encodes all characters except A-Za-z0-9_-!.~'()* .
+     * Originally, this did a more minimal encoding. Now it does proper encoding.
      * 
      * @param nameOrValue   not yet percentEncoded
      * @return the encoded query string.
@@ -1284,26 +1289,45 @@ public class SSR {
         int nvLength = nameOrValue.length();
         for (int po = 0; po < nvLength; po++) {
             char ch = nameOrValue.charAt(po);
-            if      (ch == '%') sb.append("%25");
-            else if (ch == '&') sb.append("%26");  //needed to distinguish & in value in &var=value
-            else if (ch == '"') sb.append("%22");  //helps with urls in javascript code
-            else if (ch == '\'')sb.append("%27");  //helps with urls in javascript code
-            else if (ch == '=') sb.append("%3D");  //needed to distinguish = in value in &var=value
-            else if (ch == '#') sb.append("%23");  //needed for SOS    added 2009-09-28
-            else if (ch == '+') sb.append("%2B");  //before handling ' '
-            else if (ch == ' ') sb.append("%20");  //safer than '+'
-            else if (ch == '<') sb.append("%3C");
-            else if (ch == '>') sb.append("%3E");
-            //see slide 7 of https://www.owasp.org/images/b/ba/AppsecEU09_CarettoniDiPaola_v0.8.pdf
-            //reserved=; / ? : @ & = + $ ,
-            else if (ch == ';') sb.append("%3B");
-            else if (ch == '/') sb.append("%2F");
-            else if (ch == '?') sb.append("%3F");
-            //else if (ch == ':') sb.append("%3A");
-            else if (ch == '@') sb.append("%40");
-            else if (ch == '$') sb.append("%24");
-            else if (ch < 32 || ch >= 127) sb.append(percentEncode("" + ch)); //this handles any unicode char via utf-8
-            else sb.append(ch);
+            //see https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_unreserved_characters
+            //  "URI producers are discouraged from percent-encoding unreserved characters."
+            //   A-Za-z0-9_-.~   (unreserved characters)   different from java:
+            //See javadocs for URI. It says
+            //  encode everything but A-Za-z0-9_-!.~'()*   (unreserved characters)
+            //  and for details see appendix A of http://www.ietf.org/rfc/rfc2396.txt
+            //    It says agree with unreserved character list in URI javadocs 
+            //    (unreserved = alphanum | mark)
+            //JavaScript docs support that interpretation
+            //  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+            if (Character.isLetterOrDigit(ch) || "_-!.~'()*".indexOf(ch) >= 0) 
+                sb.append(ch);
+            else if (ch < 16)  sb.append("%0" + Integer.toHexString(ch).toUpperCase());
+            else if (ch < 127) sb.append("%"  + Integer.toHexString(ch).toUpperCase());
+            else sb.append(percentEncode("" + ch)); //this handles any unicode char via utf-8
+        }
+        return sb.toString();
+    }
+
+    /** 
+     * This is used by Erddap.sendRedirect to try to fix urls that are supposedly
+     * already percentEncoded, but have characters that are now (with stricter
+     * Tomcat) not allowed, notably |,&gt;,&lt;
+     *
+     * @param url the whole URL (which you wouldn't do with minimalPercentEncode)
+     * @return url with additional characters encoded
+     */
+    public static String fixPercentEncodedUrl(String url) throws Exception {
+        if (url == null)
+            return "";
+        StringBuilder sb = new StringBuilder();
+        int tLength = url.length();
+        for (int po = 0; po < tLength; po++) {
+            char ch = url.charAt(po);
+            if ("|<>;@$,#[]".indexOf(ch) >= 0) 
+                sb.append("%"  + Integer.toHexString(ch).toUpperCase());
+            else if (ch < 127) 
+                sb.append(ch);
+            else sb.append(percentEncode("" + ch)); //this handles any unicode char via utf-8
         }
         return sb.toString();
     }
@@ -1313,7 +1337,7 @@ public class SSR {
      * (where H is a hexadecimal digit) and by converting ' ' to '+'.
      * <br>This should be use RARELY. See minimalPercentEncode for most uses.
      * <br>This is used on names and values just prior to contacting a url.
-     * <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     * <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      * <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * 
      * @param query   not yet percentEncoded
@@ -1368,7 +1392,7 @@ public class SSR {
      * Besides, for this purpuse, the caller doesn't care what the response is.
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @param timeOutMillis
      * @throws Exception if trouble
@@ -1392,7 +1416,7 @@ public class SSR {
      * and 10 minute read timeout.
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return an InputStream from the url
      * @throws Exception if trouble
@@ -1414,7 +1438,7 @@ public class SSR {
      * This is useful for short responses.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a String with the response.   Lines will always be separated by \n only.
      * @throws Exception if error occurs
@@ -1446,7 +1470,7 @@ public class SSR {
      *
      * @param urlString urlString (or file name) pointing to the information.  
      *   The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      *   <br>This can be a url or a local file (with or without file://).
      * @param fullFileName the full name for the file to be created.
@@ -1512,7 +1536,7 @@ public class SSR {
      * and the related test site: http://www.webperformance.org/compression/ .
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @param timeOutMillis the time out for opening a connection in milliseconds  
      *    (use -1 to get high default, currently 10 minutes)
@@ -1557,7 +1581,7 @@ public class SSR {
      * This tries to use compression.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      */
     public static InputStream getUrlInputStream(String urlString) throws Exception {
@@ -1571,7 +1595,7 @@ public class SSR {
      *
      * @param urlString The query MUST be already percentEncoded as needed.
      *   This can be a url or a local file (with or without file://).
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a String[] with the response (one string per line of the file).
      * @throws Exception if error occurs
@@ -1601,7 +1625,7 @@ public class SSR {
      * This tries to use compression.
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a String with the response.
      * @throws Exception if error occurs
@@ -1615,7 +1639,7 @@ public class SSR {
      * This tries to use compression.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a byte[] with the response.
      * @throws Exception if error occurs
@@ -1717,7 +1741,7 @@ public class SSR {
      * @param app e.g., /servlet/SomeServlet
      * @param data the data to be sent; the keys and values MUST be already percentEncoded as needed.
      *    e.g., key1=value1&key2=value2
-     *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a String[] with the response.
      *   If an error occurs, this will return String[2]{null, error message}.
@@ -1732,7 +1756,7 @@ public class SSR {
             //http://www.informit.com/guides/content.asp?g=java&seqNum=44  
             //The httpClient attempts require commons-httpclient... and commons-logging.jar
             //  to be in the /lib directory and in the -cp for jikes and java
-            //;C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\commons-httpclient-2.0.2.jar;C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\commons-logging.jar
+            //;C:\programs\_tomcat\webapps\cwexperimental\WEB-INF\lib\commons-httpclient-2.0.2.jar;C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\commons-logging.jar
             //The .jar files (and related files) can be downloaded from Apache's Jakarta project.
             int port = 80;
             HttpClient client = new HttpClient();
@@ -2051,7 +2075,7 @@ public class SSR {
     /**
      * This returns the directory that is the application's root
      * (with forward slashes and a trailing slash, 
-     * e.g., c:/programs/tomcat/webapps/cwexperimental/).
+     * e.g., c:/programs/_tomcat/webapps/cwexperimental/).
      * Tomcat calls this the ContextDirectory.
      * This only works if these classes are installed
      * underneath Tomcat (with "WEB-INF/" 
@@ -2134,33 +2158,22 @@ public class SSR {
                 cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
                 Process p = Runtime.getRuntime().exec(cmd);
             } else {
-                // Under Unix, Netscape has to be running for the "-remote"
-                // command to work.  So, we try sending the command and
-                // check for an exit value.  If the exit command is 0,
-                // it worked, otherwise we need to start the browser.
-                // cmd = 'netscape -remote openURL(http://www.javaworld.com)'
-                // The default browser under unix.
-                String UNIX_PATH = "netscape";
-                // The flag to display a url.
-                String UNIX_FLAG = "-remote openURL";
-                cmd = UNIX_PATH + " " + UNIX_FLAG + "(" + url + ")";
-                Process p = Runtime.getRuntime().exec(cmd);
+                //http://linux.die.net/man/1/xdg-open
+                // cmd = 'xdg-open ' + url
+                Process p = Runtime.getRuntime().exec("xdg-open " + 
+                    (url.startsWith("file://")? url.substring(7) : url));
 
-                // wait for exit code -- if it's 0, command worked,
-                // otherwise we need to start the browser up.
+                // wait for exit code -- if it's 0, command worked
                 int exitCode = p.waitFor();
-                if (exitCode != 0) {
-                    // Command failed, start up the browser
-                    // cmd = 'netscape http://www.javaworld.com'
-                    cmd = UNIX_PATH + " "  + url;
-                    p = Runtime.getRuntime().exec(cmd);
-                }
+                if (exitCode != 0) 
+                    throw new RuntimeException("xdg-open exitCode=" + exitCode);
             }
         } catch (Throwable t) {
-            String2.log(String2.ERROR + " while trying to displayInBrowser(" + url + "):\n" +
+            String2.log(String2.ERROR + " while trying to display url=" + url + "\n" +
+                "Please use the appropriate program to open and view the file.\n" +
+                "[Underlying error:\n" +
                 MustBe.throwableToString(t) +
-                (String2.OSIsWindows? "" :
-                    "(On non-Windows computers, Netscape must be in your PATH for this to work.)"));
+                "]");
         }
     }
 

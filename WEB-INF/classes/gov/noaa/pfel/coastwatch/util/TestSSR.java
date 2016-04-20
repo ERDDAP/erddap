@@ -56,12 +56,39 @@ public class TestSSR {
         */
 
         //percentDecode(String query) 
-        Test.ensureEqual(SSR.percentEncode(       "+ :q*~?=&%"), "%2B+%3Aq*%7E%3F%3D%26%25", "");
-        Test.ensureEqual(SSR.minimalPercentEncode("+ :q*~?=&%"), "%2B%20:q*~%3F%3D%26%25", "");
-        Test.ensureEqual(SSR.percentDecode("%2B+%3aq%2a%7E%3f%3D%26%25"), "+ :q*~?=&%", "");
+        Test.ensureEqual(SSR.minimalPercentEncode("+ :q*~?=&%"), 
+            "%2B%20%3Aq*~%3F%3D%26%25", "");
+        Test.ensureEqual(SSR.percentEncode(       "+ :q*~?=&%"), 
+            "%2B+%3Aq*%7E%3F%3D%26%25", ""); //I don't like +    It encodes ~
+        Test.ensureEqual(SSR.percentDecode("%2B%20%3Aq*~%3F%3D%26%25"), "+ :q*~?=&%", "");
 
-        Test.ensureEqual(SSR.minimalPercentEncode("A9+ :q*~?=&%;/?@=+$,"), "A9%2B%20:q*~%3F%3D%26%25%3B%2F%3F%40%3D%2B%24,", "");
-        Test.ensureEqual(SSR.percentDecode("A9%2B%20:q*~%3F%3D%26%25%3B%2F%3F%40%3D%2B%24,"), "A9+ :q*~?=&%;/?@=+$,", "");
+        String s = "AZaZ09 \t\r\n`";
+        Test.ensureEqual(SSR.minimalPercentEncode(s), 
+            "AZaZ09%20%09%0D%0A%60", "");
+        Test.ensureEqual(SSR.percentEncode(s), 
+            "AZaZ09+%09%0D%0A%60", ""); //I don't like +
+        Test.ensureEqual(SSR.percentDecode("AZaZ09%20%09%0D%0A%60"), s, "");
+
+        s = "~!@#$%^&*()";
+        Test.ensureEqual(SSR.minimalPercentEncode(s), 
+            "~!%40%23%24%25%5E%26*()", "");
+        Test.ensureEqual(SSR.percentEncode(s), 
+            "%7E%21%40%23%24%25%5E%26*%28%29", "");
+        Test.ensureEqual(SSR.percentDecode("%7E%21%40%23%24%25%5E%26*%28%29"), s, "");
+
+        s = "-_=+\\|[{]};";
+        Test.ensureEqual(SSR.minimalPercentEncode(s), 
+            "-_%3D%2B%5C%7C%5B%7B%5D%7D%3B", "");
+        Test.ensureEqual(SSR.percentEncode(s), 
+            "-_%3D%2B%5C%7C%5B%7B%5D%7D%3B", "");
+        Test.ensureEqual(SSR.percentDecode("-_%3D%2B%5C%7C%5B%7B%5D%7D%3B"), s, "");
+
+        s = ":'\",<.>/?";
+        Test.ensureEqual(SSR.minimalPercentEncode(s), 
+            "%3A'%22%2C%3C.%3E%2F%3F", "");
+        Test.ensureEqual(SSR.percentEncode(s), 
+            "%3A%27%22%2C%3C.%3E%2F%3F", "");
+        Test.ensureEqual(SSR.percentDecode("%3A%27%22%2C%3C.%3E%2F%3F"), s, "");
 
         /* 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
         //sftp
@@ -301,7 +328,7 @@ public class TestSSR {
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):
         //ensureEqual(String2.getContextDirectory(), //with / separator and / at the end
-        //  "C:/programs/tomcat/webapps/cwexperimental/", "a");
+        //  "C:/programs/_tomcat/webapps/cwexperimental/", "a");
         //wimpy test, but works on all computers
         Test.ensureNotNull(SSR.getContextDirectory(), //with / separator and / at the end
             "contextDirectory");
@@ -338,8 +365,8 @@ public class TestSSR {
         if (emailPort.length() == 0) emailPort = "587";
 
         emailUser = String2.getStringFromSystemIn( 
-            "gmail email user (e.g., bob.simons@noaa.gov)? ");
-        if (emailUser.length() == 0) emailUser = "bob.simons@noaa.gov"; 
+            "gmail email user (e.g., erd.data)? ");
+        if (emailUser.length() == 0) emailUser = "erd.data@noaa.gov"; 
 
         emailPassword = String2.getPasswordFromSystemIn(
             "gmail email password\n" +
@@ -347,12 +374,12 @@ public class TestSSR {
         
         if (emailPassword.length() > 0) {
             emailReplyToAddress = String2.getStringFromSystemIn( 
-                "gmail email Reply To address (e.g., bob.simons@noaa.gov)? ");
-            if (emailReplyToAddress.length() == 0) emailReplyToAddress = "bob.simons@noaa.gov";
+                "gmail email Reply To address (e.g., erd.data@noaa.gov)? ");
+            if (emailReplyToAddress.length() == 0) emailReplyToAddress = "erd.data@noaa.gov";
 
             emailToAddresses = String2.getStringFromSystemIn(
-                "1+ email To addresses (e.g., erd.data@noaa.gov,CoHortSoftware@gmail.com,null)? ");
-            if (emailToAddresses.length() == 0) emailToAddresses = "erd.data@noaa.gov,CoHortSoftware@gmail.com";
+                "1+ email To addresses (e.g., bob.simons@noaa.gov,CoHortSoftware@gmail.com,null)? ");
+            if (emailToAddresses.length() == 0) emailToAddresses = "bob.simons@noaa.gov,CoHortSoftware@gmail.com";
 
             try {
                 String2.log("test gmail email " + emailToAddresses); 

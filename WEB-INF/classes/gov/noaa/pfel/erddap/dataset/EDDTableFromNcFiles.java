@@ -25,6 +25,7 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.Tally;
@@ -95,7 +96,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
      *    ERDDAP to try to generate FGDC metadata for this dataset).
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
-    public EDDTableFromNcFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromNcFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -111,7 +113,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromNcFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromNcFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -128,7 +131,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
      * The constructor for subclasses.
      */
     public EDDTableFromNcFiles(String tClassName, 
-        String tDatasetID, String tAccessibleTo,
+        String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -144,7 +147,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super(tClassName, tDatasetID, tAccessibleTo, 
+        super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -237,6 +240,10 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String[] useDimensions = StringArray.arrayFromCSV(useDimensionsCSV);
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+        if (!String2.isSomething(sampleFileName)) 
+            String2.log("Found/using sampleFileName=" +
+                (sampleFileName = FileVisitorDNLS.getSampleFileName(
+                    tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         //show structure of sample file
         String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
@@ -1011,6 +1018,7 @@ cdmSuggestion() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
+        String dir = EDStatic.fullTestCacheDirectory;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "erdCinpKfmSFNH";
@@ -1021,9 +1029,9 @@ cdmSuggestion() +
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNcFiles 1D test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1160,9 +1168,9 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1186,9 +1194,9 @@ expected =
         //.csv    for one lat,lon,time
         userDapQuery = "" +
             "&longitude=-119.05&latitude=33.46666666666&time=2005-07-01T00:00:00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1Station", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1207,9 +1215,9 @@ expected =
         //.csv    for one lat,lon,time      via lon > <
         userDapQuery = "" +
             "&longitude>-119.06&longitude<=-119.04&latitude=33.46666666666&time=2005-07-01T00:00:00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1229,10 +1237,10 @@ expected =
         userDapQuery = "" +
             "&time=2005-07-01&common_name=\"Red+abalone\"";
         long time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_eq", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1253,10 +1261,10 @@ expected =
         userDapQuery = "" +
             "&time=2005-07-01&id!=\"San+Miguel+(Hare+Rock)\"&common_name=\"Red+abalone\"";
         time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_NE", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1276,10 +1284,10 @@ expected =
         userDapQuery = "" +
             "&time=2005-07-01&id>\"San+Miguel+(G\"&id<=\"San+Miguel+(I\"&common_name=\"Red+abalone\"";
         time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_gtlt", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1292,10 +1300,10 @@ expected =
         userDapQuery = "longitude,latitude,depth,time,id,species_name,size" + //no common_name
             "&time=2005-07-01&id=~\"(zztop|.*Hare+Rock.*)\"&common_name=\"Red+abalone\"";   //but common_name here
         time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_regex", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,depth,time,id,species_name,size\n" +
@@ -1313,6 +1321,7 @@ expected =
     public static void test2D(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromNcFiles.test2D() *****************\n");
         testVerboseOn();
+        String dir = EDStatic.fullTestCacheDirectory;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1336,9 +1345,9 @@ expected =
 */
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNcFiles 2D test das dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
         //String2.log(results);
         expected = 
 "  time {[10]\n" +
@@ -1373,9 +1382,9 @@ expected =
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1419,9 +1428,9 @@ expected =
 
         userDapQuery = "latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&latitude=-27.7&time=2005-04-19T00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1433,9 +1442,9 @@ expected =
         //2005 04 25 18 00 999 99.0 99.0  3.90  8.00 99.00 999 9999.0 999.0  23.9 999.0 99.0 99.00
         userDapQuery = "latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = "latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -1450,10 +1459,10 @@ expected =
         userDapQuery = "latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&latitude>35&latitude<39&time=2005-04-01";
         long time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1478,10 +1487,10 @@ expected =
         //test that constraint vars are sent to low level data request
         userDapQuery = "latitude,station,wvht,dpd,wtmp,dewp" + //no "time" here
             "&latitude>35&latitude<39&time=2005-04-01"; //"time" here
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "latitude,station,wvht,dpd,wtmp,dewp\n" +
@@ -1507,10 +1516,10 @@ expected =
         //test that constraint vars are sent to low level data request
         //and that constraint causing 0rows for a station doesn't cause problems
         userDapQuery = "latitude,wtmp&time>=2008-03-14T18:00:00Z&time<=2008-03-14T18:00:00Z&wtmp>20";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "latitude,wtmp\n" +
@@ -1547,6 +1556,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
+        String dir = EDStatic.fullTestCacheDirectory;
         EDV edv;
         String id = "testNc3D";
         
@@ -1568,9 +1578,9 @@ expected =
 */
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNcFiles test3D das dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
         //String2.log(results);
         expected = 
 "  time {[10]\n" +
@@ -1605,9 +1615,9 @@ expected =
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1652,9 +1662,9 @@ expected =
 
         userDapQuery = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&longitude=-48.13&latitude=-27.7&time=2005-04-19T00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1666,9 +1676,9 @@ expected =
         //2005 04 25 18 00 999 99.0 99.0  3.90  8.00 99.00 999 9999.0 999.0  23.9 999.0 99.0 99.00
         userDapQuery = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&longitude=-48.13&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -1683,10 +1693,10 @@ expected =
         userDapQuery = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&longitude>-125&longitude<-121&latitude>35&latitude<39&time=2005-04-01";
         long time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1705,10 +1715,10 @@ expected =
         //test that constraint vars are sent to low level data request
         userDapQuery = "longitude,latitude,station,wvht,dpd,wtmp,dewp" + //no "time" here
             "&longitude>-125&longitude<-121&latitude>35&latitude<39&time=2005-04-01"; //"time" here
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,station,wvht,dpd,wtmp,dewp\n" +
@@ -1728,10 +1738,10 @@ expected =
         //test that constraint vars are sent to low level data request
         //and that constraint causing 0rows for a station doesn't cause problems
         userDapQuery = "longitude,latitude,wtmp&time>=2008-03-14T18:00:00Z&time<=2008-03-14T18:00:00Z&wtmp>20";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,wtmp\n" +
@@ -1894,6 +1904,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles.test4D() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
         int po;
         EDV edv;
@@ -1916,9 +1927,9 @@ expected =
 */
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNcFiles test4D das dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
 
         expected = 
@@ -1969,9 +1980,9 @@ expected =
         Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -2018,9 +2029,9 @@ expected =
         //2011-04-12 was -48.13&latitude=-27.7  now 27.705 S 48.134 W
         userDapQuery = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&longitude=-48.134&latitude=-27.705&time=2005-04-19T00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -2032,9 +2043,9 @@ expected =
         //2005 04 25 18 00 999 99.0 99.0  3.90  8.00 99.00 999 9999.0 999.0  23.9 999.0 99.0 99.00
         userDapQuery = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&longitude=-48.134&latitude=-27.705&time>=2005-04-01&time<=2005-04-26";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -2049,10 +2060,10 @@ expected =
         userDapQuery = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp" +
             "&longitude>-125&longitude<-121&latitude>35&latitude<39&time=2005-04-01";
         long time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2080,10 +2091,10 @@ expected =
         //test that constraint vars are sent to low level data request
         userDapQuery = "longitude,latitude,station,wvht,dpd,wtmp,dewp" + //no "time" here
             "&longitude>-125&longitude<-121&latitude>35&latitude<39&time=2005-04-01"; //"time" here
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2112,10 +2123,10 @@ expected =
         //test that constraint vars are sent to low level data request
         //and that constraint causing 0rows for a station doesn't cause problems
         userDapQuery = "longitude,latitude,wtmp&time>=2008-03-14T18:00:00Z&time<=2008-03-14T18:00:00Z&wtmp>20";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2184,14 +2195,15 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
+        String dir = EDStatic.fullTestCacheDirectory;
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
         //!!!change time to be ~nowLocal+16 (= nowZulu+8);  e.g., T20 for local time 4pm
         userDapQuery = "longitude,latitude,time,station,wd,wtmp&time%3E=2009-03-12T20"; 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_24hours", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         String2.log(results);
 
         //in log output, look at end of constructor for "maxTime is within last 24hrs, so setting maxTime to NaN (i.e., Now)."
@@ -2209,15 +2221,15 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-
+        String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
         //time constraints force erddap to get actual data, (not just station variables)
         //  and order of variables says to sort by lon first
         userDapQuery = "longitude,latitude,station&station=~\"5.*\"&time>=2008-03-11&time<2008-03-12&distinct()"; 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_distincts", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = //2011-04-12 changed with reprocessing. Mostly 2 to mostly 3 decimal digits
 "longitude,latitude,station\n" +
@@ -2237,9 +2249,9 @@ expected =
         //if no time constraint, erddap can use SUBSET_FILENAME
         String2.log("\n* now testing just subset variables");
         userDapQuery = "longitude,latitude,station&station=~\"5.*\"&distinct()"; 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_distincts2", ".nc");  //nc so test metadata
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = //note sorted by lon first (because of &distinct()), not order in subset file
            //2011-04-12 lots of small changes due to full reprocessing
@@ -2300,10 +2312,10 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " http://www.ndbc.noaa.gov/\n" +
-//today + " http://127.0.0.1:8080/...
+//today + " http://localhost:8080/...
 
 expected = 
-"http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.nc\\?longitude,latitude,station&station=~\\\\\"5\\.\\*\\\\\"&distinct\\(\\)\";\n" +
+"http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.nc\\?longitude,latitude,station&station=~\\\\\"5\\.\\*\\\\\"&distinct\\(\\)\";\n" +
 "  :id = \"EDDTableFromNcFiles_distincts2\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
@@ -2360,9 +2372,7 @@ expected =
 "This dataset has both historical data \\(quality controlled, before\n" +
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
 "20.{8}T00:00:00Z on\\).\";\n" +  //changes   
-"  :time_coverage_end = \"20.{11}:00:00Z\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
-"  :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
 "  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 "  :Westernmost_Easting = -170.493f; // float\n" +
 " data:\n" +
@@ -2381,9 +2391,9 @@ expected =
         //if just one var, erddap can use DISTINCT_SUBSET_FILENAME
         String2.log("\n* now testing just distinct subset variables");
         userDapQuery = "longitude&longitude>-154&longitude<-153&distinct()"; 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_distincts3", ".nc"); //nc so test metadata
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf EDDTableFromNcFiles_distincts3.nc {\n" +
@@ -2412,8 +2422,6 @@ expected =
 "  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -153.348f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
-"  :geospatial_lat_max = 71.502; // double\n" +
-"  :geospatial_lat_min = -27.705; // double\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_max = -153.348f; // float\n" +
 "  :geospatial_lon_min = -153.913f; // float\n" +
@@ -2427,7 +2435,7 @@ today; //"2013-05-28T18:14:07Z http://www.ndbc.noaa.gov/
 
 
 expected = 
-"http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.nc\\?longitude&longitude>-154&longitude<-153&distinct\\(\\)\";\n" +
+"http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.nc\\?longitude&longitude>-154&longitude<-153&distinct\\(\\)\";\n" +
 "  :id = \"EDDTableFromNcFiles_distincts3\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
@@ -2456,7 +2464,6 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
-"  :Northernmost_Northing = 71.502; // double\n" +
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
@@ -2464,7 +2471,6 @@ expected =
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :Southernmost_Northing = -27.705; // double\n" +
 "  :standard_name_vocabulary = \"CF-12\";\n" +
 "  :subsetVariables = \"station, longitude, latitude\";\n" +
 "  :summary = \"The National Data Buoy Center \\(NDBC\\) distributes meteorological data from\n" +
@@ -2484,9 +2490,7 @@ expected =
 "This dataset has both historical data \\(quality controlled, before\n" +
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
 "20.{8}T00:00:00Z on\\).\";\n" +    //changes
-"  :time_coverage_end = \"20.{11}:00:00Z\";\n" + //changes
 "  :time_coverage_resolution = \"P1H\";\n" +
-"  :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
 "  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 "  :Westernmost_Easting = -153.913f; // float\n" +
 " data:\n" +
@@ -2507,13 +2511,13 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-
+        String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
         userDapQuery = "station&station>\"5\"&station<\"6\""; 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_id", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "station\n" +
 "\n" +
@@ -2555,9 +2559,11 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles.testOrderBy() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+
 
         //.csv
         //from NdbcMetStation.test31201
@@ -2565,9 +2571,9 @@ expected =
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderBy(\"station,time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_ob", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2603,9 +2609,9 @@ expected =
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderBy(\"time,station\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_ob2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2635,6 +2641,65 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //.csv   test orderBy with implicit all vars
+        userDapQuery = "&station>\"51\"&station<\"512\"" +
+            "&time=2005-04-19T23:00:00Z&orderBy(\"station\")";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_ob3", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
+",degrees_east,degrees_north,UTC,degrees_true,m s-1,m s-1,m,s,s,degrees_true,hPa,degree_C,degree_C,degree_C,km,hPa,m,m s-1,m s-1\n" +
+"51001,-162.279,23.445,2005-04-19T23:00:00Z,89,7.7,10.6,3.16,14.29,8.32,NaN,1021.1,22.1,24.2,NaN,NaN,NaN,NaN,-7.7,-0.1\n" +
+"51002,-157.808,17.094,2005-04-19T23:00:00Z,72,9.5,12.0,3.11,10.0,6.19,NaN,1016.7,24.8,25.2,NaN,NaN,NaN,NaN,-9.0,-2.9\n" +
+"51003,-160.66,19.087,2005-04-19T23:00:00Z,103,6.1,7.5,2.51,14.29,7.28,NaN,1017.7,24.7,25.4,NaN,NaN,NaN,NaN,-5.9,1.4\n" +
+"51004,-152.382,17.525,2005-04-19T23:00:00Z,65,9.9,11.7,NaN,NaN,NaN,NaN,1017.1,24.3,25.0,NaN,NaN,NaN,NaN,-9.0,-4.2\n" +
+"51028,-153.913,0.0,2005-04-19T23:00:00Z,108,5.4,6.4,1.97,10.0,7.72,40,1008.6,27.5,27.8,NaN,NaN,NaN,NaN,-5.1,1.7\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderBy(\"station,latitude\")",
+                dir, eddTable.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> distinct + orderBy not allowed  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderBy(\"station\")&distinct()",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "The query has more than one distinct() or orderBy...() constraint.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> 2 orderBy not allowed  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderBy(\"station\")&orderByMax(\"station\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "The query has more than one distinct() or orderBy...() constraint.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
     }
 
     /**
@@ -2647,7 +2712,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
-
+        String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
         //test orderMyMax(twoVars)
@@ -2656,9 +2721,9 @@ expected =
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"station,time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2675,9 +2740,9 @@ expected =
         //test orderMyMax(oneVar)
         userDapQuery = "time,station,wtmp,atmp&station=\"51002\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2687,9 +2752,9 @@ expected =
         //test orderMyMax(twoVars -- different order)
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"time,station\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2698,6 +2763,20 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByMax(\"station,latitude\")",
+                dir, eddTable.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
     }
 
     /**
@@ -2710,6 +2789,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
+        String dir = EDStatic.fullTestCacheDirectory;
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
@@ -2719,9 +2799,9 @@ expected =
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"station,time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2738,9 +2818,9 @@ expected =
         //test orderMyMin(oneVar)
         userDapQuery = "time,station,wtmp,atmp&station=\"51002\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2750,9 +2830,9 @@ expected =
         //test orderMyMin(twoVars -- different order)
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"time,station\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2761,6 +2841,20 @@ expected =
 "2005-04-19T23:00:00Z,51001,24.2,22.1\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByMin(\"station,latitude\")",
+                dir, eddTable.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
     }
 
     /**
@@ -2773,7 +2867,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
-
+        String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
         //test orderMyMinMax(twoVars)
@@ -2782,9 +2876,9 @@ expected =
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"station,time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2809,9 +2903,9 @@ expected =
         //test orderMyMinMax(oneVar)
         userDapQuery = "time,station,wtmp,atmp&station=\"51002\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"time\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2822,9 +2916,9 @@ expected =
         //test orderMyMinMax(twoVars -- different order)
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"time,station\")";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2836,6 +2930,20 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByMinMax(\"station,latitude\")",
+                dir, eddTable.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
     }
 
     /**
@@ -2848,7 +2956,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
-
+        String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
         //.csv
@@ -2856,9 +2964,9 @@ expected =
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
         userDapQuery = "station,longitude,latitude&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_sll", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "station,longitude,latitude\n" +
 ",degrees_east,degrees_north\n" +
@@ -2881,6 +2989,7 @@ expected =
     public static void testGlobal() throws Throwable {
         testVerboseOn();
         String name, baseName, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
         EDV edv;
         int epo;
@@ -2895,8 +3004,8 @@ expected =
         Test.ensureEqual(edv.destinationMin(), -164.0833, "");
         Test.ensureEqual(edv.destinationMax(), -106.1167, "");
 
-        tName = csub.makeNewFileForDapQuery(null, null, csubDapQuery, EDStatic.fullTestCacheDirectory, baseName, ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        tName = csub.makeNewFileForDapQuery(null, null, csubDapQuery, dir, baseName, ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "ID,line_station,line,station,longitude,latitude,time,depth,chlorophyll,dark,light_percent,NH3,NO2,NO3,oxygen,PO4,pressure,primprod,salinity,silicate,temperature\n" +
@@ -4023,16 +4132,17 @@ expected =
         String2.log("\n*** EDDTableFromNcFiles.testErdGtsppBest test:" + tDatasetID);
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, tDatasetID); //should work
         String tName, error, results = null, expected;
+        String dir = EDStatic.fullTestCacheDirectory;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec. 
 
     try {
 
         //*** .das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             "gtspp", ".das"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
         expected = 
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -4144,7 +4254,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 24919149;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 25398255;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4190,7 +4300,7 @@ expected =
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 _FillValue NaN;\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.45390068e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 6.31152e\\+8, 1.4593392e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4253,7 +4363,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2016-02-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2016-04-16 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4262,8 +4372,8 @@ expected =
 "    String creator_email \"nodc.gtspp@noaa.gov\";\n" +
 "    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
-"    String crs \"EPSG:4326\";\n" +                  //2 changes
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2016-01-24&time%3C=2016-02-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String crs \"EPSG:4326\";\n" +                  //2 changes below:
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2016-03-24&time%3C=2016-04-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4281,9 +4391,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2016-02-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
+"    String history \"2016-04-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2016-02-10 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2016-04-16 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4291,7 +4401,7 @@ expected =
         Test.ensureLinesMatch(tResults, expected, "\nresults=\n" + results);
 
 //+ " (local files)\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "    String id \"erdGtsppBest\";\n" +
 "    String infoUrl \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
@@ -4302,7 +4412,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-02-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-04-16 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4327,7 +4437,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the January 2016 data\\) but is a subset of the " + //month changes
+    "up to and including the March 2016 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4339,7 +4449,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2016-01-27T13:18:00Z\";\n" + //changes
+"    String time_coverage_end \"2016-03-30T12:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -4356,9 +4466,9 @@ expected =
     try {
 
         //*** .dds
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             "gtspp", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -4386,8 +4496,8 @@ expected =
         //station_id    (slow for .nc, faster for .ncCF)
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&station_id=1254666", 
-            EDStatic.fullTestCacheDirectory, "gtspp1254666", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, "gtspp1254666", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -4414,9 +4524,9 @@ expected =
                 results = "";
                 long eTime = System.currentTimeMillis();
                 tName = tedd.makeNewFileForDapQuery(null, null, tests[test], 
-                    EDStatic.fullTestCacheDirectory, "gtspp" + test, ".csv"); 
+                    dir, "gtspp" + test, ".csv"); 
                 String2.log("\n*** finished testing " + tests[test] + " time=" + (System.currentTimeMillis() - eTime));
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = new String((new ByteArray(dir + tName)).toArray());
             } catch (Throwable t) {
                 error = MustBe.throwableToString(t);
             }
@@ -4432,8 +4542,8 @@ expected =
         //latitude = -78.579002  the minmin value as of 2014-07-21
         //should succeed quickly (except for println statements here)
         tName = tedd.makeNewFileForDapQuery(null, null, "&latitude=-78.579002", 
-            EDStatic.fullTestCacheDirectory, "gtspp77", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, "gtspp77", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -4450,8 +4560,8 @@ expected =
         long eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&time>2000-01-01T02:59:59Z&time<2000-01-01T03:00:01Z&orderBy(\"station_id,depth\")", 
-            EDStatic.fullTestCacheDirectory, "gtsppLL", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, "gtsppLL", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -4767,7 +4877,7 @@ expected =
         dapQuery = "time,irradiance&time=\"2011-07-01\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
             dir, eddTable.className() + "_ModTime2",  ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         debugMode = oDebugMode;    
@@ -4799,7 +4909,7 @@ expected =
             ".htmlTable", ".json", 
             ".mat", ".nc", ".ncHeader", 
             ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", 
-            ".xhtml",
+            ".xhtml", //21?
             ".kml", ".smallPdf", ".pdf", ".largePdf", 
             ".smallPng", ".png", ".largePng"};  
         int expectedMs[] = new int[] { 
@@ -4811,7 +4921,7 @@ expected =
             534, 523,                 //1672, 2719,                    //4109, 4921, 
             469, 535, 665,            //1531, 1922, 1797,              //4921, 4921, 4610, 
             896, 65, 485, 482, 480,   //4266, 32, 2562, 2531, ?,       //8359, 31, 3969, 3921, ?, 
-            729,                      //2014-09 slower 729->1140 why?  //4266,    //6531, 
+            1200,  //but really slow if hard drive is busy!   //4266   //6531,               
             967, 763, 686, 740,       //2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
             924, 904, 1022};          //2984, 3125, 3391               //5421, 5204, 5343};         
         int bytes[]    = new int[] {
@@ -5565,6 +5675,7 @@ landings.landings[12][1][1]
         //this dataset is not fromNcFiles, but test here with other testNcCF tests
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "nwioosCoral"); 
         String tName, error, results, expected;
+        String dir = EDStatic.fullTestCacheDirectory;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String2.log("\nafter constructor, combinedGlobal=\n" + tedd.combinedGlobalAttributes());
@@ -5573,8 +5684,8 @@ landings.landings[12][1][1]
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "longitude,latitude,depth,time,taxa_scientific,institution,species_code" +
             "&taxa_scientific=\"Alyconaria unident.\"", 
-            EDStatic.fullTestCacheDirectory, "ncCF", ".ncCF"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCF", ".ncCF"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCF.nc {\n" +
@@ -5667,7 +5778,7 @@ landings.landings[12][1][1]
 //today + 
 
 expected = 
-"http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.ncCF?longitude,latitude,depth,time,taxa_scientific,institution,species_code&taxa_scientific=\\\"Alyconaria unident.\\\"\";\n" +
+"http://localhost:8080/cwexperimental/tabledap/nwioosCoral.ncCF?longitude,latitude,depth,time,taxa_scientific,institution,species_code&taxa_scientific=\\\"Alyconaria unident.\\\"\";\n" +
 "  :id = \"ncCF\";\n" +
 "  :infoUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.info\";\n" +
 "  :institution = \"NOAA NWFSC\";\n" +
@@ -5769,11 +5880,12 @@ expected =
             "&longitude>-123&longitude<-122&latitude>37&latitude<38" +
             "&time>=2005-05-01T00&time<=2005-05-01T03";
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, query,
-            EDStatic.fullTestCacheDirectory, "ncCF1a", ".ncCF"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCF1a", ".ncCF"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCF1a.nc {\n" +
@@ -5875,7 +5987,7 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
        
 //+ " http://www.ndbc.noaa.gov/\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 String expected2 = 
 "tabledap/cwwcNDBCMet.ncCF\\?longitude,latitude,station,time,atmp,wtmp&longitude>-123&longitude<-122&latitude>37&latitude<38&time>=2005-05-01T00&time<=2005-05-01T03\";\n" +
 "  :id = \"ncCF1a\";\n" +
@@ -5962,8 +6074,8 @@ String expected3 = expected2 +
 
         // .ncCFHeader
         tName = tedd.makeNewFileForDapQuery(null, null, query,
-            EDStatic.fullTestCacheDirectory, "ncCF1a", ".ncCFHeader"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "ncCF1a", ".ncCFHeader"); 
+        results = String2.readFromFile(dir + tName)[1];
 
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -5986,6 +6098,7 @@ String expected3 = expected2 +
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); //should work
         String tName, error, results, expected;
         int po;
+        String dir = EDStatic.fullTestCacheDirectory;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //lon lat time range 
@@ -5993,8 +6106,8 @@ String expected3 = expected2 +
             "longitude,latitude,station,time,atmp,wtmp" +
             "&longitude>-123&longitude<-122&latitude>37&latitude<38" +
             "&time>=2005-05-01T00&time<=2005-05-01T03", 
-            EDStatic.fullTestCacheDirectory, "ncCFMA1a", ".ncCFMA"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCFMA1a", ".ncCFMA"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCFMA1a.nc {\n" +
@@ -6092,7 +6205,7 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //      + " http://www.ndbc.noaa.gov/\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/cwwcNDBCMet.ncCFMA\\?longitude,latitude,station,time,atmp,wtmp&longitude>-123&longitude<-122&latitude>37&latitude<38&time>=2005-05-01T00&time<=2005-05-01T03\";\n" +
 "  :id = \"ncCFMA1a\";\n" +
@@ -6211,12 +6324,13 @@ expected =
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "cruise,time,longitude,latitude,bucket_temperature&cruise=~%22(0002|0103)%22", 
-            EDStatic.fullTestCacheDirectory, "ncCF1b", ".ncCF"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCF1b", ".ncCF"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCF1b.nc {\n" +
@@ -6559,12 +6673,13 @@ expected =
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "cruise,time,longitude,latitude,bucket_temperature&cruise=~%22(0002|0103)%22", 
-            EDStatic.fullTestCacheDirectory, "ncCFMA1b", ".ncCFMA"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCFMA1b", ".ncCFMA"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCFMA1b.nc {\n" +
@@ -6642,7 +6757,7 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //+ " (local files)\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "  :id = \"ncCFMA1b\";\n" +
 "  :infoUrl = \"http://swfsc.noaa.gov/GroundfishAnalysis/\";\n" +
@@ -6919,6 +7034,7 @@ expected =
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdGlobecBottle"); //should work
         String tName, error, results, expected;
         int po;
+        String dir = EDStatic.fullTestCacheDirectory;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //lon lat time range 
@@ -6929,8 +7045,8 @@ expected =
             //for erdGlobecBottle
             "cruise_id,ship,cast,longitude,latitude,time,bottle_posn,temperature0" +
             "&time>=2002-08-19T08:00:00Z&time<=2002-08-19T12:00:00Z",
-            EDStatic.fullTestCacheDirectory, "ncCF2a", ".ncCF"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCF2a", ".ncCF"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCF2a.nc {\n" +
@@ -7047,7 +7163,7 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/erdGlobecBottle.ncCF?cruise_id,ship,cast,longitude,latitude,time,bottle_posn,temperature0&time>=2002-08-19T08:00:00Z&time<=2002-08-19T12:00:00Z\";\n" +
 "  :id = \"ncCF2a\";\n" +
@@ -7154,6 +7270,7 @@ expected =
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -7163,8 +7280,8 @@ expected =
             //for erdGlobecBottle
             "cruise_id,ship,cast,longitude,latitude,time,bottle_posn,temperature0" +
             "&time>=2002-08-19T08:00:00Z&time<=2002-08-19T12:00:00Z",
-            EDStatic.fullTestCacheDirectory, "ncCFMA2a", ".ncCFMA"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCFMA2a", ".ncCFMA"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCFMA2a.nc {\n" +
@@ -7271,7 +7388,7 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/erdGlobecBottle.ncCFMA?cruise_id,ship,cast,longitude,latitude,time,bottle_posn,temperature0&time>=2002-08-19T08:00:00Z&time<=2002-08-19T12:00:00Z\";\n" +
 "  :id = \"ncCFMA2a\";\n" +
@@ -7392,14 +7509,15 @@ expected =
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "platform,cruise,org,type,station_id,longitude,latitude,time,depth," +
             "temperature,salinity&cruise=~%22%28SHIP%2012|Q990046312%29%22" +
             "&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z",
-            EDStatic.fullTestCacheDirectory, "ncCF2b", ".ncCF"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCF2b", ".ncCF"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCF2b.nc \\{\n" +
@@ -7677,7 +7795,7 @@ expected =
 //today + " (local files)\n" +  //from upwell, so "today" won't be to the second until 1.40 release
 //today + " http://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
 //today + " (local files)\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+//today + " http://localhost:8080/cwexperimental/tabledap/
 /* 2013-10-28 I never got summary regex working. Not worth the effort. Comment it out
 expected = 
 "erdGtsppBest.ncCF\\?platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity&cruise=~%22%28SHIP%20%20%20%2012\\|Q990046312%29%22&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z\";\n" +
@@ -7790,6 +7908,7 @@ expected =
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
         String query = 
             "platform,cruise,org,type,station_id,longitude,latitude,time,depth," +
             "temperature,salinity&cruise=~%22%28SHIP%2012|Q990046312%29%22" +
@@ -7797,8 +7916,8 @@ expected =
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, query,
-            EDStatic.fullTestCacheDirectory, "ncCFMA2b", ".ncCFMA"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, "ncCFMA2b", ".ncCFMA"); 
+        results = NcHelper.dumpString(dir + tName, true);
         //String2.log(results);
         expected = 
 "netcdf ncCFMA2b.nc \\{\n" +
@@ -8066,7 +8185,7 @@ expected =
 //today + " (local files)\n" +  //from upwell, so time not to seconds until ver 1.40
 //today + " http://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
 //today + " (local files)\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+//today + " http://localhost:8080/cwexperimental/tabledap/
 /* 2013-10-28 Too hard to get summary converted to regex. So skip testing it.
 String expected2 = 
 "erdGtsppBest.ncCFMA?platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity&cruise=~%22%28SHIP%20%20%20%2012|Q990046312%29%22&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z\";\n" +
@@ -8208,8 +8327,8 @@ String expected3 = expected2 +
 
         //.ncCFMAHeader
         tName = tedd.makeNewFileForDapQuery(null, null, query,
-            EDStatic.fullTestCacheDirectory, "ncCFMA2b", ".ncCFMAHeader"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "ncCFMA2b", ".ncCFMAHeader"); 
+        results = String2.readFromFile(dir + tName)[1];
         tPo = results.indexOf("(bob.simons at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, "\nresults=\n" + results);
@@ -8232,7 +8351,8 @@ String expected3 = expected2 +
         //setup and warmup
         EDD.testVerbose(false);
         EDDTable tableDataset = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
-        String fileName = EDStatic.fullTestCacheDirectory + "tableTestSpeedDAF.txt";
+        String dir = EDStatic.fullTestCacheDirectory;
+        String fileName = dir + "tableTestSpeedDAF.txt";
         Writer writer = new FileWriter(fileName);
         tableDataset.writeDapHtmlForm(null, "", writer);
 
@@ -8259,8 +8379,9 @@ String expected3 = expected2 +
     public static void testSpeedMAG() throws Throwable {
         //setup and warmup
         EDD.testVerbose(false);
+        String dir = EDStatic.fullTestCacheDirectory;
         EDDTable tableDataset = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
-        String fileName = EDStatic.fullTestCacheDirectory + "tableTestSpeedMAG.txt";
+        String fileName = dir + "tableTestSpeedMAG.txt";
         String2.log("fileName=" + fileName);
         OutputStreamSource oss = new OutputStreamSourceSimple(new FileOutputStream(fileName));
         tableDataset.respondToGraphQuery(null, null, "", "", oss, null, null, null);
@@ -8271,7 +8392,7 @@ String expected3 = expected2 +
         int n = 100; //1000 so it dominates program run time if profiling
         for (int i = 0; i < n; i++) 
             tableDataset.respondToGraphQuery(null, null, "", "", oss,
-                EDStatic.fullTestCacheDirectory, "testSpeedMAG.txt", ".graph");
+                dir, "testSpeedMAG.txt", ".graph");
         double observe = (System.currentTimeMillis() - time2) / (float)n;
         double expect = 8; //2014-09 java 1.7 was 4.38ms, java 1.6 10.7ms, java 1.5 55.172ms
         String2.log("\nEDDTableFromNcFiles.testSpeedMAG time per .graph = " +
@@ -8290,11 +8411,12 @@ String expected3 = expected2 +
         //setup and warmup
         EDD.testVerbose(false);
         EDDTable tableDataset = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
-        String fileName = EDStatic.fullTestCacheDirectory + "tableTestSpeedSubset.txt";
+        String dir = EDStatic.fullTestCacheDirectory;
+        String fileName = dir + "tableTestSpeedSubset.txt";
         String2.log("fileName=" + fileName);
         OutputStreamSource oss = new OutputStreamSourceSimple(new FileOutputStream(fileName));
         tableDataset.respondToGraphQuery(null, null, "", "", oss,
-            EDStatic.fullTestCacheDirectory, "testSpeedSubset.txt", ".graph");
+            dir, "testSpeedSubset.txt", ".graph");
 
         //time it 
         String2.log("start timing");
@@ -8302,7 +8424,7 @@ String expected3 = expected2 +
         int n = 100;  //use 1000 so it dominates program run time if profiling
         for (int i = 0; i < n; i++) 
             tableDataset.respondToGraphQuery(null, null, "", "", oss,
-                EDStatic.fullTestCacheDirectory, "testSpeedSubset.txt", ".graph");
+                dir, "testSpeedSubset.txt", ".graph");
 
         double observe = (System.currentTimeMillis() - time2) / (float)n;
         double expect = 4.23; //2013-10-28 ~10ms   
@@ -8323,12 +8445,13 @@ String expected3 = expected2 +
         String2.log("\n*** EDDTableFromNcFiles.testEqualsNaN");
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdGtsppBest"); 
         String tName, error, results, expected;
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&trajectory=%22ME_BA_067F_66021%2014%22&time=2014-01-01T00:00:00Z&salinity=NaN",
-            EDStatic.fullTestCacheDirectory, "equalsNaN", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "equalsNaN", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -8358,6 +8481,7 @@ String expected3 = expected2 +
         //tests of REVERSED_OPERATOR
         EDDTable tedd; 
         String tName, error, results, expected;
+        String dir = EDStatic.fullTestCacheDirectory;
 
         tedd = (EDDTable)oneFromDatasetsXml(null, "erdCinpKfmT"); 
         expected = 
@@ -8369,50 +8493,50 @@ String expected3 = expected2 +
         // >= 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth<=17&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // > 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth<18&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // <= 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth<=11&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // <
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth>10.9&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // =
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth=11&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // !=
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth!=10&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // =~
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth=~\"(1000|11)\"&time>=2007-09-26T22",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -8423,8 +8547,8 @@ String expected3 = expected2 +
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&depth=2",  //what we want to work
-            EDStatic.fullTestCacheDirectory, "depth", ".csv"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            dir, "depth", ".csv"); 
+        results = String2.readFromFile(dir + tName)[1];
         //String2.log(results);
         expected = 
 "station_name,station,latitude,longitude,time,depth,WaterTemperature,salinity,chlorophyll,Nitrogen,Phosphate,Ammonium\n" +
@@ -8441,6 +8565,7 @@ String expected3 = expected2 +
     public static void testMV() throws Throwable {
         String2.log("\n*** EDDTableFromNcFiles.testMV\n" +
             "NaN<=-5 = " + (Double.NaN <= -5) + " = " + PrimitiveArray.testValueOpValue(Double.NaN, "<=" , -5));
+        String dir = EDStatic.fullTestCacheDirectory;
         String name, tName, results, tResults, expected, dapQuery;
         String error = "";
         try {
@@ -8449,8 +8574,8 @@ String expected3 = expected2 +
             dapQuery = "station,longitude,latitude,time,wtmp&station<=\"41024\"&time>=2012-06-20T00:00:00Z&time<=2012-06-20T02:00:00Z&wtmp<=-5";
 
             tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
-                EDStatic.fullTestCacheDirectory, baseName, ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                dir, baseName, ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
             String2.log(results);
             expected = "Shouldn't get here!";  
             Test.ensureEqual(results, expected, "");
@@ -8503,6 +8628,7 @@ String expected3 = expected2 +
         testVerboseOn();
         String2.log("\n***EDDTableFromFiles.testGlobec");
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
         EDV edv;
         int po, epo;
@@ -8607,7 +8733,7 @@ String expected3 = expected2 +
             results = t.toString();
             Test.ensureLinesMatch(results, 
                 "com.cohort.util.SimpleException: Your query produced no matching results. " +
-                "\\(time=" + s.substring(0, 17) + ".{2}Z is outside of the variable's actual_range: " +
+                "\\(time=" + s.substring(0, 14) + ".{5}Z is outside of the variable's actual_range: " +
                 "2002-05-30T03:21:00Z to 2002-08-19T20:18:00Z\\)", 
                 "results=\n" + results);
         }
@@ -8986,10 +9112,10 @@ String expected3 = expected2 +
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNcFiles.test das dds for entire dataset\n");
-        tName = globecBottle.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, "", dir, 
             globecBottle.className() + "_Entire", ".das"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
         //String2.log(results);
         String expectedDas1 = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
@@ -9152,9 +9278,9 @@ String expected3 = expected2 +
 
 
         //*** test getting dds for entire dataset
-        tName = globecBottle.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, "", dir, 
             globecBottle.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -9190,18 +9316,18 @@ String expected3 = expected2 +
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //*** test DAP data access form
-        tName = globecBottle.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, "", dir, 
             globecBottle.className() + "_Entire", ".html"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //SSR.displayInBrowser("file://" + dir + tName);
  
 
         //*** test make data files
         String2.log("\n****************** EDDTableFromNcFiles.test make DATA FILES\n");       
 
         //.asc
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".asc"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -9223,8 +9349,8 @@ String expected3 = expected2 +
 
         //.csv
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-            EDStatic.fullTestCacheDirectory, globecBottle.className() + "_Data", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, globecBottle.className() + "_Data", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -9240,9 +9366,9 @@ String expected3 = expected2 +
 
         //.csvp  and &units("UCUM")
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&units(\"UCUM\")", 
-            EDStatic.fullTestCacheDirectory, 
+            dir, 
             globecBottle.className() + "_Data", ".csvp"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude (deg{east}),NO3 (umol.L-1),time (UTC),ship\n" +
@@ -9257,9 +9383,9 @@ String expected3 = expected2 +
 
         //.csv0
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-            EDStatic.fullTestCacheDirectory, 
+            dir, 
             globecBottle.className() + "_Data", ".csv0"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
@@ -9274,9 +9400,9 @@ String expected3 = expected2 +
         //.csv   test of datasetName.dataVarName notation
         String dotDapQuery = "s.longitude,altitude,NO3,s.time,ship" +
             "&s.latitude>0&altitude>-5&s.time>=2002-08-03";
-        tName = globecBottle.makeNewFileForDapQuery(null, null, dotDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, dotDapQuery, dir, 
             globecBottle.className() + "_DotNotation", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,altitude,NO3,time,ship\n" +
@@ -9289,10 +9415,10 @@ String expected3 = expected2 +
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.csv  test of regex on numeric variable
-        tName = globecBottle.makeNewFileForDapQuery(null, null, regexDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, regexDapQuery, dir, 
             globecBottle.className() + "_NumRegex", ".csv"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -9321,10 +9447,10 @@ String expected3 = expected2 +
         try {
             String tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
                 "&time>=2002-08-07T00&time<=2002-08-07T06&ship=\"New_Horizon\"";
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
                 globecBottle.className() + "_StrEq", ".csv"); 
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            //SSR.displayInBrowser("file://" + dir + tName);
+            results = new String((new ByteArray(dir + tName)).toArray());
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -9358,10 +9484,10 @@ String expected3 = expected2 +
         try {
             String tDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5" +
                 "&time>=2002-08-07T00&time<=2002-08-07T06&ship>\"Nev\"&ship<\"Nex\"";
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
                 globecBottle.className() + "_GTLT", ".csv"); 
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            //SSR.displayInBrowser("file://" + dir + tName);
+            results = new String((new ByteArray(dir + tName)).toArray());
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -9406,9 +9532,9 @@ String expected3 = expected2 +
             String tDapQuery = "longitude,NO3,time,ship&latitude>0" +
                 "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; //source fails with this
                 //"&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\"";       //source works with this
-            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
                 globecBottle.className() + "_regex", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = new String((new ByteArray(dir + tName)).toArray());
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -9440,9 +9566,9 @@ String expected3 = expected2 +
 
 
         //.das     das isn't affected by userDapQuery
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         Test.ensureEqual(
             results.substring(0, expectedDas1.length()), expectedDas1, "results=\n" + results);
@@ -9451,9 +9577,9 @@ String expected3 = expected2 +
         Test.ensureEqual(results.substring(Math.max(tpo, 0)), expectedDas2, "results=\n" + results);
 
         //.dds 
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".dds"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -9468,9 +9594,9 @@ String expected3 = expected2 +
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.dods
-        //tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        //tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
         //    globecBottle.className() + "_Data", ".dods"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //SSR.displayInBrowser("file://" + dir + tName);
         try {
             String2.log("\ndo .dods test");
             String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
@@ -9504,9 +9630,9 @@ String expected3 = expected2 +
         //.esriCsv
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "&time>=2002-08-03", 
-            EDStatic.fullTestCacheDirectory, 
+            dir, 
             "testEsri5", ".esriCsv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "cruise_id,ship,cast,X,Y,altitude,date,time,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n" +
@@ -9520,9 +9646,9 @@ String expected3 = expected2 +
 
 
         //.geoJson    mapDapQuery so lon and lat are in query
-        tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, dir, 
             globecBottle.className() + "_DataGJ", ".geoJson"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "{\n" +
@@ -9569,8 +9695,8 @@ expected =
         //.geoJson    just lon and lat in response
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03",
-            EDStatic.fullTestCacheDirectory, globecBottle.className() + "_DataGJLL", ".geoJson"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, globecBottle.className() + "_DataGJLL", ".geoJson"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "{\n" +
@@ -9595,8 +9721,8 @@ expected =
         String jsonp = "myFunctionName";
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03" + "&.jsonp=" + SSR.percentEncode(jsonp),
-            EDStatic.fullTestCacheDirectory, globecBottle.className() + "_DataGJLL", ".geoJson"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, globecBottle.className() + "_DataGJLL", ".geoJson"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = jsonp + "(" +
 "{\n" +
@@ -9620,10 +9746,10 @@ expected =
 
 
         //.htmlTable
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".htmlTable"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 EDStatic.startHeadHtml(EDStatic.erddapUrl((String)null), "EDDTableFromNcFiles_Data") + "\n" +
@@ -9670,9 +9796,9 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
 
         //.json
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".json"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "{\n" +
@@ -9697,9 +9823,9 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //.json  with jsonp query
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
-            EDStatic.fullTestCacheDirectory, 
+            dir, 
             globecBottle.className() + "_Data", ".json"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = jsonp + "(" +
 "{\n" +
@@ -9724,10 +9850,10 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //octave> load('c:/temp/tabledap/EDDTableFromNcFiles_Data.mat');
         //octave> testGlobecBottle
         //2010-07-14 Roy can read this file in Matlab, previously. text didn't show up.
-        tName = globecBottle.makeNewFileForDapQuery(null, null, regexDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, regexDapQuery, dir, 
             globecBottle.className() + "_Data", ".mat"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = File2.hexDump(dir + tName, 1000000);
         //String2.log(results);
         Test.ensureEqual(
             results.substring(0, 71 * 4) + results.substring(71 * 7), //remove the creation dateTime
@@ -9815,8 +9941,8 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //!!! This is also a test of missing_value and _FillValue both active
         String tUserDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-14&time<=2002-08-15";
         tName = globecBottle.makeNewFileForDapQuery(null, null, tUserDapQuery, 
-            EDStatic.fullTestCacheDirectory, globecBottle.className() + "_Data", ".nc"); 
-        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+            dir, globecBottle.className() + "_Data", ".nc"); 
+        results = NcHelper.dumpString(dir + tName, true);
         String tHeader1 = 
 "netcdf EDDTableFromNcFiles_Data.nc {\n" +
 "  dimensions:\n" +
@@ -9966,10 +10092,10 @@ expected =
             expected, "results=\n" + results);
 
         //.ncHeader
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".ncHeader"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         String2.log(results);
 
         tResults = results.substring(0, tHeader1.length());
@@ -9987,9 +10113,9 @@ expected =
         try {
             tName = globecBottle.makeNewFileForDapQuery(null, null, 
                 "&latitude>0&time>=2002-08-03", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_ODV", ".odvTxt"); 
-            String2.log("ODV fileName=" + EDStatic.fullTestCacheDirectory + tName);
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                dir, globecBottle.className() + "_ODV", ".odvTxt"); 
+            String2.log("ODV fileName=" + dir + tName);
+            results = new String((new ByteArray(dir + tName)).toArray());
             //String2.log(results);
             expected = 
     "//<Creator>http://www.globec.org/</Creator>\n" +
@@ -10003,7 +10129,7 @@ expected =
 //"//<Creator>http://www.globec.org/</Creator>\n" +
 //"//<CreateTime>2013-03-22T17:52:05</CreateTime>\n" +
 "//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>\n" +
-"//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
+"//<Source>http://localhost:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
@@ -10021,10 +10147,10 @@ expected =
 
 
         //.tsv
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude\tNO3\ttime\tship\n" +
@@ -10037,10 +10163,10 @@ expected =
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.tsvp
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsvp"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude (degrees_east)\tNO3 (micromoles L-1)\ttime (UTC)\tship\n" +
@@ -10052,10 +10178,10 @@ expected =
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.tsv0
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv0"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
@@ -10066,10 +10192,10 @@ expected =
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.xhtml
-        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".xhtml"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //SSR.displayInBrowser("file://" + dir + tName);
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -10119,9 +10245,9 @@ expected =
         //data for mapExample
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "longitude,latitude&time>=2002-08-03&time<=2002-08-04", 
-            EDStatic.fullTestCacheDirectory, 
+            dir, 
             globecBottle.className() + "Map", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude\n" +
@@ -10144,7 +10270,7 @@ expected =
             //test treat itself as a dataset
             EDDTable eddTable2 = new EDDTableFromDapSequence(
                 "erddapGlobecBottle", //String tDatasetID, 
-                null, null, null, null, null, "", "", null,
+                null, null, null, null, null, null, "", "", null,
                 new Object[][]{  //dataVariables: sourceName, addAttributes
                     {"longitude", null, null},
                     {"latitude", null, null},
@@ -10183,10 +10309,10 @@ expected =
                 false); 
 
             //.xhtml from local dataset made from Erddap
-            tName = eddTable2.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = eddTable2.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
                 eddTable2.className() + "_Itself", ".xhtml"); 
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            //SSR.displayInBrowser("file://" + dir + tName);
+            results = new String((new ByteArray(dir + tName)).toArray());
             //String2.log(results);
             expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -10236,15 +10362,16 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
+        String dir = EDStatic.fullTestCacheDirectory;
 
         String2.log("\n****************** EDDTableFromNcFiles.testKml\n");
         EDDTable globecBottle = (EDDTable)oneFromDatasetsXml(null, "testGlobecBottle"); //should work
 
         //kml
         tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-            EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapKml", ".kml"); 
-        //String2.log(String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1]);
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            dir, globecBottle.className() + "_MapKml", ".kml"); 
+        //String2.log(String2.readFromFile(dir + tName)[1]);
+        SSR.displayInBrowser("file://" + dir + tName);
     }
 
     /**
@@ -10255,15 +10382,16 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
         userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
+        String dir = EDStatic.fullTestCacheDirectory;
 
         String2.log("\n****************** EDDTableFromNcFiles.testGraphics\n");
         EDDTable globecBottle = (EDDTable)oneFromDatasetsXml(null, "testGlobecBottle"); //should work
 
             //kml
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapKml", ".kml"); 
-            //String2.log(String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1]);
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapKml", ".kml"); 
+            //String2.log(String2.readFromFile(dir + tName)[1]);
+            SSR.displayInBrowser("file://" + dir + tName);
 
         if (doAll) {
 
@@ -10271,89 +10399,89 @@ expected =
             //there is no .transparentPng for EDDTable
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&.size=128|256&.font=.75", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphTiny", 
+                dir, globecBottle.className() + "_GraphTiny", 
                 ".largePng"); //to show it is irrelevant
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphS", ".smallPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphS", ".smallPng"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphM", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphM", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphL", ".largePng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphL", ".largePng"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&.size=1700|1800", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphHuge", 
+                dir, globecBottle.className() + "_GraphHuge", 
                 ".smallPng"); //to show it is irrelevant
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphPdfSmall", ".smallPdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphPdfSmall", ".smallPdf"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphPdf", ".pdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphPdf", ".pdf"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphPdfLarge", ".largePdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphPdfLarge", ".largePdf"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
 
             //*** test make MAP
             String2.log("\n******************* EDDTableFromNcFiles.test make MAP\n");
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapS", ".smallPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapS", ".smallPng"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapM", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapM", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapL", ".largePng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapL", ".largePng"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapS", ".smallPdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapS", ".smallPdf"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapM", ".pdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapM", ".pdf"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapL", ".largePdf"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapL", ".largePdf"); 
+            SSR.displayInBrowser("file://" + dir + tName);
   
 
             //kml
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapKml", ".kml"); 
-            //String2.log(String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1]);
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapKml", ".kml"); 
+            //String2.log(String2.readFromFile(dir + tName)[1]);
+            SSR.displayInBrowser("file://" + dir + tName);
 
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&.legend=Off&.trim=10", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphMLegendOff", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphMLegendOff", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphSLegendOnly", ".smallPng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphSLegendOnly", ".smallPng"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphMLegendOnly", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphMLegendOnly", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&.legend=Only", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphLLegendOnly", ".largePng"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphLLegendOnly", ".largePng"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
 
         }
@@ -10366,63 +10494,63 @@ expected =
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 //I specify colorBar, but it isn't used
                 "&.draw=markers&.marker=1|5&.color=0x0000FF&.colorBar=Rainbow|C|Linear", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphWithMarkersNoColorBar", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphWithMarkersNoColorBar", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=lines&.marker=9|7", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphWithLines", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphWithLines", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=linesAndMarkers&.marker=9|7&.colorBar=Rainbow|C|Linear", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphWithLinesAndMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphWithLinesAndMarkers", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 //color and colorBar aren't specified; default is used
                 "&.draw=markers&.marker=9|7", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphWithMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphWithMarkers", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=lines&.color=0xFF8800", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapWithLines", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapWithLines", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=linesAndMarkers&.marker=5|5&.colorBar=Rainbow|D|Linear", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapWithLinesAndMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapWithLinesAndMarkers", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=markers&.marker=5|5&.colorBar=Rainbow|D|Linear", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapWithMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapWithMarkers", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "time,sal00,sal11&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=sticks&.color=0xFF8800", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_GraphWithSticks", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_GraphWithSticks", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00,sal11&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=vectors&.color=0xFF0088&.vec=30", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapWithVectors", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapWithVectors", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00,sal11&altitude>-5&time>=2002-08-03&cast>200";
             tName = globecBottle.makeNewFileForDapQuery(null, null, tQuery + 
                 "&.draw=vectors&.color=0xFF0088&.vec=30", 
-                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapWithVectorsNoData", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                dir, globecBottle.className() + "_MapWithVectorsNoData", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
         }
 
     }
@@ -10439,8 +10567,8 @@ expected =
         //TEST READING AS OPENDAP SERVER -- how specify constraint expression?
         //test reading via netcdf-java    similar to .dods test
         //tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
-        //    EDStatic.fullTestCacheDirectory, globecBottle.className() + "_Data", ".dods"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //    dir, globecBottle.className() + "_Data", ".dods"); 
+        //SSR.displayInBrowser("file://" + dir + tName);
         try {
             String2.log("\n*** do netcdf-java opendap test");
             //!!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
@@ -10529,7 +10657,7 @@ expected =
         }
 
         //OTHER APPROACH: GET .NC FILE  -- HOW SPECIFY CONSTRAINT EXPRESSION???
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //SSR.displayInBrowser("file://" + dir + tName);
         if (false) {
             try {
                 String2.log("\n*** do netcdf-java .nc test");
@@ -10561,13 +10689,14 @@ expected =
         String results, query, tName, expected;
         String baseQuery = "&time>=2000-08-07&time<2000-08-08"; 
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdGlobecBirds");
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //the basicQuery
         try {
             //an easy query
-            tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, dir, 
                 tedd.className() + "_bird1", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = new String((new ByteArray(dir + tName)).toArray());
             expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
@@ -10588,8 +10717,8 @@ expected =
            
             //unscaled flight_dir values are 0..36 so see if >=40 is properly handled 
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&flight_dir>=40", 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_bird2", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                dir, tedd.className() + "_bird2", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
             expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
@@ -10611,7 +10740,7 @@ expected =
         try {        
             //try getting no data -- exception should be MustBe.THERE_IS_NO_DATA
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&flight_dir>=4000", 
-                EDStatic.fullTestCacheDirectory, tedd.className() + "_bird2", ".csv"); 
+                dir, tedd.className() + "_bird2", ".csv"); 
             throw new Exception("Shouldn't have gotten here.");      
         } catch (Throwable t) {
             //test that this is the expected exception
@@ -10645,6 +10774,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles.testLatLon\n");
         testVerboseOn();
         String results, query, tName, expected;
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //the basicQuery
         try {
@@ -10653,9 +10783,9 @@ expected =
             //*** test a TableWriter that doesn't convert time to iso format
             query = "cruise_id,station_id,longitude,latitude&latitude=44.6517&distinct()";             
            
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
                 edd.className() + "_LL", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = new String((new ByteArray(dir + tName)).toArray());
             expected = 
 "cruise_id,station_id,longitude,latitude\n" +
 ",,degrees_east,degrees_north\n" +
@@ -10718,9 +10848,9 @@ expected =
         //Test that constructor of EDVAlt added proper metadata for altitude variable.
         EDDTableFromNcFiles tableDataset = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "erdCalcofiBio");         
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
-            EDStatic.fullTestCacheDirectory, tableDataset.className() + "testTableWithAltitude", ".das"); 
+            dir, tableDataset.className() + "testTableWithAltitude", ".das"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
         po = results.indexOf("depth {");
         Test.ensureTrue(po > 0, "results=\n" + results);
         expected = 
@@ -10743,9 +10873,9 @@ expected =
 
         //ISO 19115 should deal with altitude correctly
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
-            EDStatic.fullTestCacheDirectory, tableDataset.className() + "testTableWithAltitude", ".iso19115"); 
+            dir, tableDataset.className() + "testTableWithAltitude", ".iso19115"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
 
         po = results.indexOf(
 "codeListValue=\"vertical\">");
@@ -10783,13 +10913,14 @@ expected =
         String2.log("\n*** EDDTableFromNcFiles.testTableWithDepth");
         String results, expected, tName;
         int po;
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //Test that constructor of EDVDepth added proper metadata for depth variable.
         EDDTableFromNcFiles tableDataset = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "testTableWithDepth");         
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
-            EDStatic.fullTestCacheDirectory, tableDataset.className() + "testTableWithDepth", ".das"); 
+            dir, tableDataset.className() + "testTableWithDepth", ".das"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
         po = results.indexOf("depth {");
         Test.ensureTrue(po > 0, "results=\n" + results);
         expected = 
@@ -10818,9 +10949,9 @@ expected =
         String2.log("!!time destinationMin=" + timeEdv.destinationMin() + "=" + timeEdv.destinationMinString() +
                           " destinationMax=" + timeEdv.destinationMax() + "=" + timeEdv.destinationMaxString());
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
-            EDStatic.fullTestCacheDirectory, tableDataset.className() + "testTableWithDepth", ".iso19115"); 
+            dir, tableDataset.className() + "testTableWithDepth", ".iso19115"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
 
         expected = 
         "<gmd:EX_Extent>\n" +
@@ -11029,12 +11160,13 @@ expected =
         String tName, error, results, tResults, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String dir = EDStatic.fullTestCacheDirectory;
 
         //*** .das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             "testAirt", ".das"); 
         results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir + tName)).toArray());
         //String2.log(results);
         expected =   //2013-01-04 several changes related to new array and wmo_platform_code
 "Attributes \\{\n" +
@@ -11177,13 +11309,13 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2016-02-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2016-04-04 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
 
 //+ " (local files)\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/pmelTaoDyAirt.das\";\n" +
 "    String infoUrl \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
@@ -11237,9 +11369,9 @@ expected =
         
 
         //*** .dds
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             "testAirt", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -11265,8 +11397,8 @@ expected =
         //    EDDTableFromTao.updateOneTaoDataset and the stations specified by the URLS.
         //  (It is unfortunate that this is hard-coded.)
         tName = tedd.makeNewFileForDapQuery(null, null, "station&distinct()", 
-            EDStatic.fullTestCacheDirectory, "testAirtStations", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, "testAirtStations", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         //good test of salinity values: I hand checked this from 1989427.nc in gtspp_at199505.zip
         expected = 
@@ -11457,8 +11589,8 @@ So the changes seem good. */
 // 20110724 1200 28.31 2 1
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&station=\"2s180w\"&time>2011-07-14&time<2011-07-25", 
-            EDStatic.fullTestCacheDirectory, "testAirtData", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            dir, "testAirtData", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "array,station,wmo_platform_code,longitude,latitude,time,depth,AT_21,QAT_5021,SAT_6021\n" +
@@ -12129,7 +12261,7 @@ So the changes seem good. */
 "  <name>My Title</name>\n" +
 "  <description><![CDATA[Data courtesy of NOAA NMFS SWFSC ERD\n" +
 "<br />My summary.\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
 "ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
 "x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
@@ -12173,12 +12305,12 @@ So the changes seem good. */
 "<br />floats = 0.0\n" +
 "<br />doubles = 1.0E12\n" +
 "<br />Strings = 0\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
 "970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E9999&#x2e;99&#x26;longitude&#x25;3C10000&#x2e;01&#x26;latitude&#x25;3" +
 "E39&#x2e;99&#x26;latitude&#x25;3C40&#x2e;01\">View tabular data for this location.</a>\n" +
 "\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
 "ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
 "x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
@@ -12203,12 +12335,12 @@ So the changes seem good. */
 "<br />floats = 1.1\n" +
 "<br />doubles = 1.0000000000001E12\n" +
 "<br />Strings = 10\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
 "970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10000&#x2e;99&#x26;longitude&#x25;3C10001&#x2e;01&#x26;latitude&#x25;" +
 "3E40&#x2e;99&#x26;latitude&#x25;3C41&#x2e;01\">View tabular data for this location.</a>\n" +
 "\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
 "ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
 "x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
@@ -12233,12 +12365,12 @@ So the changes seem good. */
 "<br />floats = 2.2\n" +
 "<br />doubles = 1.0000000000002E12\n" +
 "<br />Strings = 20\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
 "970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10001&#x2e;99&#x26;longitude&#x25;3C10002&#x2e;01&#x26;latitude&#x25;" +
 "3E41&#x2e;99&#x26;latitude&#x25;3C42&#x2e;01\">View tabular data for this location.</a>\n" +
 "\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
 "ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
 "x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
@@ -12254,9 +12386,9 @@ So the changes seem good. */
 "    <range>466666.6666666667</range>\n" +
 "  </LookAt>\n" +
 "  <ScreenOverlay id=\"Logo\">\n" +
-"    <description>http://127.0.0.1:8080/cwexperimental</description>\n" +
+"    <description>http://localhost:8080/cwexperimental</description>\n" +
 "    <name>Logo</name>\n" +
-"    <Icon><href>http://127.0.0.1:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
+"    <Icon><href>http://localhost:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
 "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
@@ -12370,7 +12502,7 @@ So the changes seem good. */
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
 expected = 
-//"2014-10-22T16:16:21Z http://127.0.0.1:8080/cwexperimental
+//"2014-10-22T16:16:21Z http://localhost:8080/cwexperimental
 "/tabledap/testSimpleTestNcTable.nc?time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings&time>=1970-01-02T00:00:00Z&time<1970-01-05T00:00:00Z\";\n" +
 "  :id = \"simpleTest\";\n" +
 "  :infoUrl = \"???\";\n" +
@@ -12427,7 +12559,7 @@ expected =
 ////<Creator>???</Creator>
 ////<CreateTime>2014-10-22T21:33:31</CreateTime>
 ////<Software>ERDDAP - Version 1.53</Software>
-////<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
+////<Source>http://localhost:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
@@ -12690,7 +12822,7 @@ expected =
 "  <name>My Title</name>\n" +
 "  <description><![CDATA[Data courtesy of NOAA NMFS SWFSC ERD\n" +
 "<br />My summary.\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;millis&#x2c;latitude&#x2c;longitude&#x2c;doubles&#x2c;Strings&#x" +
 "26;millis&#x3e;2010&#x2d;01&#x2d;01T00&#x3a;00&#x3a;00&#x2e;030Z&#x26;millis&#x3c;&#x3d;2010&#x2d;01&#x2d;01T00" +
 "&#x3a;00&#x3a;00&#x2e;032Z\">View/download more data from this dataset.</a>\n" +
@@ -12729,12 +12861,12 @@ expected =
 "<br />longitude = 10001 degrees_east\n" +
 "<br />doubles = 1.0000000000001E12\n" +
 "<br />Strings = 10\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
 "970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10000&#x2e;99&#x26;longitude&#x25;3C10001&#x2e;01&#x26;latitude&#x25;" +
 "3E40&#x2e;99&#x26;latitude&#x25;3C41&#x2e;01\">View tabular data for this location.</a>\n" +
 "\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;millis&#x2c;latitude&#x2c;longitude&#x2c;doubles&#x2c;Strings&#x" +
 "26;millis&#x3e;2010&#x2d;01&#x2d;01T00&#x3a;00&#x3a;00&#x2e;030Z&#x26;millis&#x3c;&#x3d;2010&#x2d;01&#x2d;01T00" +
 "&#x3a;00&#x3a;00&#x2e;032Z\">View/download more data from this dataset.</a>\n" +
@@ -12754,12 +12886,12 @@ expected =
 "<br />longitude = 10002 degrees_east\n" +
 "<br />doubles = 1.0000000000002E12\n" +
 "<br />Strings = 20\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
 "970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10001&#x2e;99&#x26;longitude&#x25;3C10002&#x2e;01&#x26;latitude&#x25;" +
 "3E41&#x2e;99&#x26;latitude&#x25;3C42&#x2e;01\">View tabular data for this location.</a>\n" +
 "\n" +
-"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
 "testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;millis&#x2c;latitude&#x2c;longitude&#x2c;doubles&#x2c;Strings&#x" +
 "26;millis&#x3e;2010&#x2d;01&#x2d;01T00&#x3a;00&#x3a;00&#x2e;030Z&#x26;millis&#x3c;&#x3d;2010&#x2d;01&#x2d;01T00" +
 "&#x3a;00&#x3a;00&#x2e;032Z\">View/download more data from this dataset.</a>\n" +
@@ -12775,9 +12907,9 @@ expected =
 "    <range>466666.6666666667</range>\n" +
 "  </LookAt>\n" +
 "  <ScreenOverlay id=\"Logo\">\n" +
-"    <description>http://127.0.0.1:8080/cwexperimental</description>\n" +
+"    <description>http://localhost:8080/cwexperimental</description>\n" +
 "    <name>Logo</name>\n" +
-"    <Icon><href>http://127.0.0.1:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
+"    <Icon><href>http://localhost:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
 "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
@@ -12859,7 +12991,7 @@ expected =
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
 expected = 
-//"2014-10-22T16:16:21Z http://127.0.0.1:8080/cwexperimental
+//"2014-10-22T16:16:21Z http://localhost:8080/cwexperimental
 "/tabledap/testSimpleTestNcTable.nc?time,millis,latitude,longitude,doubles,Strings&millis>2010-01-01T00:00:00.030Z&millis<=2010-01-01T00:00:00.032Z\";\n" +
 "  :id = \"simpleTest\";\n" +
 "  :infoUrl = \"???\";\n" +
@@ -12906,7 +13038,7 @@ expected =
 //<Creator>???</Creator>
 //<CreateTime>2014-10-22T22:43:55</CreateTime>
 //<Software>ERDDAP - Version 1.53</Software>
-//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
+//<Source>http://localhost:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
@@ -13565,7 +13697,7 @@ expected =
 //"2015-09-10T15:31:18Z http://www.ndbc.noaa.gov/\n" +
 //"2015-09-10T15:31:18Z 
         String originalDas2 =
-"http://127.0.0.1:8080/cwexperimental/tabledap/miniNdbc.das\";\n" +
+"http://localhost:8080/cwexperimental/tabledap/miniNdbc.das\";\n" +
 "    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC, CoastWatch WCN\";\n" +
 "    String keywords \"Atmosphere > Air Quality > Visibility,\n" +
@@ -13921,7 +14053,7 @@ expected =
         testErdGtsppBest("erdGtsppBestNc");
         testErdGtsppBest("erdGtsppBest");
         testTransparentPng();
-        testSpeed(-1);  //15=.odv 25=png
+        testSpeed(-1);  //-1=all   15=.odv 21=.xhtml 25=png
         testManyYears();
         testCAMarCat();
         testNcCFPoint();

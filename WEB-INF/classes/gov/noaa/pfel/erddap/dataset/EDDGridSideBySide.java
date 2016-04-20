@@ -82,6 +82,7 @@ public class EDDGridSideBySide extends EDDGrid {
         ArrayList tChildDatasets = new ArrayList();
         StringBuilder messages = new StringBuilder();
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         int tMatchAxisNDigits = DEFAULT_MATCH_AXIS_N_DIGITS;
         StringArray tOnChange = new StringArray();
@@ -153,6 +154,8 @@ public class EDDGridSideBySide extends EDDGrid {
                 tMatchAxisNDigits = String2.parseBoolean(content)? 20 : 0;
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<fgdcFile>")) {}
@@ -177,7 +180,8 @@ public class EDDGridSideBySide extends EDDGrid {
             tcds[c] = (EDDGrid)tChildDatasets.get(c);
 
         //make the main dataset based on the information gathered
-        return new EDDGridSideBySide(tDatasetID, tAccessibleTo, tAccessibleViaWMS, 
+        return new EDDGridSideBySide(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS, 
             tMatchAxisNDigits, tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tcds);
 
@@ -204,7 +208,7 @@ public class EDDGridSideBySide extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridSideBySide(String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         int tMatchAxisNDigits, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -219,6 +223,7 @@ public class EDDGridSideBySide extends EDDGrid {
         className = "EDDGridSideBySide"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));

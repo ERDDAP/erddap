@@ -67,7 +67,8 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
     /**
      * The constructor. See EDDTableFromDatabase for details.
      */
-    public EDDTableFromPostDatabase(String tDatasetID, String tAccessibleTo, 
+    public EDDTableFromPostDatabase(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -79,10 +80,12 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
         String tConnectionProperties[],
         String tCatalogName, String tSchemaName, String tTableName,
         String tColumnNameQuotes, String tOrderBy[],
-        boolean tSourceNeedsExpandedFP_EQ
+        boolean tSourceNeedsExpandedFP_EQ, 
+        String tSourceCanOrderBy, String tSourceCanDoDistinct
         ) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+        super(tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, 
             tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes,
@@ -90,7 +93,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
             tDataSourceName,
             tLocalSourceUrl, tDriverName, tConnectionProperties,
             tCatalogName, tSchemaName, tTableName, tColumnNameQuotes, tOrderBy,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tSourceCanOrderBy, tSourceCanDoDistinct);
         
         if (verbose) String2.log(
             "\n*** starting POST specific part of EDDTableFromPostDatabase " + tDatasetID); 
@@ -359,7 +362,7 @@ boolean addTestPostUser = false;
      * See the EDDTable method documentation.
      *
      * <p>The method avoids SQL Injection Vulnerability
-     * (see http://en.wikipedia.org/wiki/SQL_injection) by using
+     * (see https://en.wikipedia.org/wiki/SQL_injection) by using
      * preparedStatements (so String values are properly escaped and
      * numbers are assured to be numbers).
      *
@@ -767,7 +770,7 @@ boolean addTestPostUser = false;
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
+today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 "    String infoUrl \"http://www.postprogram.org/\";\n" +
 "    String institution \"POST\";\n" +
 "    String license \"DISCLAIMER\n" +
@@ -1130,7 +1133,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet3.das\";\n" +
+today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
 "    String infoUrl \"http://www.postprogram.org/\";\n" +
 "    String institution \"POST\";\n" +
 "    String license \"DISCLAIMER\n" +

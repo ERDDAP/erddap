@@ -223,6 +223,11 @@ public class XML {
 
     /** This encodes spaces as (char)160 (nbsp) when they are leading, trailing,
      * or more than 1 consecutive.
+     * #160 (instead of &amp;nbsp; or &amp;#160;) is fine because that is the 
+     * UTF character for a non-break-space. When UTF stream is encoded as UTF-8, 
+     * it is appropriately encoded.
+     *
+     * This is reasonable for HTML, but not recommended for xhtml.
      *
      * @param s
      * @return s with some spaces encoded as (char)160 (nbsp)

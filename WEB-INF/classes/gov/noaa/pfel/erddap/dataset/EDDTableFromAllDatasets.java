@@ -67,6 +67,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         className = "EDDTableFromAllDatasets"; 
         datasetID = DATASET_ID;
         setAccessibleTo(null);
+        setGraphsAccessibleTo(null);
         onChange = new StringArray();
         fgdcFile = null;
         iso19115File = null;
@@ -196,7 +197,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String roles[] = EDStatic.getRoles(loggedInAs);
-        boolean isLoggedIn = loggedInAs != null;
+        boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
 
         //create the table and the global attributes
         Table table = new Table();
@@ -242,6 +243,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         StringArray sosCol = new StringArray();
         StringArray wcsCol = new StringArray();
         StringArray wmsCol = new StringArray();
+        StringArray filesCol = new StringArray();
         StringArray fgdcCol = new StringArray();
         StringArray iso19115Col = new StringArray();
         StringArray metadataCol = new StringArray();
@@ -382,6 +384,11 @@ public class EDDTableFromAllDatasets extends EDDTable{
         table.columnAttributes(col)
             .add("ioos_category", "Other")
             .add("long_name", EDStatic.advl_wms);
+        col = table.addColumn("files", filesCol);
+        table.columnAttributes(col)
+            .add("comment", EDStatic.advc_files)
+            .add("ioos_category", "Other")
+            .add("long_name", EDStatic.advl_files);
         col = table.addColumn("fgdc", fgdcCol);
         table.columnAttributes(col)
             .add("comment", EDStatic.advc_fgdc)
@@ -420,6 +427,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
             .add("long_name", EDStatic.advl_summary);
         
         //add each dataset's information
+        //only title, summary, institution, id are always accessible if !listPrivateDatasets
         for (int i = 0; i < datasetIDs.size(); i++) {
             String tId = datasetIDs.get(i);
             EDDGrid eddGrid = gridDatasetHashMap.get(tId);
@@ -436,14 +444,16 @@ public class EDDTableFromAllDatasets extends EDDTable{
             if (edd == null) //perhaps just deleted
                 continue;
             boolean isAccessible = edd.isAccessibleTo(roles);
-            if (!EDStatic.listPrivateDatasets && !isAccessible)
+            boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
+            if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible)
                 continue;
 
             //add this dataset's value to each column   (order is not important)
             idCol.add(tId);
             accessCol.add(edd.getAccessibleTo() == null? "public" :
-                !isLoggedIn? "log in" :
-                isAccessible? "yes" : "no");
+                isAccessible? "yes" : 
+                graphsAccessible? "graphs" :
+                isLoggedIn? "no" : "log in");
             institutionCol.add(edd.institution());
             dataStructureCol.add(isGrid? "grid" : "table");
             cdmCol.add(edd.cdmDataType());
@@ -454,16 +464,16 @@ public class EDDTableFromAllDatasets extends EDDTable{
             EDV tedv;
             tedv = isGrid &&  eddGrid.lonIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.lonIndex()] :
                   !isGrid && eddTable.lonIndex() >= 0 ? eddTable.dataVariables[eddTable.lonIndex()] : null;
-            minLongitude.add(tedv == null? Double.NaN : tedv.destinationMin());
-            maxLongitude.add(tedv == null? Double.NaN : tedv.destinationMax());
-            longitudeSpacing.add(isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
+            minLongitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
+            maxLongitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+            longitudeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
 
             //lat
             tedv = isGrid &&  eddGrid.latIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.latIndex()] :
                   !isGrid && eddTable.latIndex() >= 0 ? eddTable.dataVariables[eddTable.latIndex()] : null;
-            minLatitude.add(tedv == null? Double.NaN : tedv.destinationMin());
-            maxLatitude.add(tedv == null? Double.NaN : tedv.destinationMax());
-            latitudeSpacing.add(isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
+            minLatitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
+            maxLatitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+            latitudeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
 
             //alt or depth
             tedv = isGrid &&  eddGrid.altIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.altIndex()] :
@@ -472,46 +482,49 @@ public class EDDTableFromAllDatasets extends EDDTable{
                 //depth?
                 tedv = isGrid &&  eddGrid.depthIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.depthIndex()] :
                       !isGrid && eddTable.depthIndex() >= 0 ? eddTable.dataVariables[eddTable.depthIndex()] : null;
-                minAltitude.add(tedv == null? Double.NaN : -tedv.destinationMin());
-                maxAltitude.add(tedv == null? Double.NaN : -tedv.destinationMax());
+                minAltitude.add(!graphsAccessible || tedv == null? Double.NaN : -tedv.destinationMin());
+                maxAltitude.add(!graphsAccessible || tedv == null? Double.NaN : -tedv.destinationMax());
             } else {
                 //alt
-                minAltitude.add(tedv == null? Double.NaN : tedv.destinationMin());
-                maxAltitude.add(tedv == null? Double.NaN : tedv.destinationMax());
+                minAltitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
+                maxAltitude.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
             }
 
             //time
             tedv = isGrid &&  eddGrid.timeIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.timeIndex()] :
                   !isGrid && eddTable.timeIndex() >= 0 ? eddTable.dataVariables[eddTable.timeIndex()] : null;
-            minTime.add(tedv == null? Double.NaN : tedv.destinationMin());
-            maxTime.add(tedv == null? Double.NaN : tedv.destinationMax());
-            timeSpacing.add(isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
+            minTime.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
+            maxTime.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+            timeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
 
             //other
             String daps = tErddapUrl + "/" + edd.dapProtocol() + "/" + tId; //without an extension, so easy to add
-            gdCol.add(edd instanceof EDDGrid? daps : "");
-            subCol.add(edd.accessibleViaSubset().length() == 0? 
+            gdCol.add(isAccessible && edd instanceof EDDGrid? daps : "");
+            subCol.add(isAccessible && edd.accessibleViaSubset().length() == 0? 
                 daps + ".subset" : "");
-            tdCol.add(edd instanceof EDDTable? daps : "");
-            magCol.add(edd.accessibleViaMAG().length() == 0? 
+            tdCol.add(isAccessible && edd instanceof EDDTable? daps : "");
+            magCol.add(graphsAccessible && edd.accessibleViaMAG().length() == 0? //graphs
                 daps + ".graph" : "");
-            sosCol.add(edd.accessibleViaSOS().length() == 0? 
+            sosCol.add(isAccessible && edd.accessibleViaSOS().length() == 0? 
                 tErddapUrl + "/sos/" + tId + "/" + EDDTable.sosServer : "");
-            wcsCol.add(edd.accessibleViaWCS().length() == 0? 
+            wcsCol.add(isAccessible && edd.accessibleViaWCS().length() == 0? 
                 tErddapUrl + "/wcs/" + tId + "/" + EDDGrid.wcsServer : "");
-            wmsCol.add(edd.accessibleViaWMS().length() == 0? 
+            wmsCol.add(graphsAccessible && edd.accessibleViaWMS().length() == 0? //graphs
                 tErddapUrl + "/wms/" + tId + "/" + EDD.WMS_SERVER : "");
-            fgdcCol.add(edd.accessibleViaFGDC().length() == 0? 
+            filesCol.add(isAccessible && edd.accessibleViaFilesDir().length() > 0? 
+                tErddapUrl + "/files/" + tId + "/" : "");
+            fgdcCol.add(graphsAccessible && edd.accessibleViaFGDC().length() == 0? 
                 tErddapUrl + "/" + EDStatic.fgdcXmlDirectory     + 
                     edd.datasetID() + EDD.fgdcSuffix     + ".xml" : "");
-            iso19115Col.add(edd.accessibleViaISO19115().length() == 0? 
+            iso19115Col.add(graphsAccessible && edd.accessibleViaISO19115().length() == 0? 
                 tErddapUrl + "/" + EDStatic.iso19115XmlDirectory + 
                     edd.datasetID() + EDD.iso19115Suffix + ".xml" : "");
-            metadataCol.add(tErddapUrl + "/info/" + edd.datasetID() + "/index"); 
-            sourceCol.add(edd.publicSourceUrl());
-            infoUrlCol.add(edd.infoUrl());
-            rssCol.add(EDStatic.erddapUrl + "/rss/" + edd.datasetID()+ ".rss"); //never https url
-            emailCol.add(EDStatic.subscriptionSystemActive?
+            metadataCol.add(graphsAccessible? tErddapUrl + "/info/" + edd.datasetID() + "/index" : ""); 
+            sourceCol.add(graphsAccessible? edd.publicSourceUrl() : "");
+            infoUrlCol.add(graphsAccessible? edd.infoUrl() : "");
+            rssCol.add(graphsAccessible? EDStatic.erddapUrl + "/rss/" + edd.datasetID()+ ".rss" : 
+                ""); //never https url
+            emailCol.add(graphsAccessible && EDStatic.subscriptionSystemActive?
                 tErddapUrl + "/" + Subscriptions.ADD_HTML + 
                     "?datasetID=" + edd.datasetID()+ "&showErrors=false&email=" : 
                 "");

@@ -778,7 +778,7 @@ String2.log("***end catalog.xml");
         verbose = true;
         StringArray sa = generateThreddsXml(
             "c:/u00/", "satellite/", 
-            "C:/programs/tomcat/webapps/cwexperimental/WEB-INF/incompleteMainCatalog.xml", 
+            "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/incompleteMainCatalog.xml", 
             "c:/u00/xml/");
         String2.log("first catalog.xml=" + sa.get(0));
 //        SSR.displayInBrowser("file://" + sa.get(0));

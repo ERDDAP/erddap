@@ -64,8 +64,10 @@ public class TableWriterEsriCsv extends TableWriter {
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      */
-    public TableWriterEsriCsv(OutputStreamSource tOutputStreamSource) {
-        super(tOutputStreamSource);
+    public TableWriterEsriCsv(EDD tEdd, String tNewHistory, 
+        OutputStreamSource tOutputStreamSource) {
+
+        super(tEdd, tNewHistory, tOutputStreamSource);
     }
 
     /**
@@ -198,10 +200,14 @@ public class TableWriterEsriCsv extends TableWriter {
     
     /**
      * This writes any end-of-file info to the stream and flush the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
@@ -221,10 +227,11 @@ public class TableWriterEsriCsv extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(Table table, OutputStreamSource tOutputStreamSource) 
-        throws Throwable {
+    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+        OutputStreamSource tOutputStreamSource) throws Throwable {
 
-        TableWriterEsriCsv twsv = new TableWriterEsriCsv(tOutputStreamSource);
+        TableWriterEsriCsv twsv = new TableWriterEsriCsv(tEdd, tNewHistory, 
+            tOutputStreamSource);
         twsv.writeAllAndFinish(table);
     }
 

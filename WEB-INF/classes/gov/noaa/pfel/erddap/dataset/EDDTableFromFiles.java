@@ -164,6 +164,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         int tUpdateEveryNMillis = 0;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         boolean tFileTableInMemory = false;
         String tFgdcFile = null;
@@ -209,6 +210,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             else if (localTags.equals("</isLocal>")) tIsLocal = String2.parseBoolean(content); 
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<updateEveryNMillis>")) {}
@@ -274,7 +277,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         if (tType == null)
             tType = "";
         if (tType.equals("EDDTableFromAsciiFiles")) {
-            return new EDDTableFromAsciiFiles(tDatasetID, tAccessibleTo,
+            return new EDDTableFromAsciiFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -288,7 +292,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tAccessibleViaFiles);
 
         } else if (tType.equals("EDDTableFromAwsXmlFiles")) {
-            return new EDDTableFromAwsXmlFiles(tDatasetID, tAccessibleTo,
+            return new EDDTableFromAwsXmlFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -302,7 +307,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tAccessibleViaFiles);
 
         } else if (tType.equals("EDDTableFromColumnarAsciiFiles")) {
-            return new EDDTableFromColumnarAsciiFiles(tDatasetID, tAccessibleTo,
+            return new EDDTableFromColumnarAsciiFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -316,7 +322,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tAccessibleViaFiles);
 
         } else if (tType.equals("EDDTableFromNcFiles")) { 
-            return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo,
+            return new EDDTableFromNcFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -330,7 +337,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tAccessibleViaFiles);
 
         } else if (tType.equals("EDDTableFromNcCFFiles")) {
-            return new EDDTableFromNcCFFiles(tDatasetID, tAccessibleTo,
+            return new EDDTableFromNcCFFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -343,8 +351,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
                 tAccessibleViaFiles); 
 
-        } else if (tType.equals("EDDTableFromPostNcFiles")) {
-            return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo,
+        /*} else if (tType.equals("EDDTableFromPostNcFiles")) {
+            return new EDDTableFromNcFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -356,7 +365,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
                 tAccessibleViaFiles);
-
+        */
         } else if (tType.equals("EDDTableFromHyraxFiles")) {
 
             String qrName = quickRestartFullFileName(tDatasetID);
@@ -386,7 +395,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 NcHelper.writeAttributesToNc(qrName, qrAtts);
             }
 
-            EDDTableFromFiles tEDDTable = new EDDTableFromHyraxFiles(tDatasetID, tAccessibleTo,
+            EDDTableFromFiles tEDDTable = new EDDTableFromHyraxFiles(tDatasetID,
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -431,7 +441,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 NcHelper.writeAttributesToNc(qrName, qrAtts);
             }
 
-            EDDTableFromFiles tEDDTable = new EDDTableFromThreddsFiles(tDatasetID, tAccessibleTo,
+            EDDTableFromFiles tEDDTable = new EDDTableFromThreddsFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -474,7 +485,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     String2.log(error);
             }
 
-            return new EDDTableFromWFSFiles(tDatasetID, tAccessibleTo,
+            return new EDDTableFromWFSFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery,  
                 tGlobalAttributes,
@@ -494,7 +506,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tAccessibleViaFiles);
 
         //} else if (tType.equals("EDDTableFrom???Files")) {
-        //    return new EDDTableFromFiles(tDatasetID, tAccessibleTo,
+        //    return new EDDTableFromFiles(tDatasetID, 
+        //        tAccessibleTo, tGraphsAccessibleTo,
         //        tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
         //        tDefaultDataQuery, tDefaultGraphQuery, 
         //        tGlobalAttributes,
@@ -569,7 +582,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
      *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *        http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -620,8 +633,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @param tSourceNeedsExpandedFP_EQ
      * @throws Throwable if trouble
      */
-    public EDDTableFromFiles(String tClassName, 
-        String tDatasetID, String tAccessibleTo, 
+    public EDDTableFromFiles(String tClassName, String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -655,6 +668,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         String fileTableFileName = datasetDir() + FILE_TABLE_FILENAME;
 
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;

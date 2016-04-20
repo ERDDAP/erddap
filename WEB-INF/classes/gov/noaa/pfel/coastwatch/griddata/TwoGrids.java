@@ -59,7 +59,7 @@ import ucar.unidata.geoloc.LatLonPointImpl;
  * (e.g., zonal and meridional data) and store the data in one file.
  *
  * <p>My reading of the ESRI .asc format 
- * (http://en.wikipedia.org/wiki/Esri_grid) is that it is only
+ * (https://en.wikipedia.org/wiki/Esri_grid) is that it is only
  * for one grid of data (not two). So that format is not supported here.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2006-10-23

@@ -82,6 +82,7 @@ public class EDDTableFromMWFS extends EDDTable{
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -126,6 +127,8 @@ public class EDDTableFromMWFS extends EDDTable{
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
@@ -250,6 +253,7 @@ public class EDDTableFromMWFS extends EDDTable{
         className = "EDDTableFromMWFS"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -627,7 +631,7 @@ time series data.</att>
 
         //a test based on their web page's example
         //http://csc-s-ial-p.csc.noaa.gov/DTL/DTLProjects/microwfs/
-        TableWriterAllInMemory tw = new TableWriterAllInMemory();
+        TableWriterAllInMemory tw = new TableWriterAllInMemory(this);
         //BBOX is max lon, min lat, min lon, max lat  (!)
         //e.g.,  "&BBOX=-69.00,32.0,-72.00,42.30&TIME=2007-06-01T12:00Z,2007-06-01T14:00Z" + 
         //       "&TYPENAME=waterTemperature";

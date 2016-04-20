@@ -52,8 +52,8 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     //TableWriter has Attributes globalAttributes;
     //TableWriter has Attributes[] columnAttributes;
     protected int[] columnMaxStringLength;
-    protected double[] columnMinValue;  //NaN if no valid values
-    protected double[] columnMaxValue;
+    protected double[] columnMinValue;  //min of finite values, NaN if no valid values
+    protected double[] columnMaxValue;  //max of finite values, NaN if no valid values
 
     /**
      * The constructor.
@@ -63,8 +63,9 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
-    public TableWriterAllWithMetadata(String tDir, String tFileNameNoExt) {
-        super(tDir, tFileNameNoExt);
+    public TableWriterAllWithMetadata(EDD tEdd, String tNewHistory, String tDir, 
+        String tFileNameNoExt) {
+        super(tEdd, tNewHistory, tDir, tFileNameNoExt);
     }
 
 
@@ -93,10 +94,14 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     
     /**
      * This is called to close the column streams and clean up the metadata.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         //close the column streams
         super.finish();
         finishMetadata();
@@ -171,6 +176,24 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
         if (columnMinValue == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
+        //remove these things. They're added back with new values below if appropriate.
+        globalAttributes.remove("geospatial_lon_min");
+        globalAttributes.remove("geospatial_lon_max");
+        globalAttributes.remove("Westernmost_Easting");
+        globalAttributes.remove("Easternmost_Easting");
+
+        globalAttributes.remove("geospatial_lat_min");
+        globalAttributes.remove("geospatial_lat_max");
+        globalAttributes.remove("Southernmost_Northing");
+        globalAttributes.remove("Northernmost_Northing");
+
+        globalAttributes.remove("geospatial_vertical_min"); //unidata-related
+        globalAttributes.remove("geospatial_vertical_max");
+
+        globalAttributes.remove("time_coverage_start");   //unidata-related
+        globalAttributes.remove("time_coverage_end");
+
+        //go through the columns
         int lonCol   = String2.indexOf(columnNames, EDV.LON_NAME);
         int latCol   = String2.indexOf(columnNames, EDV.LAT_NAME);
         int altCol   = String2.indexOf(columnNames, EDV.ALT_NAME);
@@ -199,10 +222,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
             int   iMax = Math2.roundToInt(dMax);
             if (col == lonCol) {
                 if (Double.isNaN(dMin)) {
-                    globalAttributes.remove("geospatial_lon_min");
-                    globalAttributes.remove("geospatial_lon_max");
-                    globalAttributes.remove("Westernmost_Easting");
-                    globalAttributes.remove("Easternmost_Easting");
+                    //"geospatial_lon_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_lon_min",  fMin);
                     globalAttributes.set("geospatial_lon_max",  fMax);
@@ -216,10 +236,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 }
             } else if (col == latCol) {
                 if (Double.isNaN(dMin)) {
-                    globalAttributes.remove("geospatial_lat_min");
-                    globalAttributes.remove("geospatial_lat_max");
-                    globalAttributes.remove("Southernmost_Northing");
-                    globalAttributes.remove("Northernmost_Northing");
+                    //"geospatial_lat_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_lat_min", fMin);
                     globalAttributes.set("geospatial_lat_max", fMax);
@@ -233,8 +250,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 } 
             } else if (col == altCol || col == depthCol) {
                 if (Double.isNaN(dMin)) {
-                    globalAttributes.remove("geospatial_vertical_min"); //unidata-related
-                    globalAttributes.remove("geospatial_vertical_max");
+                    //"geospatial_vertical_min" etc removed above
                 } else if (minMax instanceof FloatArray) {
                     globalAttributes.set("geospatial_vertical_min", fMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", fMax);
@@ -248,8 +264,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 }
             } else if (col == timeCol) {
                 if (Double.isNaN(dMin)) {
-                    globalAttributes.remove("time_coverage_start");   //unidata-related
-                    globalAttributes.remove("time_coverage_end");
+                    //"time_coverage_start" etc removed above
                 } else {  //always iso string
                     String tp = columnAttributes(col).getString(EDV.TIME_PRECISION);
                     //"" unsets the attribute if min or max isNaN

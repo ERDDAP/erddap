@@ -766,6 +766,41 @@ public class Attributes {
 
     }
 
+    /**
+     * This makes a set of addAttributes which are needed to change a into b.
+     * If an attribute in 'a' needs to be set to null, this sets it to the String 
+     *   "null" instead of just nulling it.
+     */
+    public static Attributes makeALikeB(Attributes a, Attributes b) {
+        Attributes addAtts = new Attributes();
+
+        //remove/change atts already in 'a' that aren't correct
+        String[] aNames = a.getNames();
+        int naNames = aNames.length;
+        for (int i = 0; i < naNames; i++) {
+            String aName = aNames[i];
+            PrimitiveArray aPA = a.get(aName);
+            PrimitiveArray bPA = b.get(aName);
+            if (bPA == null)
+                addAtts.set(aName, "null"); 
+            else if (!aPA.equals(bPA))
+                addAtts.set(aName, bPA);
+        }
+
+        //add atts from 'b' that aren't already in 'a'
+        String[] bNames = b.getNames();
+        int nbNames = bNames.length;
+        for (int i = 0; i < nbNames; i++) {
+            String bName = bNames[i];
+            if (a.get(bName) == null)
+                addAtts.set(bName, b.get(bName));
+        }
+
+        return addAtts;
+    }
+
+
+
 
 
     /**
@@ -957,8 +992,26 @@ public class Attributes {
             "    d=4\n",
             "");
 
+        //makeALikeB
+        Attributes a =  new Attributes();
+        a.set("s",      new StringArray(new String[]{"theString"})); //same
+        a.set("number", new DoubleArray(new double[]{11, 22}));      //different
+        a.set("inA",    new IntArray(   new int[]{1, 2}));           //unique 
+        Attributes b =  new Attributes();
+        b.set("s",      new StringArray(new String[]{"theString"})); //same
+        b.set("number", new IntArray(   new int[]{11, 22}));         //different
+        b.set("inB",    new IntArray(   new int[]{3, 4, 5}));        //unique
 
-
+        atts = makeALikeB(a, b);
+        Test.ensureEqual(atts.toString(), 
+"    inA=\"null\"\n" +
+"    inB=3, 4, 5\n" +
+"    number=11, 22\n",
+            "atts=\n" + atts.toString());
+        a.add(atts);
+        a.removeValue("null");
+        Test.ensureEqual(a, b, "");
+        Test.ensureEqual(a.toString(), b.toString(), "");
 
         String2.log("*** test Attributes finished successfully.");
     } 

@@ -2401,7 +2401,7 @@ public class TestUtil {
         String2.log("test getClassPath   current=" + String2.getClassPath());
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):
-        //Test.ensureEqual(String2.getClassPath(), "C:/programs/tomcat/webapps/cwexperimental/WEB-INF/classes/", "a");
+        //Test.ensureEqual(String2.getClassPath(), "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/", "a");
         //this is a wimpy test, but will work with all installations under Tomcat
         Test.ensureEqual(String2.getClassPath().endsWith("/WEB-INF/classes/"), true, "a");
 
@@ -4199,8 +4199,8 @@ expected =
         //this only works on Bob's computer
         String2.log("File2.getSystemTempDirectory()=" + File2.getSystemTempDirectory());
         String s = File2.getSystemTempDirectory();
-        if (!s.equals("C:/Documents and Settings/Bob.Simons/Local Settings/Temp/") &&
-            !s.equals("C:/Documents and Settings/Robert/Local Settings/Temp/")) {
+        if (!s.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
+            !s.equals("C:/Users/Robert/AppData/Local/Temp/")) {
             String2.log(
                 "getSystemTempDirectory        =" + s);
                 //+ "\n" + String2.Press_CtrlC_or_Enter); 
@@ -4457,8 +4457,8 @@ expected =
             Test.ensureTrue(b != c, "");
 
             String filler100 = "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-            int n = 1000000;
-            String sa[] = new String[n];
+            int n = 1000;
+            String sa[] = new String[95*95];
             long oMemoryInUse = -1;
             Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
             int canSize = -1;
@@ -4466,38 +4466,51 @@ expected =
             //for each outer loop, create a different group of 100 canonical strings 
             for (int outer = 0; outer < 10; outer++) {
 
-                //create 1000000 strings, but only 100 canonical strings
+                //create 1000000 strings, but only 95*95 different strings per outer loop
+                //With each outer loop, sa values are overwritten. 
+                //  So previous values should be garbage collected.
+                //  If not, memory use and count of nStrings in canonical system
+                //    (tested below) will increase with each outer loop.
                 long time = System.currentTimeMillis();
-                for (int inner = 0; inner < n; inner++) 
-                    //(char) at beginning means a different 100 strings are created for each outer loop
-                    sa[inner] = String2.canonical(((char)(65 + outer)) + 
-                        filler100.substring(0, 98) + inner % 100);
+                for (int inner = 0; inner < n; inner++) {
+                    for (int inner2 = 0; inner2 < n; inner2++) {
+                        int j = (inner % 95) * 95 + (inner2 % 95);
+                        sa[j] = String2.canonical(
+                            //makes 95*95 different strings, dispersed to different canonical maps
+                            ((char)(32 + (inner % 95))) + "" + //"" keeps char+char->int
+                            ((char)(32 + (inner2 % 95))) + "" + 
+                            //make this string unique to this outer loop iteration
+                            ((char)(65 + outer)) + "" + 
+                             //make it a long string
+                            filler100);
+                        //String2.log(">[" + j + "]=" + sa[j]);
+                    }
+                }
 
-                //ensure that memory use and canonical size don't grow unexpectedly
+                //ensure that memory use and nStrings in maps don't grow unexpectedly
                 time = System.currentTimeMillis() - time;
                 Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
                 long memoryInUse = Math2.getMemoryInUse();
-                int shouldBe = outer == 0? 550 : 280;
+                int shouldBe = outer == 0? 320 : 185;
                 String2.log("canonicalSize=" + String2.canonicalSize() + 
-                    " time=" + time + " (should be Java 1.7M4700=~" + shouldBe + 
-                    "ms [2014-07: 1st pass ~550], 1.6=~1450ms, 1.5=~2000ms) " + 
+                    " time=" + time + " (should be Java 1.8=~" + shouldBe + 
+                    "ms [1st pass is slower]) " + 
                     Math2.memoryString());
                 Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
                 if (oMemoryInUse == -1) {
                     oMemoryInUse = memoryInUse; 
                     canSize = String2.canonicalSize();
                 } else {
-                    String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
+                    String2.log("  excess bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
                     Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
                     Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
-                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB) + 
-                        " (Java 1.7 M4700: 19 then 23 MB).");
+                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
                 }
                 Test.ensureEqual(String2.canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
             }   
+            //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
             String2.log(
-                "\nStarting Dec 2012, it grows from 19MB to 23MB 1/2 way through.\n" +
-                "Is this a Java 1.7 thing?  Perhaps it is increase in memory allocated to the nursery."); 
+                "\n2016-03 memory use is constant at ~37MB"); 
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(

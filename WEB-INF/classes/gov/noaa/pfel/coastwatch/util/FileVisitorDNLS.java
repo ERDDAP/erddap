@@ -560,6 +560,25 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return tTable;
     }        
 
+    /** 
+     * As a convenience to generateDatasetsXml methods, this returns the last
+     * matching fullFileName.
+     *
+     */
+    public static String getSampleFileName(String tFileDir, String tFileNameRegex,
+        boolean tRecursive, String tPathRegex) throws Exception {
+        Table fileTable = oneStep(tFileDir, tFileNameRegex, tRecursive, tPathRegex,
+            false); //dirNamesToo
+        int nRows = fileTable.nRows();
+        if (nRows == 0)
+            throw new RuntimeException(
+                "ERROR in getSampleFileName: No matching files found for\n" +
+                "  dir=" + tFileDir + " fileNameRegex=" + tFileNameRegex + 
+                " recursive=" + tRecursive + " pathRegex=" + tPathRegex);
+        return fileTable.getColumn(DIRECTORY).getString(nRows - 1) +
+               fileTable.getColumn(NAME).getString(nRows - 1);
+    }
+
 //Patterns are thread safe.
 //inport:
 //<table><tr><th><img src="/icons/blank.gif" alt="[ICO]"></th><th>
@@ -923,30 +942,30 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         table.removeAllRows();
         Test.ensureTrue( //completelySuccessful
             addToWAFUrlList("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
-                "1797.*\\.xml", 
-                true, ".*/NMFS/(|NWFSC/)(|inport/)(|xml/)", //tricky!
+                "22...\\.xml",   
+                //pre 2016-03-04 I tested NWFSC/inport/xml, but it has been empty for a month!
+                true, ".*/NMFS/(|NEFSC/)(|inport/)(|xml/)", //tricky!
                 true, //tDirsToo, 
                 dirs, names, lastModifieds, sizes),
             "");
         results = table.dataToCSVString();
         expected = 
 "directory,name,lastModified,size\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17970.xml,1450369020000,12288\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17971.xml,1450369020000,12288\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17972.xml,1450369020000,13312\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17973.xml,1450369020000,11264\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17975.xml,1450369020000,13312\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17977.xml,1450369080000,12288\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/,17979.xml,1450369080000,14336\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/,,,\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,,,\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1455948120000,21504\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1455948120000,21504\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1455948120000,19456\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1455948120000,21504\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1456553280000,23552\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1455948120000,25600\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
       } catch (Throwable t) {
           String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\nThis changes periodically. If reasonable, just continue\n" +
-              "(there no more subtests in this test)."); 
+              "\nThis changes periodically. If reasonable, just continue." +
+              "\n(there no more subtests in this test).");
       }
     }
 
@@ -1358,6 +1377,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
       } catch (Throwable t) {
           String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+              "\n2016-02-29 results=\"\" because HTTP 503, Server Not Available." +
               "\nUnexpected error."); 
       }
     }
@@ -1745,7 +1765,7 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
         //oneStepAccessibleViaFiles
         table = oneStepDoubleWithUrlsNotDirs("c:/erddapTest/fileNames", ".*\\.png", 
             true, tPathRegex,
-            "http://127.0.0.1:8080/cwexperimental/files/testFileNames/");
+            "http://localhost:8080/cwexperimental/files/testFileNames/");
         results = table.toCSVString();
         expected = 
 "{\n" +
@@ -1772,9 +1792,9 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
 "// global attributes:\n" +
 "}\n" +
 "row,url,name,lastModified,size\n" +
-"0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
-"1,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
-"2,http://127.0.0.1:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
+"0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
+"1,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
+"2,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -1864,9 +1884,9 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
 "directory,name,lastModified,size\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_200601-201012.nc,1382457840000,1368327466\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201101-201512.nc,1382457577000,1369233982\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201601-202012.nc,1382260226000,1368563375\n";
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
         if (expected.length() > results.length()) 
             String2.log("results=\n" + results);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -1876,9 +1896,9 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
         results = table.dataToCSVString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_200601-201012.nc,1382457840000,1368327466\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201101-201512.nc,1382457577000,1369233982\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201601-202012.nc,1382260226000,1368563375\n";
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
         if (expected.length() > results.length()) 
             String2.log("results=\n" + results);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -1889,9 +1909,9 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
         expected = 
 "directory,name,lastModified,size\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_200601-201012.nc,1382457840000,1368327466\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201101-201512.nc,1382457577000,1369233982\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201601-202012.nc,1382260226000,1368563375\n";
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
         if (expected.length() > results.length()) 
             String2.log("results=\n" + results);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -1901,9 +1921,9 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
         results = table.dataToCSVString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_200601-201012.nc,1382457840000,1368327466\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201101-201512.nc,1382457577000,1369233982\n" +
-"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_BNU-ESM_201601-202012.nc,1382260226000,1368563375\n";
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
         if (expected.length() > results.length()) 
             String2.log("results=\n" + results);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -1932,7 +1952,7 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
      *    then a specific directory. Each subsequent dir must be a capturing group
      *    with the option of nothing, e.g., "(|someDir/)". 
      *    Use "(|[^/]+/)" to match anything at a given level.  Example:
-     *    ".* /NMFS/(|NWFSC/)(|inport/)(|xml/)" (but remove the internal space which
+     *    ".* /NMFS/(|NEFSC/)(|inport/)(|xml/)" (but remove the internal space which
      *    lets this javadoc comment continue).
      * @param doIt if true, the files are actually copied
      * @return a Table with 2 String columns (remote, local)
@@ -2071,60 +2091,61 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
         String unitTestDataDir = "/erddapTest/"; //from EDStatic
         String rDir = "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/";
         String lDir = unitTestDataDir + "sync";  //test without trailing slash 
-        String fileRegex = "1797.\\.xml";
+        String fileRegex = "22...\\.xml";
         boolean recursive = true;
-        String pathRegex = ".*/NMFS/(|NWFSC/)(|inport/)(|xml/)"; //tricky!            
+        //pre 2016-03-04 I tested NWFSC/inport/xml, but it has been empty for a month!
+        String pathRegex = ".*/NMFS/(|NEFSC/)(|inport/)(|xml/)"; //tricky!            
         boolean doIt = true;
 
         //get original times
-        String name17975 = lDir + "/NWFSC/inport/xml/17975.xml";
-        String name17977 = lDir + "/NWFSC/inport/xml/17977.xml";
+        String name22560 = lDir + "/NEFSC/inport/xml/22560.xml";
+        String name22565 = lDir + "/NEFSC/inport/xml/22565.xml";
 
-        long time17975 = File2.getLastModified(name17975);
-        long time17977 = File2.getLastModified(name17977);
+        long time22560 = File2.getLastModified(name22560);
+        long time22565 = File2.getLastModified(name22565);
 
         try {
+            //For testing purposes, I put one extra file in the dir: 8083.xml renamed as 22ext.xml
 
             //do the sync
             sync(rDir, lDir, fileRegex, recursive, pathRegex, true);
 
             //current date on all these files
-            Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1438262220),
-                "2015-07-30T13:17:00", ""); //what the web site shows         
-
+            Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1455948120),
+                "2016-02-20T06:02:00", ""); //what the web site shows for many
 
             //delete 1 local file
-            File2.delete(lDir + "/NWFSC/inport/xml/17972.xml");
+            File2.delete(lDir + "/NEFSC/inport/xml/22561.xml");
 
             //make 1 local file older
-            File2.setLastModified(name17975, 1438262219000L);
+            File2.setLastModified(name22560, 1438262219000L);
 
             //make 1 local file newer
-            File2.setLastModified(name17977, System.currentTimeMillis() + 100);
+            File2.setLastModified(name22565, System.currentTimeMillis() + 100);
 
             //test the sync (but modified
             Table table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
             String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
-                "\"found nAlready=4 nToDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
+                "\"found nAlready=3 nToDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
             String results = table.dataToCSVString();
             String expected = //the lastModified values change periodically
 "remote,local,lastModified\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/17972.xml,/erddapTest/sync/NWFSC/inport/xml/17972.xml,1454507520000\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NWFSC/inport/xml/17975.xml,/erddapTest/sync/NWFSC/inport/xml/17975.xml,1454507520000\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml,/erddapTest/sync/NEFSC/inport/xml/22560.xml,1460184720000\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22561.xml,/erddapTest/sync/NEFSC/inport/xml/22561.xml,1460184780000\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //no changes, do the sync again
             table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
             String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
-                "\"found nAlready=6 nToDownload=0 nTooRecent=1 nExtraLocal=1\"\n");
+                "\"found nAlready=5 nToDownload=0 nTooRecent=1 nExtraLocal=1\"\n");
             results = table.dataToCSVString();
             expected = 
     "remote,local,lastModified\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
         } finally {
-            File2.setLastModified(name17975, time17975);
-            File2.setLastModified(name17977, time17977);
+            File2.setLastModified(name22560, time22560);
+            File2.setLastModified(name22565, time22565);
         }
 
     }

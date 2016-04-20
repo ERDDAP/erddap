@@ -206,7 +206,7 @@ public class RunLoadDatasets extends Thread {
 
                                             //prepare ttName for regex: encode -, .  ('_' doesn't need encoding)
                                             ttName = String2.replaceAll(ttName, "-", "\\x2D");
-                                            ttName = String2.replaceAll(ttName, ".", "\\x2E");
+                                            ttName = String2.replaceAll(ttName, ".", "\\.");
                                             tNames.set(i, ttName);
 
                                         } else {

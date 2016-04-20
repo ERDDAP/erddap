@@ -71,6 +71,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         EDDGrid firstChild = null;
         StringArray tLocalSourceUrls = new StringArray();
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -150,6 +151,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                 tMatchAxisNDigits = String2.parseBoolean(content)? 20 : 0;
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<onChange>")) {}
@@ -168,7 +171,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         //make the main dataset based on the information gathered
         return new EDDGridAggregateExistingDimension(tDatasetID, 
-            tAccessibleTo, tAccessibleViaWMS,
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery,
             firstChild, tLocalSourceUrls.toArray(),
@@ -202,7 +205,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridAggregateExistingDimension(String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS, 
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         EDDGrid firstChild, String tLocalSourceUrls[], 
@@ -219,6 +222,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         className = "EDDGridAggregateExistingDimension"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
@@ -618,6 +622,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String results, expected;
 
         //******* test thredds -- lame test: the datasets can't actually be aggregated
+        try {
         results = generateDatasetsXml("thredds",
             "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
             ".*", 1440); //recursive
@@ -846,10 +851,15 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "</dataset>\n" +
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
 
 
 
         //****** test HYRAX
+        try {
         results = generateDatasetsXml("hyrax",
             "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html", 
             "month_[0-9]{8}_v11l35flk\\.nc\\.gz", //note: v one one L
@@ -1076,6 +1086,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "</dataset>\n" +
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
 
 
         String2.log("\n*** EDDGridAggregateExistingDimension.testGenerateDatasetsXml() finished successfully.\n");
@@ -1086,6 +1100,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      */
     public static void testGetDodsIndexUrls() throws Exception {
         String2.log("\nEDDGridAggregateExistingDimension.testGetDodsIndexUrls");
+
+        try {
         StringArray sourceUrls = new StringArray();
         String dir = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/";
         getDodsIndexUrls(dir, "[0-9]{8}\\.bodas_ts\\.nc", true, "", sourceUrls);
@@ -1094,6 +1110,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         Test.ensureEqual(sourceUrls.size(), 741, "");
         Test.ensureEqual(sourceUrls.get(740), dir + "20061227.bodas_ts.nc", "");
         String2.log("EDDGridAggregateExistingDimension.testGetDodsIndexUrls finished successfully.");
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
     }
 
     /**
@@ -1108,6 +1128,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String name, tName, userDapQuery, results, expected, error;
 
         //one time
+
+        try {
 
         //*** NDBC  is also IMPORTANT UNIQUE TEST of >1 variable in a file
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "ndbcCWind41002");       
@@ -1395,7 +1417,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "2007-12-31T22:40:00Z, 32.27, -75.42, 36, 4.0\n" +
 "2007-12-31T22:50:00Z, 32.27, -75.42, 37, 4.3\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
 
         String2.log("\n*** EDDGridAggregateExistingDimension.test finished.");
 
@@ -1407,6 +1432,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
      */
     public static void testRtofs() throws Throwable {
         String2.log("\n****************** EDDGridAggregateExistingDimension.testRtofs() *****************\n");
+        try {
         testVerboseOn();
         String tName, results, expected;
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "RTOFSWOC1");
@@ -1420,7 +1446,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "2009-07-01T00:00:00Z\n" +
 "2009-07-02T00:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }        
     }
 
 

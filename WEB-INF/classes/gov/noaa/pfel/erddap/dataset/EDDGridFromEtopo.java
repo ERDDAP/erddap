@@ -521,7 +521,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 //today + " (local file)\n" +
 //today + 
 expected =   
-" http://127.0.0.1:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
+" http://localhost:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
 "  :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
 "  :infoUrl = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +

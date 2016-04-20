@@ -79,24 +79,16 @@ public class HtmlWidgets {
         "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF"};
 
     /** This will display a message to the user if JavaScript is not supported
-     * or disabled. Last updated 2013-05-03. */
+     * or disabled. Last updated 2016-03-28. */
     public static String ifJavaScriptDisabled =
         "<noscript><p><font color=\"red\"><b>To work correctly, this web page requires that JavaScript be enabled in your browser.</b> Please:\n" +
         "<br>1) Enable JavaScript in your browser:\n" +
-        "<br>&nbsp;&nbsp; &bull; Windows\n" +  
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: select \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select \"Options : Options : Content : Enable JavaScript : OK\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer: select \n" +  //true for IE 6 and 7 
-        "   \"Tools : Internet Options : Security : Internet : Custom level :\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: (it should be always on!)\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer: \"Tools : Internet Options : Security : Internet : Custom level :\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sripting/ Active Scripting : Enable : OK : OK\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: select \"Settings : Quick Preferences : Enable JavaScript\"\n" +
-        "<br>&nbsp;&nbsp; &bull; Mac OS X\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: select \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select \"Firefox : Preferences : Content : Enable JavaScript : OK\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer (this is an out-of-date browser -- please consider switching): \n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select \"Explorer : Preferences : Web Content : Enable Scripting : OK\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: select \"Opera : Quick Preferences : Enable JavaScript\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Safari: select \"Safari : Preferences : Security : Enable JavaScript\"\n" + 
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: \"Settings : Websites : JavaScript\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Safari: \"Safari : Preferences : Security : Enable JavaScript\"\n" + 
         "<br>2) Reload this web page.\n" +
         "<br>&nbsp;</font>\n" +
         "</noscript>\n";
@@ -167,35 +159,17 @@ public class HtmlWidgets {
         "\n";
     }
 
-    /** This is a standalone javascript which does minimal percent encoding of a string,
+    /** This is a standalone javascript which does percent encoding of a string,
      *  similar to SSR.minimalPercentEncode.
      */
     public static String PERCENT_ENCODE_JS =
-        //browser handles other chars, but needs help with + & " ' space, and thus %
         "<script type=\"text/javascript\"> \n" +
         "function percentEncode(s) { \n" + 
         "  var s2=\"\";\n" +
         "  for (var i = 0; i < s.length; i++) {\n" +
         "    var ch=s.charAt(i);\n" +
-        "    if (ch == \"%\") s2+=\"%25\";\n" +
-        "    else if (ch == \"&\") s2+=\"%26\";\n" +     //to distinguish & in value in &id=value
-        "    else if (ch == \"\\\"\") s2+=\"%22\";\n" +  //avoids trouble with " in urls in javascript 
-        "    else if (ch == \"'\") s2+=\"%27\";\n" +     //avoids trouble with ' in urls in javascript
-        "    else if (ch == \"+\") s2+=\"%2B\";\n" +     //avoid trouble with +
-        "    else if (ch == \" \" || ch == \"\\xA0\") s2+=\"%20\";\n" +  //safer than +   0xA0=nbsp, see select(encodeSpaces)
-        //see slide 7 of https://www.owasp.org/images/b/ba/AppsecEU09_CarettoniDiPaola_v0.8.pdf
-        //reserved=; / ? : @ & = + $ ,
-        "    else if (ch == \"=\") s2+=\"%3D\";\n" +
-        "    else if (ch == \"#\") s2+=\"%23\";\n" +  
-        "    else if (ch == \"<\") s2+=\"%3C\";\n" +
-        "    else if (ch == \">\") s2+=\"%3E\";\n" +
-        "    else if (ch == \";\") s2+=\"%3B\";\n" +
-        "    else if (ch == \"/\") s2+=\"%2F\";\n" +
-        "    else if (ch == \"?\") s2+=\"%3F\";\n" +
-        //"    else if (ch == \":\") s2+=\"%3A\";\n" +
-        "    else if (ch == \"@\") s2+=\"%40\";\n" +
-        "    else if (ch == \"$\") s2+=\"%24\";\n" +
-        "    else s2+=ch;\n" +
+        "    if (ch == \"\\xA0\") s2+=\"%20\";\n" +  //0xA0=nbsp, see select(encodeSpaces)
+        "    else s2+=encodeURIComponent(ch);\n" +
         "  }\n" +
         "  return s2;\n" +
         "}\n" +
@@ -339,7 +313,7 @@ public class HtmlWidgets {
     }
 
     /**
-     * This creates the HTML code for a button.
+     * This creates the HTML code for a button using the 'input' tag.
      * "labelText" is displayed and name=labelText is returned if clicked
      *
      * @param type "submit" or "button".  
@@ -367,8 +341,9 @@ public class HtmlWidgets {
     }
 
     /**
-     * This creates the HTML code for a button widget.
-     * The labelTextHtml is displayed and name=labelText is returned if clicked
+     * This creates the HTML code for a button widget using the 'button' tag.
+     * The labelTextHtml is displayed and name=labelText is returned if clicked.
+     * This can be used by itself, without a &lt;form&gt;.
      *
      * @param type "submit" or "button".  
      *    "submit" buttons submit the form to the form's url.
@@ -583,7 +558,7 @@ public class HtmlWidgets {
     public String select(String name, String tooltip, int nRows,
         String options[], int selected, String other) {
 
-        return select(name, tooltip, nRows, options, selected, other, false, "");
+        return select(name, tooltip, nRows, options, null, selected, other, false, "");
     }
 
     /**
@@ -600,7 +575,7 @@ public class HtmlWidgets {
     public String select(String name, String tooltip, int nRows,
         String options[], int selected, String other, boolean encodeSpaces) {
 
-        return select(name, tooltip, nRows, options, selected, other, encodeSpaces, "");
+        return select(name, tooltip, nRows, options, null, selected, other, encodeSpaces, "");
      }
 
     /**
@@ -615,8 +590,22 @@ public class HtmlWidgets {
      *   nbsp (char A0) is now percent encoded as %20 (a space).
      */    
     public String select(String name, String tooltip, int nRows,
-        String options[], int selected, String other, boolean encodeSpaces, 
-        String buttonJS) {
+        String options[], int selected, String other, 
+        boolean encodeSpaces, String buttonJS) {
+
+        return select(name, tooltip, nRows, options, null, selected, other, 
+            encodeSpaces, buttonJS);
+     }
+
+
+    /**
+     * This variant of select adds a values parameter.
+     *
+     * @param values this should parallel options, or be null (usually).
+     */    
+    public String select(String name, String tooltip, int nRows,
+        String options[], String values[], int selected, String other, 
+        boolean encodeSpaces, String buttonJS) {
 
         StringBuilder sb = new StringBuilder();
         int nOptions = options.length;
@@ -646,6 +635,7 @@ public class HtmlWidgets {
             if (encodeSpaces)
                 opt = XML.minimalEncodeSpaces(opt);
             sb.append(spacer + "<option" + 
+                (values == null? "" : " value=\"" + XML.encodeAsHTML(values[i]) + "\"") +
                 (i == selected? " selected=\"selected\"" : "") + 
                 //If option is "", Win IE 7 needs 'value' to be explicitly set 
                 //  for (name).value to work in JavaScript
@@ -1551,13 +1541,13 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         boolean oDebugMode = debugMode;
         debugMode = true;
         String fullName = SSR.getTempDirectory() + "TestHtmlWidgets.html";
-        String imageDir = "file://c:/programs/tomcat/webapps/cwexperimental/images/";
+        String imageDir = "file://c:/programs/_tomcat/webapps/cwexperimental/images/";
         File2.delete(fullName);
         Writer writer = new FileWriter(fullName);
         boolean tHtmlTooltips = true;
         HtmlWidgets widgets = new HtmlWidgets("", tHtmlTooltips, 
             imageDir);
-//            "http://127.0.0.1:8080/cwexperimental/images/");
+//            "http://localhost:8080/cwexperimental/images/");
 //            "http://coastwatch.pfeg.noaa.gov/erddap/images/"); //SANS_SERIF_STYLE);
         writer.write(
             DOCTYPE_HTML_TRANSITIONAL +

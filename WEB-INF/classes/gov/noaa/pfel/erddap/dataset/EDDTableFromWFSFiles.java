@@ -58,7 +58,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
      *    ERDDAP to try to generate FGDC metadata for this dataset).
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
-    public EDDTableFromWFSFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromWFSFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -74,7 +75,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromWFSFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromWFSFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 

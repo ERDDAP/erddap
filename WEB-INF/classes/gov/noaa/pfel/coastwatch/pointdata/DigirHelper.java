@@ -256,7 +256,7 @@ public class DigirHelper  {
         "  <header>\n" +
         "    <version>1.0</version>\n" +
         "    <sendTime>&CurrentDateTTime;</sendTime>\n" +
-        "    <source>127.0.0.1</source>\n" +
+        "    <source>localhost</source>\n" +
         */
 
         //make the request
@@ -575,7 +575,7 @@ public class DigirHelper  {
           <header>
             <version>1.0.0</version>
             <sendTime>2003-06-05T11:57:00-03:00</sendTime>
-            <source>127.0.0.1</source>
+            <source>localhost</source>
             <destination resource="MYRES">
               http://some_provider.org/provider/DiGIR.php</destination>
             <type>inventory</type>
@@ -995,7 +995,7 @@ String2.log("inventoryTable:\n" + table.toString());
         "  <header>\n" +
         "    <version>1.0</version>\n" +
         "    <sendTime>&CurrentDateTTime;</sendTime>\n" +
-        "    <source>127.0.0.1</source>\n" +
+        "    <source>localhost</source>\n" +
         "    <destination resource=\"GHMP\">&url;</destination>\n" +  //is there an 'any' option? or more than 1?
         "    <type>search</type>\n" +
         "  </header>\n" +

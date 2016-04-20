@@ -42,6 +42,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.MessageFormat;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -53,7 +54,7 @@ import java.util.Properties;
 /** 
  * This class represents a table of data from a database.
  * This class avoids the SQL Injection security problem 
- * (see http://en.wikipedia.org/wiki/SQL_injection).
+ * (see https://en.wikipedia.org/wiki/SQL_injection).
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-08
  */
@@ -74,7 +75,7 @@ public class EDDTableFromDatabase extends EDDTable{
     protected String catalogSeparator;
 
     public static String testUser = "postgres";
-    public static String testUrl = "jdbc:postgresql://127.0.0.1:5432/mydatabase";
+    public static String testUrl = "jdbc:postgresql://localhost:5432/mydatabase";
     public static String testDriver = "org.postgresql.Driver";
 
     /**
@@ -113,6 +114,7 @@ public class EDDTableFromDatabase extends EDDTable{
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -127,6 +129,8 @@ public class EDDTableFromDatabase extends EDDTable{
         String tOrderBy[] = new String[0];
         StringArray tConnectionProperties = new StringArray();
         boolean tSourceNeedsExpandedFP_EQ = true;
+        String tSourceCanOrderBy = "no";
+        String tSourceCanDoDistinct = "no";
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
 
@@ -152,6 +156,8 @@ public class EDDTableFromDatabase extends EDDTable{
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
@@ -177,6 +183,10 @@ public class EDDTableFromDatabase extends EDDTable{
             }
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
+            else if (localTags.equals( "<sourceCanOrderBy>")) {}
+            else if (localTags.equals("</sourceCanOrderBy>")) tSourceCanOrderBy = content; 
+            else if (localTags.equals( "<sourceCanDoDistinct>")) {}
+            else if (localTags.equals("</sourceCanDoDistinct>")) tSourceCanDoDistinct = content; 
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
@@ -197,8 +207,9 @@ public class EDDTableFromDatabase extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        if (subclass.equals("Post"))
-            return new EDDTableFromPostDatabase(tDatasetID, tAccessibleTo, 
+        /*if (subclass.equals("Post"))
+            return new EDDTableFromPostDatabase(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery, 
                 tGlobalAttributes,
@@ -208,8 +219,9 @@ public class EDDTableFromDatabase extends EDDTable{
                 tLocalSourceUrl, tDriverName, 
                 tConnectionProperties.toArray(),
                 tCatalogName, tSchemaName, tTableName, tColumnNameQuotes, tOrderBy,
-                tSourceNeedsExpandedFP_EQ);
-        else return new EDDTableFromDatabase(tDatasetID, tAccessibleTo, 
+                tSourceNeedsExpandedFP_EQ, tSourceCanOrderBy, tSourceCanDoDistinct);
+        else*/ return new EDDTableFromDatabase(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery, 
                 tGlobalAttributes,
@@ -219,7 +231,7 @@ public class EDDTableFromDatabase extends EDDTable{
                 tLocalSourceUrl, tDriverName, 
                 tConnectionProperties.toArray(),
                 tCatalogName, tSchemaName, tTableName, tColumnNameQuotes, tOrderBy,
-                tSourceNeedsExpandedFP_EQ);
+                tSourceNeedsExpandedFP_EQ, tSourceCanOrderBy, tSourceCanDoDistinct);
 
     }
 
@@ -336,7 +348,7 @@ public class EDDTableFromDatabase extends EDDTable{
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
      *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *        http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -374,7 +386,8 @@ public class EDDTableFromDatabase extends EDDTable{
      * @param tSourceNeedsExpandedFP_EQ
      * @throws Throwable if trouble
      */
-    public EDDTableFromDatabase(String tDatasetID, String tAccessibleTo, 
+    public EDDTableFromDatabase(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -386,7 +399,8 @@ public class EDDTableFromDatabase extends EDDTable{
         String tConnectionProperties[],
         String tCatalogName, String tSchemaName, String tTableName,
         String tColumnNameQuotes, String tOrderBy[],
-        boolean tSourceNeedsExpandedFP_EQ
+        boolean tSourceNeedsExpandedFP_EQ, 
+        String tSourceCanOrderBy, String tSourceCanDoDistinct
         ) throws Throwable {
 
         if (verbose) String2.log(
@@ -399,6 +413,7 @@ public class EDDTableFromDatabase extends EDDTable{
         className = "EDDTableFromDatabase"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -436,6 +451,10 @@ public class EDDTableFromDatabase extends EDDTable{
               "".equals(columnNameQuotes), 
             "<columnNameQuotes> must be \", ', or an empty string.");
         orderBy = tOrderBy == null? new String[0] : tOrderBy;
+        sourceCanOrderBy = Math.max(0, //so default=no
+            getNoPartialYes(tSourceCanOrderBy));
+        sourceCanDoDistinct = Math.max(0, //so default=no
+            getNoPartialYes(tSourceCanDoDistinct));
 
         //try to get the dataSource
         if (dataSourceName != null && dataSourceName.length() > 0) {
@@ -605,7 +624,7 @@ public class EDDTableFromDatabase extends EDDTable{
      * See the EDDTable method documentation.
      *
      * <p>The method avoids SQL Injection Vulnerability
-     * (see http://en.wikipedia.org/wiki/SQL_injection) by using
+     * (see https://en.wikipedia.org/wiki/SQL_injection) by using
      * preparedStatements (so String values are properly escaped and
      * numbers are assured to be numbers).
      *
@@ -629,21 +648,46 @@ public class EDDTableFromDatabase extends EDDTable{
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
+        //String2.log(">>resultsVars=" + resultsVariables.toString());
 
-        //distinct?  orderBy?  databases can handle them
+        //distinct?   database handles it if sourceCanDoDistict = PARTIAL or YES
+        //orderBy...? database handles it if sourceCanOrderBy   = PARTIAL or YES
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
         //but orderBy may be slow/hard for database (faster to do it in erddap?)
+        //Checking for >1 distinct() or orderBy has already been done by getSourceQueryFromDapQuery.
         String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
         boolean distinct = false;
-        boolean queryHasOrderBy = false;
-        boolean queryHasOrderByMax = false;
+        StringArray queryOrderBy = null;  //the query orderBy or distinct source variable names 
         for (int pi = 0; pi < parts.length; pi++) {
             String p = parts[pi];
-            if (p.equals("distinct()")) distinct = true;
-            if (p.startsWith("orderBy(\"") && p.endsWith("\")")) 
-                queryHasOrderBy = true;
-            if (p.startsWith("orderByMax(\"") && p.endsWith("\")")) 
-                queryHasOrderByMax = true;
+            //String2.log(">>p#" + pi + "=" + p);
+            if (p.equals("distinct()") &&
+                sourceCanDoDistinct >= CONSTRAIN_PARTIAL) {
+                distinct = true;
+                //To databases, DISTINCT doesn't imply a sort order.
+                //To ERDDAP,    DISTINCT does imply a sort order.
+                //So if database is going to handle DISTINCT, also tell it to sort the results.
+                //http://stackoverflow.com/questions/691562/does-select-distinct-imply-a-sort-of-the-results
+                queryOrderBy = (StringArray)(resultsVariables.clone());
+                //String2.log(">>distinct() -> queryOrderBy=" + queryOrderBy.toString());
+
+            } else if (p.startsWith("orderBy") && //doesn't matter if orderByMax|Min|MinMax|... 
+                p.endsWith("\")") &&
+                sourceCanOrderBy >= CONSTRAIN_PARTIAL) {
+                int tpo = p.indexOf("(\"");
+                if (tpo < 0) 
+                    throw new SimpleException(EDStatic.queryError + "Invalid syntax for \"" + p + "\"."); //should have been caught already
+                queryOrderBy = StringArray.fromCSV(
+                    p.substring(tpo + 2, p.length() - 2));
+                //change from destNames to sourceNames
+                for (int oi = 0; oi < queryOrderBy.size(); oi++) {
+                    int v = String2.indexOf(dataVariableDestinationNames(), queryOrderBy.get(oi));
+                    if (v < 0)
+                        throw new SimpleException(EDStatic.queryError +
+                            MessageFormat.format(EDStatic.queryErrorUnknownVariable, queryOrderBy.get(oi))); 
+                    queryOrderBy.set(oi, dataVariableSourceNames()[v]);
+                }
+            }
         }
 
         //no need to further prune constraints
@@ -721,10 +765,17 @@ public class EDDTableFromDatabase extends EDDTable{
                 (schemaName.equals( "")? "" : schemaName  + ".") + 
                 tableName);
 
-            //add orderBy
+            //create orderBySB
             StringBuilder orderBySB = new StringBuilder();
-            if (distinct || queryHasOrderBy || queryHasOrderByMax) {
-                //let TableWriterXxx handle it (probably more efficient since in memory)
+            if (queryOrderBy != null) {
+                //append queryOrderBy variables
+                for (int ob = 0; ob < queryOrderBy.size(); ob++) {
+                    if (resultsVariables.indexOf(queryOrderBy.get(ob)) >= 0) { //should be
+                        if (orderBySB.length() > 0) orderBySB.append(", ");
+                        //Quotes around colNames avoid trouble when colName is a SQL reserved word.
+                        orderBySB.append(columnNameQuotes + queryOrderBy.get(ob) + columnNameQuotes);
+                    }
+                }
             } else {
                 //append predefined orderBy variables
                 for (int ob = 0; ob < orderBy.length; ob++) {
@@ -735,6 +786,7 @@ public class EDDTableFromDatabase extends EDDTable{
                     }
                 }
             }
+            //String2.log(">>orderBySB=" + orderBySB.toString());
 
             //add constraints to query  
             int nCv = constraintVariables.size();
@@ -769,7 +821,7 @@ public class EDDTableFromDatabase extends EDDTable{
 
             //fill in the '?' in the preparedStatement
             //***!!! This method avoids SQL Injection Vulnerability !!!***
-            //(see http://en.wikipedia.org/wiki/SQL_injection) by using
+            //(see https://en.wikipedia.org/wiki/SQL_injection) by using
             //preparedStatements (so String values are properly escaped and
             //numbers are assured to be numbers).
             PreparedStatement statement = connection.prepareStatement(query.toString());
@@ -1543,10 +1595,13 @@ expected =
     /**
      * This performs basic tests of the local postgres database.
      *
+     * @param tDatasetID testMyDatabaseNo or testMyDatabasePartial or testMyDatabaseYes,
+     *   to test sourceCanOrderBy=x and sourceCanDoDistinct=x.
+     *   tDatasetID=testMyDabaseYes tests sourceCanOrderBy=yes and sourceCanDoDistinct=yes.
      * @throws Throwable if trouble
      */
-    public static void testBasic() throws Throwable {
-        String2.log("\n*** testBasic");
+    public static void testBasic(String tDatasetID) throws Throwable {
+        String2.log("\n*** testBasic tDatasetID=" + tDatasetID);
         testVerboseOn();
         long eTime;
         String tQuery;
@@ -1555,7 +1610,8 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         try {
-            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testMyDatabase"); 
+            EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null,
+                tDatasetID); 
             String tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".das"); 
             results = new String((new ByteArray(dir + tName)).toArray());
@@ -1599,7 +1655,7 @@ expected =
 "    String cdm_data_type \"Other\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"" + today + "T.{8}Z \\(source database\\)\n" +
-today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das\";\n" +
+today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
 "    String infoUrl \"http://swfsc.noaa.gov/erd.aspx\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"birthdate, category, first, height, last, weight\";\n" +
@@ -1613,6 +1669,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(source database\\)\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String subsetVariables \"category\";\n" +
 "    String summary \"This is Bob's test for reading from a database table.\";\n" +
 "    String title \"mydatabase myschema mytable\";\n" +
 "  \\}\n" +
@@ -1652,8 +1709,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
 "B,Stan,Smith,177,81.1,1971-10-12T23:24:25Z\n" +
 ",Zele,Zule,NaN,NaN,\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log(" " + Integer.MAX_VALUE + " " + Short.MAX_VALUE + 
-                "\n  all time=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("  all time=" + (System.currentTimeMillis() - eTime)); 
 
             //subset
             eTime = System.currentTimeMillis();
@@ -1681,6 +1737,105 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
 
+            //distinct()  2 vars
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,first&distinct()",
+                dir, tedd.className() + "_distinct1", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected = tDatasetID.equals("testMyDatabaseNo") ||
+                       tDatasetID.equals("testMyDatabasePartial")?
+//ERDDAP sorts "" at top.
+"category,first\n" +
+",\n" +
+",Zele\n" +
+"A,Bob\n" +
+"A,John\n" +
+"B,Betty\n" +
+"B,Stan\n" :
+//Postgres sorts "" at bottom
+"category,first\n" +
+",\n" +
+"A,Bob\n" +
+"A,John\n" +
+"B,Betty\n" +
+"B,Stan\n" +
+",Zele\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+
+            //distinct()  2 vars, different order
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "first,category&distinct()",
+                dir, tedd.className() + "_distinct2", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"first,category\n" +
+",\n" +
+"Betty,B\n" +
+"Bob,A\n" +
+"John,A\n" +
+"Stan,B\n" +
+"Zele,\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+
+            //orderBy()  subsetVars
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category&orderBy(\"category\")",
+                dir, tedd.className() + "_orderBy1", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"category\n" +
+"\n" +
+"\n" +
+"A\n" +
+"B\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+
+            //orderBy()  
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"last,category\")",
+                dir, tedd.className() + "_orderBy2", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"category,last,first\n" +
+",,\n" +
+"B,Bach,Betty\n" +
+"A,Bucher,Bob\n" +
+"A,Johnson,John\n" +
+"B,Smith,Stan\n" +
+",Zule,Zele\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+
+            //orderBy()  
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"category,last\")",
+                dir, tedd.className() + "_orderBy3", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected = tDatasetID.equals("testMyDatabaseNo") ||
+                       tDatasetID.equals("testMyDatabasePartial")?
+//ERDDAP sorts "" at top.
+"category,last,first\n" +
+",,\n" +
+",Zule,Zele\n" +
+"A,Bucher,Bob\n" +
+"A,Johnson,John\n" +
+"B,Bach,Betty\n" +
+"B,Smith,Stan\n" :
+//Postgres sorts "" at bottom
+"category,last,first\n" +
+",,\n" +
+"A,Bucher,Bob\n" +
+"A,Johnson,John\n" +
+"B,Bach,Betty\n" +
+"B,Smith,Stan\n" +
+",Zule,Zele\n";
+
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+
             //no matching data (database determined)
             eTime = System.currentTimeMillis();
             try {
@@ -1697,11 +1852,25 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
                     String2.pressEnterToContinue("Unexpected error."); 
             }
 
+            //quick reject -> orderBy var not in results vars
+            //orderBy()  
+            try {
+                tName = tedd.makeNewFileForDapQuery(null, null, "category,last&orderBy(\"category,last,first\")",
+                    dir, tedd.className() + "_qr1", ".csv"); 
+                throw new SimpleException("Shouldn't get here");
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+                results = t.toString(); 
+                expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                    "variable=first isn't in the list of results variables.";
+                Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+            }
+
             //quick reject -> no matching data
             eTime = System.currentTimeMillis();
             try {
                 tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height>1000",
-                    dir, tedd.className() + "_subset", ".csv"); 
+                    dir, tedd.className() + "_qr2", ".csv"); 
                 results = new String((new ByteArray(dir + tName)).toArray());
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -1716,7 +1885,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromDatabase.testTime error."); 
+                "\nUnexpected EDDTableFromDatabase.test(" + tDatasetID + ") error."); 
         }
     }
 
@@ -1747,7 +1916,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
             EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testNonExistentVariable"); 
             results = "shouldn't get here";
             edd.getDataForDapQuery(null, "", "",                    //should throw error
-                new TableWriterAll(dir, "testNonExistentVariable")); 
+                new TableWriterAll(edd, "", dir, "testNonExistentVariable")); 
             results = "really shouldn't get here";
         } catch (Throwable t) {
             results = MustBe.throwableToString(t);
@@ -1769,7 +1938,7 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
             EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testNonExistentTable"); 
             results = "shouldn't get here";
             edd.getDataForDapQuery(null, "", "",                    //should throw error
-                new TableWriterAll(dir, "testNonExistentTable")); 
+                new TableWriterAll(edd, "", dir, "testNonExistentTable")); 
             results = "really shouldn't get here";
         } catch (Throwable t) {
             results = MustBe.throwableToString(t);
@@ -1787,10 +1956,15 @@ today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/testMyDatabase.das
         String2.log("\n****************** EDDTableFromDatabase.test() *****************\n");
 
         //tests usually run       
+        /* */
         testGenerateDatasetsXml();
-        testBasic();
+        //test sourceCanOrderBy=x and sourceCanDoDistinct=x (x=no|partial|yes).
+        testBasic("testMyDatabaseNo");  
+        testBasic("testMyDatabasePartial");  
+        testBasic("testMyDatabaseYes");
         testNonExistentVariable();
         testNonExistentTable();
+        /* */
     }
 
 
