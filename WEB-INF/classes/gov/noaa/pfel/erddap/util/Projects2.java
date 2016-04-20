@@ -61,9 +61,9 @@ public class Projects2  {
      * an older hand-generated datasets.xml.
      */
     public static void copyKeywords() throws Throwable {
-        String handXmlName = "c:/programs/tomcat/content/erddap/datasets2.xml";
+        String handXmlName = "c:/programs/_tomcat/content/erddap/datasets2.xml";
         String autoXmlName = "c:/temp/datasets20111019.xml";
-        String resultName  = "c:/programs/tomcat/content/erddap/datasets2New.xml";
+        String resultName  = "c:/programs/_tomcat/content/erddap/datasets2New.xml";
 
         //read handXml
         String sar[] = String2.readFromFile(handXmlName);
@@ -159,8 +159,8 @@ public class Projects2  {
      * keywords with new auto-generated keywords.
      */
     public static void copyKeywordsUsgs() throws Throwable {
-        String handXmlName = "c:/programs/tomcat/content/erddap/datasets2.xml";
-        String resultName  = "c:/programs/tomcat/content/erddap/datasets2New.xml";
+        String handXmlName = "c:/programs/_tomcat/content/erddap/datasets2.xml";
+        String resultName  = "c:/programs/_tomcat/content/erddap/datasets2New.xml";
 
         //read handXml
         String sar[] = String2.readFromFile(handXmlName);

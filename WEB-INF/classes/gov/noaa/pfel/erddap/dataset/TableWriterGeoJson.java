@@ -62,8 +62,10 @@ public class TableWriterGeoJson extends TableWriter {
      *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
      *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
      */
-    public TableWriterGeoJson(OutputStreamSource tOutputStreamSource, String tJsonp) {
-        super(tOutputStreamSource);
+    public TableWriterGeoJson(EDD tEdd, String tNewHistory, 
+        OutputStreamSource tOutputStreamSource, String tJsonp) {
+
+        super(tEdd, tNewHistory, tOutputStreamSource);
         jsonp = tJsonp;
         if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
             throw new SimpleException(EDStatic.errorJsonpFunctionName);
@@ -275,10 +277,14 @@ public class TableWriterGeoJson extends TableWriter {
     
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
@@ -312,10 +318,11 @@ public class TableWriterGeoJson extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(Table table, OutputStreamSource outputStreamSource, 
-        String tJsonp) throws Throwable {
+    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+        OutputStreamSource outputStreamSource, String tJsonp) throws Throwable {
 
-        TableWriterGeoJson twgj = new TableWriterGeoJson(outputStreamSource, tJsonp);
+        TableWriterGeoJson twgj = new TableWriterGeoJson(tEdd, tNewHistory, 
+            outputStreamSource, tJsonp);
         twgj.writeAllAndFinish(table);
     }
 

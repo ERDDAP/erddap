@@ -100,6 +100,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
     <li><a rel="help" href="#active"><tt>active="..."</tt></a>
 
     <li><a rel="help" href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
+    <li><a rel="help" href="#graphsAccessibleTo"><tt>&lt;graphsAccessibleTo&gt;</tt></a>
     <li><a rel="help" href="#accessibleViaFiles"><tt>&lt;accessibleViaFiles&gt;</tt></a>
     <li><a rel="help" href="#accessibleViaWMS"><tt>&lt;accessibleViaWMS&gt;</tt></a>
     <li><a rel="help" href="#defaultDataQuery"><tt>&lt;defaultDataQuery&gt;</tt></a>
@@ -553,9 +554,10 @@ After you finish, I'll contact you to work out the final details.
       <li>DasDds asks you for the datasetID for the dataset you are working on.
       <li>DasDds tries to create the dataset with that datasetID.
         <ul>
-        <li>It always prints lots of diagnostic messages.
+        <li>DasDds always prints lots of diagnostic messages.
           <br>If you use "DasDds -verbose", DasDds will print more diagnostic messages than usual.
-        <li>It always deletes all /dataset/ files for the dataset (for safety) before trying
+        <li>For safety, DasDds always deletes all of the cached dataset information (files) 
+          for the dataset before trying
           to create the dataset.  So for aggregated datasets, you might want to adjust the 
           fileNameRegex temporarily to limit the number of files the data constructor finds.
         <li>If the dataset fails to load (for whatever reason), 
@@ -1236,6 +1238,8 @@ but it is far more likely that a user will hit the file-type-specific limits.
       <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> 
         makes a local copy of all of the data from an ArcGIS MapServer WFS server
         so the data can then be re-served quickly to ERDDAP users.
+      <li><a rel="help" href="#EDDTableAggregateRows">EDDTableAggregateRows</a>
+        can make an EDDTable dataset from a group of EDDTable datasets.
       <li><a rel="help" href="#EDDTableCopy">EDDTableCopy</a> can make a local 
         copy of many types of EDDTable datasets and then re-serve the data quickly from the 
         local copy.
@@ -1290,6 +1294,7 @@ but it is far more likely that a user will hit the file-type-specific limits.
 &lt;dataset type="EDDGridFromDap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt; 
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For EDDGridFromDap, 
@@ -1551,6 +1556,7 @@ dataset is:
 <pre>
 &lt;dataset type="EDDGridFromEDDTable" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt; 
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For EDDGridFromEDDTable, 
@@ -1642,6 +1648,8 @@ a remote ERDDAP server.
 <pre>
 &lt;dataset type="EDDGridFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
+  <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1.  For EDDGridFromErddap, 
     this gets the remote .dds and then gets the new leftmost dimension values. --&gt;
@@ -1658,6 +1666,8 @@ a remote ERDDAP server.
 <pre>
 &lt;dataset type="EDDTableFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
+  <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -1767,6 +1777,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
     <a rel="help" href="#NCO">NCO</a>
     to fix the problem.
   </ul>
+
 <li><a name="EDDGridFromFiles_AggregationViaFileNames"><b>Aggregation via File Names
 or Global Metadata</b></a> - 
   <br>All variations of EDDGridFromFiles can also aggregate a group of files 
@@ -1928,6 +1939,7 @@ or Global Metadata</b></a> -
    ERDDAP log.txt file to find the offending time value. 
    Then look in the source files to find the corresponding file 
    (or one before or one after) that doesn't belong in the aggregation.
+
 <li><a name="EDDGridFromFiles_Directories"><b>Directories</b></a> - 
   The files MAY be in one directory, or in a directory
   and its subdirectories (recursively).
@@ -1936,6 +1948,164 @@ or Global Metadata</b></a> -
   in a series of
   subdirectories (one per year, or one per month for datasets with very frequent files),
   so that there are never a huge number of files in a given directory.
+  <br>&nbsp;
+
+<li><a name="remoteDirectories"><b>Remote Directories and 
+  HTTP Range Requests</b></a> -
+  <br>(AKA Byte Serving, Byte Range Requests, Accept-Ranges http header) 
+  <br>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles,  
+  can <i>sometimes</i> serve data from .nc files on remote servers and accessed via HTTP
+  if the server supports
+  <a href="https://en.wikipedia.org/wiki/Byte_serving"
+    >Byte Serving<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  via HTTP range requests (the HTTP mechanism for byte serving).
+  This is possible because netcdf-java (which ERDDAP uses to read .nc files)
+  supports reading data from remote .nc files via HTTP range requests.
+
+  <p>Don't do this!  It is horribly slow. It is not supported.
+  <br>Because each range request goes over the internet, serving data 
+  in remote files via range requests is <i>very</i> slow and inefficient. 
+  Note that requests for data from a file on a local, standard, SATA, hard drive
+  have a latency of about 3 ms for the first request and &lt;1 ms thereafter,
+  and the bandwidth ranges from about 0.3 GBytes/s for a single drive
+  to 3 GBytes/s for a RAID.
+  For requests over the internet to a remote server (not in the same room),
+  the latency varies greatly but is often 500 - 2000 ms for the first and subsequent
+  requests, and the available bandwidth is often very limiting (since it is shared
+  with other users at an institution).
+  When reading data from a file, netcdf-java often makes hundreds or thousands of 
+  requests for a range of bytes.
+  So it is no surprise that accessing data via range requests is much, much
+  slower than accessing data via local files.
+  So range requests should be a last-resort system for serving data.
+  Because of this, this is an upsupported feature in ERDDAP. 
+  It works for your setup or it doesn't, but IMHO it isn't worth spending
+  your or my time on.
+
+  <p>Alternatives
+  <br>Please use an alternative:
+  <ul>
+  <li>Install ERDDAP (or THREDDS) on a server that has direct access to the files. 
+  You can then use EDDGridFromErddap or EDDTableFromErddap, 
+  (or EDDGridFromDap) to re-serve the data on your main ERDDAP.
+  <li>Or, make a local copy of the files. Big hard drives are cheap!
+    Even if you can't store the entire dataset locally indefinitely,
+    perhaps you can do it temporarily.  
+  <li>Or, request that ERDDAP make a local caching system. It would grab whole files, 
+    as needed, store and read them locally, and delete the Least Recently Used files
+    when space is limited. 
+    This was planned as a solution for working with AWS S3 (see below) 
+    (which, as expected, 
+    performs badly when reading files via range requests -- not its fault) 
+    but never implemented.
+  </ul>  
+
+  <p>How it works.
+  <br>Normally, when netcdf-java reads data from a local file, it sends 
+  a series of requests to the operating system, each for a specific range of bytes
+  from the file in order to get a specific piece of information.
+  With range requests, netcdf-java can read the remote file by 
+  sending a series of requests to the server (over the internet), 
+  each for a specific range of bytes.
+
+  <p>.grib and .bufr
+  <br>Netcdf-java can read data from local .grib and .bufr files, 
+  but I don't know if netcdf-java (and thus ERDDAP) support
+  reading data from remote .grib and .bufr files via range requests. 
+  The problem is: when netcdf-java reads local .grib and .bufr files, 
+  it makes a local index file in the same directory.
+  Given that this wouldn't be possible with remote files, this probably doesn't work.
+  I've never tried it. 
+
+  <p><a href="https://aws.amazon.com/s3/"
+    >Amazon S3<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  <br>Amazon S3 is a storage system that is part of 
+  <a href="https://aws.amazon.com/"
+    >Amazon Web Services (AWS)<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  (AKA Amazon's cloud services). 
+  Instead of a hierarchical file system, S3 has "buckets", each of which has
+  a name and a "file" (a blob of bytes in the bucket).
+  If the bucket names are file-like (e.g., "dirName1/dirName2/bucketName"),
+  they can be accessed via a URL (http://<i>ownersName</i>.s3.amazonaws.com/<i>dirName1/dirName2/bucketName</i>).
+  ERDDAP uses the 
+  <a href="https://aws.amazon.com/sdk-for-java/"
+    >AWS SDK for Java<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  (which is included in the erddap.war file) 
+  to read the bucket names as if they were file names and access data
+  in the buckets via range requests. 
+  For this to work, the user running ERDDAP must have up-to-date, valid
+  <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/credentials.html"
+    >AWS credentials<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  and which are authorized to access those buckets. 
+  This works, but, as discussed above, very slowly. 
+  If you are running ERDDAP on an AWS EC2 instance 
+  (a virtual computer that you can rent by the hour from Amazon),
+  you can improve performance by using 
+  <a href="https://aws.amazon.com/ec2/instance-types/"
+    >instance types<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  that support "Enhanced Networking".
+  For access to S3 to work better, ERDDAP should cache the files locally as needed instead of 
+  reading the remote S3 data via byte ranges. Currently, ERDDAP doesn't support that.
+
+  <p>For This To Work ...
+  <br>The remote server must support HTTP range requests.
+  It is usually Apache that handles this. 
+  By default, Apache supports range requests, but this feature may have been disabled.
+  You can use 
+  <a href="http://curl.haxx.se">curl<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  to test if a file can be accessed by range requests, via
+  <br><tt>curl --head <i>fileUrl</i></tt>
+<br>If a file is accessible via byte range requests (Accept-Ranges), 
+the response will include the line 
+  <br><tt>Accept-Ranges: bytes</tt>
+  <br>If you are the administer for the server and the server doesn't support 
+  range requests,
+  you can enable them -- search the web for advice on how to do this in Apache.
+
+  <p>To Set This Up in ERDDAP ...
+  <br>Enter the URL+baseDirectory in the &lt;fileDir&gt; tag for the dataset.
+  ERDDAP will notice that the fileDir starts with http://, https://, or ftp://,
+  and will try to read the remote directory information. 
+  It may fail because ERDDAP can't yet read directory information from all types
+  of remote directories. (If so, send us the URL.)
+  You may need to use the rarely used &lt;pathRegex&gt; tag to specify a 
+  regular expression which limits which paths (which subdirectories)
+  will be included in the dataset.
+
+  <p><a name="accessingErddapFiles">Accessing</a> ERDDAP's "files" via byte range requests
+  <br>Flipping this around, given that ERDDAP has a /files/ system to make
+  source files accessible and also that you can (in theory) think of a dataset 
+  in ERDDAP as a giant .nc file by appending ".nc" to the base OPenDAP URL
+  for a given dataset (e.g., http://myserver.org/erddap/griddap/datasetID.nc
+  and also by adding a ?query after that to specify a subset),
+  it is reasonable to ask whether you can use netcdf-java, Ferret, or some other 
+  NetCDF client software to read data via HTTP Range Requests from ERDDAP.
+  The answer is "no". ERDDAP does not support that. 
+  For the files in the /files/ system, that is mostly because the /files/ system
+  is a virtual file system created by ERDDAP which doesn't support range requests.
+  And trying to access datasetID.nc (for the whole dataset or a ?query subset) 
+  as a file via range requests doesn't work partly because it is a virtual file.
+  <br>Instead, if you want to do this, download the source file(s) from the /files/ system
+  or the .nc?query subset file to your computer and use netcdf-java, Ferret, 
+  or some other NetCDF client software to read the (now) local file(s).
+  That will be vastly more efficient because
+  there will be just one big request over the internet to the server,
+  instead of hundreds or thousands of tiny requests.
+
 <li><a name="EDDGridFromFiles_CachedFileInformation"><b>Cached File Information</b></a> - 
   When an EDDGridFromFiles dataset is first loaded, 
   EDDGridFromFiles reads information from all of the relevant files 
@@ -2044,6 +2214,7 @@ or Global Metadata</b></a> -
 <pre>
 &lt;dataset type="EDDGridFrom...Files" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For EDDGridFromFiles subclasses, 
@@ -2181,11 +2352,12 @@ each data file before EDDGridFromFiles looks at the files:
       (16 bit) variable.
   <li>It converts _FillValue and missing_value values to be NaN's
       (or MAX_VALUE for integer data types).
+  <li>It converts time and timestamp values to "seconds since 1970-01-01T00:00:00Z".
   </ul>
 The big advantage of this class is that it provides a way to deal 
 with different values of 
-scale_factor, add_offset, _FillValue, or missing_value in different files in a 
-collection.
+scale_factor, add_offset, _FillValue, missing_value, or time units
+in different files in a collection.
 Otherwise, you would have to use a tool like 
 <a rel="help" href="#NcML">NcML</a> or
 <a rel="help" href="#NCO">NCO</a>
@@ -2200,6 +2372,7 @@ cd to
 <br><tt><i>bigParentDirectory</i>/dataset/<i>last2Letters</i>/<i>datasetID</i>/</tt>
 <br>where <tt><i>last2Letters</i></tt> is the last 2 letters of the datasetID,
 <br>and delete all of the files in that directory.
+
 
 <p><a name="EDDGridLonPM180"><b>EDDGridLonPM180</b></a> 
 modifies the longitude values of a child (enclosed) EDDGrid dataset 
@@ -2312,6 +2485,7 @@ with the 0-360 dataset to forcibly disable the WMS service for that dataset.
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For EDDGridFromDap, 
     this gets the remote .dds and then gets the new leftmost dimension values. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -2359,6 +2533,7 @@ aggregates two or more EDDGrid datasets (the children) side by side.
 <pre>
 &lt;dataset type="EDDGridSideBySide" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -2470,6 +2645,7 @@ dimension and another child might have 365 values (for 2005) for the time dimens
     ascending values for the aggregated dimension. --&gt;
   &lt;matchAxisNDigits&gt;...&lt;/ensureAxisValuesAreEqual&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -2633,6 +2809,7 @@ of another EDDGrid's data and serves data from the local copy.
 <pre>
 &lt;dataset type="EDDGridCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a>true|false(default)&lt;/accessibleViaFiles&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
@@ -2675,6 +2852,7 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
     &lt;!- - If you read the XML response from the sourceUrl, the source code (for example, prbo05) 
     is the value from one of the &lt;resource&gt;&lt;code&gt; tags. - -&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!- - 0 or 1 - - &gt;
@@ -2711,8 +2889,9 @@ handles data from one Cassandra table.
     it separately.
   <li>Carefully read all of this document's information about EDDTableFromCassandra.
     Some of the details are very important.
-  <li>The Cassandra Java driver is intended to work with Cassandra 2+.
-     If you are using Cassandra 1.2.x, you must edit the cassandra.yaml file for 
+  <li>The Cassandra Java driver is intended to work with Apache Cassandra (1.2+) 
+     and DataStax Enterprise (3.1+).
+     If you are using Apache Cassandra 1.2.x, you must edit the cassandra.yaml file for 
      each node to set <tt>start_native_transport: true</tt>, then restart each node.
      <!-- http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/driverDependencies_r.html -->
   <li>We strongly recommend using the
@@ -2733,18 +2912,16 @@ handles data from one Cassandra table.
       the program will display a list of tables in that keyspace and their columns.
     </ol>
   <li><a name="CassandraQuotes">Case-insensitive Keyspace and Table Names</a> -
-    <br>Cassandra and ERDDAP treat keyspace and table names 
-    in a case-insensitive way.
+    <br>Cassandra treats keyspace and table names in a case-insensitive way.
     Because of this, you MUST NEVER use a reserved word (but with a different case)
     as a Cassandra keyspace or table name.
   <li>Case-insensitive Column Names - 
-    <br>By default, Cassandra and ERDDAP treat column names in a case-insensitive way.
+    <br>By default, Cassandra treats column names in a case-insensitive way.
     If you use one of Cassandra's reserved words as a column name (please don't!),
     you MUST use 
     <br><tt>&lt;columnNameQuotes&gt;"&lt;columnNameQuotes&gt;</tt> 
-    <br>in 
-    datasets.xml for this dataset so that Cassandra and ERDDAP will treat the 
-    column names in a case-sensitive way.
+    <br>in datasets.xml for this dataset so that Cassandra and ERDDAP will treat 
+    the column names in a case-sensitive way.
     This will likely be a massive headache for you, because it is hard to determine
     the case-sensitive versions of the column names -- Cassandra almost always
     displays the column names as all lower-case, regardless of the true case.
@@ -2892,7 +3069,7 @@ handles data from one Cassandra table.
     <br>Don't use quotes for a numeric column, for example, <tt>deviceid=1007</tt> 
     <br>Do use quotes for a string column, for example, <tt>stationid="Point Pinos"</tt>
 
-  <li>Dataset Default Sort Order - the order of the partition key &lt;dataVariable&gt;'s
+  <li>Dataset Default Sort Order - The order of the partition key &lt;dataVariable&gt;'s
     in datasets.xml determines the default sort order of the results from Cassandra.
     Of course, users can request a different sort order for a given set of results
     by appending <tt>&amp;orderBy("<i>comma-separated list of variables</i>")</tt>
@@ -3311,6 +3488,7 @@ handles data from one Cassandra table.
   <a rel="help" href="#CassandraQuotes">&lt;columnNameQuotes&gt;</a>...&lt;columnNameQuotes&gt; &lt;!-- OPTIONAL. Options: [nothing] (the default) or ".
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -3360,6 +3538,7 @@ handles data from one Cassandra table.
 &lt;dataset type="EDDTableFromDapSequence" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -3877,8 +4056,11 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     sourceNames are included in the ORDER BY clause for a given user 
     request.  If this is not specified, the order of the returned 
     values in not specified. Default = "".  OPTIONAL. --&gt;
+  <a rel="help" href="#sourceCanSort">&lt;sourceCanSort&gt;</a>no(default)|partial|yes&lt;/sourceCanSort&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#sourceCanDoDistinct">&lt;sourceCanDoDistinct&gt;</a>no(default)|partial|yes&lt;/sourceCanDoDistinct&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -3930,6 +4112,7 @@ lets you create an EDDTable dataset from any EDDGrid dataset.
 <pre>
 &lt;dataset type="EDDTableFromEDDGrid" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For EDDTableFromEDDGrid, 
     this calls lowUpdate() of the underlying EDDGrid. --&gt;
@@ -4051,7 +4234,7 @@ subclasses, this dataset type does not serve data from within the files.
         &lt;destinationName&gt;day&lt;/destinationName&gt;
         &lt;dataType&gt;int&lt;/dataType&gt;
         &lt;addAttributes&gt;
-            &lt;att name="extractRegex"&gt;jplMURSST.{6}(..).{6}\\.png&lt;/att&gt;
+            &lt;att name="extractRegex"&gt;jplMURSST.{6}(..).{6}\.png&lt;/att&gt;
             &lt;att name="extractGroup" type="int"&gt;1&lt;/att&gt;
             &lt;att name="ioos_category"&gt;Time&lt;/att&gt;
         &lt;/addAttributes&gt;
@@ -4095,6 +4278,7 @@ subclasses, this dataset type does not serve data from within the files.
 <pre>
 &lt;dataset type="EDDTableFromFileNames" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -4342,30 +4526,53 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   so that there are never a huge number of files in a given directory.
   <br>&nbsp;
 
+<li><b>Remote Directories and HTTP Range Requests</b> (AKA Byte Serving, Byte Range Requests) - 
+  <br>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles,  
+  can sometimes serve data from .nc files on remote servers and accessed via HTTP
+  if the server supports
+  <a href="https://en.wikipedia.org/wiki/Byte_serving"
+    >Byte Serving<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+  via HTTP range requests (the HTTP mechanism for byte serving).
+  This is possible because netcdf-java (which ERDDAP uses to read .nc files)
+  supports reading data from remote .nc files via HTTP range requests.
+  For more information, see 
+  <a rel="help" href="#remoteDirectories">Remote Directories</a>.
+  <br>&nbsp;
+
 <li><a name="EDDTableFromFiles_MillionsOfFiles"><b>Millions of Files</b></a> -
   Some datasets have millions of source files. 
   ERDDAP can handle this, but with mixed results.
-  For many requests, ERDDAP can scan the dataset's
-  <a rel="help" href="#EDDTableFromFilesCachedFileInformation">cached file information</a>
-  and figure out that only a few of the files
-  might have data which is relevant to the request and thus respond quickly.
-  But for other requests (for example, waterTemperature=18 degrees_C)
-  where any file might have relevant data,
-  ERDDAP has to open a large number of files to see if each of the files has
-  any data which is relevant to the request.
-  The files are opened sequentially. On any operating system and any file system
-  (other than solid state drives), this takes a long time (so ERDDAP responds slowly)
-  and really ties up the file system (so ERDDAP responds slowly to other requests).
+  <ul>
+  <li>For requests that just involve variables listed in 
+    <a rel="help" href="#subsetVariables">&lt;subsetVariables&gt;</a>,
+    ERDDAP has all of the needed information already extracted from 
+    the datafiles and stored in one file, so it can respond very, very quickly.
+  <li>For other requests, ERDDAP can scan the dataset's
+    <a rel="help" href="#EDDTableFromFilesCachedFileInformation">cached file information</a>
+    and figure out that only a few of the files
+    might have data which is relevant to the request and thus respond quickly.
+  <li>But for other requests (for example, waterTemperature=18 degrees_C)
+    where any file might have relevant data,
+    ERDDAP has to open a large number of files to see if each of the files has
+    any data which is relevant to the request.
+    The files are opened sequentially. On any operating system and any file system
+    (other than solid state drives), this takes a long time (so ERDDAP responds slowly)
+    and really ties up the file system (so ERDDAP responds slowly to other requests).
+  </ul>
 
   <p>Fortunately, there is a solution.
   <ol>
   <li>Set up the dataset on a non-public ERDDAP (your personal computer?).
   <li>Create and run a script which requests a series of .ncCF files, each with 
-    a large chunk of the dataset (for example, all of the data for a given month).
-    (The request will fail if the resulting file would be greater than 2GB,
-    so choose an appropriate time span for your dataset.)
+    a large chunk of the dataset, usually a time period
+    (for example, all of the data for a given month).
+    Choose the time period so that all of the resulting files are less 
+    than 2GB (but hopefully greater than 1GB).
     If the dataset has near-real-time data, run the script to regenerate the 
-    file for the current month frequently (every 10 minutes? every hour?).
+    file for the current time period (e.g., this month) frequently 
+    (every 10 minutes? every hour?).
     Requests to ERDDAP for .ncCF files create a .nc file that uses the 
     <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
@@ -4377,9 +4584,11 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     dataset on your public ERDDAP which gets data from the .nc(CF) files.
     ERDDAP can extract data from these files very quickly.
     And since there are now dozens or hundreds (instead of millions) of files, 
-    even if ERDDAP has to open all of the files, it can do so quickly.    
+    even if ERDDAP has to open all of the files, it can do so quickly.
+    
   </ol>
-  This system works very well.
+  Yes, this system takes some time and effort to set up, but it works very, very well. 
+  Most data requests can be handled 100 times faster than before.
   <br>[Bob knew this was a possibility, but it was Kevin O'Brien who first did this
   and showed that it works well.  Now, Bob uses this for the GTSPP dataset 
   which has about 18 million source files and which ERDDAP now serves 
@@ -4440,11 +4649,11 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     forces ERDDAP to look for <tt>XYZ</tt> at the beginning of the file name.
     This causes <tt>XYZ</tt>, if found at the beginning of the file name, to be removed
     (for example, the file name <tt>XYZAble.nc</tt> becomes <tt>Able.nc</tt>).
-  <li><tt>&lt;postExtractRegex&gt;\x2Enc$&lt;/postExtractRegex&gt;</tt> 
+  <li><tt>&lt;postExtractRegex&gt;\.nc$&lt;/postExtractRegex&gt;</tt> 
     <br>The $ at the end is a regular expression special character which 
     forces ERDDAP to look for <tt>.nc</tt> at the end of the file name.
     Since . is a regular expression special character (which matches any character), 
-    it is encoded as <tt>\x2E</tt> here 
+    it is encoded as <tt>\.</tt> here 
     (because 2E is the hexadecimal character number for a period).
     This causes <tt>.nc</tt>, if found at the end of the file name, to be removed
     (for example, the partial file name <tt>Able.nc</tt> becomes <tt>Able</tt>).
@@ -4523,6 +4732,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   &lt;nDimensions&gt;...&lt;/nDimensions&gt;  &lt;!-- This was used prior to ERDDAP version 1.30, 
     but is now ignored. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For EDDTableFromFiles subclasses, 
     this uses Java's WatchDirectory system to notice new/deleted/changed files, 
@@ -4676,6 +4886,7 @@ tags in the chunk of XML for this dataset:
 <pre>
 &lt;dataset type="EDDTableFromAsciiService..." <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -4726,6 +4937,7 @@ tags in the chunk of XML for this dataset:
 &lt;dataset type="EDDTableFromMWFS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;! - - 0 or 1 - - &gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;! - - 0 or 1 - - &gt;
@@ -5025,6 +5237,7 @@ on how this class works and how to use this class.
     source code (for example, GHMP) is the value from one of the 
     &lt;resource&gt;&lt;code&gt; tags. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -5120,7 +5333,7 @@ Sensor Observation Service
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> system.
   Most ERDDAP servers express units with the 
-    <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS<img 
+    <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> system.
   If you need to convert between the two systems, you can use
@@ -5130,6 +5343,7 @@ Sensor Observation Service
 &lt;dataset type="EDDTableFromSOS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -5153,7 +5367,7 @@ Sensor Observation Service
   &lt;timeSourceFormat&gt;...&lt;/timeSourceFormat&gt;
     &lt;!-- timeSourceFormat MUST be either
     * For numeric data: a <a rel="help"
-        href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUnits<img 
+        href="http://www.unidata.ucar.edu/software/udunits/">UDUnits<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."
         /></a>-compatible string (with the format 
@@ -5257,6 +5471,80 @@ Sensor Observation Service
   for additional information on how this class works and how to use this class.
   <br>&nbsp;
 </ul>
+
+
+<p><a name="EDDTableAggregateRows"><b>EDDTableAggregateRows</b></a>
+can make an EDDTable dataset from a group of "child" EDDTable datasets.  
+<ul>
+<li>Here are some uses for EDDTableAggregateRows:
+  <ul>
+  <li>You could make an EDDTableAggregateRows dataset from two different kinds 
+    of files or data sources, for example, a dataset with data 
+    up to the end of last month stored in .ncCF files 
+    and a dataset with data for the current month stored in a relational database.
+  <li>You could make an EDDTableAggregateRows dataset to deal with a change in 
+    source files (for example, the time format changed, or 
+    a variable name changed, or dataType/scale_factor/add_offset changed). 
+    In this case, one child would get data from files made before the change
+    and the other child would get data from files made after the change.
+    This use of EDDTableAggregateRows is an alternative to using 
+    <a rel="help" href="#NcML">NcML</a> or <a rel="help" href="#NCO">NCO</a>.
+    Unless there is a distinguishing feature in the file names (so you can use
+    &lt;fileNameRegex&gt; to determine which file belongs to which child dataset),
+    you probably need to store the files for the two child datasets in different directories.
+  <li>You could make an EDDTableAggregateRows dataset which has 
+    a shared subset of variables of one or more similar but different datasets,
+    for example, a dataset which makes a Profile dataset 
+    from the combination of a Profile dataset, a TimeSeriesProfile dataset, 
+    and a TrajectoryProfile dataset 
+    (which have some different variables and some variables in common --
+    in which case you'll have to make special variants for the child datasets,
+    with just the in-common variables).
+  </ul>
+<li>The "source" 
+  <a rel="help" href="#globalAttributes"><tt>globalAttributes</tt></a> 
+  for the EDDTableAggregateRows is the combined globalAttributes from the first child dataset.
+  The EDDTableAggregateRows can have a global &lt;addAttributes&gt; to provide
+  additional global attributes or override the source global attributes.
+<li>All child datasets must have the same 
+  <a rel="help" href="#dataVariable"><tt>dataVariables</tt></a>, 
+  in the same order, with the same 
+  <a rel="help" href="#destinationName"><tt>destinationNames</tt></a>, 
+  <a rel="help" href="#dataType"><tt>dataTypes</tt></a>, 
+  <a rel="help" href="#missing_value"><tt>missing_values</tt></a>, 
+  <a rel="help" href="#FillValue"><tt>_FillValues</tt></a>, 
+  and 
+  <a rel="help" href="#units"><tt>units</tt></a>. 
+  The metadata for each variable for the EDDTableAggregateRows dataset 
+  comes variables in the first child dataset,
+  but EDDTableAggregateRows will update the 
+  <a rel="help" href="#actual_range"><tt>actual_range</tt></a> metadata
+  to be the actual range for all of the children.
+<li>Dataset Default Sort Order - The order of the child datasets determines the 
+  overall default sort order of the results. 
+  Of course, users can request a different sort order 
+  for a given set of results by appending 
+  <tt>&amp;orderBy("<i>comma-separated list of variables</i>")</tt>
+  to the end of their query.
+<li><a name="EDDTableAggregateRowsSkeletonXML">Skeleton</a> XML - The skeleton XML for an EDDTableAggregateRows dataset is:
+<pre>
+&lt;dataset type="EDDTableAggregateRows" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
+  <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a>true|false(default)&lt;/accessibleViaFiles&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. --&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
+  &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 1 or more --&gt;
+&lt;/dataset&gt;
+</pre>
+&nbsp;
+</ul>
+
 
 
 <p><a name="EDDTableCopy"><b>EDDTableCopy</b></a> can make a local 
@@ -5418,6 +5706,7 @@ Sensor Observation Service
 <pre>
 &lt;dataset type="EDDTableCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a>true|false(default)&lt;/accessibleViaFiles&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
@@ -5440,10 +5729,10 @@ Sensor Observation Service
 
 Here are detailed descriptions of common tags and attributes.
 <ul>
-<li><a name="convertToPublicSourceUrl"><tt><b>&lt;convertToPublicSourceUrl /&gt;</b></tt></a>
-    is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
+<li><a name="convertToPublicSourceUrl"><tt><b>&lt;convertToPublicSourceUrl&gt;</b></tt></a>
+  is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
     "<tt>from</tt>" and a "<tt>to</tt>" attribute which specify how to convert 
-      a matching local sourceUrl into a public sourceUrl.
+      a matching local sourceUrl (usually an IP number) into a public sourceUrl (a domain name).
     "<tt>from</tt>" must have the form "<tt>[something]//[something]/</tt>".
       There can be 0 or more of these tags.
     For more information see <a rel="help" href="#sourceUrl"><tt>&lt;sourceUrl&gt;</tt></a>.
@@ -5452,7 +5741,16 @@ Here are detailed descriptions of common tags and attributes.
     <br>will cause a matching local sourceUrl (such as
     http://192.168.31.18/thredds/dodsC/satellite/BA/ssta/5day)
     <br>into a public sourceUrl (http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day).
-    <br>&nbsp;
+
+  <p>But, for security reasons and reasons related to the subscription system, 
+    <b>DON'T USE THIS TAG!</b>
+  <br>Instead, always use the public domain name in the <tt>&lt;sourceUrl&gt;</tt> tag
+  and use the 
+  <a rel="help" href="http://linux.die.net/man/5/hosts">/etc/hosts table</a>
+  on your server to convert local domain names 
+  to IP numbers without using a DNS server. 
+  You can test if a domain name is properly converted into an IP number by using:
+  <br><tt>ping <i>some.domain.name</i></tt>
 
 <li><a name="requestBlacklist"><tt><b>&lt;requestBlacklist&gt;</b></tt></a>
     <a name="frequentCrashes">is</a> an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
@@ -5512,58 +5810,56 @@ Here are detailed descriptions of common tags and attributes.
 
 <li><a name="user"><tt><b>&lt;user&gt;</b></tt></a>
   is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag that identifies a user's
-  username, password, and roles (a comma-separated list).
+  username, password (if authentication=custom), and roles (a comma-separated list).
+  The use of username and password varies slightly based on the value of 
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authentication"
+  ><tt>&lt;authentication&gt;</tt></a> in your ERDDAP's setup.xml file.
   <ul>
   <li>This is part of ERDDAP's 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">security system</a>
     for restricting access to some datasets to some users.
   <li>Make a separate <tt>&lt;user&gt;</tt> tag for each user.
-  <li>If setup.xml's <tt>&lt;authentication&gt;</tt> is <tt>openid</tt>, 
-    use the user's OpenID URL as the username
-    and don't specify a password.
-    For example, if the user has a Gmail account (John.Smith@gmail.com),
-    then the user automatically has an OpenID URL (http://openid-provider.appspot.com/John.Smith),
-    so the <tt>&lt;user&gt;</tt> tag would be
-    <br><tt>&lt;user username="http://openid-provider.appspot.com/John.Smith" roles="JASmith, JASmithGroup"/&gt;</tt>
-    <br>OpenID is great because it frees you, the ERDDAP admin, from managing and dealing with passwords.
-    A user's OpenID URL is public information, so there is no need to keep them secret.
-  <li>The comma-separated list of roles specifies which roles you are assigning to the user.
-    The "admin" role has a special meaning -- it identifies the ERDDAP administrator.
-    Users with the admin role have special privileges.  But admins don't automatically get
-    access to any of the private datasets.
-  <li>The user will then have access to datasets that list one of these roles in the dataset's 
-    <a rel="help" href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a> tag.
-    <br>Thus, this is 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Role-based_access_control">role-based access control<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.
-  <li>If there is no <tt>&lt;user&gt;</tt> tag for a client, s/he will only be able to access public datasets,
+  <li>If there is no <tt>&lt;user&gt;</tt> tag for a client, s/he will only be 
+    able to access public datasets,
     i.e., datasets which don't have an <a rel="help" href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
     tag.
-  <li>If setup.xml's <tt>&lt;authentication&gt;</tt> is <tt>custom</tt>, 
-    you need to specify the user and the
-    password (at least 7 characters long) attributes in the <tt>&lt;user&gt;</tt> tag.
+  <li><tt>username</tt>
+    <br>For authentication=custom, the username is usually a combination of letters, 
+      digits, underscores, and periods.
+    <br>For authentication=email, the username is the user's email address.
+      It may be any email address.
+    <br>For authentication=google, the username is the user's Google email address.
+      This includes Google-managed accounts like @noaa.gov accounts.    
+  <li><tt>password</tt>
+    <br>For authentication=email and google, don't specify a password attribute.
+    <br>For authentication=custom, you must specify a password attribute for each user.
     <ul>
     <li>The passwords that users enter are case sensitive.
     <li>setup.xml's <tt>&lt;passwordEncoding&gt;</tt> determines how passwords are stored in the
       <tt>&lt;user&gt;</tt> tags in datasets.xml.  In order of increasing security, the options are: 
       <ul>
-      <li>plaintext (NOT RECOMMENDED!) 
       <li><a rel="help" href="http://en.wikipedia.org/wiki/MD5">MD5<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
-      - the stored form of the password is made from 
-        <tt>MD5(<i>password</i>)</tt>
-      <li>UEPMD5 - (the default) the stored form of the password is made from 
-        <tt>MD5(<i>UserName</i>:ERDDAP:<i>password</i>)</tt>
-        The UserName and "ERDDAP" are used to 
+      (not recommended) - for the password attribute, specify the MD5 hash digest
+        of the user's password.
+      <li>UEPMD5 (not recommended) - for the password attribute, specify the 
+        MD5 hash digest of <i>username</i>:ERDDAP:<i>password</i> .
+        The username and "ERDDAP" are used to 
           <a rel="help" href="http://en.wikipedia.org/wiki/Salt_(cryptography)">salt<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
-      the hash value, making
-        it more difficult to decode. 
+        the hash value, making it more difficult to decode. 
+      <li><a rel="help" href="http://en.wikipedia.org/wiki/SHA-2">SHA256<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+        (not recommended) - for the password attribute, specify the SHA-256 hash digest
+        of the user's password.
+      <li>UEPSHA256 (default, recommended) - for the password attribute, 
+        specify the SHA-256 hash digest of <i>username</i>:ERDDAP:<i>password</i> .
+        The username and "ERDDAP" are used to salt
+        the hash value, making it more difficult to decode. 
       </ul>
-      (See  in setup.xml.)
     <li>On Windows, you can generate MD5 password digest values by downloading an MD5 program 
       (such as <a rel="help" href="http://www.fourmilab.ch/md5/">MD5<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -5664,6 +5960,26 @@ for details.
     This dataset won't be visible to users who aren't logged in.
     <br>&nbsp;
   </ul> 
+
+<li><a name="graphsAccessibleTo"><tt><b>&lt;graphsAccessibleTo&gt;</b></tt></a>
+    is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag which
+    determines whether graphics and metadata for the dataset are available to the public.
+    It offers a way to partially override the dataset's
+    <a rel="help" href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a> setting.
+    The allowed values are:
+    <ul>
+    <li><tt>auto</tt> - This value (or the absence of a 
+      &lt;graphsAccessibleTo&gt; tag for the dataset) makes access
+      to graphs and metadata from the dataset mimic the dataset's
+      <tt>&lt;accessibleTo&gt;</tt> setting.
+      <br>So if the dataset is private, its graphs and metadata will be private.
+      <br>And if the dataset is public, its graphs and metadata will be public.
+    <li><tt>public</tt> - This setting makes the dataset's graphs and metadata
+      accessible to anyone, even users who aren't logged in,
+      even if the dataset is otherwise private because it has an 
+      <tt>&lt;accessibleTo&gt;</tt> tag.
+      <br>&nbsp;
+    </ul>
 
 <li><a name="accessibleViaFiles"><tt><b>&lt;accessibleViaFiles&gt;</b></tt></a>
     is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag for 
@@ -5831,13 +6147,16 @@ for more information.
         <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
-        In practice, this can be very minimal percent encoding: 
-        all you have to do is convert special characters in the right-hand-side values of any constraints:
-        % into %25, &amp; into %26, ", into %22, = into %3D, + into %2B, and space into %20 (or +)
-        and convert all characters above #126 to their %HH form (where HH is the 2-digit hex value).
-        Unicode characters above #255 must be UTF-8 encoded and then each byte must be converted to
-        %HH form (ask a programmer for help).
-      <li>Since datasets.xml is an XML file, you also need to encode '&amp;', '&lt;', and '&gt;' in the URL
+        You just need to encode special characters in the right-hand-side values of any
+        constraints into the form %HH, where HH is the 2 digit hexadecimal value of the character.
+        Usually, you just need to convert a few of the punctuation characters: % into %25, 
+        &amp; into %26, ", into %22, = into %3D, + into %2B, | into %7C, space into %20,
+        and convert all characters above #127 into their UTF-8 form and then percent encode
+        each byte of the UTF-8 form into the %HH format (ask a programmer for help).
+        But in some situations, you need to percent encode all characters other than
+        A-Za-z0-9_-!.~'()* .
+      <li>Since datasets.xml is an XML file, you then need to encode 
+        '&amp;', '&lt;', and '&gt;' in the URL
         as '&amp;amp;', '&amp;lt;', and '&amp;gt;'.
       <li>Example: For a URL that you might type into a browser as:
         <tt>http://www.company.com/webService?department=R%26D&amp;param2=value2</tt> 
@@ -6098,6 +6417,65 @@ for more information.
     <br>&nbsp;
   </ul>
 
+<li><a name="sourceCanDoDistinct"><tt><b>&lt;sourceCanDoDistinct&gt;</b></tt></a>
+  is an OPTIONAL tag within an EDDTableFromDatabase <tt>&lt;dataset&gt;</tt> tag that 
+  specifies if the source database should handle &amp;distinct() constraints
+  in user queries.
+  <ul>
+  <li>This tag is OPTIONAL. Valid values are <tt>no</tt> (ERDDAP handles distinct; the default),
+    <tt>partial</tt> (the source handles distinct and ERDDAP handles it again),
+    and <tt>yes</tt> (the source handles distinct).
+  <li>If you are using <tt>no</tt> and ERDDAP is running out of memory when
+    handling distinct, use <tt>yes</tt>.
+  <li>If you are using <tt>yes</tt> and the source database handles distinct too slowly,
+    use <tt>no</tt>.
+  <li><tt>partial</tt> gives you the worst of both: 
+    it is slow because the database handling of distinct is slow and
+    it may run out of memory in ERDDAP.
+  <li>Note that databases interpret <tt>DISTINCT</tt> as a request for just
+    unique rows of results, whereas ERDDAP interprets it as a request for
+    a sorted list of unique rows of results.
+    If you set this to <tt>partial</tt> or <tt>yes</tt>, ERDDAP automatically
+    also tells the database to sort the results. 
+  <li>One small difference in the results: 
+    <br>With <tt>no|partial</tt>, ERDDAP will sort "" at start of results (before non-"" strings).
+    <br>With <tt>yes</tt>, the database may (Postgres will) sort "" at end of results 
+      (after non-"" strings).
+    <br>I will guess that this will also affect the sorting of short words
+      vs. longer words that start with the short word.
+      For example, ERDDAP will sort "Simon" before "Simons".
+  <li>An example is:
+    <br><tt>&lt;sourceCanDoDistinct&gt;yes&lt;/sourceCanDoDistinct&gt;</tt>
+    <br>&nbsp;
+  </ul>
+
+<li><a name="sourceCanOrderBy"><tt><b>&lt;sourceCanOrderBy&gt;</b></tt></a>
+  is an OPTIONAL tag within an EDDTableFromDatabase <tt>&lt;dataset&gt;</tt> tag that 
+  specifies if the source database should handle &amp;orderBy (and variants) constraints
+  in user queries.
+  <ul>
+  <li>This tag is OPTIONAL. Valid values are <tt>no</tt> (ERDDAP handles orderBy; the default),
+    <tt>partial</tt> (the source handles orderBy and ERDDAP handles it again),
+    and <tt>yes</tt> (the source handles orderBy).
+  <li>If you are using <tt>no</tt> and ERDDAP is running out of memory when
+    handling orderBy, use <tt>yes</tt>.
+  <li>If you are using <tt>yes</tt> and the source database handles orderBy too slowly,
+    use <tt>no</tt>.
+  <li><tt>partial</tt> gives you the worst of both: 
+    it is slow because the database handling of orderBy is slow and
+    it may run out of memory in ERDDAP.
+  <li>One small difference in the results: 
+    <br>With <tt>no|partial</tt>, ERDDAP will sort "" at start of results (before non-"" strings).
+    <br>With <tt>yes</tt>, the database may (Postgres will) sort "" at end of results 
+      (after non-"" strings).
+    <br>I will guess that this will also affect the sorting of short words
+      vs. longer words that start with the short word.
+      For example, ERDDAP will sort "Simon" before "Simons".
+  <li>An example is:
+    <br><tt>&lt;sourceCanOrderBy&gt;yes&lt;/sourceCanOrderBy&gt;</tt>
+    <br>&nbsp;
+  </ul>
+
 <li><a name="sourceNeedsExpandedFP_EQ"><tt><b>&lt;sourceNeedsExpandedFP_EQ&gt;</b></tt></a>
   is an OPTIONAL tag within an EDDTable <tt>&lt;dataset&gt;</tt> tag that 
   specifies (true (the default) or false) if the source needs help with queries with 
@@ -6141,12 +6519,14 @@ for more information.
      <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
-    In practice, this can be very minimal percent encoding: 
-    all you have to do is convert special characters in the right-hand-side values of any constraints:
-    % into %25, &amp; into %26, ", into %22, = into %3D, + into %2B, and space into %20 (or +)
-    and convert all characters above #126 to their %HH form (where HH is the 2-digit hex value).
-    Unicode characters above #255 must be UTF-8 encoded and then each byte must be converted 
-    to %HH form (ask a programmer for help).
+        You just need to encode special characters in the right-hand-side values of any
+        constraints into the form %HH, where HH is the 2 digit hexadecimal value of the character.
+        Usually, you just need to convert a few of the punctuation characters: % into %25, 
+        &amp; into %26, ", into %22, = into %3D, + into %2B, | into %7C, space into %20,
+        and convert all characters above #127 into their UTF-8 form and then percent encode
+        each byte of the UTF-8 form into the %HH format (ask a programmer for help).
+        But in some situations, you need to percent encode all characters other than
+        A-Za-z0-9_-!.~'()* .
   <li>Since datasets.xml is an XML file, you MUST also encode '&amp;', '&lt;', and '&gt;' in the URL
     as '&amp;amp;', '&amp;lt;', and '&amp;gt;'.
   <li>For most dataset types, ERDDAP adds the original sourceUrl (the "localSourceUrl" in the source code)
@@ -6187,6 +6567,8 @@ for more information.
       subtags within <tt>addAttributes</tt> is not important.
     <li>The <tt>&lt;att&gt;</tt> subtag format is 
       <br><tt>&lt;att name="<i>name</i>" [type="<i>type</i>"] &gt;<i>value</i>&lt;/att&gt;</tt>
+    <li>The destination name of all attributes MUST start with a letter (A-Z, a-z)
+      and MUST contain only the characters A-Z, a-z, 0-9, or '_'.
     <li>If an <tt>&lt;att&gt;</tt> subtag has no value or a value of <tt>null</tt>, 
       that attribute will be removed from the combined attributes.
       <br>For example, <tt>&lt;att name="rows" /&gt;</tt> will remove <tt>rows</tt> from the combined attributes.
@@ -6239,7 +6621,9 @@ for more information.
        which applies to 
        global and variable <tt><b>&lt;addAttributes&gt;</b></tt>.
 
-     <li><a rel="help" href="http://www.fgdc.gov/">FGDC<img 
+     <li><a rel="help"
+     href="http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html"
+     >FGDC<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> and
        <a rel="help" href="http://en.wikipedia.org/wiki/Geospatial_metadata">ISO&nbsp;19115-2/19139<img 
@@ -6247,7 +6631,8 @@ for more information.
         title="This link to an external web site does not constitute an endorsement."/></a>
        Metadata
        - Normally, ERDDAP will automatically generate
-       ISO 19115 and FGDC XML metadata files for each dataset using information
+       ISO 19115-2/19139 and FGDC (FGDC-STD-001-1998) XML metadata files for each 
+       dataset using information
        from the dataset's metadata. So, <b>good dataset metadata leads to good ERDDAP-generated 
        ISO 19115 and FGDC metadata. Please consider putting lots of time and effort into
        improving your datasets' metadata (which is a good thing to do anyway).</b>
@@ -6653,6 +7038,16 @@ for more information.
         is appropriate, ERDDAP will automatically use it to create a
         <tt>featureType</tt> attribute.  So there is no need for you to add it.
 
+        <p>However, if you are using 
+        <a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>
+        to create a dataset from files that follow the 
+        <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG) standard<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+        the files themselves must have <tt>featureType</tt> correctly defined,
+        so that ERDDAP can read the files correctly.
+        That is part of the CF DSG requirements for that type of file.
+
       <li><a name="history"><b>history</b></a> 
         (from the
         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
@@ -6693,13 +7088,14 @@ for more information.
           <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
-          In practice, this can be very minimal percent encoding: 
-          all you have to do is convert special characters in the right-hand-side values of
-          any constraints: % into %25, &amp; into %26, " into %22, = into %3D, + into %2B,
-          and space into %20 (or +) and convert all characters above #126 to their %HH form
-          (where HH is the 2-digit hex value).
-          Unicode characters above #255 must be UTF-8 encoded and then each byte must be
-          converted to %HH form (ask a programmer for help).
+        You just need to encode special characters in the right-hand-side values of any
+        constraints into the form %HH, where HH is the 2 digit hexadecimal value of the character.
+        Usually, you just need to convert a few of the punctuation characters: % into %25, 
+        &amp; into %26, ", into %22, = into %3D, + into %2B, | into %7C, space into %20,
+        and convert all characters above #127 into their UTF-8 form and then percent encode
+        each byte of the UTF-8 form into the %HH format (ask a programmer for help).
+        But in some situations, you need to percent encode all characters other than
+        A-Za-z0-9_-!.~'()* .
         <li>Since datasets.xml is an XML file, you MUST also encode '&amp;', '&lt;', and '&gt;' in the
           URL as '&amp;amp;', '&amp;lt;', and '&amp;gt;'.
         <li><tt>infoUrl</tt> is unique to ERDDAP. It is not from any metadata standard.
@@ -6921,6 +7317,13 @@ for more information.
           <br><tt>&lt;att name="subsetVariables"&gt;station_id, longitude,
             latitude&lt;/att&gt;</tt>
           <br>so that the values are sorted by station_id.
+        <li>The suggested usage is: include the feature variables 
+          (variables with information about the stations, profiles, and/or trajectories) 
+          in the subsetVariables list,
+          and don't include the data variables 
+          (e.g., time, temperature, salinity, current speed)
+          in the list.
+          But it is your choice which variables to include in the subsetVariables list.
         <li>If the number of distinct combinations of these variables is greater than about 1,000,000,
           you should consider restricting the subsetVariables that you specify to reduce the 
           number of distinct combinations to below 1,000,000; otherwise, 
@@ -6929,6 +7332,8 @@ for more information.
           you should consider not including that variable in the list of subsetVariables;
           otherwise, it takes a long time to transmit the 
           <i>datasetID</i>.subset, <i>datasetID</i>.graph, and <i>datasetID</i>.html web pages.
+          A compromise is: remove variables from the list that users are not
+          likely to select from a drop down list.
         <li>You should test each dataset to see if the subsetVariables setting is okay.
           If the source data server is slow and it takes too long (or fails) to download the data,
           either reduce the number of variables specified or remove the subsetVariables global attribute.
@@ -7612,6 +8017,14 @@ for more information.
           <br><tt>&nbsp;&nbsp;destinationValue = sourceValue * scale_factor + add_offset</tt>
           <br>Or, stated another way:
           <br><tt>&nbsp;&nbsp;unpackedValue = packedValue * scale_factor + add_offset</tt>
+        <li>If you have a collection of gridded .nc files where, for a given variable, 
+          some files use one combination of scale_factor + add_offset, 
+          and one or more other subsets of the files use other
+          combinations of scale_factor + add_offset, 
+          you can use
+          <a rel="help" href="#EDDGridFromNcFilesUnpacked">EDDGridFromNcFilesUnpacked</a>.
+          It unpacks the values at a lower level, thereby hiding the differences, 
+          so that you can make one dataset from the collection of heterogeneous files.
         </ul>
 
       <li><a name="standard_name"><b>standard_name</b></a> 
@@ -7722,7 +8135,7 @@ for more information.
           and is STRONGLY RECOMMENDED for other variables whenever appropriate (which is
           almost always).
         <li>In general, we recommend 
-          <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUnits<img 
+          <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUnits<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>-compatible
           units which is required by the 
@@ -7762,7 +8175,7 @@ for more information.
             <tt><a rel="help" href="#units">units</a></tt> which is either 
           <ul>
           <li>For time axis variables or time data variables with numeric data: 
-            <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUnits<img 
+            <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUnits<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>-compatible
             string (with the format <tt><i>units</i> since <i>baseTime</i></tt>) describing how to
@@ -7772,14 +8185,14 @@ for more information.
             <br>ms, msec, msecs, millis, millisec, millisecs, millisecond, milliseconds, 
             <br>s, sec, secs, second, seconds, m, min, mins, minute, minutes, h, hr, hrs, hour, hours, 
             <br>d, day, days, week, weeks, mon, mons, month, months, yr, yrs, year, or years.
-            <br>Technically, ERDDAP does NOT follow the CF standard when converting "years since" and
-              "months since" time values to "seconds since". The CF standard defines a year as a 
-              fixed, single value: 3.15569259747e7 seconds. And CF defines a month as year/12.
+            <br>Technically, ERDDAP does NOT follow the UDUNITS standard when converting "years since" and
+              "months since" time values to "seconds since". The UDUNITS standard defines a year as a 
+              fixed, single value: 3.15569259747e7 seconds. And UDUNITS defines a month as year/12.
               Unfortunately, most/all datasets that we have seen that use "years since" or 
               "months since" clearly intend the values to be calendar years or calendar months. 
               For example, 3 "months since 1970-01-01" is usually intended to mean 1970-04-01.
               So, ERDDAP interprets "years since" and "months since" as calendar years and months,
-              and does not strictly follow the CF standard.
+              and does not strictly follow the UDUNITS standard.
              
              <p>Ideally, the <tt><i>baseTime</i></tt> is an ISO 8601:2004(E) formatted date time string <br>(yyyy-MM-dd'T'HH:mm:ssZ, for example, 1970-01-01T00:00:00Z). 
              ERDDAP tries to work with a wide range of variations of that ideal format, for example, "1970-1-1 0:0:0" is supported.
@@ -7824,7 +8237,17 @@ for more information.
           <a rel="help" href="#destinationName">destinationName</a> <tt>time</tt>
           and their <tt>units</tt> metadata (which must be suitable).
 
-          <p><a name="timeStampVariable">Any</a> other variable 
+          <p>Different Time Units in Different Gridded .nc Files -
+          If you have a collection of gridded .nc files where, for the time variable, 
+          one subset of the files uses different time units 
+          than one or more other subsets of the files, 
+          you can use
+          <a rel="help" href="#EDDGridFromNcFilesUnpacked">EDDGridFromNcFilesUnpacked</a>.
+          It converts time values to "seconds since 1970-01-01T00:00:00Z" 
+          at a lower level, thereby hiding the differences, 
+          so that you can make one dataset from the collection of heterogeneous files.
+
+          <p><a name="timeStampVariable">TimeStamp Variables</a> - Any other variable 
           (axisVariable or dataVariable, in an EDDGrid or EDDTable dataset)
           can be a timeStamp variable. 
           Timestamp variables are variables that have time-related units and time data,
@@ -7914,7 +8337,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.66
+<p>ERDDAP, Version 1.70
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;

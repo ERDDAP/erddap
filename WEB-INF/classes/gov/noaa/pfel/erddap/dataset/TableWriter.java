@@ -13,6 +13,7 @@ import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.EDV;
 
 /**
  * TableWriter provides a way to write a table to an outputStream
@@ -39,8 +40,17 @@ public abstract class TableWriter {
      */
     public boolean noMoreDataPlease = false;
 
+    /**
+     * The code that creates the TableWriter may set this to true to 
+     * supress/delay the finish() method (and the finish() part of
+     * writeAllAndFinish().
+     */
+    public boolean ignoreFinish = false;
+
     //these are set by the constructor
     protected long time;
+    protected EDD edd;
+    protected String newHistory;
     protected OutputStreamSource outputStreamSource;
 
     //these are set the first time ensureCompatible is called
@@ -53,12 +63,19 @@ public abstract class TableWriter {
     /**
      * The constructor.
      *
+     * @param tEdd will be used as the source of metadata if not null.
+     *    If null (e.g., when Erddap.java uses TableWriters), metadata will be
+     *    from the first table sent to writeSome().
+     * @param tNewHistory usually from getNewHistory(requestUrl, userDapQuery).
+     *    May be old history or null.
      * @param tOutputStreamSource  the source of an outputStream that receives the 
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      */
-    public TableWriter(OutputStreamSource tOutputStreamSource) {
+    public TableWriter(EDD tEdd, String tNewHistory, OutputStreamSource tOutputStreamSource) {
         time = System.currentTimeMillis();
+        edd = tEdd;
+        newHistory = tNewHistory;
         outputStreamSource = tOutputStreamSource;
     }
 
@@ -77,18 +94,36 @@ public abstract class TableWriter {
         for (int c = 0; c < nColumns; c++)
             tColumnTypes[c] = table.getColumn(c).elementClass();
 
-        //first time this is called?
+        //first time this is called? note column names, types, and metadata
         if (columnNames == null) {
             columnNames = tColumnNames;
             columnTypes = tColumnTypes;
             columnAttributes = new Attributes[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                //no need to make copies (clones) off atts since standardizeResultsTable
-                //has made copies for the table
-                columnAttributes[col] = table.columnAttributes(col); 
+                Attributes colAttsClone = null;
+                if (edd != null) {
+                    try {  //findVar throws exception if not found
+                        EDV edv = edd.findVariableByDestinationName(columnNames[col]); //finds axis or dataVariable
+                        colAttsClone = new Attributes(edv.combinedAttributes());
+                    } catch (Throwable t) {
+                        //rare, e.g., happens with added "Count" and "Percent"
+                        //columns in countTable for "2 = viewDistinctDataCounts" 
+                        //for EDDTable.respondToSubsetQuery.
+                        String2.log("TableWriter.ensureCompatible didn't find colName=" + 
+                            columnNames[col] + " in dataset=" + edd.datasetID());
+                    }
+                }
+                if (colAttsClone == null)
+                    //no need to make copies (clones) of atts since standardizeResultsTable
+                    //has made copies for the table
+                    colAttsClone = table.columnAttributes(col);
+                columnAttributes[col] = colAttsClone; 
                 //String2.log("\nTableWriter attributes " + columnNames[col] + "\n" + columnAttributes[col]);
             }
-            globalAttributes = table.globalAttributes();
+            if (edd == null) 
+                 globalAttributes = table.globalAttributes(); //table already has deep clone
+            else globalAttributes = new Attributes(edd.combinedGlobalAttributes()); //make deep clone
+            globalAttributes.set("history", newHistory); //if null, it won't be set.
             return;
         }
 
@@ -146,6 +181,7 @@ public abstract class TableWriter {
 
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
@@ -161,6 +197,10 @@ public abstract class TableWriter {
      */
     public void writeAllAndFinish(Table table) throws Throwable {
         writeSome(table);
+        if (ignoreFinish) {
+            table.removeAllRows();
+            return;
+        }
         finish();
     }
 

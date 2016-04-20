@@ -46,10 +46,10 @@ public class TableWriterDodsAscii extends TableWriter {
      *     The ouputStream is not procured until there is data to be written.
      * @param tSequenceName  e.g., "erd_opendap_globec_bottle"
      */
-    public TableWriterDodsAscii(OutputStreamSource tOutputStreamSource, 
-        String tSequenceName) {
+    public TableWriterDodsAscii(EDD tEdd, String tNewHistory, 
+        OutputStreamSource tOutputStreamSource, String tSequenceName) {
 
-        super(tOutputStreamSource);
+        super(tEdd, tNewHistory, tOutputStreamSource);
         sequenceName = tSequenceName;
     }
 
@@ -126,10 +126,14 @@ public class TableWriterDodsAscii extends TableWriter {
     
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");

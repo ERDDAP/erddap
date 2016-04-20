@@ -143,10 +143,10 @@ public class MakeErdJavaZip  {
         File2.delete(baseDir + "DoesntExit.xml.log");
 
         //delete the log created by DoubleCenterGrids.test
-        File2.delete("c:/programs/tomcat/webapps/cwexperimental/WEB-INF/DoubleCenterGrids.log");
+        File2.delete("c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/DoubleCenterGrids.log");
 
         //delete the test file from ConvertTable
-        File2.delete("c:/programs/tomcat/webapps/cwexperimental/WEB-INF/result.nc");
+        File2.delete("c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/result.nc");
 
         //accumulate the file names to be zipped
         ArrayList<String> dirNames = new ArrayList();

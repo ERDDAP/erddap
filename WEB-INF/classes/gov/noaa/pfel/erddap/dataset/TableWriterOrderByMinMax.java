@@ -47,15 +47,18 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderByMinMax(String tDir, String tFileNameNoExt, 
-            TableWriter tOtherTableWriter, String tOrderByCsv) {
+    public TableWriterOrderByMinMax(EDD tEdd, String tNewHistory, String tDir, 
+        String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tDir, tFileNameNoExt); 
+        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
+        String err = EDStatic.queryError + 
+            "No column names were specified for 'orderByMinMax'.";
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
-            throw new SimpleException("Query error: " +
-                "No column names were specified for 'orderByMinMax'.");
+            throw new SimpleException(err);
         orderBy = String2.split(tOrderByCsv, ',');
+        if (orderBy.length == 0)
+            throw new SimpleException(err);
     }
 
 
@@ -87,10 +90,14 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
     
     /**
      * This finishes orderByMinMax and writes results to otherTableWriter
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         super.finish();
 
         Table cumulativeTable = cumulativeTable();
@@ -109,6 +116,11 @@ public class TableWriterOrderByMinMax extends TableWriterAll {
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
+        if (ignoreFinish) {
+            writeSome(tCumulativeTable);
+            tCumulativeTable.removeAllRows();
+            return;
+        }
         tCumulativeTable.orderByMinMax(orderBy);
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
         otherTableWriter = null;

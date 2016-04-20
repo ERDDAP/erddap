@@ -800,7 +800,7 @@ public class File2 {
     /**
      * This returns a temporary directory 
      * (with forward slashes and a trailing slash, 
-     * e.g., c:/Documents and Settings/Bob.Simons/ ... /).
+     * e.g., c:/Users/Bob.Simons/AppData/Local/Temp/).
      *
      * @return the temporary directory 
      * @throws Exception if trouble
@@ -822,8 +822,8 @@ public class File2 {
     /**
      * This converts (if not already done) tDir to use trailing / and with / separator.
      *
-     * @param tDir The directory, with or without trailing /.  
-     *    With / or \\.
+     * @param tDir The directory, with or without trailing / .  
+     *    With / or \\ .
      * @return The directory with trailing / and with / separator.
      */
     public static String forwardSlashDir(String tDir) {

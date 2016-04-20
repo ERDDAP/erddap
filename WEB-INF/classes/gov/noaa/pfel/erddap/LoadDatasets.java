@@ -229,6 +229,9 @@ public class LoadDatasets extends Thread {
                     if (isDuplicate) { 
                         skip = true;
                         duplicateDatasetIDs.add(tId);
+                        if (reallyVerbose) 
+                            String2.log("*** skipping datasetID=" + tId + 
+                                " because it's a duplicate.");
                     }
                     
                     //Test second: skip dataset because of datasetsRegex?
@@ -463,6 +466,7 @@ public class LoadDatasets extends Thread {
                                         if (tAction.startsWith("http://")) {
                                             if (tAction.indexOf("/" + EDStatic.warName + "/setDatasetFlag.txt?") > 0 &&
                                                 (tAction.startsWith(EDStatic.baseUrl) ||  
+                                                 tAction.startsWith("http://localhost") ||
                                                  tAction.startsWith("http://127.0.0.1"))) { 
                                                 //a dataset on this ERDDAP! just set the flag
                                                 //e.g., http://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
@@ -538,32 +542,52 @@ public class LoadDatasets extends Thread {
                 //<user username="bsimons" password="..." roles="admin, role1" />
                 //this mimics tomcat syntax
                 } else if (tags.equals("<erddapDatasets><user>")) { 
-                    String tUser = xmlReader.attributeValue("username");
+                    String tUsername = xmlReader.attributeValue("username");
                     String tPassword  = xmlReader.attributeValue("password");  
-                    if (tPassword != null && !EDStatic.passwordEncoding.equals("plaintext")) 
-                        tPassword = tPassword.toLowerCase(); //match Digest Authentication standard case
+                    if (tUsername != null) 
+                        tUsername = tUsername.trim();
+                    if (tPassword != null) 
+                        tPassword = tPassword.trim().toLowerCase(); //match Digest Authentication standard case
                     String ttRoles = xmlReader.attributeValue("roles");
                     String tRoles[] = ttRoles == null || ttRoles.trim().length() == 0?
                         new String[0] : String2.split(ttRoles, ','); 
 
-                    if (tUser != null && tUser.length() > 0) {
-                        if (EDStatic.authentication.equals("custom") &&   //others in future
-                            (tPassword == null || tPassword.length() < 7)) {
-                            warningsFromLoadDatasets.append(
-                                "datasets.xml error: The password for <user> username=" + tUser + 
-                                " in datasets.xml had fewer than 7 characters.\n\n");
-                        } else {
-                            Arrays.sort(tRoles);
-                            if (reallyVerbose) String2.log("user=" + tUser + " roles=" + String2.toCSSVString(tRoles));
-                            Object o = tUserHashMap.put(tUser, new Object[]{tPassword, tRoles});
-                            if (o != null)
-                                warningsFromLoadDatasets.append(
-                                    "datasets.xml error: There are two <user> tags in datasets.xml with username=" + 
-                                    tUser + "\nChange one of them.\n\n");
-                        }
-                    } else {
+                    //is username nothing?
+                    if (!String2.isSomething(tUsername)) {
                         warningsFromLoadDatasets.append(
-                            "datasets.xml error: A <user> tag in datasets.xml had no username=\"\" attribute.\n\n");
+                            "datasets.xml error: A <user> tag in datasets.xml had no username=\"someName\" attribute.\n\n");
+
+                    //is username reserved?
+                    } else if (EDStatic.loggedInAsHttps.equals(tUsername)) {
+                        warningsFromLoadDatasets.append(
+                            "datasets.xml error: <user> username=\"" + 
+                            String2.annotatedString(tUsername) + "\" is a reserved username.\n\n");
+
+                    //is name invalid?
+                    } else if (!String2.isPrintable(tUsername)) {
+                        warningsFromLoadDatasets.append(
+                            "datasets.xml error: <user> username=\"" + 
+                            String2.annotatedString(tUsername) + "\" has invalid characters.\n\n");
+
+                    //is password invalid?
+                    } else if (EDStatic.authentication.equals("custom") &&   //others in future
+                        !String2.isHexString(tPassword)) {
+                        warningsFromLoadDatasets.append(
+                            "datasets.xml error: The password for <user> username=" + tUsername + 
+                            " in datasets.xml isn't a hexadecimal string.\n\n");
+
+                    //add user info to tUserHashMap
+                    } else {                            
+                        Arrays.sort(tRoles);
+                        if ("email".equals(EDStatic.authentication) ||
+                            "google".equals(EDStatic.authentication))
+                            tUsername = tUsername.toLowerCase();  //so case insensitive, to avoid trouble
+                        if (reallyVerbose) String2.log("user=" + tUsername + " roles=" + String2.toCSSVString(tRoles));
+                        Object o = tUserHashMap.put(tUsername, new Object[]{tPassword, tRoles});
+                        if (o != null)
+                            warningsFromLoadDatasets.append(
+                                "datasets.xml error: There are two <user> tags in datasets.xml with username=" + 
+                                tUsername + "\nChange one of them.\n\n");
                     }
 
                 } else if (tags.equals("<erddapDatasets></user>")) { //do nothing
@@ -693,7 +717,6 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Log in attempt blocked temporarily (since last daily report)");
                     EDStatic.tally.remove("Log in failed (since last daily report)");
                     EDStatic.tally.remove("Log in succeeded (since last daily report)");
-                    EDStatic.tally.remove("Log in Redirect (since last daily report)");
                     EDStatic.tally.remove("Log out (since last daily report)");
                     EDStatic.tally.remove("Main Resources List (since last daily report)");
                     EDStatic.tally.remove("MemoryInUse > MaxSafeMemory (since last daily report)");
@@ -703,6 +726,7 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Protocol (since last daily report)");
                     EDStatic.tally.remove("Requester Is Logged In (since last daily report)");
                     EDStatic.tally.remove("Request refused: array size >= Integer.MAX_VALUE (since last daily report)");
+                    EDStatic.tally.remove("Request refused: not authorized (since last daily report)");
                     EDStatic.tally.remove("Request refused: not enough memory currently (since last daily report)");
                     EDStatic.tally.remove("Request refused: not enough memory ever (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
@@ -817,7 +841,7 @@ public class LoadDatasets extends Thread {
                 removeOldLines(EDStatic.failureTimesLoadDatasetsSB,  101, 59);
                 removeOldLines(EDStatic.responseTimesLoadDatasetsSB, 101, 59);
 
-                String2.flushLog(); //useful to have this info ASAP
+                String2.flushLog(); //useful to have this info ASAP and ensure log is flushed periodically
             }
 
         } catch (Throwable t) {

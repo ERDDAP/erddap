@@ -19,6 +19,7 @@ import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -62,7 +63,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      *
      */
     public EDDTableFromNcCFFiles(
-        String tDatasetID, String tAccessibleTo,
+        String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -79,7 +80,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         throws Throwable {
 
         super("EDDTableFromNcCFFiles",  
-            tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+            tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, 
             tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -161,6 +163,10 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+        if (!String2.isSomething(sampleFileName)) 
+            String2.log("Found/using sampleFileName=" +
+                (sampleFileName = FileVisitorDNLS.getSampleFileName(
+                    tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
         String2.log(NcHelper.dumpString(sampleFileName, false));
@@ -766,7 +772,7 @@ directionsForGenerateDatasetsXml() +
     "    String units \"m\";\n" +
     "  \\}\n" +
     "  time \\{\n" +
-    "    Int32 _ChunkSize 1;\n" +
+    "    Int32 _ChunkSizes 1;\n" +
     "    String _CoordinateAxisType \"Time\";\n" +
     "    Float64 actual_range 1.0173492e\\+9, 1.3907502000000134e\\+9;\n" +
     "    String axis \"T\";\n" +
@@ -802,7 +808,7 @@ directionsForGenerateDatasetsXml() +
     "    Float64 valid_range 0.0, 99999.0;\n" +
     "  \\}\n" +
     "  significant_wave_height \\{\n" +
-    "    Int32 _ChunkSize 1;\n" +
+    "    Int32 _ChunkSizes 1;\n" +
     "    Float32 _FillValue -999.0;\n" +
     "    Float64 accuracy 0.5;\n" +
     "    Float32 actual_range 0.009102137, 9.613417;\n" +
@@ -822,7 +828,7 @@ directionsForGenerateDatasetsXml() +
     "    Float32 valid_range 0.0, 10.0;\n" +
     "  \\}\n" +
     "  significant_wave_height_qc \\{\n" +
-    "    Int32 _ChunkSize 1;\n" +
+    "    Int32 _ChunkSizes 1;\n" +
     "    Byte _FillValue -128;\n" +
     "    Byte actual_range 0, 99;\n" +
     "    Float64 colorBarMaximum 128.0;\n" +
@@ -839,7 +845,7 @@ directionsForGenerateDatasetsXml() +
     "    Byte valid_range -127, 127;\n" +
     "  \\}\n" +
     "  dominant_wave_period \\{\n" +
-    "    Int32 _ChunkSize 1;\n" +
+    "    Int32 _ChunkSizes 1;\n" +
     "    Float32 _FillValue -999.0;\n" +
     "    Float64 accuracy 2.0;\n" +
     "    Float32 actual_range 1.032258, 16.0;\n" +
@@ -860,7 +866,7 @@ directionsForGenerateDatasetsXml() +
     "    Float32 valid_range 0.0, 32.0;\n" +
     "  \\}\n" +
     "  dominant_wave_period_qc \\{\n" +
-    "    Int32 _ChunkSize 1;\n" +
+    "    Int32 _ChunkSizes 1;\n" +
     "    Byte _FillValue -128;\n" +
     "    Byte actual_range 0, 99;\n" +
     "    Float64 colorBarMaximum 128.0;\n" +
@@ -913,7 +919,7 @@ directionsForGenerateDatasetsXml() +
     "Thu Jun 20 16:50:01 2013: /usr/local/bin/ncrcat -d time,56463.65625,56464.00 B0125.accelerometer.realtime.nc B0125.accelerometer.realtime.nc.new\n" +
     "\n" +
     today + "T.{8}Z \\(local files\\)\n" +
-    today + "T.{8}Z http://127.0.0.1:8080/cwexperimental/tabledap/UMaineAccB01.das\";\n" +
+    today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\";\n" +
     "    String id \"B01\";\n" +
     "    String infoUrl \"http://gyre.umeoce.maine.edu/\";\n" +
     "    String institution \"Department of Physical Oceanography, School of Marine Sciences, University of Maine\";\n" +
@@ -1036,11 +1042,317 @@ directionsForGenerateDatasetsXml() +
             String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
 
-
+        String2.log("\n*** EDDTableFromNcCFFiles.testBridger() finished.");
     }
 
+    
+    /**
+     * This tests sos code and global attribute with name=null.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testNcml() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcCFFiles.testNcml() *****************\n");
+        testVerboseOn();
+       String baseName = //don't make this public via GitHub
+            "/data/medrano/CTZ-T500-MCT-NS5649-Z408-INS12-REC14";
+        String results, expected;
+        Table table;
+        try {
 
+            //ncdump the .nc file
+            String2.log("Here's the ncdump of " + baseName + ".nc:");
+            results = NcHelper.dumpString(baseName + ".nc", false);
+            expected = 
+"netcdf CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc {\n" +
+"  dimensions:\n" +
+"    time = UNLIMITED;   // (101 currently)\n" +
+"    one = 1;\n" +
+"    ni_Srec = 93;\n" +
+"    lat = 1;\n" +
+"    lon = 1;\n" +
+"  variables:\n" +
+"    double Cond(time=101);\n" +
+"      :long_name = \"Conductividad\";\n" +
+"      :units = \"S/m\";\n" +
+"\n" +
+"    double Pres(time=101);\n" +
+"      :long_name = \"Presion\";\n" +
+"      :units = \"dBar\";\n" +
+"\n" +
+"    double ProfDiseno(one=1);\n" +
+"      :long_name = \"Profundidad de diseno\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double ProfEstimada(one=1);\n" +
+"      :long_name = \"Profundidad estimada\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double Sal(time=101);\n" +
+"      :long_name = \"Salinidad\";\n" +
+"      :units = \"PSU\";\n" +
+"\n" +
+"    double Temp(time=101);\n" +
+"      :long_name = \"Temperatura\";\n" +
+"      :units = \"\uFFFDC\";\n" + //65533
+"\n" +
+"    double TiranteDiseno(one=1);\n" +
+"      :long_name = \"Tirante diseno\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double TiranteEstimado(one=1);\n" +
+"      :long_name = \"Tirante estimado\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double i_Salrec(ni_Srec=93);\n" +
+"      :long_name = \"Indices salinidad reconstruida\";\n" +
+"      :units = \"N/A\";\n" +
+"\n" +
+"    double jd(time=101);\n" +
+"      :long_name = \"tiempo en dias Julianos\";\n" +
+"      :units = \"days since 0000-01-01 00:00:00 \";\n" +
+"      :time_origin = \"0000-01-01 00:00:00\";\n" +
+"\n" +
+"    double lat(lat=1);\n" +
+"      :long_name = \"Latitud\";\n" +
+"      :Units = \"degrees_north\";\n" +
+"\n" +
+"    double lon(lon=1);\n" +
+"      :long_name = \"Longitud\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    double var_pres(one=1);\n" +
+"      :long_name = \"Bandera presion\";\n" +
+"      :units = \"N/A\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :Title = \"Datos MCT para  el anclaje CTZ-T500 crucero CANEK 14\";\n" +
+"  :Anclaje = \"CTZ-T500\";\n" +
+"  :Equipo = \"MCT\";\n" +
+"  :Numero_de_serie = \"5649\";\n" +
+"  :Source_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.mat\";\n" +
+"  :Final_NC_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc\";\n" +
+"  :Creation_date = \"06-Aug-2014 12:22:59\";\n" +
+"  :NCO = \"\\\"4.5.2\\\"\";\n" +
+" data:\n" +
+"}\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
+            //ncdump the .ncml file
+            String2.log("\nHere's the ncdump of " + baseName + ".ncml:");
+            results = NcHelper.dumpString(baseName + ".ncml", false);
+            expected = 
+"<?xml version='1.0' encoding='UTF-8'?>\n" +
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
+"    location='file:/data/medrano/CTZ-T500-MCT-NS5649-Z408-INS12-REC14.ncml' >\n" +
+"\n" +
+"  <dimension name='time' length='101' />\n" +
+"  <dimension name='station' length='1' />\n" +
+"\n" +
+"  <attribute name='Anclaje' value='CTZ-T500' />\n" +
+"  <attribute name='Equipo' value='MCT' />\n" +
+"  <attribute name='Numero_de_serie' value='5649' />\n" +
+"  <attribute name='Source_file' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14.mat' />\n" +
+"  <attribute name='Final_NC_file' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc' />\n" +
+"  <attribute name='NCO' value='&quot;4.5.2&quot;' />\n" +
+"  <attribute name='Conventions' value='CF-1.6' />\n" +
+"  <attribute name='featureType' value='timeSeries' />\n" +
+"  <attribute name='standard_name_vocabulary' value='CF-1.6' />\n" +
+"  <attribute name='title' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14' />\n" +
+"  <attribute name='cdm_data_type' value='TimeSeries' />\n" +
+"  <attribute name='cdm_timeseries_variables' value='station' />\n" +
+"  <attribute name='date_created' value='06-Aug-2014 12:22:59' />\n" +
+"\n" +
+"  <variable name='station' type='int' shape='station' >\n" +
+"    <attribute name='long_name' value='CTZ-T500-MCT-NS5649-Z408-INS12-REC14' />\n" +
+"    <attribute name='cf_role' value='timeseries_id' />\n" +
+"  </variable>\n" +
+"  <variable name='time' type='double' shape='station time' >\n" +
+"    <attribute name='long_name' value='tiempo en dias Julianos' />\n" +
+"    <attribute name='units' value='days since 0000-01-01 00:00:00 ' />\n" +
+"    <attribute name='time_origin' value='0000-01-01 00:00:00' />\n" +
+"    <attribute name='standard_name' value='time' />\n" +
+"    <attribute name='axis' value='T' />\n" +
+"    <attribute name='calendar' value='julian' />\n" +
+"  </variable>\n" +
+"  <variable name='Cond' type='double' shape='station time' >\n" +
+"    <attribute name='long_name' value='Conductividad' />\n" +
+"    <attribute name='units' value='S/m' />\n" +
+"    <attribute name='standard_name' value='sea_water_electrical_conductivity' />\n" +
+"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
+"  </variable>\n" +
+"  <variable name='Pres' type='double' shape='station time' >\n" +
+"    <attribute name='long_name' value='Presion' />\n" +
+"    <attribute name='units' value='dBar' />\n" +
+"    <attribute name='standard_name' value='sea_water_pressure' />\n" +
+"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
+"  </variable>\n" +
+"  <variable name='Temp' type='double' shape='station time' >\n" +
+"    <attribute name='long_name' value='Temperatura' />\n" +
+"    <attribute name='units' value='degree_celsius' />\n" +
+"    <attribute name='standard_name' value='sea_water_temperature' />\n" +
+"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
+"  </variable>\n" +
+"  <variable name='Sal' type='double' shape='station time' >\n" +
+"    <attribute name='long_name' value='Salinidad' />\n" +
+"    <attribute name='units' value='PSU' />\n" +
+"    <attribute name='standard_name' value='sea_water_salinity' />\n" +
+"    <attribute name='coordinates' value='time latitude longitude z' />\n" +
+"  </variable>\n" +
+"  <variable name='latitude' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='Latitud' />\n" +
+"    <attribute name='standard_name' value='latitude' />\n" +
+"    <attribute name='units' value='degrees_north' />\n" +
+"    <attribute name='axis' value='Y' />\n" +
+"  </variable>\n" +
+"  <variable name='longitude' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='Longitud' />\n" +
+"    <attribute name='units' value='degrees_east' />\n" +
+"    <attribute name='standard_name' value='longitude' />\n" +
+"    <attribute name='axis' value='X' />\n" +
+"  </variable>\n" +
+"  <variable name='z' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='profundidad' />\n" +
+"    <attribute name='units' value='m' />\n" +
+"    <attribute name='standard_name' value='depth' />\n" +
+"    <attribute name='axis' value='Z' />\n" +
+"  </variable>\n" +
+"  <variable name='ProfDiseno' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='Profundidad de diseno' />\n" +
+"    <attribute name='units' value='m' />\n" +
+"  </variable>\n" +
+"  <variable name='TiranteDiseno' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='Tirante diseno' />\n" +
+"    <attribute name='units' value='m' />\n" +
+"  </variable>\n" +
+"  <variable name='TiranteEstimado' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='Tirante estimado' />\n" +
+"    <attribute name='units' value='m' />\n" +
+"  </variable>\n" +
+"  <variable name='var_pres' type='double' shape='station' >\n" +
+"    <attribute name='long_name' value='Bandera presion' />\n" +
+"    <attribute name='units' value='N/A' />\n" +
+"  </variable>\n" +
+"</netcdf>\n";
+//Before netcdf-java 4.6.4: ProfDiseno, TiranteDiseno, TiranteEstimado, and var_pres
+//appeared as shape='station one' even though he got rid of 'one' dimension
+//via .ncml
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //read the .ncml via table.readNcCF
+            table = new Table();
+            table.readNcCF(baseName + ".ncml", null, null, null, null);
+            results = table.toCSVString(5);
+            results = String2.replaceAll(results, '\t', ' ');
+            expected = 
+"{\n" +
+"dimensions:\n" +
+" row = 101 ;\n" +
+"variables:\n" +
+" double Cond(row) ;\n" +
+"  Cond:coordinates = \"time latitude longitude z\" ;\n" +
+"  Cond:long_name = \"Conductividad\" ;\n" +
+"  Cond:standard_name = \"sea_water_electrical_conductivity\" ;\n" +
+"  Cond:units = \"S/m\" ;\n" +
+" double Pres(row) ;\n" +
+"  Pres:coordinates = \"time latitude longitude z\" ;\n" +
+"  Pres:long_name = \"Presion\" ;\n" +
+"  Pres:standard_name = \"sea_water_pressure\" ;\n" +
+"  Pres:units = \"dBar\" ;\n" +
+" double Temp(row) ;\n" +
+"  Temp:coordinates = \"time latitude longitude z\" ;\n" +
+"  Temp:long_name = \"Temperatura\" ;\n" +
+"  Temp:standard_name = \"sea_water_temperature\" ;\n" +
+"  Temp:units = \"degree_celsius\" ;\n" +
+" double Sal(row) ;\n" +
+"  Sal:coordinates = \"time latitude longitude z\" ;\n" +
+"  Sal:long_name = \"Salinidad\" ;\n" +
+"  Sal:standard_name = \"sea_water_salinity\" ;\n" +
+"  Sal:units = \"PSU\" ;\n" +
+" double ProfDiseno(row) ;\n" +
+"  ProfDiseno:long_name = \"Profundidad de diseno\" ;\n" +
+"  ProfDiseno:units = \"m\" ;\n" +
+" double TiranteDiseno(row) ;\n" +
+"  TiranteDiseno:long_name = \"Tirante diseno\" ;\n" +
+"  TiranteDiseno:units = \"m\" ;\n" +
+" double TiranteEstimado(row) ;\n" +
+"  TiranteEstimado:long_name = \"Tirante estimado\" ;\n" +
+"  TiranteEstimado:units = \"m\" ;\n" +
+" double var_pres(row) ;\n" +
+"  var_pres:long_name = \"Bandera presion\" ;\n" +
+"  var_pres:units = \"N/A\" ;\n" +
+" int station(row) ;\n" +
+"  station:cf_role = \"timeseries_id\" ;\n" +
+"  station:long_name = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\" ;\n" +
+" double time(row) ;\n" +
+"  time:_CoordinateAxisType = \"Time\" ;\n" +
+"  time:axis = \"T\" ;\n" +
+"  time:calendar = \"julian\" ;\n" +
+"  time:long_name = \"tiempo en dias Julianos\" ;\n" +
+"  time:standard_name = \"time\" ;\n" +
+"  time:time_origin = \"0000-01-01 00:00:00\" ;\n" +
+"  time:units = \"days since 0000-01-01 00:00:00 \" ;\n" +
+" double latitude(row) ;\n" +
+"  latitude:_CoordinateAxisType = \"Lat\" ;\n" +
+"  latitude:axis = \"Y\" ;\n" +
+"  latitude:long_name = \"Latitud\" ;\n" +
+"  latitude:standard_name = \"latitude\" ;\n" +
+"  latitude:units = \"degrees_north\" ;\n" +
+" double longitude(row) ;\n" +
+"  longitude:_CoordinateAxisType = \"Lon\" ;\n" +
+"  longitude:axis = \"X\" ;\n" +
+"  longitude:long_name = \"Longitud\" ;\n" +
+"  longitude:standard_name = \"longitude\" ;\n" +
+"  longitude:units = \"degrees_east\" ;\n" +
+" double z(row) ;\n" +
+"  z:_CoordinateAxisType = \"Height\" ;\n" +
+"  z:axis = \"Z\" ;\n" +
+"  z:long_name = \"profundidad\" ;\n" +
+"  z:standard_name = \"depth\" ;\n" +
+"  z:units = \"m\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\" ;\n" +
+"  :Anclaje = \"CTZ-T500\" ;\n" +
+"  :cdm_data_type = \"TimeSeries\" ;\n" +
+"  :cdm_timeseries_variables = \"ProfDiseno, TiranteDiseno, TiranteEstimado, var_pres, station, latitude, longitude, z\" ;\n" +
+"  :Conventions = \"CF-1.6\" ;\n" +
+"  :date_created = \"06-Aug-2014 12:22:59\" ;\n" +
+"  :Equipo = \"MCT\" ;\n" +
+"  :featureType = \"timeSeries\" ;\n" +
+"  :Final_NC_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.nc\" ;\n" +
+"  :NCO = \"\\\"4.5.2\\\"\" ;\n" +
+"  :Numero_de_serie = \"5649\" ;\n" +
+"  :Source_file = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14.mat\" ;\n" +
+"  :standard_name_vocabulary = \"CF-1.6\" ;\n" +
+"  :subsetVariables = \"ProfDiseno, TiranteDiseno, TiranteEstimado, var_pres, station, latitude, longitude, z\" ;\n" +
+"  :title = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\" ;\n" +
+"}\n" +
+"row,Cond,Pres,Temp,Sal,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres,station,time,latitude,longitude,z\n" +
+"0,3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
+"1,3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
+"2,3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
+"3,3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
+"4,3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            //read the .ncml via table.readNcCF -- just station info
+            table = new Table();
+            table.readNcCF(baseName + ".ncml", 
+                StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), null, null, null);
+            results = table.dataToCSVString();
+            results = String2.replaceAll(results, '\t', ' ');
+            expected = 
+"station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres\n" +
+"0,18.843666666666667,-94.81761666666667,406.0,408.0,500.0,498.0,1.0\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+        }
+
+        String2.log("\n*** EDDTableFromNcCFFiles.testNcml() finished.");
+    }
     
     
     /**
@@ -1049,13 +1361,14 @@ directionsForGenerateDatasetsXml() +
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-        /* */
+        /* 
         testGenerateDatasetsXml();
         test1(true); //deleteCachedDatasetInfo
         test1(false); 
         testKevin20130109();
         testNoAttName();
         testBridger();
+*/        testNcml();
 
         //not usually run
     }

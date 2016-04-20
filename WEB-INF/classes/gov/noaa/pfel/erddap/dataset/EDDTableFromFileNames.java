@@ -93,6 +93,7 @@ public class EDDTableFromFileNames extends EDDTable{
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         String tFileDir = null;
         String tFileNameRegex = null;
         boolean tRecursive = false;
@@ -125,6 +126,8 @@ public class EDDTableFromFileNames extends EDDTable{
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<onChange>")) {}
@@ -153,7 +156,8 @@ public class EDDTableFromFileNames extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDTableFromFileNames(tDatasetID, tAccessibleTo,
+        return new EDDTableFromFileNames(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
@@ -229,13 +233,14 @@ public class EDDTableFromFileNames extends EDDTable{
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
      *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *        http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @throws Throwable if trouble
      */
-    public EDDTableFromFileNames(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromFileNames(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
@@ -254,6 +259,7 @@ public class EDDTableFromFileNames extends EDDTable{
         className = "EDDTableFromFileNames"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -437,6 +443,7 @@ public class EDDTableFromFileNames extends EDDTable{
         //this also verifies that fileDir is accessible.
         File2.makeDirectory(cacheDirectory()); 
         TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(
+            null, null, //metadata is irrelevant here
             cacheDirectory(), "constructor");
         getDataForDapQuery( //throws exception if 0 files
             EDStatic.loggedInAsSuperuser, 
@@ -1092,7 +1099,7 @@ directionsForGenerateDatasetsXml() +
 "  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"Other\";\n" +
 "    String history \".{19}Z \\(local files\\)\n" +
-".{19}Z http://127.0.0.1:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
+".{19}Z http://localhost:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
 "    String infoUrl \"http://www.pfeg.noaa.gov/\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"file, images, jpl, modified, mur, name, nasa, size, sst, time, URL\";\n" +
@@ -1110,9 +1117,9 @@ directionsForGenerateDatasetsXml() +
         expected = 
 "five,url,name,time,day,lastModified,size\n" +
 "m,,,UTC,,UTC,bytes\n" +
-"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T22:54:04Z,46482.0\n" +
-"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T22:22:18Z,46586.0\n" +
-"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T22:21:44Z,46549.0\n";
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T22:54:04Z,46482.0\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T22:22:18Z,46586.0\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T22:21:44Z,46549.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test that min and max are being set by the constructor
@@ -1228,7 +1235,7 @@ directionsForGenerateDatasetsXml() +
 "    String creator_name \"NASA Earth Exchange\";\n" +
 "    String creator_url \"https://nex.nasa.gov/nex/\";\n" +
 "    String history \".{19}Z \\(remote files\\)\n" +
-".{19}Z http://127.0.0.1:8080/cwexperimental/tabledap/testFileNamesAwsS3.das\";\n" +
+".{19}Z http://localhost:8080/cwexperimental/tabledap/testFileNamesAwsS3.das\";\n" +
 "    String infoUrl \"https://nex.nasa.gov/nex/\";\n" +
 "    String institution \"NASA Earth Exchange\";\n" +
 "    String keywords \"data, earth, exchange, file, great, identifier, lastModified, modified, name, nasa, size, time, title\";\n" +
@@ -1246,9 +1253,9 @@ directionsForGenerateDatasetsXml() +
         expected = 
 "five,url,name,startMonth,endMonth,lastModified,size\n" +
 "m,,,UTC,UTC,UTC,bytes\n" +
-"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,2006-01-01T00:00:00Z,2010-12-01T00:00:00Z,2013-10-25T20:46:53Z,1.372730447E9\n" +
-"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,2011-01-01T00:00:00Z,2015-12-01T00:00:00Z,2013-10-25T20:47:18Z,1.373728987E9\n" +
-"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,2016-01-01T00:00:00Z,2020-12-01T00:00:00Z,2013-10-25T20:51:23Z,1.373747344E9\n";
+"5.0,http://localhost:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,2006-01-01T00:00:00Z,2010-12-01T00:00:00Z,2013-10-25T20:46:53Z,1.372730447E9\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,2011-01-01T00:00:00Z,2015-12-01T00:00:00Z,2013-10-25T20:47:18Z,1.373728987E9\n" +
+"5.0,http://localhost:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,2016-01-01T00:00:00Z,2020-12-01T00:00:00Z,2013-10-25T20:51:23Z,1.373747344E9\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         //test that min and max are being set by the constructor

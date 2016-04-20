@@ -70,6 +70,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -134,6 +135,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
@@ -165,7 +168,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDGridFromEDDTable(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+        return new EDDGridFromEDDTable(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
@@ -253,8 +257,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
      *    becomes the source information for the eddGrid.
      * @throws Throwable if trouble
      */
-    public EDDGridFromEDDTable(
-        String tDatasetID, String tAccessibleTo, boolean tAccessibleViaWMS, 
+    public EDDGridFromEDDTable(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -274,6 +278,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         className = "EDDGridFromEDDTable"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
@@ -598,9 +603,10 @@ public class EDDGridFromEDDTable extends EDDGrid {
                  " >= gapThreshold=" + gapThreshold)));
 
         //make a subrequest for each combination of outerAxes values
-        TableWriterAll twa = new TableWriterAll(cacheDirectory(), 
+        TableWriterAll twa = new TableWriterAll(null, null, //metadata not kept
+            cacheDirectory(), 
             suggestFileName(loggedInAs, datasetID, ".twa")); //twa adds a random number
-        twa.normalFinish = false;
+        twa.ignoreFinish = true;
         int qn = 0;
         outerLoop:
         while (outerNDIndex.increment()) { //updates outerNDCurrent
@@ -647,7 +653,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
                     throw t;
             }
         }
-        twa.doNormalFinish();
+        twa.ignoreFinish = false;
+        twa.finish();
 
         //go through the tabular results in TableWriterAll
         PrimitiveArray twaPA[] = new PrimitiveArray[nCols];
@@ -1326,7 +1333,7 @@ directionsForGenerateDatasetsXml() +
        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
 //"2015-01-30T17:06:49Z http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
-//"2015-01-30T17:06:49Z http://127.0.0.1:8080/cwexperimental/griddap/testGridFromTable.das\";\n" +
+//"2015-01-30T17:06:49Z http://localhost:8080/cwexperimental/griddap/testGridFromTable.das\";\n" +
 expected=
     "String infoUrl \"http://www.ncddc.noaa.gov/activities/wcos\";\n" +
 "    String institution \"NOAA NMSP\";\n" +

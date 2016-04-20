@@ -20,6 +20,7 @@ import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -52,7 +53,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      *    <br>If "", no one will have access to this dataset.
      * <p>The sortedColumnSourceName isn't utilized.
      */
-    public EDDTableFromColumnarAsciiFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromColumnarAsciiFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File,
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -68,7 +70,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromColumnarAsciiFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromColumnarAsciiFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -174,6 +177,10 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             charset = "ISO-8859-1";
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+        if (!String2.isSomething(sampleFileName)) 
+            String2.log("Found/using sampleFileName=" +
+                (sampleFileName = FileVisitorDNLS.getSampleFileName(
+                    tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         //read the lines of the sample file
         String lines[] = String2.readLinesFromFile(sampleFileName, charset, 2);
@@ -699,7 +706,7 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //"2014-12-04T19:15:21Z (local files)
-//2014-12-04T19:15:21Z http://127.0.0.1:8080/cwexperimental/tabledap/testTableColumnarAscii.das";
+//2014-12-04T19:15:21Z http://localhost:8080/cwexperimental/tabledap/testTableColumnarAscii.das";
 expected =
 "    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +

@@ -90,7 +90,11 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 
-import org.verisign.joid.consumer.OpenIdFilter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+//import org.verisign.joid.consumer.OpenIdFilter;
 
 /**
  * ERDDAP is a Java servlet which serves gridded and tabular data
@@ -414,14 +418,18 @@ public class Erddap extends HttpServlet {
 
         long doGetTime = System.currentTimeMillis();
         int requestNumber = totalNRequests.incrementAndGet();
-        String ipAddress = "NotSetYet";
+        String ipAddress = "NotSetYet"; //won't be null
 
         try {
 
             //get loggedInAs
             String loggedInAs = EDStatic.getLoggedInAs(request);
-            EDStatic.tally.add("Requester Is Logged In (since startup)", "" + (loggedInAs != null));
-            EDStatic.tally.add("Requester Is Logged In (since last daily report)", "" + (loggedInAs != null));
+            {
+                String tLoggedInAs = loggedInAs == null?          "no/http" : 
+                    loggedInAs.equals(EDStatic.loggedInAsHttps)?  "no/https" : "yes";
+                EDStatic.tally.add("Requester Is Logged In (since startup)", tLoggedInAs);
+                EDStatic.tally.add("Requester Is Logged In (since last daily report)", tLoggedInAs);
+            }
 
             String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
             String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl(), pre "?"
@@ -435,7 +443,7 @@ public class Erddap extends HttpServlet {
                 ipAddress = "";
             } else {
                 //if csv, get last part
-                //see http://en.wikipedia.org/wiki/X-Forwarded-For
+                //see https://en.wikipedia.org/wiki/X-Forwarded-For
                 int cPo = ipAddress.lastIndexOf(',');
                 if (cPo >= 0)
                     ipAddress = ipAddress.substring(cPo + 1);
@@ -452,43 +460,10 @@ public class Erddap extends HttpServlet {
                 Calendar2.getCurrentISODateTimeStringLocal() + " " + 
                 (loggedInAs == null? "(notLoggedIn)" : loggedInAs) + " " +
                 ipAddress + " " +
-                requestUrl + EDStatic.questionQuery(userQuery));
-
-            //Redirect to http if loggedInAs == null && non-login/logout request was sent to https.
-            //loggedInAs is used in many, many places to determine if ERDDAP should use https for e.g., /images/... .
-            //So if user isn't logged in, http is used and 
-            //  that puts non-https content on https pages.
-            //But browsers object to that.
-            //This solution: redirect non-loggedIn users to http.
-            if (loggedInAs == null &&
-                (!requestUrl.equals("/" + EDStatic.warName + "/login.html") && 
-                 !requestUrl.equals("/" + EDStatic.warName + "/logout.html"))) {
-                String fullRequestUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
-                if (fullRequestUrl.startsWith("https://")) {
-                    //hopefully headers and other info won't be lost in the redirect
-                    if (verbose) String2.log("Redirecting loggedInAs=null request from https: to http:.");
-                    sendRedirect(response, EDStatic.baseUrl + requestUrl +
-                        EDStatic.questionQuery(userQuery));
-                    return;            
-                }
-            }
-
-            //Redirect to https if loggedInAs != null && request was sent to http.
-            //logged in user on http: page appears not logged in.
-            //(Also, she might accidentally forget to log out.)
-            //loggedInAs is used in many, many places to determine if ERDDAP should use https for e.g., /images/... .
-            //So if user is logged in, https is used and that puts https content on http pages.
-            //This solution: redirect loggedIn users to https.
-            if (loggedInAs != null) {
-                String fullRequestUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
-                if (fullRequestUrl.startsWith("http://")) {
-                    //hopefully headers and other info won't be lost in the redirect
-                    if (verbose) String2.log("Redirecting loggedInAs!=null request from http: to https:.");
-                    sendRedirect(response, EDStatic.baseHttpsUrl + requestUrl +
-                        EDStatic.questionQuery(userQuery));
-                    return;            
-                }
-            }
+                requestUrl + 
+                (requestUrl.endsWith("login.html") && userQuery.indexOf("nonce=") >= 0?
+                    "?[CONFIDENTIAL]" : 
+                    EDStatic.questionQuery(userQuery)));
 
             //refuse request? e.g., to fend of a Denial of Service attack or an overzealous web robot
             int periodPo = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below
@@ -569,9 +544,12 @@ public class Erddap extends HttpServlet {
                 doInformationHtml(request, response, loggedInAs);
             } else if (endOfRequest.equals("legal.html")) {
                 doLegalHtml(request, response, loggedInAs);
-            } else if (endOfRequest.equals("login.html")) {
+            } else if (endOfRequest.equals("login.html") && EDStatic.authentication.length() > 0) {
                 doLogin(request, response, loggedInAs);
-            } else if (endOfRequest.equals("logout.html")) {
+            } else if (endOfRequest.equals("loginGoogle.html") &&  
+                EDStatic.authentication.equals("google")) {
+                doLoginGoogle(request, response, loggedInAs);
+            } else if (endOfRequest.equals("logout.html") && EDStatic.authentication.length() > 0) {
                 doLogout(request, response, loggedInAs);
             } else if (endOfRequest.equals("rest.html")) {
                 doRestHtml(request, response, loggedInAs);
@@ -608,9 +586,6 @@ public class Erddap extends HttpServlet {
                     protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("convert")) {
                 doConvert(request, response, loggedInAs, endOfRequest, 
-                    protocolEnd + 1, userQuery);
-            } else if (protocol.equals("post")) {
-                doPostPages(request, response, loggedInAs, endOfRequest, 
                     protocolEnd + 1, userQuery);
             } else if (endOfRequest.equals("version")) {
                 doVersion(request, response);
@@ -739,15 +714,8 @@ public class Erddap extends HttpServlet {
             writer.write("<table width=\"100%\" border=\"0\" cellspacing=\"12\" cellpadding=\"0\">\n" +
                 "<tr>\n<td width=\"60%\"" + tdString);
 
-
             //*** left column: theShortDescription
-            String shortDescription = EDStatic.theShortDescriptionHtml(tErddapUrl);
-            //special case for POST
-            if (EDStatic.postShortDescriptionActive) 
-                shortDescription = String2.replaceAll(shortDescription, 
-                    "[standardPostDescriptionHtml]", getPostIndexHtml(loggedInAs, tErddapUrl));
-            writer.write(shortDescription);
-            shortDescription = null;
+            writer.write(EDStatic.theShortDescriptionHtml(tErddapUrl));
 
             //thin vertical line between text columns
             writer.write(
@@ -927,18 +895,20 @@ public class Erddap extends HttpServlet {
                 writer.write(
                     "<p><b><a name=\"metadata\">" + EDStatic.indexMetadata + "</a></b>\n" +
                     "<br>");
-                String fgdcLink = 
-                    "<a rel=\"bookmark\" " + 
+                String fgdcLink = //&#8209; is a non-breaking hyphen
+                    "<br><a rel=\"bookmark\" " + 
                     "href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
-                    "\">FGDC</a> " +
-                    "(<a rel=\"help\" href=\"http://www.fgdc.gov/\">?" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>)";
+                    "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n" +
+                    "with <a rel=\"help\" href=\"http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n" +
+                    ">FGDC&#8209;STD&#8209;001&#8209;1998" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>";
                 String isoLink  =
-                    "<a rel=\"bookmark\" " + 
+                    "<br><a rel=\"bookmark\" " + 
                     "href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
-                    "\">ISO&nbsp;19115-2/19139</a> " +
-                    "(<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Geospatial_metadata\">?" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>)";
+                    "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n" +
+                    "with <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n" +
+                    ">ISO&nbsp;19115&#8209;2/19139" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>";
                 if (EDStatic.fgdcActive && EDStatic.iso19115Active)
                     writer.write(MessageFormat.format(EDStatic.indexWAF2, 
                         fgdcLink, isoLink));
@@ -1082,7 +1052,80 @@ public class Erddap extends HttpServlet {
             return minutesToGo;
         }
     }
+      
+    /**
+     * This is the callback url for google authentication.
+     * This just handles verification of Google login. 
+     * It doesn't display a web page or redirect to a web page.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     */
+    public void doLoginGoogle(HttpServletRequest request, HttpServletResponse response, 
+        String loggedInAs) throws Throwable {
 
+        String loginUrl = EDStatic.erddapHttpsUrl + "/login.html";
+
+        //user is trying to log in
+        String idtoken = request.getParameter("idtoken"); //from the POST'd info
+        if (idtoken == null) {
+            sendRedirect(response, loginUrl);
+            return;
+        }
+                
+        String email = null;
+        try {
+            //see https://developers.google.com/identity/sign-in/web/backend-auth#verify-the-integrity-of-the-id-token
+            //String2.log("idtoken=" + idtoken);  //long base64(?) encoded
+            String json = SSR.getUrlResponseString( //throws Exception
+                "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + idtoken);
+            //String2.log("json=" + json); //it is as expected
+            JSONTokener tokener = new JSONTokener(json);
+            JSONObject jo = new JSONObject(tokener);
+            //String2.log("jo=" + jo.toString()); //it is as expected
+            String msg = "Invalid value in idtoken: ";
+            email           = jo.optString("email");  //opt returns "" if not found
+            String aud      = jo.optString("aud");
+            String verified = jo.optString("email_verified");
+            String expires  = jo.optString("exp");
+            if (!EDStatic.googleClientID.equals(aud))  //ensure this is request for my server
+                throw new SimpleException(msg + "unexpected aud=" + aud);
+            if (email != null)
+                email = email.toLowerCase(); //so case insensitive, to avoid trouble
+            EDStatic.subscriptions.ensureEmailValid(email); //checks validity and emailBlacklist, throws exception
+            //Don't check list of users. Allow anyone to log in.
+            //if (!EDStatic.onListOfUsers(email))        //ensure it is a registered user
+            //    throw new SimpleException(
+            //        "That email address isn't on the list of users for this ERDDAP.\n" +
+            //        "Contact " + EDStatic.adminContact() + " to ask to be added to the list.\n" +
+            //        "Then try again.");
+            if (!verified.equals("true"))                 //ensure verified=true 
+                throw new SimpleException(msg + "verified=false");
+            long expireSec = String2.parseLong(expires);  //ensure it isn't an out-of-date authentication
+            if (expireSec == Long.MAX_VALUE ||
+                expireSec < System.currentTimeMillis() / 1000.0)
+                throw new SimpleException(msg + "expires=" + expires + " isn't valid.");
+
+            //success
+            HttpSession session = request.getSession(); //make one if one doesn't exist
+            //it is stored on server.  user doesn't have access, so can't spoof it
+            //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
+            session.setAttribute("loggedInAs:" + EDStatic.warName, email); 
+            Math2.sleep(500); //give session changes time to take effect
+            loginSucceeded(email);
+            //sendRedirect(response, loginUrl + "?message=" + 
+            //    SSR.minimalPercentEncode(EDStatic.loginSucceeded));
+            return;
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            loginFailed(email == null? "(unknown)" : email); 
+            //sendRedirect(response, loginUrl + "?message=" + 
+            //    SSR.minimalPercentEncode(EDStatic.loginFailed + ": " + 
+            //        MustBe.getShortErrorMessage(t)));
+            return;
+        }
+    }  
+    
     
     
     /**
@@ -1093,90 +1136,38 @@ public class Erddap extends HttpServlet {
     public void doLogin(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs) throws Throwable {
 
-        //Special case: "loggedInAsLoggingIn" is used by login.html
+        //Special case: "loggedInAsHttps" is for using https without being logged in
         //so that https is used for erddapUrl substitutions, 
         //but &amp;loginInfo; indicates user isn't logged in.
-        String tLoggedInAs = loggedInAs == null? EDStatic.loggedInAsLoggingIn : loggedInAs;
-
-        String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
-        String loginUrl = EDStatic.erddapHttpsUrl + "/login.html";
+        String tErddapUrl = EDStatic.erddapHttpsUrl;
+        String loginUrl = tErddapUrl + "/login.html";
         String userQuery = request.getQueryString(); //may be null;  leave encoded
         String message = request.getParameter("message");
-        String redMessage = message == null? "" :
-            "<font class=\"warningColor\"><pre>" + 
+        String standoutMessage = message == null? "" :
+            "<pre><font class=\"standoutColor\">" + 
             XML.encodeAsHTML(message) +  //encoding is important to avoid security problems (HTML injection)
-            "</pre></font>\n";                   
+            "</font></pre>\n";                   
 
-        //if authentication is active ...
-        if (!EDStatic.authentication.equals("")) {
+        if (loggedInAs == null) {
             //if request was sent to http:, redirect to https:
-            String actualUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
-            if (EDStatic.baseHttpsUrl != null && 
-                EDStatic.baseHttpsUrl.startsWith("https://") && //EDStatic ensures this is true
-                !actualUrl.startsWith("https://")) {
-                //hopefully this won't happen much
-                //hopefully headers and other info won't be lost in the redirect
-                sendRedirect(response, loginUrl + EDStatic.questionQuery(userQuery));
-                return;            
-            }
+            //hopefully headers and other info won't be lost in the redirect
+            sendRedirect(response, loginUrl + EDStatic.questionQuery(userQuery));
+            return;            
         }
-
-
-        //*** BASIC
-        /*
-        if (EDStatic.authentication.equals("basic")) {
-
-            //this is based on the example code in Java Servlet Programming, pg 238
-
-            //since login is external, there is no way to limit login attempts to 3 tries in 10 minutes
-
-            //write the html for the form 
-            OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogIn, out);
-            try {
-                writer.write(EDStatic.youAreHere(tLoggedInAs, EDStatic.LogIn));
-
-                //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
-                writer.write(redMessage);           
-
-                writer.write("<p>This ERDDAP is configured to let you log in by entering your User Name and Password.\n");
-
-                if (loggedInAs == null) {
-                    //I don't think this can happen; users must be logged in to see this page
-                    writer.write(
-                    "<p><b>Something is wrong!</b> Your browser should have asked you to log in to see this web page!\n" +
-                    "<br>Tell the ERDDAP administrator to check the &lt;tomcat&gt;/conf/web.xml file.\n" +
-                    "<p>" + EDStatic.loginPublicAccess);
-
-                } else {
-                    //tell user he is logged in
-                    writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
-                        " <b>" + loggedInAs + "</b></font>\n" +
-                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
-                        EDStatic.logout + "</a>)\n");
-                }
-            
-            } catch (Throwable t) {
-                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                writer.write(EDStatic.htmlForException(t));
-            }
-            endHtmlWriter(out, writer, tErddapUrl, false);
-            return;
-        }
-        */
-
 
         //*** CUSTOM
         if (EDStatic.authentication.equals("custom")) {
 
             //is user trying to log in?
+            //use getParameter because form info should have been POST'd
             String user =     request.getParameter("user");
             String password = request.getParameter("password");
             //justPrintable is good security and makes EDStatic.loggedInAsSuperuser special
             if (user     != null) user     = String2.justPrintable(user);   
             if (password != null) password = String2.justPrintable(password);
-            if (loggedInAs == null &&   //can't log in if already logged in
+            if (loggedInAs.equals(EDStatic.loggedInAsHttps) &&   //can't log in if already logged in                
                 user != null && user.length() > 0 && password != null) {
+
                 int minutesUntilLoginAttempt = minutesUntilLoginAttempt(user);
                 if (minutesUntilLoginAttempt > 0) {
                     sendRedirect(response, loginUrl + "?message=" + 
@@ -1190,10 +1181,11 @@ public class Erddap extends HttpServlet {
                         HttpSession session = request.getSession(); //make one if one doesn't exist
                         //it is stored on server.  user doesn't have access, so can't spoof it
                         //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
-                        session.setAttribute("loggedInAs:" + EDStatic.warName, user);  
-//??? should I create/add a ticket number to session so it can't be spoofed???
+                        session.setAttribute("loggedInAs:" + EDStatic.warName, user); 
+                        Math2.sleep(500); //give session changes time to take effect
                         loginSucceeded(user);
-                        sendRedirect(response, loginUrl);
+                        sendRedirect(response, loginUrl + "?message=" + 
+                            SSR.minimalPercentEncode(EDStatic.loginSucceeded));
                         return;
                     } else {
                         //invalid login;  if currently logged in, logout
@@ -1201,6 +1193,7 @@ public class Erddap extends HttpServlet {
                         if (session != null) {
                             session.removeAttribute("loggedInAs:" + EDStatic.warName);
                             session.invalidate();
+                            Math2.sleep(500); //give session changes time to take effect
                         }
                         loginFailed(user);
                         sendRedirect(response, loginUrl + "?message=" + 
@@ -1218,43 +1211,228 @@ public class Erddap extends HttpServlet {
                 }
             }
 
+            //custom login.html
             OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogIn, out);
+            Writer writer = getHtmlWriter(loggedInAs, EDStatic.LogIn, out);
             try {
-                writer.write(EDStatic.youAreHere(tLoggedInAs, EDStatic.LogIn));
+                writer.write(EDStatic.youAreHere(loggedInAs, EDStatic.LogIn));
 
                 //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
-                writer.write(redMessage);           
+                writer.write(standoutMessage);           
 
                 writer.write(EDStatic.loginDescribeCustom);
 
-                if (loggedInAs == null) {
+                if (loggedInAs.equals(EDStatic.loggedInAsHttps)) {
+
+                    String tProblems = String2.replaceAll(EDStatic.loginProblems, 
+                        "&initialHelp;", 
+                        EDStatic.loginProblemExact +
+                        EDStatic.loginProblem3Times);
+                    tProblems = String2.replaceAll(tProblems, "&info;", EDStatic.loginUserNameAndPassword); //it's in loginProblemExact
+                    tProblems = String2.replaceAll(tProblems, "&erddapUrl;", tErddapUrl); //it's in cookies
+
                     //show the login form
                     writer.write(
                     "<p>" + EDStatic.loginNot + "\n" +
                     EDStatic.loginPublicAccess +
                     //use POST, not GET, so that form params (password!) aren't in url (and so browser history, etc.)
                     "<form action=\"login.html\" method=\"post\" id=\"login_form\">\n" +  
-                    "<p><b>" + EDStatic.loginPleaseLogIn + ":</b>\n" +
+                    "<p><b>" + EDStatic.loginToLogIn + ":</b>\n" +
                     "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
                     "  <tr>\n" +
-                    "    <td>" + EDStatic.loginUserName + ": </td>\n" +
+                    "    <td>" + EDStatic.loginUserName + ":&nbsp;</td>\n" +
                     "    <td><input type=\"text\" size=\"30\" value=\"\" name=\"user\" id=\"user\"/></td>\n" +
                     "  </tr>\n" +
                     "  <tr>\n" +
-                    "    <td>" + EDStatic.loginPassword + ": </td>\n" + 
+                    "    <td>" + EDStatic.loginPassword + ":&nbsp;</td>\n" + 
                     "    <td><input type=\"password\" size=\"20\" value=\"\" name=\"password\" id=\"password\"/>\n" +
                     "      <input type=\"submit\" value=\"" + EDStatic.LogIn + "\"/></td>\n" +
                     "  </tr>\n" +
                     "</table>\n" +
                     "</form>\n" +
                     "\n" +
-                    String2.replaceAll(
-                        String2.replaceAll(EDStatic.loginProblems, "&info;", EDStatic.loginUserNameAndPassword),
-                        "&erddapUrl;", tErddapUrl));               
+                    tProblems);
 
                 } else {
-                    //tell user he is already logged in
+                    //tell user he is logged in
+                    writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
+                        " <b>" + loggedInAs + "</b>.</font>\n" +
+                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
+                        EDStatic.logout + "</a>)\n" +
+                        "<p>" + EDStatic.loginBack + "\n" +
+                        String2.replaceAll(EDStatic.loginProblemsAfter, "&second;", ""));
+                }
+            } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(t));
+            }
+            
+            endHtmlWriter(out, writer, tErddapUrl, false);
+            return;
+        }
+
+        //*** EMAIL
+        //Biggest weakness:
+        //  What if BadBob makes the initial request using GoodGeorge's email address 
+        //   and is able to view the invitation email in transit?
+        //  a) Not likely. Most email systems (e.g., gmail) offer end-to-end encryption.
+        //  b) Unless the email is deleted before reaching GoodGeorge, 
+        //    at least GoodGeorge will know when someone is doing this.
+        //  c) ??? Offer a link to withdraw this invitation / log out that email address.
+        if (EDStatic.authentication.equals("email")) {
+
+            int offerValidMinutes = 15;
+            //Is user submitting any info (from form or email)?
+            String email = request.getParameter("email");  //from form and email
+            String nonce = request.getParameter("nonce");  //from email
+            //justPrintable is good security and makes EDStatic.loggedInAsSuperuser special
+            if (email != null) email = String2.justPrintable(email).toLowerCase();  //so case insensitive, to avoid trouble
+            if (nonce != null) nonce = String2.justPrintable(nonce);
+            String testEmailValid = EDStatic.subscriptions.testEmailValid(email);
+
+            //FIRST STEP: Is user submitting is user requesting the invitation email?
+            //use getParameter because form info may have been POST'd
+            if (!loggedInAs.equals(EDStatic.loggedInAsHttps)) {  //already logged in!
+                //fall through
+
+            } else if (email == null) {  //not yet trying to log in
+                //fall through
+
+            } else if (testEmailValid.length() > 0) {
+                sendRedirect(response, loginUrl + "?message=" + SSR.minimalPercentEncode(testEmailValid));
+                return;
+
+            } else if (!EDStatic.onListOfUsers(email)) {               
+                sendRedirect(response, loginUrl + "?message=" + 
+                    SSR.minimalPercentEncode(
+                        "That email address isn't on the list of users for this ERDDAP.\n" +
+                        "Contact " + EDStatic.adminContact() + " to ask to be added to the list.\n" +
+                        "Then try again."));
+                return;
+
+            } else if (nonce == null) {
+
+                //too many login attempts?
+                int minutesUntilLoginAttempt = minutesUntilLoginAttempt(email);
+                if (minutesUntilLoginAttempt > 0) {
+                    sendRedirect(response, loginUrl + "?message=" + 
+                        SSR.minimalPercentEncode(MessageFormat.format(
+                            EDStatic.loginAttemptBlocked, email, "" + minutesUntilLoginAttempt)));
+                    return;
+                }
+
+                //send invitation email
+                HttpSession session = request.getSession(); //make one if one doesn't exist
+                //It is stored on server and tied to user's browser with a cookie.  
+                //User doesn't have access to server side info, so can't spoof it.
+                //  (except by guessing the sessionID number (a long) and storing a cookie with it?)
+                long expires = System.currentTimeMillis() + offerValidMinutes * Calendar2.MILLIS_PER_MINUTE;  
+                String newNonce = EDStatic.nonce(email + "\n" + expires).toLowerCase(); //ensure lowerCase
+                String error = EDStatic.email(email, 
+                    EDStatic.DONT_LOG_THIS_EMAIL + "Invitation to log into ERDDAP.", 
+                    "ERDDAP received a request to log in " + email + " .\n" +
+                    "If you didn't make this request, please contact the ERDDAP administrator,\n" +
+                    EDStatic.adminIndividualName + " (email: " + EDStatic.adminEmail + "), to report this abuse.\n" +
+                    "\n" +
+                    "To log in to ERDDAP, click on this link\n" +
+                    loginUrl + "?email=" + SSR.minimalPercentEncode(email) + "&nonce=" + newNonce + "\n" +
+                    "(or copy and paste it into the address field of your web browser).\n" +
+                    "This invitation is valid for " + offerValidMinutes + " minutes, until " + 
+                        Calendar2.epochSecondsToIsoStringT(expires / 1000.0) + "Z, and\n" +
+                    "is only valid in the same browser that you used to make the login request.");
+                if (error.length() == 0) {
+                    session.setAttribute("loggingInAs:" + EDStatic.warName, 
+                        email + "\n" + expires + "\n" + newNonce);
+                    Math2.sleep(500); //give session changes time to take effect
+                    sendRedirect(response, loginUrl + "?message=" +  
+                        SSR.minimalPercentEncode(
+                            "Okay. An invitation to log in has been emailed to " + email + " .\n" +
+                            "Wait for the email. Then click the link in the email to log in."));
+                    return;
+                } else {  //trouble
+                    session.removeAttribute("loggingInAs:" + EDStatic.warName);
+                    Math2.sleep(500); //give session changes time to take effect
+                    sendRedirect(response, loginUrl + "?message=" +  
+                        SSR.minimalPercentEncode(error));
+                }
+                return;
+
+            } else { 
+                //does nonce match info stored in session?
+                HttpSession session = request.getSession(false); //make one if one doesn't exist
+                String info = session == null? "" : 
+                    (String)session.getAttribute("loggingInAs:" + EDStatic.warName);
+                String parts[] = String2.split(info, '\n');
+                if (parts == null || parts.length != 3 ||  //no loggingInAs info
+                    parts[0] == null || parts[1] == null || parts[2] == null ||
+                    !email.equals(parts[0].toLowerCase()) ||  //wrong email?
+                    String2.parseLong(parts[1]) == Long.MAX_VALUE || //shouldn't happen
+                    System.currentTimeMillis() > String2.parseLong(parts[1]) || //waited too long?
+                    !nonce.toLowerCase().equals(parts[2].toLowerCase())) {  //wrong nonce?
+                    //failure
+                    if (session != null) {
+                        session.removeAttribute("loggingInAs:" + EDStatic.warName);
+                        session.invalidate();
+                        Math2.sleep(500); //give session changes time to take effect
+                    }
+                    loginFailed(email);
+                    sendRedirect(response, loginUrl + "?message=" +  
+                        SSR.minimalPercentEncode(EDStatic.loginFailed));
+                    return;
+
+                } else {
+                    //success
+                    session.removeAttribute("loggingInAs:" + EDStatic.warName);
+                    session.setAttribute(   "loggedInAs:"  + EDStatic.warName, email); 
+                    Math2.sleep(500); //give session changes time to take effect
+                    loginSucceeded(email);
+                    sendRedirect(response, loginUrl + "?message=" + 
+                        SSR.minimalPercentEncode(EDStatic.loginSucceeded));
+                    return;
+                }
+            }
+
+            //email login.html
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, EDStatic.LogIn, out);
+            try {
+                writer.write(EDStatic.youAreHere(loggedInAs, EDStatic.LogIn));
+
+                //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
+                writer.write(standoutMessage);           
+
+                writer.write(EDStatic.loginDescribeEmail);
+
+                if (loggedInAs.equals(EDStatic.loggedInAsHttps)) {
+
+                    //show the login form
+                    String tProblems = String2.replaceAll(EDStatic.loginProblems, 
+                        "&initialHelp;", 
+                        EDStatic.loginProblemSameBrowser + 
+                        EDStatic.loginProblemExpire +
+                        EDStatic.loginProblem3Times);
+                    tProblems = String2.replaceAll(tProblems, "&offerValidMinutes;", "" + offerValidMinutes); //it's in expire
+                    tProblems = String2.replaceAll(tProblems, "&erddapUrl;", tErddapUrl); //it's in cookies
+
+                    writer.write(
+                    "<p>" + EDStatic.loginNot + "\n" +
+                    EDStatic.loginPublicAccess +
+                    //use POST, not GET, so that form params (password!) aren't in url (and so browser history, etc.)
+                    "<form action=\"login.html\" method=\"post\" id=\"login_form\">\n" +  
+                    "<p><b>" + EDStatic.loginToLogIn + ":</b>\n" +
+                    "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
+                    "  <tr>\n" +
+                    "    <td>" + EDStatic.loginYourEmailAddress + ":&nbsp;</td>\n" +
+                    "    <td><input type=\"text\" size=\"60\" value=\"\" name=\"email\" id=\"email\"/>\n" +
+                    "     <input type=\"submit\" value=\"" + EDStatic.LogIn + "\"/></td>\n" +
+                    "  </tr>\n" +
+                    "</table>\n" +
+                    "</form>\n" +
+                    "\n" +
+                    tProblems); 
+
+                } else {
+                    //tell user he is logged in
                     writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
                         " <b>" + loggedInAs + "</b>.</font>\n" +
                         "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
@@ -1272,18 +1450,99 @@ public class Erddap extends HttpServlet {
         }
 
 
+        //*** Google
+        if (EDStatic.authentication.equals("google")) {
+
+            //Google login.html
+            //see https://developers.google.com/identity/sign-in/web/
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, EDStatic.LogIn, 
+                "<meta name=\"google-signin-client_id\" " + 
+                  "content=\"" + EDStatic.googleClientID + "\">\n" + 
+                  "<script src=\"https://apis.google.com/js/platform.js\" async defer></script>\n", //I removed async and defer so it executes immediately
+                out);
+
+            try {
+                writer.write(
+                    EDStatic.youAreHere(loggedInAs, EDStatic.LogIn));
+
+                //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
+                writer.write(standoutMessage);           
+
+                writer.write(EDStatic.loginDescribeGoogle);
+
+                if (loggedInAs.equals(EDStatic.loggedInAsHttps)) {
+
+                    //login page for google
+                    String tProblems = String2.replaceAll(EDStatic.loginProblems, 
+                        "&initialHelp;", 
+                        EDStatic.loginProblemGoogleAgain);
+                    tProblems = String2.replaceAll(tProblems, "&erddapUrl;", tErddapUrl); //it's in cookies
+
+                    //show the login button
+                    HtmlWidgets widgets = new HtmlWidgets("", false, //tHtmlTooltips, 
+                        EDStatic.imageDir);
+                    writer.write(
+                    "<script>\n" +
+                    "  function onSignIn(googleUser) {\n" +
+                    "    var id_token = googleUser.getAuthResponse().id_token;\n" +
+                    "    var xhr = new XMLHttpRequest();\n" +
+                    //loginGoogle.html just handles setting session info.
+                    //It isn't a web page and the user isn't redirected there.
+                    "    xhr.open('POST', '" + EDStatic.erddapHttpsUrl + "/loginGoogle.html');\n" +
+                    "    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');\n" +
+                    "    xhr.onload = function() {\n" +
+                    "      console.log('Signed in as: ' + xhr.responseText);\n" +                    
+                    "    };\n" +
+                    "    xhr.send('idtoken=' + id_token);\n" +
+                    "  }\n" +
+                    "</script>\n" +
+                    "\n" +
+                    "<p>" + EDStatic.loginNot + "\n" +
+                    EDStatic.loginPublicAccess +
+                    "<p>" + EDStatic.loginToLogIn + ":\n" +
+                    "<ol>\n" +
+                    "<li>" + EDStatic.loginGoogleSignIn + "\n" +
+                    "  <div id=\"gSignInButton\" class=\"g-signin2\" data-onsuccess=\"onSignIn\"></div>\n" +
+                    "  <br>&nbsp;\n" +
+                    "<li>" + EDStatic.Then + "\n" +
+                    widgets.htmlButton("button", "loginToERDDAP", "", "", 
+                        EDStatic.loginGoogleErddap, 
+                        "onclick='window.location.assign(\"" + 
+                        loginUrl + "\")'") + //don't say succeeded. It only succeeds if user successfully signed into Google.
+                    "</ol>\n" +
+                    tProblems);               
+
+                } else {
+                    //tell user he is logged in
+                    writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
+                        " <b>" + loggedInAs + "</b>.</font>\n" +
+                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
+                        EDStatic.logout + "</a>)\n" +
+                        "<p>" + EDStatic.loginBack + "\n" +
+                        String2.replaceAll(EDStatic.loginProblemsAfter, "&second;", ""));
+                }
+            } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+                writer.write(EDStatic.htmlForException(t));
+            }
+            
+            endHtmlWriter(out, writer, tErddapUrl, false);
+            return;
+        } 
+
+
         //*** OpenID
-        if (EDStatic.authentication.equals("openid")) {
+/*        if (EDStatic.authentication.equals("openid")) {
 
             //this is based on the example code at http://joid.googlecode.com/svn/trunk/examples/server/login.jsp
 
             //check if user is requesting to signin, before writing content
             String oid = request.getParameter("openid_url");
-            if (loggedInAs != null) {
+            if (!loggedInAs.equals(loggedInAsHttps)) {
                 loginSucceeded(loggedInAs); //this over-counts successes (any time logged-in user visits login page)
             }
-            if (loggedInAs == null &&   //can't log in if already logged in
-                request.getParameter("signin") != null && oid != null && oid.length() > 0) {
+            if (request.getParameter("signin") != null && oid != null && oid.length() > 0) {
 
                 //first thing: normalize oid
                 if (!oid.startsWith("http")) 
@@ -1321,20 +1580,20 @@ public class Erddap extends HttpServlet {
          
             //write the html for the openID info and form
             OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(tLoggedInAs, "OpenID " + EDStatic.LogIn, out);
+            Writer writer = getHtmlWriter(loggedInAs, "OpenID " + EDStatic.LogIn, out);
             try {
-                writer.write(EDStatic.youAreHere(tLoggedInAs,
+                writer.write(EDStatic.youAreHere(loggedInAs,
                     "<img align=\"bottom\" src=\"" + //align=middle looks bad on safari
-                    EDStatic.imageDirUrl(tLoggedInAs) + "openid.png\" alt=\"OpenID\"/>OpenID " +
+                    EDStatic.imageDirUrl(loggedInAs) + "openid.png\" alt=\"OpenID\"/>OpenID " +
                     EDStatic.LogIn));
 
                 //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
-                writer.write(redMessage);           
+                writer.write(standoutMessage);           
 
                 //OpenID info
                 writer.write(String2.replaceAll(EDStatic.loginDescribeOpenID, "&erddapUrl;", tErddapUrl));
 
-                if (loggedInAs == null) {
+                if (loggedInAs.equals(EDStatic.loggedInAsHttps) {
                     //show the login form
                     writer.write(
                     "<p>" + EDStatic.loginNot + "\n" + 
@@ -1368,7 +1627,7 @@ public class Erddap extends HttpServlet {
                         "&erddapUrl;", tErddapUrl));               
   
                 } else {
-                    //tell user he is already logged in
+                    //tell user he is logged in
                     String s = String2.replaceAll(EDStatic.loginProblemsAfter, "&second;", 
                         "<li>" + EDStatic.loginOpenIDSame + "\n" +
                         "  <br>&nbsp;\n");
@@ -1388,16 +1647,17 @@ public class Erddap extends HttpServlet {
             endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }
+*/
 
         //*** Other
         //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, 
         //    "This ERDDAP is not set up to let users log in.");
         OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogIn, out);
+        Writer writer = getHtmlWriter(loggedInAs, EDStatic.LogIn, out);
         try {
             writer.write(
-                EDStatic.youAreHere(tLoggedInAs, EDStatic.LogIn) +
-                redMessage +
+                EDStatic.youAreHere(loggedInAs, EDStatic.LogIn) +
+                standoutMessage +
                 "<p>" + EDStatic.loginCanNot + "\n");       
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -1417,75 +1677,31 @@ public class Erddap extends HttpServlet {
     public void doLogout(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
 
-        String loginUrl = EDStatic.erddapHttpsUrl + "/login.html";
+        String tErddapUrl = EDStatic.erddapHttpsUrl;
+        String loginUrl = tErddapUrl + "/login.html";
+
+        //user wasn't logged in?
+        String encodedYouWerentLoggedIn = "?message=" + 
+            SSR.minimalPercentEncode(EDStatic.loginAreNot);
+        if (loggedInAs == null || loggedInAs.equals(EDStatic.loggedInAsHttps)) {
+            //user wasn't logged in
+            sendRedirect(response, loginUrl + encodedYouWerentLoggedIn);
+            return;
+        }
 
         try {       
-            //user wasn't logged in?
-            String encodedYouWerentLoggedIn = "?message=" + 
-                SSR.minimalPercentEncode(EDStatic.loginWereNot);
-            if (loggedInAs == null && !EDStatic.authentication.equals("basic")) {
-                //user wasn't logged in
-                sendRedirect(response, loginUrl + encodedYouWerentLoggedIn);
-                return;
-            }
-
             //user was logged in
             HttpSession session = request.getSession(false); //false = don't make a session if none currently
             String encodedSuccessMessage = "?message=" + SSR.minimalPercentEncode(
                 EDStatic.logoutSuccess);
 
-            //*** BASIC
-            /*
-            if (EDStatic.authentication.equals("basic")) {
-                if (session != null) {
-                    //!!!I don't think this works!!!
-                    ArrayList al = String2.toArrayList(session.getAttributeNames());
-                    for (int i = 0; i < al.size(); i++)
-                        session.removeAttribute(al.get(i).toString());
-                    session.invalidate();
-                }
-                EDStatic.tally.add("Log out (since startup)", "success");
-                EDStatic.tally.add("Log out (since last daily report)", "success");
-
-                //show the log out web page.   
-                //Don't return to login.html, which triggers logging in again.
-                String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
-                OutputStream out = getHtmlOutputStream(request, response);
-                Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogOut, out);
-                try {
-                    writer.write(EDStatic.youAreHere(tLoggedInAs, EDStatic.LogOut));
-                    if (loggedInAs == null) { 
-                        //never was logged in 
-                        writer.write(EDStatic.loginWereNot);
-                    } else {
-                        //still logged in?
-                        loggedInAs = EDStatic.getLoggedInAs(request);
-                        if (loggedInAs == null) {
-                            //successfully logged out
-                            String s = String2.replaceAll(EDStatic.logoutSuccess, "\n", "\n<br>");
-                            s = String2.replaceAll(s, "   ", " &nbsp; ");
-                            writer.write(s);       
-                        } else {
-                            //couldn't log user out!
-                            writer.write(
-                                "ERDDAP is having trouble logging you out.\n" +
-                                "<br>To log out, please close your browser.\n");
-                        }
-                    }
-                } catch (Throwable t) {
-                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                    writer.write(EDStatic.htmlForException(t));
-                }
-                endHtmlWriter(out, writer, tErddapUrl, false);                
-                return;
-            }
-            */
-
-            //*** CUSTOM
-            if (EDStatic.authentication.equals("custom")) {
+            //*** CUSTOM and EMAIL logout
+            if (EDStatic.authentication.equals("custom") ||
+                EDStatic.authentication.equals("email")) {
                 if (session != null) { //should always be !null
                     session.removeAttribute("loggedInAs:" + EDStatic.warName);
                     session.invalidate();
+                    Math2.sleep(500); //give session changes time to take effect
                     EDStatic.tally.add("Log out (since startup)", "success");
                     EDStatic.tally.add("Log out (since last daily report)", "success");
                 }
@@ -1493,12 +1709,77 @@ public class Erddap extends HttpServlet {
                 return;
             }
 
+            //*** GOOGLE logout
+            if (EDStatic.authentication.equals("google")) {
+                if (session != null) { //should always be !null
+                    session.removeAttribute("loggedInAs:" + EDStatic.warName);
+                    session.invalidate();
+                    Math2.sleep(500); //give session changes time to take effect
+                    EDStatic.tally.add("Log out (since startup)", "success");
+                    EDStatic.tally.add("Log out (since last daily report)", "success");
+                }
+
+                //send user to web page that signs out then redirects to login.html
+                //see https://developers.google.com/identity/sign-in/web/
+                OutputStream out = getHtmlOutputStream(request, response);
+                Writer writer = getHtmlWriter(loggedInAs, EDStatic.LogOut, 
+                    "<meta name=\"google-signin-client_id\" " + 
+                      "content=\"" + EDStatic.googleClientID + "\">\n",
+                    out);
+
+                try {
+                    HtmlWidgets widgets = new HtmlWidgets("", false, //tHtmlTooltips, 
+                        EDStatic.imageDir);
+                    writer.write(
+                        EDStatic.youAreHere(loggedInAs, EDStatic.LogOut) +
+                        //"Logging out and redirecting back to login.html.\n" +
+                        //Sequence of events here was very difficult to set up.
+                        //Javascript scripts are executed in order of appearance.
+                        //solution to gapi.auth2 is undefined:
+                        //http://stackoverflow.com/questions/29815870/typeerror-gapi-auth2-undefined
+                        "<script type=\"text/javascript\">\n" +
+                        "  function initAuth2() {\n" +
+                        "    console.log('in initAuth2()');\n" +
+                        "    gapi.load('auth2', function() {\n" +
+                        "      gapi.auth2.init();\n" +
+                        "    });\n" +
+                        "  }\n" +
+                        "</script>\n" +
+                        "<script src=\"https://apis.google.com/js/platform.js?onload=initAuth2\"></script>\n" + //I removed async and defer so fetched and run immediately
+                        "<script type=\"text/javascript\">\n" +
+                        "  function signOut() {\n" +       
+                        "    console.log('in mySignOff()');\n" +
+                        "    var auth2 = gapi.auth2.getAuthInstance();\n" +
+                        "    auth2.signOut().then(function () {\n" +
+                        "      console.log('User signed out.');\n" +
+                        "    });\n" +
+                        "    window.location.assign(\"" + 
+                            loginUrl + encodedSuccessMessage + "\");\n" +
+                        "  }\n" +
+                        //"</script>\n" +
+                        //"<script type=\"text/javascript\">\n" +
+                        //"  onload = mySignOff;\n" +
+                        "</script>\n" +
+                        EDStatic.loginAs + " <b>" + loggedInAs + "</b>.\n" +
+                        widgets.htmlButton("button", "logout", "", 
+                            EDStatic.LogOut, EDStatic.LogOut, 
+                            "onclick=\"signOut();\""));
+                } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+                    writer.write(EDStatic.htmlForException(t));
+                }
+                
+                endHtmlWriter(out, writer, tErddapUrl, false);
+                return;
+            }
+
             //*** OpenID
-            if (EDStatic.authentication.equals("openid")) {
+/*            if (EDStatic.authentication.equals("openid")) {
                 if (session != null) {  //should always be !null
                     OpenIdFilter.logout(session);
                     session.removeAttribute("user");
                     session.invalidate();
+                    Math2.sleep(500); //give session changes time to take effect
                     EDStatic.tally.add("Log out (since startup)", "success");
                     EDStatic.tally.add("Log out (since last daily report)", "success");
                 }
@@ -1506,7 +1787,7 @@ public class Erddap extends HttpServlet {
                     SSR.minimalPercentEncode(" * " + EDStatic.logoutOpenID));
                 return;
             }
-
+*/
             //*** Other    (shouldn't get here)
             sendRedirect(response, loginUrl + encodedYouWerentLoggedIn);
             return;
@@ -3086,6 +3367,9 @@ writer.write(
         }
 
         endHtmlWriter(out, writer, tErddapUrl, false);
+
+        //as a convenience to admins, viewing status.html calls String2.flushLog()
+        String2.flushLog();
     }
 
     /**
@@ -3117,12 +3401,12 @@ writer.write(
                 "<h2 align=\"center\"><a name=\"WebService\">Accessing</a> ERDDAP's RESTful Web Services</h2>\n" +
                 "ERDDAP is both:\n" +
                 "<ul>\n" +
-                "<li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Web_application\">A web application" +
+                "<li><a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_application\">A web application" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
                 "  &ndash; a web page with a form that humans with browsers can use\n" +
                 "  (in this case, to get data, graphs, or information about datasets).\n" +
                 "  <br>&nbsp;\n" +
-                "<li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Web_service\">A RESTful web service" +
+                "<li><a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_service\">A RESTful web service" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
                 "  &ndash; a URL that computer programs can use\n" +
                 "  (in this case, to get data, graphs, and information about datasets).\n" +
@@ -3156,7 +3440,7 @@ writer.write(
                 "<p><a name=\"requests\"><b>RESTful URL Requests</b></a>\n" +
                 "<br>Requests for user-interface information from ERDDAP (for example, search results)\n" +
                 "use the web's universal standard for requests:\n" +
-                "<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Uniform_Resource_Locator\">URLs" +
+                "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Uniform_Resource_Locator\">URLs" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
                 "sent via\n" +
                 "<a href=\"http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3\">HTTP GET" +
@@ -3175,17 +3459,17 @@ writer.write(
                 "<li> They are universally supported (in browsers, computer languages, operating system\n" +
                 "  tools, etc).\n" +
                 "<li> They are a foundation of\n" +
-                "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Representational_State_Transfer\">Representational State Transfer (REST)" +
+                "  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Representational_State_Transfer\">Representational State Transfer (REST)" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
                 "  <a rel=\"help\" href=\"http://www.crummy.com/writing/RESTful-Web-Services/\">Resource Oriented Architecture (ROA)" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "<li> They facilitate using the World Wide Web as a big distributed application,\n" +
                 "  for example via\n" +
-                "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\">mashups" +
+                "  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\">mashups" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
-                "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Ajax_%28programming%29\">AJAX applications" +
+                "  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Ajax_%28programming%29\">AJAX applications" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-                "<li> They are <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Stateless_protocol\">stateless" +
+                "<li> They are <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Stateless_protocol\">stateless" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
                 "  as is ERDDAP, which makes the system simpler.\n" +
                 "<li> A URL completely define a given request, so you can bookmark it in your browser,\n" +
@@ -3196,17 +3480,24 @@ writer.write(
                 "<br>In URLs, some characters are not allowed (for example, spaces) and other characters\n" +
                 "have special meanings (for example, '&amp;' separates key=value pairs in a query).\n" +
                 "When you fill out a form on a web page and click on Submit, your browser automatically\n" +
-                "<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encodes" +
+                "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encodes" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-                "  the special characters in the URL (for example, by replacing ' ' in a query\n" +
-                "value with \"%20\", for example,\n" +
+                "  the special characters in the URL (for example, space becomes %20), for example,\n" +
                 "<br><a href=\"" + htmlQueryUrlWithSpaces + "\">" + htmlQueryUrlWithSpaces + "</a>\n" +
-                "<br>But if your computer program or script generates the URLs, it may need to do the percent\n" +
-                "encoding itself.  Programming languages have tools to do this (for example, see Java's\n" +
-                "<a rel=\"help\" href=\"http://docs.oracle.com/javase/7/docs/api/java/net/URLEncoder.html\">java.net.URLEncoder" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>).\n" +
+                "<br>But if your computer program or script generates the URLs, it probably needs to do the percent\n" +
+                "encoding itself.  If so, then probably all characters other than A-Za-z0-9_-!.~'()*\n" +
+                "in the query's values (the parts after the '=' signs) need to be encoded\n" +
+                "as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+                "Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+                "(ask a programmer for help). Programming languages have tools to do this (for example, see Java's\n" +
+                "<a rel=\"help\" href=\"http://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> and JavaScript's\n" +
+                "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
+                "<a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "\n" +  
-                
+
                 //compression
                 "<p>" + OutputStreamFromHttpResponse.acceptEncodingHtml(tErddapUrl) +
                 "\n" +
@@ -3218,7 +3509,7 @@ writer.write(
                 "results as a table of data in these common, computer-program friendly, file types:\n" +
                 "<ul>\n" + //list of plainFileTypes
                 "<li>.csv - a comma-separated ASCII text table.\n" +
-                    "(<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">more&nbsp;info" +
+                    "(<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Comma-separated_values\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.htmlTable - an .html web page with the data in a table.\n" +
                     "(<a rel=\"help\" href=\"http://www.w3schools.com/html/html_tables.asp\">more&nbsp;info" +
@@ -3311,7 +3602,7 @@ writer.write(
                     EDStatic.encodedDefaultPIppQuery + 
                     "&amp;searchFor=wind%20speed") +
                 "  <br>(Your program or script may need to \n" +
-                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode" +
+                "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent-encode" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
@@ -3329,7 +3620,7 @@ writer.write(
                     EDStatic.encodedDefaultPIppQuery + "\">" + EDStatic.advancedSearch + "</a>\n" +
                 "    in a browser to figure out all of the optional parameters.\n" +
                 "  (Your program or script may need to \n" +
-                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode" +
+                "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent-encode" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
@@ -3883,8 +4174,18 @@ writer.write(
                 return;
             }
             if (!dataset.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-                EDStatic.redirectToLogin(loggedInAs, response, id);
-                return;
+                //exception is graphsAccessibleTo=public
+                if (dataset.graphsAccessibleToPublic()) {
+                    if (dataset.graphsAccessibleTo_fileTypeNamesContains(fileTypeName)) {
+                        //fall through to get graphics
+                    } else {
+                        EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, true);
+                        return;
+                    }
+                } else {
+                    EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, false);
+                    return;
+                }
             }
             if (fileTypeName.equals(".graph") && dataset.accessibleViaMAG().length() > 0) {
                 sendResourceNotFoundError(request, response, dataset.accessibleViaMAG());
@@ -3926,13 +4227,17 @@ writer.write(
                 FromErddap fromErddap = (FromErddap)dataset;
                 double sourceVersion = fromErddap.sourceErddapVersion();
                 //some requests are handled locally...
-                if (!fileTypeName.equals(".html") && 
-                    !fileTypeName.equals(".graph") &&
-                    !fileTypeName.endsWith("ngInfo") &&  //pngInfo EDD.readPngInfo makes local file in all cases
-                    !fileTypeName.endsWith("dfInfo") &&  //pdfInfo
+                if (fileTypeName.equals(".das") || 
+                    fileTypeName.equals(".dds") || 
+                    fileTypeName.equals(".html") || 
+                    fileTypeName.equals(".graph") ||
+                    fileTypeName.endsWith("ngInfo") ||  //pngInfo EDD.readPngInfo makes local file in all cases
+                    fileTypeName.endsWith("dfInfo") ||  //pdfInfo
                     //for old remote erddaps, make .png locally so pngInfo is available
-                    !(fileTypeName.equals(".png") && sourceVersion <= 1.22) &&
-                    !fileTypeName.equals(".subset")) { 
+                    (fileTypeName.equals(".png") && sourceVersion <= 1.22) ||
+                    fileTypeName.equals(".subset")) { 
+                    //handle locally
+                } else {
                     //redirect the request
                     String tUrl = fromErddap.getPublicSourceErddapUrl() + fileTypeName;
                     String tqs = EDStatic.questionQuery(request.getQueryString());  //still encoded
@@ -3979,12 +4284,6 @@ writer.write(
                         tableDatasetHashMap.get(id);
                     if (dataset2 != null && dataset != dataset2) { //yes, simplistic !=,  not !equals
                         //yes! ask dataset2 to respond to the query
-
-                        //does user still have access to the dataset?
-                        if (!dataset2.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-                            EDStatic.redirectToLogin(loggedInAs, response, id);
-                            return;
-                        }
 
                         try {
                             //note that this will fail if the previous reponse is already committed
@@ -4093,9 +4392,9 @@ writer.write(
             int nids = ids.size();
             for (int ti = 0; ti < nids; ti++) {
                 EDD edd = gridDatasetHashMap.get(ids.get(ti));
-                if (edd != null && //if just deleted
+                if (edd != null && //in case just deleted
                     edd.accessibleViaFilesDir().length() > 0 &&
-                    (edd.isAccessibleTo(roles))) {
+                    edd.isAccessibleTo(roles)) { // /files/, so graphsAccessibleToPublic is irrelevant
                     subDirNames.add(edd.datasetID());
                     subDirDes.add(edd.title());
                 }
@@ -4104,9 +4403,9 @@ writer.write(
             nids = ids.size();
             for (int ti = 0; ti < nids; ti++) {
                 EDD edd = tableDatasetHashMap.get(ids.get(ti));
-                if (edd != null && //if just deleted
+                if (edd != null && //in case just deleted
                     edd.accessibleViaFilesDir().length() > 0 &&
-                    (edd.isAccessibleTo(roles))) {
+                    edd.isAccessibleTo(roles)) { // /files/, so graphsAccessibleToPublic is irrelevant
                     subDirNames.add(edd.datasetID());
                     subDirDes.add(edd.title());
                 }
@@ -4197,8 +4496,11 @@ writer.write(
             sendResourceNotFoundError(request, response, "this dataset is not accessible via /files/");
             return;
         }
-        if (!edd.isAccessibleTo(roles)) { //listPrivateDatasets doesn't apply
-            EDStatic.redirectToLogin(loggedInAs, response, id);
+        if (!edd.isAccessibleTo(roles)) { 
+            // /files/ access: all requests are data requests
+            //listPrivateDatasets and graphsAccessibleToPublic don't apply
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, 
+                edd.graphsAccessibleToPublic());
             return;
         }
 
@@ -4368,7 +4670,7 @@ writer.write(
 
 
     /**
-     * This sends the list of griddap, tabledap, sos, wcs, wms datasets
+     * This sends the list of griddap, tabledap, sos, wcs, or wms datasets
      *
      * @param request
      * @param response
@@ -4415,7 +4717,8 @@ writer.write(
             for (int ti = 0; ti < ntids; ti++) {
                 EDD edd = gridDatasetHashMap.get(tids.get(ti));
                 if (edd != null && //if just deleted
-                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)) ||
+                        edd.graphsAccessibleToPublic()) { //griddap requests may be graphics requests {
                     titles.add(edd.title());
                     ids.add(   edd.datasetID());
                 }
@@ -4429,7 +4732,8 @@ writer.write(
             for (int ti = 0; ti < ntids; ti++) {
                 EDD edd = tableDatasetHashMap.get(tids.get(ti));
                 if (edd != null && //if just deleted
-                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)) ||
+                        edd.graphsAccessibleToPublic()) { //tabledap requests may be graphics requests 
                     titles.add(edd.title());
                     ids.add(   edd.datasetID());
                 }
@@ -4445,6 +4749,7 @@ writer.write(
                 if (edd != null && //if just deleted
                     edd.accessibleViaSOS().length() == 0 &&
                     (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    //no edd.graphsAccessibleToPublic() since sos requests are all data requests
                     titles.add(edd.title());
                     ids.add(   edd.datasetID());
                 }
@@ -4461,6 +4766,7 @@ writer.write(
                 if (edd != null && //if just deleted
                     edd.accessibleViaWCS().length() == 0 &&
                     (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    //no edd.graphsAccessibleToPublic() since wcs requests are all data requests
                     titles.add(edd.title());
                     ids.add(   edd.datasetID());
                 }
@@ -4475,7 +4781,8 @@ writer.write(
                 EDD edd = gridDatasetHashMap.get(tids.get(ti));
                 if (edd != null && //if just deleted
                     edd.accessibleViaWMS().length() == 0 &&
-                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles) ||
+                        edd.graphsAccessibleToPublic())) { //all wms requests are graphics requests
                     titles.add(edd.title());
                     ids.add(   edd.datasetID());
                 }
@@ -4696,8 +5003,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //check loggedInAs
         String roles[] = EDStatic.getRoles(loggedInAs);
-        if (!eddTable.isAccessibleTo(roles)) {
-            EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+        if (!eddTable.isAccessibleTo(roles)) { 
+            //SOS access: all requests are data requests
+            //listPrivateDatasets and graphAccessibleToPublic don't apply
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
+                eddTable.graphsAccessibleToPublic());
             return;
         }
 
@@ -5052,7 +5362,10 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         //check loggedInAs
         String roles[] = EDStatic.getRoles(loggedInAs);
         if (!eddGrid.isAccessibleTo(roles)) {
-            EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+            //WCS access: all requests are data requests
+            //listPrivateDatasets and graphsAccessibleToPublic don't apply
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
+                eddGrid.graphsAccessibleToPublic());
             return;
         }
 
@@ -5100,7 +5413,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day
             String tUrl = ((EDDGridFromErddap)eddGrid).getPublicSourceErddapUrl();
             sendRedirect(response, String2.replaceAll(tUrl, "/griddap/", "/wcs/") + 
-                "/" + EDDGrid.wcsServer + "?" + userQuery);  
+                "/" + EDDGrid.wcsServer + "?" + userQuery);
             return;
         }
 
@@ -5340,8 +5653,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         //for a specific dataset
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
         if (eddGrid != null) {
-            if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-                EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+            if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+                !eddGrid.graphsAccessibleToPublic()) { 
+                //WMS access: all requests are graphics requests
+                //listPrivateDatasets doesn't apply
+                EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
+                    false);
                 return;
             }
 
@@ -5387,7 +5704,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     String tQuery = String2.replaceAll(userQuery, fe.datasetID() + "%3A", sourceDatasetID + "%3A");
                     tQuery =        String2.replaceAll(tQuery,    fe.datasetID() + ":",   sourceDatasetID + ":");
                     sendRedirect(response, String2.replaceAll(tUrl, "/griddap/", "/wms/") + "/" + EDD.WMS_SERVER + 
-                        "?" + tQuery);  
+                        "?" + tQuery);
                     return;
                 }
 
@@ -5636,9 +5953,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  </table>\n" +
                 "  <sup>*</sup> Parameter names are case-insensitive.\n" +
                 "  <br>Parameter values are case sensitive and must be\n" +
-                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
-                "    which your browser normally handles for you.\n" +
+                "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+                "   <br>all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where\n" +
+                "   <br>HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+                "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+                "   <br>(ask a programmer for help). There are\n" +
+                    "<a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
                 "  <br>&nbsp;\n" +
                 "\n");
@@ -5793,9 +6115,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //WMS 1.3.0 spec section 6.8.1
                 "  <sup>*</sup> Parameter names are case-insensitive.\n" +
                 "  <br>Parameter values are case sensitive and must be\n" +
-                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
-                "    which your browser normally handles for you.\n" +
+                "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+                "  <br>all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where\n" +
+                "  <br>HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+                "  <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+                "   <br>(ask a programmer for help). There are\n" +
+                    "<a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
                 "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
                 "<p>(Revised from Table 8 of the WMS 1.3.0 specification)\n" +
                 "\n");
@@ -5968,8 +6295,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 EDDGrid eddGrid = gridDatasetHashMap.get(mainDatasetID);
                 if (eddGrid == null) {
                     mainDatasetID = null; //something else is going on, e.g., wms for all dataset's together
-                } else if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-                    EDStatic.redirectToLogin(loggedInAs, response, mainDatasetID);
+                } else if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+                           !eddGrid.graphsAccessibleToPublic()) { 
+                    //WMS: all requests are graphics requests
+                    //listPrivateDatasets doesn't apply
+                    EDStatic.sendHttpUnauthorizedError(loggedInAs, response, mainDatasetID,
+                        false);
                     return;
                 } else if (eddGrid instanceof EDDGridFromErddap &&
                     //earlier versions of wms work ~differently
@@ -6005,7 +6336,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                     etUrl.append(SSR.minimalPercentEncode(part.substring(0, epo)) + "=" +
                                                  SSR.minimalPercentEncode(part.substring(epo + 1)));
                                 } else {
-                                    etUrl.append(qParts[qpi]);
+                                    etUrl.append(qParts[qpi]); //SSR.minimalPercentEncode?
                                 }
                             }
                         }
@@ -6256,8 +6587,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 if (eddGrid == null)
                     throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (dataset not found).");
-                if (!eddGrid.isAccessibleTo(roles)) { //listPrivateDatasets doesn't apply
-                    EDStatic.redirectToLogin(loggedInAs, response, datasetID);
+                if (!eddGrid.isAccessibleTo(roles) &&
+                    !eddGrid.graphsAccessibleToPublic()) {
+                    //WMS: all requests are graphics requests
+                    //listPrivateDatasets doesn't apply
+                    EDStatic.sendHttpUnauthorizedError(loggedInAs, response, datasetID,
+                        false);
                     return;
                 }
                 if (eddGrid.accessibleViaWMS().length() > 0)
@@ -6518,8 +6853,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 MessageFormat.format(EDStatic.notAvailable, tDatasetID));
             return;
         }
-        if (!eddGrid.isAccessibleTo(roles)) {
-            EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+        if (!eddGrid.isAccessibleTo(roles) &&
+            !eddGrid.graphsAccessibleToPublic()) {
+            //WMS: all requests are graphics requests
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+                false);
             return;
         }
         if (eddGrid.accessibleViaWMS().length() > 0) {
@@ -7076,8 +7414,12 @@ writer.write(
                 "datasetID=" + tDatasetID + " is currently unavailable.");
             return;
         }
-        if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-            EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+        if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+            !eddGrid.graphsAccessibleToPublic()) { 
+            //WMS: all requests are graphics requests
+            //listPrivateDatasets doesn't apply
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+                false);
             return;
         }
         int loni = eddGrid.lonIndex();
@@ -7644,7 +7986,8 @@ writer.write(
                         continue;
                 }
                 //ensure accessibleTo and accessibleVia
-                if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) 
+                if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+                    !edd.graphsAccessibleToPublic()) // /metadata requests
                     continue;
                 if ((isFgdc? edd.accessibleViaFGDC() :
                              edd.accessibleViaISO19115()).length() > 0)
@@ -7684,7 +8027,8 @@ writer.write(
                 if (edd == null) {
                     //reasons are just for Tally, so DON'T TRANSLATE THEM
                     reason += "The dataset wasn't available.";
-                } else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) {
+                } else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+                           !edd.graphsAccessibleToPublic()) { //metadata requests
                     reason += "The user wasn't authorized.";
                 } else if (isFgdc && edd.accessibleViaFGDC().length() > 0) {
                     reason += "The dataset wasn't accessibleViaFGDC.";
@@ -7879,7 +8223,9 @@ writer.write(
                 EDD edd = gridDatasetHashMap.get(tids.get(ti));
                 if (edd != null && //if just deleted
                     edd.accessibleViaGeoServicesRest().length() == 0 &&
-                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))
+                    //ESRI REST: treat as if all requests are data requests                        
+                    ) {
                     ids.add(edd.datasetID());
                 }
             }
@@ -7962,7 +8308,9 @@ breadCrumbs + endBreadCrumbs +
             return;
         }
         if (!tEddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //authorization (very important)
-            EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+            //ESRI REST: all requests are data requests
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+                tEddGrid.graphsAccessibleToPublic());
             return;
         }
         if (tEddGrid.accessibleViaGeoServicesRest().length() > 0) {
@@ -8495,7 +8843,7 @@ breadCrumbs + endBreadCrumbs +
                 String virtualFileName = null;
                 if (fParam.length() == 0 || fParamIsJson || fParam.equals("image")) {
 
-                    //generate the userDapQuery
+                    //generate the userDapQuery          %7C=|
                     StringBuilder iQuery = new StringBuilder(tDestName);
                     EDVGridAxis tAxisVariables[] = tEddGrid.axisVariables();
                     int nav = tAxisVariables.length;
@@ -8515,9 +8863,9 @@ breadCrumbs + endBreadCrumbs +
                             iQuery.append("[0]"); //??? temporary lame cop out!
                         }
                         iQuery.append(']');
-                    }
-                    iQuery.append("&.draw=surface&.vars=longitude|latitude|" + tDestName); 
-                    iQuery.append("&.size=" + xSize + "|" + ySize);
+                    }                            
+                    iQuery.append("&.draw=surface&.vars=longitude%7Clatitude%7C" + tDestName); 
+                    iQuery.append("&.size=" + xSize + "%7C" + ySize); // |
                     String imageQuery = iQuery.toString();
                     if (verbose) String2.log("  exportImage query=" + imageQuery);
 
@@ -9917,7 +10265,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     (userQuery.length() == 0? "" : "&" + userQuery);
             userQuery = "page=1&" + userQuery;
             sendRedirect(response, 
-                EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" + userQuery);
+                EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" + 
+                    userQuery);
             return;
         }              
         int pipp[] = EDStatic.getRequestedPIpp(request);
@@ -10361,7 +10710,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         } else {
             //sortByTitle
             if (matchingDatasetIDs != null) 
-                matchingDatasetIDs = sortByTitle(loggedInAs, matchingDatasetIDs);
+                matchingDatasetIDs = sortByTitle(loggedInAs, matchingDatasetIDs, 
+                    true); //search: this is a metadata request
         }
 
         Table resultsTable = null;
@@ -10557,7 +10907,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         //special cases: "" and "all"
         if (nSearchWords == 0 ||
             (nSearchWords == 1 && searchWords.get(0).equals("all"))) 
-            return sortByTitle(loggedInAs, tDatasetIDs);
+            return sortByTitle(loggedInAs, tDatasetIDs, 
+                true); //search: this is a metadata request 
         
         //gather the matching datasets
         Table table = new Table();
@@ -10667,7 +11018,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                                 BooleanClause.Occur.MUST);
                         } else {
                             //no terms. So return all datasetsIDs, sorted by title
-                            return sortByTitle(loggedInAs, tDatasetIDs);
+                            return sortByTitle(loggedInAs, tDatasetIDs,
+                                true); //search: this is a metadata request
                         }
                     }
                     //now, booleanQuery must have terms
@@ -10712,7 +11064,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                                 edd = tableDatasetHashMap.get(tDatasetID);
                             if (edd == null)  //just deleted?
                                 continue;
-                            if (edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) {
+                            if (edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) ||
+                                edd.graphsAccessibleToPublic()) {  //search for datasets
                                 rankPa.add(i);
                                 idPa.add(tDatasetID);
                             }
@@ -10752,7 +11105,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         edd = tableDatasetHashMap.get(tId);
                     if (edd == null)  //just deleted?
                         continue;
-                    if (!EDStatic.listPrivateDatasets && !edd.isAccessibleTo(roles))
+                    if (!EDStatic.listPrivateDatasets && !edd.isAccessibleTo(roles) &&
+                        !edd.graphsAccessibleToPublic()) //search for datasets is always a metadata request
                         continue;
                     nDatasetsSearched++;
                     int rank = edd.searchRank(isNegative, searchWordsB, jumpB);           
@@ -10788,9 +11142,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
      *    dataset exists. (But dataset will be matched if EDStatic.listPrivateDatasets.)  
      * @param tDatasetIDs  The datasets to be considered (usually allDatasetIDs()). 
      *    The order (sorted or not) is irrelevant.
+     * @param graphOrMetadataRequest use true if this is for a graph or metadata request
+     *    so that graphsAccessibleToPublic() will be used.
      * @return a StringArray with the matching datasetIDs, sorted by title.
      */
-    public StringArray sortByTitle(String loggedInAs, StringArray tDatasetIDs) {
+    public StringArray sortByTitle(String loggedInAs, StringArray tDatasetIDs,
+        boolean graphOrMetadataRequest) {
 
         String roles[] = EDStatic.getRoles(loggedInAs);
         Table table = new Table();
@@ -10806,7 +11163,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 edd = tableDatasetHashMap.get(tID);
             if (edd == null)  //just deleted?
                 continue;
-            if (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)) {
+            if (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles) ||
+                (graphOrMetadataRequest && edd.graphsAccessibleToPublic())) {
                 titlePa.add(edd.title());
                 idPa.add(tID);
             }
@@ -11040,7 +11398,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         }   
 
         //sort catDats by title
-        catDats = sortByTitle(loggedInAs, catDats);
+        catDats = sortByTitle(loggedInAs, catDats,
+            true); //category search: this is a metadata request
 
         //calculate Page ItemsPerPage  (part of: categorize)
         int nMatches = catDats.size();
@@ -11218,7 +11577,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
             //get the datasetIDs
             //(sortByTitle ensures user has right to know dataset exists)
-            StringArray tIDs = sortByTitle(loggedInAs, allDatasetIDs()); 
+            StringArray tIDs = sortByTitle(loggedInAs, allDatasetIDs(), 
+                true); //info: this is a metadata request 
             int nDatasets = tIDs.size();
             EDStatic.tally.add("Info (since startup)", "View All Datasets");
             EDStatic.tally.add("Info (since last daily report)", "View All Datasets");
@@ -11339,8 +11699,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 MessageFormat.format(EDStatic.unknownDatasetID, tID));
             return;
         }
-        if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-            EDStatic.redirectToLogin(loggedInAs, response, tID);
+        if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+            !edd.graphsAccessibleToPublic()) { 
+            // /info/ request: all requests are graphics|metadata requests
+            //listPrivateDatasets doesn't apply
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tID, 
+                false);
             return;
         }
 
@@ -11694,8 +12058,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             if (edd == null) {
                 trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDInvalid + "</font>\n";
                 tDatasetID = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-            } else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
-                EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+            } else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+                       !edd.graphsAccessibleToPublic()) { 
+                //subscription: all requests are graphics|metadata requests
+                //listPrivateDatasets doesn't apply
+                EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+                    false);
                 return;
             }
         }
@@ -11714,9 +12082,17 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (tAction.length() > Subscriptions.ACTION_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlTooLong + "</font>\n";
             tAction = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-        } else if (!tAction.equals("") && 
-            (tAction.length() <= 10 || !tAction.startsWith("http://") || 
-             tAction.startsWith("http://127.0.0.1"))) {
+        } else if (tAction.length() <= 10 || 
+            !(tAction.startsWith("http://") || tAction.startsWith("https://")) ||
+//??? Make it so ERDDAP admin must also okay subscription requests (so admin can screen out malicious requests)?
+             //this isn't allowed because a remote user could use it to gain access to other services on this server
+             tAction.startsWith("http://127.0.0.1") ||
+             tAction.startsWith("https://127.0.0.1") ||
+             tAction.startsWith("http://localhost") ||
+             tAction.startsWith("https://localhost") ||
+             //this isn't allowed because a remote user could use it to gain access to other services on other local servers
+             tAction.startsWith("http://192.168.") || 
+             tAction.startsWith("https://192.168.")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlInvalid + "</font>\n";
             tAction = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
         } else if (tAction.indexOf('<') >= 0 || tAction.indexOf('>') >= 0) {  //prevent e.g., <script>
@@ -13512,875 +13888,6 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
     }
 
     /**
-     * Process erddap/post/...
-     *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param endOfRequest e.g., convert/time.html
-     * @param datasetIDStartsAt is the position right after the / at the end of the protocol
-     *    (always "convert") in the requestUrl
-     * @param userQuery  post "?", still percentEncoded, may be null.
-     * @throws Throwable if trouble
-     */
-    public void doPostPages(HttpServletRequest request, HttpServletResponse response, 
-        String loggedInAs, 
-        String endOfRequest, int datasetIDStartsAt, String userQuery) throws Throwable {
-
-        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-        String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
-        String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
-            requestUrl.substring(datasetIDStartsAt);
-
-        boolean postActive = 
-            EDStatic.PostSurgeryDatasetID.length() > 0 &&
-            EDStatic.PostDetectionDatasetID.length() > 0 &&
-            tableDatasetHashMap.get(EDStatic.PostSurgeryDatasetID) != null &&
-            tableDatasetHashMap.get(EDStatic.PostDetectionDatasetID) != null; 
-        if (!postActive)
-            sendResourceNotFoundError(request, response, "Currently, the POST datasets aren't available.");
-
-        if (EDStatic.postShortDescriptionActive) {
-            //post/index.html is inactive and redirects to (tErddapUrl)/index.html
-            if (endOfRequest.equals("post") ||
-                endOfRequest.equals("post/") || 
-                endOfRequest.equals("post/index.html")) {
-                sendRedirect(response, tErddapUrl + "/index.html");
-                return;
-            }
-        } else {
-            //if no document specified, redirect to /post/index.html (else fall through)
-            if (endOfRequest.equals("post") ||
-                endOfRequest.equals("post/")) {
-                sendRedirect(response, tErddapUrl + "/post/index.html");
-                return;
-            }
-        }
-
-        EDStatic.tally.add("POST (since startup)", endOfRequest);
-        EDStatic.tally.add("POST (since last daily report)", endOfRequest);
-
-        if (endOfRequestUrl.equals("index.html")) {
-            //fall through
-        } else if (endOfRequestUrl.startsWith("license.html")) {
-            doPostLicense(request, response, loggedInAs);
-            return;
-        } else if (endOfRequestUrl.startsWith("subset.html")) {
-            doPostSubset(request, response, loggedInAs, userQuery);
-            return;
-        } else {
-            if (verbose) String2.log(EDStatic.resourceNotFound + " unknown POST endOfRequestUrl");
-            sendResourceNotFoundError(request, response, "");
-            return;
-        }
-
-        //display start of web page
-        if (reallyVerbose) String2.log("doPost");
-        OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "POST", out); 
-        try {
-            writer.write(
-                EDStatic.youAreHere(loggedInAs, "POST"));
-
-            writer.write(getPostIndexHtml(loggedInAs, tErddapUrl));
-
-        } catch (Throwable t) {
-            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            writer.write(EDStatic.htmlForException(t));
-        }
-
-        //end of document
-        endHtmlWriter(out, writer, tErddapUrl, false);
-    }
-
-
-    /**
-     * This returns the left side html for the post index page (or the home page of the post erddap).
-     */
-    public String getPostIndexHtml(String loggedInAs, String tErddapUrl) throws Throwable {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(EDStatic.PostIndex1Html(tErddapUrl));
-
-        if (loggedInAs == null) 
-            sb.append(EDStatic.PostIndex2Html());
-
-        sb.append(EDStatic.PostIndex3Html(tErddapUrl));
-
-        return sb.toString();
-    }
-
-    
-    /**
-     * Process erddap/post/license.html
-     *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param userQuery  post "?", still percentEncoded, may be null.
-     * @throws Throwable if trouble
-     */
-    public void doPostLicense(HttpServletRequest request, HttpServletResponse response, 
-        String loggedInAs) throws Throwable {
-
-        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-
-        boolean postActive = 
-            EDStatic.PostSurgeryDatasetID.length() > 0 &&
-            EDStatic.PostDetectionDatasetID.length() > 0 &&
-            tableDatasetHashMap.get(EDStatic.PostSurgeryDatasetID) != null &&
-            tableDatasetHashMap.get(EDStatic.PostDetectionDatasetID) != null; 
-        EDDTable eddSurgery = tableDatasetHashMap.get(EDStatic.PostSurgeryDatasetID);
-        if (!postActive)
-            sendResourceNotFoundError(request, response, "Currently, the POST datasets aren't available.");
-
-        OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "POST License", out); 
-        try {
-            if (EDStatic.postShortDescriptionActive)
-                writer.write(
-                    EDStatic.youAreHere(loggedInAs, "POST License"));
-            else writer.write(
-                    EDStatic.youAreHere(loggedInAs, "post", "license")); //"post" must be lowercase for the link to work
-
-            //show the POST license
-            writer.write(
-                "By accessing the POST data, you are agreeing to the terms of the POST License:\n" +
-                "<pre>\n" +
-                XML.encodeAsPreHTML(eddSurgery.combinedGlobalAttributes().getString("license"), 80) +
-                "</pre>\n");
-
-        } catch (Throwable t) {
-            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            writer.write(EDStatic.htmlForException(t));
-        }
-
-        //end of document
-        endHtmlWriter(out, writer, tErddapUrl, false);
-    }
-
-    /**
-     * Process erddap/post/subset.html
-     *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param userQuery  post "?", still percentEncoded, may be null.
-     * @throws Throwable if trouble
-     */
-    public void doPostSubset(HttpServletRequest request, HttpServletResponse response, 
-        String loggedInAs, String userQuery) throws Throwable {
-
-        //BOB: this is similar to EDDTable.respondToSubsetQuery()
-
-        //constants
-        String ANY = "(ANY)";
-        String surgeryYear = "surgery_year";
-
-        //post active?
-        EDDTable surgeryEdd   = (EDDTable)(EDStatic.PostSurgeryDatasetID.length() == 0? null :
-            tableDatasetHashMap.get(EDStatic.PostSurgeryDatasetID));
-        EDDTable detectionEdd = (EDDTable)(EDStatic.PostDetectionDatasetID.length() == 0? null :
-            tableDatasetHashMap.get(EDStatic.PostDetectionDatasetID));
-        boolean postActive = surgeryEdd != null && detectionEdd != null; 
-        if (!postActive) {
-            sendResourceNotFoundError(request, response, "Currently, the POST datasets aren't available.");
-            return;
-        }
-        if (EDStatic.PostSubset.length == 0) 
-            throw new SimpleException("<PostSubset> wasn't specified in setup.xml.");
-        if (!surgeryEdd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { 
-            EDStatic.redirectToLogin(loggedInAs, response, EDStatic.PostSurgeryDatasetID);
-            return;
-        }
-        if (!detectionEdd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { 
-            EDStatic.redirectToLogin(loggedInAs, response, EDStatic.PostDetectionDatasetID);
-            return;
-        }
-        //parse the userQuery and create the bigUserDapQuery and smallUserDapQuery
-        HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
-        int lastP = String2.indexOf(EDStatic.PostSubset, queryMap.get(".last")); //pName of last changed select option
-        String param[] = new String[EDStatic.PostSubset.length];
-        StringBuilder bigUserDapQuery   = new StringBuilder();
-        StringBuilder smallUserDapQuery = new StringBuilder();
-        StringBuilder countsConstraints = new StringBuilder();
-        StringBuilder countsQuery = new StringBuilder();
-        for (int p = 0; p < EDStatic.PostSubset.length; p++) {
-            String pName = EDStatic.PostSubset[p];
-            param[p] = queryMap.get(pName); 
-            if (param[p] == null || param[p].equals(ANY)) {
-                param[p] = null;
-            } else if (param[p].length() >= 2 &&
-                       param[p].charAt(0) == '"' && 
-                       param[p].charAt(param[p].length() - 1) == '"') {
-                //remove begin/end quotes
-                param[p] = param[p].substring(1, param[p].length() - 1);
-            }
-            //if last selection was ANY, last is irrelevant
-            if (p == lastP && param[p] == null)
-                lastP = -1;
-
-            if (param[p] == null) {
-                //nothing
-
-            } else if (pName.equals(surgeryYear)) {
-                if (param[p].length() > 0) {
-                    int year = String2.parseInt(param[p]);
-                    String tq = year > 1800 && year < 2200?
-                        EDStatic.pEncode("&surgery_time>=" + year    + "-01-01" + 
-                                         "&surgery_time<" + (year+1) + "-01-01") :
-                        "NaN";
-                    smallUserDapQuery.append(tq);
-                    if (p != lastP) {
-                        bigUserDapQuery.append(tq);
-                        countsQuery.append(tq);
-                        countsConstraints.append(
-                            (countsConstraints.length() > 0? " and " : "") +
-                            pName + "=" + SSR.minimalPercentEncode("\"" + param[p] + "\""));
-                    }
-                }
-            } else { //all are strings
-                if (param[p] != null) {
-                    String tq = "&" + pName + "=" + SSR.minimalPercentEncode("\"" + param[p] + "\"");
-                    smallUserDapQuery.append(tq);
-                    if (p != lastP) {
-                        bigUserDapQuery.append(tq);
-                        countsQuery.append(tq);
-                        countsConstraints.append(
-                            (countsConstraints.length() > 0? " and " : "") +
-                            pName + "=\"" + param[p] + "\"");
-                    }
-                }
-            }
-        }
-        if (reallyVerbose) 
-            String2.log(
-                "  bigUserDapQuery=" + bigUserDapQuery + 
-                "\n  smallUserDapQuery=" + smallUserDapQuery);
-
-        //get the corresponding surgery table subset (or null if no data or trouble)
-        String tDir = surgeryEdd.cacheDirectory();
-        String tBigFileName   = "subset_" + surgeryEdd.suggestFileName(loggedInAs, bigUserDapQuery.toString(), ".nc");
-        String tSmallFileName = "subset_" + surgeryEdd.suggestFileName(loggedInAs, smallUserDapQuery.toString(), ".nc");
-        Table bigTable = null;    //more than what user actually selected if lastP is active
-        Table smallTable = null;  //what user actually selected
-        String surgeryNcUrl = "/tabledap/" + EDStatic.PostSurgeryDatasetID + ".nc";
-
-        //read bigTable from cached file?
-        if (File2.isFile(tDir + tBigFileName + ".nc")) {
-            try {
-                //read from the file
-                bigTable = new Table();
-                bigTable.readFlatNc(tDir + tBigFileName + ".nc", null, 0);
-                //String2.log("data from cached file");
-            } catch (Throwable t) {
-                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                String2.log("reading file=" + tDir + tBigFileName + ".nc" + "failed:\n" +
-                    MustBe.throwableToString(t));
-                bigTable = null;
-                File2.delete(tDir + tBigFileName + ".nc");
-            }
-        }
-
-        //generate bigTable via bigUserDapQuery and getDataForDapQuery?
-        if (bigTable == null) {
-            try {
-                TableWriterAllWithMetadata twawm = surgeryEdd.getTwawmForDapQuery(
-                    loggedInAs, surgeryNcUrl, bigUserDapQuery.toString());  
-                surgeryEdd.saveAsFlatNc(tDir + tBigFileName + ".nc", twawm); //internally, it writes to temp file, then rename to cacheFullName
-                bigTable = twawm.cumulativeTable();
-                //String2.log("data from surgeryEdd");
-            } catch (Throwable t) {
-                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                //e.g., no Data will occur if user generated invalid query (e.g., not by using web form)
-                String2.log("creating bigTable from bigUserDapQuery=" + bigUserDapQuery + " failed:\n" +
-                    MustBe.throwableToString(t));
-            }
-        }
-
-        //is smallTable same as bigTable?
-        if (lastP < 0) {
-            smallTable = bigTable;
-        } else {
-            //read smallTable from cached file?
-            if (File2.isFile(tDir + tSmallFileName + ".nc")) {
-                try {
-                    //read from the file
-                    smallTable = new Table();
-                    smallTable.readFlatNc(tDir + tSmallFileName + ".nc", null, 0);
-                    //String2.log("data from cached file");
-                } catch (Throwable t) {
-                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                    String2.log("reading file=" + tDir + tSmallFileName + ".nc" + "failed:\n" +
-                        MustBe.throwableToString(t));
-                    smallTable = null;
-                    File2.delete(tDir + tSmallFileName + ".nc");
-                }
-            }
-
-            //generate smallTable via smallUserDapQuery and getDataForDapQuery?
-            if (smallTable == null) {
-                try {
-                    TableWriterAllWithMetadata twawm = surgeryEdd.getTwawmForDapQuery(
-                        loggedInAs, surgeryNcUrl, smallUserDapQuery.toString());  
-                    surgeryEdd.saveAsFlatNc(tDir + tSmallFileName + ".nc", twawm); //internally, it writes to temp file, then rename to cacheFullName
-                    smallTable = twawm.cumulativeTable();
-                    //String2.log("data from surgeryEdd");
-                } catch (Throwable t) {
-                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                    //e.g., no Data will occur if user generated invalid query (e.g., not by using web form)
-                    String2.log("creating smallTable from smallUserDapQuery=" + smallUserDapQuery + " failed:\n" +
-                        MustBe.throwableToString(t));
-                }
-            }
-        }
-
-
-        //show the .html response/form
-        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-        HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
-        widgets.enterTextSubmitsForm = true; 
-        OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "POST Subset", out); 
-
-        try {
-            
-            //you are here
-            if (EDStatic.postShortDescriptionActive)
-                writer.write(
-                    EDStatic.youAreHere(loggedInAs, "POST Subset"));
-            else writer.write(
-                    EDStatic.youAreHere(loggedInAs, "post", "subset")); //"post" must be lowercase for link to work
-
-            writer.write(
-                "<b>This interactive web page helps you select a subset of the POST surgery\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(surgeryEdd.summary(), 100)) + "\n" +
-                "and detection\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(detectionEdd.summary(), 100)) + "\n" +
-                "data and view maps\n" +
-                "<br>and tables of the selected data.</b>\n" +
-                "By accessing the POST data, you are agreeing to the terms of the\n" +
-                "<a rel=\"copyright\" href=\"" + tErddapUrl + "/post/license.html\">POST License</a>.\n" +
-                "\n" +
-                "<br>&nbsp;\n"); //necessary for the blank line before start of form (not <p>) 
-            writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
-            
-            //if noData/invalid request tell user and reset all
-            if (bigTable == null) {
-                //error message?
-                writer.write("<font class=\"warningColor\">" + MustBe.THERE_IS_NO_DATA + 
-                    " The form below has been reset.</font>\n");
-
-                //reset all
-                Arrays.fill(param, ANY);
-                bigUserDapQuery = new StringBuilder();
-                tBigFileName = "subset_" + surgeryEdd.suggestFileName(loggedInAs, bigUserDapQuery.toString(), ".nc");
-
-                if (File2.isFile(tDir + tBigFileName + ".nc")) {
-                    //read bigTable from cached file?
-                    bigTable = new Table();
-                    bigTable.readFlatNc(tDir + tBigFileName + ".nc", null, 0);
-                } else {
-                    //or get the data via bigUserDapQuery
-                    TableWriterAllWithMetadata twawm = surgeryEdd.getTwawmForDapQuery(
-                        loggedInAs, surgeryNcUrl, bigUserDapQuery.toString());  
-                    surgeryEdd.saveAsFlatNc(tDir + tBigFileName + ".nc", twawm); //internally, it writes to temp file, then rename to cacheFullName
-                    bigTable = twawm.cumulativeTable();
-                }
-
-                //reset other things
-                smallTable = null; //triggers changes below
-            }
-            if (smallTable == null) {
-                smallUserDapQuery = bigUserDapQuery;
-                tSmallFileName = tBigFileName;
-                smallTable = bigTable;
-                lastP = -1;
-            }
-
-            //Select a subset of surgeries
-            writer.write(
-                widgets.beginForm("f1", "GET", tErddapUrl + "/post/subset.html", "") + "\n" +
-                "<b>Select a subset of tagged animals.</b>\n" +
-                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font class=\"subduedColor\">" +
-                    "(Number of animals currently selected: " + smallTable.nRows() + ")</font>\n" +
-                "  <br>Make as many selections as you want, in any order.\n" +
-                "   Each selection changes the other options (and the maps and data below) accordingly.\n" +
-                widgets.beginTable(0, 0, ""));  
-
-            StringBuilder newDapQuery = new StringBuilder();
-            boolean allData = true;
-            for (int p = 0; p < EDStatic.PostSubset.length; p++) {
-                String pName = EDStatic.PostSubset[p];
-                boolean isSurgeryYear = pName.equals(surgeryYear);
-                StringArray sa; //work on a copy
-                if (isSurgeryYear) {
-                    //if isSurgeryYear, convert iso times to just years
-                    PrimitiveArray pa = p == lastP? 
-                        bigTable.findColumn("surgery_time") :
-                        smallTable.findColumn("surgery_time");
-                    int n = pa.size();
-                    sa = new StringArray(n, false);
-                    for (int row = 0; row < n; row++) {
-                        double epochSec = pa.getDouble(row);
-//!!!for now, better to suppress NaN time (since user can request those tags anyway)
-                        if (!Double.isNaN(epochSec))
-                            sa.add(Calendar2.epochSecondsToIsoStringT(epochSec).substring(0, 4));
-                        //sa.add(Double.isNaN(epochSec)? "NaN" : 
-                        //    Calendar2.epochSecondsToIsoStringT(epochSec).substring(0, 4));
-                    }
-                } else {
-                    sa = new StringArray(p == lastP?
-                        bigTable.findColumn(pName) :
-                        smallTable.findColumn(pName)); 
-                } 
-                sa.sortIgnoreCase();
-                //int nBefore = sa.size();
-                sa.removeDuplicates();
-                //String2.log(pName + " nBefore=" + nBefore + " nAfter=" + sa.size());
-                sa.atInsert(0, ANY);
-                String saa[] = sa.toStringArray();
-                int which = param[p] == null? 0 : String2.indexOf(saa, param[p]);
-                if (which < 0)
-                    which = 0;
-                if (which > 0) {
-                    allData = false;
-                    if (isSurgeryYear) {
-                        if (sa.get(which).equals("NaN")) {
-                            newDapQuery.append("&surgery_time=NaN");
-                        } else {
-                            int yr = String2.parseInt(sa.get(which));
-                            newDapQuery.append(EDStatic.pEncode(
-                                "&surgery_time>=" + yr      + "-01-01" +
-                                "&surgery_time<" + (yr + 1) + "-01-01"));
-                        }
-                    } else {
-                        newDapQuery.append("&" + SSR.minimalPercentEncode(pName) + "=" + 
-                            SSR.minimalPercentEncode("\"" + param[p] + "\""));
-                    }
-                }
-
-                //String2.log("pName=" + pName + " which=" + which);
-                writer.write(
-                    "<tr>\n" +
-                    "  <td nowrap>&nbsp;&nbsp;&nbsp;&nbsp;" + pName + "&nbsp;</td>\n" +
-                    "  <td nowrap>\n");
-
-                if (p == lastP) 
-                    writer.write(
-                        "  " + widgets.beginTable(0, 0, "") + "\n" +
-                        "  <tr>\n" +
-                        "  <td nowrap>\n");
-
-                writer.write(
-                    "=" +
-                    widgets.select(pName, "", 1,
-                        saa, which, "onchange='mySubmit(\"" + pName + "\");'", 
-                        true)); //encodeSpaces solves the problem with consecutive internal spaces
-
-                if (p == lastP) { 
-                    writer.write(
-                        "      </td>\n" +
-                        "      <td>\n" +
-                        "<img src=\"" + widgets.imageDirUrl + "minus.gif\"\n" +
-                        "  " + widgets.completeTooltip("Select the previous item.") +
-                        "  alt=\"-\" " + 
-                        //onMouseUp works much better than onClick and onDblClick
-                        "  onMouseUp='\n" +
-                        "   var sel=document.f1." + pName + ";\n" +
-                        "   if (sel.selectedIndex>0) {\n" + 
-                        "    sel.selectedIndex--;\n" +
-                        "    mySubmit(\"" + pName + "\");\n" +
-                        "   }' >\n" + 
-                        "      </td>\n" +
-
-                        "      <td>\n" +
-                        "<img src=\"" + widgets.imageDirUrl + "plus.gif\"\n" +
-                        "  " + widgets.completeTooltip("Select the next item.") +
-                        "  alt=\"+\" " + 
-                        //onMouseUp works much better than onClick and onDblClick
-                        "  onMouseUp='\n" +
-                        "   var sel=document.f1." + pName + ";\n" +
-                        "   if (sel.selectedIndex<sel.length-1) {\n" + //no action if at last item
-                        "    sel.selectedIndex++;\n" +
-                        "    mySubmit(\"" + pName + "\");\n" +
-                        "   }' >\n" + 
-                        "      </td>\n" +
-
-                        "    </tr>\n" +
-                        "    " + widgets.endTable());
-                }
-
-                writer.write(
-                    //write hidden last widget
-                    (p == lastP? widgets.hidden("last", pName) : "") +
-
-                    //end of select td (or its table)
-                    "      </td>\n");
-
-                //n options
-                writer.write(
-                    "  <td nowrap>&nbsp;" +
-                    (which == 0 || p == lastP? 
-                        "<font class=\"subduedColor\">(" + 
-                            (sa.size() - 1) + " option" + 
-                            (sa.size() == 2? 
-                                ": " + XML.minimalEncodeSpaces(XML.encodeAsHTML(sa.get(1))) : 
-                                "s") + 
-                            ")</font>\n" : 
-                        ""));
-
-                //mention PostSampleTag if it's an option
-                if (pName.equals("unique_tag_id")) {
-                    int samplePo = sa.indexOf(EDStatic.PostSampleTag);
-                    if (samplePo >= 0 && which != samplePo) {
-                        writer.write("&nbsp;&nbsp;" + 
-                            widgets.button("button", null, 
-                                XML.encodeAsHTML(EDStatic.PostSampleTag) + " is an interesting tag.", 
-                                "An interesting tag.",
-                                "onclick='f1." + pName + ".selectedIndex=" + samplePo + ";" +
-                                    "mySubmit(\"" + pName + "\");'"));
-                    }
-                }
-
-
-                writer.write(
-                    "  </td>\n" +
-                    "</tr>\n");
-            }
-
-            writer.write(
-                "</table>\n" +
-                "\n");
-
-            //View the graph and/or data?
-            writer.write(
-                "<p><b>View:</b>\n");
-            String viewParam[]    = {"surgeryMap",          "detectionMap",  "surgeryCounts",  "surgeryData",  "detectionData"};
-            String viewTitle[]    = {"Surgery/Release Map", "Detection Map", "Surgery Counts", "Surgery Data", "Detection Data"};
-            boolean viewDefault[] = {true,                  true,            false,            true,           false};
-            boolean viewChecked[] = new boolean[viewParam.length]; //will be set below
-            String warn = 
-                "<p>This may involve lots of data and may be slow." +
-                "<br>Consider using this only when you need it.";
-            String viewTooltip[] = {
-                "View a map of the locations where the selected tagged" +
-                "<br>animals were released.", 
-
-                "View a map of the locations where the selected tagged" +
-                "<br>animals were released or detected." +
-                warn, 
-
-                "View a table with counts of the matching surgery data." +
-                "<br>The table shows all of the values of the last-selected" +
-                "<br>variable, not just the last selected value.",
-
-                "View a table of surgery data for the selected tagged animals." +
-                "<p>The longitude, latitude, and time columns indicate the" +
-                "<br>animal's release location and time.",
-
-                "View a table of detection data for all of the selected\n" +
-                "<br>tagged animals." +
-                "<p>In almost all cases, the first detection is for the\n" +
-                "<br>animal's release location and time." +
-                warn};
- 
-            for (int v = 0; v < viewParam.length; v++) {
-                String val = userQuery == null || userQuery.length() == 0? 
-                    "" + viewDefault[v] : queryMap.get("." + viewParam[v]);
-                viewChecked[v] = "true".equals(val); //val may be null
-                writer.write(
-                    "&nbsp;&nbsp;&nbsp;\n" + 
-                    widgets.checkbox(viewParam[v], "", 
-                        viewChecked[v], "true", viewTitle[v], 
-                        "onclick='mySubmit(null);'") +  //IE doesn't trigger onchange for checkbox
-                    EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[v]));
-            }
-
-            //mySubmit   (greatly reduces the length of the query -- just essential info)
-            writer.write(
-                HtmlWidgets.PERCENT_ENCODE_JS + //encodeSpaces: this encodes nbsp=#160 as space=%20
-                "<script type=\"text/javascript\"> \n" +
-                "function mySubmit(tLast) { \n" +
-                "  try { \n" +
-                "    var d = document; \n" +
-                "    var q = \"\"; \n" +
-                "    var w; \n");
-            for (int p = 0; p < EDStatic.PostSubset.length; p++) {
-                String pName = EDStatic.PostSubset[p];
-                String quotes = pName.equals("surgery_year")? "" : "\\\"";
-                writer.write(
-                "    w = d.f1." + pName + ".selectedIndex; \n" +
-                "    if (w > 0) q += \"&" + pName + 
-                    "=\" + percentEncode(\"" + quotes + "\" + d.f1." + pName + 
-                        ".options[w].text + \"" + quotes + "\"); \n");
-            }
-            for (int p = 0; p < viewParam.length; p++) {
-                String pName = viewParam[p];
-                writer.write(
-                "    if (d.f1." + pName + ".checked) q += \"&." + pName + "=true\"; \n");
-            }            
-            //last
-            writer.write(
-                "    if ((tLast == null || tLast == undefined) && d.f1.last != undefined) tLast = d.f1.last.value; \n" + //get from hidden widget?
-                "    if (tLast != null && tLast != undefined) q += \"&.last=\" + tLast; \n");
-
-            //query must be something, else checkboxes reset to defaults
-            writer.write( 
-                "    if (q.length == 0) q += \"&." + viewParam[0] + "=false\"; \n"); //javascript uses length, not length()
-
-            //submit the query
-            writer.write(
-                "    window.location=\"" + tErddapUrl + "/post/subset.html?\" + q;\n" + 
-                "  } catch (e) { \n" +
-                "    alert(e); \n" +
-                "    return \"\"; \n" +
-                "  } \n" +
-                "} \n" +
-                "</script> \n");  
-
-            //endForm
-            writer.write(widgets.endForm() + "\n");
-
-            //set initial focus to lastP select widget    throws error
-            if (lastP >= 0) 
-                writer.write(
-                    "<script type=\"text/javascript\">document.f1." + EDStatic.PostSubset[lastP] + ".focus();</script>\n");
-            
-            //RESULTS
-            writer.write(
-                "<a name=\"map\">&nbsp;</a><hr>\n" +
-                widgets.beginTable(0, 0, "width=\"100%\"") +
-                "<tr>\n" +
-                "  <td width=\"50%\" valign=\"top\">\n"); 
-
-            //0 = map = Surgery Map
-            String graphDapQuery = 
-                "longitude,latitude,time" + //yes, release "time" (not surgery_time) appropriate for release location
-                newDapQuery.toString() + 
-                "&.draw=markers&.colorBar=|D||||";
-            writer.write(
-                "<b>Surgery/Release Map</b>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[0]) +
-                "<br>(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
-                    EDStatic.PostSurgeryDatasetID + ".graph?" +
-                    graphDapQuery) + 
-                "\">Refine the map and/or download the image</a>)\n");
-            if (viewChecked[0]) {  
-                writer.write(
-                    "<br><img width=\"" + EDStatic.imageWidths[1] + 
-                        "\" height=\"" + EDStatic.imageHeights[1] + "\" " +
-                        "alt=\"Post-surgery release locations and times.\" " +
-                        "title=\"Post-surgery release locations and times.\" " +
-                        "src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
-                            EDStatic.PostSurgeryDatasetID + ".png?" + graphDapQuery) + 
-                        "\">&nbsp;&nbsp;&nbsp;&nbsp;\n");  //space between images if side-by-side
-            } else {
-                writer.write("<p><font class=\"subduedColor\">To view the map, check <tt>View : " + 
-                    viewTitle[0] + "</tt> above.</font>\n");
-            }
-
-            writer.write(
-                "  </td>\n" +
-                "  <td width=\"50%\" valign=\"top\">\n"); 
-
-            //1 = map = Detection Map
-            writer.write(
-                "<b>Detection Map</b>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[1]));
-            if (viewChecked[1]) {  
-                if (loggedInAs == null && smallTable.nRows() > 1) {
-                    writer.write(
-                        "<p><font class=\"subduedColor\">Since you aren't logged in, you can only see a Detection Map\n" +
-                        "<br>if you have selected just one animal (above).</font>\n");
-                } else if (allData) {
-                    writer.write(
-                        "<p><font class=\"subduedColor\">To view a Detection Map, you must select (above)\n" +
-                        "<br>at least one non-\"" + ANY + "\" option.</font>\n");
-                } else {
-                    graphDapQuery = 
-                        "longitude,latitude,time" + newDapQuery.toString() + 
-                        "&.draw=markers&.colorBar=|D||||";
-                    writer.write(
-                        "<br>(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + 
-                            "/tabledap/" + EDStatic.PostDetectionDatasetID + ".graph?" +
-                            graphDapQuery) + 
-                        "\">Refine the map and/or download the image</a>)\n" +
-                        "<br><img width=\"" + EDStatic.imageWidths[1] + 
-                            "\" height=\"" + EDStatic.imageHeights[1] + "\" " +
-                            "alt=\"Detection locations and times.\" " +
-                            "title=\"Detection locations and times.\" " +
-                            "src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
-                                EDStatic.PostDetectionDatasetID + ".png?" + graphDapQuery) + 
-                            "\">\n");
-                }
-            } else {
-                writer.write("<p><font class=\"subduedColor\">To view the map, check <tt>View : " + 
-                    viewTitle[1] + "</tt> above.</font>\n" +
-                    warn + "\n");
-            }
-
-            //end map table  
-            writer.write(
-                "  </td>\n" +
-                "</tr>\n" +
-                widgets.endTable()); 
-
-            // 2 = viewRelatedDataCounts
-            writer.write("\n" +
-                "<br><a name=\"" + viewParam[2] + "\">&nbsp;</a><hr>\n" +
-                "<p><b>" + viewTitle[2] + "</b>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[2]));
-            if (viewChecked[2] && lastP >= 0) {  
-                String lastPName = EDStatic.PostSubset[lastP];
-                String fullCountsQuery = lastPName + countsQuery.toString();
-                writer.write(
-                    "&nbsp;&nbsp;\n" +
-                    "(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" +
-                        EDStatic.PostSurgeryDatasetID + ".html?" + fullCountsQuery + "&distinct()") + 
-                    "\">Refine the data subset and/or download the data</a>)\n");
-
-                try {                    
-                    //get the raw data
-                    PrimitiveArray varPA = (PrimitiveArray)(bigTable.findColumn(lastPName).clone());
-                    Table countTable = new Table();
-                    countTable.addColumn(lastPName, varPA);
-
-                    //sort, count, remove duplicates
-                    varPA.sortIgnoreCase();
-                    int n = varPA.size();
-                    IntArray countPA = new IntArray(n, false);
-                    countTable.addColumn("Count", countPA);
-                    int lastCount = 1;
-                    countPA.add(lastCount);
-                    BitSet keep = new BitSet(n);
-                    keep.set(0, n); //initially, all set
-                    for (int i = 1; i < n; i++) {
-                        if (varPA.compare(i-1, i) == 0) {
-                            keep.clear(i-1);
-                            lastCount++;
-                        } else {
-                            lastCount = 1;
-                        }
-                        countPA.add(lastCount);
-                    }
-                    countTable.justKeep(keep);
-
-                    //calculate percents
-                    double stats[] = countPA.calculateStats();
-                    double total = stats[PrimitiveArray.STATS_SUM];
-                    n = countPA.size();
-                    DoubleArray percentPA = new DoubleArray(n, false);
-                    countTable.addColumn("Percent", percentPA);
-                    for (int i = 0; i < n; i++) 
-                        percentPA.add(Math2.roundTo(countPA.get(i) * 100 / total, 2));
-
-                    //write results
-                    String countsCon = countsConstraints.toString();
-                    writer.write(
-                    "<br>When " +
-                        (countsCon.length() == 0? "there are no constraints, " : 
-                            (XML.encodeAsHTML(countsCon) + (countsCon.length() < 40? ", " : ",\n<br>"))) +
-                    "the counts of surgery data for the " + countTable.nRows() + 
-                    " values of \"" + lastPName + "\" are:\n");
-                    writer.flush(); //essential, since creating and using another writer to write the countTable
-                    TableWriterHtmlTable.writeAllAndFinish(loggedInAs, countTable, 
-                        new OutputStreamSourceSimple(out), 
-                        false, "", false, "", "", 
-                        true, false, -1);          
-                    writer.write("<p>The total of the counts is " + 
-                        Math2.roundToLong(total) + ".\n");
-                } catch (Throwable t) {
-                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                    String message = MustBe.getShortErrorMessage(t);
-                    String2.log("Caught:\n" + MustBe.throwableToString(t)); //log full message with stack trace
-                    writer.write( 
-                        //"<p>An error occurred while getting the data:\n" +
-                        "<pre>" + XML.encodeAsPreHTML(message, 120) +
-                        "</pre>\n");                        
-                }
-
-            } else {
-                writer.write("<p><font class=\"subduedColor\">To view the surgery counts, check <tt>View : " + 
-                    viewTitle[2] + "</tt> above and select a value for one of the variables above.</font>\n");
-            }
-
-            //3 = data = Surgery Data
-            String newDapQueryString = newDapQuery.length() == 0?
-                EDStatic.pEncode("&time>=&time<=") : 
-                newDapQuery.toString();
-            writer.write("<br><a name=\"" + viewParam[3] + "\">&nbsp;</a><hr>\n" +
-                "<p><b>Surgery/Release Data</b>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[3]) +
-                "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + 
-                    EDStatic.PostSurgeryDatasetID + ".das\">Metadata</a>)\n" +
-                "&nbsp;&nbsp;\n" +
-                "(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
-                    EDStatic.PostSurgeryDatasetID + ".html?" + newDapQueryString) + 
-                "\">Refine the data subset and/or download the data</a>)\n" +
-                "<br>Note that the longitude, latitude, and time variables " +
-                    "have data for the animal's release, not its surgery.\n");
-            if (viewChecked[3]) {  
-                if (allData) {
-                    writer.write(
-                        "\n<p><font class=\"subduedColor\">To view Surgery/Release Data, you must select (above)\n" +
-                        "at least one non-\"" + ANY + "\" option.</font>\n");
-                } else {
-                    writer.flush(); //essential, since creating and using another writer to write the smallTable
-                    TableWriterHtmlTable.writeAllAndFinish(loggedInAs, smallTable, 
-                        new OutputStreamSourceSimple(out), 
-                        false, "", false, "", "", 
-                        true, true, -1);          
-                }
-            } else {
-                writer.write("<p><font class=\"subduedColor\">To view the data, check <tt>View : " + 
-                    viewTitle[3] + "</tt> above.</font>\n");
-            }
-
-            //4 = data = Detection Data
-            newDapQueryString = newDapQuery.toString();
-            writer.write(
-                "<br><a name=\"" + viewParam[4] + "\">&nbsp;</a><hr>\n" +
-                "<p><b>Detection Data</b>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[4]) +
-                "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + 
-                    EDStatic.PostDetectionDatasetID + ".das\">Metadata</a>)\n" +
-                "&nbsp;&nbsp;" +
-                "(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
-                    EDStatic.PostDetectionDatasetID + ".html?" + newDapQueryString) + 
-                "\">Refine the data subset and/or download the data</a>)\n" +
-                "<br>Note that the first detection for each animal is from its release.\n");
-            if (viewChecked[4]) {  
-                if (loggedInAs == null && smallTable.nRows() > 1) {
-                    writer.write(
-                        "<p><font class=\"subduedColor\">Since you aren't logged in, \n" +
-                        "you can only see Detection Data if you have selected just one animal (above).</font>\n");
-                } else if (allData || newDapQuery.length() == 0) {
-                    writer.write(
-                        "<p><font class=\"subduedColor\">To view Detection Data, you must select (above)\n" +
-                        "at least one non-\"" + ANY + "\" option.</font>\n");
-                } else {
-                    //generate htmlTable via getDataForDapQuery
-                    writer.flush(); //essential, since creating and using another writer to write the detections
-                    TableWriter tw = new TableWriterHtmlTable(loggedInAs, 
-                        new OutputStreamSourceSimple(out),
-                        false, "", false, // tWriteHeadAndBodyTags, tFileNameNoExt, tXhtmlMode,         
-                        "", "", true, true, -1); //tPreTableHtml, tPostTableHtml, tEncodeAsXML, tWriteUnits) 
-                    String detectionNcUrl = "/tabledap/" + EDStatic.PostDetectionDatasetID + ".nc";
-                    if (detectionEdd.handleViaFixedOrSubsetVariables(loggedInAs, detectionNcUrl, newDapQueryString, tw)) {}
-                    else             detectionEdd.getDataForDapQuery(loggedInAs, detectionNcUrl, newDapQueryString, tw);  
-                }
-            } else {
-                writer.write("<p><font class=\"subduedColor\">To view the data, check <tt>View : " + 
-                    viewTitle[4] + "</tt> above.</font>\n" +
-                    warn + "\n");
-            }
-
-
-        } catch (Throwable t) {
-            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-            writer.write(EDStatic.htmlForException(t));
-        }
-
-        //end of document
-        endHtmlWriter(out, writer, tErddapUrl, false);
-    }
-
-    /**
      * This indicates if the string 's' equals 'start' (e.g., "index") 
      * plus one of the plain file types.
      */
@@ -14974,7 +14481,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String roles[] = EDStatic.getRoles(loggedInAs);
-        boolean isLoggedIn = loggedInAs != null;
+        boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
         Table table = new Table();
         StringArray gdCol = new StringArray();
         StringArray subCol = new StringArray();
@@ -15026,39 +14533,44 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 continue;
             boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
             boolean isAccessible = edd.isAccessibleTo(roles);
-            if (!EDStatic.listPrivateDatasets && !isAccessible)
+            boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
+            if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible)
                 continue;
 
+            //just show things (URLs, info) that user has access to 
             String daps = tErddapUrl + "/" + edd.dapProtocol() + "/" + tId; //without an extension, so easy to add
-            gdCol.add(edd instanceof EDDGrid? daps : "");
-            subCol.add(edd.accessibleViaSubset().length() == 0? 
+            gdCol.add(isAccessible && edd instanceof EDDGrid? daps : "");
+            subCol.add(isAccessible && edd.accessibleViaSubset().length() == 0? 
                 daps + ".subset" : "");
-            tdCol.add(edd instanceof EDDTable? daps : "");
-            magCol.add(edd.accessibleViaMAG().length() == 0? 
+            tdCol.add(isAccessible && edd instanceof EDDTable? daps : "");
+            magCol.add(graphsAccessible && edd.accessibleViaMAG().length() == 0? //graphs
                 daps + ".graph" : "");
-            sosCol.add(edd.accessibleViaSOS().length() == 0? 
+            sosCol.add(isAccessible && edd.accessibleViaSOS().length() == 0? 
                 tErddapUrl + "/sos/" + tId + "/" + EDDTable.sosServer : "");
-            wcsCol.add(edd.accessibleViaWCS().length() == 0? 
+            wcsCol.add(isAccessible && edd.accessibleViaWCS().length() == 0? 
                 tErddapUrl + "/wcs/" + tId + "/" + EDDGrid.wcsServer : "");
-            wmsCol.add(edd.accessibleViaWMS().length() == 0? 
+            wmsCol.add(graphsAccessible && edd.accessibleViaWMS().length() == 0? //graphs
                 tErddapUrl + "/wms/" + tId + "/" + EDD.WMS_SERVER : "");
-            filesCol.add(edd.accessibleViaFilesDir().length() > 0? 
+            filesCol.add(isAccessible && edd.accessibleViaFilesDir().length() > 0? 
                 tErddapUrl + "/files/" + tId + "/" : "");
             accessCol.add(edd.getAccessibleTo() == null? "public" :
-                !isLoggedIn? "log in" :
-                isAccessible? "yes" : "no");
+                isAccessible? "yes" : 
+                graphsAccessible? "graphs" : 
+                isLoggedIn? "no" : "log in");
+            //only title, summary, institution, id are always accessible if !listPrivateDatasets
             titleCol.add(edd.title());
             summaryCol.add(edd.extendedSummary());
-            fgdcCol.add(edd.accessibleViaFGDC().length() == 0? 
+            fgdcCol.add(graphsAccessible && edd.accessibleViaFGDC().length() == 0? 
                 tErddapUrl + "/" + EDStatic.fgdcXmlDirectory     + 
                     edd.datasetID() + EDD.fgdcSuffix     + ".xml" : "");
-            iso19115Col.add(edd.accessibleViaISO19115().length() == 0? 
+            iso19115Col.add(graphsAccessible && edd.accessibleViaISO19115().length() == 0? 
                 tErddapUrl + "/" + EDStatic.iso19115XmlDirectory + 
                     edd.datasetID() + EDD.iso19115Suffix + ".xml" : "");
-            infoCol.add(tErddapUrl + "/info/" + edd.datasetID() + "/index" + fileTypeName);
-            backgroundCol.add(edd.infoUrl());
-            rssCol.add(isAllDatasets? "" : EDStatic.erddapUrl + "/rss/" + edd.datasetID()+ ".rss"); //never https url
-            emailCol.add(EDStatic.subscriptionSystemActive && !isAllDatasets?
+            infoCol.add(graphsAccessible? tErddapUrl + "/info/" + edd.datasetID() + "/index" + fileTypeName : "");
+            backgroundCol.add(graphsAccessible? edd.infoUrl() : "");
+            rssCol.add(graphsAccessible && !isAllDatasets?  
+                EDStatic.erddapUrl + "/rss/" + edd.datasetID()+ ".rss" : ""); //never https url
+            emailCol.add(graphsAccessible && EDStatic.subscriptionSystemActive && !isAllDatasets?
                 tErddapUrl + "/" + Subscriptions.ADD_HTML + 
                     "?datasetID=" + edd.datasetID()+ "&showErrors=false&email=" : 
                 "");
@@ -15086,7 +14598,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String roles[] = EDStatic.getRoles(loggedInAs);
-        boolean isLoggedIn = loggedInAs != null;
+        boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
         Table table = new Table();
         StringArray gdCol = new StringArray();
         StringArray subCol = new StringArray();
@@ -15116,11 +14628,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (EDStatic.filesActive) table.addColumn("Source<br>Data<br>Files", filesCol);
         String accessTip = EDStatic.dtAccessible;
         if (isLoggedIn)
-            accessTip += EDStatic.dtAccessibleYes;
-        if (EDStatic.authentication.length() > 0 && EDStatic.listPrivateDatasets) //this erddap supports logging in
-            accessTip += isLoggedIn?
-                EDStatic.dtAccessibleNo :
-                EDStatic.dtAccessibleLogIn;
+            accessTip += EDStatic.dtAccessibleYes + //"You are logged in and ...
+                (EDStatic.listPrivateDatasets? EDStatic.dtAccessibleNo : "");   //"You are logged in and ...
+        if (EDStatic.authentication.length() > 0 && !isLoggedIn && //this erddap supports logging in
+            EDStatic.listPrivateDatasets) 
+            accessTip += EDStatic.dtAccessibleLogIn;
+        accessTip += EDStatic.dtAccessibleGraphs;
         if (EDStatic.authentication.length() > 0)
             table.addColumn("Acces-<br>sible<br>" + EDStatic.htmlTooltipImage(loggedInAs, accessTip),
                 accessCol);
@@ -15150,55 +14663,59 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 continue; 
             boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
             boolean isAccessible = edd.isAccessibleTo(roles);
-            if (!EDStatic.listPrivateDatasets && !isAccessible)
+            boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
+            if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible)
                 continue;
 
+            //just show things (URLs, info) user has access to
             String daps = "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                 "href=\"" + tErddapUrl + "/" + edd.dapProtocol() + "/" + tId + ".html\" " +
                 "title=\"" + EDStatic.dtDAF1 + " " + edd.dapProtocol() + " " + EDStatic.dtDAF2 + "\" " +
                 ">data</a>&nbsp;"; 
-            gdCol.add(edd instanceof EDDGrid?  daps : "&nbsp;"); 
-            subCol.add(edd.accessibleViaSubset().length() == 0? 
+            gdCol.add(isAccessible && edd instanceof EDDGrid?  daps : "&nbsp;"); 
+            subCol.add(isAccessible && edd.accessibleViaSubset().length() == 0? 
                 " &nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                     "href=\"" + tErddapUrl + "/tabledap/" + tId + ".subset\" " +
                     "title=\"" + EDStatic.dtSubset + "\" " +
                     ">set</a>" : 
                 "&nbsp;");
-            tdCol.add(edd instanceof EDDTable? daps : "&nbsp;");
-            magCol.add(edd.accessibleViaMAG().length() == 0? 
+            tdCol.add(isAccessible && edd instanceof EDDTable? daps : "&nbsp;");
+            magCol.add(graphsAccessible && edd.accessibleViaMAG().length() == 0? //graphs
                 " &nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                     "href=\"" + tErddapUrl + "/" + edd.dapProtocol() + 
                     "/" + tId + ".graph\" " +
                     "title=\"" + EDStatic.dtMAG + "\" " +
                     ">graph</a>" : 
                 "&nbsp;");
-            sosCol.add(edd.accessibleViaSOS().length() == 0? 
+            sosCol.add(isAccessible && edd.accessibleViaSOS().length() == 0? 
                 "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                     "href=\"" + tErddapUrl + "/sos/" + tId + "/index.html\" " +
                     "title=\"" + EDStatic.dtSOS + "\" >" +
                     "S</a>&nbsp;" : 
                 "&nbsp;");
-            wcsCol.add(edd.accessibleViaWCS().length() == 0? 
+            wcsCol.add(isAccessible && edd.accessibleViaWCS().length() == 0? 
                 "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                     "href=\"" + tErddapUrl + "/wcs/" + tId + "/index.html\" " +
                     "title=\"" + EDStatic.dtWCS + "\" >" +
                     "C</a>&nbsp;" : 
                 "&nbsp;");
-            wmsCol.add(edd.accessibleViaWMS().length() == 0? 
+            wmsCol.add(graphsAccessible && edd.accessibleViaWMS().length() == 0? //graphs
                 "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                     "href=\"" + tErddapUrl + "/wms/" + tId + "/index.html\" " +
                     "title=\"" + EDStatic.dtWMS + "\" >" +
                     "M</a>&nbsp;" : 
                 "&nbsp;");
-            filesCol.add(edd.accessibleViaFilesDir().length() > 0? 
+            filesCol.add(isAccessible && edd.accessibleViaFilesDir().length() > 0? 
                 "&nbsp;&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                     "href=\"" + tErddapUrl + "/files/" + tId + "/\" " +
                     "title=\"" + EDStatic.dtFiles + "\" >" +
                     "files</a>&nbsp;" : 
                 "&nbsp;");
             accessCol.add(edd.getAccessibleTo() == null? "public" :
-                !isLoggedIn? loginHref :
-                isAccessible? "yes" : "no");
+                isAccessible? "yes" : 
+                graphsAccessible? "graphs" : 
+                isLoggedIn? "no" : loginHref);
+            //only title, summary, institution, id are always accessible if !listPrivateDatasets
             String tTitle = edd.title();
             plainTitleCol.add(tTitle);
             if (tTitle.length() > 95) 
@@ -15218,7 +14735,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             else titleCol.add(XML.encodeAsHTML(tTitle));
             summaryCol.add("&nbsp;&nbsp;&nbsp;" + EDStatic.htmlTooltipImage(loggedInAs, 
                 XML.encodeAsPreHTML(edd.extendedSummary(), 100)));
-            infoCol.add(
+            infoCol.add(!graphsAccessible? "" : 
                 "\n&nbsp;" +
                 //fgdc
                 (edd.accessibleViaFGDC().length() > 0?  
@@ -15247,13 +14764,17 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     "/index.html\" " + //here, always .html
                 "title=\"" + EDStatic.clickInfo + "\" >M</a>" +
                 "\n&nbsp;");
-            backgroundCol.add("<a rel=\"bookmark\" " +
+            backgroundCol.add(!graphsAccessible? "" : 
+                "<a rel=\"bookmark\" " +
                 "href=\"" + XML.encodeAsHTML(edd.infoUrl()) + "\" " +
                 "title=\"" + EDStatic.clickBackgroundInfo + "\" >background" +
                     (edd.infoUrl().startsWith(EDStatic.baseUrl)? "" : externalLinkHtml) + 
                     "</a>");
-            rssCol.add(isAllDatasets? "&nbsp;" : edd.rssHref(loggedInAs));
-            emailCol.add("&nbsp;" + (isAllDatasets? "" : edd.emailHref(loggedInAs)) + "&nbsp;");
+            rssCol.add(graphsAccessible && !isAllDatasets? 
+                edd.rssHref(loggedInAs) : "&nbsp;");
+            emailCol.add(graphsAccessible && EDStatic.subscriptionSystemActive &&
+                !isAllDatasets? 
+                edd.emailHref(loggedInAs) : "&nbsp;");
             String tInstitution = edd.institution();
             if (tInstitution.length() > 20) 
                 institutionCol.add(
@@ -15295,7 +14816,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             request, response, fileName, fileTypeName, fileTypeExtension); 
 
         if (fileTypeName.equals(".htmlTable")) {
-            TableWriterHtmlTable.writeAllAndFinish(loggedInAs, table, outSource, 
+            TableWriterHtmlTable.writeAllAndFinish(null, null, loggedInAs, table, outSource, 
                 true, fileName, false,
                 "", "", true, false, -1); //pre, post, encodeAsHTML, writeUnits
 
@@ -15308,10 +14829,10 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 if (!String2.isJsonpNameSafe(jsonp))
                     throw new SimpleException(EDStatic.errorJsonpFunctionName);
             }
-            TableWriterJson.writeAllAndFinish(table, outSource, jsonp, false); //writeUnits
+            TableWriterJson.writeAllAndFinish(null, null, table, outSource, jsonp, false); //writeUnits
 
         } else if (fileTypeName.equals(".csv")) {
-            TableWriterSeparatedValue.writeAllAndFinish(table, outSource,
+            TableWriterSeparatedValue.writeAllAndFinish(null, null, table, outSource,
                 ",", true, true, '0', "NaN"); //separator, quoted, writeColumnNames, writeUnits
 
         } else if (fileTypeName.equals(".mat")) {
@@ -15347,12 +14868,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             File2.simpleDelete(EDStatic.fullPlainFileNcCacheDirectory + ncFileName); 
 
         } else if (fileTypeName.equals(".tsv")) {
-            TableWriterSeparatedValue.writeAllAndFinish(table, outSource, 
+            TableWriterSeparatedValue.writeAllAndFinish(null, null, table, outSource, 
                 "\t", false, true, '0', "NaN"); //separator, quoted, writeColumnNames, writeUnits
 
         } else if (fileTypeName.equals(".xhtml")) {
-            TableWriterHtmlTable.writeAllAndFinish(loggedInAs, table, outSource, 
-                true, fileName, true,
+            TableWriterHtmlTable.writeAllAndFinish(null, null, 
+                loggedInAs, table, outSource, true, fileName, true,
                 "", "", true, false, -1); //pre, post, encodeAsHTML, writeUnits
 
         } else {
@@ -15368,7 +14889,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
     }
 
     public static void sendRedirect(HttpServletResponse response, String url) 
-        throws IOException {
+        throws Exception {
+        url = SSR.fixPercentEncodedUrl(url); //crude insurance for new percentEncoding requirements
         if (verbose) String2.log("redirected to " + url);
         response.sendRedirect(url);
     }
@@ -15423,7 +14945,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
     /**
      * This makes a erddapContent.zip file with the [tomcat]/content/erddap files for distribution.
      *
-     * @param removeDir e.g., "c:/programs/tomcat/samples/"     
+     * @param removeDir e.g., "c:/programs/_tomcat/samples/"     
      * @param destinationDir  e.g., "c:/backup/"
      */
     public static void makeErddapContentZip(String removeDir, String destinationDir) throws Throwable {
@@ -15620,13 +15142,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\"],\n" +
 "    \"rows\": [\n" +
-"      [\"cdm_data_type\", \"http://127.0.0.1:8080/cwexperimental/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"institution\", \"http://127.0.0.1:8080/cwexperimental/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"ioos_category\", \"http://127.0.0.1:8080/cwexperimental/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"keywords\", \"http://127.0.0.1:8080/cwexperimental/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"long_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"standard_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"variableName\", \"http://127.0.0.1:8080/cwexperimental/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n" +
+"      [\"cdm_data_type\", \"http://localhost:8080/cwexperimental/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"institution\", \"http://localhost:8080/cwexperimental/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"ioos_category\", \"http://localhost:8080/cwexperimental/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"keywords\", \"http://localhost:8080/cwexperimental/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"long_name\", \"http://localhost:8080/cwexperimental/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"standard_name\", \"http://localhost:8080/cwexperimental/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"variableName\", \"http://localhost:8080/cwexperimental/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n", 
@@ -15643,13 +15165,13 @@ jsonp + "(" +
 "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\"],\n" +
 "    \"rows\": [\n" +
-"      [\"cdm_data_type\", \"http://127.0.0.1:8080/cwexperimental/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"institution\", \"http://127.0.0.1:8080/cwexperimental/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"ioos_category\", \"http://127.0.0.1:8080/cwexperimental/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"keywords\", \"http://127.0.0.1:8080/cwexperimental/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"long_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"standard_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"variableName\", \"http://127.0.0.1:8080/cwexperimental/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n" +
+"      [\"cdm_data_type\", \"http://localhost:8080/cwexperimental/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"institution\", \"http://localhost:8080/cwexperimental/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"ioos_category\", \"http://localhost:8080/cwexperimental/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"keywords\", \"http://localhost:8080/cwexperimental/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"long_name\", \"http://localhost:8080/cwexperimental/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"standard_name\", \"http://localhost:8080/cwexperimental/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"variableName\", \"http://localhost:8080/cwexperimental/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n" +
@@ -15677,7 +15199,7 @@ jsonp + "(" +
                 "/categorize/institution/index.tsv"));
             Test.ensureTrue(results.indexOf("Category[9]URL[10]") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(
-                "noaa_coastwatch_west_coast_node[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
+                "noaa_coastwatch_west_coast_node[9]http://localhost:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
                 "results=\n" + results);
             
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
@@ -15714,13 +15236,13 @@ jsonp + "(" +
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
             expected =            
-"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.subset\", " +                
-"\"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle\", " +
-"\"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.graph\", " + 
+"http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle.subset\", " +                
+"\"http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle\", " +
+"\"http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle.graph\", " + 
                 (EDStatic.sosActive? "\"\", " : "") + //currently, it isn't made available via sos
                 (EDStatic.wcsActive? "\"\", " : "") +
                 (EDStatic.wmsActive? "\"\", " : "") +
-                (EDStatic.filesActive? "\"http://127.0.0.1:8080/cwexperimental/files/erdGlobecBottle/\", " : "") +
+                (EDStatic.filesActive? "\"http://localhost:8080/cwexperimental/files/erdGlobecBottle/\", " : "") +
                 (EDStatic.authentication.length() > 0? "\"public\", " : "") +
                 "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
                 "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from " +
@@ -15749,16 +15271,16 @@ jsonp + "(" +
                 "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\\n\\n" +
                 "cdm_data_type = TrajectoryProfile\\n" +
                 "VARIABLES:\\ncruise_id\\n... (24 more variables)\\n\", " +
-                "\"http://127.0.0.1:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
-                "\"http://127.0.0.1:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
-                "\"http://127.0.0.1:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
+                "\"http://localhost:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
+                "\"http://localhost:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
+                "\"http://localhost:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
                 "\"http://www.globec.org/\", " +
-                "\"http://127.0.0.1:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
+                "\"http://localhost:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
                 (EDStatic.subscriptionSystemActive? 
-                    "\"http://127.0.0.1:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " :
+                    "\"http://localhost:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " :
                     "") +
                 "\"GLOBEC\", \"erdGlobecBottle\"],";
-            po = results.indexOf("http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle");
+            po = results.indexOf("http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle");
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
             //griddap
@@ -15950,7 +15472,7 @@ jsonp + "(" +
                 } catch (Throwable t) {
                     results = MustBe.throwableToString(t);
                 }
-                Test.ensureTrue(results.indexOf("java.io.FileNotFoundException: http://127.0.0.1:8080/cwexperimental/wcs/index.html?page=1&itemsPerPage=1000") >= 0, "results=\n" + results);            
+                Test.ensureTrue(results.indexOf("java.io.FileNotFoundException: http://localhost:8080/cwexperimental/wcs/index.html?page=1&itemsPerPage=1000") >= 0, "results=\n" + results);            
             }
 
             //wms
@@ -16113,14 +15635,14 @@ jsonp + "(" +
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.csv");
             expected = 
 "Resource,URL\n" +
-"info,http://127.0.0.1:8080/cwexperimental/info/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
-"search,http://127.0.0.1:8080/cwexperimental/search/index.csv?" + EDStatic.defaultPIppQuery + "&searchFor=\n" +
-"categorize,http://127.0.0.1:8080/cwexperimental/categorize/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
-"griddap,http://127.0.0.1:8080/cwexperimental/griddap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
-"tabledap,http://127.0.0.1:8080/cwexperimental/tabledap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
-(EDStatic.sosActive? "sos,http://127.0.0.1:8080/cwexperimental/sos/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
-(EDStatic.wcsActive? "wcs,http://127.0.0.1:8080/cwexperimental/wcs/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
-(EDStatic.wmsActive? "wms,http://127.0.0.1:8080/cwexperimental/wms/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "");
+"info,http://localhost:8080/cwexperimental/info/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+"search,http://localhost:8080/cwexperimental/search/index.csv?" + EDStatic.defaultPIppQuery + "&searchFor=\n" +
+"categorize,http://localhost:8080/cwexperimental/categorize/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+"griddap,http://localhost:8080/cwexperimental/griddap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+"tabledap,http://localhost:8080/cwexperimental/tabledap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+(EDStatic.sosActive? "sos,http://localhost:8080/cwexperimental/sos/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
+(EDStatic.wcsActive? "wcs,http://localhost:8080/cwexperimental/wcs/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
+(EDStatic.wmsActive? "wms,http://localhost:8080/cwexperimental/wms/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "");
 //subscriptions?
 //converters?
             Test.ensureEqual(results, expected, "results=\n" + results);
@@ -16144,32 +15666,32 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>info\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>search\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>categorize\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>griddap\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>tabledap\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 (EDStatic.sosActive?
 "<tr>\n" +
 "<td nowrap>sos\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;sos&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" : "") +
 "<tr>\n" +
 "<td nowrap>wms\n" +
-"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;localhost&#x3a;8080&#x2f;cwexperimental&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
@@ -16183,14 +15705,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    \"columnNames\": [\"Resource\", \"URL\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\"],\n" +
 "    \"rows\": [\n" +
-"      [\"info\", \"http://127.0.0.1:8080/cwexperimental/info/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"search\", \"http://127.0.0.1:8080/cwexperimental/search/index.json?page=1&itemsPerPage=1000&searchFor=\"],\n" +
-"      [\"categorize\", \"http://127.0.0.1:8080/cwexperimental/categorize/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"griddap\", \"http://127.0.0.1:8080/cwexperimental/griddap/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"tabledap\", \"http://127.0.0.1:8080/cwexperimental/tabledap/index.json?page=1&itemsPerPage=1000\"]"            + (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive? "," : "") + "\n" +
-(EDStatic.sosActive? "      [\"sos\", \"http://127.0.0.1:8080/cwexperimental/sos/index.json?page=1&itemsPerPage=1000\"]" + (EDStatic.wcsActive || EDStatic.wmsActive? "," : "") + "\n" : "") +
-(EDStatic.wcsActive? "      [\"wcs\", \"http://127.0.0.1:8080/cwexperimental/wcs/index.json?page=1&itemsPerPage=1000\"]" + (EDStatic.wmsActive? "," : "") + "\n" : "") +
-(EDStatic.wmsActive? "      [\"wms\", \"http://127.0.0.1:8080/cwexperimental/wms/index.json?page=1&itemsPerPage=1000\"]\n" : "") +
+"      [\"info\", \"http://localhost:8080/cwexperimental/info/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"search\", \"http://localhost:8080/cwexperimental/search/index.json?page=1&itemsPerPage=1000&searchFor=\"],\n" +
+"      [\"categorize\", \"http://localhost:8080/cwexperimental/categorize/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"griddap\", \"http://localhost:8080/cwexperimental/griddap/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"tabledap\", \"http://localhost:8080/cwexperimental/tabledap/index.json?page=1&itemsPerPage=1000\"]"            + (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive? "," : "") + "\n" +
+(EDStatic.sosActive? "      [\"sos\", \"http://localhost:8080/cwexperimental/sos/index.json?page=1&itemsPerPage=1000\"]" + (EDStatic.wcsActive || EDStatic.wmsActive? "," : "") + "\n" : "") +
+(EDStatic.wcsActive? "      [\"wcs\", \"http://localhost:8080/cwexperimental/wcs/index.json?page=1&itemsPerPage=1000\"]" + (EDStatic.wmsActive? "," : "") + "\n" : "") +
+(EDStatic.wmsActive? "      [\"wms\", \"http://localhost:8080/cwexperimental/wms/index.json?page=1&itemsPerPage=1000\"]\n" : "") +
 //subscriptions?
 "    ]\n" +
 "  }\n" +
@@ -16200,14 +15722,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             results = String2.annotatedString(SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.tsv"));
             expected = 
 "Resource[9]URL[10]\n" +
-"info[9]http://127.0.0.1:8080/cwexperimental/info/index.tsv?page=1&itemsPerPage=1000[10]\n" +
-"search[9]http://127.0.0.1:8080/cwexperimental/search/index.tsv?page=1&itemsPerPage=1000&searchFor=[10]\n" +
-"categorize[9]http://127.0.0.1:8080/cwexperimental/categorize/index.tsv?page=1&itemsPerPage=1000[10]\n" +
-"griddap[9]http://127.0.0.1:8080/cwexperimental/griddap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
-"tabledap[9]http://127.0.0.1:8080/cwexperimental/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
-(EDStatic.sosActive? "sos[9]http://127.0.0.1:8080/cwexperimental/sos/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
-(EDStatic.wcsActive? "wcs[9]http://127.0.0.1:8080/cwexperimental/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
-(EDStatic.wmsActive? "wms[9]http://127.0.0.1:8080/cwexperimental/wms/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
+"info[9]http://localhost:8080/cwexperimental/info/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+"search[9]http://localhost:8080/cwexperimental/search/index.tsv?page=1&itemsPerPage=1000&searchFor=[10]\n" +
+"categorize[9]http://localhost:8080/cwexperimental/categorize/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+"griddap[9]http://localhost:8080/cwexperimental/griddap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+"tabledap[9]http://localhost:8080/cwexperimental/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+(EDStatic.sosActive? "sos[9]http://localhost:8080/cwexperimental/sos/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
+(EDStatic.wcsActive? "wcs[9]http://localhost:8080/cwexperimental/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
+(EDStatic.wmsActive? "wms[9]http://localhost:8080/cwexperimental/wms/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
 "[end]";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -16231,38 +15753,38 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">info</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/info/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/info/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">search</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/search/index.xhtml?page=1&amp;itemsPerPage=1000&amp;searchFor=</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/search/index.xhtml?page=1&amp;itemsPerPage=1000&amp;searchFor=</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">categorize</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/categorize/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/categorize/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">griddap</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/griddap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/griddap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">tabledap</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/tabledap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/tabledap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 (EDStatic.sosActive?
 "<tr>\n" +
 "<td nowrap=\"nowrap\">sos</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/sos/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/sos/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" : "") +
 (EDStatic.wcsActive?
 "<tr>\n" +
 "<td nowrap=\"nowrap\">wcs</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" : "") +
 (EDStatic.wmsActive? 
 "<tr>\n" +
 "<td nowrap=\"nowrap\">wms</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wms/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
+"<td nowrap=\"nowrap\">http://localhost:8080/cwexperimental/wms/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" : "") +
 "</table>\n" +
 "</body>\n" +

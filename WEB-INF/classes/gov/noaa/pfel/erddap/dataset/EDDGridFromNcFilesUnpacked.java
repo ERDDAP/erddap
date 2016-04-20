@@ -53,7 +53,7 @@ import ucar.ma2.*;
 /** 
  * This class represents gridded data aggregated from a collection of 
  * NetCDF .nc (http://www.unidata.ucar.edu/software/netcdf/),
- * GRIB .grb (http://en.wikipedia.org/wiki/GRIB),
+ * GRIB .grb (https://en.wikipedia.org/wiki/GRIB),
  * (and related) netcdfFiles which are unpacked at a low level.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2009-01-05
@@ -85,7 +85,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
     
     /** The constructor just calls the super constructor. */
     public EDDGridFromNcFilesUnpacked(String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
@@ -98,7 +98,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
         boolean tAccessibleViaFiles) throws Throwable {
 
         super("EDDGridFromNcFilesUnpacked", tDatasetID, 
-            tAccessibleTo, tAccessibleViaWMS,
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, 
             tAddGlobalAttributes,
@@ -500,7 +500,7 @@ today;
 //2015-10-08T22:27:15Z  
 
 expected = 
-"http://127.0.0.1:8080/cwexperimental/griddap/testEDDGridFromNcFilesUnpacked.das\";\n" +
+"http://localhost:8080/cwexperimental/griddap/testEDDGridFromNcFilesUnpacked.das\";\n" +
 "    String infoUrl \"https://podaac.jpl.nasa.gov/\";\n" +
 "    String institution \"Jet Propulsion Laboratory\";\n" +
 "    String keywords \"analysed, analysed_sst, daily, data, day, earth, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans,\n" +
@@ -813,7 +813,7 @@ NcHelper.debugMode = true;
        
 expected = 
 //"2015-10-30T18:17:10Z (local files)
-//2015-10-30T18:17:10Z http://127.0.0.1:8080/cwexperimental/griddap/testUInt16File.das";
+//2015-10-30T18:17:10Z http://localhost:8080/cwexperimental/griddap/testUInt16File.das";
 "    String infoUrl \"???\";\n" +
 "    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" +
 "    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +

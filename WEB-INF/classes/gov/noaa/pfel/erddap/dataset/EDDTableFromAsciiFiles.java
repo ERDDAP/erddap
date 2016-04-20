@@ -23,6 +23,7 @@ import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
@@ -56,7 +57,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      *    <br>If "", no one will have access to this dataset.
      * <p>The sortedColumnSourceName isn't utilized.
      */
-    public EDDTableFromAsciiFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromAsciiFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File,
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -73,7 +75,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromAsciiFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromAsciiFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -87,7 +90,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     }
 
     /** The constructor for subclasses. */
-    public EDDTableFromAsciiFiles(String tClassName, String tDatasetID, String tAccessibleTo,
+    public EDDTableFromAsciiFiles(String tClassName, String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
@@ -103,7 +107,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super(tClassName, tDatasetID, tAccessibleTo, 
+        super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -222,6 +226,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+        if (!String2.isSomething(sampleFileName)) 
+            String2.log("Found/using sampleFileName=" +
+                (sampleFileName = FileVisitorDNLS.getSampleFileName(
+                    tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -712,7 +720,7 @@ directionsForGenerateDatasetsXml() +
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //+ " The source URL.\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+//today + " http://localhost:8080/cwexperimental/tabledap/
 expected =
 "testTableAscii.das\";\n" +
 "    String infoUrl \"The Info Url\";\n" +
@@ -931,7 +939,7 @@ expected =
     "    String history \"Data downloaded hourly from http://shiptracker.noaa.gov/shiptracker.html to ERD\n" +
     today;
     //        "2013-05-24T17:24:54Z (local files)\n" +
-    //"2013-05-24T17:24:54Z http://127.0.0.1:8080/cwexperimental/tabledap/testWTDL.das\";\n" +
+    //"2013-05-24T17:24:54Z http://localhost:8080/cwexperimental/tabledap/testWTDL.das\";\n" +
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
     expected=
@@ -1089,7 +1097,7 @@ expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //"2014-12-04T19:15:21Z (local files)
-//2014-12-04T19:15:21Z http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das";
+//2014-12-04T19:15:21Z http://localhost:8080/cwexperimental/tabledap/testTableAscii.das";
 expected =
 "    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +

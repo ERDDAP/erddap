@@ -53,7 +53,7 @@ import ucar.ma2.*;
 /** 
  * This class represents gridded data aggregated from a collection of 
  * NetCDF .nc (http://www.unidata.ucar.edu/software/netcdf/),
- * GRIB .grb (http://en.wikipedia.org/wiki/GRIB),
+ * GRIB .grb (https://en.wikipedia.org/wiki/GRIB),
  * (and related) NetcdfFiles.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2009-01-05
@@ -85,7 +85,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
     
     /** The constructor just calls the super constructor. */
     public EDDGridFromNcFiles(String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
@@ -97,7 +97,8 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
         int tMatchAxisNDigits, boolean tFileTableInMemory,
         boolean tAccessibleViaFiles) throws Throwable {
 
-        super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+        super("EDDGridFromNcFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, 
             tAddGlobalAttributes,
@@ -397,7 +398,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"featureType\">GRID</att>\n" +
 "        <att name=\"file_format\">GRIB-2</att>\n" +
 "        <att name=\"GRIB_table_version\">2,1</att>\n" +
-"        <att name=\"history\">Read using CDM IOSP Grib2Collection</att>\n" +
+"        <att name=\"history\">Read using CDM IOSP GribCollection v3</att>\n" + //changed in netcdf-java 4.6.4
 "        <att name=\"Originating_or_generating_Center\">US National Weather Service, National Centres for Environmental Prediction (NCEP)</att>\n" +
 "        <att name=\"Originating_or_generating_Subcenter\">0</att>\n" +
 "        <att name=\"Type_of_generating_process\">Forecast</att>\n" +
@@ -424,23 +425,26 @@ directionsForGenerateDatasetsXml() +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
+"            <att name=\"calendar\">proleptic_gregorian</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"long_name\">GRIB forecast or observation time</att>\n" +  //new in netcdf-java 4.6.4
 "            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">Hour since 2009-06-01T06:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
-"            <att name=\"long_name\">Time</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>ordered_sequence_of_data</sourceName>\n" +
 "        <destinationName>ordered_sequence_of_data</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"Grib2_level_type\" type=\"int\">241</att>\n" +
+"            <att name=\"Grib_level_type\" type=\"int\">241</att>\n" +
+"            <att name=\"long_name\">Ordered Sequence of Data</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"positive\">up</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"units\">count</att>\n" + //'seq' new in netcdf-java 4.6.4, fixed in 4.6.5
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Taxonomy</att>\n" +
-"            <att name=\"long_name\">Ordered Sequence Of Data</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
@@ -473,46 +477,25 @@ directionsForGenerateDatasetsXml() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"abbreviation\">SWDIR</att>\n" +
+"            <att name=\"coordinates\">reftime time ordered_sequence_of_data lat lon </att>\n" + //new in netcdf-java 4.6.4
 "            <att name=\"Grib2_Generating_Process_Type\">Forecast</att>\n" +
-"            <att name=\"Grib2_Level_Type\" type=\"int\">241</att>\n" +
+"            <att name=\"Grib2_Level_Type\">Ordered Sequence of Data</att>\n" + //changed in netcdf-java 4.6.4
 "            <att name=\"Grib2_Parameter\" type=\"intList\">10 0 7</att>\n" +
 "            <att name=\"Grib2_Parameter_Category\">Waves</att>\n" +
 "            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n" +
 "            <att name=\"Grib2_Parameter_Name\">Direction of swell waves</att>\n" +
 "            <att name=\"Grib_Variable_Id\">VAR_10-0-7_L241</att>\n" +
+"            <att name=\"grid_mapping\">LatLon_Projection</att>\n" + //new in netcdf-java 4.6.4
 "            <att name=\"long_name\">Direction of swell waves @ Ordered Sequence of Data</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
-"            <att name=\"units\">degree.true</att>\n" +
+"            <att name=\"units\">degree_true</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" + //new in netcdf-java 4.6.4
 "            <att name=\"ioos_category\">Surface Waves</att>\n" +
 "            <att name=\"standard_name\">sea_surface_swell_wave_to_direction</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>Significant_height_of_swell_waves_ordered_sequence_of_data</sourceName>\n" +
-"        <destinationName>Significant_height_of_swell_waves_ordered_sequence_of_data</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"abbreviation\">SWELL</att>\n" +
-"            <att name=\"Grib2_Generating_Process_Type\">Forecast</att>\n" +
-"            <att name=\"Grib2_Level_Type\" type=\"int\">241</att>\n" +
-"            <att name=\"Grib2_Parameter\" type=\"intList\">10 0 8</att>\n" +
-"            <att name=\"Grib2_Parameter_Category\">Waves</att>\n" +
-"            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n" +
-"            <att name=\"Grib2_Parameter_Name\">Significant height of swell waves</att>\n" +
-"            <att name=\"Grib_Variable_Id\">VAR_10-0-8_L241</att>\n" +
-"            <att name=\"long_name\">Significant height of swell waves @ Ordered Sequence of Data</att>\n" +
-"            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
-"            <att name=\"units\">m</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Surface Waves</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_significant_height</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -521,13 +504,15 @@ directionsForGenerateDatasetsXml() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"abbreviation\">SWPER</att>\n" +
+"            <att name=\"coordinates\">reftime time ordered_sequence_of_data lat lon </att>\n" + //new in netcdf-java 4.6.4
 "            <att name=\"Grib2_Generating_Process_Type\">Forecast</att>\n" +
-"            <att name=\"Grib2_Level_Type\" type=\"int\">241</att>\n" +
+"            <att name=\"Grib2_Level_Type\">Ordered Sequence of Data</att>\n" + //changed in netcdf-java 4.6.4
 "            <att name=\"Grib2_Parameter\" type=\"intList\">10 0 9</att>\n" +
 "            <att name=\"Grib2_Parameter_Category\">Waves</att>\n" +
 "            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n" +
 "            <att name=\"Grib2_Parameter_Name\">Mean period of swell waves</att>\n" +
 "            <att name=\"Grib_Variable_Id\">VAR_10-0-9_L241</att>\n" +
+"            <att name=\"grid_mapping\">LatLon_Projection</att>\n" + //new in netcdf-java 4.6.4
 "            <att name=\"long_name\">Mean period of swell waves @ Ordered Sequence of Data</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "            <att name=\"units\">s</att>\n" +
@@ -535,8 +520,36 @@ directionsForGenerateDatasetsXml() +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">20.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" + //new in netcdf-java 4.6.4
 "            <att name=\"ioos_category\">Surface Waves</att>\n" +
 "            <att name=\"standard_name\">sea_surface_swell_wave_period</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Significant_height_of_swell_waves_ordered_sequence_of_data</sourceName>\n" +
+"        <destinationName>Significant_height_of_swell_waves_ordered_sequence_of_data</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"abbreviation\">SWELL</att>\n" +
+"            <att name=\"coordinates\">reftime time ordered_sequence_of_data lat lon </att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"Grib2_Generating_Process_Type\">Forecast</att>\n" +
+"            <att name=\"Grib2_Level_Type\">Ordered Sequence of Data</att>\n" + ////changed in netcdf-java 4.6.4
+"            <att name=\"Grib2_Parameter\" type=\"intList\">10 0 8</att>\n" +
+"            <att name=\"Grib2_Parameter_Category\">Waves</att>\n" +
+"            <att name=\"Grib2_Parameter_Discipline\">Oceanographic products</att>\n" +
+"            <att name=\"Grib2_Parameter_Name\">Significant height of swell waves</att>\n" +
+"            <att name=\"Grib_Variable_Id\">VAR_10-0-8_L241</att>\n" +
+"            <att name=\"grid_mapping\">LatLon_Projection</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"long_name\">Significant height of swell waves @ Ordered Sequence of Data</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" + //new in netcdf-java 4.6.4
+"            <att name=\"ioos_category\">Surface Waves</att>\n" +
+"            <att name=\"standard_name\">sea_surface_swell_wave_significant_height</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -656,7 +669,7 @@ directionsForGenerateDatasetsXml() +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"int\">1</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"bounds\">time_bnds</att>\n" +
 "            <att name=\"calendar\">standard</att>\n" +
@@ -665,7 +678,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">days since 1950-01-01 00:00:00</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"bounds\">null</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "        </addAttributes>\n" +
@@ -674,7 +687,7 @@ directionsForGenerateDatasetsXml() +
 "        <sourceName>lat</sourceName>\n" +
 "        <destinationName>latitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"int\">3105</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">3105</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"bounds\">lat_bnds</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
@@ -682,7 +695,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">degrees_north</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"bounds\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
@@ -692,7 +705,7 @@ directionsForGenerateDatasetsXml() +
 "        <sourceName>lon</sourceName>\n" +
 "        <destinationName>longitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"int\">7025</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">7025</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"bounds\">lon_bnds</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
@@ -701,7 +714,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"valid_range\" type=\"doubleList\">0.0 360.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"bounds\">null</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
@@ -712,7 +725,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>tasmin</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSize\" type=\"intList\">1 369 836</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 369 836</att>\n" +
 "            <att name=\"_FillValue\" type=\"float\">1.0E20</att>\n" +
 "            <att name=\"associated_files\">baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_CESM1-CAM5_rcp26_r0i0p0.nc areacella: areacella_fx_CESM1-CAM5_rcp26_r0i0p0.nc</att>\n" +
 "            <att name=\"cell_measures\">area: areacella</att>\n" +
@@ -727,7 +740,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">K</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_ChunkSize\">null</att>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">313.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">263.0</att>\n" +
 "            <att name=\"coordinates\">null</att>\n" +
@@ -750,7 +763,7 @@ directionsForGenerateDatasetsXml() +
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nExpected error: Have you updated your AWS credentials lately?\n"); 
+                "\nUnexpected error: Have you updated your AWS credentials lately?\n"); 
         }
     }
 
@@ -865,7 +878,7 @@ directionsForGenerateDatasetsXml() +
 //today + 
 
 expected = 
-//"2015-06-24T17:36:33Z http://127.0.0.1:8080/cwexperimental/griddap/testAwsS3.das\";\n" +
+//"2015-06-24T17:36:33Z http://localhost:8080/cwexperimental/griddap/testAwsS3.das\";\n" +
     "String infoUrl \"http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/\";\n" +
 "    String initialization_method \"1\";\n" +
 "    String institute_id \"NASA-Ames\";\n" +
@@ -900,7 +913,7 @@ expected =
 "    String region_id \"CONUS\";\n" +
 "    String region_lexicon \"http://en.wikipedia.org/wiki/Contiguous_United_States\";\n" +
 "    String resolution_id \"800m\";\n" +
-"    String sourceUrl \"(local files)\";\n" +
+"    String sourceUrl \"(remote files)\";\n" +
 "    Float64 Southernmost_Northing 24.0625;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"800m Downscaled NEX Climate Model Intercomparison Project 5 (CMIP5) Climate Projections for the Continental US\";\n" +
@@ -979,7 +992,7 @@ expected =
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nExpected error: Have you updated your AWS credentials lately?\n"); 
+                "\nUnexpected error: Have you updated your AWS credentials lately?\n"); 
         }
 
     }
@@ -1126,7 +1139,7 @@ today;
 //            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
-expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
+expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
 "    String infoUrl \"http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -1454,7 +1467,7 @@ today;
 //today + 
 
 expected = 
-" http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles_42.das\";\n" +
+" http://localhost:8080/cwexperimental/griddap/testGribFiles_42.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
 "    String institution \"UK Met RSMC\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
@@ -1873,7 +1886,7 @@ today;
 //+ " (local files)\n" +
 //today + 
 expected= 
-" http://127.0.0.1:8080/cwexperimental/griddap/testGrib2_42.das\";\n" +
+" http://localhost:8080/cwexperimental/griddap/testGrib2_42.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -2094,6 +2107,7 @@ expected=
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 actual_range 3.471984e+8, 6.600528e+8;\n" +
 "    String axis \"T\";\n" +
+"    String calendar \"proleptic_gregorian\";\n" + //new in netcdf-java 4.6.4
 "    String GRIB2_significanceOfRTName \"Start of forecast\";\n" +
 "    String GRIB_orgReferenceTime \"1981-01-01T12:00:00Z\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -2106,7 +2120,7 @@ expected=
 "    String _CoordinateAxisType \"Height\";\n" +
 "    Float32 actual_range 10.0, 10.0;\n" +
 "    String datum \"ground\";\n" +
-"    Int32 Grib1_level_code 105;\n" +
+"    Int32 Grib_level_type 105;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Specified Height Level above Ground\";\n" +
 "    String positive \"up\";\n" +
@@ -2133,6 +2147,8 @@ expected=
 "  wind_speed {\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time height_above_ground lat lon \";\n" + //new in netcdf-java 4.6.4
+"    String description \"Wind speed\";\n" +
 "    Int32 Grib1_Center 74;\n" +
 "    String Grib1_Level_Desc \"Specified height level above ground\";\n" +
 "    Int32 Grib1_Level_Type 105;\n" +
@@ -2140,6 +2156,7 @@ expected=
 "    Int32 Grib1_Subcenter 0;\n" +
 "    Int32 Grib1_TableVersion 1;\n" +
 "    String Grib_Variable_Id \"VAR_74-0-1-32_L105\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Wind speed @ Specified height level above ground\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2160,7 +2177,8 @@ expected=
 "    Float64 geospatial_lon_min 0.0;\n" +
 "    Float64 geospatial_lon_resolution 3.75;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"Read using CDM IOSP Grib1Collection\n" +
+"    String GRIB_table_version \"0,1\";\n" + //new in netcdf-java 4.6.4   comma!
+"    String history \"Read using CDM IOSP GribCollection v3\n" + //changed in netcdf-java 4.6.4
 today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
@@ -2169,7 +2187,7 @@ today;
 //today + 
 try {
 expected = 
-"http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles_43.das\";\n" +
+"http://localhost:8080/cwexperimental/griddap/testGribFiles_43.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
 "    String institution \"UK Met RSMC\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
@@ -2292,6 +2310,7 @@ expected =
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 actual_range 1.243836e+9, 1.244484e+9;\n" +
 "    String axis \"T\";\n" +
+"    String calendar \"proleptic_gregorian\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Forecast Time\";\n" +
 "    String standard_name \"time\";\n" +
@@ -2332,13 +2351,15 @@ expected =
 "    String abbreviation \"SWPER\";\n" +
 "    Float64 colorBarMaximum 20.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time ordered_sequence_of_data lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 241;\n" +
+"    String Grib2_Level_Type \"Ordered Sequence of Data\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 10, 0, 9;\n" +
 "    String Grib2_Parameter_Category \"Waves\";\n" +
 "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n" +
 "    String Grib2_Parameter_Name \"Mean period of swell waves\";\n" +
 "    String Grib_Variable_Id \"VAR_10-0-9_L241\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Mean period of swell waves @ Ordered Sequence of Data\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2349,13 +2370,15 @@ expected =
 "    String abbreviation \"WVPER\";\n" +
 "    Float64 colorBarMaximum 20.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 10, 0, 6;\n" +
 "    String Grib2_Parameter_Category \"Waves\";\n" +
 "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n" +
 "    String Grib2_Parameter_Name \"Mean period of wind waves\";\n" +
 "    String Grib_Variable_Id \"VAR_10-0-6_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Mean period of wind waves @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2372,13 +2395,15 @@ expected =
 "    String abbreviation \"PERPW\";\n" +
 "    Float64 colorBarMaximum 20.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 10, 0, 11;\n" +
 "    String Grib2_Parameter_Category \"Waves\";\n" +
 "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n" +
 "    String Grib2_Parameter_Name \"Primary wave mean period\";\n" +
 "    String Grib_Variable_Id \"VAR_10-0-11_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Primary wave mean period @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2389,13 +2414,15 @@ expected =
 "    String abbreviation \"HTSGW\";\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 10, 0, 3;\n" +
 "    String Grib2_Parameter_Category \"Waves\";\n" +
 "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n" +
 "    String Grib2_Parameter_Name \"Significant height of combined wind waves and swell\";\n" +
 "    String Grib_Variable_Id \"VAR_10-0-3_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Significant height of combined wind waves and swell @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2406,13 +2433,15 @@ expected =
 "    String abbreviation \"SWELL\";\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time ordered_sequence_of_data lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 241;\n" +
+"    String Grib2_Level_Type \"Ordered Sequence of Data\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 10, 0, 8;\n" +
 "    String Grib2_Parameter_Category \"Waves\";\n" +
 "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n" +
 "    String Grib2_Parameter_Name \"Significant height of swell waves\";\n" +
 "    String Grib_Variable_Id \"VAR_10-0-8_L241\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Significant height of swell waves @ Ordered Sequence of Data\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2423,13 +2452,15 @@ expected =
 "    String abbreviation \"WVHGT\";\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 10, 0, 5;\n" +
 "    String Grib2_Parameter_Category \"Waves\";\n" +
 "    String Grib2_Parameter_Discipline \"Oceanographic products\";\n" +
 "    String Grib2_Parameter_Name \"Significant height of wind waves\";\n" +
 "    String Grib_Variable_Id \"VAR_10-0-5_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Significant height of wind waves @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2440,13 +2471,15 @@ expected =
 "    String abbreviation \"UGRD\";\n" +
 "    Float64 colorBarMaximum 20.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 0, 2, 2;\n" +
 "    String Grib2_Parameter_Category \"Momentum\";\n" +
 "    String Grib2_Parameter_Discipline \"Meteorological products\";\n" +
 "    String Grib2_Parameter_Name \"u-component of wind\";\n" +
 "    String Grib_Variable_Id \"VAR_0-2-2_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"u-component of wind @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2457,13 +2490,15 @@ expected =
 "    String abbreviation \"VGRD\";\n" +
 "    Float64 colorBarMaximum 20.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 0, 2, 3;\n" +
 "    String Grib2_Parameter_Category \"Momentum\";\n" +
 "    String Grib2_Parameter_Discipline \"Meteorological products\";\n" +
 "    String Grib2_Parameter_Name \"v-component of wind\";\n" +
 "    String Grib_Variable_Id \"VAR_0-2-3_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"v-component of wind @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2480,13 +2515,15 @@ expected =
 "    String abbreviation \"WIND\";\n" +
 "    Float64 colorBarMaximum 20.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"reftime time lat lon \";\n" + //new in netcdf-java 4.6.4
 "    String Grib2_Generating_Process_Type \"Forecast\";\n" +
-"    Int32 Grib2_Level_Type 1;\n" +
+"    String Grib2_Level_Type \"Ground or water surface\";\n" + //changed in netcdf-java 4.6.4
 "    Int32 Grib2_Parameter 0, 2, 1;\n" +
 "    String Grib2_Parameter_Category \"Momentum\";\n" +
 "    String Grib2_Parameter_Discipline \"Meteorological products\";\n" +
 "    String Grib2_Parameter_Name \"Wind speed\";\n" +
 "    String Grib_Variable_Id \"VAR_0-2-1_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" + //new in netcdf-java 4.6.4
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"Wind speed @ Ground or water surface\";\n" +
 "    Float32 missing_value NaN;\n" +
@@ -2509,7 +2546,8 @@ expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String GRIB_table_version \"2,1\";\n" +
 "    String GRIB_table_version_master_local \"2/1\";\n" +
-"    String history \"Read using CDM IOSP Grib2Collection\n" +
+"    String history \"Read using CDM IOSP GribCollection v3\n" + //changed in "netcdf-java 4.6.4"
+
 today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
@@ -2517,7 +2555,7 @@ today;
 //+ " (local files)\n" +
 //today + 
 expected= 
-"http://127.0.0.1:8080/cwexperimental/griddap/testGrib2_43.das\";\n" +
+"http://localhost:8080/cwexperimental/griddap/testGrib2_43.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -2806,7 +2844,7 @@ today;
 //today + 
     
 expected =
-" http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
+" http://localhost:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"NOAA CoastWatch\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
@@ -2917,19 +2955,21 @@ expected =
             ".graph", ".html", ".htmlTable",   //.help not available at this level
             ".json", ".mat", 
             ".nc", ".ncHeader", 
-            ".odvTxt", ".tsv", ".tsvp", ".tsv0", ".xhtml", 
+            ".odvTxt", ".tsv", ".tsvp", ".tsv0", 
+            ".xhtml", 
             ".geotif", ".kml", 
             ".smallPdf", ".pdf", ".largePdf", 
             ".smallPng", ".png", ".largePng", 
             ".transparentPng"};
         int expectedMs[] = new int[]  {  
-            //now Java 1.7/M4700          //was Java 1.6 times            //was java 1.5 times
+            //now Java 1.8,1.7/M4700      //was Java 1.6 times            //was java 1.5 times
             187, 905, 811, 800,           //734, 6391, 6312, ?            //1250, 9750, 9562, ?                                  
             15, 15, 109, 8112,            //15, 15, 156, 16875            //15, 15, 547, 18859
             63, 47, 561,                  //63, 47, 2032,                 //93, 31, ...,
             921, 125,                     //6422, 203,                    //9621, 625,  
             121, 121,                     //2015-02 faster: 121. 2014-09 slower 163->331: java? netcdf-java? unsure //234, 250,   //500, 500, 
-            1248, 811, 811, 811, 1139,    //9547, 6297, 6281, ?, 8625,    //13278, 8766, 8844, ?, 11469, 
+            1248, 811, 811, 811,          //9547, 6297, 6281, ?,          //13278, 8766, 8844, ?,
+            1800,  //but really slow if hard drive is busy!   //8625,     //11469, 
             750, 10,                      //2015-02 kml faster: 10, 2014-09 kml slower 110->258. why?  656, 110,         //687, 94,  //Java 1.7 was 390r until change to new netcdf-Java
             444, 976, 1178,               //860, 2859, 3438,              //2188, 4063, 3797,   //small varies greatly
             160, 378, 492,                //2015-02 faster: 160, 2014-09 png slower 212,300->378. why? //438, 468, 1063,               //438, 469, 1188,     //small varies greatly
@@ -2940,7 +2980,8 @@ expected =
             60787, 51428, 14770799, 
             31827797, 2085800, 
             2090600, 5285, 
-            24337084, 23734053, 23734063, 23733974, 90604796, 
+            24337084, 23734053, 23734063, 23733974, 
+            90604796, 
             523113, 3601, 
             478774, 2189656, 2904880, 
             30852, 76777, 277494, 
@@ -3671,7 +3712,7 @@ expected =
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
 expected = 
-//"2014-10-22T16:16:21Z http://127.0.0.1:8080/cwexperimental
+//"2014-10-22T16:16:21Z http://localhost:8080/cwexperimental
 "/griddap/testSimpleTestNc.nc?hours[1:2],minutes[1:2],seconds[1:2],millis[1:2],bytes[1:2],shorts[1:2],ints[1:2],floats[1:2],doubles[1:2],Strings[1:2]\";\n" +
 "  :id = \"simpleTest\";\n" +
 "  :infoUrl = \"???\";\n" +
@@ -3975,7 +4016,7 @@ expected =
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
 expected = 
-//"2014-10-22T16:16:21Z http://127.0.0.1:8080/cwexperimental
+//"2014-10-22T16:16:21Z http://localhost:8080/cwexperimental
 "/griddap/testSimpleTestNc.nc?bytes[2:3],doubles[2:3],Strings[2:3]\";\n" +
 "  :id = \"simpleTest\";\n" +
 "  :infoUrl = \"???\";\n" +
@@ -4452,7 +4493,7 @@ directionsForGenerateDatasetsXml() +
 //2015-09-09T22:18:53Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day
 //2015-09-09T22:18:53Z 
     String originalDas2 = 
-"http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
+"http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
 "    String infoUrl \"http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -4759,7 +4800,7 @@ today;
 //today + 
     
 expected =
-" http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
+" http://localhost:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"NOAA CoastWatch\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
@@ -4858,15 +4899,16 @@ expected =
         testVerboseOn();
         String results, expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-        String dir = "http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/"; //catalog.html
+        String dir = "http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/"; //catalog.html
 
+      try {
         //dir  is a /thredds/catalog/.../  [implied catalog.html] URL!
         //file is a /thredds/fileServer/... not compressed data file.
         results = generateDatasetsXml( 
             dir, 
-            "sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc", 
+            "sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc", 
             //sample file is a thredds/fileServer/.../...nc URL!
-            "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2011.nc", 
+            "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc", 
             -1, null);
         //String2.log(results);
 String2.setClipboardString(results);
@@ -4905,8 +4947,8 @@ String2.setClipboardString(results);
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"noaa_nodc_0ba9_b245_c4c4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
-"    <fileDir>http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/</fileDir>\n" +
-"    <fileNameRegex>sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc</fileNameRegex>\n" +
+"    <fileDir>http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/</fileDir>\n" +
+"    <fileNameRegex>sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -4929,7 +4971,7 @@ String2.setClipboardString(results);
 "        <att name=\"geospatial_lon_resolution\">1.0 degree grids</att>\n" +
 "        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
 "        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
-"        <att name=\"history\">Aquarius Level-2 SCI CAP V3.0</att>\n" +
+"        <att name=\"history\">Aquarius Level-2 SCI CAP V4.0</att>\n" +
 "        <att name=\"institution\">JPL,  California Institute of Technology</att>\n" +
 "        <att name=\"keywords\">Earth Science &gt;Oceans &gt; Surface Salinity</att>\n" +
 "        <att name=\"keywords_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords</att>\n" +
@@ -4942,21 +4984,21 @@ String2.setClipboardString(results);
 "        <att name=\"references\">Aquarius users guide, V6.0, PO.DAAC, JPL/NASA. Jun 2, 2014</att>\n" +
 "        <att name=\"sensor\">Aquarius</att>\n" +
 "        <att name=\"source\">Jet Propulsion Laboratory, California Institute of Technology</att>\n" +
-"        <att name=\"summary\">This dataset is created by NODC Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average</att>\n" +
-"        <att name=\"title\">Gridded monthly mean Sea Surface Salinity calculated from Aquarius level-2 SCI V3.0 data</att>\n" +
+"        <att name=\"summary\">This dataset is created by NODC Satellite Oceanography Group from Aquarius level-2 SCI V4.0 data,using 1.0x1.0 (lon/lat) degree box average</att>\n" +
+"        <att name=\"title\">Gridded monthly mean Sea Surface Salinity calculated from Aquarius level-2 SCI V4.0 data</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
-"        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/catalog.html</att>\n" +
+"        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/catalog.html</att>\n" +
 "        <att name=\"institution\">JPL, California Institute of Technology</att>\n" +
 "        <att name=\"keywords\">aquarius, calculate, calculated, california, center, data, earth,\n" +
 "Earth Science &gt;Oceans &gt; Surface Salinity,\n" +
-"gridded, institute, jet, jpl, laboratory, level, level-2, mean, month, monthly, national, ncei, noaa, nodc, number, observation, observations, ocean, oceanographic, oceans, propulsion, salinity, sci, science, sea, sea_surface_salinity, sea_surface_salinity_number_of_observations, sss, sss_obs, statistics, surface, swath, technology, time, used, v3.0, valid</att>\n" +
+"gridded, institute, jet, jpl, laboratory, level, level-2, mean, month, monthly, national, ncei, noaa, nodc, number, observation, observations, ocean, oceanographic, oceans, propulsion, salinity, sci, science, sea, sea_surface_salinity, sea_surface_salinity_number_of_observations, sss, sss_obs, statistics, surface, swath, technology, time, used, v4.0, valid</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average</att>\n" +
+"        <att name=\"summary\">This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V4.0 data,using 1.0x1.0 (lon/lat) degree box average</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -5056,7 +5098,14 @@ String2.setClipboardString(results);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlWithRemoteThreddsFiles() finished successfully\n");
-   
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\n2016-02-29 This started failing with netcdf-java 4.6.4 with\n" +
+                "message about End of File at position 20.\n" +
+                "I reported to netcdf-java github BugTracker,\n" +
+                "but they aren't interested in pursuing if I'm not."); 
+        }        
+  
     }
 
     /**
@@ -5074,6 +5123,7 @@ String2.setClipboardString(results);
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String id = "testRemoteThreddsFiles";  //from generateDatasetsXml above but different datasetID
+      try {   
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id);
 
         //*** test getting das for entire dataset
@@ -5156,7 +5206,7 @@ String2.setClipboardString(results);
 "    Float64 geospatial_lon_resolution 1.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String grid_mapping_name \"latitude_longitude\";\n" +
-"    String history \"Aquarius Level-2 SCI CAP V3.0\n" +
+"    String history \"Aquarius Level-2 SCI CAP V4.0\n" +
 today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
@@ -5165,12 +5215,12 @@ today;
 //today + 
     
 expected =
-"Z http://127.0.0.1:8080/cwexperimental/griddap/testRemoteThreddsFiles.das\";\n" +
-"    String infoUrl \"http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/catalog.html\";\n" +
+"Z http://localhost:8080/cwexperimental/griddap/testRemoteThreddsFiles.das\";\n" +
+"    String infoUrl \"http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/catalog.html\";\n" +
 "    String institution \"JPL, California Institute of Technology\";\n" +
 "    String keywords \"aquarius, calculate, calculated, california, center, data, earth,\n" +
 "Earth Science >Oceans > Surface Salinity,\n" +
-"gridded, institute, jet, jpl, laboratory, level, level-2, mean, month, monthly, national, ncei, noaa, nodc, number, observation, observations, ocean, oceanographic, oceans, propulsion, salinity, sci, science, sea, sea_surface_salinity, sea_surface_salinity_number_of_observations, sss, sss_obs, statistics, surface, swath, technology, time, used, v3.0, valid\";\n" +
+"gridded, institute, jet, jpl, laboratory, level, level-2, mean, month, monthly, national, ncei, noaa, nodc, number, observation, observations, ocean, oceanographic, oceans, propulsion, salinity, sci, science, sea, sea_surface_salinity, sea_surface_salinity_number_of_observations, sss, sss_obs, statistics, surface, swath, technology, time, used, v4.0, valid\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"These data are available for use without restriction.\";\n" +
 "    String mission \"SAC-D Aquarius\";\n" +
@@ -5184,10 +5234,10 @@ expected =
 "    String sourceUrl \"(remote files)\";\n" +
 "    Float64 Southernmost_Northing -89.5;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
-"    String summary \"This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V3.0 data,using 1.0x1.0 (lon/lat) degree box average\";\n" +
+"    String summary \"This dataset is created by National Oceanographic Data Center (NODC) Satellite Oceanography Group from Aquarius level-2 SCI V4.0 data,using 1.0x1.0 (lon/lat) degree box average\";\n" +
 "    String time_coverage_end \"2015-03-15T00:00:00Z\";\n" +
 "    String time_coverage_start \"2011-08-15T00:00:00Z\";\n" +
-"    String title \"Gridded monthly mean Sea Surface Salinity calculated from Aquarius level-2 SCI V3.0 data\";\n" +
+"    String title \"Gridded monthly mean Sea Surface Salinity calculated from Aquarius level-2 SCI V4.0 data\";\n" +
 "    Float64 Westernmost_Easting -179.5;\n" +
 "  }\n" +
 "}\n";
@@ -5255,6 +5305,14 @@ expected =
 "2015-03-15T00:00:00Z,-16.5,-126.5,36.25797\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\n2016-02-29 This started failing with netcdf-java 4.6.4 with\n" +
+                "message about End of File at position 20 for each file\n" +
+                "(I reported to netcdf-java github BugTracker,\n" +
+                "but they aren't interested in pursuing if I'm not),\n" +
+                "so no valid files."); 
+        }        
         //  */
     }
 
@@ -5552,7 +5610,7 @@ expected =
        
 expected = 
 //"2015-10-30T18:17:10Z (local files)
-//2015-10-30T18:17:10Z http://127.0.0.1:8080/cwexperimental/griddap/testUInt16File.das";
+//2015-10-30T18:17:10Z http://localhost:8080/cwexperimental/griddap/testUInt16File.das";
 "    String infoUrl \"???\";\n" +
 "    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" +
 "    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
@@ -6402,7 +6460,7 @@ expected =
         testGrib2_43(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3+
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
-        testSpeed(-1);  //-1 = all
+        testSpeed(-1);  //-1=all  19=.xhtml
         testAVDVSameSource();
         test2DVSameSource();
         testAVDVSameDestination();
@@ -6421,6 +6479,9 @@ expected =
         //tests of remote sources on-the-fly
         testGenerateDatasetsXmlAwsS3();
         testAwsS3(false);  //deleteCachedInfo
+        //NetcdfFile.open(          "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+        //NetcdfDataset.openDataset("http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+        //from command line: curl --head http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
         testGenerateDatasetsXmlWithRemoteThreddsFiles();
         testRemoteThreddsFiles(false); //deleteCachedInfo 
         testMatchAxisNDigits();

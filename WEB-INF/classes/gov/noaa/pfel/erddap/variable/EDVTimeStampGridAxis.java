@@ -226,7 +226,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * describing how to interpret numbers 
      * (e.g., "seconds since 1970-01-01T00:00:00")
      * or a java.text.SimpleDateFormat string describing how to interpret string times  
-     * (see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     * (see http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      * Examples: 
      * <br>Date and Time Pattern    Result 
      * <br>"yyyy.MM.dd G 'at' HH:mm:ss z"    2001.07.04 AD at 12:08:56 PDT 

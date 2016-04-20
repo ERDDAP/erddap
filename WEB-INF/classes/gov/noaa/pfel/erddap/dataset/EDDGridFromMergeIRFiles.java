@@ -62,7 +62,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * The constructor just calls the super constructor.
      */
     public EDDGridFromMergeIRFiles(String tDatasetID, 
-            String tAccessibleTo, boolean tAccessibleViaWMS,
+            String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
             StringArray tOnChange, String tFgdcFile, String tIso19115File,
             String tDefaultDataQuery, String tDefaultGraphQuery,
             Attributes tAddGlobalAttributes,
@@ -75,7 +75,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             throws Throwable {
 
         super("EDDGridFromMergeIRFiles", tDatasetID, 
-                tAccessibleTo, tAccessibleViaWMS,
+                tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery,
                 tAddGlobalAttributes,
@@ -189,7 +189,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
-     *   If special axis0, this list will be the instances list[1 ... n-1].
+     *   If special axis0, this will not include axis0's name.
      * @return a PrimitiveArray[] with the results (with the requested
      *   sourceDataTypes). It needn't set sourceGlobalAttributes or
      *   sourceDataAttributes (but see getSourceMetadata).
@@ -204,7 +204,6 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
-            //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 String avName = sourceAxisNames.get(avi);
                 getWhat = "axisAttributes for variable=" + avName;
@@ -847,7 +846,7 @@ directionsForGenerateDatasetsXml() +
 //2015-03-20T17:28:57Z (local files)\n" +
 //"2015-03-20T17:28:57Z 
 String expected2 = 
-"http://127.0.0.1:8080/cwexperimental/griddap/mergeIR.das\";\n" +
+"http://localhost:8080/cwexperimental/griddap/mergeIR.das\";\n" +
 "    String infoUrl \"http://www.cpc.ncep.noaa.gov/products/global_precip/html/README\";\n" +
 "    String institution \"NOAA NWS NCEP CPC\";\n" +
 "    String keywords \"4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature\";\n" +

@@ -25,6 +25,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -54,7 +55,7 @@ import ucar.ma2.*;
 /** 
  * This class represents gridded data aggregated from a collection of 
  * NetCDF .nc (http://www.unidata.ucar.edu/software/netcdf/),
- * GRIB .grb (http://en.wikipedia.org/wiki/GRIB),
+ * GRIB .grb (https://en.wikipedia.org/wiki/GRIB),
  * (and related) data files.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2009-01-05
@@ -81,7 +82,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
     /** The constructor just calls the super constructor. */
     public EDDGridFromNcLow(String subclassname, String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
@@ -93,7 +94,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         int tMatchAxisNDigits, boolean tFileTableInMemory,
         boolean tAccessibleViaFiles) throws Throwable {
 
-        super(subclassname, tDatasetID, tAccessibleTo, tAccessibleViaWMS, 
+        super(subclassname, tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS, 
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, 
             tAddGlobalAttributes,
@@ -189,7 +191,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
-     *    If special axis0, this list will be the instances list[1 ... n-1].
+     *    If special axis0, this will not include axis0's name.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -200,11 +202,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         StringArray sourceAxisNames) throws Throwable {
 
         NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName); //may throw exception
-        String getWhat = "globalAttributes";
+        String getWhat = "?";
         try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
-            //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 String avName = sourceAxisNames.get(avi);
                 getWhat = "axisAttributes for variable=" + avName;
@@ -388,6 +389,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+
+        if (!String2.isSomething(sampleFileName)) 
+            String2.log("Found/using sampleFileName=" +
+                (sampleFileName = FileVisitorDNLS.getSampleFileName(
+                    tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         String2.log("Let's see if netcdf-java can tell us the structure of the sample file:");
         String2.log(NcHelper.dumpString(sampleFileName, false));
@@ -585,7 +591,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
                 "    <updateEveryNMillis>" + suggestUpdateEveryNMillis(tFileDir) + 
-                "</updateEveryNMillis>\n" +  
+                   "</updateEveryNMillis>\n" +  
                 "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
                 "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
                 "    <recursive>true</recursive>\n" +

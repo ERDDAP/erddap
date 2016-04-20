@@ -52,13 +52,9 @@ public class TableWriterAll extends TableWriter {
     protected String dir;
     protected String fileNameNoExt;
 
-    //may be changed after construction
-    public boolean normalFinish = true;
-
     //set firstTime
-    //POLICY: because this procedure may be used in more than one thread,
-    //do work on unique temp files names using randomInt, then rename to proper file name.
-    //If procedure fails half way through, there won't be a half-finished file.
+    //POLICY: because this class may be used in more than one thread,
+    //each instance makes unique temp files names by adding randomInt to name.
     protected int randomInt = Math2.random(Integer.MAX_VALUE);
     protected DataOutputStream[] columnStreams;
     protected long totalNRows = 0; 
@@ -76,8 +72,8 @@ public class TableWriterAll extends TableWriter {
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
-    public TableWriterAll(String tDir, String tFileNameNoExt) {
-        super(null);
+    public TableWriterAll(EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt) {
+        super(tEdd, tNewHistory, null);
         dir = File2.addSlash(tDir);
         //Normally, this is cacheDirectory and it already exists,
         //  but my testing environment (2+ things running) may have removed it.
@@ -139,20 +135,14 @@ public class TableWriterAll extends TableWriter {
     
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
-        if (normalFinish) 
-            doNormalFinish();
-    }
+        if (ignoreFinish) 
+            return;
 
-    /**
-     * This writes any end-of-file info to the stream and flushes the stream.
-     *
-     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
-     */
-    public void doNormalFinish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (columnStreams == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
@@ -160,7 +150,7 @@ public class TableWriterAll extends TableWriter {
         for (int col = 0; col < columnStreams.length; col++) {
             //close the stream
             columnStreams[col].close();
-            //a silly attempt to solve File2.delete problem on these files, but it couldn't hurt
+            //an attempt to solve File2.delete problem on these files: it couldn't hurt
             columnStreams[col] = null;  
         }
         columnStreams = null;

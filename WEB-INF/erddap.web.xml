@@ -47,13 +47,13 @@ Use netcat to test if this works:
 <auth-constraint />
 </security-constraint>
 
-<!-- This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session. -->
+<!-- This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session. netcdf-java 4.6.4 - ->
 	<filter>
         <filter-name>OpenIdFilter</filter-name>
         <filter-class>org.verisign.joid.consumer.OpenIdFilter</filter-class>
 		<init-param>
 			<param-name>saveInCookie</param-name>
-			<!-- If param-value is true, the identity url will be stored in a cookie under "openid.identity". -->
+			<!- - If param-value is true, the identity url will be stored in a cookie under "openid.identity". - ->
 			<param-value>true</param-value>
 		</init-param>
     </filter>
@@ -62,7 +62,7 @@ Use netcat to test if this works:
         <url-pattern>/login.html</url-pattern> 
     </filter-mapping>
 
-<!-- JSPC servlet mappings start -->
+<!- - JSPC servlet mappings start -->
 
     <servlet>
         <servlet-name>ERDDAP</servlet-name>

@@ -53,10 +53,12 @@ public class ArchiveADataset {
             s = args[i];
         } else {
             s = String2.getStringFromSystemIn("? ");
+            if (s == null)  //null if ^C
+                throw new RuntimeException("ControlC");
         }
-        if (s == null)  //null if ^C
-            throw new RuntimeException("ControlC");
-        s = String2.fromJson(s.trim()); 
+        s = s.trim();
+        if (s.length() >= 2 && s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"')
+            s = String2.fromJson(s); 
         if (s.equals("default") || s.equals("\"default\"")) 
             s = def;
         else if (s.equals("\"\"") || s.equals("nothing") || s.equals("\"nothing\"")) //else is important
@@ -140,9 +142,10 @@ public class ArchiveADataset {
                 "This program will:\n" +
                 "* Ask you a series of questions so that you can specify which subset\n" +
                 "  of which dataset you want to archive and how you want it archived.\n" + 
-                "  Enter \"default\" to get the default suggestion.\n" +
-                "  Or, you can put all the answers on the command line\n" +
-                "    (use \"\" (two double quotes) as a placeholder for an empty string).\n" +
+                "  Enter \"default\" (without the quotes) to get the default suggestion.\n" +
+                "  Press Enter or enter \"\" (two double quotes) or the word \"nothing\"\n" +
+                "    (without quotes) to specify a 0-length string.\n" +
+                "  Or, you can put all the answers as parameters on the command line.\n" +
                 "* Make a series of requests to the dataset and stage the files in\n" +
                 "  " + aadDir + "\n" +
                 "  Each of those files must be <2GB.\n" +
@@ -670,7 +673,7 @@ public class ArchiveADataset {
         String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
         String expected = 
 "READ_ME.txt                                                      " + today + "T.{8}Z           359\n" +
-"scrippsGliders.das                                               " + today + "T.{8}Z         12528\n" +
+"scrippsGliders.das                                               " + today + "T.{8}Z         12554\n" +
 "scrippsGliders.dds                                               " + today + "T.{8}Z           679\n" +
 "data/\n" +
 "  sp051-20141112.nc                                              " + today + "T.{8}Z        133832\n" +

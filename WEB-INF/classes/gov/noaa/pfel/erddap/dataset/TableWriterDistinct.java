@@ -52,9 +52,10 @@ public class TableWriterDistinct extends TableWriterAll {
      * @param tOtherTableWriter the tableWriter that will receive the unique rows
      *   found by this tableWriter.
      */
-    public TableWriterDistinct(String tDir, String tFileNameNoExt, TableWriter tOtherTableWriter) {
+    public TableWriterDistinct(EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt, 
+        TableWriter tOtherTableWriter) {
 
-        super(tDir, tFileNameNoExt); 
+        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
     }
 
@@ -86,10 +87,13 @@ public class TableWriterDistinct extends TableWriterAll {
     
     /**
      * This reconstructs the table, sorts and removes duplicates, and sends table to otherTableWriter.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish)
+            return;
 
         //close the dataOutputStreams
         super.finish();  //this throws Throwable if no data
@@ -108,14 +112,21 @@ public class TableWriterDistinct extends TableWriterAll {
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
+        if (ignoreFinish) {
+            writeSome(tCumulativeTable);
+            tCumulativeTable.removeAllRows();
+            return;
+        }
+
         lowFinish(tCumulativeTable);
     }
 
     
     /** Given a cumulativeTable, this sorts it and removes duplicate rows. */
     private void lowFinish(Table cumulativeTable) throws Throwable {
+
         //check for MustBe.THERE_IS_NO_DATA
-        if (cumulativeTable.nRows() == 0)
+        if (cumulativeTable.nRows() == 0) 
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //sortAndRemoveDuplicates

@@ -304,6 +304,10 @@ public abstract class EDD {
      *   length=0 means accessible to no one.
      */
     protected String[] accessibleTo = null; 
+
+    protected static HashSet graphsAccessibleTo_fileTypeNames;
+    private boolean graphsAccessibleToPublic = false; //safe default, but it will be set explicitly in constructor.
+
     /** The localSourceUrl actually used to get data (e.g., the url which works in the DMZ, 
      * as opposed to the publicUrl. */
     protected String localSourceUrl;
@@ -371,6 +375,7 @@ public abstract class EDD {
             if (type.equals("EDDGridLonPM180"))         return EDDGridLonPM180.fromXml(erddap, xmlReader);
             if (type.equals("EDDGridSideBySide"))       return EDDGridSideBySide.fromXml(erddap, xmlReader);
 
+            if (type.equals("EDDTableAggregateRows"))   return EDDTableAggregateRows.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableCopy"))            return EDDTableCopy.fromXml(erddap, xmlReader);
             //if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(erddap, xmlReader); //inactive
             if (type.equals("EDDTableFromAsciiServiceNOS")) return EDDTableFromAsciiServiceNOS.fromXml(erddap, xmlReader);
@@ -391,8 +396,8 @@ public abstract class EDD {
             //if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap, xmlReader); //inactive 2010-09-08
             //if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(erddap, xmlReader); //inactive 2011-12-16
             if (type.equals("EDDTableFromOBIS"))        return EDDTableFromOBIS.fromXml(erddap, xmlReader);
-            if (type.equals("EDDTableFromPostDatabase"))return EDDTableFromPostDatabase.fromXml(erddap, xmlReader);
-            if (type.equals("EDDTableFromPostNcFiles")) return EDDTableFromPostNcFiles.fromXml(erddap, xmlReader);
+            //if (type.equals("EDDTableFromPostDatabase"))return EDDTableFromPostDatabase.fromXml(erddap, xmlReader);
+            //if (type.equals("EDDTableFromPostNcFiles")) return EDDTableFromPostNcFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromSOS"))         return EDDTableFromSOS.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromThreddsFiles"))return EDDTableFromThreddsFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromWFSFiles"))    return EDDTableFromWFSFiles.fromXml(erddap, xmlReader);
@@ -837,7 +842,7 @@ public abstract class EDD {
             return "";
         try {
             //generate the rss xml
-            //See general info: http://en.wikipedia.org/wiki/RSS_(file_format)
+            //See general info: https://en.wikipedia.org/wiki/RSS_(file_format)
             //  background: http://www.mnot.net/rss/tutorial/
             //  rss 2.0 spec: http://cyber.law.harvard.edu/rss/rss.html
             //I chose rss 2.0 for no special reason (most modern version of that fork; I like "simple").
@@ -882,6 +887,136 @@ public abstract class EDD {
 
     }
 
+    /**
+     * EDD...FromErddap dataset constructors use this to try to subscribe 
+     * to the remote ERDDAP dataset.
+     * It's ok that this is done every time the dataset is constructed. 
+     * emailIfAlreadyValid=false so there won't be excess email confirmation requests 
+     * and if flagKeyKey changes, the new tFlagUrl will be sent.
+     */
+    public void tryToSubscribeToRemoteErddapDataset(boolean tryToSubscribe) {
+
+        try {
+            String keepUpToDate = 
+                "If you want to keep this dataset up-to-date, use a small reloadEveryNMinutes.";
+            if (!tryToSubscribe) {
+                String2.log(EDStatic.warning + 
+                    " <tryToSubscribeToRemoteErddapDataset> is false.\n" +
+                    keepUpToDate);
+            } else if (EDStatic.baseUrl.startsWith("http://127.0.0.1")  ||
+                       EDStatic.baseUrl.startsWith("https://127.0.0.1") ||
+                       EDStatic.baseUrl.startsWith("http://localhost")  || 
+                       EDStatic.baseUrl.startsWith("https://localhost")) {
+                String2.log(EDStatic.warning + 
+                    " This ERDDAP won't try to subscribe to the dataset on the remote\n" +
+                    "ERDDAP because this ERDDAP isn't publicly accessible.\n" +
+                    keepUpToDate);
+            } else if (!String2.isSomething(EDStatic.emailSubscriptionsFrom)) { 
+                //this erddap's subscription system isn't active
+                String2.log(EDStatic.warning +
+                    " Subscribing to the remote ERDDAP dataset failed because\n" +
+                    "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n" +
+                    keepUpToDate);
+            } else if (datasetID.endsWith("_LonPM180Child") || //if hidden EDDGridLomPM180 child dataset, subscribing will always fail, so don't try
+                       datasetID.endsWith("_LonPM180Low")) {   // name used for child in v1.66 only
+                String2.log("Note: This dataset didn't try to subscribe to the source dataset\n" +
+                    "because this dataset isn't publicly accessible.");
+            } else {
+                //try to subscribe to the dataset on the remote erddap
+                int tpo = localSourceUrl.indexOf("/griddap/"); //the "remote" erddap may be local
+                if (tpo < 0)
+                    tpo = localSourceUrl.indexOf("/tabledap/"); 
+                if (tpo < 0)
+                    throw new SimpleException(
+                        "Neither /griddap/ nor /tabledap/ are in localSourceUrl=" + 
+                        localSourceUrl + " !");
+                String subscriptionUrl = localSourceUrl.substring(0, tpo + 1) + Subscriptions.ADD_HTML + "?" +
+                    "datasetID=" + File2.getNameNoExtension(localSourceUrl) + 
+                    "&email=" + SSR.minimalPercentEncode(EDStatic.emailSubscriptionsFrom) +
+                    "&emailIfAlreadyValid=false" + 
+                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
+                SSR.touchUrl(subscriptionUrl, 60000);  
+                String2.log(datasetID + " sent a subscription request to the remote ERDDAP dataset.");
+                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
+            }
+        } catch (Throwable st) {
+            String2.log(
+                String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
+                "  If the subscription hasn't been set up already, you may need to\n" + 
+                "  use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n" +
+                MustBe.throwableToString(st) //don't display; flags are ~confidential
+                );
+        }
+    }
+
+    /** 
+     * Call this in the constructor if this dataset has a child and it is a FromErddap, 
+     * to try to subscribe to the remote ERDDAP's dataset.
+     *
+     * <p>It's ok that this is done every time. 
+     * emailIfAlreadyValid=false so there won't be excess email confirmation requests 
+     * and if flagKeyKey changes, the new tFlagUrl will be sent.
+     *
+     * @param tChild a child dataset that is a fromErddap dataset
+     */
+    public void tryToSubscribeToChildFromErddap(EDD tChild) {
+        String cause = "";
+        try {
+            String tEmail = EDStatic.emailSubscriptionsFrom;
+            String tfeSourceUrl = ((FromErddap)tChild).getLocalSourceErddapUrl(); //"remote" erddap may be local
+            int gpo = tfeSourceUrl.indexOf(tChild instanceof EDDGrid?
+                "/griddap/" : "/tabledap/");
+            String underlyingID = File2.getNameNoExtension(tfeSourceUrl);
+            String tFlagUrl = flagUrl(datasetID);
+
+            if (tfeSourceUrl.startsWith(EDStatic.baseUrl) ||  
+                tfeSourceUrl.startsWith("http://127.0.0.1") ||
+                tfeSourceUrl.startsWith("http://localhost")) { 
+                //underlying dataset is on this ERDDAP -- subscribe directly!
+                EDStatic.subscriptions.addAndValidate(underlyingID, //throw exception if trouble
+                    String2.isSomething(tEmail)? tEmail : EDStatic.adminEmail, 
+                    tFlagUrl);
+                if (verbose) String2.log("  " + datasetID + 
+                    " successfully subscribed directly to local datasetID=" + underlyingID);
+                return; //success
+
+            } else if (EDStatic.baseUrl.startsWith("http://127.0.0.1")  ||
+                       EDStatic.baseUrl.startsWith("https://127.0.0.1") ||
+                       EDStatic.baseUrl.startsWith("http://localhost")  || 
+                       EDStatic.baseUrl.startsWith("https://localhost")) {
+                cause = "\nCause: This ERDDAP isn't publicly accessible.";
+
+            } else if (!String2.isSomething(tEmail)) { 
+                cause = "\nCause: The subscription system on this ERDDAP isn't set up.";
+
+            } else {
+                //this erddap's subscription system is active
+                //so try to subscribe to dataset on remote erddap
+                String subscriptionUrl = tfeSourceUrl.substring(0, gpo + 1) + 
+                        Subscriptions.ADD_HTML + "?" +
+                    "datasetID=" + underlyingID + 
+                    "&email=" + tEmail +
+                    "&emailIfAlreadyValid=false" + 
+                    "&action=" + SSR.minimalPercentEncode(tFlagUrl); // %encode deals with & within flagUrl
+                if (verbose) String2.log("  " + datasetID + 
+                    " is subscribing to underlying fromErddap dataset:\n  " + subscriptionUrl);
+                SSR.touchUrl(subscriptionUrl, 60000);  //may throw exception
+                return; //success
+
+            }
+        } catch (Throwable st) {
+            cause = "\nCause: " + MustBe.throwableToString(st); 
+        }
+        //it only gets here if there is trouble
+        String2.log(
+            "\n" +
+            "WARNING: datasetID=" + datasetID + 
+            " failed to subscribe to its child, fromErddap, underlying dataset.\n" + 
+            "If the subscription hasn't been set up already, keep this dataset up-to-date by\n" +
+            "using a small reloadEveryNMinutes, or have the remote ERDDAP admin add an <onChange>." +
+            cause + "\n"); 
+    }
+
 
     /**
      * The directory in which information for this dataset (e.g., fileTable.nc) is stored.
@@ -908,6 +1043,8 @@ public abstract class EDD {
      */
     public static void deleteCachedDatasetInfo(String tDatasetID) {
         String dir = datasetDir(tDatasetID);
+        if (verbose)
+            String2.log("deleting cached dataset info for datasetID=" + tDatasetID);
         File2.delete(dir + DIR_TABLE_FILENAME);
         File2.delete(dir + FILE_TABLE_FILENAME);
         File2.delete(dir + BADFILE_TABLE_FILENAME);
@@ -1246,6 +1383,37 @@ public abstract class EDD {
     }
 
     /**
+     * @param s must be null (like "auto"), "auto", or "public"
+     */
+    protected boolean setGraphsAccessibleTo(String s) {
+        //dataset is public
+        if (accessibleTo == null) 
+            return graphsAccessibleToPublic = true;
+
+        //dataset is private
+        if (s == null || s.equals("auto"))
+            return graphsAccessibleToPublic = false;
+
+        if (s.equals("public"))
+            return graphsAccessibleToPublic = true;
+
+        throw new RuntimeException(String2.ERROR + 
+            ": <graphsAccessibleTo> must be \"auto\", null (like \"auto\"), or \"public\".");
+    }
+
+    /** Indicates if graphs and metadata (but not data) are to be made available to users
+     * who aren't logged in or aren't authorized to access this dataset.
+     */
+    public boolean graphsAccessibleToPublic() {
+        return graphsAccessibleToPublic;
+    }
+
+    /** Indicates if a fileTypeName, e.g., .largePng is accessible if graphsAccessibleToPublic() */
+    public static boolean graphsAccessibleTo_fileTypeNamesContains(String fileTypeName) {
+        return graphsAccessibleTo_fileTypeNames.contains(fileTypeName);
+    }
+
+    /**
      * Given a list of the current user's roles, this compares it to
      * accessibleTo to determine if this dataset is accessible to this user.
      *
@@ -1492,8 +1660,9 @@ public abstract class EDD {
 
 
     /** 
-     * This writes the dataset's FGDC-STD-012-2002
-     * "Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata"
+     * This writes the dataset's FGDC-STD-001-1998
+     * "Content Standard for Digital Geospatial Metadata" with 
+     * "Extensions for Remote Sensing Metadata"
      * XML to the writer.
      *
      * <p>This is usually just called by the dataset's constructor, 
@@ -2760,6 +2929,9 @@ public abstract class EDD {
         //String type = this instanceof EDDGrid? "Gridded" :
         //   this instanceof EDDTable? "Tabular" : "(type???)";
         
+        boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
+        boolean isAccessible =  isAccessibleTo(EDStatic.getRoles(loggedInAs));
+        boolean graphsAccessible = isAccessible || graphsAccessibleToPublic();
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String tQuery = userDapQuery == null || userDapQuery.length() == 0? "" :
             //since this may be direct from user, I need to XML encode it 
@@ -2768,14 +2940,14 @@ public abstract class EDD {
             //See Tomcat (Definitive Guide) pg 147...
             XML.encodeAsHTMLAttribute("?" + userDapQuery); 
         String dapUrl = tErddapUrl + "/" + dapProtocol() + "/" + datasetID;
-        String dapLink = "", subsetLink = "", graphLink = "", filesLink = "";
-        if (showDafLink) 
-            dapLink = 
+        String dafLink = "", subsetLink = "", graphLink = "", filesLink = "";
+        if (isAccessible && showDafLink) 
+            dafLink = 
                 "     | <a rel=\"alternate\" rev=\"alternate\" " +  
                     "title=\"" + EDStatic.clickAccess + "\" \n" +
                 "         href=\"" + dapUrl + ".html" + 
                     tQuery + "\">" + EDStatic.daf + "</a>\n";
-        if (showSubsetLink && accessibleViaSubset().length() == 0) 
+        if (isAccessible && showSubsetLink && accessibleViaSubset().length() == 0) 
             subsetLink = 
                 "     | <a rel=\"alternate\" rev=\"alternate\" " +
                     "title=\"" + EDStatic.dtSubset + "\" \n" +
@@ -2783,7 +2955,7 @@ public abstract class EDD {
                     tQuery + 
                     (tQuery.length() == 0? "" : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
                     "\">" + EDStatic.subset + "</a>\n";
-        if (showFilesLink && accessibleViaFilesDir().length() > 0) //> because it has sourceDir
+        if (isAccessible && showFilesLink && accessibleViaFilesDir().length() > 0) //> because it has sourceDir
             filesLink = 
                 "     | <a rel=\"alternate\" rev=\"alternate\" " +
                     "title=\"" + 
@@ -2793,7 +2965,7 @@ public abstract class EDD {
                     "\" \n" +
                 "         href=\"" + tErddapUrl + "/files/" + datasetID + "/\">" + 
                 EDStatic.EDDFiles + "</a>\n";
-        if (showGraphLink && accessibleViaMAG().length() == 0) 
+        if (graphsAccessible && showGraphLink && accessibleViaMAG().length() == 0) 
             graphLink = 
                 "     | <a rel=\"alternate\" rev=\"alternate\" " +
                     "title=\"" + EDStatic.dtMAG + "\" \n" +
@@ -2815,8 +2987,8 @@ public abstract class EDD {
             "  <tr>\n" +
             "    <td nowrap valign=\"top\">" + EDStatic.EDDDatasetTitle + ":&nbsp;</td>\n" +
             "    <td><font class=\"standoutColor\"><big><b>" + XML.encodeAsHTML(title()) + "</b></big></font>\n" +
-            "      " + emailHref(loggedInAs) + "\n" +
-            "      " + rssHref(loggedInAs) + "\n" +
+            (graphsAccessible? "      " + emailHref(loggedInAs) + "\n" +
+                               "      " + rssHref(loggedInAs) + "\n" : "") +
             "    </td>\n" +
             "  </tr>\n" +
             "  <tr>\n" +
@@ -2849,7 +3021,7 @@ public abstract class EDD {
                 (infoUrl().startsWith(EDStatic.baseUrl)? "" : EDStatic.externalLinkHtml(tErddapUrl)) + 
                 "</a>\n" +
                 subsetLink + "\n" +
-                dapLink + "\n" +
+                dafLink + "\n" +
                 filesLink + "\n" +
                 graphLink + "</td>\n" +
             "  </tr>\n" +
@@ -5896,7 +6068,8 @@ public abstract class EDD {
         //  e.g., _CoordinateAxes, _CoordSysBuilder
         String removePrefixes[] = {"fgdc_", "fgdc:", "HDF5_", "HDF5."}; //e.g., HDF5_chunksize
         String toRemove[] = {  //lowercase here. Removal is case-insensitive.
-            "bounds", "_chunksize", "chunksize", 
+            "bounds", 
+            "_chunksize", "_chunksizes", "chunksize", "chunksizes", //plural is from netcdf-java 4.6.4+
             "_coordinateaxes", "coordinates", "coordintates",//sic //coordinate info often wrong or with sourceNames
             "data_bins", "data_center", 
             "data_maximum", "data_minimum", //see above
@@ -6027,6 +6200,8 @@ public abstract class EDD {
         if (isSomething(tUnits)) {
             if (tUnits.startsWith("deg-")) //some podaac datasets have this
                 tUnits = "deg_" + tUnits.substring(4);
+            else if (tUnits.equals("seq")) //netcdf-java 4.6.4 generates this
+                tUnits = "count";
             else if (String2.indexOf(new String[]{"n/a", "none", "unitless"}, tUnits.toLowerCase()) >= 0) 
                 tUnits = "";
             if (tUnits.toLowerCase().indexOf("%y") < 0) //e.g., a date format
@@ -7599,12 +7774,16 @@ public abstract class EDD {
                 ) {
                 addAtts.add("ioos_category", "Biology");
 
-            } else if (lcu.indexOf("|percent") >= 0 && lcu.indexOf("|cover") >= 0 &&
-                lcu.indexOf("|water") < 0 &&
-                lcu.indexOf("|lake")  < 0 &&
-                lcu.indexOf("|land")  < 0 &&
-                lcu.indexOf("|ice|")  < 0 &&
-                lcu.indexOf("|snow")  < 0) {
+            } else if (
+                lcu.indexOf("|bed|layer|") > 0 ||
+                (lcu.indexOf("bottom") >= 0 && lcu.indexOf("wave") < 0 &&
+                 (lcu.indexOf("ripple") >= 0 || lcu.indexOf("roughness") >= 0)) ||
+                (lcu.indexOf("|percent") >= 0 && lcu.indexOf("|cover") >= 0 &&
+                 lcu.indexOf("|water") < 0 &&
+                 lcu.indexOf("|lake")  < 0 &&
+                 lcu.indexOf("|land")  < 0 &&
+                 lcu.indexOf("|ice|")  < 0 &&
+                 lcu.indexOf("|snow")  < 0)) {
                 addAtts.add("ioos_category", "Bottom Character");
 
             } else if (
@@ -7786,6 +7965,12 @@ public abstract class EDD {
                 addAtts.add("ioos_category", "Phytoplankton Species"); 
 
             } else if (
+                lcu.indexOf("eightbitcolor") >= 0 ||
+                lcu.indexOf("palette")       >= 0 ||
+                lcu.indexOf("rgb")           >= 0) {
+                addAtts.add("ioos_category", "Other");
+
+            } else if (
                 lcu.indexOf("aprs")         >= 0 || //4 letter NDBC abbreviations
                 lcu.indexOf("ptdy")         >= 0 ||
                 lcu.indexOf("pressure")     >= 0 ||
@@ -7871,9 +8056,9 @@ public abstract class EDD {
                 addAtts.add("ioos_category", "Temperature");
 
 
-            } else if (
-               ((lcu.indexOf("atmosphere")     >= 0 || lcu.indexOf("air")    >= 0) &&
-                (lcu.indexOf("streamfunction") >= 0 || lcu.indexOf("stress") >= 0)) ||
+            } else if (lcu.indexOf("sediment") < 0 &&
+               (((lcu.indexOf("atmosphere")     >= 0 || lcu.indexOf("air")    >= 0) &&
+                 (lcu.indexOf("streamfunction") >= 0 || lcu.indexOf("stress") >= 0)) ||
                 lcu.indexOf("momentum|flux")>= 0 ||
                 lcu.indexOf("|u-flux|")     >= 0 ||
                 lcu.indexOf("|v-flux|")     >= 0 ||
@@ -7888,7 +8073,7 @@ public abstract class EDD {
                 lcu.indexOf("wgst")         >= 0 ||
                 lcu.indexOf("wspu")         >= 0 ||
                 lcu.indexOf("wspv")         >= 0 ||
-                lcu.indexOf("wind")         >= 0) { 
+                lcu.indexOf("wind")         >= 0)) { 
                 addAtts.add("ioos_category", "Wind");
            
             } else if (
@@ -7919,8 +8104,8 @@ public abstract class EDD {
 
             //catch time near end
             //let other things be caught above, e.g., wind in m/s, temperature change/day
-            } else if (
-                //Calendar2.isTimeUnits(tUnitsLC) || //see above: caught before others
+            } else if (lcu.indexOf("meter") < 0 &&
+               (//Calendar2.isTimeUnits(tUnitsLC) || //see above: caught before others
                 lcu.indexOf("|age|")        >= 0 ||
                 lcu.indexOf("|calendar|")   >= 0 ||
                 lcu.indexOf("|date")        >= 0 ||
@@ -7932,7 +8117,7 @@ public abstract class EDD {
                 lcu.indexOf("|second|")     >= 0 || 
                 lcu.indexOf("|seconds|")    >= 0 ||
                 (lcu.indexOf("|time") >= 0 && lcu.indexOf("|time-averaged") < 0) ||
-                lcu.indexOf("|year")        >= 0) {
+                lcu.indexOf("|year")        >= 0)) {
                 addAtts.add("ioos_category", "Time");
 
             //catch Quality at end if not caught above
@@ -8125,41 +8310,59 @@ public abstract class EDD {
 
         String tdi = tPublicSourceUrl;
         StringArray parts;
-        if (tPublicSourceUrl.startsWith("http")) {
+        String pre[] = new String[]{"http://", "https://", "ftp://", "sftp://", "ftps://"};
+        int po = String2.whichPrefix(pre, tdi, 0);
+        if (po >= 0) {
+
+            //it's a URL
+            tdi = tdi.substring(pre[po].length());
 
             //reduce to e.g., oceanwatch.pfeg.noaa.gov
-            int po = tdi.indexOf("//");  if (po >= 0) tdi = tdi.substring(po + 2);
-            po     = tdi.indexOf('/');   if (po >= 0) tdi = tdi.substring(0, po);  
+            po     = tdi.indexOf('/');   if (po >= 0) tdi = tdi.substring(0, po);  //remove directories
+            po     = tdi.indexOf(':');   if (po >= 0) tdi = tdi.substring(0, po);  //remove port#
 
             parts = StringArray.fromCSV(String2.replaceAll(tdi, '.', ','));
+            if (parts.size() == 1)
+                return parts.toArray();
 
-            //just keep one name?
-            po = parts.indexOf("edu");
-            if (po < 0) po = parts.indexOf("org");
-            if (po < 0) po = parts.indexOf("com");
-            if (po > 0)
-                return new String[]{parts.get(po - 1)};
-
-            //remove ending, e.g., .gov .edu .com .2LetterCountryCode
-            if (parts.size() > 1)
-                parts.remove(parts.size() - 1);
+            //if first part is www, remove it
+            if (parts.get(0).equals("www")) {
+                parts.remove(0);
+                if (parts.size() == 1)
+                    return parts.toArray();
+            }
 
             //if ending was country code, then .gov .edu .com .net or .org may still be at end
             String last = parts.get(parts.size() - 1);
             if  (last.equals("gov") || last.equals("edu") ||
                  last.equals("com") || last.equals("org") ||
-                 last.equals("net") || last.equals("mil")) 
+                 last.equals("net") || last.equals("mil") ||
+                 last.length() == 2) {  //2 letter country code
                 parts.remove(parts.size() - 1);
+                if (parts.size() == 1)
+                    return parts.toArray();
+            }
 
-            //if 3+ part name (thredds1.pfeg.noaa) or first part is www, remove first part
-            if (parts.size() >= 3 || parts.get(0).equals("www"))
-                parts.remove(0);
+            //if ending was country code, then .gov .edu .com .net or .org may still be at end
+            last = parts.get(parts.size() - 1);
+            if  (last.equals("gov") || last.equals("edu") ||
+                 last.equals("com") || last.equals("org") ||
+                 last.equals("net") || last.equals("mil")) {
+                parts.remove(parts.size() - 1);
+                if (parts.size() == 1)
+                    return parts.toArray();
+            }
+
+            //if 3+ part name (thredds1.pfeg.noaa), just keep last 2 parts
+            if (parts.size() >= 3)
+                parts.removeRange(0, parts.size() - 2);
 
             //reverse the parts
             parts.reverse();
 
         } else {
             //tPublicSourceUrl is a filename
+            tdi = String2.replaceAll(tdi, '\\', '/');
             if (tdi.startsWith("/")) tdi = tdi.substring(1);   
             if (tdi.endsWith("/"))   tdi = tdi.substring(0, tdi.length() - 1);
             parts = StringArray.fromCSV(String2.replaceAll(tdi, '/', ','));
@@ -8168,6 +8371,7 @@ public abstract class EDD {
             if (parts.size() > 1)
                 parts.removeRange(0, parts.size() - 1);
         }
+        //String2.log(">> suggestDatasetsID sourceUrl=" + tPublicSourceUrl + " result=" + parts.toArray());
         return parts.toArray();
     }
 
@@ -8634,66 +8838,6 @@ public abstract class EDD {
 "    -->\n";
     }
 
-    /** 
-     * Call this in the constructor if this dataset has a child and it is a FromErddap, 
-     * to try to subscribe to the remote ERDDAP's dataset.
-     *
-     * <p>It's ok that this is done every time. 
-     * emailIfAlreadyValid=false so there won't be excess email confirmation requests 
-     * and if flagKeyKey changes, the new tFlagUrl will be sent.
-     *
-     * @param tChild a child dataset that is a fromErddap dataset
-     */
-    public void tryToSubscribeToChildFromErddap(EDD tChild) {
-        String cause = "";
-        try {
-            String tEmail = EDStatic.emailSubscriptionsFrom;
-            String tfeSourceUrl = ((FromErddap)tChild).getLocalSourceErddapUrl(); //"remote" erddap may be local
-            int gpo = tfeSourceUrl.indexOf(tChild instanceof EDDGrid?
-                "/griddap/" : "/tabledap/");
-            String underlyingID = File2.getNameNoExtension(tfeSourceUrl);
-            String tFlagUrl = flagUrl(datasetID);
-
-            if (tfeSourceUrl.startsWith(EDStatic.baseUrl) ||  
-                tfeSourceUrl.startsWith("http://127.0.0.1")) { 
-                //underlying dataset is on this ERDDAP -- subscribe directly!
-                EDStatic.subscriptions.addAndValidate(underlyingID, //throw exception if trouble
-                    String2.isSomething(tEmail)? tEmail : EDStatic.adminEmail, 
-                    tFlagUrl);
-                if (verbose) String2.log("  " + datasetID + 
-                    " successfully subscribed directly to local datasetID=" + underlyingID);
-                return; //success
-
-            } else if (String2.isSomething(tEmail)) { 
-                //this erddap's subscription system is active
-                //so try to subscribe to dataset on remote erddap
-                String subscriptionUrl = tfeSourceUrl.substring(0, gpo + 1) + 
-                        Subscriptions.ADD_HTML + "?" +
-                    "datasetID=" + underlyingID + 
-                    "&email=" + tEmail +
-                    "&emailIfAlreadyValid=false" + 
-                    "&action=" + SSR.minimalPercentEncode(tFlagUrl); // %encode deals with & within flagUrl
-                if (verbose) String2.log("  " + datasetID + 
-                    " is subscribing to underlying fromErddap dataset:\n  " + subscriptionUrl);
-                SSR.touchUrl(subscriptionUrl, 60000);  //may throw exception
-                return; //success
-
-            } else {
-                cause = "\nCause: The subscription system on this ERDDAP isn't set up.";
-            }
-        } catch (Throwable st) {
-            cause = "\nCause: " + MustBe.throwableToString(st); 
-        }
-        //it only gets here if there is trouble
-        String2.log(
-            "\n" +
-            "WARNING: datasetID=" + datasetID + 
-            " failed to subscribe to its child, fromErddap, underlying dataset.\n" + 
-            "If the subscription hasn't been set up already, keep this dataset up-to-date by\n" +
-            "using a small reloadEveryNMinutes, or have the remote ERDDAP admin add an <onChange>." +
-            cause + "\n"); 
-    }
-
 
     /**
      * This is used by subclass's generateDatasetsXml methods to write the
@@ -8731,22 +8875,45 @@ public abstract class EDD {
         return sb.toString();
     }
 
+    /** 
+     * This is used by standardizeResultsTable 
+     * (and places that bypass standardizeResultsTable) to update the 
+     * globalAttributes of a response table.
+     */
+    public String getNewHistory(String requestUrl, String userDapQuery) {
+
+        String tHistory = addToHistory(
+            combinedGlobalAttributes.getString("history"), publicSourceUrl());
+        return addToHistory(tHistory,  
+            EDStatic.baseUrl + requestUrl + 
+            (userDapQuery == null || userDapQuery.length() == 0? "" : "?" + userDapQuery));
+    }
+
     /**
      * This adds a line to the "history" attribute (which is created if it 
      * doesn't already exist).
      *
-     * @param attributes (always a COPY of the dataset's global attributes,
+     * @param tHistory the previous value, may be null
+     * @param text  usually one line of info
+     */
+    public static String addToHistory(String tHistory, String text) {
+        String add = Calendar2.getCurrentISODateTimeStringZulu() + "Z " + text;
+        if (tHistory == null)
+            tHistory = add;
+        else tHistory += "\n" + add;
+        return tHistory;
+    }
+
+    /**
+     * This adds a line to the "history" attribute (which is created if it 
+     * doesn't already exist).
+     *
+     * @param attributes (should always be a COPY of the dataset's global attributes,
      *    so you don't get multiple similar history lines of info)
      * @param text  usually one line of info
      */
     public static void addToHistory(Attributes attributes, String text) {
-        String add = Calendar2.getCurrentISODateTimeStringZulu() +
-            "Z " + text;
-        String history = attributes.getString("history");
-        if (history == null)
-            history = add;
-        else history += "\n" + add;
-        attributes.set("history", history);
+        attributes.set("history", addToHistory(attributes.getString("history"), text));
     }
 
     /**
@@ -9589,6 +9756,10 @@ public abstract class EDD {
 
     /**
      * This method creates the NOAA NMFS InPort XML content for this dataset.
+     * Currently, this only really works for Bob Simons and his setup because
+     * some of the information has to be customized the way InPort requires it.
+     * Email Bob if you would like to use this.
+     *
      * Intro
      *   https://inport.nmfs.noaa.gov/inport/help/importing-metadata
      * Info about the xml loader:
@@ -9598,20 +9769,34 @@ public abstract class EDD {
      *    locally: /programs/inport/inport-xml-sample.xml
      * Metadata Matrix (alternative(!)/definitive(!) field descriptions)
      *   https://docs.google.com/spreadsheets/d/1vdD7ZL_jlfmpldGlUsIhrbRoosvv7T0OAYdMAsT7_oE/edit#gid=1465720645
+     * Rubric/testing, e.g., see  ("rubric" in comments below)
+     *   https://inport.nmfs.noaa.gov/inport/item/11425/score
+     * InPort Metadata Field Descriptions With AFSC Response Suggestions ("AFSC" in comments below)
+     *   https://docs.google.com/spreadsheets/d/1GXv0NhxjjH_qYIlQRYsyM7UhBFRPC9DHo_YhY3oLEH0/edit?ts=56be2e4f#gid=1465720645
+     * InPort Code List
+     *   https://drive.google.com/a/noaa.gov/file/d/0B4V355Z2fPnqNkk1alA1X00xSGc/view?ts=56be5b98
      * This will throw a RuntimeException if trouble.
      *
      * @return the InPort XML content
      */
-    public String getInPortXmlString() {
+    public String getInPortXmlString(String archiveLocation, String archiveOther, 
+        String archiveNone) {
         boolean isGrid = this instanceof EDDGrid;
         EDDGrid  eddGrid  = isGrid? (EDDGrid)this : null;
         EDDTable eddTable = isGrid? null : (EDDTable)this;
         Attributes gatts = combinedGlobalAttributes();
         String now = Calendar2.getCompactCurrentISODateTimeStringLocal();
 
-        ///help/xml-loader says:
-        //An omitted tag causes previous value to be preserved -- sounds like trouble.
-        //An empty tag causes value to be "nulled out" (emptied) -- sounds appropriate -- do this.
+        ///help/xml-loader documentation says:
+        //An omitted tag causes previous value to be preserved -- sounds accident-prone.
+        //An empty tag causes value to be "nulled out" (emptied) -- sounds safer -- do this.
+
+String tOrganization = EDStatic.adminInstitution == null? "" : EDStatic.adminInstitution;
+String tCity = EDStatic.adminCity == null? "" : EDStatic.adminCity;
+if (tOrganization.equals("NOAA NMFS SWFSC Environmental Research Division")) {
+    tOrganization = "Southwest Fisheries Science Center"; //in InPort
+    tCity = "Santa Cruz"; //where data is located
+}
 
         StringBuilder sb = new StringBuilder();       
 sb.append(
@@ -9619,6 +9804,8 @@ sb.append(
 "<inport-metadata version=\"1.0\">\n" +
 "  <item-identification>\n" +
 "    <parent-catalog-item-id>???</parent-catalog-item-id>\n" + 
+//2016-02-17 Michael Chang email says that a new dataset has a parent-catalog-item-id
+//  and an existing dataset has a catalog-item-id. They are mutually exclusive.
 //To create a new catalog item, enter the catalog item ID of the existing catalog item under which this new item should be created. Do not include this tag if you are updating, and not creating an item. 
 "    <catalog-item-id>???</catalog-item-id>\n" + 
 //To update an existing catalog item, enter its catalog item ID here. Do not include this tag if you are creating a new item, rather than updating an existing item.
@@ -9628,7 +9815,7 @@ sb.append(
 //Enter the catalog item title. If this upload is updating an existing catalog item, the title here will replace the existing one.
 "    <short-name>" + XML.encodeAsXML(datasetID()) + "</short-name>\n" + 
 //Enter a short name for the catalog item.
-"    <status>Complete</status>\n" + 
+"    <status>In Work</status>\n" + //??? while still working on these records, then Complete
 //Enter the status. Must be one of the following values: In Work, Planned, Complete.
 "    <abstract>" + XML.encodeAsXML(summary()) + "</abstract>\n" + 
 //Enter the abstract/description of the catalog item.
@@ -9638,13 +9825,11 @@ sb.append(
 "    <supplemental-information>" + XML.encodeAsXML(infoUrl()) + "</supplemental-information>\n" + 
 //Enter supplemental information if applicable.
 "  </item-identification>\n" +
-"  <physical-location>\n" +
-"    <organization>" + 
-    XML.encodeAsXML(EDStatic.adminInstitution == null? "" : EDStatic.adminInstitution) + 
+"  <physical-location>\n" + //where the data is located!
+"    <organization>" + XML.encodeAsXML(tOrganization) + 
    "</organization>\n" + 
 //Enter EITHER the organization name, OR the organization acronym, EXACTLY as it is listed in InPort. The organization must exist in InPort.
-"    <city>" + 
-    XML.encodeAsXML(EDStatic.adminCity == null? "" : EDStatic.adminCity) + 
+"    <city>" + XML.encodeAsXML(tCity) +  //where the data is located
    "</city>\n" + 
 //Enter the city.
 "    <state-province>" + 
@@ -9660,32 +9845,38 @@ sb.append(
 "  </physical-location>\n" +
 "  <data-set-information>\n" +
 "    <data-presentation-form>" + 
-    XML.encodeAsXML(isGrid? "Document (digital)" : "Table (digital)") + 
+    XML.encodeAsXML("Table (digital)") + //odd for grids, but close enough
    "</data-presentation-form>\n" +
+//Bob says see http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\
+//  which has OnLineFunctionCodes and OnLinePresentationCodes (this)
+//  There isn't an option for Grids: "Table (digital)" is closest and reasonable.
 //Enter one data presentation form from the following list of possible values: Document (digital), Document (hardcopy), Image (digital), Image (hardcopy), Map (digital), Map (hardcopy), Profile (digital), Profile (hardcopy), Table (digital), Table (hardcopy), Video (digital), Video (hardcopy), Audio, Other
-"    <data-presentation-form-other></data-presentation-form-other>\n" + 
+"    <data-presentation-form-other>" + //For grids, I decided against "Multidimensional Grid (digital)" : "") + 
+   "</data-presentation-form-other>\n" + 
 //If the Data Presentation Form is Other, enter what it is here. This field should not be populated if the Data Presentation Form is not Other.\n" +
 "    <instrument>" + 
     XML.encodeAsXML(gatts.getString("instrument") != null? gatts.getString("instrument") :
-                    gatts.getString("sensor")     != null? gatts.getString("sensor") : "") +
+                    gatts.getString("sensor")     != null? gatts.getString("sensor") : 
+                    "Not Applicable") + //from rubric
    "</instrument>\n" +
 //Enter the name of the instrument used for data collection, if applicable.
 "    <platform>" + 
     XML.encodeAsXML(gatts.getString("platform")  != null? gatts.getString("platform") :
-                    gatts.getString("satellite") != null? gatts.getString("satellite") : "") + 
+                    gatts.getString("satellite") != null? gatts.getString("satellite") : 
+                    "Not Applicable") + //from rubric
     "</platform>\n" +
 //Enter the name of the platform used for data collection, if applicable.
-"    <physical-collection-fishing-gear></physical-collection-fishing-gear>\n" + 
+"    <physical-collection-fishing-gear>Not Applicable" + //from rubric
+   "</physical-collection-fishing-gear>\n" + 
 //Enter the name of the physical collection or fishing gear used for data collection, if applicable.
-"  </data-set-information>\n" +
+"  </data-set-information>\n");
+
+//*** support role info
+sb.append(
 "  <support-roles mode=\"replace\">\n");
 
-//*** role=Metadata Contact from ERDDAP admin
-//??? duplicate to be Distributor, Process Contact(?), Publisher?
-sb.append(
-"    <support-role>\n" +
-"      <support-role-type>Metadata contact</support-role-type>\n" + 
-//Enter Author, Collection Item Originator, Data Set Credit, Data Steward, Distributor, Metadata Contact, Originator, Point of Contact, Process Contact, Publisher
+//support role info for ERDDAP admin 
+String adminSupportInfo = 
 "      <from-date>" + now.substring(0, 4) + "</from-date>\n" + //unknown start date, so use this year
 //Enter the start date of the support role in ISO 8601 basic format (YYYYMMDD), up to the appropriate granularity which is significant. For example, if the date is significant only up to the month, enter YYYYMM.
 //still in effect, so don't specify: "      <to-date></to-date>\n" + 
@@ -9694,23 +9885,17 @@ sb.append(
     XML.encodeAsXML(EDStatic.adminEmail == null? "" : EDStatic.adminEmail) + 
      "</person-email>\n" + 
 //If the support role is a person, enter the person's email address. The person must exist in InPort. Please contact your librarian is the person is not in InPort.
-"      <organization>" + 
-    XML.encodeAsXML(EDStatic.adminInstitution == null? "" :EDStatic.adminInstitution) + 
+"      <organization>" + XML.encodeAsXML(tOrganization) + 
      "</organization>\n" + 
 //If the support role is an organization, enter EITHER the organization name OR the organization acronym, as it is listed in InPort. The organization must exist in InPort.
 "      <contact-instructions>" + 
     XML.encodeAsXML(EDStatic.adminEmail == null? "" : "email " + EDStatic.adminEmail) + 
      "</contact-instructions>\n" + 
 //Enter the contact instructions for the person or organization specified for the support role.
-"    </support-role>\n");
+"    </support-role>\n";
 
-//*** role=Author from creator metadata
-//??? duplicate to be Data Set Credit?
-if (gatts.getString("creator_email") != null)
-    sb.append(
-"    <support-role>\n" +
-"      <support-role-type>Author</support-role-type>\n" + 
-//Enter Author, Collection Item Originator, Data Set Credit, Data Steward, Distributor, Metadata Contact, Originator, Point of Contact, Process Contact, Publisher
+//support role info for creator metadata 
+String creatorSupportInfo = gatts.getString("creator_email") == null? "" :
 "      <from-date>" + now.substring(0, 4) + "</from-date>\n" + //unknown start date, so use this year
 //Enter the start date of the support role in ISO 8601 basic format (YYYYMMDD), up to the appropriate granularity which is significant. For example, if the date is significant only up to the month, enter YYYYMM.
 //still in effect, so don't specify: "      <to-date></to-date>\n" + 
@@ -9727,9 +9912,50 @@ if (gatts.getString("creator_email") != null)
      XML.encodeAsXML(gatts.getString("creator_email") == null? "" : "email " + gatts.getString("creator_email")) + 
      "</contact-instructions>\n" + 
 //Enter the contact instructions for the person or organization specified for the support role.
-"    </support-role>\n");
+"    </support-role>\n";
 
-//*** Publisher  - give ERDDAP info???
+//SUPPORT ROLE TYPES: Enter Author, Collection Item Originator, Data Set Credit, 
+//Data Steward, Distributor, Metadata Contact, Originator, Point of Contact, 
+//Process Contact, Publisher
+
+//Metadata Contact from admin 
+sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Metadata Contact</support-role-type>\n" + 
+adminSupportInfo);
+
+//Distributor from admin 
+sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Distributor</support-role-type>\n" + 
+adminSupportInfo);
+
+//Author from creator
+if (creatorSupportInfo.length() > 0) 
+    sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Author</support-role-type>\n" + 
+creatorSupportInfo);
+
+//Data Set Credit from creator
+if (creatorSupportInfo.length() > 0) 
+    sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Data Set Credit</support-role-type>\n" + 
+creatorSupportInfo);
+
+//Data Steward from creator or admin
+sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Data Steward</support-role-type>\n" + 
+(creatorSupportInfo.length() > 0? creatorSupportInfo : adminSupportInfo));
+
+//Point of Contact (for the data) from creator or admin
+sb.append(
+"    <support-role>\n" +
+"      <support-role-type>Point of Contact</support-role-type>\n" + 
+(creatorSupportInfo.length() > 0? creatorSupportInfo : adminSupportInfo));
+
 
 //end of support roles
 sb.append(
@@ -9749,15 +9975,15 @@ if ((isGrid? eddGrid.timeIndex() : eddTable.timeIndex()) >= 0) {
         String startS = String2.replaceAll(String2.replaceAll(
             edv.destinationMinString(), "-", ""), ":", "");
         //if stop is in last 60 days, treat as Continuing 
-        String stopS  = Calendar2.removeSpacesDashesColons(
+        String stopS  = 
             Math2.isFinite(stop) &&
             System.currentTimeMillis()/1000.0 - stop > 60 * Calendar2.SECONDS_PER_DAY? 
-            edv.destinationMaxString() : "");
+            edv.destinationMaxString() : "";
         stopS = String2.replaceAll(String2.replaceAll(stopS, "-", ""), ":", "");
 sb.append(
 "      <time-frames>\n" +
 "        <time-frame>\n" +
-"          <time-frame-type>" + (stopS.length() == 0? "Range" : "Continuing") +
+"          <time-frame-type>" + (stopS.length() == 0? "Continuing" : "Range") +
          "</time-frame-type>\n" + 
 //Enter Continuing, Range or Discrete
 "          <start-date-time>" + startS + 
@@ -9809,7 +10035,7 @@ sb.append(
 "          <south-bound>" + (Math2.isFinite(south)? "" + south : "") + 
          "</south-bound>\n" + 
 //Enter a numeric value between -90 to 90. All bounds must be supplied (no partial bounding boxes). The north bound must be greater or equal to the south bound.
-"          <description>" + (global? "global" : "") +
+"          <description>" + //AFSC recommends lat-long box or this, not both: (global? "global" : "") +
           "</description>\n" + 
 //Enter a description for the geographic extent.
 "        </geographic-area>\n" +
@@ -9832,9 +10058,8 @@ sb.append(
 //Enter the minimum vertical value (numeric value).
 "          <max>" + (Math2.isFinite(max)? "" + max : "") + "</max>\n" + 
 //Enter the maximum vertical value (numeric value). The maximum must be greater than or equal to the minimum value.
-"          <coordinate-reference-system-url>" +
-           XML.encodeAsXML(hasAlt? "???" : "???" ) + 
-         "</coordinate-reference-system-url>\n" + 
+"          <coordinate-reference-system-url></coordinate-reference-system-url>\n" + 
+//??? I don't know the URLs and I don't have a good system for knowing which is appropriate.
 //Enter the URL that describes the coordinate reference system being used.  The URL must start with http://, https://, or ftp://
 "        </vertical-extent>\n" +
 "      </vertical-extents>\n");
@@ -9844,32 +10069,41 @@ sb.append(
 if (accessibleTo != null)
     throw new RuntimeException("This method is only set up for public datasets, " +
         "but this dataset has accessibleTo limitions."); 
+
+String tSearchUrl = EDStatic.erddapUrl;
+if (this instanceof FromErddap) {
+    tSearchUrl = ((FromErddap)this).getPublicSourceErddapUrl();
+    int tpo = tSearchUrl.indexOf(isGrid? "/griddap/" : "/tabledap/");
+    tSearchUrl = tSearchUrl.substring(0, tpo);
+}
+tSearchUrl += "/search/index.html?searchFor=datasetID%3D" + datasetID;
+
 sb.append(
 "    </extent>\n" +
 "  </extents>\n" +
 "  <access-information>\n" +
 "    <security-class>Unclassified</security-class>\n" + 
 //A value for this field is required for this section. It must be one of the following values: \"Top Secret\", \"Secret\", \"Confidential\", \"Restricted\", \"Sensitive\", \"Unclassified\".
-"    <security-classification-system>???</security-classification-system>\n" + 
-//??? Enter the security classification system.
+"    <security-classification-system></security-classification-system>\n" + 
+//??? Tallying shows that there are a wide range of values. Very few look like the name of a system.
+//Enter the security classification system.
 "    <security-handling-description></security-handling-description>\n" + 
 //Enter the security handling description.
 "    <data-access-policy>" + XML.encodeAsXML(gatts.getString("license")) + 
    "</data-access-policy>\n" + 
 //Enter the data access policy.
-"    <data-access-procedure>" + 
-    XML.encodeAsXML(EDStatic.erddapUrl + "/search/index.html?searchFor=datasetID%3D" + datasetID) +
+"    <data-access-procedure>The data can be obtained from ERDDAP: " + XML.encodeAsXML(tSearchUrl) +
    "</data-access-procedure>\n" + 
 //Enter the data access procedure.
-"    <data-access-constraints>None</data-access-constraints>\n" + 
-//Enter the data access constraints.
+"    <data-access-constraints>Not Applicable</data-access-constraints>\n" + 
+//Enter the data access constraints.  [rubric says to use "Not Applicable"]
 "    <data-use-constraints>" + 
     XML.encodeAsXML(gatts.getString("license")) + 
    "</data-use-constraints>\n" + 
 //Enter the data use constraints.
 "    <metadata-access-constraints>None</metadata-access-constraints>\n" + 
 //Enter the metadata access constraints.
-"    <metadata-use-constraints></metadata-use-constraints>\n" + 
+"    <metadata-use-constraints>None</metadata-use-constraints>\n" + 
 //Enter the metadata use constraints.
 "  </access-information>\n" +
 "  <data-quality>\n" +
@@ -9905,7 +10139,9 @@ sb.append(
 //Enter the completeness report.
 "    <conceptual-consistency></conceptual-consistency>\n" + 
 //Enter the conceptual consistency.
-"    <quality-control-procedures></quality-control-procedures>\n" + 
+"    <quality-control-procedures>" +
+    "Data is checked for completeness, conceptual consistency, and reasonableness." + //rubric requires something
+   "</quality-control-procedures>\n" + 
 //Enter details quality control procedures employed.
 "  </data-quality>\n");
 
@@ -9922,120 +10158,31 @@ sb.append(
 //Enter Yes or No, in regards to whether or not a Data Access Waiver has been filed. This field should only be included if data are not to be made available to the public, or if it is available with limitations.
 //"    <hosting-service-needed></hosting-service-needed>\n" + 
 //Indicate whether a hosting service is needed. This field should only be included if no distributor is currently providing data access.
-"    <delay-collection-dissemination>ASAP</delay-collection-dissemination>\n" + 
+"    <delay-collection-dissemination>0 days" + //rubric suggests "0 days" for no delay
+   "</delay-collection-dissemination>\n" + 
 //Enter the approximate delay between data collection and dissemination.
 "    <delay-collection-dissemination-explanation></delay-collection-dissemination-explanation>\n");
 //If the delay between data collection and dissemination is longer than the latency of automated processing, explain under what authority data access is delayed. This field should only be included if the delay is longer than the latency of automated processing.
 
-//default archive info (e.g., for Dave's datasets)
-String arLocation = "", arOther = "", arNone = "";
-if (datasetID.startsWith("erdPP") ||  //seawifs derived
-    datasetID.startsWith("erdMH1") || //seawifs...
-    datasetID.startsWith("erdSA") ||
-    datasetID.startsWith("erdSG") ||
-    datasetID.startsWith("erdSH") ||
-    datasetID.startsWith("erdSW") ||
-    datasetID.startsWith("erdVH") || //viirs
-    datasetID.startsWith("gsfc") ||
-    datasetID.startsWith("jpl") ||
-    institution.indexOf("GSFC") >= 0 ||
-    institution.indexOf("JPL")  >= 0 ||
-    institution.indexOf("NASA") >= 0 ||
-    institution.indexOf("OBPG") >= 0) {
-    arLocation = "Other"; 
-    arOther = "NASA";
-
-} else if (datasetID.startsWith("erdlasFn") ||
-           datasetID.startsWith("hycom") ||
-           datasetID.startsWith("nrl") ||        //but do they actaully archive it???
-           institution.indexOf("FNMOC") >= 0 ||
-           institution.indexOf("Naval Oceanographic") >= 0 ||
-           institution.indexOf("Naval Research") >= 0) {
-    arLocation = "Other"; 
-    arOther = "US Department of Defense"; //???
-
-} else if (datasetID.startsWith("aadc") || //obis
-           datasetID.startsWith("usgs")) { //Coastal Relief Model
-    arLocation = "Other"; 
-    arOther = "USGS"; //???
-
-} else if (datasetID.startsWith("erdCinp")) { //National Park Service
-    arLocation = "Other"; 
-    arOther = "US Department of Interior"; //???
-
-} else if (datasetID.startsWith("aviso") ||
-           datasetID.startsWith("erdTA")) { //aviso
-    arLocation = "World Data Center"; 
-    arOther = "AVISO"; //???
-
-} else if (datasetID.startsWith("esrl") ||
-           institution.indexOf("NGDC") >= 0) {
-    arLocation = "NCEI-CO";  //NGDC
-
-} else if (datasetID.startsWith("gfdl") ||
-           datasetID.startsWith("nodc") ||
-           datasetID.startsWith("pmelTao") ||   //???
-           datasetID.startsWith("scripps") ||  //gliders
-           title.startsWith("Currents, HFRadar,") ||  //???
-           datasetID.startsWith("ucsd") ||         //HFRadar ???
-           datasetID.startsWith("UMD / SODA") ||   //???
-           datasetID.startsWith("gtopp") ||   //???
-           institution.indexOf("CeNCOOS") >= 0 || //IOOS works to archive regional data
-           institution.indexOf("GoMOOS") >= 0 || 
-           institution.indexOf("NERACOOS") >= 0 || 
-           datasetID.startsWith("NWIOOS") ||   
-           institution.indexOf("AOML") >= 0 || 
-           institution.indexOf("FSU") >= 0 ||  //NOAA ship 
-           institution.indexOf("NDBC") >= 0 ||
-           institution.indexOf("NODC") >= 0 ||
-           institution.indexOf("NOS") >= 0) {
-    arLocation = "NCEI-MD";  //NODC
-
-} else if (datasetID.startsWith("ncddc")) {
-    arLocation = "NCEI-MS";  //NCDDC
-
-} else if (datasetID.startsWith("ncdc") ||
-           datasetID.startsWith("ncep") ||
-           institution.indexOf("NCDC") >= 0 ||
-           institution.indexOf("NCEP") >= 0) {
-    arLocation = "NCEI-NC";  //NCDC
-
-} else if (datasetID.startsWith("erdCalCOFI") ||   
-           datasetID.startsWith("siocalcofi") ||  
-           datasetID.startsWith("erdCAMarCat") ||   
-           datasetID.startsWith("erdHadISST") ||   
-           datasetID.startsWith("erdFedRockfish") ||   
-           datasetID.startsWith("erdPrd") ||   
-           datasetID.startsWith("FRDCPS") ||   
-           datasetID.startsWith("fedCalLandings") ||   
-           datasetID.startsWith("LiquidR") ||   
-           datasetID.startsWith("osu") ||   
-           datasetID.startsWith("PRBO") ||  //Farallon Island Seabird data
-           datasetID.startsWith("rt")) {   //Sacramento River
-    arLocation = "To Be Determined";
-    arNone = "We will find out if an archive is interested in this dataset.";
-
-} else {
-    //default archive info (e.g., for Dave's datasets)
-    arLocation = "No Archiving Intended"; 
-    arNone = "This data is derived from data in an archive. " +
-        "The archives only want to archive the source data.";
-}
-//skip: earthCube.*
-
 sb.append(
-"    <archive-location>" + XML.encodeAsXML(arLocation) + 
+"    <archive-location>" + XML.encodeAsXML(archiveLocation) + 
    "</archive-location>\n" + 
 //Enter only one of the following fixed values: NCEI-MD, NCEI-CO, NCEI-NC, NCEI-MS, World Data Center (WDC) Facility, Other, To Be Determined, Unable to Archive, No Archiving Intended
-"    <archive-location-explanation-other>" + XML.encodeAsXML(arOther) + 
+"    <archive-location-explanation-other>" + XML.encodeAsXML(archiveOther) + 
    "</archive-location-explanation-other>\n" + 
 //Specify the archive location, if World Data Center (WDC) Facility or Other was entered. This field should only be included if one of those values was entered. 
-"    <archive-location-explanation-none>" + XML.encodeAsXML(arNone) + 
+"    <archive-location-explanation-none>" + XML.encodeAsXML(archiveNone) + 
    "</archive-location-explanation-none>\n" + 
 //Provide an explanation, if To Be Determined, Unable to Archive, or No Archiving Intended was entered.
-"    <delay-collection-archive></delay-collection-archive>\n" + 
+"    <delay-collection-archive>" +
+    (archiveLocation.equals("No Archiving Intended") ||
+     archiveLocation.equals("Other")? "Not Applicable" : "") + 
+   "</delay-collection-archive>\n" + 
 //45 days
-"    <data-protection-plan>Data files are backed up.</data-protection-plan>\n" + 
+"    <data-protection-plan>" + //modified from AFSC
+    "The Environmental Research Department's IT Security and Contingency Plan " +
+    "establishes the security practices that ensure the security of the data and " +
+    "the plans necessary to recover and restore the data if problems occur.</data-protection-plan>\n" + 
 //Discuss how the data will be protected from accidental or malicious modification or deletion prior to receipt by the archive. Include relevant information on data back-up, disaster recovery/contingency planning, and off-site data storage relevant to the data collection.
 "  </data-management>\n" +
 "  <lineage>\n" +
@@ -10118,25 +10265,26 @@ sb.append(
 "  </lineage>\n" +
 "  <downloads mode=\"replace\">\n" +
 "    <download>\n" +
-"      <download-url></download-url>\n" + 
+"      <download-url>" + XML.encodeAsXML(tSearchUrl) + 
+     "</download-url>\n" + 
 //Enter the download URL. The URL must start with http://, https://, or ftp://
-"      <file-name></file-name>\n" + 
+"      <file-name>" + datasetID + "</file-name>\n" + 
 //Enter the file name.
-"      <description></description>\n" + 
+"      <description>This dataset is available in ERDDAP, a data server that gives you a simple, consistent way to download subsets of gridded and tabular scientific datasets in common file formats and make graphs and maps.</description>\n" + 
 //Enter the download description.
 "      <file-date-time></file-date-time>\n" + 
 //Enter the date/time of the file. The date/time must be specified as YYYYMMDD, YYYYMMDDTHH, YYYYMMDDTHHMM, or YYYYMMDDTHHMMSS.
-"      <file-type></file-type>\n" + 
+"      <file-type>In ERDDAP, you can specify the file type that you want. Options include .htmlTable, OPeNDAP .das .dds or .dods, .esriAscii, .esriCsv, .mat, .nc, .odvTxt, .csv, .tsv, .json, .geoJson, .xhtml, .ncHeader, .ncml, .fgdc, .iso19115, Google Earth .kml, .geotif, .png, .transparentPng, and .pdf.</file-type>\n" + 
 //Enter the type of file.
-"      <fgdc-content-type></fgdc-content-type>\n" + 
+"      <fgdc-content-type>Live Data and Maps</fgdc-content-type>\n" + 
 //Enter the FGDC content type of the download. Must be one of the following: Applications, Clearinghouses, Downloadable Data, Geographic Activities, Geographic Services, Live Data and Maps, Map Files, Offline Data, Other Documents, Static Map Images
 "      <file-size></file-size>\n" + 
 //Enter the file size of the download.
 "      <application-version></application-version>\n" + 
 //Enter the application version for the download.
-"      <compression></compression>\n" + 
+"      <compression>Uncompressed</compression>\n" + 
 //Enter the compression status of the download file. Must be one of the following values: Uncompressed, Zip, GZIP, Z, TAR, GTAR, Unknown, no compression applied
-"      <review-status></review-status>\n" + 
+"      <review-status>Chked Viruses Inapp Content</review-status>\n" + 
 //Enter the review status of the download. Must be one of the following values: Not Chked, Chked MD, Chked Viruses, Chked Inapp Content, Chked Viruses Inapp Content
 "    </download>\n" +
 "  </downloads>\n" +
@@ -10148,19 +10296,448 @@ sb.append(
      * This creates and writes one InPort XML file.
      * This throws a runtime exception if there is trouble.
      */
-    public void writeInPortXmlFile(String fullFileName) {
-        String error = String2.writeToFile(fullFileName, getInPortXmlString(), "UTF-8");
+    public void writeInPortXmlFile(String fullFileName, String archiveLocation,
+        String archiveOther, String archiveNone) {
+        String error = String2.writeToFile(fullFileName, 
+            getInPortXmlString(archiveLocation, archiveOther, archiveNone), "UTF-8");
         if (error.length() > 0)
             throw new RuntimeException(error);
     }
 
+    /**
+     * Generate InPortXmlFiles for Coastwatch ERDDAP.
+     */
+    public static void generateInPortXmlFilesForCoastwatchErddap() throws Throwable {
+
+        String2.log("*** generateInPortXmlFilesForCoastwatchErddap");
+        String dir = "/data/InPort/coastwatchErddap/";
+        File2.deleteAllFiles(dir);
+        StringBuilder errorSB = new StringBuilder();
+        int nSkip = 0, nSuccess = 0, nFailure = 0;
+        long eTime = System.currentTimeMillis();
+
+        //get a list of datasets from addDatasets on coastwatch Erddap
+        String lines[] = SSR.getUrlResponse(
+            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/allDatasets.csv0?datasetID,dataStructure");
+        int nLines = lines.length;
+
+        //make HashSet with datasetIDs
+        HashSet hashset = new HashSet();
+        for (int line = 0; line < nLines; line++) 
+            hashset.add(String2.split(lines[line], ',')[0]);
+
+        //consider making InPort Xml for these datasets
+        for (int line = 0; line < nLines; line++) {
+if (nSuccess >= 2)
+   break;
+            String tDatasetID = "?";
+            try {
+
+            String parts[] = String2.split(lines[line], ',');
+            tDatasetID = parts[0];
+            if (hashset.contains(tDatasetID + "_LonPM180")) {
+                String2.log("skip " + tDatasetID + " because there's a _LonPM180 version of it.");
+                nSkip++;
+                continue;
+            }
+            if (tDatasetID.startsWith("erdPP") ||  //seawifs derived
+                tDatasetID.startsWith("erdMH1") || //seawifs...
+                tDatasetID.startsWith("erdSA") ||
+                tDatasetID.startsWith("erdSG") ||
+                tDatasetID.startsWith("erdSH") ||
+                tDatasetID.startsWith("erdSW") ||
+                tDatasetID.startsWith("erdVH") || //viirs
+                tDatasetID.startsWith("gsfc") ||
+                tDatasetID.startsWith("jpl") ||
+                tDatasetID.startsWith("erdlasFn") ||
+                tDatasetID.startsWith("hycom") ||
+                tDatasetID.startsWith("nrl") ||        //but do they actaully archive it???
+                tDatasetID.startsWith("aadc") || //obis
+                tDatasetID.startsWith("usgs") || //Coastal Relief Model
+                tDatasetID.startsWith("erdCinp") || //National Park Service
+                tDatasetID.startsWith("aviso") ||
+                tDatasetID.startsWith("erdTA") || //aviso
+                tDatasetID.startsWith("esrl") ||
+                tDatasetID.startsWith("gfdl") ||
+                tDatasetID.startsWith("nodc") ||
+                tDatasetID.startsWith("pmelTao") ||   //???
+                tDatasetID.startsWith("scripps") ||  //gliders
+                tDatasetID.startsWith("ucsd") ||         //HFRadar ???
+                tDatasetID.startsWith("UMD / SODA") ||   //???
+                tDatasetID.startsWith("gtopp") ||   //???
+                tDatasetID.startsWith("NWIOOS") ||   
+                tDatasetID.startsWith("ncddc") ||
+                tDatasetID.startsWith("ncdc") ||
+                tDatasetID.startsWith("ncep") ||
+                tDatasetID.startsWith("erdCAMarCat") ||  //Jan Mason???  
+                tDatasetID.startsWith("erdHadISST") ||   //Roy???
+                tDatasetID.startsWith("erdCalCOFI") ||   //done in La Jolla
+                tDatasetID.startsWith("siocalcofi") ||  
+                tDatasetID.startsWith("earthCube") ||  //was a test dataset
+                tDatasetID.startsWith("erdFedRockfish") ||  //??? 
+                tDatasetID.startsWith("erdPrd") ||          //???
+                tDatasetID.startsWith("FRDCPS") ||          //??? 
+                tDatasetID.startsWith("fedCalLandings") ||  //??? 
+                tDatasetID.startsWith("LiquidR") ||         //???
+                tDatasetID.startsWith("osu") ||             //???
+                tDatasetID.startsWith("PRBO") ||  //Farallon Island Seabird data ???
+                tDatasetID.startsWith("rt")) {   //Sacramento River ???
+                String2.log("skip " + tDatasetID + " because datasetID known to be not relevant.");
+                nSkip++;
+                continue;
+            }
+
+
+            String gridTable = parts[1]; //grid or table
+            String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
+            EDD edd = oneFromXmlFragment(null, 
+"<dataset type=\"EDD" + String2.toTitleCase(gridTable) + "FromErddap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
+"    <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/" + gridTable + "dap/" + tDatasetID + "</sourceUrl>\n" +
+"</dataset>\n");        
+            Attributes gatts = edd.combinedGlobalAttributes();
+            String tCreatorEmail = gatts.getString("creator_email");
+            String tInstitution  = gatts.getString("institution");
+            String tTitle        = gatts.getString("title");
+            if (tCreatorEmail == null) tCreatorEmail = "";
+            if (tInstitution  == null) tInstitution = "";
+            if (tTitle        == null) tTitle = "";
+
+            //! Only include datasets for which ERD Data is the creator.
+
+            //default archive info (e.g., for Dave's datasets)
+            String archiveLocation = "", archiveOther = "", archiveNone = "";
+            if (tDatasetID.startsWith("erdPP") ||  //seawifs derived
+                tDatasetID.startsWith("erdMH1") || //seawifs...
+                tDatasetID.startsWith("erdSA") ||
+                tDatasetID.startsWith("erdSG") ||
+                tDatasetID.startsWith("erdSH") ||
+                tDatasetID.startsWith("erdSW") ||
+                tDatasetID.startsWith("erdVH") || //viirs
+                tDatasetID.startsWith("gsfc") ||
+                tDatasetID.startsWith("jpl") ||
+                tInstitution.indexOf("GSFC") >= 0 ||
+                tInstitution.indexOf("JPL")  >= 0 ||
+                tInstitution.indexOf("NASA") >= 0 ||
+                tInstitution.indexOf("OBPG") >= 0) {
+                archiveLocation = "Other"; 
+                archiveOther = "NASA";
+
+            } else if (tDatasetID.startsWith("erdlasFn") ||
+                       tDatasetID.startsWith("hycom") ||
+                       tDatasetID.startsWith("nrl") ||        //but do they actaully archive it???
+                       tInstitution.indexOf("FNMOC") >= 0 ||
+                       tInstitution.indexOf("Naval Oceanographic") >= 0 ||
+                       tInstitution.indexOf("Naval Research") >= 0) {
+                archiveLocation = "Other"; 
+                archiveOther = "US Department of Defense"; //???
+
+            } else if (tDatasetID.startsWith("aadc") || //obis
+                       tDatasetID.startsWith("usgs")) { //Coastal Relief Model
+                archiveLocation = "Other"; 
+                archiveOther = "USGS"; //???
+
+            } else if (tDatasetID.startsWith("erdCinp")) { //National Park Service
+                archiveLocation = "Other"; 
+                archiveOther = "US Department of Interior"; //???
+
+            } else if (tDatasetID.startsWith("aviso") ||
+                       tDatasetID.startsWith("erdTA")) { //aviso
+                archiveLocation = "World Data Center"; 
+                archiveOther = "AVISO"; //???
+
+            } else if (tDatasetID.startsWith("esrl") ||
+                       tInstitution.indexOf("NGDC") >= 0) {
+                archiveLocation = "NCEI-CO";  //NGDC
+
+            } else if (tDatasetID.startsWith("gfdl") ||
+                       tDatasetID.startsWith("nodc") ||
+                       tDatasetID.startsWith("pmelTao") ||   //???
+                       tDatasetID.startsWith("scripps") ||  //gliders
+                       tTitle.startsWith("Currents, HFRadar,") ||  //???
+                       tDatasetID.startsWith("ucsd") ||         //HFRadar ???
+                       tDatasetID.startsWith("UMD / SODA") ||   //???
+                       tDatasetID.startsWith("gtopp") ||   //???
+                       tInstitution.indexOf("CeNCOOS") >= 0 || //IOOS works to archive regional data
+                       tInstitution.indexOf("GoMOOS") >= 0 || 
+                       tInstitution.indexOf("NERACOOS") >= 0 || 
+                       tDatasetID.startsWith("NWIOOS") ||   
+                       tInstitution.indexOf("AOML") >= 0 || 
+                       tInstitution.indexOf("FSU") >= 0 ||  //NOAA ship 
+                       tInstitution.indexOf("NDBC") >= 0 ||
+                       tInstitution.indexOf("NODC") >= 0 ||
+                       tInstitution.indexOf("NOS") >= 0) {
+                archiveLocation = "NCEI-MD";  //NODC
+
+            } else if (tDatasetID.startsWith("ncddc")) {
+                archiveLocation = "NCEI-MS";  //NCDDC
+
+            } else if (tDatasetID.startsWith("ncdc") ||
+                       tDatasetID.startsWith("ncep") ||
+                       tInstitution.indexOf("NCDC") >= 0 ||
+                       tInstitution.indexOf("NCEP") >= 0) {
+                archiveLocation = "NCEI-NC";  //NCDC
+
+            //skip local datasets that others will enter into InPort
+            } else if (tDatasetID.startsWith("erdCAMarCat") ||  //Jan Mason???  
+                       tDatasetID.startsWith("erdHadISST") ||   //Roy???
+                       tDatasetID.startsWith("erdCalCOFI") ||   //done in La Jolla
+                       tDatasetID.startsWith("siocalcofi") ||  
+                       tDatasetID.startsWith("earthCube") ||  //was a test dataset
+                       tDatasetID.startsWith("erdFedRockfish") ||  //??? 
+                       tDatasetID.startsWith("erdPrd") ||          //???
+                       tDatasetID.startsWith("FRDCPS") ||          //??? 
+                       tDatasetID.startsWith("fedCalLandings") ||  //??? 
+                       tDatasetID.startsWith("LiquidR") ||         //???
+                       tDatasetID.startsWith("osu") ||             //???
+                       tDatasetID.startsWith("PRBO") ||  //Farallon Island Seabird data ???
+                       tDatasetID.startsWith("rt")) {   //Sacramento River ???
+                archiveLocation = "To Be Determined";
+                archiveNone = "We will find out if an archive is interested in this dataset.";
+
+            } else {
+                //default archive info (e.g., for Dave's datasets)
+                //These are the ones we'll actually submit to InPort.
+                archiveLocation = "No Archiving Intended"; 
+                archiveNone = "This data is derived from data in an archive. " +
+                    "The archives only want to archive the source data.";
+            }
+
+            if (archiveLocation.equals("No Archiving Intended") &&
+                tCreatorEmail.equals("erd.data@noaa.gov")) {
+                edd.writeInPortXmlFile(dir + fileName, archiveLocation, archiveOther, archiveNone);
+                nSuccess++;
+            } else {
+                nSkip++;
+                String2.log("skip " + tDatasetID + " because creator not erd.data@noaa.gov .\n" +
+                    archiveLocation + ", " + archiveOther + ", " + archiveNone + "\n");
+            }
+
+        } catch (Throwable t) {
+            nFailure++;
+            errorSB.append("ERROR while creating InPort.xml file for " + tDatasetID + "\n" +
+                MustBe.throwableToString(t) + "\n");
+        }}
+
+        //all done
+        String2.log("\n******\n");
+        String2.log(errorSB.toString());
+        String2.log("generateInPortXmlFilesForCoastwatchErddap() finished.\n" +
+            "  nSkip=" + nSkip + " nSuccess=" + nSuccess + " nFailure=" + nFailure + 
+            " time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - eTime));
+    }
+
+
     public static void testInPortXml() throws Throwable {
         String dir = EDStatic.fullTestCacheDirectory;
-        String tid = "erdBAssta5day";
-        String error = String2.writeToFile(dir + "ErddapToInPort_" + tid + ".xml", 
-            EDD.oneFromDatasetsXml(null, tid).getInPortXmlString(), "UTF-8");
+        String gridTable = "grid"; //grid or table
+        String tDatasetID = "erdSWchlamday";
+        String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
+        EDD edd = oneFromXmlFragment(null, 
+"<dataset type=\"EDD" + String2.toTitleCase(gridTable) + "FromErddap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
+"    <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/" + gridTable + "dap/" + tDatasetID + "</sourceUrl>\n" +
+"</dataset>\n");        
+        String error = String2.writeToFile(dir + fileName, 
+            edd.getInPortXmlString(
+                "No Archiving Intended",
+                "",
+                "This data is derived from data in an archive. " +
+                "The archives only want to archive the source data."), 
+            "UTF-8");
         if (error.length() > 0)
             throw new RuntimeException(error);
+        String results = new String((new ByteArray(dir + fileName)).toArray());
+        String expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<inport-metadata version=\"1.0\">\n" +
+"  <item-identification>\n" +
+"    <parent-catalog-item-id>???</parent-catalog-item-id>\n" +
+"    <catalog-item-id>???</catalog-item-id>\n" +
+"    <catalog-item-type>Data Set</catalog-item-type>\n" +
+"    <title>Chlorophyll-a, Orbview-2 SeaWiFS, 0.1&#xb0;, Global (Monthly Composite) DEPRECATED</title>\n" +
+"    <short-name>erdSWchlamday</short-name>\n" +
+"    <status>In Work</status>\n" +
+"    <abstract>THIS VERSION IS DEPRECATED. SEE THE NEW R2014.0 VERSION IN erdSW1chla1day. (Jan 2016) \n" +
+"NASA GSFC Ocean Color Web distributes science-quality chlorophyll-a concentration data from the Sea-viewing Wide Field-of-view Sensor (SeaWiFS) on the Orbview-2 satellite.</abstract>\n" +
+"    <purpose></purpose>\n" +
+"    <notes></notes>\n" +
+"    <other-citation-details></other-citation-details>\n" +
+"    <supplemental-information>http://coastwatch.pfeg.noaa.gov/infog/SW_chla_las.html</supplemental-information>\n" +
+"  </item-identification>\n" +
+"  <physical-location>\n" +
+"    <organization>Southwest Fisheries Science Center</organization>\n" +
+"    <city>Santa Cruz</city>\n" +
+"    <state-province>CA</state-province>\n" +
+"    <country>USA</country>\n" +
+"    <location-description></location-description>\n" +
+"  </physical-location>\n" +
+"  <data-set-information>\n" +
+"    <data-presentation-form>Other</data-presentation-form>\n" +
+"    <data-presentation-form-other>Multidimensional Grid (digital)</data-presentation-form-other>\n" +
+"    <instrument>SeaWiFS HRPT</instrument>\n" +
+"    <platform>Orbview-2</platform>\n" +
+"    <physical-collection-fishing-gear>Not Applicable</physical-collection-fishing-gear>\n" +
+"  </data-set-information>\n" +
+"  <support-roles mode=\"replace\">\n" +
+"    <support-role>\n" +
+"      <support-role-type>Metadata Contact</support-role-type>\n" +
+"      <from-date>2016</from-date>\n" +
+"      <person-email>bob.simons@noaa.gov</person-email>\n" +
+"      <organization>Southwest Fisheries Science Center</organization>\n" +
+"      <contact-instructions>email bob.simons@noaa.gov</contact-instructions>\n" +
+"    </support-role>\n" +
+"    <support-role>\n" +
+"      <support-role-type>Distributor</support-role-type>\n" +
+"      <from-date>2016</from-date>\n" +
+"      <person-email>bob.simons@noaa.gov</person-email>\n" +
+"      <organization>Southwest Fisheries Science Center</organization>\n" +
+"      <contact-instructions>email bob.simons@noaa.gov</contact-instructions>\n" +
+"    </support-role>\n" +
+"    <support-role>\n" +
+"      <support-role-type>Author</support-role-type>\n" +
+"      <from-date>2016</from-date>\n" +
+"      <person-email>erd.data@noaa.gov</person-email>\n" +
+"      <organization></organization>\n" +
+"      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" +
+"    </support-role>\n" +
+"    <support-role>\n" +
+"      <support-role-type>Data Set Credit</support-role-type>\n" +
+"      <from-date>2016</from-date>\n" +
+"      <person-email>erd.data@noaa.gov</person-email>\n" +
+"      <organization></organization>\n" +
+"      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" +
+"    </support-role>\n" +
+"    <support-role>\n" +
+"      <support-role-type>Data Steward</support-role-type>\n" +
+"      <from-date>2016</from-date>\n" +
+"      <person-email>erd.data@noaa.gov</person-email>\n" +
+"      <organization></organization>\n" +
+"      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" +
+"    </support-role>\n" +
+"    <support-role>\n" +
+"      <support-role-type>Point of Contact</support-role-type>\n" +
+"      <from-date>2016</from-date>\n" +
+"      <person-email>erd.data@noaa.gov</person-email>\n" +
+"      <organization></organization>\n" +
+"      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" +
+"    </support-role>\n" +
+"  </support-roles>\n" +
+"  <extents mode=\"replace\">\n" +
+"    <extent>\n" +
+"      <description></description>\n" +
+"      <time-frames>\n" +
+"        <time-frame>\n" +
+"          <time-frame-type>Range</time-frame-type>\n" +
+"          <start-date-time>19970916T000000Z</start-date-time>\n" +
+"          <end-date-time>20101216T120000Z</end-date-time>\n" +
+"          <description></description>\n" +
+"        </time-frame>\n" +
+"      </time-frames>\n" +
+"      <geographic-areas>\n" +
+"        <geographic-area>\n" +
+"          <west-bound>-180.0</west-bound>\n" +
+"          <east-bound>180.0</east-bound>\n" +
+"          <north-bound>90.0</north-bound>\n" +
+"          <south-bound>-90.0</south-bound>\n" +
+"          <description></description>\n" +
+"        </geographic-area>\n" +
+"      </geographic-areas>\n" +
+"    </extent>\n" +
+"  </extents>\n" +
+"  <access-information>\n" +
+"    <security-class>Unclassified</security-class>\n" +
+"    <security-classification-system></security-classification-system>\n" +
+"    <security-handling-description></security-handling-description>\n" +
+"    <data-access-policy>The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.</data-access-policy>\n" +
+"    <data-access-procedure>The data can be obtained from ERDDAP: http://coastwatch.pfeg.noaa.gov/erddap/search/index.html?searchFor=datasetID&#37;3DerdSWchlamday</data-access-procedure>\n" +
+"    <data-access-constraints>Not Applicable</data-access-constraints>\n" +
+"    <data-use-constraints>The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.</data-use-constraints>\n" +
+"    <metadata-access-constraints>None</metadata-access-constraints>\n" +
+"    <metadata-use-constraints>None</metadata-use-constraints>\n" +
+"  </access-information>\n" +
+"  <data-quality>\n" +
+"    <representativeness></representativeness>\n" +
+"    <accuracy></accuracy>\n" +
+"    <analytical-accuracy></analytical-accuracy>\n" +
+"    <quantitation-limits></quantitation-limits>\n" +
+"    <bias></bias>\n" +
+"    <comparability></comparability>\n" +
+"    <completeness-measure></completeness-measure>\n" +
+"    <precision></precision>\n" +
+"    <analytical-precision></analytical-precision>\n" +
+"    <field-precision></field-precision>\n" +
+"    <sensitivity></sensitivity>\n" +
+"    <detection-limit></detection-limit>\n" +
+"    <completeness-report></completeness-report>\n" +
+"    <conceptual-consistency></conceptual-consistency>\n" +
+"    <quality-control-procedures>Data is checked for completeness, conceptual consistency, and reasonableness.</quality-control-procedures>\n" +
+"  </data-quality>\n" +
+"  <data-management>\n" +
+"    <resources-identified>Yes</resources-identified>\n" +
+"    <resources-budget-percentage>Unknown</resources-budget-percentage>\n" +
+"    <data-access-directive-compliant>Yes</data-access-directive-compliant>\n" +
+"    <data-access-directive-waiver></data-access-directive-waiver>\n" +
+"    <delay-collection-dissemination>0 days</delay-collection-dissemination>\n" +
+"    <delay-collection-dissemination-explanation></delay-collection-dissemination-explanation>\n" +
+"    <archive-location>Other</archive-location>\n" +
+"    <archive-location-explanation-other>NASA</archive-location-explanation-other>\n" +
+"    <archive-location-explanation-none></archive-location-explanation-none>\n" +
+"    <delay-collection-archive>Not Applicable</delay-collection-archive>\n" +
+"    <data-protection-plan>The Environmental Research Department's IT Security and Contingency Plan establishes the security practices that ensure the security of the data and the plans necessary to recover and restore the data if problems occur.</data-protection-plan>\n" + 
+"  </data-management>\n" +
+"  <lineage>\n" +
+"    <lineage-statement></lineage-statement>\n" +
+"    <lineage-process-steps>\n" +
+"      <lineage-process-step>\n" +
+"        <sequence-number>1</sequence-number>\n" +
+"        <description>NASA/GSFC/DAAC, GeoEye</description>\n" +
+"        <process-date-time></process-date-time>\n" +
+"        <process-contact-type></process-contact-type>\n" +
+"        <process-contact></process-contact>\n" +
+"        <process-contact-phone></process-contact-phone>\n" +
+"        <process-contact-email-address></process-contact-email-address>\n" +
+"        <source-citation></source-citation>\n" +
+"      </lineage-process-step>\n" +
+"      <lineage-process-step>\n" +
+"        <sequence-number>2</sequence-number>\n" +
+"        <description>NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</description>\n" +
+"        <process-date-time>20121013T011508Z</process-date-time>\n" +
+"        <process-contact-type></process-contact-type>\n" +
+"        <process-contact></process-contact>\n" +
+"        <process-contact-phone></process-contact-phone>\n" +
+"        <process-contact-email-address></process-contact-email-address>\n" +
+"        <source-citation></source-citation>\n" +
+"      </lineage-process-step>\n" +
+"    </lineage-process-steps>\n" +
+"  </lineage>\n" +
+"  <downloads mode=\"replace\">\n" +
+"    <download>\n" +
+"      <download-url>http://coastwatch.pfeg.noaa.gov/erddap/search/index.html?searchFor=datasetID&#37;3DerdSWchlamday</download-url>\n" +
+"      <file-name>erdSWchlamday</file-name>\n" +
+"      <description>This dataset is available in ERDDAP, a data server that gives you a simple, consistent way to download subsets of gridded and tabular scientific datasets in common file formats and make graphs and maps.</description>\n" +
+"      <file-date-time></file-date-time>\n" +
+"      <file-type>In ERDDAP, you can specify the file type that you want. Options include .htmlTable, OPeNDAP .das .dds or .dods, .esriAscii, .esriCsv, .mat, .nc, .odvTxt, .csv, .tsv, .json, .geoJson, .xhtml, .ncHeader, .ncml, .fgdc, .iso19115, Google Earth .kml, .geotif, .png, .transparentPng, and .pdf.</file-type>\n" +
+"      <fgdc-content-type>Live Data and Maps</fgdc-content-type>\n" +
+"      <file-size></file-size>\n" +
+"      <application-version></application-version>\n" +
+"      <compression>Uncompressed</compression>\n" +
+"      <review-status>Chked Viruses Inapp Content</review-status>\n" +
+"    </download>\n" +
+"  </downloads>\n" +
+"</inport-metadata>\n";
+        Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+
     }
 
 
@@ -10197,5 +10774,44 @@ sb.append(
         TableWriter.reallyVerbose = on;
         TaskThread.verbose = on;
         TaskThread.reallyVerbose = on;
+    }
+
+    public static void testSuggestInstitutionParts() {
+        String2.log("\n*** EDD.testSuggestionInstituionParts");
+
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "http://some.site.com:8080/erddap")), "site, some", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "https://thredds1.some.site.gov:8080/erddap")), "site, some", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "https://the.thredds1.some.site.gov:8080/erddap")), "site, some", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "ftp://www.some.site.org/erddap")), "site, some", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "ftps://www.site/erddap")), "site", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "sftp://site/erddap")), "site", "");
+
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "/some/dir1/dir2")), "dir2", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "\\some\\dir1\\dir2\\")), "dir2", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "/some/dir/")), "dir", "");
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "/dir/")), "dir", "");
+
+        Test.ensureEqual(String2.toCSSVString(suggestInstitutionParts(
+            "/")), "", "");
+    }
+            
+
+    /** This tests some of the static methods in this class.
+     * Almost all of the testing of this class is done by subclasses.
+     */
+    public static void test() throws Throwable {
+        String2.log("\n*** EDD.testEDD");
+
+        testSuggestInstitutionParts();
     }
 }

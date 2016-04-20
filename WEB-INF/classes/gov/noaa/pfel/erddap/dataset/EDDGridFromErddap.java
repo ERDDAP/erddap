@@ -72,6 +72,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     public static boolean acceptDeflate = true;
 
     protected String publicSourceErddapUrl;
+    protected boolean subscribeToRemoteErddapDataset;
 
     /**
      * This constructs an EDDGridFromErddap based on the information in an .xml file.
@@ -91,7 +92,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         int tUpdateEveryNMillis = 0;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
+        boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -123,12 +126,15 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //it can never get dataset info from the remote erddap dataset (which should have restricted access).
             //Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
             //So there is currently no way to make this work. 
-            //So it is disabled.
-            //else if (localTags.equals( "<accessibleTo>")) {}
-            //else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-
+            else if (localTags.equals( "<accessibleTo>")) {}
+            else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
+            else if (localTags.equals( "<subscribeToRemoteErddapDataset>")) {}
+            else if (localTags.equals("</subscribeToRemoteErddapDataset>")) 
+                tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
             else if (localTags.equals( "<onChange>")) {}
@@ -144,10 +150,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
             else xmlReader.unexpectedTagException();
         }
-        return new EDDGridFromErddap(tDatasetID, tAccessibleTo,  tAccessibleViaWMS,
+        return new EDDGridFromErddap(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tLocalSourceUrl);
+            tLocalSourceUrl, tSubscribeToRemoteErddapDataset);
     }
 
     /**
@@ -170,11 +177,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * @throws Throwable if trouble
      */
     public EDDGridFromErddap(String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tLocalSourceUrl) throws Throwable {
+        String tLocalSourceUrl, boolean tSubscribeToRemoteErddapDataset) 
+        throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromErddap " + tDatasetID); 
@@ -185,7 +193,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //save some of the parameters
         className = "EDDGridFromErddap"; 
         datasetID = tDatasetID;
-        //setAccessibleTo(tAccessibleTo);  disabled. see above.
+        setAccessibleTo(tAccessibleTo);  
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
@@ -197,11 +206,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         setUpdateEveryNMillis(tUpdateEveryNMillis);
-        if (tLocalSourceUrl.indexOf("/tabledap/") > 0)
+        if (localSourceUrl.indexOf("/tabledap/") > 0)
             throw new RuntimeException(
                 "For datasetID=" + tDatasetID + 
                 ", use type=\"EDDTableFromErddap\", not EDDGridFromErddap, in datasets.xml.");
-        publicSourceErddapUrl = convertToPublicSourceUrl(tLocalSourceUrl);
+        publicSourceErddapUrl = convertToPublicSourceUrl(localSourceUrl);
+        subscribeToRemoteErddapDataset = tSubscribeToRemoteErddapDataset;
 
         //quickRestart
         Attributes quickRestartAttributes = null;       
@@ -232,7 +242,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //setup via info.json
         //source http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
         //json   http://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
-        String jsonUrl = String2.replaceAll(tLocalSourceUrl, "/griddap/", "/info/") + "/index.json";
+        String jsonUrl = String2.replaceAll(localSourceUrl, "/griddap/", "/info/") + "/index.json";
 
         byte sourceInfoBytes[] = quickRestartAttributes == null?
             SSR.getUrlResponseBytes(jsonUrl) : //has timeout and descriptive error
@@ -401,40 +411,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             }
         }
 
-        //try to subscribe to the remote dataset
-        //It's ok that this is done every time. 
-        //  emailIfAlreadyValid=false so there won't be excess email confirmation requests 
-        //  and if flagKeyKey changes, the new tFlagUrl will be sent.
-        //There is analogous code in EDDTableFromErddap.
-        try {
-            if (!String2.isSomething(EDStatic.emailSubscriptionsFrom)) { 
-                //this erddap's subscription system isn't active
-                String2.log(
-                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
-                    "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n" +
-                    "To keep this dataset up-to-date, use a small reloadEveryNMinutes.");
-            } else if (datasetID.endsWith("_LonPM180Child") || //if hidden EDDGridLomPM180 child dataset, subscribing will always fail, so don't try
-                       datasetID.endsWith("_LonPM180Low")) {   // name used for child in v1.66 only
-                //no point subscribing if this dataset is publicly accessible
-            } else {
-                //try to subscribe to the dataset on the remote erddap
-                int gpo = tLocalSourceUrl.indexOf("/griddap/"); //the "remote" erddap may be local
-                String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
-                    "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
-                    "&email=" + EDStatic.emailSubscriptionsFrom +
-                    "&emailIfAlreadyValid=false" + 
-                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
-                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
-                SSR.touchUrl(subscriptionUrl, 60000);  
-            }
-        } catch (Throwable st) {
-            String2.log(
-                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
-                "If the subscription hasn't been set up already, you may need to\n" + 
-                "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
-                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
-                );
-        }
+        //try to subscribe to the remote ERDDAP dataset
+        tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset);
 
         //finally
         if (verbose) String2.log(
@@ -681,10 +659,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //make the sibling
         EDDGridFromErddap newEDDGrid = new EDDGridFromErddap(
             tDatasetID, 
-            String2.toSSVString(accessibleTo), false, //accessibleViaWMS
+            String2.toSSVString(accessibleTo), "auto", false, //accessibleViaWMS
             shareInfo? onChange : (StringArray)onChange.clone(), 
             "", "", "", "", //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
-            getReloadEveryNMinutes(), getUpdateEveryNMillis(), tLocalSourceUrl);
+            getReloadEveryNMinutes(), getUpdateEveryNMillis(), tLocalSourceUrl,
+            subscribeToRemoteErddapDataset);
 
         //if shareInfo, point to same internal data
         if (shareInfo) {
@@ -927,9 +906,9 @@ String expected =
                 expected, "results=\n" + results);
 
 expected = 
-"<dataset type=\"EDDGridFromErddap\" datasetID=\"0_0_3648_e4d8_5e3c\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_8f86_303c_35ff\" active=\"true\">\n" +
 "    <!-- SST, Blended, Global, EXPERIMENTAL (5 Day Composite) -->\n" +
-"    <sourceUrl>http://127.0.0.1:8080/cwexperimental/griddap/erdBAssta5day</sourceUrl>\n" +
+"    <sourceUrl>http://localhost:8080/cwexperimental/griddap/erdBAssta5day</sourceUrl>\n" +
 "</dataset>";
 
             int po = results.indexOf(expected.substring(0, 80));
@@ -952,7 +931,7 @@ expected =
                     "datasetID=" + edd.datasetID() +
                     "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
                 Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL (Monthly Composite)", "");
-                Test.ensureEqual(edd.datasetID(), "0_0_f195_5e9d_3212", "");
+                Test.ensureEqual(edd.datasetID(), "localhost_bcc8_5919_5e47", "");
                 Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                     "chlorophyll", "");
             } catch (Exception e) {
@@ -1081,7 +1060,7 @@ expected =
 "    String history \"NASA GSFC \\(OBPG\\)";
 //"2010-02-05T02:14:47Z NOAA CoastWatch (West Coast Node) and NOAA SWFSC ERD\n" + //changes sometimes
 //today + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\n";
-//today + " http://127.0.0.1:8080/cwexperimental/griddap/rMHchla8day.das\";\n" +   //This is it working locally.
+//today + " http://localhost:8080/cwexperimental/griddap/rMHchla8day.das\";\n" +   //This is it working locally.
 //or           coastwatch ...      //what I expected/wanted.  This really appears as if remote dataset.
 
 expected2 =
@@ -1172,12 +1151,12 @@ expected2 =
     "      Float64 latitude\\[latitude = 4320\\];\n" +
     "      Float64 longitude\\[longitude = 8640\\];\n" +
     "  \\} chlorophyll;\n" +
-    "\\} "; //rMHchla8day;\n";
-            Test.ensureLinesMatch(results, expected + "rMHchla8day;\n", "\nresults=\n" + results);
+    "\\} rMHchla8day;\n";
+            Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
             if (testLocalErddapToo) {
                 results = SSR.getUrlResponseString(localUrl + ".dds");
-                Test.ensureLinesMatch(results, expected + "erdMHchla8day;\n", "\nresults=\n" + results);
+                Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
             }
 
             //********************************************** test getting axis data

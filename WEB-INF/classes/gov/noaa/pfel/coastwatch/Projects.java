@@ -3190,7 +3190,7 @@ variables:
         /*  
         //one time - change ucar to ucar4
         String[] list = RegexFilenameFilter.recursiveFullNameList(
-            "c:/programs/tomcat/webapps/cwexperimental/WEB-INF/classes/ucar4", ".*\\.java", false);
+            "c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/ucar4", ".*\\.java", false);
         for (int i = 0; i < list.length; i++) {
             String content[] = String2.readFromFile(list[i]);
             if (content[0].length() == 0) {
@@ -3312,15 +3312,15 @@ public static void testJanino() throws Exception {
             }
         }
         //Grid.testHDF(new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser"), false);
-        //"C:/programs/tomcat/webapps/cwexperimental/WEB-INF/classes/gov/noaa/pfel/coastwatch/griddata/OQNux10S1day_20050712_x-135_X-105_y22_Y50Test.hdf";
+        //"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/gov/noaa/pfel/coastwatch/griddata/OQNux10S1day_20050712_x-135_X-105_y22_Y50Test.hdf";
         //File2.copy("c:/TestDapperBackendService.nc", "c:/zztop/testFileCopy.nc");
         //String2.log(" -5%4=" + (-5%4) + " 5%-4=" + (5%-4) + " -5%-4=" + (-5%-4));
         if (false) {
             //ucar.nc2.util.DebugFlags.set("DODS/serverCall", true);
             //NetcdfFile nc = NetcdfDataset.openFile("http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp", null);
             //NetcdfFile nc = NetcdfDataset.openFile("http://coastwatch.pfeg.noaa.gov/erddap2/tabledap/cwwcNDBCMet", null);
-            NetcdfFile nc = NetcdfDataset.openFile("http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet", null);
-            //NetcdfFile nc = NetcdfDataset.openFile("http://thredds1.pfeg.noaa.gov:8080/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
+            NetcdfFile nc = NetcdfDataset.openFile("http://localhost/cwexperimental/tabledap/cwwcNDBCMet", null);
+            //NetcdfFile nc = NetcdfDataset.openFile("http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
             String2.log(nc.toString());
             nc.close();
         }
@@ -3452,7 +3452,7 @@ public static void testJanino() throws Exception {
      */    
     public static void downloadFilesFromErddap() throws Exception {
          //setup
-         String erddapUrl = "http://127.0.0.1:8080/cwexperimental/griddap/";
+         String erddapUrl = "http://localhost:8080/cwexperimental/griddap/";
          String datasetID = "usgsCeSrtm30v6c";
          String varName = "topo"; //presumably only one
          int n = 21600;
@@ -6396,7 +6396,7 @@ project)
                         //The symbol o/oo stands for "parts per thousand" or "per mil"; 
                         //a salt content of 3.5% is equivalent to 35 o/oo, 
                         //or 35 grams of salt per kilogram of sea water.
-                        //http://en.wikipedia.org/wiki/Per_mil says
+                        //https://en.wikipedia.org/wiki/Per_mil says
                         //A per mil or per mille (also spelled permil, permille,
                         //per mill or promille) (Latin, literally meaning 'for (every) thousand') 
                         //is a tenth of a percent or one part per thousand. 
@@ -7705,7 +7705,7 @@ towTypesDescription);
                 if (nErrors > 0)
                     String2.pressEnterToContinue(
                         "Bob: check US daylight savings time rules. On/near these dates?\n" +
-                        "http://en.wikipedia.org/wiki/History_of_time_in_the_United_States\n" +
+                        "https://en.wikipedia.org/wiki/History_of_time_in_the_United_States\n" +
                         "nErrors=" + nErrors);
             }
 
@@ -8905,6 +8905,151 @@ towTypesDescription);
             }
         }
     }
+
+    /** Make VH3 1day .ncml files. */
+    public static void makeVH31dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int jDate = 1; jDate <= nDays; jDate++) {
+                String yj = year + String2.zeroPad("" + jDate, 3);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
+                String2.log(yj + " " + daysSince);      
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH3ncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH3ncml/chla/ncml1day/V2014365.ncml is
+<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj + ".L3m_DAY_SNPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH3 8day .ncml files. 
+     * coordValue is firstDay. First 3 of 2012 are 15340, 15348, 15356. 
+     * Every year, start again Jan 1-8, 9-16, ...
+     * End of year, 
+     */
+    public static void makeVH38dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int day1 = 1; day1 <= nDays; day1 += 8) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, day1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, 
+                    Math.min(nDays, day1+7));
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                if (day1+7 > nDays)
+                    daysSince--; //imperfect
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH3ncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH3ncml/chla/ncml8day/V20120012012008.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_8D_SNPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH3 mday .ncml files. 
+     * coordValue is firstDay of the month. First 3 of 2012 are 15340, 15371, 15400. 
+     */
+    public static void makeVH3mdayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            for (int month = 1; month <= 12; month++) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, month, 1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, month+1, 0);
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH3ncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH3ncml/chla/ncmlmon/V20120012012031.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012031.L3m_MO_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf>
+ */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_MO_SNPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
 
 }
 

@@ -38,18 +38,24 @@ public class DasDds {
         outFile.flush();
     }
 
-    /** This gets the i'th value from args, or prompts the user. */
+    /** 
+     * This gets the i'th value from args, or prompts the user. 
+     *
+     * @return the value from the user (or null if user pressed ^C)
+     */
     private String get(String args[], int i, String prompt, String def) throws Throwable {
+        String s; 
         if (args.length > i) {
-            String2.log(prompt + "? " + args[i]);
-            return args[i];
+            String2.log(prompt + "? " + (s = args[i]));
+        } else {
+            s = String2.getStringFromSystemIn(prompt + " (default=\"" + def + "\")\n? ");
+            if (s == null)  //null if ^C
+                return s;  //different than GenerateDatasetsXml
         }
-        String s = String2.getStringFromSystemIn(prompt + " (default=\"" + def + "\")? ");
-        if (s == null)  //null if ^C
-            return s;
-        if (s.equals("\"\"")) 
-            s = "";
-        else if (s.length() == 0) 
+        s = s.trim();
+        if (s.length() >= 2 && s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"')
+            s = String2.fromJson(s); 
+        if (s.length() == 0) 
             s = def;
         return s;
     }

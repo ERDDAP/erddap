@@ -75,7 +75,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * <p>The sortedColumnSourceName can't be for a char/String variable
      *   because NcHelper binary searches are currently set up for numeric vars only.
      */
-    public EDDTableFromHyraxFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromHyraxFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -91,7 +92,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromHyraxFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromHyraxFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -370,6 +372,10 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+        if (!String2.isSomething(oneFileDapUrl)) 
+            String2.log("Found/using sampleFileName=" +
+                (oneFileDapUrl = FileVisitorDNLS.getSampleFileName(
+                    tLocalDirUrl, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -970,7 +976,7 @@ today;
 
         
 //        + " http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/testEDDTableFromHyraxFiles.das\";\n" +
 "    String infoUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n" +

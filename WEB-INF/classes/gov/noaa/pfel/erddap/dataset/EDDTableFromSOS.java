@@ -205,6 +205,7 @@ public class EDDTableFromSOS extends EDDTable{
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -262,6 +263,8 @@ public class EDDTableFromSOS extends EDDTable{
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
@@ -299,7 +302,7 @@ public class EDDTableFromSOS extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDTableFromSOS(tDatasetID, tAccessibleTo,
+        return new EDDTableFromSOS(tDatasetID, tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes, tSosServerType,
             tStationIdSourceName, tLongitudeSourceName, tLatitudeSourceName,
@@ -375,7 +378,7 @@ public class EDDTableFromSOS extends EDDTable{
      *      describing how to interpret numbers 
      *      (e.g., "seconds since 1970-01-01T00:00:00Z"),
      *    <li> a java.text.SimpleDateFormat string describing how to interpret string times  
-     *      (see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *      (see http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    </ul>
      * @param tDataVariables is an Object[nDataVariables][4]: 
      *    <br>[0]=String sourceName (the field name of the data variable in the tabular results,
@@ -416,7 +419,8 @@ public class EDDTableFromSOS extends EDDTable{
      * @param tSourceNeedsExpandedFP_EQ
      * @throws Throwable if trouble
      */
-    public EDDTableFromSOS(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromSOS(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -444,6 +448,7 @@ public class EDDTableFromSOS extends EDDTable{
         className = "EDDTableFromSOS"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -2594,7 +2599,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.3608, 166.6175;\n" +
+"    Float64 actual_range -177.36, 166.6175;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -2665,7 +2670,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 "    Float64 geospatial_lat_min -14.2767;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 166.6175;\n" +
-"    Float64 geospatial_lon_min -177.3608;\n" +
+"    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
@@ -2682,7 +2687,7 @@ expected =
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
 "    String time_coverage_start \"1853-07-10T00:00:00Z\";\n" +
 "    String title \"NOAA NOS SOS, EXPERIMENTAL - Air Temperature\";\n" +
-"    Float64 Westernmost_Easting -177.3608;\n" +
+"    Float64 Westernmost_Easting -177.36;\n" +
 "  }\n" +
 "}\n";
             int po = Math.max(0, results.indexOf(expected.substring(0, 30)));
@@ -2844,7 +2849,7 @@ expected =
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.3608, 167.7361;\n" + //2015-12-10 moved a little
+"    Float64 actual_range -177.36, 167.7361;\n" + //2015-12-10 moved a little
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -2915,7 +2920,7 @@ expected =
 "    Float64 geospatial_lat_min -14.2767;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 167.7361;\n" +
-"    Float64 geospatial_lon_min -177.3608;\n" +
+"    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
@@ -3805,7 +3810,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.3608, 167.7361;\n" + //changes
+"    Float64 actual_range -177.36, 167.7361;\n" + //changes
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -3889,7 +3894,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    Float64 geospatial_lat_min -14.2767;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 167.7361;\n" +
-"    Float64 geospatial_lon_min -177.3608;\n" +
+"    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
@@ -3991,7 +3996,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.3608, 167.7361;\n" + //changes
+"    Float64 actual_range -177.36, 167.7361;\n" + //changes
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -4061,7 +4066,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    Float64 geospatial_lat_min -14.2767;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 167.7361;\n" +
-"    Float64 geospatial_lon_min -177.3608;\n" +
+"    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
@@ -4920,7 +4925,7 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.2095577e+9, NaN;\n" +
+"    Float64 actual_range 1.2095577e+9, NaN;\n" + //was a value, but many stations have "now", which is propertly converted to NaN here
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4986,7 +4991,7 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_floor_depth_below_sea_surface data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
-"    String time_coverage_start \"2008-04-30T12:15:00Z\";\n" +
+"    String time_coverage_start \"2008-04-30T12:15:00Z\";\n" +    
 "    String title \"NOAA NDBC SOS - sea_floor_depth_below_sea_surface\";\n" +
 "    Float64 Westernmost_Easting -176.25;\n" +
 "  }\n" +
@@ -7940,7 +7945,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum -15.0;\n" +
 "    String ioos_category \"Wind\";\n" +
-"    String observedProperty \"http://127.0.0.1:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#cwwcNDBCMet\";\n" +
+"    String observedProperty \"http://localhost:8080/cwexperimental/sos/cwwcNDBCMet/phenomenaDictionary.xml#cwwcNDBCMet\";\n" +
 "    String standard_name \"northward_wind\";\n" +
 "    String units \"m s-1\";\n" +
 "  }\n" +
@@ -8567,7 +8572,7 @@ testQuickRestart = true;
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;       
 //T15:47:07Z http://data.gcoos.org:8080/52nSOS/sos/kvp
-//2015-03-09T15:47:07Z http://127.0.0.1:8080/cwexperimental/tabledap/gcoosSosAirPressure.das
+//2015-03-09T15:47:07Z http://localhost:8080/cwexperimental/tabledap/gcoosSosAirPressure.das
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 

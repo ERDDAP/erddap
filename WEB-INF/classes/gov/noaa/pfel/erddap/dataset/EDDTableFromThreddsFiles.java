@@ -25,6 +25,7 @@ import dods.dap.*;
 
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -84,7 +85,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      *    ERDDAP to try to generate FGDC metadata for this dataset).
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
-    public EDDTableFromThreddsFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromThreddsFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -99,7 +101,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
         boolean tAccessibleViaFiles) throws Throwable {
 
-        super("EDDTableFromThreddsFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromThreddsFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -625,6 +628,12 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
         if (!String2.isSomething(tLocalDirUrl))
             throw new IllegalArgumentException("localDirUrl wasn't specified.");
+        if (!String2.isSomething(oneFileDapUrl)) 
+            String2.log("Found/using sampleFileName=" +
+                (oneFileDapUrl = FileVisitorDNLS.getSampleFileName(
+                    tLocalDirUrl, tFileNameRegex, true, ".*"))); //recursive, pathRegex
+
+
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
         String tPublicDirUrlHtml = tPublicDirUrl;
         String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
@@ -1095,7 +1104,7 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
     
 //+ " http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+//today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "nmspWcosTemp.das\";\n" +
 "    String infoUrl \"http://www.ncddc.noaa.gov/activities/wcos\";\n" +
@@ -1426,30 +1435,30 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  conductivity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 5.555556E7;\n" + //2013-03-26 new value is nonsense.  was 4.78
-"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-"    Int16 average_length 60;\n" +           //2014-08-11 they returned
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+//"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+//"    Int16 average_length 60;\n" +           //2014-08-11 they returned, 2016-04-13 they disappeared
+//"    String average_method \"average\";\n" +
+//"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+//"    Float32 data_precision -9999.0;\n" +
+//"    Float32 distance_from_bow -9999.0;\n" +
+//"    Float32 height -9999.0;\n" +
+//"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"siemens meter-1\";\n" +
+//"    String original_units \"siemens meter-1\";\n" +
 "    Int32 qcindex 16;\n" +
-"    Float32 sampling_rate -9999.0;\n" +
-"    Float32 special_value -8888.0;\n" +
+//"    Float32 sampling_rate -9999.0;\n" +
+//"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
 "  \\}\n" +
 "  relativeHumidity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 24.0, 101.0;\n" +
+"    Float32 actual_range 23.4, 101.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1474,49 +1483,49 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  salinity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 7777777.0;\n" + //2013-03-26 nonsense!  was 9672.92
-"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-"    Int16 average_length -9999;\n" +        //2014-08-11 they returned  
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+//"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+//"    Int16 average_length -9999;\n" +        //2014-08-11 they returned //2016-04-13 disappeared
+//"    String average_method \"average\";\n" +
+//"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
-"    Int32 data_interval 60;\n" +
-"    Float32 data_precision -9999.0;\n" +  //2014-12-08 several lines disappeared
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+//"    Int32 data_interval 60;\n" +
+//"    Float32 data_precision -9999.0;\n" +  //2014-12-08 several lines disappeared
+//"    Float32 distance_from_bow -9999.0;\n" +
+//"    Float32 height -9999.0;\n" +
+//"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Sea Water Practical Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-"    String original_units \"PSU\";\n" +
+//"    String original_units \"PSU\";\n" +
 "    Int32 qcindex 15;\n" +
-"    Float32 sampling_rate -9999.0;\n" +
-"    Float32 special_value -8888.0;\n" +
+//"    Float32 sampling_rate -9999.0;\n" +
+//"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_practical_salinity\";\n" +
-"    String units \"PSU\";\n" +
+//"    String units \"PSU\";\n" +
 "  \\}\n" +
 "  seaTemperature \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range -1.1, 7777777.0;\n" +  //nonsense!
-"    String average_center \"time at end of period\";\n" + //2014-01-09 several lines disappeared
-"    Int16 average_length 60;\n" +                         //2014-08-11 they returned
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+//"    String average_center \"time at end of period\";\n" + //2014-01-09 several lines disappeared
+//"    Int16 average_length 60;\n" +                         //2014-08-11 they returned
+//"    String average_method \"average\";\n" +
+//"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+//"    Float32 data_precision -9999.0;\n" +
+//"    Float32 distance_from_bow -9999.0;\n" +
+//"    Float32 height -9999.0;\n" +
+//"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"celsius\";\n" +
 "    Int32 qcindex 14;\n" +
-"    Float32 sampling_rate 1.0;\n" +
-"    Float32 special_value -8888.0;\n" +
+//"    Float32 sampling_rate 1.0;\n" +
+//"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_temperature\";\n" +
 "    Int16 ts_sensor_category 12;\n" +
 "    String units \"degree_C\";\n" +
@@ -1742,7 +1751,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
             "\nresults=\n" + results);
 
 //+ " http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+//today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "fsuNoaaShipWTEP.das\";\n" +
 "    String infoUrl \"http://samos.coaps.fsu.edu/html/\";\n" +

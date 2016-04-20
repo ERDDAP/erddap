@@ -61,6 +61,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -106,6 +107,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
@@ -135,7 +138,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 */
         return new EDDGridFromBinaryFile(tDatasetID, 
-            tAccessibleTo, tAccessibleViaWMS, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS, 
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             new Object[1][3], new Object[1][3], //ttAxisVariables, ttDataVariables,
@@ -167,7 +170,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridFromBinaryFile(String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -186,6 +189,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         className = "EDDGridFromBinaryFile"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
