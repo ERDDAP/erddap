@@ -20,6 +20,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -33,7 +34,6 @@ import java.io.ByteArrayInputStream;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 
-import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 
 /** 
  * This class creates an EDDTable from an EDDGrid.
@@ -66,6 +66,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         EDDGrid tEDDGrid = null;
         Attributes tAddGlobalAttributes = null;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -111,6 +112,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
             } else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
 //updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
@@ -135,7 +138,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
             }
         }
 
-        return new EDDTableFromEDDGrid(tDatasetID, tAccessibleTo,
+        return new EDDTableFromEDDGrid(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
             tReloadEveryNMinutes, //tUpdateEveryNMillis, 
@@ -147,7 +151,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
      *
      * @throws Throwable if trouble
      */
-    public EDDTableFromEDDGrid(String tDatasetID, String tAccessibleTo, 
+    public EDDTableFromEDDGrid(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery,
@@ -175,6 +180,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         localSourceUrl = eddGrid.localSourceUrl;
 
         setAccessibleTo(tAccessibleTo); 
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -201,7 +207,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         //specify what sourceCanConstrain
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //axisVars yes, dataVars no; best to have it doublecheck
         sourceCanConstrainStringData  = CONSTRAIN_NO; 
-        sourceCanConstrainStringRegex = ""; //no    ???
+        sourceCanConstrainStringRegex = ""; 
 
         //quickRestart is handled by contained eddGrid
 
@@ -210,7 +216,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         int eddGridNDV = eddGrid.dataVariables.length;
         dataVariables = new EDV[eddGridNAV + eddGridNDV];
         for (int dv = 0; dv < dataVariables.length; dv++) {
-            //variables in this class just see the destination name/type/... of the eddGrid varaible
+            //variables in this class just see the destination name/type/... of the eddGrid variable
             EDV gridVar = dv < eddGridNAV?  eddGrid.axisVariables[eddGridNAV - 1 - dv] :
                                             eddGrid.dataVariables[dv - eddGridNAV];
             String tSourceName     = gridVar.destinationName();     
@@ -232,19 +238,11 @@ public class EDDTableFromEDDGrid extends EDDTable{
             } else if (tSourceName.equals(EDV.DEPTH_NAME)) {
                 newVar = new EDVDepth(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 depthIndex = dv;
-            } else if (tSourceName.equals(EDV.TIME_NAME)) {
-                //tMin tMax are epochSeconds    
-                tAddAtts.add("data_min", "" + tMin);
-                if (debugMode) String2.log("> time tMax=" + tMax + " NOW=" + (System.currentTimeMillis()/1000.0) +
-                    " abs(diff)=" + Math.abs(tMax - System.currentTimeMillis()/1000.0) +
-                    " 3days=" + (3 * Calendar2.SECONDS_PER_DAY));
+            } else if (tSourceName.equals(EDV.TIME_NAME)) {                
+                tAddAtts.add("data_min", "" + tMin); //data_min/max have priority                
+                tAddAtts.add("data_max", "" + tMax); //tMin tMax are epochSeconds    
                 newVar = new EDVTime(tSourceName, tSourceAtts, tAddAtts, 
                     tDataType); //this constructor gets source / sets destination actual_range
-                //actively unset destinationMax if time is close to NOW)
-                if (Math.abs(tMax - System.currentTimeMillis()/1000.0) < 3 * Calendar2.SECONDS_PER_DAY) {
-                    newVar.setDestinationMax(Double.NaN);
-                    newVar.setActualRangeFromDestinationMinMax();
-                }
                 timeIndex = dv;
             //currently, there is no EDVTimeStampGridAxis
             } else newVar = new EDV(tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
@@ -691,7 +689,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
 "    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch";
 //2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
 //2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
-//2013-04-04T21:43:14Z http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
+//2013-04-04T21:43:14Z http://localhost:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
 
         int tPo = results.indexOf("String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -1187,7 +1185,7 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch";
 //2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
 //2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
-//2013-04-04T21:43:14Z http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
+//2013-04-04T21:43:14Z http://localhost:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
 
         int tPo = results.indexOf("String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);

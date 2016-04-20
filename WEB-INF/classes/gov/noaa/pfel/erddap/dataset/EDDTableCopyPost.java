@@ -60,6 +60,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         EDDTable tSourceEdd = null;
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -88,6 +89,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
@@ -146,7 +149,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         }
 
         return new EDDTableCopyPost(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
+            tAccessibleTo, tGraphsAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
             tSourceEdd, tFileTableInMemory);
@@ -159,7 +163,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public EDDTableCopyPost(String tDatasetID, 
-        String tAccessibleTo, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes,
@@ -167,7 +171,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         Boolean tSourceNeedsExpandedFP_EQ,
         EDDTable tSourceEdd, boolean tFileTableInMemory) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
+        super(tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tReloadEveryNMinutes,
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ, 
@@ -182,7 +187,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * <p>It will fail if 0 local files -- that's okay, TaskThread will continue to work 
      *  and constructor will try again in 15 min.
      */
-    EDDTableFromFiles makeLocalEdd(String tDatasetID, String tAccessibleTo,
+    EDDTableFromFiles makeLocalEdd(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -195,7 +201,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
-        return new EDDTableFromPostNcFiles(tDatasetID, tAccessibleTo, 
+        return new EDDTableFromPostNcFiles(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             "", "", //tDefaultDataQuery, tDefaultGraphQuery
             tAddGlobalAttributes, 
@@ -808,7 +815,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         longResults.addColumn("error",                           longResultsErrorPa);
 
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(dir, "findFastSwimmer");
+            TableWriterAll twa = new TableWriterAll(this, dir, "findFastSwimmer");
             if (pt % 100 == 0) String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1020,7 +1027,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         float maxYears = 0;
         StringBuilder results = new StringBuilder();
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(dir, "findLongest");
+            TableWriterAll twa = new TableWriterAll(this, dir, "findLongest");
             String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1087,7 +1094,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         GridDataAccessor.verbose = false;
         GridDataAccessor.reallyVerbose = false;
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(dir, "findUpstream");
+            TableWriterAll twa = new TableWriterAll(this, dir, "findUpstream");
             String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1180,7 +1187,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int nBefore = 0;
         int nNaN = 0;
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(dir, "findDetBeforeSurg");
+            TableWriterAll twa = new TableWriterAll(this, dir, "findDetBeforeSurg");
             String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1270,7 +1277,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int nNaN = 0, nG1 = 0;
         for (int pt = 0; pt < tags.size(); pt++) { 
             String2.log("" + pt);
-            TableWriterAll twa = new TableWriterAll(dir, "findDetDatePublic");
+            TableWriterAll twa = new TableWriterAll(this, dir, "findDetDatePublic");
             try {
                 String tag = tags.get(pt);
                 reallyVerbose = false;
@@ -1335,7 +1342,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int resultsErrorPaI = resultsTable.addColumn("error",                           resultsErrorPa);
 
         //find activation_time is after surgery_time
-        TableWriterAll twa = new TableWriterAll(
+        TableWriterAll twa = new TableWriterAll(this, 
             "c:/u00/cwatch/erddap2/cache/cPostSurg3/", "findSurgeryBeforeActivation");
         tedd.getDataForDapQuery(loggedInAs, "requestUrl", 
             "unique_tag_id,activation_time,surgery_time,PI", twa);
@@ -1410,7 +1417,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         //need to make the file?
         if (forceCreateNewFile || !File2.isFile(dir + name)) {          
             EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3"); 
-            TableWriterAllWithMetadata twa = new TableWriterAllWithMetadata(dir, name);
+            TableWriterAllWithMetadata twa = new TableWriterAllWithMetadata(this, dir, name);
             tedd.getDataForDapQuery(loggedInAs, "", "unique_tag_id", twa);
             tedd.saveAsFlatNc(dir + name, twa); //internally, it writes to temp file, then rename to cacheFullName
         }

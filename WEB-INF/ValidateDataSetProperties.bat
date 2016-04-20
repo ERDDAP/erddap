@@ -12,6 +12,6 @@ rem NOAA/Bob Simons  bob.simons@noaa.gov
 rem
 
 set thisDir=%~dp0
-java -cp %thisDir%/classes;%thisDir%/lib/netcdfAll-latest.jar;%thisDir%/lib/activation.jar;%thisDir%/lib/lucene-core.jar;%thisDir%/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.ValidateDataSetProperties
+java -cp classes;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/activation.jar;lib/lucene-core.jar;lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.ValidateDataSetProperties
 
 

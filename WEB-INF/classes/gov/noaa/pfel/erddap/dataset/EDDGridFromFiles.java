@@ -152,6 +152,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         String tType = xmlReader.attributeValue("type"); 
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         boolean tFileTableInMemory = false;
@@ -194,6 +195,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
@@ -245,7 +248,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (tType == null)
             tType = "";
         if (tType.equals("EDDGridFromNcFiles")) 
-            return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+            return new EDDGridFromNcFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,
@@ -255,7 +259,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 tMatchAxisNDigits, tFileTableInMemory, 
                 tAccessibleViaFiles);
         else if (tType.equals("EDDGridFromNcFilesUnpacked")) 
-            return new EDDGridFromNcFilesUnpacked(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+            return new EDDGridFromNcFilesUnpacked(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,
@@ -265,7 +270,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 tMatchAxisNDigits, tFileTableInMemory, 
                 tAccessibleViaFiles);
         else if (tType.equals("EDDGridFromMergeIRFiles")) 
-            return new EDDGridFromMergeIRFiles(tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+            return new EDDGridFromMergeIRFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,
@@ -368,7 +374,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @throws Throwable if trouble
      */
     public EDDGridFromFiles(String tClassName, String tDatasetID, 
-        String tAccessibleTo, boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
@@ -397,6 +403,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String fileTableFileName = datasetDir() + FILE_TABLE_FILENAME;
 
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
@@ -1762,7 +1769,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
             //get the axisValues for dimensions[1+]
             int nAxes = sourceAxisNames.size();
-            PrimitiveArray tsav[] = lowGetSourceAxisValues(fileDir, fileName, sourceAxisNamesNoAxis0);
+            PrimitiveArray tsav[] = lowGetSourceAxisValues(fileDir, fileName, 
+                sourceAxisNamesNoAxis0);
             PrimitiveArray nsav[] = new PrimitiveArray[nAxes];
             System.arraycopy(tsav, 0, nsav, 1, nAxes - 1);            
             nsav[0] = PrimitiveArray.factory(axis0Class, 1, false);
@@ -1801,7 +1809,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * This is the low-level request corresponding to what is actually in the file. 
      *
-     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     * @param sourceAxisNames If special axis0, this will not include axis0's name.
      */
     public abstract PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName, 
         StringArray sourceAxisNames) throws Throwable;

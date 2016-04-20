@@ -216,6 +216,7 @@ public class EDDTableFromOBIS extends EDDTable{
         String tLocalSourceUrl = null, tSourceCode = null;
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -254,6 +255,8 @@ public class EDDTableFromOBIS extends EDDTable{
             else if (localTags.equals("</sourceCode>")) tSourceCode = content; 
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<longitudeSourceMinimum>")) {}
@@ -290,7 +293,8 @@ public class EDDTableFromOBIS extends EDDTable{
             else xmlReader.unexpectedTagException();
         }
 
-        return new EDDTableFromOBIS(tDatasetID, tAccessibleTo,
+        return new EDDTableFromOBIS(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             tLocalSourceUrl, tSourceCode, tReloadEveryNMinutes, 
@@ -363,7 +367,8 @@ public class EDDTableFromOBIS extends EDDTable{
      * @param tSourceNeedsExpandedFP_EQ
      * @throws Throwable if trouble
      */
-    public EDDTableFromOBIS(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromOBIS(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -386,6 +391,7 @@ public class EDDTableFromOBIS extends EDDTable{
         className = "EDDTableFromOBIS"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -785,7 +791,7 @@ expected =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromOBIS\" datasetID=\"rutgers_6cb4_a970_1d67\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromOBIS\" datasetID=\"rutgers_marine_6cb4_a970_1d67\" active=\"true\">\n" +
 "    <sourceUrl>http://iobis.marine.rutgers.edu/digir2/DiGIR.php</sourceUrl>\n" +
 "    <sourceCode>OBIS-SEAMAP</sourceCode>\n" +
 "    <sourceNeedsExpandedFP_EQ>true</sourceNeedsExpandedFP_EQ>\n" +
@@ -802,13 +808,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://marine.rutgers.edu/main/</att>\n" +
 "        <att name=\"infoUrl\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
 "        <att name=\"institution\">DUKE</att>\n" +
-"        <att name=\"keywords\">area, assessment, biogeographic, data, digir.php, duke, information, monitoring, obis, obis-seamap, ocean, program, rutgers, seamap, server, southeast, system</att>\n" +
+"        <att name=\"keywords\">area, assessment, biogeographic, data, digir.php, duke, information, marine, monitoring, obis, obis-seamap, ocean, program, rutgers, seamap, server, southeast, system</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">Ocean Biogeographic Information System (OBIS)-Southeast Area Monitoring &amp; Assessment Program (SEAMAP) Data from the OBIS Server at RUTGERS.\n" +
+"        <att name=\"summary\">Ocean Biogeographic Information System (OBIS)-Southeast Area Monitoring &amp; Assessment Program (SEAMAP) Data from the OBIS Server at RUTGERS MARINE.\n" +
 "\n" +
 "[OBIS_SUMMARY]</att>\n" +
-"        <att name=\"title\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS (DiGIR.php)</att>\n" +
+"        <att name=\"title\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS MARINE (DiGIR.php)</att>\n" +
 "    </addAttributes>\n" +
 "</dataset>\n" +
 "\n\n";
@@ -816,8 +822,8 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "rutgers_6cb4_a970_1d67", "");
-            Test.ensureEqual(edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS (DiGIR.php)", "");
+            Test.ensureEqual(edd.datasetID(), "rutgers_marine_6cb4_a970_1d67", "");
+            Test.ensureEqual(edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS MARINE (DiGIR.php)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, latitude, altitude, time, ID, BasisOfRecord, BoundingBox, " +
                 "CatalogNumber, Citation, Class, CollectionCode, Collector, " +

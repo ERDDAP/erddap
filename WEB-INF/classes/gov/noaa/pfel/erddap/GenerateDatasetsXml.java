@@ -54,17 +54,21 @@ public class GenerateDatasetsXml {
      * @throws RuntimeException("ControlC") if user presses ^C.
      */
     private String get(String args[], int i, String def, String prompt) throws Throwable {
+        String s; 
         if (args.length > i) {
-            String2.log(prompt + "? " + args[i]);
-            return args[i];
+            String2.log(prompt + "? " + (s = args[i]));
+        } else {
+            s = String2.getStringFromSystemIn(prompt + " (default=\"" + def + "\")\n? ");
+            if (s == null)  //null if ^C
+                throw new RuntimeException("ControlC");
         }
-        String s = String2.getStringFromSystemIn(prompt + " (default=\"" + def + "\")\n? ");
-        if (s == null)  //null if ^C
-            throw new RuntimeException("ControlC");
-        if (s.equals("\"\"")) 
-            s = "";
-        else if (s.length() == 0) 
+        s = s.trim();
+        if (s.length() >= 2 && s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"')
+            s = String2.fromJson(s); 
+        if (s.length() == 0 || s.equals("default") || s.equals("\"default\"")) 
             s = def;
+        else if (s.equals("nothing") || s.equals("\"nothing\"")) //else is important
+            s = "";
         return s;
     }
 
@@ -108,6 +112,8 @@ public class GenerateDatasetsXml {
             s15 = "", s16 = "", s17 = "";
         String reloadEveryNMinutesMessage = "ReloadEveryNMinutes (e.g., " + 
             EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ")";
+        String sampleFileNamePrompt = "Full file name of one file (or leave empty to use first matching fileName)";                  
+        String sampleFileUrlPrompt  = "Full URL of one file (or leave empty to use first matching fileName)";                  
 
         //look for -verbose (and remove it)
         boolean reallyVerbose = false;  
@@ -179,10 +185,14 @@ public class GenerateDatasetsXml {
                 //get the EDD type
                 eddType = get(args, 0, eddType,
                     "\n*** GenerateDatasetsXml ***\n" +
+                    "Press Enter or type the word \"default\" (but without the quotes)\n" +
+                    "  to get the default value.\n" +
+                    "Type the word \"nothing\" (but without quotes) or \"\" (2 double quotes)\n" +
+                    "  to change from a non-nothing default back to nothing (a 0-length string).\n" +
+                    "Press ^D or ^C to exit this program at any time.\n" +
+                    "Or, you can put all the answers as parameters on the command line.\n" +
                     "Results are shown on the screen and put in\n" +
                     outFileName + "\n" +
-                    "Press ^D or ^C to exit at any time.\n" +
-                    "Type \"\" to change from a non-nothing default back to nothing.\n" +
                     "DISCLAIMER:\n" +
                     "  The chunk of datasets.xml made by GenerateDatasetsXml isn't perfect.\n" +
                     "  YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
@@ -244,7 +254,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDGridFromNcFiles")) {
                     s1  = get(args,  1,  s1, "Parent directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
-                    s3  = get(args,  3,  s3, "Full file name of one file");                  
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
                     String2.log("working...");
                     printToBoth(EDDGridFromNcFiles.generateDatasetsXml(s1, 
@@ -254,7 +264,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDGridFromNcFilesUnpacked")) {
                     s1  = get(args,  1,  s1, "Parent directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
-                    s3  = get(args,  3,  s3, "Full file name of one file");                  
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
                     String2.log("working...");
                     printToBoth(EDDGridFromNcFilesUnpacked.generateDatasetsXml(s1, 
@@ -286,7 +296,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromAsciiFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.asc\")");
-                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
                     s4  = get(args,  4,  s4, "Charset (e.g., ISO-8859-1 (default) or UTF-8)");                     
                     s5  = get(args,  5,  s5, "Column names row (e.g., 1)");                     
                     s6  = get(args,  6,  s6, "First data row (e.g., 2)");                          
@@ -310,7 +320,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromAwsXmlFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.xml\")");
-                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
                     s4  = "1"; //get(args,  4,  s4, "Column names row (e.g., 1)");                     
                     s5  = "2"; //get(args,  5,  s5, "First data row (e.g., 2)");                          
                     s6  = get(args,  6,  s6, reloadEveryNMinutesMessage);
@@ -333,7 +343,7 @@ public class GenerateDatasetsXml {
                 //currently no EDDTableFromBMDE  //it is inactive
 
                 } else if (eddType.equals("EDDTableFromCassandra")) {
-                    s1 = get(args,  1,  s1, "URL (without port number, e.g., 127.0.0.1)");
+                    s1 = get(args,  1,  s1, "URL (without port number, e.g., localhost or 127.0.0.1)");
                     s2 = get(args,  2,  s2, "Connection properties (format: name1|value1|name2|value2)");
                     s3 = get(args,  3,  s3, "Keyspace (or '!!!LIST!!!')");
                     s4 = get(args,  4,  s4, "Table name (or '!!!LIST!!!')");
@@ -350,7 +360,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromColumnarAsciiFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.asc\")");
-                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
                     s4  = get(args,  4,  s4, "Charset (e.g., ISO-8859-1 (default) or UTF-8)");                     
                     s5  = get(args,  5,  s5, "Column names row (e.g., 1)");                     
                     s6  = get(args,  6,  s6, "First data row (e.g., 2)");                          
@@ -425,7 +435,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromNcFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
-                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
                     s4  = get(args,  4,  s4, "DimensionsCSV (or \"\" for default)");                       
                     s5  = get(args,  5,  s5, reloadEveryNMinutesMessage);
                     s6  = get(args,  6,  s6, "PreExtractRegex");
@@ -447,7 +457,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromNcCFFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
-                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
                     s5  = get(args,  5,  s5, "PreExtractRegex");
                     s6  = get(args,  6,  s6, "PostExtractRegex");
@@ -492,7 +502,7 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromThreddsFiles")) {
                     s1  = get(args,  1,  s1, "Starting catalog.xml URL");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
-                    s3  = get(args,  3,  s3, "A sample file URL");                       
+                    s3  = get(args,  3,  s3, sampleFileUrlPrompt);                       
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
                     s5  = get(args,  5,  s5, "PreExtractRegex");
                     s6  = get(args,  6,  s6, "PostExtractRegex");

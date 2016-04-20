@@ -63,11 +63,12 @@ public class TableWriterSeparatedValue extends TableWriter {
      *    ERDDAP .csv and .tsv use "NaN" because they did since the beginning and
      *    because it is easier/safer to replace "NaN" with "" than replace nothing with "NaN".
      */
-    public TableWriterSeparatedValue(OutputStreamSource tOutputStreamSource,
+    public TableWriterSeparatedValue(EDD tEdd, String tNewHistory, 
+        OutputStreamSource tOutputStreamSource,
         String tSeparator, boolean tQuoted, boolean tWriteColumnNames, 
         char tWriteUnits, String tNanString) {
 
-        super(tOutputStreamSource);
+        super(tEdd, tNewHistory, tOutputStreamSource);
         separator = tSeparator;
         quoted = tQuoted;
         writeColumnNames = tWriteColumnNames;
@@ -196,10 +197,14 @@ public class TableWriterSeparatedValue extends TableWriter {
     
     /**
      * This writes any end-of-file info to the stream and flush the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
@@ -219,13 +224,13 @@ public class TableWriterSeparatedValue extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(Table table, 
+    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource tOutputStreamSource, String tSeparator, boolean tQuoted, 
         boolean tWriteColumnNames, char tWriteUnits, String tNanString) throws Throwable {
 
-        TableWriterSeparatedValue twsv = new TableWriterSeparatedValue(
-            tOutputStreamSource, tSeparator,tQuoted, tWriteColumnNames, tWriteUnits,
-            tNanString);
+        TableWriterSeparatedValue twsv = new TableWriterSeparatedValue(tEdd, 
+            tNewHistory, tOutputStreamSource, tSeparator,tQuoted, 
+            tWriteColumnNames, tWriteUnits, tNanString);
         twsv.writeAllAndFinish(table);
     }
 

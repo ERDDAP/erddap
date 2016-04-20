@@ -10,6 +10,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 package dods.dap;
+import com.cohort.util.MustBe;
+import com.cohort.util.String2;
 import java.net.*;
 import java.io.*;
 import dods.dap.parser.ParseException;
@@ -251,12 +253,12 @@ public class DConnect {
         catch (InterruptedException ie) {} */
 
       } catch (NullPointerException e) {
-        System.out.println("DConnect NullPointer; retry open ("+retry+") "+url);
+        String2.log("DConnect NullPointer; retry open ("+retry+") "+url);
         try { Thread.sleep(backoff); }
         catch (InterruptedException ie) {}
 
       } catch (FileNotFoundException e) {
-        System.out.println("DConnect FileNotFound; retry open ("+retry+") "+url);
+        String2.log("DConnect FileNotFound; retry open ("+retry+") "+url);
         try { Thread.sleep(backoff); }
         catch (InterruptedException ie) {}
       }
@@ -322,11 +324,11 @@ public class DConnect {
     else {
       URL url = new URL(urlString + ".das" + projString + selString);
       if (dumpDAS) {
-        System.out.println("--DConnect.getDAS to "+url);
+        String2.log("--DConnect.getDAS to "+url);
         copy( url.openStream(), System.out);
-        System.out.println("\n--DConnect.getDAS END1");
+        String2.log("\n--DConnect.getDAS END1");
         dumpBytes( url.openStream(), 100);
-        System.out.println("\n-DConnect.getDAS END2");
+        String2.log("\n-DConnect.getDAS END2");
       }
       is = openConnection(url, timeOutMillis); //the changed part
     }
@@ -450,7 +452,8 @@ public class DConnect {
         return getDataFromUrl( url, statusUI, btf);
       } 
       catch (DODSException e) {
-        System.out.println("DConnect getData failed; retry ("+retry+","+backoff+") "+url);
+        String2.log("DConnect getData failed; retry ("+retry+","+backoff+") "+url +
+            MustBe.throwableToString(e));
         errorMsg = e.getErrorMessage();
         errorCode = e.getErrorCode();
 	
@@ -494,7 +497,7 @@ public class DConnect {
     // DEBUG
     ByteArrayInputStream bis = null;
     if (dumpStream) {
-      System.out.println("DConnect to "+url);
+      String2.log("DConnect to "+url);
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
       copy(is, bos);
       bis = new ByteArrayInputStream(bos.toByteArray());
@@ -505,7 +508,7 @@ public class DConnect {
 
       if (dumpStream) {
         bis.mark( 1000);
-        System.out.println("DConnect parse header: ");
+        String2.log("DConnect parse header: ");
         dump( bis);
         bis.reset();
       }
@@ -515,7 +518,7 @@ public class DConnect {
 
       if (dumpStream) {
         bis.mark( 20);
-        System.out.println("DConnect done with header, next bytes are: ");
+        String2.log("DConnect done with header, next bytes are: ");
         dumpBytes( bis, 20);
         bis.reset();
       }
@@ -523,24 +526,24 @@ public class DConnect {
       dds.readData(is, statusUI); // read the data!
 
     } catch (Exception e) {
-      System.out.println("DConnect dds.parse: "+url+"\n "+e);
+      String2.log("DConnect dds.parse: "+url+"\n "+e);
       e.printStackTrace();
       /* DEBUG
       if (dumpStream) {
-        System.out.println("DConnect dump "+url);
+        String2.log("DConnect dump "+url);
         bis.reset();
         dump(bis);
         bis.reset();
         File saveFile = null;
         try {
           saveFile = File.createTempFile("debug","tmp", new File("."));
-          System.out.println("try Save file = "+ saveFile.getAbsolutePath());
+          String2.log("try Save file = "+ saveFile.getAbsolutePath());
           FileOutputStream saveFileOS = new FileOutputStream(saveFile);
           copy(bis, saveFileOS);
           saveFileOS.close();
-          System.out.println("wrote Save file = "+ saveFile.getAbsolutePath());
+          String2.log("wrote Save file = "+ saveFile.getAbsolutePath());
         } catch (java.io.IOException ioe) {
-          System.out.println("failed Save file = "+ saveFile.getAbsolutePath());
+          String2.log("failed Save file = "+ saveFile.getAbsolutePath());
           ioe.printStackTrace();
         }
       } */
@@ -574,14 +577,14 @@ public class DConnect {
     DataInputStream d = new DataInputStream(is);
 
     try {
-      System.out.println( "dump lines avail="+is.available());
+      String2.log( "dump lines avail="+is.available());
       while ( true ) {
         String line = d.readLine();
-        System.out.println( line);
+        String2.log( line);
         if (null == line) return;
         if (line.equals("Data:")) break;
       }
-      System.out.println( "dump bytes avail="+is.available());
+      String2.log( "dump bytes avail="+is.available());
       dumpBytes( is, 20);
 
     } catch (java.io.EOFException e) {
@@ -593,7 +596,7 @@ public class DConnect {
       DataInputStream d = new DataInputStream(is);
       int count = 0;
       while ( (count < n) && (d.available() > 0)) {
-        System.out.println( count +" "+d.readByte());
+        String2.log( count +" "+d.readByte());
         count++;
       }
     } catch (java.io.IOException e) {

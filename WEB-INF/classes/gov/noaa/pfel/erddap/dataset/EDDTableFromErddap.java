@@ -68,6 +68,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     public static boolean acceptDeflate = true;
 
     protected String publicSourceErddapUrl;
+    protected boolean subscribeToRemoteErddapDataset;
 
     /**
      * This constructs an EDDTableFromErddap based on the information in an .xml file.
@@ -86,7 +87,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        boolean tSubscribeToRemoteErddapDataset = EDStatic.subscribeToRemoteErddapDataset;
         String tFgdcFile = null;
         String tIso19115File = null;
         String tSosOfferingPrefix = null;
@@ -115,10 +118,10 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             //it can never get dataset info from the remote erddap dataset (which should have restricted access).
             //Plus there is no way to pass accessibleTo info between ERDDAP's (but not to users).
             //So there is currently no way to make this work. 
-            //So it is disabled.    See below, too.
-            //else if (localTags.equals( "<accessibleTo>")) {}
-            //else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-
+            else if (localTags.equals( "<accessibleTo>")) {}
+            else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
             else if (localTags.equals( "<onChange>")) {}
@@ -133,13 +136,18 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<subscribeToRemoteErddapDataset>")) {}
+            else if (localTags.equals("</subscribeToRemoteErddapDataset>")) 
+                tSubscribeToRemoteErddapDataset = String2.parseBoolean(content);
 
             else xmlReader.unexpectedTagException();
         }
 
-        return new EDDTableFromErddap(tDatasetID, tAccessibleTo, 
+        return new EDDTableFromErddap(tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
-            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tLocalSourceUrl);
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
+            tLocalSourceUrl, tSubscribeToRemoteErddapDataset);
     }
 
     /**
@@ -164,12 +172,13 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
      * @throws Throwable if trouble
      */
-    public EDDTableFromErddap(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromErddap(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, 
-        String tLocalSourceUrl) throws Throwable {
+        String tLocalSourceUrl, boolean tSubscribeToRemoteErddapDataset) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDTableFromErddap " + tDatasetID); 
@@ -180,7 +189,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         //save some of the parameters
         className = "EDDTableFromErddap"; 
         datasetID = tDatasetID;
-        //setAccessibleTo(tAccessibleTo);  disabled. see above.
+        setAccessibleTo(tAccessibleTo); 
+        setGraphsAccessibleTo(tGraphsAccessibleTo); 
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -194,7 +204,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             throw new RuntimeException(
                 "For datasetID=" + tDatasetID + 
                 ", use type=\"EDDGridFromErddap\", not EDDTableFromErddap, in datasets.xml.");
-        publicSourceErddapUrl = convertToPublicSourceUrl(tLocalSourceUrl);
+        publicSourceErddapUrl = convertToPublicSourceUrl(localSourceUrl);
+        subscribeToRemoteErddapDataset = tSubscribeToRemoteErddapDataset;
 
         //erddap support all constraints:
         sourceNeedsExpandedFP_EQ = false;
@@ -323,10 +334,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                     tSourceAtt, tAddAtt, 
                     tSourceType));//this constructor gets source / sets destination actual_range
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                EDVTimeStamp edv = new EDVTimeStamp(tSourceName, tSourceName, 
+                tDataVariables.add(new EDVTimeStamp(tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //this constructor gets source / sets destination actual_range
-                tDataVariables.add(edv);
+                    tSourceType)); //this constructor gets source / sets destination actual_range
             } else {
                 EDV edv = new EDV(tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
@@ -376,37 +386,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             }
         }
 
-        //try to subscribe to the remote dataset
-        //It's ok that this is done every time. 
-        //  emailIfAlreadyValid=false so there won't be excess email confirmation requests 
-        //  and if flagKeyKey changes, the new tFlagUrl will be sent.
-        //There is analogous code in EDDGridFromErddap.
-        try {
-            if (String2.isSomething(EDStatic.emailSubscriptionsFrom)) {
-                //this erddap's email system is active
-                //so try to subscribe to dataset on remote erddap
-                int gpo = tLocalSourceUrl.indexOf("/tabledap/"); //"remote" erddap may be a local
-                String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
-                    "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
-                    "&email=" + EDStatic.emailSubscriptionsFrom +
-                    "&emailIfAlreadyValid=false" + 
-                    "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
-                //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
-                SSR.touchUrl(subscriptionUrl, 60000);
-            } else {
-                String2.log(
-                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
-                    "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n" +
-                    "To keep this dataset up-to-date, use a small reloadEveryNMinutes.");
-            }
-        } catch (Throwable st) {
-            String2.log(
-                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
-                "If the subscription hasn't been set up already, you may need to\n" + 
-                "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
-                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
-                );
-        }
+        //try to subscribe to the remote ERDDAP dataset
+        tryToSubscribeToRemoteErddapDataset(subscribeToRemoteErddapDataset);
 
         //finally
         if (verbose) String2.log(
@@ -603,9 +584,9 @@ String expected =
                 expected, "");
 
 expected = 
-"<dataset type=\"EDDTableFromErddap\" datasetID=\"0_0_4b4a_d1d6_068b\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromErddap\" datasetID=\"localhost_9fa7_a933_8a54\" active=\"true\">\n" +
 "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n" +
-"    <sourceUrl>http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n" +
+"    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n" +
 "</dataset>\n";
 
             int po = results.indexOf(expected.substring(0, 80));
@@ -962,7 +943,7 @@ try {
 //this part varies local vs. remote
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
 //today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
+//today + " http://localhost:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
 expected2 = 
 "    String infoUrl \"http://www.globec.org/\";\n" +
 "    String institution \"GLOBEC\";\n" +
@@ -1243,7 +1224,7 @@ expected2 =
 //+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
 //today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 expected =
 "tabledap/rGlobecBottle.das\";\n" +
 "    String id \"Globec_bottle_data_2002\";\n" +
@@ -1441,7 +1422,7 @@ expected =
 //+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
 //today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + " http://localhost:8080/cwexperimental/
 String tHeader2 =
 "tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
 "  :id = \"Globec_bottle_data_2002\";\n" +
@@ -1571,7 +1552,7 @@ String tHeader2 =
     public static void testDegreesSignAttribute() throws Throwable {
         String2.log("\n*** EDDTableFromErddap.testDegreesSignAttribute");
         String url = 
-            //"http://127.0.0.1:8080/cwexperimental/tabledap/erdCalcofiSur";
+            //"http://localhost:8080/cwexperimental/tabledap/erdCalcofiSur";
             "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalcofiSur";
         DConnect dConnect = new DConnect(url, true, 1, 1);
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);

@@ -20,6 +20,7 @@ import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
@@ -49,7 +50,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
      *    <br>If "", no one will have access to this dataset.
      * <p>The sortedColumnSourceName isn't utilized.
      */
-    public EDDTableFromAwsXmlFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromAwsXmlFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -65,7 +67,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super("EDDTableFromAwsXmlFiles", tDatasetID, tAccessibleTo, 
+        super("EDDTableFromAwsXmlFiles", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -161,6 +164,10 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+        if (!String2.isSomething(sampleFileName)) 
+            String2.log("Found/using sampleFileName=" +
+                (sampleFileName = FileVisitorDNLS.getSampleFileName(
+                    tFileDir, tFileNameRegex, true, ".*"))); //recursive, pathRegex
 
         //*** basically, make a table to hold the sourceAttributes 
         Table dataSourceTable = new Table();
@@ -1311,7 +1318,7 @@ directionsForGenerateDatasetsXml() +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today; //T16:36:59Z (local files)\n" +
-//"2012-11-21T16:36:59Z http://127.0.0.1:8080/cwexperimental/tabledap/testAwsXml.das\";\n" +
+//"2012-11-21T16:36:59Z http://localhost:8080/cwexperimental/tabledap/testAwsXml.das\";\n" +
 String expected2 = 
 "    String infoUrl \"http://www.exploratorium.edu\";\n" +
 "    String institution \"exploratorium\";\n" +

@@ -7,8 +7,8 @@
 
 commandLine=$0
 tDir=`echo $commandLine | dirname $0`
-cp1="$tDir/classes:$tDir/lib/lucene-core.jar:$tDir/lib/mail.jar:"
-cp2="$tDir/lib/netcdfAll-latest.jar:$tDir/lib/activation.jar"
+cp1="classes:lib/lucene-core.jar:lib/mail.jar:"
+cp2="lib/netcdfAll-latest.jar:lib/slf4j.jar:lib/activation.jar"
 cp0="$cp1$cp2"
 
 java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml $1 $2

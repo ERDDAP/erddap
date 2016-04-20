@@ -92,12 +92,13 @@ public class TableWriterHtmlTable extends TableWriter {
      * @param tShowFirstNRows if &gt;= 0, this only shows the specified number of rows,
      *   then ignores the remaining rows.
      */
-    public TableWriterHtmlTable(String tLoggedInAs, OutputStreamSource tOutputStreamSource,        
+    public TableWriterHtmlTable(EDD tEdd, String tNewHistory, String tLoggedInAs, 
+        OutputStreamSource tOutputStreamSource,        
         boolean tWriteHeadAndBodyTags, String tFileNameNoExt, boolean tXhtmlMode,         
         String tPreTableHtml, String tPostTableHtml,
         boolean tEncode, boolean tWriteUnits, int tShowFirstNRows) {
 
-        super(tOutputStreamSource);
+        super(tEdd, tNewHistory, tOutputStreamSource);
         loggedInAs = tLoggedInAs;
         writeHeadAndBodyTags = tWriteHeadAndBodyTags;
         fileNameNoExt = tFileNameNoExt;
@@ -337,10 +338,14 @@ public class TableWriterHtmlTable extends TableWriter {
     
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
+
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
@@ -388,14 +393,15 @@ public class TableWriterHtmlTable extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(String loggedInAs,
+    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, 
+        String loggedInAs,
         Table table, OutputStreamSource outputStreamSource,
         boolean writeHeadAndBodyTags, String fileNameNoExt, boolean xhtmlMode, 
         String preTableHtml, String postTableHtml,
         boolean encode, boolean writeUnits, int tShowFirstNRows) throws Throwable {
 
-        TableWriterHtmlTable tw = new TableWriterHtmlTable(loggedInAs,
-            outputStreamSource,  
+        TableWriterHtmlTable tw = new TableWriterHtmlTable(tEdd, tNewHistory, 
+            loggedInAs, outputStreamSource,  
             writeHeadAndBodyTags, fileNameNoExt, xhtmlMode, preTableHtml, postTableHtml, 
             encode, writeUnits, tShowFirstNRows);
         tw.writeAllAndFinish(table);

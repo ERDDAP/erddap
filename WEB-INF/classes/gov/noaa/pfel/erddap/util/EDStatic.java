@@ -77,7 +77,7 @@ import org.apache.lucene.util.Version;
 //import org.apache.lucene.store.SimpleFSDirectory;
 
 
-import org.verisign.joid.consumer.OpenIdFilter;
+//import org.verisign.joid.consumer.OpenIdFilter;
 
 /** 
  * This class holds a lot of static information set from the setup.xml and messages.xml
@@ -139,8 +139,9 @@ public class EDStatic {
      * <br>1.64 released on 2015-08-19
      * <br>1.66 released on 2016-01-19
      * <br>1.68 released on 2016-02-08
+     * <br>1.70 released on 2016-04-15
      */   
-    public static String erddapVersion = "1.68";  
+    public static String erddapVersion = "1.70";  
 
     /** 
      * This is almost always false.  
@@ -206,28 +207,18 @@ public static boolean developmentMode = false;
     public static int nTableDatasets = 0;
     public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
     public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
+    private static ConcurrentHashMap<String,String> sessionNonce = new ConcurrentHashMap(16, 0.75f, 4); //for a session: loggedInAs -> nonce
 
-    /** userHashMap 
-     * (key=user value=[encoded password, sorted roles String[]]) 
+    /** userHashMap. 
+     * key=username (if email address, they are lowercased) 
+     * value=[encoded password, sorted roles String[]] 
      * It is empty until the first LoadDatasets is finished and puts a new HashMap in place.
      * It is private so no other code can access the information except
      * via doesPasswordMatch() and getRoles().
-     * MD5'd passwords should all already be lowercase.
+     * MD5'd and SHA'd passwords should all already be lowercase.
      * No need to be thread-safe: one thread writes it, then put here where read only.
      */
     private static HashMap userHashMap = new HashMap(); 
-
-    /** postUserHashMap is an additional list of users with a data structure just like userHashMap.
-     * It may be created by EDDTableFromPostDatabase.
-     * Note that the role is usually just "post" (not the POST-specific roles),
-     * since the issue here is what *datasets* does the user have access to
-     * (and the POST datasets are usually publicly available).
-     * PostDatabase can just add users to userHashMap because userHashMap
-     * is replaced every major LoadDatasets; to POST user info would be lost.
-     * Passwords are MD5'd and so should all already be lowercase.
-     * No need to be thread-safe: one thread writes it, then put here where read only.
-     */
-    private static HashMap postUserHashMap = null;  //only non-null if in use
 
     /** This is a HashMap of key=id value=thread that need to be interrupted/killed
      * when erddap is stopped in Tomcat.
@@ -322,6 +313,7 @@ public static boolean developmentMode = false;
     /** The HTML/XML encoded form */
     public final static String encodedDefaultPIppQuery = "page=1&#x26;itemsPerPage=" + defaultItemsPerPage;
     public final static String encodedAllPIppQuery     = "page=1&#x26;itemsPerPage=1000000000";
+    public final static String DONT_LOG_THIS_EMAIL     = "!!! DON'T LOG THIS EMAIL: ";
 
     /** 
      * These values are loaded from the [contentDirectory]setup.xml file. 
@@ -329,7 +321,7 @@ public static boolean developmentMode = false;
      */
     public static String 
         baseUrl,
-        baseHttpsUrl, //won't be null
+        baseHttpsUrl, //won't be null, may be "(not specified)"
         bigParentDirectory,
         unitTestDataDir,
 
@@ -379,18 +371,7 @@ public static boolean developmentMode = false;
         wmsSampleVariable,
         wmsSampleBBox,
     
-        PostSurgeryDatasetID,
-        PostDetectionDatasetID,
-        PostSubset[],
-        PostUserTableName,
-        PostRoleTableName,
-        PostNameColumnName,
-        PostPasswordColumnName,
-        PostRoleColumnName,
-        PostDatePublicColumnName,
-        PostSampleTag,
-
-        authentication,  //will be one of "", "custom", "openid"
+        authentication,  //will be one of "", "custom" ["openid"]. If baseHttpsUrl doesn't start with https:, this will be "".
         datasetsRegex,
         drawLandMask,
         emailEverythingToCsv, 
@@ -398,12 +379,13 @@ public static boolean developmentMode = false;
         emailSubscriptionsFrom,
         flagKeyKey,
         fontFamily,
+        googleClientID, //if authentication=google, this will be something
         googleEarthLogoFile,
         highResLogoImageFile,
         legendTitle1, 
         legendTitle2, 
         lowResLogoImageFile,
-        passwordEncoding, //will be one of "plaintext", "MD5", or "UEPMD5"  
+        passwordEncoding, //will be one of "MD5", "UEPMD5", "SHA256", "UEPSHA256"
         questionMarkImageFile,
         searchEngine,
         warName;
@@ -413,23 +395,26 @@ public static boolean developmentMode = false;
         highResLogoImageFileWidth, highResLogoImageFileHeight,
         googleEarthLogoFileWidth,  googleEarthLogoFileHeight;
     public static Color graphBackgroundColor;
-    private static String legal, PostIndex1Html, PostIndex2Html, PostIndex3Html;
+    private static String legal;
     private static int   ampLoginInfoPo = -1;
     /** These are special because other loggedInAs must be String2.justPrintable
-        loggedInAsLoggingIn is used by login.html so https is used for images, 
-        but &amp;loginInfo; indicates user isn't logged in.
+        loggedInAsHttps is for using https without being logged in, 
+          but &amp;loginInfo; indicates user isn't logged in.
+          It is a reserved username -- LoadDatasets prohibits defining a user with that name.
+        Tab is useful here: LoadDatasets prohibits it as valid userName, 
+          but it won't cause big trouble when printed in tally info.
      */
-    public final static String loggedInAsLoggingIn = "\u0000loggingIn\uffff"; //final so not changeable
-    public final static String loggedInAsSuperuser = "\u0000superuser\uffff"; //final so not changeable
+    public final static String loggedInAsHttps     = "[https]";     //final so not changeable
+    public final static String loggedInAsSuperuser = "\tsuperuser"; //final so not changeable
+    public final static int minimumPasswordLength = 8;
     private static String startBodyHtml,  endBodyHtml, startHeadHtml; //see xxx() methods
 
     public static boolean listPrivateDatasets, 
         reallyVerbose,
-        postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there        
         subscriptionSystemActive,  convertersActive, slideSorterActive,
         fgdcActive, iso19115Active, geoServicesRestActive, 
         filesActive, dataProviderFormActive, sosActive, wcsActive, wmsActive,
-        quickRestart,
+        quickRestart, subscribeToRemoteErddapDataset,
         useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
         verbose;
@@ -515,6 +500,8 @@ public static boolean developmentMode = false;
         advl_sos,
         advl_wcs,
         advl_wms,
+        advc_files,
+        advl_files,
         advc_fgdc,
         advl_fgdc,
         advc_iso19115,
@@ -597,6 +584,7 @@ public static boolean developmentMode = false;
         convertUnitsIntro,
         convertUnitsNotes,
         convertUnitsService,
+        cookiesHelp,
         daf,
         dafGridBypass,
         dafGridHtml,
@@ -611,6 +599,7 @@ public static boolean developmentMode = false;
 
         dtAccessible,
         dtAccessibleYes,
+        dtAccessibleGraphs,
         dtAccessibleNo,
         dtAccessibleLogIn,
         dtLogIn,
@@ -711,7 +700,6 @@ public static boolean developmentMode = false;
         EDDTableDapDescription,
         EDDTableDapLongDescription,
         EDDTableDownloadDataHtml,
-
         errorTitle,
         errorRequestUrl,
         errorRequestQuery,
@@ -827,13 +815,19 @@ public static boolean developmentMode = false;
         login,
         loginAttemptBlocked,
         loginDescribeCustom,
+        loginDescribeEmail,
+        loginDescribeGoogle,
         loginDescribeOpenID,
         loginCanNot,
-        loginWereNot,
-        loginPleaseLogIn,
+        loginAreNot,
+        loginToLogIn,
+        loginEmailAddress,
+        loginYourEmailAddress,
         loginUserName,
         loginPassword,
         loginUserNameAndPassword,
+        loginGoogleSignIn,
+        loginGoogleErddap,
         loginOpenID,
         loginOpenIDOr,
         loginOpenIDCreate,
@@ -841,9 +835,15 @@ public static boolean developmentMode = false;
         loginOpenIDSame,
         loginAs,
         loginFailed,
+        loginSucceeded,
         loginInvalid,
         loginNot,
         loginBack,
+        loginProblemExact,
+        loginProblemExpire,
+        loginProblemGoogleAgain,
+        loginProblemSameBrowser,
+        loginProblem3Times,
         loginProblems,
         loginProblemsAfter,
         loginPublicAccess,
@@ -950,6 +950,7 @@ public static boolean developmentMode = false;
         noPage2,
         notAllowed,
         notAuthorized,
+        notAuthorizedForData,
         notAvailable,
         noXxx,
         noXxxBecause,
@@ -1012,6 +1013,8 @@ public static boolean developmentMode = false;
         queryErrorNotExpectedAt,
         queryErrorNotFoundAfter,
         queryErrorOccursTwice,
+        queryErrorOneDistinctOrderBy,
+        queryErrorOrderByVariable,
         queryErrorUnknownVariable,
 
         queryErrorGrid1Axis,
@@ -1056,6 +1059,8 @@ public static boolean developmentMode = false;
         seeProtocolDocumentation,
         selectNext,
         selectPrevious,
+        sosDescriptionHtml,
+        sosLongDescriptionHtml,
         ssUse,
         ssBePatient, 
         ssInstructionsHtml,
@@ -1154,6 +1159,7 @@ public static boolean developmentMode = false;
         subsetNotSetUp,
         subsetLongNotShown,
 
+        Then,
         unknownDatasetID,
         unknownProtocol,
         unsupportedFileType,
@@ -1161,8 +1167,6 @@ public static boolean developmentMode = false;
         waitThenTryAgain,
         warning,
 
-        sosDescriptionHtml,
-        sosLongDescriptionHtml,
         wcsDescriptionHtml,
         wcsLongDescriptionHtml,
         wmsDescriptionHtml,
@@ -1215,7 +1219,7 @@ public static boolean developmentMode = false;
         contentDirectory = System.getProperty(ecd);        
         if (contentDirectory == null) {
             //Or, it must be sibling of webapps
-            //e.g., c:/programs/tomcat/webapps/erddap/WEB-INF/classes/[these classes]
+            //e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
             //On windows, contentDirectory may have spaces as %20(!)
             contentDirectory = String2.replaceAll(
                 String2.getClassPath(), //with / separator and / at the end
@@ -1272,6 +1276,7 @@ public static boolean developmentMode = false;
         FilledMarkerRenderer.reallyVerbose = reallyVerbose;
         GridDataAccessor.reallyVerbose = reallyVerbose;
         GSHHS.reallyVerbose = reallyVerbose;
+        LoadDatasets.reallyVerbose = reallyVerbose;
         NcHelper.reallyVerbose = reallyVerbose;
         PathCartesianRenderer.reallyVerbose = reallyVerbose;
         SgtGraph.reallyVerbose = reallyVerbose;
@@ -1420,7 +1425,7 @@ public static boolean developmentMode = false;
         //get other info from setup.xml
         errorInMethod = "ERROR while reading " + setupFileName;
         baseUrl                    = setup.getNotNothingString("baseUrl",                    "");
-        baseHttpsUrl               = setup.getString(          "baseHttpsUrl",               "(not specified)");
+        baseHttpsUrl               = setup.getString(          "baseHttpsUrl",               "(not specified)"); //not "" (to avoid relative urls)
         categoryAttributes         = String2.split(setup.getNotNothingString("categoryAttributes", ""), ',');
         int nCat = categoryAttributes.length;
         categoryAttributesInURLs = new String[nCat];
@@ -1532,23 +1537,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         wmsSampleVariable          = setup.getNotNothingString("wmsSampleVariable",          "");
         wmsSampleBBox              = setup.getNotNothingString("wmsSampleBBox",              "");
 
-        PostIndex1Html             = setup.getString(          "PostIndex1Html", "[PostIndex1Html in setup.xml]");
-        PostIndex2Html             = setup.getString(          "PostIndex2Html", "[PostIndex2Html in setup.xml]");
-        PostIndex3Html             = setup.getString(          "PostIndex3Html", "[PostIndex3Html in setup.xml]");
-
-        //EDDTableFromPost checks that these are non-null, non-""
-        PostSurgeryDatasetID       = setup.getString(          "PostSurgeryDatasetID",       "");
-        PostDetectionDatasetID     = setup.getString(          "PostDetectionDatasetID",     "");
-        PostSubset   = String2.split(setup.getString(          "PostSubset",                 ""), ',');
-        PostUserTableName          = setup.getString(          "PostUserTableName",          "");
-        PostRoleTableName          = setup.getString(          "PostRoleTableName",          "");
-        PostNameColumnName         = setup.getString(          "PostNameColumnName",         "");
-        PostPasswordColumnName     = setup.getString(          "PostPasswordColumnName",     "");
-        PostRoleColumnName         = setup.getString(          "PostRoleColumnName",         "");
-        PostDatePublicColumnName   = setup.getString(          "PostDatePublicColumnName",   "");
-        PostSampleTag              = setup.getString(          "PostSampleTag",              "");
-
-
         authentication             = setup.getString(          "authentication",             "");
         datasetsRegex              = setup.getString(          "datasetsRegex",              ".*");
         drawLandMask               = setup.getString(          "drawLandMask",               null);
@@ -1564,6 +1552,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fontFamily                 = setup.getString(          "fontFamily",                 "SansSerif");
         graphBackgroundColor = new Color(String2.parseInt(
                                      setup.getString(          "graphBackgroundColor",       "0xffccccff")), true); //hasAlpha
+        googleClientID             = setup.getString(          "googleClientID",             null);
         googleEarthLogoFile        = setup.getNotNothingString("googleEarthLogoFile",        "");
         highResLogoImageFile       = setup.getNotNothingString("highResLogoImageFile",       "");
         legendTitle1               = setup.getString(          "legendTitle1",               null);
@@ -1577,11 +1566,12 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         partialRequestMaxBytes     = setup.getInt(             "partialRequestMaxBytes",     partialRequestMaxBytes);
         partialRequestMaxCells     = setup.getInt(             "partialRequestMaxCells",     partialRequestMaxCells);
         questionMarkImageFile      = setup.getNotNothingString("questionMarkImageFile",      "");
-        quickRestart               = setup.getBoolean(         "quickRestart",               true);
-        passwordEncoding           = setup.getString(          "passwordEncoding",           "UEPMD5");
+        quickRestart               = setup.getBoolean(         "quickRestart",               true);      
+        passwordEncoding           = setup.getString(          "passwordEncoding",           "UEPSHA256");
         searchEngine               = setup.getString(          "searchEngine",               "original");
         startBodyHtml              = setup.getNotNothingString("startBodyHtml",              "");
         startHeadHtml              = setup.getNotNothingString("startHeadHtml",              "");
+        subscribeToRemoteErddapDataset = setup.getBoolean(     "subscribeToRemoteErddapDataset", true);
         subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",   true);
         convertersActive           = setup.getBoolean(         "convertersActive",           true);
         slideSorterActive          = setup.getBoolean(         "slideSorterActive",          true);
@@ -1609,20 +1599,31 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             authentication = "";
         authentication = authentication.trim().toLowerCase();
         if (!authentication.equals("") &&
-            //!authentication.equals("basic") &&
             !authentication.equals("custom") &&
-            !authentication.equals("openid"))
-            throw new RuntimeException("setup.xml error: authentication=" + authentication + 
-                " must be (nothing)|custom|openid.");  //"basic"
+            !authentication.equals("email")  &&
+            !authentication.equals("google") 
+            //&& !authentication.equals("openid")  //OUT-OF-DATE
+            )
+            throw new RuntimeException(
+                "setup.xml error: authentication=" + authentication + 
+                " must be (nothing)|custom|google|email.");  //was also "openid"  //google NOT FINISHED
         if (!authentication.equals("") && !baseHttpsUrl.startsWith("https://"))
-            throw new RuntimeException("setup.xml error: " + 
+            throw new RuntimeException(
+                "setup.xml error: " + 
                 ": For any <authentication> other than \"\", the baseHttpsUrl=" + baseHttpsUrl + 
                 " must start with \"https://\".");
-        if (!passwordEncoding.equals("plaintext") && 
-            !passwordEncoding.equals("MD5") &&
-            !passwordEncoding.equals("UEPMD5"))
-            throw new RuntimeException("setup.xml error: passwordEncoding=" + passwordEncoding + 
-                " must be plaintext|MD5|UEPMD5.");  
+        if (authentication.equals("google") && !String2.isSomething(googleClientID))
+            throw new RuntimeException(
+                "setup.xml error: " + 
+                ": When authentication=google, you must provide your <googleClientID>.");
+        if (authentication.equals("custom") &&
+            (!passwordEncoding.equals("MD5") &&
+             !passwordEncoding.equals("UEPMD5") &&
+             !passwordEncoding.equals("SHA256") &&
+             !passwordEncoding.equals("UEPSHA256")))
+            throw new RuntimeException(
+                "setup.xml error: When authentication=custom, passwordEncoding=" + passwordEncoding + 
+                " must be MD5|UEPMD5|SHA256|UEPSHA256.");  
         //String2.log("authentication=" + authentication);
 
 
@@ -1695,6 +1696,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         advl_sos                   = messages.getNotNothingString("advl_sos",                   "");
         advl_wcs                   = messages.getNotNothingString("advl_wcs",                   "");
         advl_wms                   = messages.getNotNothingString("advl_wms",                   "");
+        advc_files                 = messages.getNotNothingString("advc_files",                 "");
+        advl_files                 = messages.getNotNothingString("advl_files",                 "");
         advc_fgdc                  = messages.getNotNothingString("advc_fgdc",                  "");
         advl_fgdc                  = messages.getNotNothingString("advl_fgdc",                  "");
         advc_iso19115              = messages.getNotNothingString("advc_iso19115",              "");
@@ -1790,6 +1793,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         convertUnitsIntro          = messages.getNotNothingString("convertUnitsIntro",          "");
         convertUnitsNotes          = messages.getNotNothingString("convertUnitsNotes",          "");
         convertUnitsService        = messages.getNotNothingString("convertUnitsService",        "");
+        cookiesHelp                = messages.getNotNothingString("cookiesHelp",                "");
         daf                        = messages.getNotNothingString("daf",                        "");
         dafGridBypass              = messages.getNotNothingString("dafGridBypass",              "");
         dafGridHtml                = messages.getNotNothingString("dafGridHtml",                "");
@@ -1804,6 +1808,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         dtAccessible               = messages.getNotNothingString("dtAccessible",               "");
         dtAccessibleYes            = messages.getNotNothingString("dtAccessibleYes",            "");
+        dtAccessibleGraphs         = messages.getNotNothingString("dtAccessibleGraphs",         "");
         dtAccessibleNo             = messages.getNotNothingString("dtAccessibleNo",             "");
         dtAccessibleLogIn          = messages.getNotNothingString("dtAccessibleLogIn",          "");
         dtLogIn                    = messages.getNotNothingString("dtLogIn",                    "");
@@ -2026,13 +2031,19 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         login                      = messages.getNotNothingString("login",                      "");
         loginAttemptBlocked        = messages.getNotNothingString("loginAttemptBlocked",        "");
         loginDescribeCustom        = messages.getNotNothingString("loginDescribeCustom",        "");
+        loginDescribeEmail         = messages.getNotNothingString("loginDescribeEmail",         "");
+        loginDescribeGoogle        = messages.getNotNothingString("loginDescribeGoogle",        "");
         loginDescribeOpenID        = messages.getNotNothingString("loginDescribeOpenID",        "");
         loginCanNot                = messages.getNotNothingString("loginCanNot",                "");
-        loginWereNot               = messages.getNotNothingString("loginWereNot",               "");
-        loginPleaseLogIn           = messages.getNotNothingString("loginPleaseLogIn",           "");
+        loginAreNot                = messages.getNotNothingString("loginAreNot",                "");
+        loginToLogIn               = messages.getNotNothingString("loginToLogIn",               "");
+        loginEmailAddress          = messages.getNotNothingString("loginEmailAddress",          "");
+        loginYourEmailAddress      = messages.getNotNothingString("loginYourEmailAddress",      "");
         loginUserName              = messages.getNotNothingString("loginUserName",              "");
         loginPassword              = messages.getNotNothingString("loginPassword",              "");
         loginUserNameAndPassword   = messages.getNotNothingString("loginUserNameAndPassword",   "");
+        loginGoogleSignIn          = messages.getNotNothingString("loginGoogleSignIn",          "");
+        loginGoogleErddap          = messages.getNotNothingString("loginGoogleErddap",          "");
         loginOpenID                = messages.getNotNothingString("loginOpenID",                "");
         loginOpenIDOr              = messages.getNotNothingString("loginOpenIDOr",              "");
         loginOpenIDCreate          = messages.getNotNothingString("loginOpenIDCreate",          "");
@@ -2040,9 +2051,15 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         loginOpenIDSame            = messages.getNotNothingString("loginOpenIDSame",            "");
         loginAs                    = messages.getNotNothingString("loginAs",                    "");
         loginFailed                = messages.getNotNothingString("loginFailed",                "");
+        loginSucceeded             = messages.getNotNothingString("loginSucceeded",             "");
         loginInvalid               = messages.getNotNothingString("loginInvalid",               "");
         loginNot                   = messages.getNotNothingString("loginNot",                   "");
         loginBack                  = messages.getNotNothingString("loginBack",                  "");
+        loginProblemExact          = messages.getNotNothingString("loginProblemExact",          "");
+        loginProblemExpire         = messages.getNotNothingString("loginProblemExpire",         "");
+        loginProblemGoogleAgain    = messages.getNotNothingString("loginProblemGoogleAgain",    "");
+        loginProblemSameBrowser    = messages.getNotNothingString("loginProblemSameBrowser",    "");
+        loginProblem3Times         = messages.getNotNothingString("loginProblem3Times",         "");
         loginProblems              = messages.getNotNothingString("loginProblems",              "");
         loginProblemsAfter         = messages.getNotNothingString("loginProblemsAfter",         "");
         loginPublicAccess          = messages.getNotNothingString("loginPublicAccess",          "");
@@ -2158,6 +2175,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         noPage2                    = messages.getNotNothingString("noPage2",                    "");
         notAllowed                 = messages.getNotNothingString("notAllowed",                 "");
         notAuthorized              = messages.getNotNothingString("notAuthorized",              "");
+        notAuthorizedForData       = messages.getNotNothingString("notAuthorizedForData",       "");
         notAvailable               = messages.getNotNothingString("notAvailable",               "");
         noXxx                      = messages.getNotNothingString("noXxx",                      "");
         noXxxBecause               = messages.getNotNothingString("noXxxBecause",               "");
@@ -2223,6 +2241,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    "");
         queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    "");
         queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      "");
+        queryErrorOneDistinctOrderBy=messages.getNotNothingString("queryErrorOneDistinctOrderBy","");
+        queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  "");
         queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  "");
 
         queryErrorGrid1Axis        = messages.getNotNothingString("queryErrorGrid1Axis",        "");
@@ -2267,6 +2287,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         selectNext                 = messages.getNotNothingString("selectNext",                 "");
         selectPrevious             = messages.getNotNothingString("selectPrevious",             "");
         seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   "");
+        sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         "");
+        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     ""); 
         ssUse                      = messages.getNotNothingString("ssUse",                      "");
         ssBePatient                = messages.getNotNothingString("ssBePatient",                "");
         ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         "");
@@ -2366,6 +2388,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         "");
 
         theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     "");
+        Then                       = messages.getNotNothingString("Then",                       "");
         unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           "");
         unknownProtocol            = messages.getNotNothingString("unknownProtocol",            "");
         unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        "");
@@ -2373,8 +2396,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           "");
         gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
         warning                    = messages.getNotNothingString("warning",                    "");
-        sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         "");
-        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     ""); 
         wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         "");
         wcsLongDescriptionHtml     = messages.getNotNothingString("wcsLongDescriptionHtml",     ""); 
         wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         "");
@@ -2421,16 +2442,11 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         legal = String2.replaceAll(legal,"[standardDisclaimerOfEndorsement]",   standardDisclaimerOfEndorsement   + "\n\n"); 
         legal = String2.replaceAll(legal,"[standardPrivacyPolicy]",             standardPrivacyPolicy             + "\n\n"); 
 
-        loginProblems      = String2.replaceAll(loginProblems,     "&adminContact;",  adminContact()) + "\n\n"; 
-        loginProblemsAfter = String2.replaceAll(loginProblemsAfter,"&adminContact;",  adminContact()) + "\n\n"; 
+        loginProblems      = String2.replaceAll(loginProblems,      "&cookiesHelp;",   cookiesHelp);
+        loginProblems      = String2.replaceAll(loginProblems,      "&adminContact;",  adminContact()) + "\n\n"; 
+        loginProblemsAfter = String2.replaceAll(loginProblemsAfter, "&adminContact;",  adminContact()) + "\n\n"; 
         loginPublicAccess += "\n"; 
         logoutSuccess += "\n"; 
-
-        PostIndex2Html = String2.replaceAll(PostIndex2Html, "&erddapUrl;",            erddapHttpsUrl);
-
-        PostIndex3Html = String2.replaceAll(PostIndex3Html, "&PostSampleTag;",          PostSampleTag);
-        PostIndex3Html = String2.replaceAll(PostIndex3Html, "&PostSurgeryDatasetID;",   PostSurgeryDatasetID);
-        PostIndex3Html = String2.replaceAll(PostIndex3Html, "&PostDetectionDatasetID;", PostDetectionDatasetID);
 
         doWithGraphs = String2.replaceAll(doWithGraphs, "&ssUse;", slideSorterActive? ssUse : "");
 
@@ -2444,7 +2460,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "[standardShortDescriptionHtml]", standardShortDescriptionHtml);
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "&requestFormatExamplesHtml;",    requestFormatExamplesHtml);
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "&resultsFormatExamplesHtml;",    resultsFormatExamplesHtml);
-        postShortDescriptionActive = theShortDescriptionHtml.indexOf("[standardPostDescriptionHtml]") >= 0;
 
         try {
             computerName = System.getenv("COMPUTERNAME");  //windows 
@@ -2494,7 +2509,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *  (neither has slash at end).
      */
     public static String baseUrl(String loggedInAs) {
-        return loggedInAs == null? baseUrl : baseHttpsUrl;
+        return loggedInAs == null? baseUrl : baseHttpsUrl; //works because of loggedInAsHttps
     }
 
     /** 
@@ -2506,7 +2521,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *  (neither has slash at end).
      */
     public static String erddapUrl(String loggedInAs) {
-        return loggedInAs == null? erddapUrl : erddapHttpsUrl;
+        return loggedInAs == null? erddapUrl : erddapHttpsUrl;  //works because of loggedInAsHttps
     }
 
     /** 
@@ -2530,7 +2545,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *  (with slash at end).
      */
     public static String imageDirUrl(String loggedInAs) {
-        return loggedInAs == null? imageDirUrl : imageDirHttpsUrl;
+        return loggedInAs == null? imageDirUrl : imageDirHttpsUrl; //works because of loggedInAsHttps
     }
 
     /** 
@@ -2780,6 +2795,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *
      * @param emailAddresses   each e.g., john.doe@company.com
      * @param subject If error, recommended: "Error in [someClass]".
+     *   If this starts with EDStatic.DONT_LOG_THIS_EMAIL, this email won't be logged
+     *   (which is useful for confidential emails).
      * @param content If error, recommended: MustBe.throwableToString(t);
      * @return an error message ("" if no error).
      *     If emailAddresses is null or length==0, this logs the message and returns "".
@@ -2789,22 +2806,15 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         //write the email to the log
         String emailAddressesCSSV = String2.toCSSVString(emailAddresses);
         String localTime = Calendar2.getCurrentISODateTimeStringLocal();
+        boolean logIt = !subject.startsWith(DONT_LOG_THIS_EMAIL);
+        if (!logIt) 
+            subject = subject.substring(DONT_LOG_THIS_EMAIL.length());
         subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + subject;
-        String fullMessage = 
-            "\n==== BEGIN =====================================================================" +
-            "\n     To: " + emailAddressesCSSV + 
-            "\nSubject: " + subject +  //always non-https url
-            "\n   Date: " + localTime + 
-            "\n--------------------------------------------------------------------------------" +
-            "\n" + erddapUrl + " reports:" +  //always non-https url
-            "\n" + content +
-            "\n==== END =======================================================================" +
-            "\n";
 
         //Always note that email sent in log.
         String2.log("Emailing \"" + subject + "\" to " + emailAddressesCSSV);
 
-        //always write to emailLog
+        //almost always write to emailLog
         try {
             String date = localTime.substring(0, 10);
             if (!emailLogDate.equals(date) || emailLogFile == null) {
@@ -2828,7 +2838,18 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
             //write the email to the log
             //do in one write encourages threads not to intermingle   (or synchronize on emailLogFile?)
-            emailLogFile.write(fullMessage);
+            emailLogFile.write(
+"\n==== BEGIN =====================================================================" +
+"\n     To: " + emailAddressesCSSV + 
+"\nSubject: " + subject +  //always non-https url
+"\n   Date: " + localTime + 
+"\n--------------------------------------------------------------------------------" +
+(logIt?
+"\n" + erddapUrl + " reports:" +  //always non-https url
+"\n" + content : 
+"\n[CONFIDENTIAL]") +
+"\n==== END =======================================================================" +
+"\n");
             emailLogFile.flush();
 
         } catch (Throwable t) {
@@ -2861,6 +2882,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             }
 
             if (errors.length() == 0)
+//??? THREAD SAFE? SYNCHRONIZED? 
+//I don't think use of this needs to be synchronized. I could be wrong. I haven't tested.
                 SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
                     emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
                     subject, 
@@ -3126,110 +3149,86 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *     this won't make a session if the user doesn't have one.
      *
      * @param request
-     * @return the user's login name if logged in (or null if not logged in).
+     * @return null (using http), 
+     *    loggedInAsHttps (using https and not logged in), 
+     *    or userName (using https and logged in).
      */
     public static String getLoggedInAs(HttpServletRequest request) {
-        if (authentication.equals("") || request == null)
+        if (request == null)
             return null;
 
-        //first, look in HTTP header for: Authentication ERDDAP_NVSA1
-        /*
-        String auth = request.getHeader("Authentication");
-        if (auth != null) {
-            String parts[] = StringArray.wordsAndQuotedPhrases(auth).toArray();
-            if (String2.indexOf(parts, "ERDDAP_NVSA1") >= 0) {
-                //yes, it is trying to use the ERDDAP Not Very Secure Authentication method #1
-                String reqUser = String2.stringStartsWith(parts, "user=\"");
-                String reqPassword  = String2.stringStartsWith(parts, "password=\"");
-                reqUser = reqUser == null? "" : reqUser.substring(6, reqUser.length() - 1);
-                reqPassword  = reqPassword  == null? "" :  reqPassword.substring(5,  reqPassword.length() - 1).toLowerCase();
+        //request is via http? treat as not logged in
+        String fullRequestUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
+        if (!fullRequestUrl.startsWith("https://")) 
+            return null;
 
-                String url   = request.getRequestURI();  //post EDD.baseUrl, pre "?"
-                String query = request.getQueryString(); //may be null;  leave encoded
-                if (query != null && query.length() > 0)
-                    url += "?" + query;
-                
-                String userPassword = getUserPassword(reqUser);  //see passwordEncoding in setup.xml 
-                String expectedPassword = String2.md5Hex(url + ":" + userPassword);
-                if (reqUser.length() > 0 && reqPassword.length() > 0 && userPassword != null &&
-                    reqPassword.equals(expectedPassword)) {
-                    return reqUser;
-                } else {
-                    String2.log("ERDDAP_NVSA1 authentication for user=" + reqUser + " failed\n" +
-                        "  for url=" + url);
-                }
-            }
-        }
-        */
+        //request is via https, but authentication=""?
+        if (authentication.length() == 0)
+            return loggedInAsHttps;
 
-        //see if user is logged in with custom or openid methods
-        //getSession(false): don't make a session if none currently
-        //  that's what causes a problem if outputStream already committed
+        //see if user is logged in
         //NOTE: session is associated with https urls, not http urls!
         //  So user only appears logged in to https urls.
-        String loggedInAs = null;
         HttpSession session = request.getSession(false); //don't make one if none already
         //String2.log("session=" + (session==null? "null" : session.getServletContext().getServletContextName()));
 
-        /*if (authentication.equals("basic")) {
-            Principal p = request.getUserPrincipal();
-            if (p != null)
-                loggedInAs = p.getName();
-        }
-        */
+        if (session == null)
+            return loggedInAsHttps;  
 
-        if (session != null) {
-            
-            if (authentication.equals("custom")) 
-                loggedInAs = (String)session.getAttribute("loggedInAs:" + warName);
+        //session != null
+        String loggedInAs = null;
+        if (authentication.equals("custom") ||
+            authentication.equals("email") ||
+            authentication.equals("google")) {
+            loggedInAs = (String)session.getAttribute("loggedInAs:" + warName);
 
-            else if (authentication.equals("openid")) 
-                loggedInAs = OpenIdFilter.getCurrentUser(session);
+        //} else if (authentication.equals("openid")) 
+        //    loggedInAs = OpenIdFilter.getCurrentUser(session);
         }
 
         //ensure printable characters only (which makes loggedInAsSuperuser special)
-        if (loggedInAs != null)
-            loggedInAs = String2.justPrintable(loggedInAs);
-        return loggedInAs;
+        return loggedInAs == null?
+            loggedInAsHttps : 
+            String2.justPrintable(loggedInAs);
+    }
+
+    /**
+     * This generates a nonce (a long "random" string related to basis).
+     */
+    public static String nonce(String basis) {
+        return String2.passwordDigest("SHA-256",
+            Math2.random(Integer.MAX_VALUE) + "_" + 
+            System.currentTimeMillis() + "_" +
+            basis + "_" + EDStatic.flagKeyKey); 
     }
 
     /** This allows LoadDatasets to set EDStatic.userHashMap (which is private).
      * There is no getUserHashMap (so info remains private).
-     * MD5'd passwords should all already be lowercase.
+     * MD5'd and SHA256'd passwords should all already be lowercase.
      */
     public static void setUserHashMap(HashMap tUserHashMap) {
         userHashMap = tUserHashMap;
-    }
-
-    /** This allows EDDTableFromPostDatabase to set EDStatic.postUserHashMap (which is private).
-     * There is no getPostUserHashMap (so info remains private).
-     * MD5'd passwords should all already be lowercase.
-     */
-    public static void setPostUserHashMap(HashMap tPostUserHashMap) {
-        postUserHashMap = tPostUserHashMap;
     }
 
     /**
      * This returns true if the plaintextPassword (after passwordEncoding as 
      * specified in setup.xml) matches the stored password for user.
      *
-     * @param user the user's log in name
+     * @param username the user's log in name
      * @param plaintextPassword that the user entered on a log-in form
      * @return true if the plaintextPassword (after passwordEncoding as 
-     *    specified in setup.xml) matches the stored password for loggedInAs.
+     *    specified in setup.xml) matches the stored password for username.
      *    If user==null or user has no password defined in datasets.xml, this returns false.
      */
-    public static boolean doesPasswordMatch(String loggedInAs, String plaintextPassword) {
-        if (loggedInAs == null || loggedInAs.length() == 0 ||
-            !loggedInAs.equals(String2.justPrintable(loggedInAs)) ||
-            plaintextPassword == null || plaintextPassword.length() < 7)
+    public static boolean doesPasswordMatch(String username, String plaintextPassword) {
+        if (username == null || username.length() == 0 ||
+            !username.equals(String2.justPrintable(username)) ||
+            plaintextPassword == null || plaintextPassword.length() < minimumPasswordLength)
             return false;
 
-        Object oar[] = (Object[])userHashMap.get(loggedInAs);
-        if (oar == null && postUserHashMap != null)
-            oar = (Object[])postUserHashMap.get(loggedInAs);
+        Object oar[] = (Object[])userHashMap.get(username);
         if (oar == null) {
-            String2.log("loggedInAs=" + loggedInAs + " not found in userHashMap or postUserHashMap.");
+            String2.log("username=" + username + " not found in userHashMap."); 
             return false;
         }
         String expected = (String)oar[0]; //using passwordEncoding in setup.xml
@@ -3238,21 +3237,38 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         //generate observedPassword from plaintextPassword via passwordEncoding 
         String observed = plaintextPassword;  
-        if (passwordEncoding.equals("plaintext")) {}
-        else if (passwordEncoding.equals("MD5"))
+        if (passwordEncoding.equals("MD5"))
             observed = String2.md5Hex(plaintextPassword); //it will be lowercase
         else if (passwordEncoding.equals("UEPMD5"))
-            observed = String2.md5Hex(loggedInAs + ":ERDDAP:" + plaintextPassword); //it will be lowercase
+            observed = String2.md5Hex(username + ":ERDDAP:" + plaintextPassword); //it will be lowercase
+        else if (passwordEncoding.equals("SHA256"))
+            observed = String2.passwordDigest("SHA-256", plaintextPassword); //it will be lowercase
+        else if (passwordEncoding.equals("UEPSHA256"))
+            observed = String2.passwordDigest("SHA-256", username + ":ERDDAP:" + plaintextPassword); //it will be lowercase
         else throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
         //only for debugging:
-        //String2.log("loggedInAs=" + loggedInAs +
+        //String2.log("username=" + username +
         //    "\nobsPassword=" + observed +
         //    "\nexpPassword=" + expected);
 
         boolean ok = observed.equals(expected);
         if (reallyVerbose)
-            String2.log("loggedInAs=" + loggedInAs + " password matched: " + ok);
+            String2.log("username=" + username + " password matched: " + ok);
         return ok; 
+    }
+
+    /**
+     * This indicates if a user is on the list of potential users 
+     * (i.e., there's a user tag for this user in datasets.xml).
+     *
+     * @param userName the user's potential user name 
+     * @return true if a user is on the list of potential users
+     * (i.e., there's a user tag for this user in datasets.xml).
+     */
+    public static boolean onListOfUsers(String userName) {
+        if (!String2.isSomething(userName))
+            return false;
+        return userHashMap.get(userName) != null;
     }
 
     /**
@@ -3270,8 +3286,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         //all other authentication methods
         Object oar[] = (Object[])userHashMap.get(loggedInAs);
-        if (oar == null && postUserHashMap != null)
-            oar = (Object[])postUserHashMap.get(loggedInAs);
         if (oar == null)
             return null;
         return (String[])oar[1];
@@ -3279,48 +3293,42 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
     /**
      * If the user tries to access a dataset to which he doesn't have access,
-     * call this to redirect him to the login page.
+     * call this to send Http UNAUTHORIZED error.
+     * (was: redirectToLogin: redirect him to the login page).
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetID  or use "" for general login.
+     * @param graphsAccessibleToPublic From edd.graphsAccessibleToPublic(). 
+     *   If this is true, then this method
+     *   was called because the request was for data from a dataset that
+     *   allows graphics|metadata requests from the public.
      * @throws Throwable (notably ClientAbortException)
      */
-    public static void redirectToLogin(String loggedInAs, 
-        HttpServletResponse response, String datasetID) throws Throwable {
+    public static void sendHttpUnauthorizedError(String loggedInAs, 
+        HttpServletResponse response, String datasetID, 
+        boolean graphsAccessibleToPublic) throws Throwable {
 
         String message = null;
         try {
-            tally.add("Log in Redirect (since startup)", datasetID); 
-            tally.add("Log in Redirect (since last daily report)", datasetID);
-            if (datasetID != null && datasetID.length() > 0) 
-                message = "loggedInAs=" + loggedInAs + 
-                    " isn't authorized to use datasetID=" + datasetID + ".";
+            tally.add("Request refused: not authorized (since startup)", datasetID); 
+            tally.add("Request refused: not authorized (since last daily report)", datasetID);
 
-            if (authentication.equals("")) {
-                //authentication.equals(""), so no way to log in , so send an error message  
+            if (datasetID != null && datasetID.length() > 0) 
+                message = MessageFormat.format(
+                    graphsAccessibleToPublic?
+                        EDStatic.notAuthorizedForData :
+                        EDStatic.notAuthorized, 
+                    loggedInAsHttps.equals(loggedInAs)? "" : loggedInAs, 
+                    datasetID);
+
+            if (message == null)
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            else 
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
-                return;
-            } 
-            
-            //BASIC
-            /*
-            if (authentication.equals("basic")) {
-                //redirect to login.html which triggers Tomcat asking user to log in
-                response.sendRedirect(erddapHttpsUrl + "/login.html");  //always https url
-                return;
-            } 
-            */
-            
-            //all other authentication types, e.g., custom, openid
-            String msg = erddapHttpsUrl + "/login.html" +  //always https url
-                "?message=" + SSR.minimalPercentEncode("Error: " + message);
-            if (verbose) String2.log(msg);
-            response.sendRedirect(msg);
-            return;
 
         } catch (Throwable t2) {
             EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
-            String2.log("Error in redirectToLogin:\n" + 
+            String2.log("Error in sendHttpUnauthorizedError:\n" + 
                 (message == null? "" : message + "\n") +
                 MustBe.throwableToString(t2));
         }
@@ -3336,8 +3344,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *     this won't make a session if the user doesn't have one.
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     *   Special case: "loggedInAsLoggingIn" is used by login.html
-     *   so that https is used for erddapUrl substitutions, 
+     *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
      */
     public static String getLoginHtml(String loggedInAs) {
@@ -3345,11 +3352,10 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             //user can't log in
             return "";
         } else {
-            String tLoggedInAs = loggedInAsLoggingIn.equals(loggedInAs)?
-                null : loggedInAs;
-            return tLoggedInAs == null?  //always use the erddapHttpsUrl for login/logout pages
+            return loggedInAs == null || loggedInAsHttps.equals(loggedInAs)?  //ie not logged in
+                //always use the erddapHttpsUrl for login/logout pages
                 "<a href=\"" + erddapHttpsUrl + "/login.html\">" + login + "</a>" :
-                "<a href=\"" + erddapHttpsUrl + "/login.html\"><b>" + XML.encodeAsHTML(tLoggedInAs) + "</b></a> | \n" + 
+                "<a href=\"" + erddapHttpsUrl + "/login.html\"><b>" + XML.encodeAsHTML(loggedInAs) + "</b></a> | \n" + 
                 "<a href=\"" + erddapHttpsUrl + "/logout.html\">" + logout + "</a>";
         }
     }
@@ -3362,8 +3368,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      *     this won't make a session if the user doesn't have one.
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
-     *   Special case: "loggedInAsLoggingIn" is used by login.html
-     *   so that https is used for erddapUrl substitutions, 
+     *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
      */
     public static String startBodyHtml(String loggedInAs) {
@@ -3381,9 +3386,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      */
     public static String endBodyHtml(            String tErddapUrl) {return String2.replaceAll(endBodyHtml,    "&erddapUrl;", tErddapUrl); }
     public static String legal(                  String tErddapUrl) {return String2.replaceAll(legal,          "&erddapUrl;", tErddapUrl); }
-    public static String PostIndex1Html(         String tErddapUrl) {return String2.replaceAll(PostIndex1Html, "&erddapUrl;", tErddapUrl); }
-    public static String PostIndex2Html()                           {return PostIndex2Html; }
-    public static String PostIndex3Html(         String tErddapUrl) {return String2.replaceAll(PostIndex3Html, "&erddapUrl;", tErddapUrl); }
 
     /** @param addToTitle has not yet been encodeAsHTML(addToTitle). */
     public static String startHeadHtml(          String tErddapUrl, String addToTitle) {
@@ -3419,8 +3421,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
     public static String adminContact() {
         String ae = String2.replaceAll(adminEmail, "@", " at ");
-        ae = String2.replaceAll(ae, ",", " dot ");
-        return adminIndividualName + " (" + adminPhone + ", " + ae + ")";
+        ae = String2.replaceAll(ae, ".", " dot ");
+        return adminIndividualName + " (email: " + ae + ")";
     }
 
     /**
@@ -4307,7 +4309,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         if (isClientAbortException(t)) 
             throw t;
     }
-    
+
 
     /** 
      * This tests some of the methods in this class.

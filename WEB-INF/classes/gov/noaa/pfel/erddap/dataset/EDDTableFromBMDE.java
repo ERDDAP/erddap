@@ -85,6 +85,7 @@ public class EDDTableFromBMDE extends EDDTable{
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
@@ -115,6 +116,8 @@ public class EDDTableFromBMDE extends EDDTable{
                 throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
@@ -143,7 +146,7 @@ public class EDDTableFromBMDE extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, 
+        return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables, tReloadEveryNMinutes, tLocalSourceUrl, tSourceCode);
@@ -212,7 +215,7 @@ public class EDDTableFromBMDE extends EDDTable{
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
      *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
+     *        http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -223,7 +226,8 @@ public class EDDTableFromBMDE extends EDDTable{
      *    name from the &lt;resource&gt;&lt;code&gt; tag.
      * @throws Throwable if trouble
      */
-    public EDDTableFromBMDE(String tDatasetID, String tAccessibleTo, 
+    public EDDTableFromBMDE(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix;
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -242,6 +246,7 @@ public class EDDTableFromBMDE extends EDDTable{
         className = "EDDTableFromBMDE"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;

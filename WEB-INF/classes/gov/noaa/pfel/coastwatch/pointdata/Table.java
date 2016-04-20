@@ -3428,7 +3428,7 @@ public class Table  {
         //  <gml:Point>
         //    <gml:pos>38.796918000000062 -81.81363499999992</gml:pos>
         //  </gml:Point>
-        //see http://en.wikipedia.org/wiki/Geography_Markup_Language#Coordinates
+        //see https://en.wikipedia.org/wiki/Geography_Markup_Language#Coordinates
         int nr = nRows();
         String try1 = "/gml:Point/gml:pos";          //space separated
         String try2 = "/gml:Point/gml:coordinates";  //comma separated
@@ -6322,6 +6322,34 @@ Dataset {
                 innerDimDim   = (Dimension)dimsList.get(innerDim);
                 innerDimName  = innerDimDim.getName();
                 innerDimSize  = innerDimDim.getLength();
+
+                //now that innerDim and outerDim are known, find 1D vars that use them
+                if (loadVariableNamesWasEmpty) { 
+                    if (debugMode) String2.log("  Debug: find 1D vars that use inner or outerDim");
+                    for (int v = 0; v < nVars; v++) {
+                        //first: go through the dimensions
+                        if (varNDims[v] != 1)
+                            continue;
+                        int whichDim = dimsList.indexOf(vars[v].getDimension(0));
+                        if (whichDim == innerDim ||
+                            whichDim == outerDim) {  //not scalarDim
+                            if (loadVariableNames.indexOf(varNames[v]) < 0) {
+                                loadVariableNames.add(varNames[v]);
+                                if (!varInLoadOrConVariables[v]) {
+                                    varInLoadOrConVariables[v] = true;
+                                    nLoadOrConVariablesInFile++;
+                                }
+                            }
+
+                            //second: trick code below into adding outerDim=scalarDim to all vars
+                            //  (scalar vars already have it)(vars using other dims don't)
+                            if (!varUsesDim[v][scalarDim]) {
+                                varUsesDim[v][scalarDim] = true;
+                                varNDims[v]++;
+                            }
+                        }
+                    }
+                }
             }
 
 
@@ -6329,10 +6357,11 @@ Dataset {
                 if (loadVariableNamesWasEmpty) 
                     String2.log("  Debug: loadVars (was empty): " + loadVariableNames.toString());
                 String2.log(
-                    "  Debug: nLoadOrConVarsInFile=" + nLoadOrConVariablesInFile + 
+                    "  Debug: nTotalVarsInFile=" + nVars + 
+                    " nLoadOrConVarsInFile=" + nLoadOrConVariablesInFile + 
                     " vars: rowSize=" + (rowSizeVar < 0? "" : varNames[rowSizeVar]) + 
-                    " index="    + (indexVar   < 0? "" : varNames[indexVar]) +
-                    "  dims: outer=" + outerDimName + "[" + outerDimSize + "]" +
+                    " index="    + (indexVar   < 0? "" : varNames[indexVar]) + "\n" +
+                    "    dims: outer=" + outerDimName + "[" + outerDimSize + "]" +
                     " inner=" + innerDimName + "[" + innerDimSize + "]" +
                     " obs=" + obsDimName + "[" + obsDimSize + "]");
             }
@@ -7286,17 +7315,17 @@ Dataset {
                     return;
                 }
 
-                //* Make interiorTable with variable[obs]?   some files have them
+                //* Make interiorTable with var[obs] and var[scalar][obs]?  some files have them
                 if (debugMode) String2.log("  Debug: make interiorTable with variable[obs]?");
                 if (ncCFcc != null) ncCFcc.set(86);
                 Table interiorTable = new Table();
                 int nLoadOrConVariablesInInteriorTable = 0; 
                 for (int v = 0; v < nVars; v++) {
-                    //read ALL interiorTable variables, not just varInLoadOrConVariables
-                    //because their all-mv rows determine which chunks of obs table to ignore
-                    if (varNDims[v] == 1 && varUsesDim[v][obsDim]) { //ensure correct dim
-                        if (varInLoadOrConVariables[v])
-                            nLoadOrConVariablesInInteriorTable++;
+                    if (!varInLoadOrConVariables[v])
+                        continue;
+                    if ((varNDims[v] == 1 && varUsesDim[v][obsDim]) || 
+                        (varNDims[v] == 2 && varUsesDim[v][obsDim] && varUsesDim[v][scalarDim])) { //always?
+                        nLoadOrConVariablesInInteriorTable++;
                         interiorTable.addColumn(interiorTable.nColumns(), varNames[v], 
                             NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                     }
@@ -7310,7 +7339,8 @@ Dataset {
                     //apply constraints (but keep all the rows)
                     if (ncCFcc != null) ncCFcc.set(87);
                     if (debugMode) String2.log("  Debug: interiorTable exists");
-                    interiorKeep = interiorTable.rowsWithData();
+                    interiorKeep = new BitSet();
+                    interiorKeep.set(0, interiorTableNRows, true);
                     int interiorNKeep = interiorTable.tryToApplyConstraints(
                         -1, conNames, conOps, conValues, interiorKeep);
                     if (interiorNKeep == 0) {
@@ -7322,7 +7352,7 @@ Dataset {
                         removeAllColumns();
                         return;
                     }
-                    if (debugMode) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString());
+                    if (debugMode) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString(5) + "...");
 
                     //are we done?
                     if (nLoadOrConVariablesInFile == nLoadOrConVariablesInInteriorTable) {
@@ -7404,6 +7434,7 @@ Dataset {
                 }              
 
                 //remove rows at end with all MV
+                int preNRows = nRows();
                 obsKeep = rowsWithData();  
                 addColumn(0, "outerIndexCol",       outerIndexColumnPA, new Attributes()); 
                 addColumn(1, "innerIndexCol",       innerIndexColumnPA, new Attributes());
@@ -7411,7 +7442,8 @@ Dataset {
                 //String2.log("  obs before justKeep(obsKeep):\n" + dataToCSVString());
                 justKeep(obsKeep);
                 if (debugMode) { 
-                    String2.log("  Debug: after removeRowsWithJustMVs nRows=" + nRows());
+                    String2.log("  Debug: main table nRows before=" + preNRows + 
+                        ", nRows after removeRowsWithJustMVs=" + nRows());
                     ensureValid();  //throws Exception if not
                 }
                 if (nRows() == 0) {
@@ -8335,6 +8367,559 @@ String2.log(table.toCSVString());
         table.readNcCF(fileName, null, null, null, null);
         String2.log(table.toCSVString());
         debugMode = oDebug;
+    }
+
+    /** This tests reading the gocd nccf files. */
+    public static void testReadGocdNcCF() throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
+        String2.log("\n*** Table.testReadGocdNcCF");
+        Table table = new Table();
+        String results, expected;
+        String fileName;
+        int po;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+/*
+        //*************** non-standard timeSeries file -- TOO WEIRD, don't support it
+        //some var var[time=7022][z=1], depth[z=1] 
+        //and other station vars (latitude, longitude) with no dimensions
+        fileName = "/data/gocd/gocdNcCF/gocd_v3_cmetr.nc"; 
+        String2.log("\n\n** Testing " + fileName);
+        String2.log(NcHelper.dumpString(fileName, false));
+//  dimensions:
+//    z = 1;
+//    time = 7022;
+//    float sampling_interval;  // :_FillValue = 9999.9f; // float
+//    float seafloor_depth;
+//    float latitude;
+//    float longitude;
+//    int latitude_quality_flag;
+//    int longitude_quality_flag;
+//    int crs;
+
+//    float depth(z=1);
+//    int depth_quality_flag(z=1);
+
+//    double time(time=7022);
+//    int time_quality_flag(time=7022);
+
+//    float u(time=7022, z=1);
+//    int u_quality_flag(time=7022, z=1);
+//    float v(time=7022, z=1);
+//    int v_quality_flag(time=7022, z=1);
+//    float current_speed(time=7022, z=1);
+//    int current_speed_quality_flag(time=7022, z=1);
+//    float current_direction(time=7022, z=1);
+//    int current_direction_quality_flag(time=7022, z=1);
+
+// global attributes:
+//  :gocd_id = "gocd_a0084999_tr1162.nc";
+//  :id = "0093183";
+//  :featureType = "timeSeries";
+//  :cdm_data_type = "Station";
+//  :instrument_type = "";
+        table.readNcCF(fileName, null, null, null, null);
+        //String2.log(table.toCSVString());
+        results = table.dataToCSVString(5);
+        expected = 
+"zztop\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        /* */
+
+
+        //*************** trajectory profile 
+        //This is important test of Table.readNcCF 
+        //  if multidimensional file, 2 levels, and outerDim=ScalarDim
+        //  this tests if var[scalarDim][obs] was read (e.g., depth[obs]
+        //File dims are outerDim=[scalarDim], inner=[time], obs=[obs]
+        table = new Table();
+        fileName = unitTestDataDir + "gocdNcCF/gocd_v3_sadcp.nc"; 
+        String2.log("\n\n** Testing " + fileName);
+        results = NcHelper.dumpString(fileName, false); //"u");  //false);
+        String2.log(results);
+//just the structure, rearranged into groups
+//  dimensions:
+//    time = 501;
+//    z = 70;
+
+//    float sampling_interval;
+//    int crs;
+//
+//    float seafloor_depth(time=501);
+//    float latitude(time=501);
+//    float longitude(time=501);
+//    double time(time=501);
+//    int latitude_quality_flag(time=501);
+//    int longitude_quality_flag(time=501);
+//    int time_quality_flag(time=501);
+//
+//    float depth(z=70);
+//    int depth_quality_flag(z=70);
+//
+//    float u(time=501, z=70);
+//    int u_quality_flag(time=501, z=70);
+//    float v(time=501, z=70);
+//    int v_quality_flag(time=501, z=70);
+//    float current_speed(time=501, z=70);
+//    int current_speed_quality_flag(time=501, z=70);
+//    float current_direction(time=501, z=70);
+//    int current_direction_quality_flag(time=501, z=70);
+
+        table.readNcCF(fileName, null, null, null, null);
+        os.reset();
+        table.saveAsDAS(os, SEQUENCE_NAME);
+        results = os.toString();
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  seafloor_depth {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String long_name \"Seafloor Depth\";\n" +
+"    String postive \"down\";\n" +
+"    String units \"meters\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String ancillary_variables \"latitude_quality_flag\";\n" +
+"    String axis \"Y\";\n" +
+"    Float64 data_max 21.0958;\n" +
+"    Float64 data_min -14.3883;\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String long_name \"latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String ancillary_variables \"longitude_quality_flag\";\n" +
+"    String axis \"X\";\n" +
+"    Float64 data_max -158.3554;\n" +
+"    Float64 data_min -176.8126;\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String long_name \"longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  latitude_quality_flag {\n" +
+"    Int32 _FillValue -9;\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Latitude Quality Flag\";\n" +
+"  }\n" +
+"  longitude_quality_flag {\n" +
+"    Int32 _FillValue -9;\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Longitude Quality Flag\";\n" +
+"  }\n" +
+"  depth {\n" +
+"    String C_format \"%7.2f\";\n" +
+"    Float64 data_max 720.0;\n" +
+"    Float64 data_min 30.0;\n" +
+"    String FORTRAN_format \"F7.2\";\n" +
+"    String long_name \"Depth\";\n" +
+"    String postive \"down\";\n" +
+"    String units \"meters\";\n" +
+"    Float32 valid_max 15000.0;\n" +
+"    Float32 valid_min 0.0;\n" +
+"  }\n" +
+"  depth_quality_flag {\n" +
+"    Int32 _FillValue -9;\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Depth QC Flags\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String ancillary_variables \"time_quality_flag\";\n" +
+"    String axis \"T\";\n" +
+"    String C_format \"%9.4f\";\n" +
+"    Float64 data_max 38751.8319444442;\n" +
+"    Float64 data_min 38730.9986111112;\n" +
+"    String FORTRAN_format \"F9.4\";\n" +
+"    String long_name \"time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String units \"days since 1900-01-01 00:00:00Z\";\n" +
+"  }\n" +
+"  time_quality_flag {\n" +
+"    Int32 _FillValue -9;\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Time Quality Flag\";\n" +
+"  }\n" +
+"  u {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String ancillary_variables \"u_quality_flag\";\n" +
+"    String C_format \"%7.4f\";\n" +
+"    String cell_methods \"time:point z:point\";\n" +
+"    String coordinates \"time z\";\n" +
+"    Float64 data_max 0.883000030517578;\n" +
+"    Float64 data_min -1.25;\n" +
+"    String FORTRAN_format \"F7.4\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String long_name \"Eastward Velocity Component\";\n" +
+"    String standard_name \"eastward_sea_water_velocity\";\n" +
+"    String units \"m s-1\";\n" +
+"    Float64 valid_max 5.0;\n" +
+"    Float64 valid_min -5.0;\n" +
+"  }\n" +
+"  u_quality_flag {\n" +
+"    Int32 _FillValue -9;\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Eastward Velocity component QC Flags\";\n" +
+"  }\n" +
+"  v {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String ancillary_variables \"v_quality_flag\";\n" +
+"    String C_format \"%7.4f\";\n" +
+"    String cell_methods \"time:point z:point\";\n" +
+"    String coordinates \"time z\";\n" +
+"    Float64 data_max 0.733;\n" +
+"    Float64 data_min -0.695;\n" +
+"    String FORTRAN_format \"F7.4\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String long_name \"Northward Velocity Component\";\n" +
+"    String standard_name \"northward_sea_water_velocity\";\n" +
+"    String units \"m s-1\";\n" +
+"    Float64 valid_max 5.0;\n" +
+"    Float64 valid_min -5.0;\n" +
+"  }\n" +
+"  v_quality_flag {\n" +
+"    Int32 _FillValue -9;\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Northward Velocity component QC Flags\";\n" +
+"  }\n" +
+"  current_speed {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String ancillary_variables \"current_direction_quality_flag\";\n" +
+"    String C_format \"%7.4f\";\n" +
+"    String cell_methods \"time:point z:point\";\n" +
+"    String coordinates \"time z\";\n" +
+"    Float64 data_max 141.42;\n" +
+"    Float64 data_min 0.0;\n" +
+"    String FORTRAN_format \"F7.4\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String long_name \"Current_Speed\";\n" +
+"    String units \"m s-1\";\n" +
+"    Float64 valid_max 7.0711;\n" +
+"    Float64 valid_min 0.0;\n" +
+"  }\n" +
+"  current_speed_quality_flag {\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Current Speed QC Flags\";\n" +
+"  }\n" +
+"  current_direction {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String ancillary_variables \"current_direction_quality_flag\";\n" +
+"    String C_format \"%5.1f\";\n" +
+"    String cell_methods \"time:point z:point\";\n" +
+"    String comment \"True Direction toward which current is flowing\";\n" +
+"    String coordinates \"time z\";\n" +
+"    Float64 data_max 360.0;\n" +
+"    Float64 data_min 0.3;\n" +
+"    String FORTRAN_format \"F5.1\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String long_name \"Current Direction\";\n" +
+"    String units \"degrees\";\n" +
+"    Float64 valid_max 360.0;\n" +
+"    Float64 valid_min 0.0;\n" +
+"  }\n" +
+"  current_direction_quality_flag {\n" +
+"    String flag_meanings \"good_value probably_good probably_bad bad_value modified_value not_used not_used not_used missing_value\";\n" +
+"    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
+"    String long_name \"Current Direction QC Flags\";\n" +
+"  }\n" +
+"  sampling_interval {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String long_name \"Sampling Interval\";\n" +
+"    String units \"minutes\";\n" +
+"  }\n" +
+"  crs {\n" +
+"    String epsg_code \"EPSG:4326\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String inverse_flattening \"298.257223563\";\n" +
+"    String long_name \"Coordinate Reference System\";\n" +
+"    String longitude_of_prime_meridian \"0.0f\";\n" +
+"    String semi_major_axis \"6378137.0\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String acknowledgment \"These data were acquired from the US NOAA National Centers for Environmental Information (NCEI) on [DATE] from http://www.nodc.noaa.gov/gocd/.\";\n" +
+"    String cdm_data_type \"TrajectoryProfile\";\n" +
+"    String cdm_profile_variables \"seafloor_depth, latitude, longitude, latitude_quality_flag, longitude_quality_flag, time, time_quality_flag\";\n" +
+"    String cdm_trajectory_variables \"sampling_interval, crs\";\n" +
+"    String contributor \"University of Hawaii and NOAA/NMFS\";\n" +
+"    String Conventions \"CF-1.6\";\n" +
+"    String creator_email \"Charles.Sun@noaa.gov\";\n" +
+"    String creator_name \"Charles Sun\";\n" +
+"    String creator_url \"http://www.nodc.noaa.gov\";\n" +
+"    String date_created \"2014-12-15T20:20:04Z\";\n" +
+"    String date_issued \"2016-01-18T04:39:10Z\";\n" +
+"    String date_modified \"2016-01-18T04:39:10Z\";\n" +
+"    String featureType \"trajectoryProfile\";\n" +
+"    Float32 geospatial_lat_max 21.0958;\n" +
+"    Float32 geospatial_lat_min -14.3883;\n" +
+"    String geospatial_lat_resolution \"point\";\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float32 geospatial_lon_max -158.3554;\n" +
+"    Float32 geospatial_lon_min -176.8126;\n" +
+"    String geospatial_lon_resolution \"point\";\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float32 geospatial_vertical_max 720.0;\n" +
+"    Float32 geospatial_vertical_min 30.0;\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
+"    String geospatial_vertical_resolution \"point\";\n" +
+"    String geospatial_vertical_units \"meters\";\n" +
+"    String gocd_format_version \"GOCD-3.0\";\n" +
+"    String gocd_id \"gocd_a0067774_01192v3.nc\";\n" +
+"    String history \"Wed Feb 10 18:31:43 2016: ncrename -d depth,z test.nc\n" +
+"2016-01-18T04:39:10Z csun updateOCD.R Version 2.0\n" +
+"Thu Jan  7 15:59:35 2016: ncatted -a valid_max,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
+"Thu Jan  7 15:59:35 2016: ncatted -a valid_min,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
+"Thu Jan  7 15:59:35 2016: ncatted -a missing_value,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
+"Thu Jan  7 15:59:35 2016: ncatted -a missing_value,sampling_interval,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
+"2016-01-07T14:01:54Z csun updateGOCD.R Version 1.0\n" +
+"2014-12-15T20:20:04Z csun convJASADCP.f90 Version 1.0\";\n" +
+"    String id \"0093183\";\n" +
+"    String institution \"NOAA National Centers for Environmental Information\";\n" +
+"    String instrument_type \"Ocean Surveyor OS75\";\n" +
+"    String keywords \"EARTH SCIENCE,OCEANS,OCEAN CIRCULATION,OCEAN CURRENTS\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"These data are openly available to the public Please acknowledge the use of these data with the text given in the acknowledgment attribute.\";\n" +
+"    String Metadata_Conventions \"Unidata Dataset Discovery v1.0\";\n" +
+"    String naming_authority \"gov.noaa.nodc\";\n" +
+"    String principal_invesigator \"E.Firing,J.Hummon,R.Brainard\";\n" +
+"    String project_name \"Coral Reef Ecosystem Investigations\";\n" +
+"    String publisher_email \"NODC.Services@noaa.gov\";\n" +
+"    String publisher_name \"US DOC; NESDIS; NATIONAL CENTERS FOR ENVIRONMENTAL INFORMATION - IN295\";\n" +
+"    String publisher_url \"http://www.nodc.noaa.gov/\";\n" +
+"    String QC_indicator \"Contact Principle Investigaror(s)\";\n" +
+"    String QC_Manual \"Contact Principle Investigaror(s)\";\n" +
+"    String QC_Software \"Contact Principle Investigaror(s)\";\n" +
+"    String QC_test_codes \"Contact Principle Investigaror(s)\";\n" +
+"    String QC_test_names \"Contact Principle Investigaror(s)\";\n" +
+"    String QC_test_results \"Contact Principle Investigaror(s)\";\n" +
+"    String references \"http://www.nodc.noaa.gov/\";\n" +
+"    String source \"global ocean currents in the NCEI archive holdings\";\n" +
+"    String standard_name_vocabulary \"CF-1.6\";\n" +
+"    String subsetVariables \"sampling_interval, crs, seafloor_depth, latitude, longitude, latitude_quality_flag, longitude_quality_flag, time, time_quality_flag\";\n" +
+"    String summary \"global ocean currents in the NCEI archive holdings\";\n" +
+"    String time_coverage_duration \"P0Y020DT20H00M00S\";\n" +
+"    String time_coverage_end \"2006-02-05T19:58:00Z\";\n" +
+"    String time_coverage_resolution \"R000501/2006-01-15T23:58:00Z/P0Y020DT20H00M00\";\n" +
+"    String time_coverage_start \"2006-01-15T23:58:00Z\";\n" +
+"    String title \"Global Ocean Currents Database  - gocd_a0067774_01192v3.nc\";\n" +
+"    String uuid \"26f4a163-4c81-437b-9ad7-796822d1ce49\";\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        os.reset();
+        table.saveAsDDS(os, SEQUENCE_NAME);
+        results = os.toString();
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float32 seafloor_depth;\n" +
+"    Float32 latitude;\n" +
+"    Float32 longitude;\n" +
+"    Int32 latitude_quality_flag;\n" +
+"    Int32 longitude_quality_flag;\n" +
+"    Float32 depth;\n" +
+"    Int32 depth_quality_flag;\n" +
+"    Float64 time;\n" +
+"    Int32 time_quality_flag;\n" +
+"    Float32 u;\n" +
+"    Int32 u_quality_flag;\n" +
+"    Float32 v;\n" +
+"    Int32 v_quality_flag;\n" +
+"    Float32 current_speed;\n" +
+"    Int32 current_speed_quality_flag;\n" +
+"    Float32 current_direction;\n" +
+"    Int32 current_direction_quality_flag;\n" +
+"    Float32 sampling_interval;\n" +
+"    Int32 crs;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //String2.log(table.toCSVString());
+        results = table.dataToCSVString(5);
+        expected = 
+"row,seafloor_depth,latitude,longitude,latitude_quality_flag,longitude_quality_flag," +
+  "depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
+  "current_speed,current_speed_quality_flag,current_direction," +
+  "current_direction_quality_flag,sampling_interval,crs\n" +
+// sfDpth lat      lon          depth  time         u        v       cspeed  cdir    sampInt,crs
+"0,9999.9,21.0958,-158.3554,1,1,30.0,1,38730.9986,1,-0.004,1,0.174,1,0.174,1,358.7,1,9999.9,0\n" +
+"1,9999.9,21.0958,-158.3554,1,1,40.0,1,38730.9986,1,-0.008,1,0.169,1,0.1692,1,357.3,1,9999.9,0\n" +
+"2,9999.9,21.0958,-158.3554,1,1,50.0,1,38730.9986,1,-0.01,1,0.165,1,0.1653,1,356.5,1,9999.9,0\n" +
+"3,9999.9,21.0958,-158.3554,1,1,60.0,1,38730.9986,1,-0.009,1,0.163,1,0.1632,1,356.8,1,9999.9,0\n" +
+"4,9999.9,21.0958,-158.3554,1,1,70.0,1,38730.9986,1,-0.012,1,0.173,1,0.1734,1,356.0,1,9999.9,0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = table.dataToCSVString(); //no row numbers
+        expected =     //why are cspeed and cdir known, but u,v not?
+//sfDpth lat      lon          depth   time         u         v         cspeed   cdir   sampInt,crs
+"9999.9,-14.2758,-170.6805,1,1,680.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
+"9999.9,-14.2758,-170.6805,1,1,690.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
+"9999.9,-14.2758,-170.6805,1,1,700.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
+"9999.9,-14.2758,-170.6805,1,1,710.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
+"9999.9,-14.2758,-170.6805,1,1,720.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n";
+        po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po), expected, 
+            "results=\n" + results.substring(po));
+        /* */
+
+
+        //***************  a similar test
+        //  2 levels, and outerDim=ScalarDim
+        //  this tests if var[scalarDim][obs] was read (e.g., depth[obs]
+        //File dims are outerDim=[scalarDim], inner=[time], obs=[obs]
+        table = new Table();
+        fileName = "/data/gocd/gocd_v3_madcp.nc"; 
+        String2.log("\n\n** Testing " + fileName);
+        results = NcHelper.dumpString(fileName, false);
+        String2.log(results);
+//just the structure, rearranged into groups
+//   z = 14;
+//   time = 3188;
+//   int crs;
+//   float sampling_interval;
+//   float seafloor_depth;
+//   float latitude;
+//   float longitude;
+//   int latitude_quality_flag;
+//   int longitude_quality_flag;
+
+//   float depth(z=14);
+//   int depth_quality_flag(z=14);
+
+//   double time(time=3188);
+//   int time_quality_flag(time=3188);
+
+//   float u(time=3188, z=14);
+//   int u_quality_flag(time=3188, z=14);
+//   float v(time=3188, z=14);
+//   int v_quality_flag(time=3188, z=14);
+//   float current_speed(time=3188, z=14);
+//   int current_speed_quality_flag(time=3188, z=14);
+//   float current_direction(time=3188, z=14);
+//   int current_direction_quality_flag(time=3188, z=14);
+
+        table.readNcCF(fileName, null, null, null, null);
+        os.reset();
+        table.saveAsDDS(os, SEQUENCE_NAME);
+        results = os.toString();
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float32 depth;\n" +
+"    Int32 depth_quality_flag;\n" +
+"    Float64 time;\n" +
+"    Int32 time_quality_flag;\n" +
+"    Float32 u;\n" +
+"    Int32 u_quality_flag;\n" +
+"    Float32 v;\n" +
+"    Int32 v_quality_flag;\n" +
+"    Float32 current_speed;\n" +
+"    Int32 current_speed_quality_flag;\n" +
+"    Float32 current_direction;\n" +
+"    Int32 current_direction_quality_flag;\n" +
+"    Float32 sampling_interval;\n" +
+"    Float32 seafloor_depth;\n" +
+"    Float32 latitude;\n" +
+"    Float32 longitude;\n" +
+"    Int32 latitude_quality_flag;\n" +
+"    Int32 longitude_quality_flag;\n" +
+"    Int32 crs;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //String2.log(table.toCSVString());
+        results = table.dataToCSVString(5);
+        expected = 
+"row,depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
+"current_speed,current_speed_quality_flag,current_direction," +
+"current_direction_quality_flag,sampling_interval,seafloor_depth,latitude,longitude," +
+"latitude_quality_flag,longitude_quality_flag,crs\n" +
+// depth q time       q u      q v      q cspeed q cDir q si   sDepth  lat      lon       q q crs
+"0,26.34,1,38621.7448,1,0.0066,1,0.0072,1,0.0111,1,42.8,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"1,24.34,1,38621.7448,1,0.0279,1,-0.008,1,0.0292,1,106.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"2,22.34,1,38621.7448,1,0.0325,1,2.0E-4,1,0.033,1,89.7,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"3,20.34,1,38621.7448,1,-0.0094,1,0.0011,1,0.0121,1,277.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"4,18.34,1,38621.7448,1,-0.0383,1,-0.0367,1,0.0532,1,226.2,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = table.dataToCSVString(); //no row numbers
+        //String2.log(results);
+        expected =     //why are cspeed and cdir known, but u,v not?
+//depth q time     q u       q v       q cspeed q cDir  q si   sDepth  lat      lon       q q crs
+"8.34,1,38754.5365,1,-0.0177,1,-0.0152,1,0.0257,1,229.2,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"6.34,1,38754.5365,1,-0.0186,1,-0.0145,1,0.0251,1,232.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"4.34,1,38754.5365,1,-0.0149,1,-0.0181,1,0.03,1,219.4,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"2.34,1,38754.5365,1,-0.0026,2,-0.0202,2,0.0293,1,187.4,2,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"0.34,1,38754.5365,1,9999.9,9,9999.9,9,9999.9,9,45.0,9,60.0,32.6386,42.37859,-70.78094,1,1,0\n";
+        po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po), expected, 
+            "results=\n" + results.substring(po));
+        /* */
+
+
+        // ************* v4 file #1 timeSeries has
+        // featureType=timeSeriesProfile   cdm_data_type=profile
+        // outerdim=scalar   var[time=6952][z=1]  time[time=6952] depth[z=1]
+        table = new Table();
+        fileName = "/data/gocd/gocd_a0000841_rcm00566_v4.nc"; 
+        String2.log("\n\n** Testing " + fileName);
+        results = NcHelper.dumpString(fileName, false); //"u");  //false);
+        String2.log(results);
+        table.readNcCF(fileName, null, null, null, null);
+        String2.log(table.dataToCSVString());
+        results = table.dataToCSVString(5);
+        expected = 
+"row,depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
+"current_speed,current_speed_quality_flag,current_direction,current_direction_quality_flag," +
+"sampling_interval,seafloor_depth,latitude,longitude,latitude_quality_flag," +
+"longitude_quality_flag,crs\n" +
+// depth  q time               q u     q v      q cSpeed p dir q si   sd     lat       lon        q q crs
+"0,1980.0,1,31662.424999999814,1,0.015,1,0.0865,1,0.0878,1,9.8,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
+"1,1980.0,1,31662.46666666679,1,-0.0045,1,0.0933,1,0.0934,1,357.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
+"2,1980.0,1,31662.508333333302,1,-0.0072,1,0.0856,1,0.0859,1,355.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
+"3,1980.0,1,31662.549999999814,1,-0.0065999995,1,0.1025,1,0.1027,1,356.3,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
+"4,1980.0,1,31662.59166666679,1,-0.0036,1,0.11200001,1,0.1121,1,358.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        /* */
+
+        //********************* v4 file #2 has
+/*        // featureType=timeSeriesProfile   cdm_data_type=profile
+        // latitude=scalar   var[time=126][z=12]  time[time=126] depth[z=12]
+        table = new Table();
+        fileName = "/data/gocd/gocd_a0060062_4381adc-a_v4.nc"; 
+        String2.log("\n\n** Testing " + fileName);
+        results = NcHelper.dumpString(fileName, false); //"u");  //false);
+        String2.log(results);
+        table.readNcCF(fileName, null, null, null, null);
+        String2.log(table.dataToCSVString());
+        results = table.dataToCSVString(5);
+        expected = 
+"zz\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        /* */
+
+        String2.log("\n*** Table.testReadGocdNcCF finished successfully");
+        debugMode = oDebug;
+
     }
 
     /** This tests readNcCF nLevels=2. */
@@ -15020,7 +15605,7 @@ String2.log(table.dataToCSVString());
 
     /**
      * This does the equivalent of a left outer join 
-     * (http://en.wikipedia.org/wiki/Join_%28SQL%29#Left_outer_join) 
+     * (https://en.wikipedia.org/wiki/Join_%28SQL%29#Left_outer_join) 
      * -- by matching a keyColumn(s) 
      * in this table and the first column(s) (the key(s)) in the lookUpTable, 
      * the other columns in the lookUpTable are inserted right after keyColumn(s)
@@ -20428,7 +21013,7 @@ touble: because table is JsonObject, info may not be in expected order
      * <li> If no exception is thrown, the file was successfully read.
      * </ul>
      *
-     * @param url e.g., http://127.0.0.1:8080/cwexperimental/info/pmelTaoDySst/index.json .
+     * @param url e.g., http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.json .
      *    It MUST be already percentEncoded as needed.
      * @throws Exception if trouble
      */
@@ -20837,8 +21422,8 @@ touble: because table is JsonObject, info may not be in expected order
 
         //******************* test readErddapInfo
         //String tUrl = "http://coastwatch.pfeg.noaa.gov/erddap2";
-        //http://127.0.0.1:8080/cwexperimental/info/pmelTaoDySst/index.json
-        String tUrl = "http://127.0.0.1:8080/cwexperimental";
+        //http://localhost:8080/cwexperimental/info/pmelTaoDySst/index.json
+        String tUrl = "http://localhost:8080/cwexperimental";
         try {
             table.readErddapInfo(tUrl + "/info/pmelTaoDySst/index.json");
             String ncHeader = table.getNCHeader("row");
@@ -23567,6 +24152,7 @@ expected =
         testReadNcCFASATimeSeriesProfile(false);
         testReadNcCFASATrajectoryProfile(false);
         testReadNcCFMATimeSeriesReversed();
+        testReadGocdNcCF();
         if (ncCFcc != null) {
             ncCFcc.flip(0, 100);  //there are currently 99 code coverage tests
             String2.pressEnterToContinue("\nTable.readNcCF code coverage: notTested=" + ncCFcc.toString());

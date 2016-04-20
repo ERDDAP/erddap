@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * This class maintains the subscriptions for people who want to 
@@ -76,15 +77,17 @@ public class Subscriptions {
     protected PersistentTable persistentTable;
     protected HashSet<String> emailBlacklist = new HashSet();
 
-    /** key=datasetID, value=HashSet of persistentTable row numbers */
-    protected HashMap datasetSubscriptions = new HashMap();  
-    /** key=email, value=HashSet of persistentTable row numbers for valid and pending subscriptions */
-    protected HashMap emailSubscriptions = new HashMap();  
+    /** From the point of view of a dataset: which subscriptions are for a given dataset.
+        key=datasetID, value=HashSet of persistentTable row numbers */
+    protected HashMap<String,HashSet> datasetSubscriptions = new HashMap();  
+    /** From the point of view of email addresses: which subscriptions are related to that email address.
+        key=email, value=HashSet of persistentTable row numbers for valid and pending subscriptions */
+    protected HashMap<String,HashSet> emailSubscriptions = new HashMap();  
 
     /** key=comboKey, value=persistentTable Integer row number */
-    protected HashMap pendingSubscriptions = new HashMap();  
+    protected HashMap<String,Integer> pendingSubscriptions = new HashMap();  
     /** key=comboKey, value=persistentTable Integer row number */
-    protected HashMap validSubscriptions = new HashMap();  
+    protected HashMap<String,Integer> validSubscriptions = new HashMap();  
 
 
     /** 
@@ -162,6 +165,7 @@ public class Subscriptions {
 
     /**
      * This sets the email blacklist (any previous list is thrown out).
+     * <br>Use the name "*" to blacklist an entire domain, e.g., *@domain.com .
      * <br>All valid and pending subscriptions for these email addresses will be removed immediately.
      * <br>No email is sent to user to notify them.
      * <br>Future requests from these email addresses will be rejected.
@@ -174,28 +178,34 @@ public class Subscriptions {
     public synchronized int setEmailBlacklist(String blacklistCsv) {
         int nRemoved = 0;
         try { 
+            //set up new blacklist
             String sa[] = StringArray.arrayFromCSV(blacklistCsv);
             emailBlacklist = new HashSet();        
             for (int i = 0; i < sa.length; i++) {
                 String email = sa[i];
-                if (String2.isEmailAddress(email)) {
+                if (String2.isSomething(email) && email.indexOf('@') >= 0)   //very loose test
                     emailBlacklist.add(email);
-                    try {
-                        //get the row numbers for that email
-                        IntArray rows = getSortedEmailSubscriptions(email);  
-                        if (rows != null) {
-                            for (int which = 0; which < rows.size(); which++) {
-                                int row = rows.get(which);
-                                remove(row, readKey(row));
-                                nRemoved++;
-                            }
+            }
+
+            //then go through list of subscribers emails, remove any on blacklist
+            //key=email, value=HashSet of persistentTable row numbers for valid and pending subscriptions */
+            Set<String> emailSet = emailSubscriptions.keySet();
+            for (String email : emailSet) {
+                try {
+                    ensureEmailValid(email); //throws Throwable if it or *@domain.com is on blacklist
+                } catch (Throwable t2) {
+                    //remove subscriptions for that email
+                    IntArray rows = getSortedEmailSubscriptions(email);  
+                    if (rows != null) {
+                        for (int which = 0; which < rows.size(); which++) {
+                            int row = rows.get(which);
+                            remove(row, readKey(row));
+                            nRemoved++;
                         }
-                    } catch (Throwable t) {
-                        String2.log("Error in Subscriptions.setEmailBlacklist for email=" + email + ":\n" +
-                            MustBe.throwableToString(t));
                     }
                 }
             }
+
         } catch (Throwable eb) {
             String2.log("Error in Subscriptions.setEmailBlacklist:\n" +
                 MustBe.throwableToString(eb));
@@ -237,8 +247,8 @@ public class Subscriptions {
      *
      * @returns true if the row was in the hashset.
      */
-    protected synchronized boolean _removeSubscription(HashMap map, String key, int row) {
-        HashSet rowNumbers = (HashSet)map.get(key);
+    protected synchronized boolean _removeSubscription(HashMap<String,HashSet> map, String key, int row) {
+        HashSet rowNumbers = map.get(key);
         if (rowNumbers == null) 
             return false;
         boolean result = rowNumbers.remove(new Integer(row)); 
@@ -260,8 +270,8 @@ public class Subscriptions {
      *
      * @return a sorted IntArray with persistent table row numbers, or null (if key not found)
      */
-    protected synchronized IntArray _getSortedSubscriptions(HashMap map, String key) {
-        HashSet hashSet = (HashSet)map.get(key);  
+    protected synchronized IntArray _getSortedSubscriptions(HashMap<String,HashSet> map, String key) {
+        HashSet hashSet = map.get(key);  
         if (hashSet == null)
             return null;
         IntArray rows = new IntArray();
@@ -327,19 +337,35 @@ public class Subscriptions {
             erddapUrl + "/" + LIST_HTML + "?email=" + email + "\n"; 
     }
 
+    /** This tests that an email address is valid.
+     *
+     * @param email
+     * @returns an error message or "" if no error.
+     */
+    public synchronized String testEmailValid(String email) {
+        if (!String2.isEmailAddress(email)) 
+            return String2.ERROR + ": \"" + email + "\" is in not a valid email address.";
+        if (email.length() > EMAIL_LENGTH) 
+            return String2.ERROR + ": email=" + email + " has more than " + 
+                EMAIL_LENGTH + " characters.";
+        int atPo = email.indexOf('@');
+        //String2.log(">>email=" + email + "\n>>emailBlacklist=" + emailBlacklist.toString());
+        //if (atPo > 0) String2.log(">>email2=*" + email.substring(atPo));
+        if (emailBlacklist.contains(email) || 
+            (atPo > 0 && emailBlacklist.contains("*" + email.substring(atPo))))  //e.g., *@example.com
+            return String2.ERROR + ": \"" + email + "\" is on the email blacklist.";
+        return "";
+    }
+
     /** This ensures that an email address is valid.
      *
      * @param email
      * @throws Throwable if it isn't valid
      */
-    public synchronized void ensureEmailValid(String email) throws Throwable {
-        if (!String2.isEmailAddress(email)) 
-            throw new Exception(String2.ERROR + ": \"" + email + "\" is in not a valid email address.");
-        if (email.length() > EMAIL_LENGTH) 
-            throw new Exception(String2.ERROR + ": email=" + email + " has more than " + 
-                EMAIL_LENGTH + " characters.");
-        if (emailBlacklist.contains(email))
-            throw new Exception(String2.ERROR + ": \"" + email + "\" is on the email blacklist.");
+    public synchronized void ensureEmailValid(String email) throws Exception {
+        String msg = testEmailValid(email);
+        if (msg.length() > 0)
+            throw new Exception(msg);
     }
 
     /**
@@ -353,7 +379,7 @@ public class Subscriptions {
         int nRows = persistentTable.nRows();
         Iterator it = pendingSubscriptions.keySet().iterator();
         while (it.hasNext()) {
-            int row = ((Integer)pendingSubscriptions.get(it.next())).intValue();
+            int row = (pendingSubscriptions.get(it.next())).intValue();
             int creationMinute = (row < 0 || row >= nRows)? -1 :
                 readCreationMinute(row);
             if (creationMinute == Integer.MAX_VALUE || creationMinute < oldestPendingAllowed) {
@@ -422,7 +448,7 @@ public class Subscriptions {
         //try to find identical pending or valid subscription
         String comboKey = comboKey(datasetID, email, action);
         int currentMinute = (int)(System.currentTimeMillis() / 60000); //safe
-        Integer rowInteger = (Integer)(pendingSubscriptions.get(comboKey));
+        Integer rowInteger = pendingSubscriptions.get(comboKey);
         int row = -1;
         if (rowInteger != null) {
             //it's already pending 
@@ -430,7 +456,7 @@ public class Subscriptions {
             writeCreationMinute(row, currentMinute); //refresh it
             persistentTable.flush();
         } else {
-            rowInteger = (Integer)(validSubscriptions.get(comboKey));
+            rowInteger = validSubscriptions.get(comboKey);
             if (rowInteger == null) {
                 //it's new
                 //find first empty row
@@ -584,9 +610,9 @@ public class Subscriptions {
         throws Throwable {
 
         String comboKey = comboKey(datasetID, email, action);
-        Integer rowInteger = (Integer)(validSubscriptions.get(comboKey));
+        Integer rowInteger = validSubscriptions.get(comboKey);
         if (rowInteger == null)
-            rowInteger = (Integer)(pendingSubscriptions.get(comboKey));
+            rowInteger = pendingSubscriptions.get(comboKey);
         if (rowInteger == null)
             return false;
         int row = rowInteger.intValue();
@@ -825,15 +851,15 @@ public class Subscriptions {
 "So if you don't want the subscription, you don't have to do anything.\n" +
 "\n" +
 "To validate the subscription, visit\n" +
-"http://127.0.0.1:8080/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
+"http://localhost:8080/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "Now or in the future, you can delete that subscription (unsubscribe) with\n" +
-"http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
+"http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://127.0.0.1:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n";              
+"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n";              
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             Test.ensureEqual(sub.persistentTable.nRows(), 1, "");
@@ -851,14 +877,14 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         pending\n" +
-"to validate:    http://127.0.0.1:8080/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
+"to validate:    http://localhost:8080/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://127.0.0.1:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
+"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
                 "results=\n" + results);
         }
 
@@ -883,14 +909,14 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
+"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://127.0.0.1:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
+"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
                 "results=\n" + results);
         }
 
@@ -941,13 +967,13 @@ public class Subscriptions {
 "(nEmailAddress=2, nPendingSubscriptions=5, nValidSubscriptions=0)\n" +
 "\n" +
 "jane.smith@company.com\n" +
-"rPmelTao            pending http://www.yahoo.com                http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
+"rPmelTao            pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
 "\n" +
 "john.smith@company.com\n" +
-"pmelTao             pending mailto:john.smith@company.com       http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
-"pmelTao             pending http://www.google.com               http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
-"rPmelTao            pending mailto:john.smith@company.com       http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
-"rPmelTao            pending http://www.yahoo.com                http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"pmelTao             pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"pmelTao             pending http://www.google.com               http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"rPmelTao            pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"rPmelTao            pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n",
             "results=\n" + results);
 
@@ -974,29 +1000,29 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
 "\n" +
 "datasetID:      pmelTao\n" +
 "action:         http://www.google.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
 "\n" +
 "datasetID:      rPmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
 "\n" +
 "datasetID:      rPmelTao\n" +
 "action:         http://www.yahoo.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://127.0.0.1:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://127.0.0.1:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n",
+"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n",
             "results=\n" + results);
 
         //remove 
@@ -1021,7 +1047,7 @@ public class Subscriptions {
         //emailBlacklist
         sub.add(sampleDatasetID, sampleEmail, "http://www.google.com");
         Test.ensureEqual(sub.setEmailBlacklist(""), 0, "");
-        Test.ensureEqual(sub.setEmailBlacklist("a@b.com," + sampleEmail), 1, "");
+        Test.ensureEqual(sub.setEmailBlacklist("a@b.com, *@c.com, " + sampleEmail), 1, "");
         results = "";
         try { 
             sub.add(sampleDatasetID, sampleEmail, "http://www.google.com");
@@ -1030,6 +1056,16 @@ public class Subscriptions {
         }
         Test.ensureEqual(results, 
             String2.ERROR + ": \"john.smith@company.com\" is on the email blacklist.",
+            "results=\n" + results);
+
+        results = "";
+        try { 
+            sub.add(sampleDatasetID, "c@c.com", "http://www.google.com");
+        } catch (Throwable t) {
+            results = t.getMessage();
+        }
+        Test.ensureEqual(results, 
+            String2.ERROR + ": \"c@c.com\" is on the email blacklist.",
             "results=\n" + results);
 
         results = "";

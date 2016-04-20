@@ -116,7 +116,13 @@ public class String2 {
 
     private static String classPath; //lazy creation by getClassPath
 
-    private static Map canonicalMap = new WeakHashMap();
+    //splitting canonicalMap into 4 maps allows each to be bigger
+    //and makes synchronized contention less common.
+    private static Map canonicalMap[] = new Map[6];
+    static {
+        for (int i = 0; i < canonicalMap.length; i++)
+            canonicalMap[i] = new WeakHashMap();
+    }
 
     //EDStatic may change this
     public static String unitTestDataDir = "/erddapTest/";
@@ -1021,6 +1027,21 @@ public class String2 {
         return false;
     }
 
+    /** Returns true if all of the characters in s are hex digits.
+     * A 0-length string returns false.
+     */
+    public static final boolean isHexString(String s) {
+        if (s == null)
+            return false;
+        int sLength = s.length();
+        if (sLength == 0)
+            return false;
+        for (int i = 0; i < sLength; i++)
+            if (!isHexDigit(s.charAt(i)))
+                return false;
+        return true;
+    }
+
     /**
      * 0..9.
      * Non-Latin numeric characters are not included (see Java Lang Spec pg 14).
@@ -1182,11 +1203,29 @@ public class String2 {
         return true;
     }
 
+    /** returns true if ch is 32..126. */
+    public static final boolean isAsciiPrintable(int ch) {
+        if (ch <   32) return false;
+        if (ch <= 126) return true; 
+        return false;
+    }
+
+    /** Returns true if all of the characters in s are 32..126 */
+    public static final boolean isAsciiPrintable(String s) {
+        if (s == null)
+            return false;
+        int sLength = s.length();
+        for (int i = 0; i < sLength; i++)
+            if (!isAsciiPrintable(s.charAt(i)))
+                return false;
+        return true;
+    }
     /**
      * This returns the string with all non-isPrintable characters removed.
      *
      * @param s
-     * @return s with all the non-isPrintable characters removed
+     * @return s with all the non-isPrintable characters removed.
+     *   If s is null, this throws null pointer exception.
      */
     public static String justPrintable(String s) {
         int n = s.length();
@@ -1345,7 +1384,7 @@ public class String2 {
      *   this emphasizes readability, not avoiding losing information.
      * Non-safe characters are converted to '_'.
      * Adjacent '_' are collapsed into '_'.
-     * See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
+     * See posix fully portable file names at https://en.wikipedia.org/wiki/Filename .
      * See javadocs for java.net.URLEncoder, which describes valid characters
      *  (but deals with encoding, whereas this method alters or removes).
      * The result may be shorter than s.
@@ -3158,11 +3197,11 @@ log("logFileMaxSize=" + logFileMaxSize);
 1) In Erddap.java, set log file size to 1 byte (so default of 10K will be used)
 2) run local erddap with standard test datasets
 3) in a browser, in separate tabs, simultaneously load
-http://127.0.0.1:8080/cwexperimental/tabledap/erdGtsppBest.htmlTable?&depth=200&temperature=10
-http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.htmlTable?&atmp=10&wtmp=10
-http://127.0.0.1:8080/cwexperimental/tabledap/pmelTaoDySst.htmlTable?&T_25=25
+http://localhost/cwexperimental/tabledap/erdGtsppBest.htmlTable?&depth=200&temperature=10
+http://localhost/cwexperimental/tabledap/cwwcNDBCMet.htmlTable?&atmp=10&wtmp=10
+http://localhost/cwexperimental/tabledap/pmelTaoDySst.htmlTable?&T_25=25
 and zoom and pan with controls in 
-  http://127.0.0.1:8080/cwexperimental/wms/erdBAssta5day/index.html
+  http://localhost/cwexperimental/wms/erdBAssta5day/index.html
 */
         try {
             //write to system.out and/or logFile 
@@ -4424,7 +4463,7 @@ and zoom and pan with controls in
     /**
      * This returns the directory that is the classpath for the source
      * code files (with forward slashes and a trailing slash, 
-     * e.g., c:/programs/tomcat/webapps/cwexperimental/WEB-INF/classes/.
+     * e.g., c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/.
      *
      * @return directory that is the classpath for the source
      *     code files (with / separator and / at the end)
@@ -4445,7 +4484,7 @@ and zoom and pan with controls in
                 classPath = classPath.substring(1);
 
             //classPath is a URL! so spaces are encoded as %20 on Windows!
-            //UTF-8: see http://en.wikipedia.org/wiki/Percent-encoding#Current_standard
+            //UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
             try {
                 classPath = URLDecoder.decode(classPath, "UTF-8");  
             } catch (Throwable t) {
@@ -4832,9 +4871,23 @@ and zoom and pan with controls in
      *   or null if password is null or there is trouble.
      */
     public static String md5Hex(String password) {
+        return passwordDigest("MD5", password);
+    }
+
+    /**
+     * This returns the hash digest of getUTF8Bytes(password) as a String of lowercase hex digits.
+     * Lowercase because the digest authentication standard uses lower case; so mimic them.
+     * And lowercase is easier to type.
+     * 
+     * @param algorithm one of the FILE_DIGEST_OPTIONS
+     * @param password  the text to be digested
+     * @return the SHA256 hash digest of the password (256 lowercase hex digits, as a String),
+     *   or null if password is null or there is trouble.
+     */
+    public static String passwordDigest(String algorithm, String password) {
         try {
             if (password == null) return null;
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance(algorithm);
             md.update(getUTF8Bytes(password));
             byte bytes[] = md.digest();
             int nBytes = bytes.length;
@@ -4843,7 +4896,6 @@ and zoom and pan with controls in
                 sb.append(zeroPad(Integer.toHexString(
                     (int)bytes[i] & 0xFF), 2));   //safe, (int) and 0xFF make it unsigned byte
             return sb.toString();
-            //return password == null? null : DigestUtils.md5Hex(password).toLowerCase();     
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return null;
@@ -5000,7 +5052,7 @@ and zoom and pan with controls in
      * <br>This returns the string with just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
      * <br>'x' and non-safe characters are CONVERTED to 'x' plus their 
      *   2 lowercase hexadecimalDigit number or "xx" + their 4 hexadecimalDigit number.
-     * <br>See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
+     * <br>See posix fully portable file names at https://en.wikipedia.org/wiki/Filename .
      * <br>When the encoding is more than 25 characters, this stops encoding and 
      *   adds "xh" and the hash code for the entire original string,
      *   so the result will always be less than ~41 characters.
@@ -5047,7 +5099,7 @@ and zoom and pan with controls in
      * </ul>
      * <br>'x' and non-safe characters are CONVERTED to 'x' plus their 
      *   2 lowercase hexadecimalDigit number or "xx" + their 4 hexadecimalDigit number.
-     * <br>See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
+     * <br>See posix fully portable file names at https://en.wikipedia.org/wiki/Filename .
      * <br>When the encoding is more than 25 characters, this stops encoding and 
      *   adds "xh" and the hash code for the entire original string,
      *   so the result will always be less than ~41 characters.
@@ -5143,20 +5195,27 @@ and zoom and pan with controls in
     public static String canonical(String s) {
         if (s == null)
             return null;
-        //it usually slows things down to compare to lastCanonical String.
-
+        if (s.length() == 0)
+            return "";
+        //generally, it slows things down to see if same as last canonical String.
+        char ch0 = s.charAt(0);
+        Map tCanonicalMap = canonicalMap[
+            ch0 < 'A'? 0 : ch0 < 'N'? 1 : //divide uppercase into 2 parts
+            ch0 < 'a'? 2 : ch0 < 'j'? 3 : //divide lowercase into 3 parts
+            ch0 < 'r'? 4 : 5];
+       
         //faster and logically better to synchronized(canonicalMap) once 
         //  (and use a few times in consistent state)
         //than to synchronize canonicalMap and lock/unlock twice
-        synchronized (canonicalMap) {
-            WeakReference wr = (WeakReference)canonicalMap.get(s);
-            //wr won't be garbage collected, but referent might (making wr.get() return null)
+        synchronized (tCanonicalMap) {
+            WeakReference wr = (WeakReference)tCanonicalMap.get(s);
+            //wr won't be garbage collected, but reference might (making wr.get() return null)
             String canonical = wr == null? null : (String)(wr.get());
             if (canonical == null) {
                 //For proof that new String(s.substring(,)) is just storing relevant chars,
                 //not a reference to the parent string, see TestUtil.testString2canonical2()
                 canonical = new String(s); //in case s is from s2.substring, copy to be just the characters
-                canonicalMap.put(canonical, new WeakReference(canonical));
+                tCanonicalMap.put(canonical, new WeakReference(canonical));
                 //String2.log("new canonical string: " + canonical);
             }
             return canonical;
@@ -5165,7 +5224,10 @@ and zoom and pan with controls in
 
     /** This is only used to test canonical. */
     public static int canonicalSize() {
-        return canonicalMap.size();
+        int sum = 0;
+        for (int i = 0; i < canonicalMap.length; i++)
+            sum += canonicalMap[i].size();
+        return sum;
     }
 
     /** 

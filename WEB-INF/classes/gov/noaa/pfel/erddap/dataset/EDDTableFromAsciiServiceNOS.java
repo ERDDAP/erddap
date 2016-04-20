@@ -51,7 +51,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
 
     /** The constructor. */
-    public EDDTableFromAsciiServiceNOS(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromAsciiServiceNOS(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File,
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -62,7 +63,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         String tBeforeData[], String tAfterData, String tNoData)
         throws Throwable {
 
-        super("EDDTableFromAsciiServiceNOS", tDatasetID, tAccessibleTo,
+        super("EDDTableFromAsciiServiceNOS", tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
             tDataVariables,
@@ -691,7 +693,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         in.close();
         table.leftToRightSort(1);
 
-        String dir = "c:/programs/tomcat/content/erddap/subset/";
+        String dir = "c:/programs/_tomcat/content/erddap/subset/";
         table.saveAsJson(dir + "nosCoopsCA.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
         String2.log(table.dataToCSVString());
 
@@ -713,7 +715,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         //reload the Capabilities document
         if (reloadStationsFile)
             reloadStationsFile();
-        String dir = "c:/programs/tomcat/content/erddap/subset/";
+        String dir = "c:/programs/_tomcat/content/erddap/subset/";
         Table table;
         int c;
 
@@ -962,7 +964,7 @@ Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level
         datumDesc.readMap(datumsHash, "Datum", "Description");
         String2.log(datumDesc.dataToCSVString());
 
-        String dir = "c:/programs/tomcat/content/erddap/subset/";
+        String dir = "c:/programs/_tomcat/content/erddap/subset/";
         toTable.saveAsJson(dir + "nosCoopsWLR6.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
         toTable.saveAsJson(dir + "nosCoopsWLR1.json",  -1, false);
         toTable.saveAsJson(dir + "nosCoopsWLV6.json",  -1, false);
@@ -1128,17 +1130,17 @@ These datasets were hard to work with:
 //9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063,2014-12-25T21:00:00Z,MLLW,1.841,0.048,0,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,waterLevel,sigma,I,F,R,L\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m,m,,,,\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n";
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,\"NWLON,PORTS\",-122.4659,37.8063," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1165,16 +1167,16 @@ These datasets were hard to work with:
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2014-12-25T14:00:00Z,MLLW,1.641,0.002,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,waterLevel,sigma,I,L\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m,m,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1206,7 +1208,7 @@ These datasets were hard to work with:
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2014-11-23T00:30:00Z,MLLW,1.374,H,0,0
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
@@ -1351,17 +1353,17 @@ These datasets were hard to work with:
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2015-02-02T00:00:00Z,1,AT,-1.0,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,AT,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1390,17 +1392,17 @@ These datasets were hard to work with:
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2015-02-02T00:00:00Z,1,BP,1019.5,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,BP,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,hPa,,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1431,17 +1433,17 @@ These datasets were hard to work with:
 //8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3267,41.505,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,CN,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,mS/cm,,,\n" +
-id + cityLL + daysAgo + "00:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:06:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:12:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:18:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:24:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:30:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:36:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:42:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:48:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:54:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
+id + cityLL + daysAgo + "00:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:06:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:12:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:18:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:24:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:30:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:36:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:42:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:48:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "00:54:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1470,16 +1472,16 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
 //9752619,"Isabel Segunda, Vieques Island",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153,2015-02-02T00:00:00Z,1,J1,0.0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,mm,,\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,0\n";// +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1508,17 +1510,17 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
 //9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409,2015-02-02T00:00:00Z,1,RH,91.4,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RH,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,percent,,,\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:00:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:06:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:12:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:18:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:24:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:30:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:36:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:42:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:48:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:54:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "01:00:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n";
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:00:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:06:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:12:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:18:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:24:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:30:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:36:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:42:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:48:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "00:54:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409," + daysAgo + "01:00:00Z,1,RH,\\d\\d\\.\\d,0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1547,17 +1549,17 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2010-10-24T00:00:00Z,1,WT,14.8,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,WT,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1586,17 +1588,17 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
 //8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2015-02-02T00:00:00Z,1,WS,1.86,22.72,3.2,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,WS,WD,WG,X,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,m s-1,degrees_true,m s-1,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {

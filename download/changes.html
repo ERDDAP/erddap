@@ -46,6 +46,285 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.70">Changes</a> in ERDDAP version 1.70 (released 2016-04-15)</h2>
+<ul>
+<li><b>New Features (for users):</b> None.
+  <br>&nbsp;
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  Below, there are several recommended changes to the documentation in your
+  setup.xml file. 
+  <br>Please make these changes now. 
+  <br>30 minutes work now may save you hours of confusion in the future.
+  <ul>
+  <li>Bug fix: The problem was that requests which were redirected to a remote ERDDAP
+    failed with a <tt>invalid character '|'</tt> error message.
+    This only occurred with recent versions of Tomcat. 
+    Thanks to Rusty Holleman, Conor Delaney, and Roy Mendelssohn.
+  <li>Bug fix: ERDDAP now uses an up-to-date version of netcdf-java
+    (it's a long story) which includes up-to-date support for NcML,
+    which fixes the problem with NcML LogicalReduce not working as expected. 
+    There may be a few small changes to the metadata which ERDDAP reads 
+    via netcdf-java from .nc, .hdf, .grib, and .bufr files.
+    Thanks to Favio Medrano.
+  <li>The new 
+  <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableAggregateRows"
+    >EDDTableAggregateRows</a> allows you to make a merged EDDTable dataset
+    from two or more EDDTable datasets
+    which have the same data variables using the same units.
+    Thanks To Kevin O'Brien.  
+  <li>New options for EDDTableFromDatabase
+    (<a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanOrderBy"
+    >sourceCanOrderBy</a> and
+    <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanDoDistinct"
+    >sourceCanDoDistinct</a>)
+    let you specify whether ERDDAP, the database, or both, handle
+    distinct and orderBy (and all variants) constraints.
+    Thanks to David Karuga.
+  <li>You can now make a private dataset's graphs and metadata available to 
+    the public via the new 
+    <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#graphsAccessibleTo"
+    >&lt;graphsAccessibleTo&gt;public&lt;/graphsAccessibleTo&gt;</a>
+    tag.
+    Thanks to Emanuele Lombardi.
+  <li>Now, if a string passed to GenerateDatasetsXml or DasDds
+    is surrounded by double quotes, it is unquoted (as if it is a JSON string).
+    Thanks to John Kerfoot and Melanie Abecassis.
+  <li>GenerateDatasetsXml now supports "default" to get the default 
+    and "nothing" to get an empty string (they work with or without quotes).
+    This solves some problems related to passing empty strings.   
+  <li>Now, in GenerateDatasetsXml, for all EDDGridFromFiles and EDDTableFromFiles 
+    datasets, 
+    if the sampleFileName you specify is "" (the empty string),
+    it will use the last matching fileName from the directory + regex + recursive=true.
+  <li>Updated: The displayInBrowser code which is used to display the results of
+    GenerateDatasetsXml and DasDds on Linux computers was out-of-date
+    and gave an odd message about Netscape.
+    Now, this uses a modern Linux tool: xdg-open. Thanks to Melanie Abecassis.
+  <li>The allDatasets dataset now has a "files" column, which indicates the
+    base URL of the /files link (if there is one) for the dataset.
+
+  <li>Increase the general security of your ERDDAP by changing the
+    permissions associated with the tomcat directory and the bigParentDirectory:
+    <br>(The actual commands below are for Linux. For other OS's, make 
+      analogous changes.)
+    <ul>
+    <li>Change the "group" to be tomcat, your username, 
+      or the name of a small group that includes tomcat and 
+      all the administrators of Tomcat/ERDDAP, e.g., 
+      <br><tt>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+      <br><tt>chgrp -R <i>yourUserName bigParentDirectory</i></tt>  
+    <li>Change permissions so that tomcat and the group have 
+      read, write, execute privileges, e.g,. 
+      <br><tt>chmod -R ug+rwx apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+      <br><tt>chmod -R ug+rwx <i>bigParentDirectory</i></tt>  
+    <li>Remove "other" user's permissions to read, write, or execute:
+      <br><tt>chmod -R o-rwx apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+      <br><tt>chmod -R o-rwx <i>bigParentDirectory</i></tt> 
+      <br>This is important, because it prevents other users from
+        reading possibly sensitive information in ERDDAP setup files, log files,
+        and files with information about private datasets.
+    </ul>
+
+  <li>The authentication/login system was revamped.  
+    Thanks to Thomas Gardner, Emanuele Lombardi, and the U.S. government's new 
+    <a rel="help" href="https://https.cio.gov/">HTTPS-Only Standard</a>.
+    <ul>    
+
+
+    <li>The authentication=openid option was removed. It was out-of-date.
+    <li>The new, recommended, 
+      <a rel="help"
+      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationGoogle"
+      >authentication=google</a>
+      option uses Google Sign-In
+      (based on OAuth 2.0) to allow anyone with a Google email account
+      (including Google managed accounts like @noaa.gov) to log in.
+    <li>The new, 
+      <a rel="help"
+      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationEmail"
+      >authentication=email</a>
+      option is a back up for authentication=google.
+      It allows users with a &lt;user&gt; tag in datasets.xml 
+      to log in by sending them an email with a special link.
+
+    <li>In your setup.xml, please change the description for &lt;authentication&gt; 
+    to be <pre>
+&lt;!-- If you want to restrict access to some datasets, 
+you need to specify the method used for logging on (authentication).
+See the info at 
+http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+Currently, the options are: "" (logins not supported, the default), 
+"custom", "email", and "google" (recommended).  
+[No longer supported: "basic", "openid"]
+--&gt;</pre>
+
+    <li>In your setup.xml, please add this right below the &lt;authentication&gt; tag<pre>
+&lt;!-- If authentication=google, you must supply your Google Client ID. 
+See
+https://developers.google.com/identity/sign-in/web/devconsole-project
+When setting this up, for Authorized JavaScript origins, 
+for testing on your computer, use the domain "localhost" 
+(e.g., origin=https://localhost:8443), 
+not "127.0.0.1" (because Google Sign-In doesn't work with anything 
+at that domain).
+This will be a string of about 75 characters, probably starting with
+several digits and ending with .apps.googleusercontent.com .
+--&gt;
+&lt;googleClientID&gt;&lt;/googleClientID&gt;</pre>
+
+    <li>Now, users who aren't logged in can use http or https URLs (if you have
+      set up &lt;baseHttpsUrl&gt; in your setup.xml).     
+      Thanks to the U.S. government's new 
+      <a rel="help" href="https://https.cio.gov/">HTTPS-Only Standard</a>.
+
+    <li>Now, you can encourage all users to use https (not http)
+      by setting &lt;baseUrl&gt; to be an https URL.
+      To force users to use only https, you must also make changes to your
+      Apache/Tomcat setup to block non-https access.
+      Thanks to the U.S. government's new 
+      <a rel="help" href="https://https.cio.gov/">HTTPS-Only Standard</a>.
+      <p>In your setup.xml, please change the description for &lt;baseUrl&gt; 
+      to be <pre>
+&lt;!-- baseUrl is the start of the public url, to which "/erddap" 
+is appended. For example:
+For running/testing on your personal computer:
+  &lt;baseUrl&gt;http://localhost:8080&lt;/baseUrl&gt;     
+  (127.0.0.1 doesn't work with authentication=google).
+For ERD releases, we use
+  &lt;baseUrl&gt;http://coastwatch.pfeg.noaa.gov&lt;/baseUrl&gt;    
+If you want to encourage all users to use https (not http), 
+  make the baseUrl the same as the baseHttpsUrl (see below).
+--&gt;</pre>
+    
+    <li>The options &lt;passwordEncoding&gt; changed.
+    In your setup.xml, please change the description for &lt;passwordEncoding&gt; 
+    to be <pre>
+&lt;!-- For "custom" authentication, this specifies how you have 
+stored passwords in the roles tags in datasets.xml.
+If you aren't storing any passwords, this is irrelevant.
+The options (in order of increasing security) are: 
+"MD5", "UEPMD5" (MD5(UserName:ERDDAP:Password)), 
+"SHA256", "UEPSHA256" (SHA256(UserName:ERDDAP:Password), 
+the default).
+You should only use "MD5" or "SHA256" if you need to match 
+values stored that way in an external password database.
+See the info at 
+http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+--&gt; </pre>
+
+    <li>In your setup.xml, please change the description for &lt;baseHttpsUrl&gt; 
+    to be<pre>
+&lt;!-- This is a variant of &lt;baseUrl&gt; which is used when 
+authentication is active and the user is logged in.
+In general, you take the &lt;baseUrl&gt;, change "http" to "https", 
+and change/add ":8443". This must begin with "https://".
+If you make a proxy so that ":8443" isn't needed, 
+then don't use ":8443" here.
+This is relevant even if &lt;authentication&gt; is "".
+See the instructions at 
+http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+For example:
+For running/testing on your personal computer:
+  &lt;baseHttpsUrl&gt;https://localhost:8443&lt;/baseHttpsUrl&gt;                  
+For releases at ERD, we use:
+  &lt;baseHttpsUrl&gt;https://coastwatch.pfeg.noaa.gov&lt;/baseHttpsUrl&gt;  
+If you want to encourage all users to use https (not http), 
+  make the baseUrl (see above) the same as the baseHttpsUrl.
+--&gt; </pre>
+
+    <li>Now, if <tt>listPrivateDatasets=true</tt> in setup.xml,
+      even less information will be shown about datasets that a user 
+      doesn't have access to.     
+
+    </ul>
+
+  <li>Now, especially for when you are initially setting up your ERDDAP,
+      you can now tell ERDDAP not to try to subscribe to remote 
+      ERDDAP datasets. Thanks to Filipe Rocha Freire.
+      <br>In your setup.xml, right before <tt>&lt;fontFamily&gt;</tt>, please add<pre>
+&lt!-- Normally, if you have a EDDGridFromErddap or EDDTableFromErddap 
+dataset in your datasets.xml, it will try to subscribe to the remote 
+ERDDAP dataset so that the local dataset is kept perfectly up-to-date.
+If this ERDDAP is not publicly accessible (http://localhost), or its
+IP address will change soon, or you have some other reason, 
+you can tell this ERDDAP to not try to subscribe to the remote 
+ERDDAP datasets by setting this to false. (default=true) 
+This is the overall setting for this ERDDAP. It can be overridden by
+the same tag (with a different value) in the datasets.xml chunk for 
+a given EDD...FromErddap dataset. 
+For each fromErddap dataset that doesn't subscribe to the remote 
+ERDDAP dataset, you should set &lt;reloadEveryNMinutes&gt; to a smaller 
+number so that the local dataset stays reasonably up-to-date. --&gt;
+&lt;subscribeToRemoteErddapDataset&gt;true&lt;/subscribeToRemoteErddapDataset&gt;</pre>
+
+  <li>In your setup.xml, in the instructions above &lt;emailFromAddress&gt;,
+    please insert:
+    <br><tt>If possible, set this up to use a secure connection (SSL / TLS) 
+    to the email server.</tt>
+    <br>If your setup isn't using a secure connection to the email server,
+    please make the changes to make it so.    
+
+  <li>In your datasets.xml, please add this line to the description of 
+    &lt;subscriptionEmailBlacklist&gt; in your datasets.xml:
+    <br><tt>You can use the name "*" to blacklist an entire domain, e.g., *@example.com .</tt>
+
+  <li>Since the change to the logging system in v1.66, the log file is 
+    never up-to-date. There are always messages or parts of messages 
+    waiting to be written to the log file. 
+    Now, you can make it up-to-date (for an instant)
+    by viewing your ERDDAP's status web page at http://<i>your.domain.org</i>/erddap/status.html .
+
+<li>HashDigest .......
+  <li>A small change (to String2.canonical) 
+    that should help keep things moving quickly
+    when ERDDAP is very busy and also better deal with a very large number of 
+    datasets.
+  <li>Strongly Recommended: stop using &lt;convertToPublicSourceUrl&gt; in datasets.xml
+    to convert an IP number in a dataset's &lt;sourceUrl&gt; (e.g., http://192.168.#.#/)
+    into a domain names (e.g., http:my.domain.org/).
+    From now on, new subscriptions to http://localhost, http://127.0.0.1, and 
+    http://192.168.#.# URLS won't be allowed for security reasons.
+    So please always use the public domain name in the <tt>&lt;sourceUrl&gt;</tt> 
+    tag (if needed because of DNS problems), you can use the
+    <a rel="help" href="http://linux.die.net/man/5/hosts">/etc/hosts table on your server</a>
+    to solve the problem by converting local domain names to IP numbers without 
+    using a DNS server.
+    You can test if a given domain name gets properly resolved by using
+    <br><tt>ping <i>some.domain.name</i></tt>
+  <li>The Cassandra driver was updated to cassandra-driver-core-3.0.0.jar 
+    and thus for Cassandra v3.
+    EDDTableFromCassandra doesn't take advantage of any new features in Cassandra v3.
+    Indexes in Cassandra can now be more complex, but ERDDAP still 
+    uses the Cassandra v2 index model, which assumes that an indexed column 
+    can be directly queried with '=' constraints.
+    If you need support for more complex indexes or other new features,
+    please email bob.simons at noaa.gov .
+  <li>Jars and the Classpath - 
+    Almost all of the included third-party .jar files were updated 
+    to their latest versions.
+    <ul>
+    <li>slf4j.jar was added to /lib and the classpath. 
+    <li>joid.jar and tsik.jar were removed from /lib and the classpath.
+    <li>If you get error messages about classes not found
+      when you compile or run ERDDAP or one of its tools, 
+      compare your command line's classpath to ERDDAP's
+      <a rel="help"
+      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#classpath"
+      >current classpath</a>      
+      to figure out which .jars are missing from your classpath.
+    </ul>    
+  </ul>    
+</ul>
+
+
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.68">Changes</a> in ERDDAP version 1.68 (released 2016-02-08)</h2>
 <ul>
 <li><b>New Features (for users):</b> None.
@@ -3017,7 +3296,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.66
+<p>ERDDAP, Version 1.70
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

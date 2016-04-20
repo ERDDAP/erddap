@@ -71,7 +71,8 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
      *    ERDDAP to try to generate FGDC metadata for this dataset).
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
-    public EDDTableFromPostNcFiles(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromPostNcFiles(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
@@ -87,7 +88,8 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
         boolean tAccessibleViaFiles) 
         throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+        super(tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, 
             tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
@@ -168,7 +170,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
      * See the EDDTable method documentation.
      *
      * <p>The method avoids SQL Injection Vulnerability
-     * (see http://en.wikipedia.org/wiki/SQL_injection) by using
+     * (see https://en.wikipedia.org/wiki/SQL_injection) by using
      * preparedStatements (so String values are properly escaped and
      * numeric values are assured to be numeric values).
      *

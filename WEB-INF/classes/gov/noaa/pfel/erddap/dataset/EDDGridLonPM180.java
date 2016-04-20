@@ -79,6 +79,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         //data to be obtained while reading xml
         EDDGrid tChildDataset = null;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -137,6 +138,8 @@ public class EDDGridLonPM180 extends EDDGrid {
             else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis = String2.parseInt(content); 
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<onChange>")) {}
@@ -154,7 +157,8 @@ public class EDDGridLonPM180 extends EDDGrid {
         }
 
         //make the main dataset based on the information gathered
-        return new EDDGridLonPM180(erddap, tDatasetID, tAccessibleTo, tAccessibleViaWMS,
+        return new EDDGridLonPM180(erddap, tDatasetID, 
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, tDefaultDataQuery, tDefaultGraphQuery,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
             tChildDataset);
@@ -183,7 +187,7 @@ public class EDDGridLonPM180 extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridLonPM180(Erddap tErddap, String tDatasetID, 
-        String tAccessibleTo,  boolean tAccessibleViaWMS,
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
@@ -199,6 +203,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         className = "EDDGridLonPM180"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
@@ -209,11 +214,11 @@ public class EDDGridLonPM180 extends EDDGrid {
         defaultGraphQuery = tDefaultGraphQuery;
 
         if (oChildDataset == null)
-            throw new RuntimeException(String2.ERROR + ": childDataset=null!");
+            throw new RuntimeException(errorInMethod + "childDataset=null!");
         Test.ensureFileNameSafe(datasetID, "datasetID");
         if (datasetID.equals(oChildDataset.datasetID()))
-            throw new RuntimeException(String2.ERROR + 
-                ": This dataset's datasetID must not be the same as the child's datasetID.");
+            throw new RuntimeException(errorInMethod + 
+                "This dataset's datasetID must not be the same as the child's datasetID.");
 
         //is oChildDataset a fromErddap from this erddap?
         //Get childDataset or localChildDataset. Work with stable local reference.
@@ -222,11 +227,12 @@ public class EDDGridLonPM180 extends EDDGrid {
             EDDGridFromErddap tFromErddap = (EDDGridFromErddap)oChildDataset;
             String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
             if (tSourceUrl.startsWith(EDStatic.baseUrl) ||   //normally
-                tSourceUrl.startsWith("http://127.0.0.1")) { //happens during testing
+                tSourceUrl.startsWith("http://127.0.0.1") ||
+                tSourceUrl.startsWith("http://localhost")) { //happens during testing
                 String lcdid = File2.getNameNoExtension(tSourceUrl);
                 if (datasetID.equals(lcdid))
-                    throw new RuntimeException(String2.ERROR + 
-                        ": This dataset's datasetID must not be the same as the localChild's datasetID.");
+                    throw new RuntimeException(errorInMethod + 
+                        "This dataset's datasetID must not be the same as the localChild's datasetID.");
                 EDDGrid lcd = tErddap.gridDatasetHashMap.get(lcdid);
                 if (lcd != null) {
                     //yes, use child dataset from this erddap
@@ -282,13 +288,13 @@ public class EDDGridLonPM180 extends EDDGrid {
         depthIndex = tChildDataset.depthIndex;
         timeIndex  = tChildDataset.timeIndex;
         if (lonIndex < 0)
-            throw new RuntimeException(String2.ERROR + 
-                ": The child dataset doesn't have a longitude axis variable.");
+            throw new RuntimeException(errorInMethod + 
+                "The child dataset doesn't have a longitude axis variable.");
 
 //lonIndex not rightmost isn't tested. So throw exception and ask admin for sample.
 if (lonIndex < nAv - 1)
-    throw new RuntimeException(String2.ERROR + 
-        ": The longitude dimension isn't the rightmost dimension. This is untested. " +
+    throw new RuntimeException(errorInMethod + 
+        "The longitude dimension isn't the rightmost dimension. This is untested. " +
         "Please send a sample file to bob.simons@noaa.gov .");
 
         //make/copy the local dataVariables
@@ -299,11 +305,11 @@ if (lonIndex < nAv - 1)
         //figure out the newLonValues
         EDVLonGridAxis childLon = (EDVLonGridAxis)axisVariables[lonIndex];
         if (!childLon.isAscending())
-            throw new RuntimeException(String2.ERROR + 
-                ": The child longitude axis has descending values!");
+            throw new RuntimeException(errorInMethod + 
+                "The child longitude axis has descending values!");
         if (childLon.destinationMax() <= 180)
-            throw new RuntimeException(String2.ERROR + 
-                ": The child longitude axis has no values >180 (max=" + 
+            throw new RuntimeException(errorInMethod + 
+                "The child longitude axis has no values >180 (max=" + 
                 childLon.destinationMax() + ")!");
         PrimitiveArray childLonValues = childLon.destinationValues();
         int nChildLonValues = childLonValues.size();
@@ -323,8 +329,8 @@ if (lonIndex < nAv - 1)
         }        
         sloni180 = sloni179 + 1;  //first index >=180
         if (childLonValues.getDouble(sloni180) > 360)
-            throw new RuntimeException(String2.ERROR + 
-                ": There are no child longitude values in the range 180 to 360!");
+            throw new RuntimeException(errorInMethod + 
+                "There are no child longitude values in the range 180 to 360!");
         sloni359 = childLonValues.binaryFindLastLE(sloni180, nChildLonValues - 1, 360); //last index <=360
         if (childLonValues.getDouble(sloni359) == 360 && //there is a value=360
             sloni359 > sloni180 &&  //and it isn't the only value in the range 180 to 360...
@@ -347,8 +353,8 @@ if (lonIndex < nAv - 1)
             int insertN = Math2.roundToInt(Math.floor((lon0 - lon359) / spacing)) - 1;
             if (insertN >= 1) {  //enough space to insert 1 regularly spaced lon values
 
-                //throw new RuntimeException(String2.ERROR + 
-                //    ": The child longitude axis has no values >180 (max=" + 
+                //throw new RuntimeException(errorInMethod + 
+                //    "The child longitude axis has no values >180 (max=" + 
                 //    childLon.destinationMax() + ")!");
 
                 insert359i = newLonValues.size();
@@ -978,7 +984,7 @@ expected =
         //test of /files/ system for fromErddap in local host dataset
         String2.log("\n* Test getting /files/ from local host erddap...");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/files/test_erdMWchlamday_LonPM180/");
+            "http://localhost:8080/cwexperimental/files/test_erdMWchlamday_LonPM180/");
         expected = "MW2002182&#x5f;2002212&#x5f;chla&#x2e;nc"; //"MW2002182_2002212_chla.nc";
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
@@ -1174,7 +1180,7 @@ expected =
         //test of /files/ system for fromErddap in local host dataset
         String2.log("\n* Test getting /files/ from local host erddap...");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/files/test_erdPHsstamday_LonPM180/");
+            "http://localhost:8080/cwexperimental/files/test_erdPHsstamday_LonPM180/");
         expected = "PH1981244&#x5f;1981273&#x5f;ssta&#x2e;nc"; //"PH1981244_1981273_ssta.nc";
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
@@ -1419,7 +1425,8 @@ expected =
             throw new RuntimeException("shouldn't get here");
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
-            if (msg.indexOf("ERROR: The child longitude axis has no values >180 (max=179.9792)!") < 0)
+            if (msg.indexOf("Error in EDDGridLonPM180(notApplicable_LonPM180) constructor:\n" +
+                "The child longitude axis has no values >180 (max=179.9792)!") < 0)
                 throw t;
         }
 
@@ -1431,15 +1438,15 @@ expected =
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 63];\n" + //changes
+"  Float64 time[time = 65];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 63][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 65][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 63];\n" +  //changes
+"      Float64 time[time = 65];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +

@@ -140,8 +140,12 @@ Joint Research Centre of the European Commission)
 <li>UW APL (University of Washington, Applied Physics Laboratory) 
   <!-- 2015-04-02 Mike Harrington -->
 </ul>
+This is just a list of some of the organizations where ERDDAP has been installed 
+by some individual or some group. 
+It does not imply that the individual, the group, or the organization recommends
+or endorses ERDDAP.
 
-<b>ERDDAP is recommended within NOAA</b> 
+<p><b>ERDDAP is recommended within NOAA</b> 
 <br><a rel="bookmark" 
 href="https://geo-ide.noaa.gov/wiki/index.php?title=Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
   src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -160,22 +164,31 @@ and post your question there.
 <h2><a name="initialSetup">How</a> To Do the Initial Setup of ERDDAP on Your Server</h2>
 ERDDAP can run on any server that supports Java and Tomcat (and perhaps other application servers).  
 ERDDAP has been tested on Linux (including on Amazon's AWS), Mac, and Windows computers.   
-<br><b>Amazon</b> - If you are installing
+<ul>
+<li><b>Amazon</b> - If you are installing
 ERDDAP on an Amazon Web Services EC2 instance, see this 
 <a rel="help" href="#amazon">Amazon Web Services Overview</a> (below)
 first.
-<br><b>Docker</b> - Axiom now offers 
+<li><b>Docker</b> - Axiom now offers 
 <a rel="bookmark" href="https://hub.docker.com/u/axiom/">ERDDAP in a Docker container<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
-    We haven't worked with Docker yet. If you work with this, please send us your comments.
-<br><b>Windows</b> - Running ERDDAP on Windows may have problems: 
+    <br>If you don't already use Docker, we don't recommend this. 
+    <br>If you chose to install ERDDAP via Docker, we don't offer any support
+      for the installation process.
+    <br>We haven't worked with Docker yet. If you work with this, please send us your comments.
+
+<li><b>Linux and Macs</b> - ERDDAP works great on Linux and Mac computers. 
+<li><b>Windows</b> - Windows is fine for testing ERDDAP and for personal use, 
+but we don't recommend using it for public ERDDAPs. 
+Running ERDDAP on Windows may have problems: 
 notably, ERDDAP may be unable to delete 
 and/or rename files quickly. This is probably due to antivirus software (e.g., from MacAfee
 and Norton) which is checking the files for viruses. If you run into this problem (which
 can be seen by error messages in the log.txt file like "Unable to delete ..."), changing the
 antivirus software's settings may partially alleviate the problem. Or consider using a Linux
 or Mac server instead.
+</ul>
 
 <p><b>The standard ERDDAP installation instructions are:</b>
 <ol>
@@ -243,7 +256,7 @@ or Mac server instead.
       This makes it impossible for hackers to log in to your server as user tomcat.
       And in any case, you should make it so that the tomcat user has very limited 
       permissions on the server's file system 
-      (read/write privileges for the apache-tomcat directory tree and 
+      (read+write+execute privileges for the apache-tomcat directory tree and 
       &lt;bigParentDirectory&gt; 
       and read-only privileges for directories with data that ERDDAP needs access to). 
       <ul>
@@ -254,14 +267,26 @@ or Mac server instead.
         <br>(It will ask you for the superuser password for permission to do this.)
       <li>You can stop working as user tomcat by using the command
         <br><tt>exit</tt>
-      <li>You should change ownership of the apache-tomcat directory tree to the tomcat user.
-        From the parent of the apache-tomcat directory, type 
-      <br><tt>chown -R tomcat apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
-      <br><tt>chgrp -R tomcat apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
-      <br>(but substitute the actual name of your tomcat directory) right after unpacking Tomcat.
-      Do most of the rest of the setup instructions as user "tomcat".
-      Later, run the startup.sh and shutdown.sh scripts as user "tomcat" so that Tomcat has 
-      permission to write to its log files.
+      <li>Do most of the rest of the Tomcat and ERDDAP setup instructions as user "tomcat".
+        Later, run the startup.sh and shutdown.sh scripts as user "tomcat" so that Tomcat has 
+        permission to write to its log files.
+      <li>After unpacking Tomcat, from the parent of the apache-tomcat directory:
+        <ul>
+        <li>Change ownership of the apache-tomcat directory tree to the tomcat user.
+          <br><tt>chown -R tomcat apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+          <br>(but substitute the actual name of your tomcat directory). 
+        <li>Change the "group" to be tomcat, your username, 
+          or the name of a small group that includes tomcat and 
+          all the administrators of Tomcat/ERDDAP, e.g., 
+          <br><tt>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+        <li>Change permissions so that tomcat and the group have 
+          read, write, execute privileges, e.g,. 
+          <br><tt>chmod -R ug+rwx apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+        <li>Remove "other" user's permissions to read, write, or execute:
+          <br><tt>chmod -R o-rwx apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+          <br>This is important, because it prevents other users from
+            reading possibly sensitive information in ERDDAP setup files.
+        </ul>
       <br>&nbsp;
       </ul>
 
@@ -273,10 +298,10 @@ or Mac server instead.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh 
       (or \'s and .bat in Windows).
       The file should contain:<tt>
-      <br>export JAVA_HOME=/usr/local/jdk1.8.0_51/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk1.8.0_77/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.0.9</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.0.23</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>In Windows, use <tt>set</tt> instead of <tt>export</tt> and \'s instead of /'s.
@@ -385,10 +410,10 @@ or Mac server instead.
       Please check back here tomorrow. Sorry for the inconvenience,
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: c:\content\bat\md5.bat erddapContent1.64.zip -->
+     <!-- Use: c:\content\bat\md5.bat erddapContent1.70.zip -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.64, size=24,996 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2015-08-19)
+    (version 1.70, size=26,759 bytes, MD5=97084B0ABE38D4DE88408918AD301AD9, dated 2016-04-15)
 
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
@@ -406,6 +431,15 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.62.zip">1.62</a>
     (size=25,035 bytes, MD5=4B17A93CE52087C53AF6AEA905391418, dated 2015-06-08)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.64.zip">1.64</a>
+    (size=24,996 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2015-08-19)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.66.zip">1.66</a>
+    (size=25,887 bytes, MD5=70B46B5E96DD17F4DCEAC27CC95BDFBB, dated 2016-01-19)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.68.zip">1.68</a>
+    (size=25,896 bytes, MD5=8E375D13D388E0D290110E196117E3DC, dated 2016-02-08)
     ]
 
   <p>Then,
@@ -417,6 +451,24 @@ or Mac server instead.
       <tt>&lt;bigParentDirectory&gt;, &lt;emailEverythingTo&gt;, &lt;baseUrl&gt;,
       &lt;baseHttpsUrl&gt;, &lt;email.*&gt;, &lt;admin.*&gt;</tt> 
       (and <tt>&lt;fontFamily&gt;</tt> if you are using Bitstream Vera Sans fonts).
+
+    <p>When you create the bigParentDirectory, from the parent directory of
+      bigParentDirectory:
+      <ul>
+      <li>Make user=tomcat the owner of the bigParentDirectory, e.g.,
+        <br><tt>chown -R tomcat <i>bigParentDirectory</i></tt>
+      <li>Change the "group" to be tomcat, your username, 
+        or the name of a small group that includes tomcat and 
+        all the administrators of Tomcat/ERDDAP, e.g., 
+        <br><tt>chgrp -R <i>yourUserName</i> <i>bigParentDirectory</i></tt>
+      <li>Change permissions so that tomcat and the group have 
+        read, write, execute privileges, e.g,. 
+        <br><tt>chmod -R ug+rwx <i>bigParentDirectory</i></tt>
+      <li>Remove "other" user's permissions to read, write, or execute:
+        <br><tt>chmod -R o-rwx <i>bigParentDirectory</i></tt>
+          reading possibly sensitive information in ERDDAP log files
+          and files with information about private datasets.
+      </ul>
 
   <li><a name="datasets.xml">Read</a> the comments in 
       <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>, then modify the XML in 
@@ -449,11 +501,11 @@ or Mac server instead.
       Please check back here tomorrow. Sorry for the inconvenience,
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download 
-    <!-- use: c:\content\bat\md5.bat erddap1.64.war  
+    <!-- use: c:\content\bat\md5.bat erddap1.70.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.64, size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
+    (version 1.70, size=556,163,762 bytes, MD5=3320ADB87E9F3AB31EBF89260C64AF19, dated 2016-04-15)
 
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
@@ -470,6 +522,15 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.62.war">1.62</a> 
     (size=491,038,285 bytes, MD5=1FDF3F349EC7D87A4A88AD14A7B5F41A, dated 2015-06-09)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.64.war">1.64</a> 
+    (size=511,898,199 bytes, MD5=0E11741BF06EE5388C022F3632EE1915, dated 2015-08-19)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.66.war">1.66</a> 
+    (size=512,007,729 bytes, MD5=71CB248B05F0340BE6CF4CF71F3BD8E6, dated 2016-01-19)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.68.war">1.68</a> 
+    (size=511,995,047 bytes, MD5=0E919CBDAD014B724DE89F40C8CA9379, dated 2016-02-08)
     ]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
@@ -477,10 +538,19 @@ or Mac server instead.
   <br>/etc/httpd/conf/httpd.conf
   file to allow HTTP traffic to/from ERDDAP without requiring the port number, e.g., :8080, in the URL:
   <ol>
-  <li>Add the following lines right before <tt>#&lt;IfModule mod_proxy.c&gt;</tt> :<tt>
-    <br>&nbsp;&nbsp; ProxyPass /erddap http://<i>www.YourServer.org</i>:8080/erddap
-    <br>&nbsp;&nbsp; ProxyPassReverse /erddap http://<i>www.YourServer.org</i>:8080/erddap</tt>
+  <li>Modify the existing &lt;VirtualHost&gt; tag (if there is one),
+    or add one at the end of the file:
+<pre>
+&lt;VirtualHost *:80&gt;
+   ServerName <i>YourDomain.org</i>
+   ProxyRequests Off
+   ProxyPreserveHost On
+   ProxyPass /erddap http://localhost:8080/erddap
+   ProxyPassReverse /erddap http://localhost:8080/erddap
+&lt;/VirtualHost&gt;
+</pre>
   <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
+
     <br>&nbsp;
   </ol>
 
@@ -579,7 +649,7 @@ or Mac server instead.
 <li>Download 
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.66, size=512,007,729 bytes, MD5=71CB248B05F0340BE6CF4CF71F3BD8E6, dated 2016-01-19)
+    (version 1.70, size=556,163,762 bytes, MD5=3320ADB87E9F3AB31EBF89260C64AF19, dated 2016-04-15)
     into a temporary directory.
   <br>&nbsp;
 
@@ -915,6 +985,8 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
     waiting for information to be written to the log file.
     The disadvantage is that the log will almost always end with a 
     partial message, which won't be completed until the next chunk is written.
+    You can make it up-to-date (for an instant) by viewing your ERDDAP's 
+    status web page at http://<i>your.domain.org</i>/erddap/status.html .
   <li>When the log.txt files gets to 20 MB, 
     <br>the file is renamed log.txt.previous and a new log.txt file is created.
     So log files don't accumulate.
@@ -1195,24 +1267,52 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
   </ul>
 
 <li><b><a name="storedDatasetInformation">Stored Dataset Information</a></b> -
-  <br>For all types of datasets, ERDDAP gathers lots of information when a dataset is loaded and keeps that
-  in memory. This allows ERDDAP to respond very quickly to searches, requests for lists of datasets,
+  <br>For all types of datasets, ERDDAP gathers lots of information when a dataset 
+  is loaded and keeps that
+  in memory. This allows ERDDAP to respond very quickly to searches, requests
+  for lists of datasets,
   and requests for information about a dataset.
 
-  <p>For a few types of datasets (notably EDDGridCopy, EDDTableCopy, EDDGridFrom<i>Xxx</i>Files, and
-  EDDTableFrom<i>Xxx</i>Files), ERDDAP stores on disk some information about the dataset that is reused 
+  <p>For a few types of datasets (notably EDDGridCopy, EDDTableCopy, 
+  EDDGridFrom<i>Xxx</i>Files, and
+  EDDTableFrom<i>Xxx</i>Files), ERDDAP stores on disk some information about the
+  dataset that is reused 
   when the dataset is reloaded. This greatly speeds the reloading process.  
   <ul>
-  <li>The dataset information files are human-readable .json files and are stored in
-    <i>bigParentDirectory</i>/dataset .
-  <li>ERDDAP only deletes these files in unusual situations.
-  <li>It shouldn't ever be necessary for you to delete these files because ERDDAP verifies and updates 
-    the stored information when the dataset is reloaded.
-  <li>But if you ever do need to delete these files (why?), you can do it when ERDDAP is running. 
-    Then set a <a rel="help" href="#flag">flag</a>.
-  <li>If you want to encourage ERDDAP to update the stored dataset information (for example,
-    if you just added, removed, or changed some files to the dataset's data directory), 
-    use the <a rel="help" href="#flag">flag</a> system.
+  <li>Some of the dataset information files are human-readable .json files and are stored in
+    <i>bigParentDirectory</i>/dataset/<i>last2LettersOfDatasetID/datasetID</i> .
+  <li>ERDDAP only deletes these files in unusual situations, e.g., if you add
+    or delete a variable from the dataset's datasets.xml chunk.
+  <li>Most changes to a dataset's datasets.xml chunk (e.g., changing a
+    global attribute or a variable attribute) don't necessitate that you delete these files. 
+    A regular dataset reload will handle these types of changes.
+    You can tell ERDDAP to reload a dataset ASAP by setting a 
+    <a rel="help" href="#flag">flag</a> for the dataset.
+  <li>Similarly, the addition or deletion of files will be handled when 
+    ERDDAP reloads a dataset. 
+    But ERDDAP will notice this type of change soon and automatically 
+    if the dataset is using the 
+    <a rel="help"  
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+    ><tt>&lt;updateEveryNMillis&gt;</tt></a>
+    system.
+  <li>It should only rarely be necessary for you to delete these files.
+    The most common situation where you need to force ERDDAP to delete the stored
+    information (because it is out-of-date/incorrect and won't be automatically 
+    fixed by ERDDAP)
+    is when you make changes
+    to the dataset's datasets.xml chunk that affect how ERDDAP interprets 
+    data in the source data files, for example, changing the time variable's format string.
+  <li>To delete a dataset's stored information files, run 
+    <a rel="help"  
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#DasDds"
+    >DasDds</a>
+    (which is easier than figuring in which directory the info is located and 
+    deleting the files by hand).
+    Then, if ERDDAP is running, set a <a rel="help" href="#flag">flag</a>
+    so that the dataset will be reloaded ASAP.
+    Remember that if a dataset is an aggregation of a large number of files,
+    reloading the dataset may take considerable time.
     <br>&nbsp;
   </ul>
 
@@ -1418,17 +1518,19 @@ Sitemap: http://<b><i>your.institutions.url</i></b>/erddap/sitemap.xml</pre>
   </ul>
 
 
-<li><b><a name="security">Security/Authentication/Authorization</a></b> - By default, ERDDAP 
-runs as an entirely public server (using http)  
-with no login system 
+<li><b><a name="security">Security</a>, Authentication, and Authorization</b> -
+By default, ERDDAP 
+runs as an entirely public server (using http and/or https)  
+with no login  
 (<a rel="help" href="http://en.wikipedia.org/wiki/Authentication">authentication<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>) 
-and no restrictions to data access 
+system and no restrictions to data access 
 (<a rel="help" href="http://en.wikipedia.org/wiki/Authorization">authorization<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>). 
-If you want to restrict access to some or all datasets to some users, you can use ERDDAP's
+
+<p>If you want to restrict access to some or all datasets to some users, you can use ERDDAP's
 built-in security system. When the security system is in use:
 <ul>
 <li>ERDDAP uses 
@@ -1439,19 +1541,34 @@ built-in security system. When the security system is in use:
   <li>The ERDDAP administrator defines users with the
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
     tag in datasets.xml.
-    Each user has a username, a password, and one or more roles. 
+    Each user has a username, a password (if <tt>authentication=custom</tt>), 
+    and one or more roles. 
   <li>The ERDDAP administrator defines which roles have access to a given dataset via the
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
     tag in datasets.xml for any dataset that shouldn't have public access.
   </ul>
-<li>The user's log in status (and a link to log in/out) will be shown at the top of every web page.
+<li>The user's log in status (and a link to log in/out) will be shown at the top
+  of every web page.
   (But a logged in user will appear to ERDDAP to be not logged in if he uses an http URL.)
-  If a user tries and fails to log in 3 times, the user is blocked from trying to log in for 15 minutes. This prevents hackers from simply trying millions of passwords until they 
-  find the right one.
-<li>Users who are not logged in use ERDDAP's <b>http</b> URLs.
-  Users who are logged in use ERDDAP's <b>https</b> URLs. 
-  This helps prevent 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Session_hijacking">session hijacking and sidejacking<img 
+<li>If the &lt;baseUrl&gt; that you specify in your setup.xml is an <b>http</b> URL,
+  users who are not logged in may use ERDDAP's <b>http</b> URLs.
+  If &lt;baseHttpsUrl&gt; is also specified, users who are not logged in 
+  can also use https URLs.
+<li>If the &lt;baseUrl&gt; that you specify in your setup.xml is an <b>https</b> URL,
+  users who are not logged are encouraged to use ERDDAP's <b>https</b> URLs --
+  all of the links on ERDDAP web pages will refer to https URLs.
+  But the only way to force users to use https URLs is by blocking
+  use of the http URLs via Apache + Tomcat.
+  A reason not to force users to use https URLs is: 
+  the underlaying SSL/TLS link takes time to establish and
+  then takes time to encrypt and decrypt all information transmitted between
+  the user the the server.
+<li>Users who are logged in MUST use ERDDAP's <b>https</b> URLs.
+  If they use http URLs, they appear to ERDDAP to be not logged in.
+  This ensures the privacy of the communications and 
+  helps prevent 
+    <a rel="help" href="http://en.wikipedia.org/wiki/Session_hijacking"
+    >session hijacking and sidejacking<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.    
 <li>Anyone who isn't logged in can access and use the public datasets.
@@ -1467,12 +1584,15 @@ built-in security system. When the security system is in use:
   they will appear.
   Attempts to request data from private datasets to which the user doesn't have access will be 
   redirected to the login page.
-<li>The RSS information for all datasets is always available to anyone.
-  (This is not ideal. But RSS readers won't ever log in, so they need access without loggin in.)
+<li>The RSS information for all datasets, even private datasets, 
+  is always available to anyone.
+  (This is not ideal. But RSS readers won't ever log in, so they need access 
+  without logging in.)
   But, since private datasets that aren't accessible aren't advertised, 
   their RSS links are not advertised either.
 <li>Email subscriptions can only be set up when a user has access to a dataset.
-  Once set up, they continue to function after the user has logged out.
+  If a user subscribes to a private dataset, the subscription 
+  continues to function after the user has logged out.
 </ul>
 
 <p>To set up the security/authentication/authorization system:
@@ -1481,103 +1601,160 @@ built-in security system. When the security system is in use:
 <li>In <a rel="help" href="#setup.xml">setup.xml</a>, 
   <ul>
   <li>Add/change the <tt>&lt;authenticate&gt;</tt> value from nothing to 
-    <tt>custom</tt> or <tt>openid</tt>.
+    <tt>custom</tt>, <tt>email</tt>, or <tt>google</tt> (recommended).
     See the comments about these options below.
   <li>Add/change the <tt>&lt;baseHttpsUrl&gt;</tt> value. 
   <li>Insert/uncomment <tt>&amp;loginInfo;</tt> in <tt>&lt;startBodyHtml&gt;</tt> to display 
     the user's log in/out info 
     at the top of each web page.
   </ul>
-<li><a rel="help" href="http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html"
-    >Configure tomcat to support SSL<img 
+<li>For testing purposes on your personal computer, 
+  <a rel="help" href="http://tomcat.apache.org/tomcat-8.0-doc/ssl-howto.html"
+    >follow these instructions to configure tomcat to support SSL<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
-     (the basis for https connections) by creating a keystore with a 
-  <a rel="help" href="http://en.wikipedia.org/wiki/Public_key_certificate">digital certificate<img 
+      (the basis for https connections) by creating a keystore with a 
+   <a rel="help" href="http://en.wikipedia.org/wiki/Self-signed_certificate"
+     >self-signed certificate<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
-     and by modifying <i>tomcat</i>/conf/server.xml to uncomment the connector for port 8443.
-  It is better to get a digital certificate from a 
+    and by modifying <i>tomcat</i>/conf/server.xml to uncomment the connector for port 8443.
+    On Windows, you may need to move .keystore from "c:\Users\<i>you</i>\.keystore" to 
+    "c:\Users\Default User\.keystore"  or "c:\.keystore" 
+    (see <i>tomcat</i>/logs/catalina.<i>today</i>.log if the application doesn't 
+    load or users can't see the log in page).
+    You can see when the .keystore certificate will expire by examining the 
+    certificate when you log in.  
+  <p>For a publicly accessible server, instead of using a self-signed certificate, 
+    it is strongly recommended that you buy and install a certificate signed by a 
      <a rel="help" href="http://en.wikipedia.org/wiki/Certificate_authority">certificate authority<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
-     than to make a 
-     <a rel="help" href="http://en.wikipedia.org/wiki/Self-signed_certificate">self-signed certificate<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
-  (<a rel="help" href="http://www.exampledepot.com/egs/java.security.cert/CreateCert.html">instructions<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>), 
+      title="This link to an external web site does not constitute an endorsement."/></a>, 
      because it gives your clients more assurance that they are indeed connecting to your
-  ERDDAP, not an imposter's website.
-  Many vendors sell digital certificates. (Search for web.) They are not expensive. 
-  On Windows, you may have to move .keystore from "c:\Documents and Settings\<i>you</i>\.keystore" to 
-  "c:\Documents and Settings\Default User\.keystore"  or "c:\.keystore" 
-  (see <i>tomcat</i>/logs/catalina.<i>today</i>.log if the application doesn't load or users can't see the log in
-  page).
-  You can see when the .keystore certificate will expire by examining the certificate when you log in.
-  For additional security, create a signed certificate from a trusted source. 
-  (Search the web for more information.)
-<li>If Tomcat is running in Apache, you need to modify the
-  /etc/httpd/conf/httpd.conf file to allow HTTPS traffic to/from ERDDAP:
-  To the "VirtualHost" tag, add the lines:<tt>
-  <br>&nbsp;&nbsp; ProxyPass /erddap https://<i>www.YourServer.org</i>:8443/erddap
-  <br>&nbsp;&nbsp; ProxyPassReverse /erddap https://<i>www.YourServer.org</i>:8443/erddap</tt>
-  <br>(This is untested. If you do this and it works or doesn't work, let us know.)
-<li>In datasets.xml, create a 
+    ERDDAP, not a man-in-the-middle's version of your ERDDAP.
+    Many vendors sell digital certificates. (Search for web.) They are not expensive. 
+<li>On Linux computers, if Tomcat is running in Apache, modify the 
+  /etc/httpd/conf.d/ssl.conf
+  file to allow HTTPS traffic to/from ERDDAP without requiring the :8443 port number
+  in the URL:
+  <ol>
+  <li>Modify the existing &lt;VirtualHost&gt; tag (if there is one),
+    or add one at the end of the file so that it at least has these lines:
+<pre>
+&lt;VirtualHost _default_:443&gt;
+   SSLEngine on
+   SSLProxyEngine On
+   ProxyPass /erddap http://localhost:8443/erddap
+   ProxyPassReverse /erddap http://localhost:8443/erddap
+&lt;/VirtualHost&gt;
+</pre>
+  <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
+  </ol>
+
+<li>In <i>tomcat</i>/conf/server.xml, uncomment the port=8443 &lt;Connector&gt; tag:
+<pre>
+&lt;Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+    maxThreads="150" SSLEnabled="false" scheme="https" secure=“true"
+    proxyPort="443" clientAuth="false" sslProtocol="TLS" /&gt;
+</pre>
+<li><a name="authorization">In</a> datasets.xml, create a 
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
-  tag for each user with username, password, and roles information.
-  This is the <a name="authorization">authorization</a> part of ERDDAP's security system.
+  tag for each user with username, password (if <tt>authorization=custom</tt>), 
+    and roles information.
+  This is the authorization part of ERDDAP's security system.
 <li>In datasets.xml, add an
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"
+  ><tt>&lt;accessibleTo&gt;</tt></a>
   tag to each dataset that shouldn't have public access.
   <tt>&lt;accessibleTo&gt;</tt> lets you specify which roles have access to that dataset.
 <li>Restart Tomcat.
   Trouble? Check the Tomcat logs.
 <li>CHECK YOUR WORK! Any mistake could lead to a security flaw.
 <li>Check that the login page uses https (not http).
-  Attempts to connect via http should be automatically redirected to https and port 8443.
-  You may need to work with your network administrator to allow external web requests to access 
-  port 8443 on your server.
-<li>You can change the <tt>&lt;user&gt;</tt> and <tt>&lt;accessibleTo&gt;</tt> tags at any time.
+  Attempts to login via http should be automatically redirected to 
+  https and port 8443 (although the port number may be hidden via an Apache proxy).
+  You may need to work with your network administrator to allow external web 
+  requests to access port 8443 on your server.
+<li>You can change the <tt>&lt;user&gt;</tt> and <tt>&lt;accessibleTo&gt;</tt> 
+  tags at any time.
   The changes will be applied at the next regular reload of any dataset,
-  or immediately if you use a <a rel="help" href="#flag">flag</a>. 
-<li>It worked for a few months, now users can't get to the log in page?
-  Check the Tomcat logs. Your .keystore certificate may have expired and you may need to make a new one.
-  You can see when the .keystore certificate will expire by examining the certificate when you log in.
+  or ASAP if you use a <a rel="help" href="#flag">flag</a>. 
 </ul>
 
-<p>Authentication (logging in) - Currently, ERDDAP supports 
-  <tt>custom</tt> and 
-  <a rel="help" href="http://openid.net/"><tt>openid</tt><img 
+<p><a name="authentication">Authentication (logging in)</a>
+  <br>Currently, ERDDAP supports 
+  <tt>custom</tt>, <tt>email</tt>, and <tt>google</tt>
+  <!-- a rel="help" href="http://openid.net/"><tt>openid</tt><img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> (recommended) authentication.
-We strongly recommend OpenID because it frees you from storing and handling user's passwords.
+      title="This link to an external web site does not constitute an endorsement."/></a> -->
+      (recommended) authentication.
+We strongly recommend the <tt>google</tt> option because it frees you from storing
+and handling user's passwords (needed for <tt>custom</tt>)
+and is more secure than the <tt>email</tt> option.
 Remember that users often use the same password at different sites.
 So they may be using the same password for your ERDDAP as they do at their bank.
-That makes their password very valuable -- much more valuable to the user than the data they are requesting.
-So you need to do as much as you can to keep the passwords private. That is a big responsibility.
-OpenID takes care of passwords, so you don't have to gather, store, or work with them. 
+That makes their password very valuable -- much more valuable to the user than 
+the data they are requesting.
+So you need to do as much as you can to keep the passwords private.
+That is a big responsibility.
+The <tt>email</tt> and <tt>google</tt> options take care of passwords, 
+so you don't have to gather, store, or work with them. 
 So you are freed from that responsibility.
 
-<ul>
-<li><tt>custom</tt> is ERDDAP's custom system for letting users log in by entering their User Name and 
-  Password in a form on a web page.
-  This is secure because the User Name and Password are transmitted via https (not http),
-  but OpenID is better because it frees you from having to handle passwords.
-  The <tt>custom</tt> approach requires you to collect User Names and Passwords (use your phone! 
-  email isn't secure!) and store them in datasets.xml in  
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
-
-  <p>The <tt>custom</tt> approach uses a 
+<p>All authentication options use a 
     <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
     on the user's computer, so the user's browser must be 
-  set to allow cookies.  If a user is making ERDDAP requests from a computer program 
-  (not a browser), cookies are hard to work with. Sorry.
+  set to allow cookies.  If a user is making ERDDAP requests from a computer
+  program (not a browser), cookies are hard to work with. Sorry.
 
-<li><a rel="help" href="http://openid.net/"><tt>openid</tt><img 
+
+<p>The details of the authentication options are:
+<ul>
+<li><a name="authenticationCustom"><tt><b>custom</b></tt></a>
+  <br><tt>custom</tt> is ERDDAP's custom system for letting users log in by 
+  entering their User Name and Password in a form on a web page.
+  If a user tries and fails to log in 3 times within 10 minutes, 
+  the user is blocked from trying to log in for 10 minutes. 
+  This prevents hackers from simply trying millions
+  of passwords until they find the right one.
+
+  <p>This is secure because the User Name and Password are transmitted via https 
+  (not http),
+  but <tt>authentication=google</tt> is better because it frees you from
+  having to handle passwords.
+  The <tt>custom</tt> approach requires you to collect a user's Name and 
+  a hash digest of their Password 
+  (use your phone! email isn't secure!) and store them in datasets.xml in  
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
+
+  <p>With the <tt>custom</tt> option, no one can log in until you 
+  (the ERDDAP administrator) create a <tt>&lt;user&gt;</tt> tag for the user,
+  specifying the user's name as the username, 
+  the hash digest of their password as the password, and their roles.
+
+  <p>Not Recommended
+  <br>Because of the awkwardness of generating and transmitting the hash digest
+  of the user's password and because of the risks associated with 
+  ERDDAP holding the hash digests of the passwords, 
+  this option is not recommended.
+
+  <p>To increase the security of this option:
+  <ul>
+  <li>Use <tt>UEPSHA256</tt> for <tt>&lt;passwordEncoding&gt;</tt>
+    in setup.xml.
+  <li>Use an as-secure-as-possible method to pass the hash digest
+    of the user's password from the user to the ERDDAP administrator (phone?).
+  <li>Make sure that other users on the server (i.e., Linux users, not ERDDAP users) 
+    can't read files in the Tomcat directory or ERDDAP's bigParentDirectory. 
+    <br>On Linux, as user=tomcat, use: 
+    <br><tt>chmod -R g-rwx <i>bigParentDirectory</i></tt>
+    <br><tt>chmod -R g-rwx <i>tomcatDirectory</i></tt>
+    <br>&nbsp;
+  </ul>
+
+<!--li><a rel="help" href="http://openid.net/"><tt>openid</tt><img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
   is an open standard that lets users log 
@@ -1587,22 +1764,238 @@ So you are freed from that responsibility.
   All you need is a user's OpenID URL (which is public information) 
   so that you can define the users and their roles in datasets.xml with 
      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
+  -->
 
-  <p>OpenID uses a <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie<img 
+<li><a name="authenticationEmail"><tt><b>email</b></tt></a>
+  <br>The <tt>email</tt> authentication option uses a user's email account 
+  to authenticate the user (by sending them an email with a special link
+  that they have to access in order to log in).
+  Unlike other emails that ERDDAP sends, ERDDAP does not write these 
+  invitation emails to the email log file because they contain confidential 
+  information.
+  <br>In theory, this is not very secure, because emails aren't always encrypted,
+  so a bad guy with the ability to intercept emails could abuse this system
+  by using a valid user's email address and intercepting the invitation email.
+  <br>In practice, if you set up ERDDAP to use a Google email account to send emails,
+  and if you set it up to use one of the TLS options for the connection, 
+  and if the user has a Google email account, this is somewhat secure because
+  the emails are encrypted all the way from ERDDAP to the user.
+
+  <p>To increase the security of this option:
+  <ul>
+  <li>Make sure that other users on the server (i.e., Linux users, not ERDDAP users) 
+    can't read files in the Tomcat directory or ERDDAP's bigParentDirectory. 
+    <br>On Linux, as user=tomcat, use: 
+    <br><tt>chmod -R g-rwx <i>bigParentDirectory</i></tt>
+    <br><tt>chmod -R g-rwx <i>tomcatDirectory</i></tt>
+  <li>Set things up to get end-to-end security for the emails
+    sent from ERDDAP to the users.
+    For example, you could make a Google-centric system by 
+    only creating &lt;user&gt; tags for Google-managed email addresses
+    and by setting up your ERDDAP to use a Google email server 
+    via a secure/TLS connection: in your setup.xml, use e.g., <tt>
+    <br>&lt;emailSmtpHost&gt;smtp.gmail.com&lt;/emailSmtpHost&gt;
+    <br>&lt;emailSmtpPort&gt;587&lt;/emailSmtpPort&gt;
+    <br>&lt;emailProperties&gt;mail.smtp.starttls.enable|true&lt;/emailProperties&gt;</tt>
+  </ul>
+
+  <p>Not Recommended
+  <br>We only recommend the <tt>email</tt> authentication option only as a 
+  temporary alternative to the 
+  <a rel="help" href="#authenticationGoogle"><tt>google</tt> authentication option</a>,
+  and only if you follow the security suggesions above. 
+  The weakness of the <tt>google</tt> option is that it 
+  relies on an external authentication system (Google Sign-In),
+  which may suddenly cease
+  to work with ERDDAP, leaving your users unable to log in. In that case,
+  switching temporarily to the <tt>email</tt> option solves the problem
+  until the <tt>google</tt> option is again working.
+
+  <p>As with the <tt>google</tt> option, <tt>email</tt> is very convenient for 
+  ERDDAP administrators -- 
+  you don't ever have to deal with passwords or their hash digests.
+  All you need to create is a 
+  <a rel="help" 
+  href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
+  ><tt>&lt;user&gt;</tt></a>
+  tag for a user in datasets.xml is the user's Google email address,
+  which ERDDAP uses as the user's name.
+  (The <tt>password</tt> attribute isn't used when authentication=email or google.)
+
+  <p>With the <tt>email</tt> option, only users that have a <tt>&lt;user&gt;</tt> tag
+  in datasets.xml can try to log in to ERDDAP by providing their
+  email address and clicking on the link in the email that ERDDAP sends them.
+
+  <p>ERDDAP treats email addresses as case-insensitive. It does this by
+  converting email addresses you enter (in &lt;user&gt; tags)
+  or users enter (on the login form) to their all lowercase version.
+
+  <p>To set up authentication=email:
+  <ul>
+  <li>In your setup.xml, change the &lt;baseHttpsUrl&gt; tag's value.
+    <br>For experimenting/working on your personal computer, use 
+    <br><tt>https://localhost:8443</tt>
+    <br>For your public ERDDAP, use
+    <br><tt>https://<i>your.domain.org</i>:8443</tt> 
+    <br>or without the :8443 if you are using an Apache 
+    <a rel="help" href="#ProxyPass">proxypass</a> so that the port number isn't needed.
+
+  <li>In your setup.xml, change the &lt;authentication&gt; tag's value to <tt>email</tt>:
+    <br><tt>&lt;authentication&gt;email&lt;/authentication&gt;</tt>
+
+  <li>In your setup.xml, make sure the email system is setup via all of the
+    <tt>&lt;email...&gt;</tt> tags, so that ERDDAP can send out emails.
+    If possible, set this up to use a secure connection (SSL / TLS) to the email server.
+
+  <li>In your datasets.xml, create 
+    <a rel="help" 
+      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
+      ><tt>&lt;user&gt;</tt></a>    
+    tags for each user who will have access to private datasets.
+    <br>Use the user's email address as the <tt>username</tt> in the tag.
+    <br>Don't specify the <tt>password</tt> attribute for the user. 
+
+  <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
+    <br>&nbsp;
+  </ul>
+
+  
+<li><a name="authenticationGoogle"><tt><b>google</b></tt></a>  (recommended)
+  <br>The <tt>google</tt> option uses 
+  <a rel="help" href="https://developers.google.com/identity/sign-in/web/"
+  >Google Sign-In<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-    on the user's computer, so the user's browser must be set to allow cookies.
-  If a user is making ERDDAP requests from a computer program (not a browser), 
-  cookies are hard to work with. Sorry.
-</ul>
-ERDDAP doesn't support BASIC authentication because:
-<ul>
-<li>BASIC seems geared toward predefined web pages needing secure access or blanket on/off access 
-  to the whole site, but ERDDAP allows (restricted access) datasets to be added on-the-fly.
-<li>BASIC authentication doesn't offer a way for users to log out!  
+      title="This link to an external web site does not constitute an endorsement."/></a>, 
+  which is based on 
+  <a rel="help" href="http://oauth.net/2/"
+  >OAuth 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+  the current version of the OAuth protocol.
+
+  <p>The <tt>google</tt> option lets users log in by signing into their
+  Google email account, 
+  including Google-managed accounts such as @noaa.gov accounts.
+  This allows ERDDAP to verify the user's identity (name and email address) 
+  and access their profile image, 
+  but does not give ERDDAP access to their emails, their Google Drive, 
+  or any other private information.
+
+  <p>The <tt>google</tt> option is the successor to the <tt>openid</tt> option,
+  which was discontinued after ERDDAP version 1.68, 
+  and which was based on a version of openID that is now out-of-date.
+  Please switch to the <tt>google</tt> option.
+
+  <p>Google Sign-In is very convenient for ERDDAP administrators -- 
+  you don't ever have to deal with passwords or their hash digests.
+  All you need to create is a 
+  <a rel="help" 
+  href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
+  ><tt>&lt;user&gt;</tt></a>
+  tag for a user in datasets.xml which specifies the user's Google email address
+  as the username attribute.
+  (The <tt>password</tt> attribute isn't used when 
+  <tt>authentication=google</tt> or <tt>email</tt>.)
+
+  <p>With the <tt>google</tt> option, anyone can log in to ERDDAP by 
+  signing into their Google email account, 
+  but no one will have the right to access private datasets
+  until you (the ERDDAP administrator) create a <tt>&lt;user&gt;</tt> tag,  
+  specifying their email address as the username and specifying their roles.
+
+  <p>Recommended
+  <br>This is the authentication option which we believe is by far the most 
+  secure option. 
+  The other options have significantly weaker security.
+
+  <p>ERDDAP treats email addresses as case-insensitive. It does this by
+  converting email addresses you enter (in &lt;user&gt; tags)
+  or users enter (on the login form) to their all lowercase version.
+
+  <p>To set up authentication=google:
+  <ul>
+  <li>In your setup.xml, change the &lt;baseHttpsUrl&gt; tag's value.
+    <br>For experimenting/working on your personal computer, use 
+    <br><tt>https://localhost:8443</tt>
+    <br>For your public ERDDAP, use
+    <br><tt>https://<i>your.domain.org</i>:8443</tt> 
+    <br>or without the :8443 if you are using an Apache 
+    <a rel="help" href="#ProxyPass">proxypass</a> so that the port number isn't needed.
+
+  <li>In your setup.xml, change the &lt;authentication&gt; tag's value to <tt>google</tt>:
+    <br><tt>&lt;authentication&gt;google&lt;/authentication&gt;</tt>
+
+  <li>If you don't have a Google email account, 
+    <a rel="help" href="https://www.google.com/intl/en_us/mail/help/about.html"
+    >create one<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  <li>Follow 
+   <a rel="help" href="https://developers.google.com/identity/sign-in/web/devconsole-project"
+   >these instructions<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    to create a Google Developers Console project and get a client ID.
+
+    <p>For <tt>authorized JavaScript origins</tt>, 
+    enter the value from <tt>&lt;baseHttpsUrl&gt;</tt> 
+    from your personal computer's ERDDAP setup.xml, e.g., 
+    <br><tt>https://localhost:8443</tt>
+    <br>On a second line, add the <tt>&lt;baseHttpsUrl&gt;</tt> 
+      from your public ERDDAP setup.xml, e.g., 
+    <br><tt>https://<i>your.domain.org</i>:8443</tt> 
+
+    <p>Don't specify any <tt>Authorized redirect URIs</tt>.
+
+    <p>When you see your Client ID for this project, 
+      copy and paste it into your setup.xml
+      (usually just below <tt>&lt;authentication&gt;</tt> to be orderly, 
+      but placement doesn't actually matter), 
+      in the <tt>&lt;googleClientID&gt;</tt> tag, e.g.,
+      <br><tt>&lt;googleClientID&gt;<i>yourClientID</i>&lt;/googleClientID&gt;</tt>
+      <br>The client ID will be a string of about 75 characters, 
+        probably starting with several digits and ending with 
+        <tt>.apps.googleusercontent.com</tt> .
+
+
+  <li>In your datasets.xml, create 
+    <a rel="help" 
+      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"
+      ><tt>&lt;user&gt;</tt></a>    
+    tags for each user who will have access to private datasets.
+    <br>Use the user's email address as the <tt>username</tt> in the tag.
+    <br>Don't specify the <tt>password</tt> attribute for the user. 
+
+  <li>Restart ERDDAP so that the changes to setup.xml and datasets.xml take effect.
+  </ul>
+
+  <p>The <tt>google</tt> option relies on Google Sign-In. If that suddenly 
+  ceases to work (for whatever reason), users won't be able to sign in to your
+  ERDDAP. As a temporary solution, you can (it's up to you) switch to ERDDAP's 
+  <tt>email</tt> authentication option temporarily. 
+  The <tt>&lt;user&gt;</tt> tag setup is the same, so the only thing
+  you need to do is change the &lt;authentication&gt; tag's value in setup.xml, to
+  <br><tt>&lt;authentication&gt;email&lt;/authentication&gt;</tt>
+
 </ul>
 
-<p>Secure Data Sources - If a data set is to have restricted access to ERDDAP users, 
+<p>ERDDAP no longer supports the <tt>openid</tt> authentication option,
+which was based on a version of openID that is now out-of-date.
+Please use the <tt>google</tt> option instead. 
+
+<p>ERDDAP doesn't support BASIC authentication because:
+<ul>
+<li>BASIC seems geared toward predefined web pages needing secure access or
+  blanket on/off access 
+  to the whole site, but ERDDAP allows (restricted access) datasets to be added 
+  on-the-fly.
+<li>BASIC authentication doesn't offer a way for users to log out!  
+<li>BASIC authentication is known to be not secure.  
+</ul>
+
+
+<p>Secure Data Sources
+<br>If a data set is to have restricted access to ERDDAP users, 
 the data source (from where ERDDAP gets the data) should not be publicly accessible.
 So how can ERDDAP get the data for restricted access datasets? Some options are:
 <ul>
@@ -1619,12 +2012,14 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
      where it is accessible to ERDDAP but not to the public.
   <br>&nbsp;
 <li>The data source can be on a public web site, but require a login to get the data.
-  The one type of dataset that ERDDAP can log on to access is 
+  The two types of dataset that ERDDAP can log on to access is 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase"
-      >EDDTableFromDatabase</a>.
-
-  These datasets support (and should always use) user names, passwords, SSL connections, 
-  and other security measures.
+      >EDDTableFromDatabase</a> and
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromCassandra"
+      >EDDTableFromCassandra</a>.
+  These datasets support (and should always use) user names 
+  (create an ERDDAP user who only has read-only privileges),
+  passwords, SSL connections, and other security measures.
 
   <p>But in general, currently, ERDDAP can't deal these data sources because it has no
   provisions for logging on to the data source.
@@ -1634,15 +2029,15 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
   can't be restricted.
   Currently, the local ERDDAP has no way to login and access the metadata information 
   from the remote ERDDAP.
-  And putting the remote ERDDAP behind your firewall and removing its dataset's 
+  And putting the "remote" ERDDAP behind your firewall and removing that dataset's 
   accessibleTo restrictions doesn't solve the problem:
-  since user requests for EDDXxxFromErddap data need to be redirected to the remote ERDDAP,
-  the remote ERDDAP can't be behind a firewall.
+  since user requests for EDDXxxFromErddap data need to be redirected to the 
+  remote ERDDAP, the remote ERDDAP must be accessible.
 
 </ul>
 
-<p><a name="defensesAgainstHackers">Defenses Against Hackers</a> - 
-There are bad guy hackers who 
+<p><a name="defensesAgainstHackers">Defenses Against Hackers</a>
+<br>There are bad guy hackers who 
 try to exploit security weaknesses in server software like ERDDAP. 
 ERDDAP follows the common security advice to have several layers of defenses:
 
@@ -1723,7 +2118,8 @@ please email <tt>bob dot simons at noaa dot gov</tt>.
 
 </ul>
 
-<p>Questions? Suggestions? If you have any questions about ERDDAP's security system
+<p>Questions? Suggestions? 
+<br>If you have any questions about ERDDAP's security system
 or have any questions, doubts, concerns, or suggestions about how it is set up, 
 please email <tt>bob dot simons at noaa dot gov</tt>.
 </ul>
@@ -2289,24 +2685,30 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   But hacking out parts of ERDDAP for your own project is likely to take weeks 
   (and months to catch subtleties) and you will lose the ability to 
   incorporate changes and bug fixes from subsequent ERDDAP releases.
-  We (obviously) think there are many benefits to using ERDDAP as is and making your ERDDAP 
+  We (obviously) think there are many benefits to using ERDDAP as is and making 
+  your ERDDAP installation publicly accessible.
+  However, in some circumstances, you might not want to make your ERDDAP
   installation publicly accessible.
-  However, in some circumstances, you might not want to make your ERDDAP installation publicly accessible.
-  Then, your service can access and use your private ERDDAP and your clients needn't know about ERDDAP.
+  Then, your service can access and use your private ERDDAP and your clients 
+  needn't know about ERDDAP.
 
-  <p><b><a name="halfWay">Half Way</a></b> - Or, there is another approach which you may find useful 
-  which is half way between delving into ERDDAP's code and using ERDDAP as a stand-alone web service:
+  <p><b><a name="halfWay">Half Way</a></b> - Or, there is another approach
+  which you may find useful 
+  which is half way between delving into ERDDAP's code and using ERDDAP as a 
+  stand-alone web service:
   In the EDD class, there is a static method which lets you make an instance of a dataset 
   (based on the specification in datasets.xml): 
   <br>&nbsp;&nbsp;<tt>oneFromDatasetXml(String tDatasetID)</tt>
   <br>It returns an instance of an EDDTable or EDDGrid dataset.
   Given that instance, you can call 
-  <br>&nbsp;&nbsp;<tt>makeNewFileForDapQuery(String userDapQuery, String dir, String fileName, String fileTypeName)</tt>
-  <br>to tell the instance to make a data file, of a specific fileType, with the results from a user query.
-  Thus, this is a simple way to use ERDDAP's methods to request data and get a file in response, 
-  just as a client would use the ERDDAP web application.
-  But this approach works within your Java program and bypasses the need for an application server 
-  like Tomcat.
+  <br>&nbsp;&nbsp;<tt>makeNewFileForDapQuery(String userDapQuery, String dir, 
+  String fileName, String fileTypeName)</tt>
+  <br>to tell the instance to make a data file, of a specific fileType, with 
+  the results from a user query.
+  Thus, this is a simple way to use ERDDAP's methods to request data and get a
+  file in response, just as a client would use the ERDDAP web application.
+  But this approach works within your Java program and bypasses the need for an 
+  application server like Tomcat.
   We use this approach for many of the unit tests of EDDTable and EDDGrid subclasses,
   so you can see examples of this in the source code for all of those classes.
 
@@ -2314,20 +2716,25 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   <ul>
   <li>Directory Structure 
     <ul>
-    <li>If you are installing ERDDAP in a Tomcat (whether or not you will actually use it that way),
-      follow the instructions above.
-    <li>If you aren't installing ERDDAP in a Tomcat, you still need to make a Tomcat-like directory structure,
+    <li>If you are installing ERDDAP in a Tomcat (whether or not you will
+      actually use it that way), follow the instructions above.
+    <li>If you aren't installing ERDDAP in a Tomcat, you still need to make a
+      Tomcat-like directory structure,
       so that ERDDAP can find the setup files in <i>tomcat</i>/content/erddap .
       <ul>
-      <li>Make a directory somewhere called "tomcat" (it can be something else, but this is easier to explain).
+      <li>Make a directory somewhere called "tomcat" (it can be something else,
+        but this is easier to explain).
       <li>As indicated above, unzip erddapContent.zip into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
-        Follow the instructions above to modify <a rel="help" href="#setup.xml">setup.xml</a> and datasets.xml.
-        Depending on your situation, you may need to specify that directory by adding something like
+        Follow the instructions above to modify 
+        <a rel="help" href="#setup.xml">setup.xml</a> and datasets.xml.
+        Depending on your situation, you may need to specify that directory by 
+        adding something like
         <br>&nbsp;&nbsp;<tt>-DErddapContentDirectory="<i>/someDirectory/content/erddap/</i>"</tt>  
         <br>to the Java command line for your program.
       <li>Make a <i>tomcat</i>/webapps/erddap directory.
       <li>.war files are just .zip files that follow a few additional conventions.
-        So you can use an unzip program to unzip erddap.war into <i>tomcat</i>/webapps/erddap .
+        So you can use an unzip program to unzip erddap.war into
+        <i>tomcat</i>/webapps/erddap .
         That has all of ERDDAP's .java classes and many other files.
       </ul>
     </ul>
@@ -2335,17 +2742,20 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
     If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use javac 1.8.0_51 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
+  <li>We currently use javac 1.8.0_77 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
-     and java 1.8.0_51 <!-- javaVersion --> to run the tests.  
+     and java 1.8.0_77 <!-- javaVersion --> to run the tests.  
      For security reasons, it is almost always best to use the latest versions of Java and Tomcat.
      <ul>
      <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
-     <li>Our javac and java classpath (including some unnecessary items) is currently
+     <li><a name="classpath">Our</a> javac and java classpath (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><tt>
-./classes;../../../lib/servlet-api.jar;lib/axis.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/jaxrpc.jar;lib/joid.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/saaj.jar;lib/tsik.jar;lib/wsdl4j.jar;lib/aws-java-sdk.jar;lib/commons-codec.jar;lib/commons-logging.jar;lib/fluent-hc.jar;lib/httpclient.jar;lib/httpclient-cache.jar;lib/httpcore.jar;lib/httpmime.jar;lib/jna.jar;lib/jna-platform.jar;lib/jackson-annotations.jar;lib/jackson-core.jar;lib/jackson-databind.jar</tt>
-
+./classes;../../../lib/servlet-api.jar;lib/axis.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/jaxrpc.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;lib/saaj.jar;lib/wsdl4j.jar;lib/aws-java-sdk.jar;lib/commons-codec.jar;lib/commons-logging.jar;lib/fluent-hc.jar;lib/httpclient.jar;lib/httpclient-cache.jar;lib/httpcore.jar;lib/httpmime.jar;lib/jna.jar;lib/jna-platform.jar;lib/jackson-annotations.jar;lib/jackson-core.jar;lib/jackson-databind.jar</tt>
+       <br>If you get error messages about classes not found
+         when you compile or run ERDDAP or one of its tools, 
+         compare your command line's classpath to the classpath above
+         to figure out which .jars are missing from your classpath.
      <li>So your javac command line will be something like
        <br><tt>javac -cp (classpath above) classes/gov/noaa/pfel/coastwatch/TestAll.java</tt>
      <li>And your java command line will be something like
@@ -2357,7 +2767,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
        If compiling TestAll succeeds but doesn't compile some class, that class isn't needed.
        (There are some unfinished/unused classes.)
      </ul>
-  <li>We use some 3rd party source code instead of .jar files (notably for SSHTools and Dods)
+  <li>We use some 3rd party source code instead of .jar files (notably for Dods)
      and have modified them slightly to avoid problems compiling with Java 1.8. <!-- javaVersion -->
      We have often made other slight modifications (notably to Dods) for other reasons.
   <li>Most classes have test methods. We run lots of tests via TestAll. 
@@ -2435,7 +2845,10 @@ ERDDAP is a product of the
 <a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
 <br>Bob Simons is the author of ERDDAP (the designer and programmer who wrote 
 the ERDDAP-specific code).
-<br>Roy Mendelssohn instigated the project.
+<br>Roy Mendelssohn instigated the project and provides essential ongoing support
+(including hardware, network, and other software support) that has made this 
+project possible and facilitated this probject,
+including by freeing up Bob's time so he could spend more time on the ERDDAP code.
 <br>The ERDDAP-specific code is licensed as copyrighted open source, with 
   <a rel="bookmark" href="http://www.noaa.gov">NOAA<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -2457,8 +2870,16 @@ the <a rel="bookmark" href="http://www.ioos.gov/">NOAA IOOS<img
       title="This link to an external web site does not constitute an endorsement."/></a>
 program, and the now defunct Pacific Ocean Shelf Tracking (POST) program.  
 
-<p>Here is the list of software that ERDDAP uses. We are grateful for all of these. 
-Thank you.
+<p>Much credit goes to the many ERDDAP administrators and users who have made
+suggestions and comments which have led to many improvements in ERDDAP. 
+Many are mentioned by name in the 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">List of Changes</a>.
+Thank you all (named and unnamed) very much.
+
+<p>Here is the list of software that ERDDAP uses. We very grateful for all of these.
+Thank you very much.
+(If we have accidentally omitted a project, please let us know so we can give
+credit where credit is due.)
 
 <ul>
 <li>ERDDAP is a 
@@ -2524,8 +2945,9 @@ Thank you.
   (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
-<li>The NetCDF Java Library includes <a rel="help" href="http://www.slf4j.org/">slf4j from the
-  Simple Logging Facade for Java</a> project
+<li>The NetCDF Java Library and Cassandra need <a rel="help" href="http://www.slf4j.org/"
+  >slf4j from the Simple Logging Facade for Java</a> project.
+  Currently, ERDDAP uses the slf4j-simple-xxx.jar renamed as slf4j.jar to meet this need.
     (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
@@ -2542,17 +2964,17 @@ Thank you.
       title="This link to an external web site does not constitute an endorsement."/></a>:
   <a rel="help" href="http://commons.apache.org/codec/">commons-codec<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>, 
+      title="This link to an external web site does not constitute an endorsement."/></a>, and
   <a rel="help" href="http://hc.apache.org/httpcomponents-client-ga/">commons-httpclient<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>, and
+      title="This link to an external web site does not constitute an endorsement."/></a>.
   <!--a rel="help" href="http://commons.apache.org/logging/">commons-logging<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
   (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>). -->
-<li>Other parts of ERDDAP use code from other 
+  Other parts of ERDDAP use code from other 
   <a rel="help" href="http://www.apache.org/">Apache projects<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>:
@@ -2562,7 +2984,7 @@ Thank you.
   <a rel="help" href="http://commons.apache.org/discovery/">commons-discovery<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
-  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+  (For all: license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The NetCDF Java Library uses XML processing code from 
@@ -2661,22 +3083,22 @@ Thank you.
     >Oracle Binary Code License Agreement for Java EE Technologies<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>. -->
-<li> For <a rel="help" href="http://openid.net/">OpenID<img 
+<!-- li> For <a rel="help" href="http://openid.net/">OpenID<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
       authentication, ERDDAP uses the
      joid.jar and tsik.jar libraries from the 
-     <a rel="help" href="http://code.google.com/p/joid/">joid project<img 
+     <a rel="help" href="https://github.com/bferg/joid">joid project<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+      title="This link to an external web site does not constitute an endorsement."/></a> 
   from <a rel="bookmark" href="http://www.verisign.com">Verisign<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
      (license: <a rel="bookmark" href="http://code.google.com/p/joid/">Apache 2.0<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
+      title="This link to an external web site does not constitute an endorsement."/></a>). -->
 <li> ERDDAP includes the 
-     <a rel="help" href="http://jdbc.postgresql.org/">PostGres JDBC4<img 
+     <a rel="help" href="http://jdbc.postgresql.org/">PostGres JDBC42<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> driver
      (license: <a rel="bookmark" href="http://jdbc.postgresql.org/license.html">BSD<img 
@@ -2785,9 +3207,10 @@ Thank you.
       <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
-  <br>aws-java-sdk.jar requires commons-codec.jar, commons-logging.jar, fluent-hc.jar,
-      httpclient.jar, httpclient-cache.jar, httpcore.jar, and httpmime.jar
-      which are all from the    
+  <br>aws-java-sdk.jar requires commons-codec.jar, commons-logging.jar,
+      fluent-hc.jar,
+      httpclient.jar, httpclient-cache.jar, httpclient-win.jar, 
+      httpcore.jar, and httpmime.jar, which are all from the    
       <a rel="help" href="https://hc.apache.org/downloads.cgi">Apache Project<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
@@ -2804,6 +3227,19 @@ Thank you.
       <a rel="bookmark" href="https://github.com/java-native-access/jna/blob/master/LICENSE">Apache 2.0<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
+  <br>aws-java-sdk.jar also requires the 
+      <a rel="help" href="http://mvnrepository.com/artifact/com.fasterxml.jackson.core"
+      >jackson-annotations.jar, jackson-core.jar, and jackson-databind.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> from 
+      <a rel="help" href="https://github.com/FasterXML">FasterXML<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="https://github.com/FasterXML/jackson-core#overview"
+      >Apache 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 
 <li> ERDDAP uses code from the 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
@@ -2817,6 +3253,31 @@ Thank you.
   The CoastWatch Browser code was written by Bob Simons.
 </ul>
 
+<p>We are also very grateful for all of the software that we use when developing ERDDAP, 
+including
+    <a rel="help" href="https://www.google.com/chrome/browser/desktop/">Chrome<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    <a rel="help" href="https://curl.haxx.se/">curl<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, 
+    <a rel="help" href="https://www.editplus.com/">EditPlus<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    <a rel="help" href="https://filezilla-project.org/">FileZilla<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+    <a rel="help" href="https://github.com/">GitHub<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    <a rel="help" href="https://www.google.com/webhp">Google Search<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, 
+    <a rel="help" href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">PuTTY<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, 
+    the Internet, the World Wide Web, and all the great, helpful websites.
+Thank you very much.
 
 <!-- ******* -->
 <h2><a name="license">License</a></h2>
@@ -2826,7 +3287,7 @@ The ERDDAP-specific code is licensed as copyrighted open source,
       title="This link to an external web site does not constitute an endorsement."/></a> holding the copyright.  
 The license is:
 <blockquote>
-ERDDAP, Copyright 2012, NOAA.
+ERDDAP, Copyright 2016, NOAA.
 
 <P>PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE THIS SOFTWARE AND 
 ITS DOCUMENTATION FOR ANY PURPOSE AND WITHOUT FEE IS HEREBY GRANTED,
@@ -2857,7 +3318,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.66
+<p>ERDDAP, Version 1.70
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;

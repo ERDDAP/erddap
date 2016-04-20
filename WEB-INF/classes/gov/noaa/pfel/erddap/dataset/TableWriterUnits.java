@@ -35,10 +35,10 @@ public class TableWriterUnits extends TableWriter {
      * @param tFromUnits e.g., UDUNITS or UCUM
      * @param tToUnits e.g., UDUNITS or UCUM
      */
-    public TableWriterUnits(TableWriter tOtherTableWriter, 
-        String tFromUnits, String tToUnits) {
+    public TableWriterUnits(EDD tEdd, String tNewHistory, 
+        TableWriter tOtherTableWriter, String tFromUnits, String tToUnits) {
 
-        super(null);
+        super(tEdd, tNewHistory, null);
         otherTableWriter = tOtherTableWriter;
         fromUnits = tFromUnits;
         toUnits = tToUnits;
@@ -95,10 +95,13 @@ public class TableWriterUnits extends TableWriter {
     
     /**
      * This calls otherTableWriter.finish.
+     * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (ignoreFinish) 
+            return;
 
         //clean up
         otherTableWriter.finish();
@@ -112,6 +115,11 @@ public class TableWriterUnits extends TableWriter {
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
+        if (ignoreFinish) {
+            writeSome(tCumulativeTable);
+            tCumulativeTable.removeAllRows();
+            return;
+        }
         changeUnits(tCumulativeTable, fromUnits, toUnits);
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
     }
@@ -122,8 +130,9 @@ public class TableWriterUnits extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(Table tTable, TableWriter tOtherTableWriter, 
-        String tFromUnits, String tToUnits) throws Throwable {
+    public static void writeAllAndFinish(EDD tEdd, Table tTable, 
+        TableWriter tOtherTableWriter, String tFromUnits, String tToUnits) 
+        throws Throwable {
 
         changeUnits(tTable, tFromUnits, tToUnits);
         tOtherTableWriter.writeAllAndFinish(tTable);

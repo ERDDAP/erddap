@@ -99,6 +99,7 @@ public class EDDGridFromDap extends EDDGrid {
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
         String tAccessibleTo = null;
+        String tGraphsAccessibleTo = null;
         boolean tAccessibleViaWMS = true;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -135,6 +136,10 @@ public class EDDGridFromDap extends EDDGrid {
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
+            else if (localTags.equals( "<graphsAccessibleTo>")) {}
+            else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
             else if (localTags.equals( "<accessibleViaWMS>")) {}
             else if (localTags.equals("</accessibleViaWMS>")) tAccessibleViaWMS = String2.parseBoolean(content);
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
@@ -167,7 +172,7 @@ public class EDDGridFromDap extends EDDGrid {
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDGridFromDap(tDatasetID, 
-            tAccessibleTo, tAccessibleViaWMS,
+            tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
@@ -251,8 +256,8 @@ public class EDDGridFromDap extends EDDGrid {
      * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
      * @throws Throwable if trouble
      */
-    public EDDGridFromDap(
-        String tDatasetID, String tAccessibleTo, boolean tAccessibleViaWMS,
+    public EDDGridFromDap(String tDatasetID, 
+        String tAccessibleTo, String tGraphsAccessibleTo, boolean tAccessibleViaWMS,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
@@ -272,6 +277,7 @@ public class EDDGridFromDap extends EDDGrid {
         className = "EDDGridFromDap"; 
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
+        setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxx, "WMS"));
@@ -725,7 +731,7 @@ public class EDDGridFromDap extends EDDGrid {
         //make the sibling
         EDDGridFromDap newEDDGrid = new EDDGridFromDap(
             tDatasetID, 
-            String2.toSSVString(accessibleTo), false, //accessibleViaWMS
+            String2.toSSVString(accessibleTo), "auto", false, //accessibleViaWMS
             shareInfo? onChange : (StringArray)onChange.clone(), 
             "", "", "", "",  //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
             addGlobalAttributes,
@@ -4583,7 +4589,7 @@ boolean testAll = true;
 
             EDDGrid eddGrid2 = new EDDGridFromDap(
                 "erddapChlorophyll", //String tDatasetID, 
-                null, true,
+                null, null, true,
                 null, null, null, null, null, null,
                 null,  
                 new Object[][] {
@@ -5763,7 +5769,7 @@ expected =
 
 //"2013-08-29T17:33:53Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\n" +
 //"2013-08-29T17:33:53Z 
-expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
+expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "    String infoUrl \"http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String institution \"NOAA NGDC\";\n" +
 "    String keywords \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
@@ -5845,7 +5851,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 //2013-08-29T17:41:13Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc
 //2013-08-29T17:41:13Z 
         expected = 
-"http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
+"http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
 "  :infoUrl = \"http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
 "  :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
@@ -6732,7 +6738,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-    "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(-75.0):(4.163336E-15)][(0.0):(180.0)]</href>\n" +
+    "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-75.0)%3A(4.163336E-15)%5D%5B(0.0)%3A(180.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6749,7 +6755,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-     "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(4.163336E-15):(75.0)][(0.0):(180.0)]</href>\n" +
+     "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(4.163336E-15)%3A(75.0)%5D%5B(0.0)%3A(180.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6766,7 +6772,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-          "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(-75.0):(4.163336E-15)][(180.0):(360.0)]</href>\n" +
+          "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-75.0)%3A(4.163336E-15)%5D%5B(180.0)%3A(360.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6783,7 +6789,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-     "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(4.163336E-15):(75.0)][(180.0):(360.0)]</href>\n" +
+     "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(4.163336E-15)%3A(75.0)%5D%5B(180.0)%3A(360.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6791,7 +6797,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    <drawOrder>1</drawOrder>\n" +
 "    <Icon>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-    "/griddap/erdBAssta5day.transparentPng?sst[(2008-11-01T12:00:00Z)][0][(-75.0):4:(75.0)][(0.0):4:(360.0)]</href>\n" +
+    "/griddap/erdBAssta5day.transparentPng?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-75.0)%3A4%3A(75.0)%5D%5B(0.0)%3A4%3A(360.0)%5D</href>\n" +
 "    </Icon>\n" +
 "    <LatLonBox>\n" +
 "      <west>0.0</west>\n" +
@@ -6847,7 +6853,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-   "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(-75.0):(-37.5)][(180.0):(270.0)]</href>\n" +
+   "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-75.0)%3A(-37.5)%5D%5B(180.0)%3A(270.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6864,7 +6870,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-    "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(-37.5):(4.163336E-15)][(180.0):(270.0)]</href>\n" +
+    "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-37.5)%3A(4.163336E-15)%5D%5B(180.0)%3A(270.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6881,7 +6887,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-      "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(-75.0):(-37.5)][(270.0):(360.0)]</href>\n" +
+      "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-75.0)%3A(-37.5)%5D%5B(270.0)%3A(360.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6898,7 +6904,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    </Region>\n" +
 "    <Link>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-     "/griddap/erdBAssta5day.kml?sst[(2008-11-01T12:00:00Z)][0][(-37.5):(4.163336E-15)][(270.0):(360.0)]</href>\n" +
+     "/griddap/erdBAssta5day.kml?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-37.5)%3A(4.163336E-15)%5D%5B(270.0)%3A(360.0)%5D</href>\n" +
 "      <viewRefreshMode>onRegion</viewRefreshMode>\n" +
 "    </Link>\n" +
 "  </NetworkLink>\n" +
@@ -6906,7 +6912,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    <drawOrder>2</drawOrder>\n" +
 "    <Icon>\n" +
 "      <href>" + EDStatic.erddapUrl + //in tests, always non-https url
-      "/griddap/erdBAssta5day.transparentPng?sst[(2008-11-01T12:00:00Z)][0][(-75.0):2:(4.163336E-15)][(180.0):2:(360.0)]</href>\n" +
+      "/griddap/erdBAssta5day.transparentPng?sst%5B(2008-11-01T12%3A00%3A00Z)%5D%5B0%5D%5B(-75.0)%3A2%3A(4.163336E-15)%5D%5B(180.0)%3A2%3A(360.0)%5D</href>\n" +
 "    </Icon>\n" +
 "    <LatLonBox>\n" +
 "      <west>-180.0</west>\n" +
@@ -7160,7 +7166,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String2.log("\nTest WMS 1.1.0 getCapabilities\n" +
                       "!!! This test requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP!!!");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "service=WMS&request=GetCapabilities&version=1.1.0");
         po = results.indexOf("</Layer>");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -7199,7 +7205,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2110e5.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7211,7 +7217,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2110edef.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" + 
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7224,7 +7230,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String2.log("\nTest WMS 1.3.0 getCapabilities\n" +
                       "!!! This test requires hawaii_d90f_20ee_c4cb_LonPM180 dataset in localhost ERDDAP!!!");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "service=WMS&request=GetCapabilities&version=1.3.0");
  
         po = results.indexOf("</Layer>");
@@ -7257,7 +7263,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2130e5.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7269,7 +7275,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth2130edef.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
             "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" + 
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7398,7 +7404,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String2.log("\nTest WMS 1.1.0 getCapabilities\n" +
                       "!!! This test requires testGridWithDepth dataset in localhost ERDDAP!!!");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
+            "http://localhost:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "service=WMS&request=GetCapabilities&version=1.1.0");
         po = results.indexOf("</Layer>");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -7420,7 +7426,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth110e5.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
+            "http://localhost:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=testGridWithDepth%3Atemp_inc" +
             "&TIME=1992-10-14T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7432,7 +7438,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth110edef.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
+            "http://localhost:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.1.0&SRS=EPSG%3A4326&LAYERS=testGridWithDepth%3Atemp_inc" +
             "&TIME=1992-10-14T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7445,7 +7451,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         String2.log("\nTest WMS 1.3.0 getCapabilities\n" +
                       "!!! This test requires testGridWithDepth dataset in localhost ERDDAP!!!");
         results = SSR.getUrlResponseString(
-            "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
+            "http://localhost:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "service=WMS&request=GetCapabilities&version=1.3.0");
         po = results.indexOf("</Layer>");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -7471,7 +7477,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth130e5.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
+            "http://localhost:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=testGridWithDepth%3Atemp_inc" +
             "&TIME=1992-10-14T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7483,7 +7489,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = EDStatic.fullTestCacheDirectory + gridDataset.className() + 
             "testGridWithDepth130edef.png";
         SSR.downloadFile(
-            "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
+            "http://localhost:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=testGridWithDepth%3Atemp_inc" +
             "&TIME=1992-10-14T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" +
             "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
@@ -7977,7 +7983,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n" +
-"<netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://127.0.0.1:8080/griddap/erdBAssta5day\">\n" +
+"<netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://localhost:8080/griddap/erdBAssta5day\">\n" +
 "  <attribute name=\"acknowledgement\" value=\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\" />\n" +
 "  <attribute name=\"cdm_data_type\" value=\"Grid\" />\n" +
 "  <attribute name=\"composite\" value=\"true\" />\n" +
@@ -8178,6 +8184,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"      :calendar = \"gregorian\";\n" + 
 "\n" +
 "    double altitude\\(altitude=1\\);\n" +
 "      :_CoordinateAxisType = \"Height\";\n" +
@@ -9078,7 +9085,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "        Float32 scale_factor 7.17185E-4;\n" + //32768-> 23.50071808, so many values are higher
 "        Float32 add_offset -2.0;\n" +
 "        Int16 _FillValue -1;\n" + //technically wrong: cf says it should be actual value: 65535(int)
-//"        Int16 Fill -1;\n" + //appeared 2015-12-28, disappeared 2016-01-19
+"        Int16 Fill -1;\n" + //appeared 2015-12-28, disappeared 2016-01-19, appeared 2016-02-25, dis 2016-03-04, appeared 2016-04-12
 "        String Scaling \"linear\";\n" +
 "        String Scaling_Equation \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
 "        Float32 Slope 7.17185E-4;\n" +
@@ -9247,7 +9254,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
 //odd flip flop changes from source       
 //        T18:46:21Z http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml\n" +
-//"2015-10-28T18:46:21Z http://127.0.0.1:8080/cwexperimental/griddap/testUInt16.das\";\n" +
+//"2015-10-28T18:46:21Z http://localhost:8080/cwexperimental/griddap/testUInt16.das\";\n" +
 /*expected = 
 "    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME\";\n" +
 "    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" + //changes and below
@@ -9410,7 +9417,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testNetcdfJava();
         testGeotif();
         testDescendingLat(true);  //testGraphics?
-        testDescendingAxisGeotif();
+        testDescendingAxisGeotif(); //2016-02-23 stalled response from http://data1.gfdl.noaa.gov:9192
         testMap74to434();
         testMapAntialiasing();
         testTimeErrorMessage();

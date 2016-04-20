@@ -607,7 +607,7 @@ public class NcHelper  {
      * <p>This purposely does not work for opendap urls. Use the opendap 
      * methods instead.
      *
-     * <p>If the fullName is an http address, the name needs to start with "http:\\" 
+     * <p>If the fullName is an http address, the name needs to start with "http://" 
      * (upper or lower case) and the server needs to support "byte ranges"
      * (see ucar.nc2.NetcdfFile documentation).
      * 
@@ -2380,7 +2380,7 @@ String2.log(pas13.toString());
                     expected = 
 "netcdf unlimited.nc {\n" +  //2013-09-03 netcdf-java 4.3 added blank lines
 "  dimensions:\n" +
-"    time = UNLIMITED;   // (2 currently\n" +
+"    time = UNLIMITED;   // (2 currently)\n" +
 "    comment_strlen = 6;\n" +
 "  variables:\n" +
 "    double time(time=2);\n" +
@@ -2429,7 +2429,7 @@ String2.log(pas13.toString());
         expected = 
 "netcdf unlimited.nc {\n" + //2013-09-03 netcdf-java 4.3 added blank lines
 "  dimensions:\n" +
-"    time = UNLIMITED;   // (5 currently\n" + //2013-09-03 bug! netcdf-java 4.3 removed close )
+"    time = UNLIMITED;   // (5 currently)\n" + 
 "    comment_strlen = 6;\n" +
 "  variables:\n" +
 "    double time(time=5);\n" +

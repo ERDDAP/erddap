@@ -2878,7 +2878,7 @@ try {
      * This overwrites any existing file of the specified name.
      * This makes an effort not to create a partial file if there is an error.
      * If no exception is thrown, the file was successfully created.
-     * See http://en.wikipedia.org/wiki/Esri_grid for info about this format.
+     * See https://en.wikipedia.org/wiki/Esri_grid for info about this format.
      * **Currently, the values are written as floats.
      * 
      * @param directory with a slash at the end

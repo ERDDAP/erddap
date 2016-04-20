@@ -2399,7 +2399,7 @@ expected =
 "java.lang.RuntimeException: ERROR in OpendapHelper.dapToNc\n" +
 "  url=http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc\n" +
 "  varNames=zztop,time,lat,lon,PL_HD,history  projection=null\n" +
-"  file=C:/programs/tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
+"  file=C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
 "var=history has different dimensions than previous vars.";
             if (results.indexOf("java.net.ConnectException: Connection timed out: connect") >= 0)
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -2416,7 +2416,7 @@ expected =
     public static void testDapToNcDGrid() throws Throwable {
         String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
         String fileName, expected, results;      
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         fileName = SSR.getTempDirectory() + "testDapToNcDGrid.nc";
         String dGridUrl = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";

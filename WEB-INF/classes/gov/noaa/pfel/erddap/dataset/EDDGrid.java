@@ -118,7 +118,9 @@ public abstract class EDDGrid extends EDD {
    
 
     /** These are needed for EDD-required methods of the same name. */
-    public final static String[] dataFileTypeNames = {  //
+    public final static String[] dataFileTypeNames = {  
+        //If add new type and not actual-data type (e.g., .das), 
+        //  add to graphsAccessibleToFileTypeNames below
         ".asc", ".csv", ".csvp", ".csv0", ".das", ".dds", ".dods", 
         ".esriAscii", //".grd", ".hdf", 
         ".fgdc", ".graph", ".help", ".html", ".htmlTable",
@@ -163,27 +165,27 @@ public abstract class EDDGrid extends EDD {
     public static String[] dataFileTypeInfo = {  //"" if not available
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#ASCII_Service", //OPeNDAP ascii
         //csv: also see http://www.ietf.org/rfc/rfc4180.txt
-        "http://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
-        "http://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
-        "http://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
+        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
+        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
+        "https://en.wikipedia.org/wiki/Comma-separated_values", //csv was "http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm", 
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Attribute_Structure", //das
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", //dods
-        "http://en.wikipedia.org/wiki/Esri_grid", //esriAscii
+        "https://en.wikipedia.org/wiki/Esri_grid", //esriAscii
         //"http://gmt.soest.hawaii.edu/gmt/doc/html/GMT_Docs/node60.html", //grd
         //"http://www.hdfgroup.org/products/hdf4/", //hdf
-        "http://www.fgdc.gov/", //fgdc
+        "http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
         "http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", //GraphicsCommands
         "http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", //help
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
         "http://www.w3schools.com/html/html_tables.asp", //htmlTable
-        "http://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
+        "https://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
         "http://www.json.org/", //json
         "http://www.mathworks.com/", //mat
         "http://www.unidata.ucar.edu/software/netcdf/", //nc
-        "http://www.unidata.ucar.edu/software/netcdf/docs/guide_ncdump.html", //ncHeader
+        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //ncHeader
         "http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/", //ncml
-        "http://odv.awi.de/en/documentation/", //odv
+        "https://odv.awi.de/en/documentation/", //odv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
@@ -223,7 +225,8 @@ public abstract class EDDGrid extends EDD {
     };
 
     private static String[] allFileTypeOptions, allFileTypeNames;
-    private static int defaultFileTypeOption = 0; //will be reset below
+    private static String[] publicGraphFileTypeNames;
+    private static int defaultFileTypeOption, defaultPublicGraphFileTypeOption; 
 
     //wcs
     public final static String wcsServer = "server";
@@ -256,6 +259,17 @@ public abstract class EDDGrid extends EDD {
         //construct allFileTypeOptions
         allFileTypeOptions = new String[nDFTN + nIFTN];
         allFileTypeNames = new String[nDFTN + nIFTN];
+        graphsAccessibleTo_fileTypeNames = new HashSet(); //read only, so needn't be thread-safe
+
+        int tExtra = 6;
+        publicGraphFileTypeNames = new String[tExtra + nIFTN];
+        publicGraphFileTypeNames[0] = ".das";
+        publicGraphFileTypeNames[1] = ".dds";
+        publicGraphFileTypeNames[2] = ".fgdc";
+        publicGraphFileTypeNames[3] = ".graph";
+        publicGraphFileTypeNames[4] = ".help";
+        publicGraphFileTypeNames[5] = ".iso19115";
+
         for (int i = 0; i < nDFTN; i++) {
             allFileTypeOptions[i] = dataFileTypeNames[i] + " - " + dataFileTypeDescriptions[i];
             allFileTypeNames[i] = dataFileTypeNames[i];
@@ -263,7 +277,13 @@ public abstract class EDDGrid extends EDD {
         for (int i = 0; i < nIFTN; i++) {
             allFileTypeOptions[nDFTN + i] = imageFileTypeNames[i] + " - " + imageFileTypeDescriptions[i];
             allFileTypeNames[nDFTN + i] = imageFileTypeNames[i];
+            publicGraphFileTypeNames[tExtra + i] = imageFileTypeNames[i];
         }
+        for (int i = 0; i < publicGraphFileTypeNames.length; i++)
+            graphsAccessibleTo_fileTypeNames.add(publicGraphFileTypeNames[i]);
+        defaultPublicGraphFileTypeOption = String2.indexOf(
+            publicGraphFileTypeNames, ".png");
+
     }
 
     //ensure org.jdom.Content is compiled -- 
@@ -3186,8 +3206,9 @@ public abstract class EDDGrid extends EDD {
             //add .draw and .vars to graphQuery 
             graphQuery.append(
                 "&.draw=" + draws[draw] +
-                "&.vars=" + varName[0] + "|" + varName[1] + "|" + varName[2] + 
-                    (nVars > 3? "|" + varName[3] : ""));
+                "&.vars=" + SSR.minimalPercentEncode(
+                    varName[0] + "|" + varName[1] + "|" + varName[2] + 
+                    (nVars > 3? "|" + varName[3] : "")));
 
             //*** Graph Settings
             writer.write("&nbsp;\n"); //necessary for the blank line before start of table (not <p>)
@@ -3232,7 +3253,8 @@ public abstract class EDDGrid extends EDD {
                              "  </tr>\n");
 
                 //add to graphQuery
-                graphQuery.append("&.marker=" + mType + "|" + mSizes[mSize]);
+                graphQuery.append("&.marker=" + 
+                    SSR.minimalPercentEncode(mType + "|" + mSizes[mSize]));
             }
 
             String colors[] = HtmlWidgets.PALETTE17;
@@ -3322,10 +3344,11 @@ public abstract class EDDGrid extends EDD {
 
                 //add to graphQuery 
                 graphQuery.append(
-                    "&.colorBar=" + EDStatic.palettes0[palette] + "|" +
+                    "&.colorBar=" + SSR.minimalPercentEncode(
+                    EDStatic.palettes0[palette] + "|" +
                     (conDis[continuous].length() == 0? "" : conDis[continuous].charAt(0)) + "|" +
                     EDV.VALID_SCALES0[scale] + "|" +
-                    palMin + "|" + palMax + "|" + EDStatic.paletteSections[pSections]);
+                    palMin + "|" + palMax + "|" + EDStatic.paletteSections[pSections]));
             }
 
             if (drawVectors) {
@@ -3344,7 +3367,7 @@ public abstract class EDDGrid extends EDD {
 
                 //add to graphQuery
                 if (vec.length() > 0)
-                    graphQuery.append("&.vec=" + vec);
+                    graphQuery.append("&.vec=" + SSR.minimalPercentEncode(vec));
             }
 
             if (drawSurface && isMap) {
@@ -3421,14 +3444,15 @@ public abstract class EDDGrid extends EDD {
 
                 //add to graphQuery
                 if (yRange[0].length() > 0 || yRange[1].length() > 0 || !yAscending) 
-                    graphQuery.append("&.yRange=" + yRange[0] + "|" + yRange[1] + "|" + yAscending);
+                    graphQuery.append("&.yRange=" + SSR.minimalPercentEncode(
+                        yRange[0] + "|" + yRange[1] + "|" + yAscending));
             }
 
 
             //*** end of form
             writer.write(widgets.endTable()); //end of Graph Settings table
 
-            //make javascript function to generate query
+            //make javascript function to generate query    \\x26=&   %7C=|
             writer.write(
                 "<script type=\"text/javascript\"> \n" +
                 "function makeQuery(varsToo) { \n" +
@@ -3468,15 +3492,15 @@ public abstract class EDDGrid extends EDD {
             writer.write(                
                 "    if (varsToo) { \n" +
                 "      q += \"&.vars=\" + d.f1.var0.options[d.f1.var0.selectedIndex].text + \n" +
-                "        \"|\" + d.f1.var1.options[d.f1.var1.selectedIndex].text; \n");
+                "        \"%7C\" + d.f1.var1.options[d.f1.var1.selectedIndex].text; \n");
             if (nVars >= 3) writer.write(
-                "      q += \"|\" + d.f1.var2.options[d.f1.var2.selectedIndex].text; \n");
+                "      q += \"%7C\" + d.f1.var2.options[d.f1.var2.selectedIndex].text; \n");
             if (nVars >= 4) writer.write(
-                "      q += \"|\" + d.f1.var3.options[d.f1.var3.selectedIndex].text; \n");
+                "      q += \"%7C\" + d.f1.var3.options[d.f1.var3.selectedIndex].text; \n");
             writer.write(
                 "    } \n");  
             if (drawLinesAndMarkers || drawMarkers) writer.write(
-                "    q += \"&.marker=\" + d.f1.mType.selectedIndex + \"|\" + \n" +
+                "    q += \"&.marker=\" + d.f1.mType.selectedIndex + \"%7C\" + \n" +
                 "      d.f1.mSize.options[d.f1.mSize.selectedIndex].text; \n");
             if (drawLines || drawLinesAndMarkers || drawMarkers || drawSticks || drawVectors) writer.write(
                 "    q += \"&.color=0x\"; \n" +
@@ -3484,10 +3508,10 @@ public abstract class EDDGrid extends EDD {
                 "      if (d.f1.colr[rb].checked) q += d.f1.colr[rb].value; \n"); //always: one will be checked
             if (drawLinesAndMarkers || drawMarkers || drawSurface) writer.write(
                 "    var tpc = d.f1.pc.options[d.f1.pc.selectedIndex].text;\n" +
-                "    q += \"&.colorBar=\" + d.f1.p.options[d.f1.p.selectedIndex].text + \"|\" + \n" +
-                "      (tpc.length > 0? tpc.charAt(0) : \"\") + \"|\" + \n" +
-                "      d.f1.ps.options[d.f1.ps.selectedIndex].text + \"|\" + \n" +
-                "      d.f1.pMin.value + \"|\" + d.f1.pMax.value + \"|\" + \n" +
+                "    q += \"&.colorBar=\" + d.f1.p.options[d.f1.p.selectedIndex].text + \"%7C\" + \n" +
+                "      (tpc.length > 0? tpc.charAt(0) : \"\") + \"%7C\" + \n" +
+                "      d.f1.ps.options[d.f1.ps.selectedIndex].text + \"%7C\" + \n" +
+                "      d.f1.pMin.value + \"%7C\" + d.f1.pMax.value + \"%7C\" + \n" +
                 "      d.f1.pSec.options[d.f1.pSec.selectedIndex].text; \n");
             if (drawVectors) writer.write(
                 "    if (d.f1.vec.value.length > 0) q += \"&.vec=\" + d.f1.vec.value; \n");
@@ -3499,7 +3523,7 @@ public abstract class EDDGrid extends EDD {
                 "    var yRMax=d.f1.yRangeMax.value; \n" +
                 "    var yRAsc=d.f1.yRangeAscending.selectedIndex; \n" +
                 "    if (yRMin.length > 0 || yRMax.length > 0 || yRAsc == 1)\n" +
-                "      q += \"\\x26.yRange=\" + yRMin + \"|\" + yRMax + \"|\" + (yRAsc==0); \n");
+                "      q += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0); \n");
             if (zoomTime) writer.write(
                 "    q += \"&.timeRange=\" + d.f1.timeN.value + \",\" + d.f1.timeUnits.value; \n");
             //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
@@ -3538,8 +3562,10 @@ public abstract class EDDGrid extends EDD {
                 "<tr><td nowrap>&nbsp;<br>" + EDStatic.optional + ":" +
                 "<br>" + EDStatic.magFileType + ":\n");
             paramName = "fType";
+            boolean tAccessibleTo = isAccessibleTo(EDStatic.getRoles(loggedInAs));
             writer.write(widgets.select(paramName, EDStatic.EDDSelectFileType, 1,
-                allFileTypeNames, defaultFileTypeOption, 
+                tAccessibleTo? allFileTypeNames      : publicGraphFileTypeNames,
+                tAccessibleTo? defaultFileTypeOption : defaultPublicGraphFileTypeOption, 
                 "onChange='f1.tUrl.value=\"" + tErddapUrl + "/griddap/" + datasetID + 
                     "\" + f1.fType.options[f1.fType.selectedIndex].text + " + 
                     "\"?" + String2.replaceAll(graphQuery.toString(), "&", "&amp;") + "\";'"));
@@ -3564,7 +3590,10 @@ public abstract class EDDGrid extends EDD {
             writer.write(widgets.textField("tUrl", genViewHtml, 
                 72, 1000, 
                 tErddapUrl + "/griddap/" + datasetID + 
-                    dataFileTypeNames[defaultFileTypeOption] + "?" + graphQuery.toString(), 
+                    (tAccessibleTo? 
+                        allFileTypeNames[defaultFileTypeOption] : 
+                        publicGraphFileTypeNames[defaultPublicGraphFileTypeOption]) + 
+                    "?" + graphQuery.toString(), 
                 ""));
             writer.write("<br>(<a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\" " +
             "title=\"griddap documentation\">" + EDStatic.magDocumentation + "</a>\n" +
@@ -6184,7 +6213,9 @@ Attributes {
             true, false);   //rowMajor, convertToNaN (would be true, but TableWriterJson will do it)
 
         //write the data to the tableWriter
-        TableWriter tw = new TableWriterJson(outputStreamSource, jsonp, true); //writeUnits 
+        TableWriter tw = new TableWriterJson(this, 
+            getNewHistory(requestUrl, userDapQuery),
+            outputStreamSource, jsonp, true); //writeUnits 
         if (isAxisDapQuery) 
              saveAsTableWriter(ada, tw);
         else saveAsTableWriter(gda, tw);
@@ -7144,7 +7175,9 @@ Attributes {
             true, false);   //rowMajor, convertToNaN (would be true, but TableWriterSeparatedValue will do it)
 
         //write the data to the tableWriter
-        TableWriter tw = new TableWriterSeparatedValue(outputStreamSource, 
+        TableWriter tw = new TableWriterSeparatedValue(this, 
+            getNewHistory(requestUrl, userDapQuery),
+            outputStreamSource, 
             separator, quoted, writeColumnNames, writeUnits, "NaN");
         if (isAxisDapQuery) 
              saveAsTableWriter(ada, tw);
@@ -7192,7 +7225,8 @@ Attributes {
             true, false);   //rowMajor, convertToNaN (EDDTable.saveAsODV handles convertToNaN)
 
         //write the data to the tableWriterAllWithMetadata
-        TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(
+        TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(this, 
+            getNewHistory(requestUrl, userDapQuery),            
             cacheDirectory(), "ODV"); //A random number will be added to it for safety.
         saveAsTableWriter(gda, twawm);
 
@@ -7248,7 +7282,9 @@ Attributes {
             true, false);   //rowMajor, convertToNaN  (would be true, but TableWriterHtmlTable will do it)
 
         //write the data to the tableWriter
-        TableWriter tw = new TableWriterHtmlTable(loggedInAs, outputStreamSource,
+        TableWriter tw = new TableWriterHtmlTable(this, 
+            getNewHistory(requestUrl, userDapQuery),
+            loggedInAs, outputStreamSource,
             true, fileName, xhtmlMode, preTableHtml, postTableHtml, 
             true, true, -1); //tencodeAsHTML, tWriteUnits 
         if (isAxisDapQuery) 
@@ -7815,7 +7851,7 @@ Attributes {
             //ArcGIS
             "<p><b><a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a><a name=\"ArcGIS\">&nbsp;</a>\n" +
-            "     <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Esri_grid\">.esriAsc" +
+            "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Esri_grid\">.esriAsc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
             "   <br>.esriAsc is an old and inherently limited file format. If you have <b>ArcGIS 10 or higher</b>, we strongly recommend\n" +
             "   <br>that you download gridded data from ERDDAP in a <a rel=\"help\" href=\"#nc\">NetCDF .nc file</a>," +
@@ -8020,15 +8056,15 @@ Attributes {
             "  <p><b>.ncHeader</b>\n" +
             "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
             "  <br>would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/guide_ncdump.html\">ncdump -h <i>fileName</i>" +
+            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
             //odv
-            "  <p><b><a rel=\"bookmark\" href=\"http://odv.awi.de/\">Ocean Data View" +
+            "  <p><b><a rel=\"bookmark\" href=\"https://odv.awi.de/\">Ocean Data View" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> .odvTxt</b>\n" +
             "    - <a name=\"ODV\">ODV</a> users can download data in a\n" +
-            "  <br><a rel=\"help\" href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file" +
+            "  <br><a rel=\"help\" href=\"https://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    by requesting griddap's .odvTxt fileType.\n" +
             "  <br>The dataset MUST include longitude, latitude, and time dimensions.\n" +
@@ -8255,20 +8291,24 @@ Attributes {
             "  <br>&nbsp;&nbsp;<tt>-o <i>fileDir/fileName.ext</i></tt> specifies the name for the file that will be created.\n" +
             "  <br>For example,\n" +
             "<pre>curl -g \"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst[%282010-09-01T12:00:00Z%29][][][]&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=|||||\" -o BAssta5day20100901.png</pre>\n" +
-            "  The erddapUrl must be <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+            "  The erddapUrl must be <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>: all characters in query values (the parts after\n" +
+            "   <br>the '=' signs) other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where HH is the\n" +
+            "   <br>2 digit hexadecimal value of the character, for example, space becomes %20. Characters\n" +
+            "   <br>above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded.\n" +
+            "   <br>Programming languages have tools to do this (for example, see Java's\n" +
+            "   <br><a rel=\"help\" href=\"http://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
+            "     and JavaScript's\n" +
+                     "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
+                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
+            "   <br><a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-            "  <br>If you get the URL from your browser's address textfield, this may be already done.\n" +
-            "  <br>If not, in practice, this can be very minimal percent encoding: all you usually\n" +
-            "  <br>have to do is convert % into %25, &amp; into %26, \" into %22, + into %2B,\n" +
-            "  <br>space into %20 (or +), &lt; into %3C, &gt; into %3E, = into %3D, ~ into %7E, and convert\n" +
-            "  <br>all characters above #126 to their %HH form (where HH is the 2-digit hex value).\n" +
-            "  <br>Unicode characters above #255 must be UTF-8 encoded and then each byte\n" +
-            "  <br>must be converted to %HH form (ask a programmer for help).\n" +
             "  <br>&nbsp;\n" +
             "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n" +
             "  <br><tt>curl \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></tt>\n" +
-            "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also\n" +
-            "  <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode" +
+            "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must\n" +
+            "  <br><a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encode" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
               "them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
@@ -8391,7 +8431,7 @@ Attributes {
                                     fullValueExample + "</tt></a>\n" +
             "     <br>The more human-oriented fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml)\n" +
             "     <br>display date/time values as " +
-            "       <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings" +
+            "       <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "     <br>(e.g., 2002-08-03T12:30:00Z, but some variables include milliseconds, e.g.,\n" +
             "     <br>2002-08-03T12:30:00.123Z).\n" +
@@ -8403,7 +8443,7 @@ Attributes {
               "       <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
               "       ERDDAP Deals with Time</a>.\n" : "") +
             "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n" +
-            "     <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string" +
+            "     <br><a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "       in parentheses, which griddap then converts to the\n" +
             "     <br>internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n" +
@@ -8845,10 +8885,6 @@ Attributes {
     public void wcsGetCapabilities(String loggedInAs, String version, Writer writer) 
         throws Throwable {
 
-        if (!isAccessibleTo(EDStatic.getRoles(loggedInAs))) 
-            throw new SimpleException(
-                MessageFormat.format(EDStatic.notAuthorized, loggedInAs, datasetID));
-
         if (accessibleViaWCS().length() > 0)
             throw new SimpleException(accessibleViaWCS());
 
@@ -9193,10 +9229,6 @@ Attributes {
     public void wcsDescribeCoverage(String loggedInAs, String version, String coveragesCSV,
         Writer writer) throws Throwable {
 
-        if (!isAccessibleTo(EDStatic.getRoles(loggedInAs))) 
-            throw new SimpleException(
-                MessageFormat.format(EDStatic.notAuthorized, loggedInAs, datasetID));
-
         if (accessibleViaWCS().length() > 0)
             throw new SimpleException(accessibleViaWCS());
 
@@ -9406,11 +9438,6 @@ Attributes {
         if (reallyVerbose) String2.log("\nrespondToWcsQuery q=" + wcsQuery);
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = "/wcs/" + datasetID + "/" + wcsServer;
-
-        //??? should this check?  getDataForDapQuery doesn't
-        //if (!isAccessibleTo(EDStatic.getRoles(loggedInAs))) 
-        //    throw new SimpleException(
-        //        MessageFormat.format(EDStatic.notAuthorized, loggedInAs, datasetID));
 
         if (accessibleViaWCS().length() > 0)
             throw new SimpleException(accessibleViaWCS);
@@ -9970,9 +9997,14 @@ Attributes {
             "  </table>\n" +
             "  <sup>*</sup> Parameter names are case-insensitive.\n" +
             "  <br>Parameter values are case sensitive and must be\n" +
-            "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
-            "    which your browser normally handles for you.\n" +
+            "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+            "   <br>all characters in query values (the parts after the '=' signs) other than A-Za-z0-9_-!.~'()* must be\n" +
+            "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+            "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+            "   <br>(ask a programmer for help). There are\n" +
+                "<a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
             "  <br>&nbsp;\n" +
             "\n");
@@ -10013,9 +10045,14 @@ Attributes {
             "  </table>\n" +
             "  <sup>*</sup> Parameter names are case-insensitive.\n" +
             "  <br>Parameter values are case sensitive and must be\n" +
-            "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
-            "    which your browser normally handles for you.\n" +
+            "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+            "   <br>all characters in query values (the parts after the '=' signs) other than A-Za-z0-9_-!.~'()* must be\n" +
+            "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+            "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+            "   <br>(ask a programmer for help). There are\n" +
+                "<a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
             "  <br>&nbsp;\n" +
             "\n");
@@ -10067,7 +10104,7 @@ Attributes {
             "    <td nowrap>time=<i>time</i>\n" +
             "    <br>time=<i>beginTime/endTime</i></td>\n" +
             "    <td>The time values must be in\n" +
-            "      <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" format" +
+            "      <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" format" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "      for example, <span style=\"white-space: nowrap;\">\"1985-01-02T00:00:00Z\").</span>\n" +
             "      <br>In ERDDAP, any time value specified rounds to the nearest available time.\n" +
@@ -10142,9 +10179,14 @@ Attributes {
             "  </table>\n" +
             "  <sup>*</sup> Parameter names are case-insensitive.\n" +
             "  <br>Parameter values are case sensitive and must be\n" +
-            "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
-            "    which your browser normally handles for you.\n" +
+            "    <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+            "   <br>all characters in query values (the parts after the '=' signs) other than A-Za-z0-9_-!.~'()* must be\n" +
+            "   <br>encoded as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+            "   <br>Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+            "   <br>(ask a programmer for help). There are\n" +
+                "<a rel=\"help\" href=\"http://www.url-encode-decode.com/\">web sites that percent encode/decode for you" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
             "  <br>&nbsp;\n" +
             "\n");
@@ -10265,7 +10307,9 @@ Attributes {
 
 
     /** 
-     * This writes the dataset's FGDC-STD-012-2002
+     * This writes the dataset's FGDC-STD-001-1998
+     * http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html
+     * and includes the NASA extensions for remotely sensed data FGDC-STD-012-2002
      * "Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata"
      * XML to the writer.
      * <br>The template is initially based on a sample file from Dave Neufeld:
