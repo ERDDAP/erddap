@@ -960,7 +960,7 @@ public class CWUser extends User  {
                             pdfFileName + "</a>\n" +
                         "\n" +
                         "<p>.pdf files can be viewed and printed with\n" + 
-                        "<a href=\"http://get.adobe.com/reader/\">Acrobat Reader</a>,\n" +   
+                        "<a href=\"https://get.adobe.com/reader/\">Acrobat Reader</a>,\n" +   
                         "a free program from Adobe.\n");
                     
                     //The link to go back to CWBrowser.jsp often lead to jumble of previous values. [why?]

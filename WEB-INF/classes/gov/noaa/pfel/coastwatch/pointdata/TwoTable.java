@@ -31,7 +31,8 @@ import java.util.GregorianCalendar;
 import java.util.Vector;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -100,9 +101,13 @@ public class TwoTable  {
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriteable nc = new NetcdfFileWriteable(fullName + randomInt, false);
+        NetcdfFileWriter nc = new NetcdfFileWriter(
+            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
         
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+
             //ensure dataTable has at least one row (.nc requres that)
             int nDataRows = dataTable.nRows();
             int nDataColumns = dataTable.nColumns();
@@ -126,9 +131,9 @@ public class TwoTable  {
 
 
             //define the dimensions
-            Dimension obsDimension  = nc.addDimension("obs", nRows);
+            Dimension obsDimension  = nc.addDimension(rootGroup, "obs", nRows);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
@@ -138,12 +143,12 @@ public class TwoTable  {
                 String tColName = getColumnNameWithoutSpaces(col);
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nclib wants at least 1
-                    Dimension lengthDimension = nc.addDimension(
+                    Dimension lengthDimension = nc.addDimension(rootGroup, 
                         tcolName + NcHelper.StringLengthSuffix, max);
-                    nc.addVariable(tColName, char.class, 
-                        new Dimension[]{obsDimension, lengthDimension}); 
+                    nc.addVariable(rootGroup, tColName, char.class, 
+                        Arrays.asList(obsDimension, lengthDimension)); 
                 } else {
-                    nc.addVariable(tColName, type, new Dimension[]{obsDimension}); 
+                    nc.addVariable(rootGroup, tColName, type, Arrays.asList(obsDimension)); 
                 }
 //nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
             }
@@ -156,7 +161,7 @@ public class TwoTable  {
             if (globalAttributes != null) {
                 for (int i = 0; i < globalAttributes.size(); i += 2) { 
                     //String2.log("Attribute: " + globalAttributes.get(i) + " is " + globalAttributes.get(i+1));
-                    nc.addGlobalAttribute((String)globalAttributes.get(i), 
+                    nc.addGroupAttribute(rootGroup, (String)globalAttributes.get(i), 
                         DataHelper.getNc1DArray(((PrimitiveArray)globalAttributes.get(i+1)).toObjectArray()));
                 }
             }

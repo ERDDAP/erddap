@@ -55,7 +55,7 @@ public class Boundaries  {
      * The nationalBoundary and stateBoundary files must be in the refDirectory. 
      *    "gshhs_?.b" (?=f|h|i|l|c) files. 
      *    The files are from the GSHHS project
-     *    (http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html 2009-10-28 v2.0).
+     *    (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html 2009-10-28 v2.0).
      *    GPL license: http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
      *    landMaskDir should have slash at end.
      */

@@ -140,8 +140,9 @@ public class EDStatic {
      * <br>1.66 released on 2016-01-19
      * <br>1.68 released on 2016-02-08
      * <br>1.70 released on 2016-04-15
+     * <br>1.72 released on 2016-05-12
      */   
-    public static String erddapVersion = "1.70";  
+    public static String erddapVersion = "1.72";  
 
     /** 
      * This is almost always false.  
@@ -1013,7 +1014,7 @@ public static boolean developmentMode = false;
         queryErrorNotExpectedAt,
         queryErrorNotFoundAfter,
         queryErrorOccursTwice,
-        queryErrorOneDistinctOrderBy,
+        queryErrorOneOrderBy,
         queryErrorOrderByVariable,
         queryErrorUnknownVariable,
 
@@ -1295,7 +1296,6 @@ public static boolean developmentMode = false;
         unitTestDataDir = setup.getString("unitTestDataDir", "[specify <unitTestDataDir> in setup.xml]"); 
         unitTestDataDir = File2.addSlash(unitTestDataDir);
         String2.unitTestDataDir = unitTestDataDir;
-        Table.unitTestDataDir   = unitTestDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = setup.getString("emailSmtpHost",  null);
@@ -2241,7 +2241,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    "");
         queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    "");
         queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      "");
-        queryErrorOneDistinctOrderBy=messages.getNotNothingString("queryErrorOneDistinctOrderBy","");
+        queryErrorOneOrderBy       = messages.getNotNothingString("queryErrorOneOrderBy",       "");
         queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  "");
         queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  "");
 

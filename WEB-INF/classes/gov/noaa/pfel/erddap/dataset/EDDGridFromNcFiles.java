@@ -37,7 +37,8 @@ import java.util.regex.Pattern;
 
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -6477,14 +6478,15 @@ expected =
         testQuickRestart();
 
         //tests of remote sources on-the-fly
-        testGenerateDatasetsXmlAwsS3();
-        testAwsS3(false);  //deleteCachedInfo
         //NetcdfFile.open(          "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
         //NetcdfDataset.openDataset("http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
         //from command line: curl --head http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
         testGenerateDatasetsXmlWithRemoteThreddsFiles();
         testRemoteThreddsFiles(false); //deleteCachedInfo 
         testMatchAxisNDigits();
+
+        testGenerateDatasetsXmlAwsS3();   //VERY SLOW
+        testAwsS3(false);  //deleteCachedInfo   //VERY SLOW
 
         /* */
 

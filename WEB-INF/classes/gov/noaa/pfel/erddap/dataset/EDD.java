@@ -391,6 +391,7 @@ public abstract class EDD {
             if (type.equals("EDDTableFromColumnarAsciiFiles"))  return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromAwsXmlFiles")) return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromHyraxFiles"))  return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
+            if (type.equals("EDDTableFromMultidimNcFiles")) return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromNcFiles"))     return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromNcCFFiles"))   return EDDTableFromNcCFFiles.fromXml(erddap, xmlReader);
             //if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(erddap, xmlReader); //inactive 2010-09-08
@@ -1383,6 +1384,8 @@ public abstract class EDD {
     }
 
     /**
+     * Call this AFTER setting accessibleTo.
+     *
      * @param s must be null (like "auto"), "auto", or "public"
      */
     protected boolean setGraphsAccessibleTo(String s) {
@@ -3811,6 +3814,7 @@ public abstract class EDD {
         keywords.remove("sep");
         keywords.remove("september");
         keywords.remove("the");
+        keywords.remove("this");
         keywords.remove("unknown");
         keywords.remove("uri");
         keywords.remove("url");
@@ -4011,7 +4015,7 @@ public abstract class EDD {
         //convert all fgdc_X, fgdc:X, and HDF5_GLOBAL.X metadata to X (if not already set)
         //  e.g., http://measures.gsfc.nasa.gov/thredds/dodsC/SWDB_aggregation/SWDB_L305.004/SWDB_Aggregation_L305_1997.ncml.ncml
         //and fix any bad characters in sourceAtt names.
-        //  e.g. http://www.ngdc.noaa.gov/thredds/dodsC/ustec/tec/200609030400_tec.nc.das uses '_'
+        //  e.g. https://www.ngdc.noaa.gov/thredds/dodsC/ustec/tec/200609030400_tec.nc.das uses '_'
         //http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#idp4775248
         //  says "Variable, dimension and attribute names should begin with a letter
         //  and be composed of letters, digits, and underscores."
@@ -4495,7 +4499,7 @@ public abstract class EDD {
                 if (!isSomething(tInstitution) ||
                     tInstitution.equals("NOAA") ||
                     tInstitution.equals("NGDC")) tInstitution  = "NOAA NCEI";                                   
-                if (!isSomething(creator_url))   creator_url   = "http://www.ngdc.noaa.gov/mgg/coastal/crm.html";                   
+                if (!isSomething(creator_url))   creator_url   = "https://www.ngdc.noaa.gov/mgg/coastal/crm.html";                   
             //etopo
             } else if (lcUrl.indexOf("/etopo") >= 0) {
                 if (!isSomething(creator_email)) creator_email = "Barry.Eakins@noaa.gov";                   
@@ -4505,7 +4509,7 @@ public abstract class EDD {
                 if (!isSomething(tInstitution) ||
                     tInstitution.equals("NOAA") ||
                     tInstitution.equals("NGDC")) tInstitution  = "NOAA NCEI";                                   
-                if (!isSomething(creator_url))   creator_url   = "http://www.ngdc.noaa.gov/mgg/global/global.html";                   
+                if (!isSomething(creator_url))   creator_url   = "https://www.ngdc.noaa.gov/mgg/global/global.html";                   
             //gfdl cm  (climate model)
             } else if (lcUrl.indexOf(".gfdl.noaa.gov") >= 0 &&
                        (lcUrl.indexOf("_cm") >= 0 ||
@@ -4560,7 +4564,7 @@ public abstract class EDD {
                 if (!isSomething(tInstitution) ||
                     tInstitution.equals("NOAA") ||
                     tInstitution.equals("NGDC")) tInstitution  = "NOAA NCEI";
-                if (!isSomething(creator_url))   creator_url   = "http://www.ngdc.noaa.gov/mgg/dem/demportal.html";                   
+                if (!isSomething(creator_url))   creator_url   = "https://www.ngdc.noaa.gov/mgg/dem/demportal.html";                   
             //osmc
             } else if (lcUrl.indexOf("osmc.noaa.gov") >= 0) {
                 if (!isSomething(creator_email)) creator_email = "OSMC.Webmaster@noaa.gov";                   
@@ -5484,7 +5488,7 @@ public abstract class EDD {
                     if (!isSomething(creator_email)) creator_email = "data.ioos@noaa.gov";                   
                     if (!isSomething(creator_name))  creator_name  = "IOOS"; 
                     if (!isSomething(tInstitution))  tInstitution  = "IOOS";
-                    if (!isSomething(creator_url))   creator_url   = "http://www.ioos.noaa.gov/";
+                    if (!isSomething(creator_url))   creator_url   = "https://ioos.noaa.gov/";
                     break;
                 }
                 if (lc.indexOf("nsidc") >= 0) {
@@ -6060,7 +6064,7 @@ public abstract class EDD {
        
         //convert all fgdc_X and fgdc:X metadata to X (if not already set)
         // and fix any bad characters in sourceAtt names.
-        //e.g. http://www.ngdc.noaa.gov/thredds/dodsC/ustec/tec/200609030400_tec.nc.das uses '_'
+        //e.g. https://www.ngdc.noaa.gov/thredds/dodsC/ustec/tec/200609030400_tec.nc.das uses '_'
         //http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#idp4775248
         //  says "Variable, dimension and attribute names should begin with a letter
         //  and be composed of letters, digits, and underscores."
@@ -8332,7 +8336,7 @@ public abstract class EDD {
                     return parts.toArray();
             }
 
-            //if ending was country code, then .gov .edu .com .net or .org may still be at end
+            //remove gov, edu, ... or country code at end
             String last = parts.get(parts.size() - 1);
             if  (last.equals("gov") || last.equals("edu") ||
                  last.equals("com") || last.equals("org") ||
@@ -9431,18 +9435,12 @@ public abstract class EDD {
         //get list of subdirs
         //because of the way it recurses, the order is already fine for my use here:
         //  every parent directory is listed before all of its child directories.
-        StringArray paths = FileVisitorSubdir.oneStep(startDir, ".*"); //pathRegex
-        int nDirs = paths.size();
-        //String2.pressEnterToContinue(String2.toNewlineString(paths.toArray()));
+        //result which have matching slashes and trailing slashes
+        startDir = File2.addSlash(String2.replaceAll(startDir, '\\', '/')); //now always '/'
+        StringArray dirs = FileVisitorSubdir.oneStep(startDir, ".*"); //pathRegex
+        int nDirs = dirs.size();
+        //String2.pressEnterToContinue(String2.toNewlineString(dirs.toArray()));
         
-        StringArray dirs = new StringArray(nDirs, false);
-        for (int i = 0; i < nDirs; i++) {
-            String path = paths.get(i); 
-            if (File.separatorChar == '\\')
-                path = String2.replaceAll(path, '\\', '/');
-            path = File2.addSlash(path);
-            dirs.add(path);
-        }
         StringArray dirInfo = new StringArray(nDirs, true);
         Table dirTable = new Table();
         dirTable.addColumn("dir", dirs);
@@ -9602,11 +9600,12 @@ public abstract class EDD {
             //table in .nc file
             if (topExt.equals(".nc") || topExt.equals(".cdf")) {
                 try {
-                    String xmlChunk = EDDTableFromNcFiles.generateDatasetsXml(
+                    String xmlChunk = EDDTableFromMultidimNcFiles.generateDatasetsXml(
                         tDir, ".*\\" + topExt, 
                         tDir + sampleName, "", tReloadEveryNMinutes,
                         "", "", "", "", //extract
-                        "", "", "", "", "", "", null); //other info
+                        true, //removeMVRows
+                        "", "", "", "", "", null); //other info
                     resultsSB.append(xmlChunk);  //recursive=true
                     for (int diri2 = diri; diri2 < nDirs; diri2++)
                         if (dirs.get(diri2).startsWith(tDir))
@@ -9618,7 +9617,7 @@ public abstract class EDD {
                     nCreated++;
                     continue;
                 } catch (Throwable t) {
-                    String2.log("> Attempt with EDDTableFromNcFiles failed:\n" +
+                    String2.log("> Attempt with EDDTableFromMultidimNcFiles failed:\n" +
                         MustBe.throwableToString(t));
                 }
             } 

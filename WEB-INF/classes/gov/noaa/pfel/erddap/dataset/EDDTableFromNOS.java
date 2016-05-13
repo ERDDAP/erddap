@@ -257,8 +257,8 @@ public class EDDTableFromNOS extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *        http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *        http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      *   The altitude and time variables (if any) should have actual_range metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -270,7 +270,7 @@ public class EDDTableFromNOS extends EDDTable{
      *     wsdlUrl.
      * @param tRequestTimeFormat the SimpleDateFormat for formatting the time requests
      *    e.g., "yyyyMMdd HH:mm"
-     *    (see http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *    (see https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      * @param tRowElementXPath  e.g., /soapenv:Envelope/soapenv:Body/WindMeasurements/data/item
      * @throws Throwable if trouble
      */

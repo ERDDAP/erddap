@@ -85,9 +85,9 @@ public class EDV {
      * The core names are from Zdenka Willis' .ppt "Integrated Ocean Observing System 
      * (IOOS) NOAA's Approach to Building an Initial Operating Capability".
      * Bob(!) added many of these categories to deal with other types of data.
-     * And updated 2011-05-19 with the 26 variables listed on pg 17 of
-     * http://www.ioos.gov/library/us_ioos_blueprint_ver1.pdf (marked 
-     * "added 2011-05-19")
+     * See the variables listed on pg 1-5 of
+     * http://www.iooc.us/wp-content/uploads/2010/11/US-IOOS-Blueprint-for-Full-Capability-Version-1.0.pdf
+     * (marked "November 2010")
      * <ul>
      * <li>"Other" is not one of the original categories, but is a fallback
      *   option if the category is not one of the pre-defined standards.

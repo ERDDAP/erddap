@@ -39,7 +39,8 @@ import java.util.List;
 import java.util.GregorianCalendar;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm,
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -342,16 +343,21 @@ public class TwoGrids  {
         //items determined by looking at a .nc file; items written in that order 
         String2.log("tFileName=" + directory + randomInt + ".nc");
         //createNew( , false) says: create a new file and don't fill with missing_values
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(directory + randomInt + ".nc", false);
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, 
+            directory + randomInt + ".nc");
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+
             int nLat = grid1.lat.length;
             int nLon = grid1.lon.length;
 
             //define the dimensions
-            Dimension timeDimension = nc.addDimension("time", 1);
-            Dimension altitudeDimension  = nc.addDimension("altitude", 1);
-            Dimension latDimension = nc.addDimension("lat", nLat);
-            Dimension lonDimension = nc.addDimension("lon", nLon);
+            Dimension timeDimension      = nc.addDimension(rootGroup, "time", 1);
+            Dimension altitudeDimension  = nc.addDimension(rootGroup, "altitude", 1);
+            Dimension latDimension       = nc.addDimension(rootGroup, "lat", nLat);
+            Dimension lonDimension       = nc.addDimension(rootGroup, "lon", nLon);
 
             //create the variables (and gather the data) 
             ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
@@ -361,26 +367,30 @@ public class TwoGrids  {
             double endSeconds   = Calendar2.isoStringToEpochSeconds(endString);   //throws exception if trouble
             double centerSeconds = (startSeconds + endSeconds) / 2;
             tTime.set(0, centerSeconds);
-            nc.addVariable("time", DataType.DOUBLE, new Dimension[]{timeDimension}); 
+            Variable timeVar = nc.addVariable(rootGroup, "time", DataType.DOUBLE, 
+                Arrays.asList(timeDimension)); 
             
             ArrayDouble.D1 tAltitude = new ArrayDouble.D1(1);
             tAltitude.set(0, 0);
-            nc.addVariable("altitude", DataType.DOUBLE, new Dimension[]{altitudeDimension}); 
+            Variable altitudeVar = nc.addVariable(rootGroup, "altitude", DataType.DOUBLE, 
+                Arrays.asList(altitudeDimension)); 
             
             ArrayDouble.D1 tLat = new ArrayDouble.D1(nLat);
             for (int i = 0; i < nLat; i++)
                 tLat.set(i, grid1.lat[i]);
-            nc.addVariable("lat", DataType.DOUBLE, new Dimension[]{latDimension}); 
+            Variable latVar = nc.addVariable(rootGroup, "lat", DataType.DOUBLE, 
+                Arrays.asList(latDimension)); 
 
             ArrayDouble.D1 tLon = new ArrayDouble.D1(nLon);
             for (int i = 0; i < nLon; i++)
                 tLon.set(i, grid1.lon[i]);
-            nc.addVariable("lon", DataType.DOUBLE, new Dimension[]{lonDimension}); 
+            Variable lonVar = nc.addVariable(rootGroup, "lon", DataType.DOUBLE, 
+                Arrays.asList(lonDimension)); 
 
-            nc.addVariable(dataName1, DataType.FLOAT, new Dimension[]{
-                timeDimension, altitudeDimension, latDimension, lonDimension}); 
-            nc.addVariable(dataName2, DataType.FLOAT, new Dimension[]{
-                timeDimension, altitudeDimension, latDimension, lonDimension}); 
+            Variable data1Var = nc.addVariable(rootGroup, dataName1, DataType.FLOAT, 
+                Arrays.asList(timeDimension, altitudeDimension, latDimension, lonDimension)); 
+            Variable data2Var = nc.addVariable(rootGroup, dataName2, DataType.FLOAT, 
+                Arrays.asList(timeDimension, altitudeDimension, latDimension, lonDimension)); 
 
             //setStatsAttributes
             grid1.setStatsAttributes(false); //false -> save data as floats
@@ -394,56 +404,58 @@ public class TwoGrids  {
                 if (names[i].equals("et_affine")) {
                     // lon = a*row + c*col + e
                     // lat = b*row + d*col + f
-                    double matrix[] = {0, grid1.latSpacing, grid1.lonSpacing, 0, grid1.lon[0], grid1.lat[0]}; //right side up
-                    nc.addGlobalAttribute("et_affine", NcHelper.get1DArray(matrix)); //float64[] {a, b, c, d, e, f}
+                    double matrix[] = {0, grid1.latSpacing, grid1.lonSpacing, 
+                                       0, grid1.lon[0],     grid1.lat[0]}; //right side up
+                    rootGroup.addAttribute(new Attribute("et_affine", 
+                        NcHelper.get1DArray(matrix))); //float64[] {a, b, c, d, e, f}
                 } else {
-                    nc.addGlobalAttribute(
-                        NcHelper.getAttribute(names[i], grid1.globalAttributes().get(names[i])));
+                    rootGroup.addAttribute(
+                        NcHelper.createAttribute(names[i], grid1.globalAttributes().get(names[i])));
                 }
             }
 
             //time attributes
-            nc.addVariableAttribute("time", "actual_range",        NcHelper.get1DArray(new double[]{centerSeconds, centerSeconds}));     
-            nc.addVariableAttribute("time", new Attribute("axis",                "T"));
-            nc.addVariableAttribute("time", "fraction_digits",     NcHelper.get1DArray(new int[]{0}));     
-            nc.addVariableAttribute("time", new Attribute("long_name",           "Centered Time"));
-            nc.addVariableAttribute("time", new Attribute("standard_name",       "time"));
-            nc.addVariableAttribute("time", new Attribute("units",               Calendar2.SECONDS_SINCE_1970));
-            nc.addVariableAttribute("time", new Attribute("_CoordinateAxisType", "Time"));
+            timeVar.addAttribute(new Attribute("actual_range",        NcHelper.get1DArray(new double[]{centerSeconds, centerSeconds})));     
+            timeVar.addAttribute(new Attribute("axis",                "T"));
+            timeVar.addAttribute(new Attribute("fraction_digits",     new Integer(0)));     
+            timeVar.addAttribute(new Attribute("long_name",           "Centered Time"));
+            timeVar.addAttribute(new Attribute("standard_name",       "time"));
+            timeVar.addAttribute(new Attribute("units",               Calendar2.SECONDS_SINCE_1970));
+            timeVar.addAttribute(new Attribute("_CoordinateAxisType", "Time"));
 
             //altitude attributes
-            nc.addVariableAttribute("altitude", "actual_range",           NcHelper.get1DArray(new double[]{0, 0}));     
-            nc.addVariableAttribute("altitude", new Attribute("axis",                   "Z"));
-            nc.addVariableAttribute("altitude", "fraction_digits",        NcHelper.get1DArray(new int[]{0}));     
-            nc.addVariableAttribute("altitude", new Attribute("long_name",              "Altitude"));
-            nc.addVariableAttribute("altitude", new Attribute("positive",               "up"));
-            nc.addVariableAttribute("altitude", new Attribute("standard_name",          "altitude"));
-            nc.addVariableAttribute("altitude", new Attribute("units",                  "m"));
-            nc.addVariableAttribute("altitude", new Attribute("_CoordinateAxisType",    "Height"));
-            nc.addVariableAttribute("altitude", new Attribute("_CoordinateZisPositive", "up"));
+            altitudeVar.addAttribute(new Attribute("actual_range",           NcHelper.get1DArray(new double[]{0, 0})));     
+            altitudeVar.addAttribute(new Attribute("axis",                   "Z"));
+            altitudeVar.addAttribute(new Attribute("fraction_digits",        new Integer(0)));     
+            altitudeVar.addAttribute(new Attribute("long_name",              "Altitude"));
+            altitudeVar.addAttribute(new Attribute("positive",               "up"));
+            altitudeVar.addAttribute(new Attribute("standard_name",          "altitude"));
+            altitudeVar.addAttribute(new Attribute("units",                  "m"));
+            altitudeVar.addAttribute(new Attribute("_CoordinateAxisType",    "Height"));
+            altitudeVar.addAttribute(new Attribute("_CoordinateZisPositive", "up"));
 
             //lat
-            NcHelper.setAttributes(nc, "lat", grid1.latAttributes());
-            nc.addVariableAttribute("lat", new Attribute("axis", "Y"));
+            NcHelper.setAttributes(latVar, grid1.latAttributes());
+            latVar.addAttribute(new Attribute("axis", "Y"));
 
             //lon
-            NcHelper.setAttributes(nc, "lon", grid1.lonAttributes());
-            nc.addVariableAttribute("lon", new Attribute("axis", "X"));
+            NcHelper.setAttributes(lonVar, grid1.lonAttributes());
+            lonVar.addAttribute(new Attribute("axis", "X"));
 
             //data1
-            NcHelper.setAttributes(nc, dataName1, grid1.dataAttributes());
+            NcHelper.setAttributes(data1Var, grid1.dataAttributes());
 
             //data2
-            NcHelper.setAttributes(nc, dataName2, grid2.dataAttributes());
+            NcHelper.setAttributes(data2Var, grid2.dataAttributes());
 
             //leave "define" mode
             nc.create();
 
             //then add data
-            nc.write("time", tTime);
-            nc.write("altitude", tAltitude);
-            nc.write("lat", tLat);
-            nc.write("lon", tLon);
+            nc.write(timeVar,     tTime);
+            nc.write(altitudeVar, tAltitude);
+            nc.write(latVar,      tLat);
+            nc.write(lonVar,      tLon);
 
             //write grid1 values to ArrayFloat.D4
             ArrayFloat.D4 tGrid = new ArrayFloat.D4(1, 1, nLat, nLon);
@@ -453,7 +465,7 @@ public class TwoGrids  {
                     tGrid.set(0, 0, iLat, iLon, Float.isNaN(tData)? (float)DataHelper.FAKE_MISSING_VALUE : tData);
                 }
             }
-            nc.write(dataName1, tGrid);
+            nc.write(data1Var, tGrid);
 
             //write grid2 values to ArrayFloat.D4
             for (int iLat = 0; iLat < nLat; iLat++) {
@@ -462,7 +474,7 @@ public class TwoGrids  {
                     tGrid.set(0, 0, iLat, iLon, Float.isNaN(tData)? (float)DataHelper.FAKE_MISSING_VALUE : tData);
                 }
             }
-            nc.write(dataName2, tGrid);
+            nc.write(data2Var, tGrid);
 
             //if close throws exception, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately

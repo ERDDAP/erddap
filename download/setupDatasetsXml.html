@@ -3,7 +3,7 @@
 <html lang="en-US">
 <head>
 <title>ERDDAP - Working with the datasets.xml File</title>
-<link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
+<link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
 <link href="../images/erddap.css" rel="stylesheet" type="text/css">
 </head>
 
@@ -11,7 +11,7 @@
 <table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
   <tr> 
     <td align="center" style="width:100px;"> &nbsp;
-      <img src="http://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;
+      <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;
       </td> 
     <td align="left">
       <font color="#FFFFFF">
@@ -25,9 +25,9 @@
       <a title="National Marine Fisheries Service"               
       rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a> 
       <a title="Southwest Fisheries Science Center"              
-      rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>
+      rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>
       <a title="Environmental Research Division" 
-      rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>
+      rel="bookmark" href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>
       &nbsp; &nbsp;
       </font></td> 
   </tr> 
@@ -47,7 +47,7 @@
 
 [This web page will only be of interest to ERDDAP administrators.]
 <p>After you have followed the ERDDAP 
-<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">installation instructions</a>, 
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">installation instructions</a>, 
 you must edit the datasets.xml file 
 in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP installation will serve. 
 
@@ -149,8 +149,6 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
       <br>&nbsp;
     </ul>
   </ul>
-<li><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#disclaimers">Disclaimers</a>
-  <br>&nbsp;
 <li><a rel="bookmark" href="#contact">Contact</a> 
 </ul>
 
@@ -206,7 +204,7 @@ dataset in datasets.xml.
     So ERDDAP has a Data Provider Form which gathers metadata 
     from the data provider and gives the data provider
     some other guidance, including extensive guidance for 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm1.html#databases"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm1.html#databases"
     >Data In Databases</a>. 
     The information submitted is converted into the datasets.xml format and then
     emailed to the ERDDAP administrator (you) and written (appended) to 
@@ -233,15 +231,15 @@ After you finish, I'll contact you to work out the final details.
 </pre>
     If you just want to look at the form (without filling it out),
     you can see the form on ERD's ERDDAP:
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm.html"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm.html"
     >Introduction</a>,  
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm1.html"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm1.html"
     >Part&nbsp;1</a>,
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm2.html"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm2.html"
     >Part&nbsp;2</a>,
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm3.html"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm3.html"
     >Part&nbsp;3</a>, and
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm4.html"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/dataProviderForm4.html"
     >Part&nbsp;4</a>.
     These links on the ERD ERDDAP send information to me, not you, so don't submit
     information with them unless you actually want to add data to the ERD ERDDAP.
@@ -345,8 +343,13 @@ After you finish, I'll contact you to work out the final details.
       <li>Often, one of your answers won't be what GenerateDatasetsXml needs.
         You can then try again, with revised answers to the questions, 
         until GenerateDatasetsXml can successfully find and understand the source data.
-      <li>If you answer the questions correctly, GenerateDatasetsXml will connect
+      <li>If you answer the questions correctly (or reasonably correctly), 
+         GenerateDatasetsXml will connect
          to the dataset's source and gather basic information (for example, variable names and metadata).
+         <br>For datasets that are from local .nc and related files,
+         GenerateDatasetsXml will often print the ncdump-like structure of the
+         file after it first reads the file. This may give you information
+         to answer the questions better on a subsequent loop through GenerateDatasetsXml.
       <li>GenerateDatasetsXml will generate a rough draft of the dataset XML for that dataset.
       <li>Diagnostic information and the rough draft of the dataset XML will be written to
         <i>bigParentDirectory</i>/logs/GenerateDatasetsXml.log .
@@ -359,6 +362,9 @@ After you finish, I'll contact you to work out the final details.
           ERDDAP found 0 matching files in the directory 
           (when you think that there are matching files in that directory):
           <ul>
+          <li>Check that you have specified the full name of the directory.
+            And if you specified the sample file name, make sure you specified
+            the file's full name, including the full directory name.
           <li>Check that the files really are in that directory.
           <li>Check the spelling of the directory name.
           <li>Check the fileNameRegex. It's really, really easy to make mistakes with regexes.
@@ -616,7 +622,7 @@ making a copy of a working dataset description in dataset.xml and then modifying
 
 <li><b><a name="encodingSpecialCharacters">Encoding</a> Special Characters</b>
 <br>Since datasets.xml is an XML file, you MUST 
-<a rel="help" href="http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Predefined_entities_in_XML">encode<img 
+<a rel="help" href="https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Predefined_entities_in_XML">encode<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
 "&amp;", "&lt;", and "&gt;" 
@@ -641,12 +647,12 @@ by pasting the XML text into an XML checker like
   To Diagnose Problems With Datasets</b>
 <br>In addition to the two main <a rel="help" href="#Tools">Tools</a>, 
 <ul>
-<li><a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a> 
+<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a> 
   is a log file with all of ERDDAP's diagnostic messages.
-<li>The <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#dailyReport">Daily Report</a> 
+<li>The <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#dailyReport">Daily Report</a> 
     has more information than the status page, including a list of datasets that 
   didn't load and the exceptions (errors) they generated.
-<li>The <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage">Status Page</a> 
+<li>The <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage">Status Page</a> 
   is a quick way to check ERDDAP's status from any web browser.
   It includes a list of datasets that didn't load (although not the related exceptions) and 
   taskThread statistics (showing the progress of 
@@ -745,9 +751,9 @@ by pasting the XML text into an XML checker like
     <li>When a user requests time data, they can request it by specifying the time as a numeric value
       (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format).
     <li>ERDDAP has a utility to 
-      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
       a Numeric Time to/from a String Time</a>.
-    <li>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How ERDDAP
+    <li>See <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How ERDDAP
        Deals with Time</a>.
       <br>&nbsp;
     </ul>
@@ -758,9 +764,9 @@ by pasting the XML text into an XML checker like
   <li>Since it is difficult for human clients and computer clients to deal with a complex set of 
     possible dataset structures, ERDDAP uses just two basic data structures: 
     <ul>
-    <li>a <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/griddap/documentation.html#dataModel">gridded 
+    <li>a <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#dataModel">gridded 
     data structure</a> (for example, for satellite data and model data) and 
-    <li>a <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/tabledap/documentation.html#dataModel">tabular 
+    <li>a <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#dataModel">tabular 
     data structure</a> (for example, for in-situ buoy, station, and trajectory data).
     </ul>
   <li>Certainly, not all data can be expressed in these structures, but much of it can. 
@@ -781,9 +787,9 @@ by pasting the XML text into an XML checker like
     If you accept ERDDAP's approach enough to try to work with it, you may find that it has its
     advantages (notably the support for multiple file types that can hold the data responses).
     The 
-    <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">ERDDAP slide show</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">ERDDAP slide show</a>
     (particularly the
-    <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">data
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">data
     structures slide</a>)
     talk a lot about these issues.
   <li>And even if this approach sounds odd to you, most ERDDAP clients will never notice --
@@ -840,7 +846,9 @@ by pasting the XML text into an XML checker like
   ERDDAP datasets will accept .ncml files whenever .nc files are expected.
   The NcML files MUST have the extension .ncml.
   See the 
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/ncml/">Unidata NcML documentation<img 
+  <a rel="help" 
+  href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/"
+  >Unidata NcML documentation<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
   NcML is useful because you can do some things with it (for example, making different changes to 
@@ -848,7 +856,7 @@ by pasting the XML text into an XML checker like
   that you can't do with ERDDAP's datasets.xml.
   <ul>
   <li>Note that changes to an .ncml file's lastModified time will cause the file to be 
-    reloaded whenever the dataset is reloaded, but changes to the underlying data files
+    reloaded whenever the dataset is reloaded, but changes to the underlying .nc data files
     won't be directly noticed.
   <li>Hint: NcML is *very* sensitive to the order of some 
     items in the NcML file. Think of NcML as specifying a series
@@ -916,9 +924,15 @@ notably, to make changes beyond what ERDDAP's manipulation system can do.
 consistent in a group of files where they weren't consistent originally.
 Or, you can use NCO to apply scale_factor and add_offset in a group of 
 files where scale_factor and add_offset have different values in different files.
+<br>(Or, you can now deal with those problems in ERDDAP via
+<a rel="help" href="#EDDGridFromNcFilesUnpacked">EDDGridFromNcFilesUnpacked</a>,
+which is a variant of EDDGridFromNcFiles which unpacks packed data and
+standardizes time values at a low level in order to deal with a collection files 
+that have different scale_factors and add_offset, or different time units.)
+
 
 <p>NCO is Free and Open Source Software which uses the 
-<a rel="help" href="http://www.gnu.org/licenses/gpl-3.0.html">GPL 3.0<img 
+<a rel="help" href="https://www.gnu.org/licenses/gpl-3.0.html">GPL 3.0<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
 license.
@@ -1130,7 +1144,7 @@ but it is far more likely that a user will hit the file-type-specific limits.
     Then look in the source files to find the corresponding file 
     (or one before or one after) that doesn't belong in the aggregation.
   <li>See the more complete description of the 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#dataModel">EDDGrid data model</a>.
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#dataModel">EDDGrid data model</a>.
   <li>The EDDGrid dataset types are:
       <ul>
       <li><a rel="help" href="#EDDGridFromDap">EDDGridFromDap</a> 
@@ -1175,7 +1189,7 @@ but it is far more likely that a user will hit the file-type-specific limits.
     but ERDDAP needs to be able to flatten the source data into a database-like table
     in order to present the data as a tabular dataset to users of ERDDAP.
   <li>See the more complete description of the 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#dataModel"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#dataModel"
     >EDDTable data model</a>.
   <li>The EDDTable dataset types are:
       <ul>
@@ -1215,8 +1229,11 @@ but it is far more likely that a user will hit the file-type-specific limits.
         <a rel="help" href="http://www.opendap.org/download/hyrax.html">Hyrax OPeNDAP server<img 
           src="../images/external.png" align="bottom" alt=" (external link)" 
           title="This link to an external web site does not constitute an endorsement."/></a>.
+      <li><a rel="help" href="#EDDTableFromMultidimNcFiles">EDDTableFromMultidimNcFiles</a> 
+        aggregates data from .nc files with several variables with shared dimensions.
       <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
         aggregates data from .nc files with several variables with shared dimensions.
+        For new datasets, try using the newer EDDTableFromMultidimNcFiles first.
       <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
         aggregates data from .nc files which use one of the file formats specified by the 
         <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
@@ -1232,7 +1249,9 @@ but it is far more likely that a user will hit the file-type-specific limits.
       <li><a rel="help" href="#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a> 
         aggregates data from files with several variables with
         shared dimensions served by a 
-          <a rel="help" href="http://www.unidata.ucar.edu/projects/THREDDS/">THREDDS OPeNDAP server<img 
+          <a rel="help" 
+          href="http://www.unidata.ucar.edu/software/thredds/current/tds/"
+          >THREDDS OPeNDAP server<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
       <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> 
@@ -1412,7 +1431,7 @@ but it is far more likely that a user will hit the file-type-specific limits.
     <br>so you know the end postition of the axis values.
   <li>Replace the old start, stride, stop values with the new values.
   <li>Contact the <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag URL</a> for the dataset to tell ERDDAP to reload the dataset.
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag URL</a> for the dataset to tell ERDDAP to reload the dataset.
   </ol>
   This isn't ideal, but it works.
   <br>&nbsp;
@@ -1530,11 +1549,11 @@ but it is far more likely that a user will hit the file-type-specific limits.
 
   <p>For each user request, EDDGridFromEDDTable prints diagnostic messages 
   related to this in the
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
   file.
   <ul>
   <li>If <tt>&lt;logLevel&gt;</tt> in 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
     is set to <tt>info</tt>, this prints a message like
     <br><tt>* nOuterAxes=1 of 4 nOuterRequests=22</tt>
     <br>If nOuterAxes=0, gapThreshold wasn't exceeded and only one request
@@ -1592,7 +1611,7 @@ a remote ERDDAP server.
     ERDDAP uses the information about the dataset which is in memory.
   <li>Unlike other types of datasets, when ERDDAP receives a request for data or images from these datasets,
     ERDDAP
-     <a rel="help" href="http://en.wikipedia.org/wiki/URL_redirection">redirects<img 
+     <a rel="help" href="https://en.wikipedia.org/wiki/URL_redirection">redirects<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
      the request to the remote ERDDAP server. The result is:
@@ -1614,7 +1633,7 @@ a remote ERDDAP server.
 <li>Normally, when an EDDGridFromErddap and EDDTableFromErddap are (re)loaded on your ERDDAP, they try
   to add a subscription to the remote dataset via the remote ERDDAP's email/URL subscription system.
   That way, whenever the remote dataset changes, the remote ERDDAP contacts the 
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">setDatasetFlag URL</a>
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">setDatasetFlag URL</a>
   on your ERDDAP so that the local dataset is reloaded ASAP and so that the local dataset always
   mimics the remote dataset.
   So, the first time this happens, you should get an email requesting that you validate the subscription.
@@ -1623,11 +1642,11 @@ a remote ERDDAP server.
   add 
     <tt><a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt;</tt>
     tags to all of the relevant datasets to call your dataset's 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">setDatasetFlag URLs</a>. 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">setDatasetFlag URLs</a>. 
   See your ERDDAP daily report for a list of setDatasetFlag URLs, but just send the ones for
   EDDGridFromErddap and EDDTableFromErddap datasets to the remote ERDDAP administrator.
 <li>EDDGridFromErddap and EDDTableFromErddap are the basis for
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#grids">grids/clusters/federations</a> 
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#grids">grids/clusters/federations</a> 
   of ERDDAPs, which efficiently distribute the CPU usage (mostly for making maps), memory usage, 
   dataset storage, and bandwidth usage of a large data center.
 <li>EDDGridFromErddap and EDDTableFromErddap can't be used with remote datasets that
@@ -1636,7 +1655,7 @@ a remote ERDDAP server.
 <li>For security reasons, EDDGridFromErddap and EDDTableFromErddap don't support the 
   <a rel="help" href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a> tag.
   See ERDDAP's 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">security system</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">security system</a>
     for restricting access to some datasets to some users.
 <li>You can use the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
@@ -1681,7 +1700,7 @@ a remote ERDDAP server.
 
 
 <p><a name="EDDGridFromEtopo"><b>EDDGridFromEtopo</b></a> just serves the 
-<a rel="help" href="http://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set<img 
+<a rel="help" href="https://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
   (Ice Surface, grid registered, binary, 2byte int: etopo1_ice_g_i2.zip) which is 
@@ -1712,10 +1731,10 @@ Instead, use a subclass of EDDGridFromFiles to handle the specific file type:
         title="This link to an external web site does not constitute an endorsement."/></a> files.
 
    <li><a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a> handles data from gridded 
-      <a rel="help" href="http://en.wikipedia.org/wiki/GRIB">GRIB .grb<img 
+      <a rel="help" href="https://en.wikipedia.org/wiki/GRIB">GRIB .grb<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files,
-      <a rel="help" href="http://www.hdfgroup.org/">HDF .hdf 4 (and 5?)<img 
+      <a rel="help" href="https://www.hdfgroup.org/">HDF .hdf 4 (and 5?)<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files,
       <a rel="help" href="#NcML">.ncml</a> files, and 
@@ -1824,7 +1843,8 @@ or Global Metadata</b></a> -
       which tells ERDDAP that the value is a String timeStamp in the format
       specified by the <a rel="help" href="#timeUnits"><i>stringTimeFormat</i></a>,
       which is a 
-      <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html"
+      <a rel="help" 
+      href="http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html"
       >Joda DateTimeFormat<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
@@ -1839,7 +1859,8 @@ or Global Metadata</b></a> -
       </ul>
 
     <li><i>extractRegex</i> - This is the 
-      <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html"
+      <a rel="help"
+      href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
       >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
@@ -1953,7 +1974,8 @@ or Global Metadata</b></a> -
 <li><a name="remoteDirectories"><b>Remote Directories and 
   HTTP Range Requests</b></a> -
   <br>(AKA Byte Serving, Byte Range Requests, Accept-Ranges http header) 
-  <br>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles,  
+  <br>EDDGridFromNcFiles, EDDTableFromMultidimNcFiles, EDDTableFromNcFiles, 
+  and EDDTableFromNcCFFiles,  
   can <i>sometimes</i> serve data from .nc files on remote servers and accessed via HTTP
   if the server supports
   <a href="https://en.wikipedia.org/wiki/Byte_serving"
@@ -2064,7 +2086,7 @@ or Global Metadata</b></a> -
   It is usually Apache that handles this. 
   By default, Apache supports range requests, but this feature may have been disabled.
   You can use 
-  <a href="http://curl.haxx.se">curl<img 
+  <a href="https://curl.haxx.se">curl<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
   to test if a file can be accessed by range requests, via
@@ -2143,7 +2165,7 @@ the response will include the line
   <li>If you want to encourage ERDDAP to update the stored dataset information 
     (for example, if you just added, removed, or changed some files to the dataset's data directory), 
     use the 
-      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>
       to force ERDDAP to update the cached file information.
   </ul>
 <li><a name="EDDGridFromFiles_HandlingRequests"><b>Handling Requests</b></a> - 
@@ -2158,12 +2180,12 @@ the response will include the line
       in the dataset's information in datasets.xml.
     <li>The dataset is reloaded as soon as possible whenever ERDDAP detects
       that you have added, removed, 
-      <a rel="help" href="http://en.wikipedia.org/wiki/Touch_(Unix)">touch'd<img 
+      <a rel="help" href="https://en.wikipedia.org/wiki/Touch_(Unix)">touch'd<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         (to change the file's lastModified time), or changed a datafile.
     <li>The dataset is reloaded as soon as possible if you use the 
-        <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>.
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>.
     </ul>
   When the dataset is reloaded, ERDDAP compares the currently available files 
   to the cached file information tables.
@@ -2228,9 +2250,10 @@ the response will include the line
   &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
   &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;!-- 0 or 1. Indicates if subdirectories
     of fileDir have data files, too. --&gt;
-  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. If recursive is "true", only full path
-    names which match the pathRegex (default=".*") will be accepted. --&gt;
-  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. Only directory names which 
+    match the pathRegex (default=".*") will be accepted. --&gt;
+  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+  >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
     (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
@@ -2311,7 +2334,7 @@ for general information on how this class works and how to use this class.
 
 
 <p><a name="EDDGridFromNcFiles"><b>EDDGridFromNcFiles</b></a> aggregates data from local, gridded, 
-    <a rel="help" href="http://en.wikipedia.org/wiki/GRIB">GRIB .grb and .grb2<img 
+    <a rel="help" href="https://en.wikipedia.org/wiki/GRIB">GRIB .grb and .grb2<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files,
     <a rel="help" href="http://www.hdfgroup.org/">HDF .hdf 4 (and 5?)<img 
@@ -2325,17 +2348,26 @@ files,
 This may work with other file types (for example, BUFR), we just haven't tested it -- please send us
 some sample files.
 
-<p>Note that for GRIB files, ERDDAP will make a .gbx index file the first time it reads each GRIB file.
+<ul>
+<li>Note that for GRIB files, ERDDAP will make a .gbx index file the first time it reads each GRIB file.
 So the GRIB files must be in a directory where the "user" that ran Tomcat has read+write permission.
 
-<p>See this class' superclass, <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a>, for information
+<li>See this class' superclass, <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a>, for information
 on how this class works and how to use this class.
 
-<p>We strongly recommend using the
+<li>We strongly recommend using the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
 
+  <p>The first thing GenerateDatasetsXml does for this type of dataset 
+  after you answer the questions is print the ncdump-like structure of the sample file.
+  So if you enter a few goofy answers for the first loop through GenerateDatasetsXml,
+  at least you'll be able to see if ERDDAP can read the file and see
+  what dimensions and variables are in the file.
+  Then you can give better answers for the second loop through GenerateDatasetsXml.
+
+</ul>
 
 <p><a name="EDDGridFromNcFilesUnpacked"><b>EDDGridFromNcFilesUnpacked</b></a> 
 is a variant of 
@@ -2366,12 +2398,28 @@ by EDDGridFromNcFiles.
 For this class to work properly, the files must follow the CF standards for the
 related attributes.
 
-<p>If try to make an EDDGridFromNcFilesUnpacked from a group of files
-with which you previously tried and failed to use EDDGridFromNcFiles,
-cd to 
-<br><tt><i>bigParentDirectory</i>/dataset/<i>last2Letters</i>/<i>datasetID</i>/</tt>
-<br>where <tt><i>last2Letters</i></tt> is the last 2 letters of the datasetID,
-<br>and delete all of the files in that directory.
+<ul>
+<li>If try to make an EDDGridFromNcFilesUnpacked from a group of files
+  with which you previously tried and failed to use EDDGridFromNcFiles,
+  cd to 
+  <br><tt><i>bigParentDirectory</i>/dataset/<i>last2Letters</i>/<i>datasetID</i>/</tt>
+  <br>where <tt><i>last2Letters</i></tt> is the last 2 letters of the datasetID,
+  <br>and delete all of the files in that directory.
+
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+
+  <p>The first thing GenerateDatasetsXml does for this type of dataset 
+  after you answer the questions is print the ncdump-like structure of the sample file
+  <b>before</b> it is unpacked.
+  So if you enter a few goofy answers for the first loop through GenerateDatasetsXml,
+  at least you'll be able to see if ERDDAP can read the file and see
+  what dimensions and variables are in the file.
+  Then you can give better answers for the second loop through GenerateDatasetsXml.
+
+</ul>
 
 
 <p><a name="EDDGridLonPM180"><b>EDDGridLonPM180</b></a> 
@@ -2434,7 +2482,7 @@ they are in the range -180 to 180 (Longitude Plus or Minus 180, hence the name).
     &lt;dataset type="EDDGridFromErddap" datasetID="erdMBsstdmday_LonPM180Child"&gt;
         &lt;!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime (Monthly Composite)
              minLon=120.0 maxLon=320.0 --&gt;
-        &lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday&lt;/sourceUrl&gt;
+        &lt;sourceUrl&gt;https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday&lt;/sourceUrl&gt;
     &lt;/dataset&gt;
 &lt;/dataset&gt; </pre>
     Put the EDDGridLonPM180 dataset <b>below</b> the original dataset in datasets.xml.
@@ -2519,14 +2567,14 @@ aggregates two or more EDDGrid datasets (the children) side by side.
 <li>Children created by this method are held privately.
   They are not separately accessible datasets (for example, by client data
   requests or by 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag files</a>).
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag files</a>).
 <li>The global metadata and settings for the parent comes from the global
   metadata and settings for the first child.
 <li>If there is an exception while creating the first child, 
   the parent will not be created.
 <li>If there is an exception while creating other children, this sends an email to
   <tt>emailEverythingTo</tt> (as specified in 
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>) 
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>) 
   and continues with the other children.
 <li><a name="EDDGridSideBySideSkeletonXML">The</a> skeleton XML for an 
   EDDGridSideBySide dataset is:
@@ -2616,15 +2664,16 @@ dimension and another child might have 365 values (for 2005) for the time dimens
     of using separate sourceUrl tags for each child.  The advantage of this
     is: new children will be detected each time the dataset is reloaded. 
     The serverType must be "thredds", "hyrax", or "dodsindex".  
-    An example of a <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+    An example of a <a rel="help" 
+    href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> (regex) 
     (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>) is .*\.nc 
     recursive can be "true" or "false".  
-    If recursive is "true", only full path names which match the pathRegex (default=".*") 
-      will be accepted. 
+    Only directory names which match the pathRegex (default=".*") will be accepted. 
     An example of a thredds catalogUrl is
     <a href="http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml"
       >http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml<img 
@@ -2703,7 +2752,7 @@ of another EDDGrid's data and serves data from the local copy.
 <li>Local Files - Each chunk of data is stored in a separate netCDF file in a 
   subdirectory of
   <i>bigParentDirectory</i>/copy/<i>datasetID</i>/ (as specified in 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>).
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>).
   File names created from axis values are modified to make them file-name-safe 
   (for example, hyphens are replaced by "x2D") -- this doesn't affect the actual data.
   <br>&nbsp;
@@ -2715,8 +2764,8 @@ of another EDDGrid's data and serves data from the local copy.
   ERDDAP's <a name="taskThread">taskThread</a> processes all the queued 
   requests for chunks of data, one-by-one.
   You can see statistics for the taskThread's activity on the
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage">Status Page</a> and in the 
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#dailyReport">Daily Report</a>.
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage">Status Page</a> and in the 
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#dailyReport">Daily Report</a>.
   (Yes, ERDDAP could assign multiple tasks to this process, but that would use 
   up lots of the remote data source's bandwidth, memory, and CPU time,
   and lots of the local ERDDAP's bandwidth,
@@ -2774,7 +2823,7 @@ of another EDDGrid's data and serves data from the local copy.
   If/when they do, you need to manually delete the chunk files in 
      <i>bigParentDirectory</i>/copy/<i>datasetID</i>/
   which changed and 
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
      the dataset to be reloaded so that the deleted chunks will be replaced.
   If you have an email subscription to the dataset, you will get two emails:
   one when the dataset first reloads and starts to copy the data, 
@@ -2794,7 +2843,7 @@ of another EDDGrid's data and serves data from the local copy.
   <ol>
   <li>Change the addAttributes for the source dataset in datasets.xml, as needed. 
   <li>Delete one of the copied files.
-  <li>Set a <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
+  <li>Set a <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
     to reload the dataset immediately.
     If you do use a flag and you have an email subscription to the dataset, you will get two emails:
     one when the dataset first reloads and starts to copy the data, 
@@ -2869,7 +2918,7 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
 
 <p><a name="EDDTableFromCassandra"><b>EDDTableFromCassandra</b></a> 
 handles data from one Cassandra table.
-<!-- or <a rel="help" href="http://en.wikipedia.org/wiki/View_(database)">view<img 
+<!-- or <a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">view<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>. -->
 <ul>
@@ -3011,7 +3060,7 @@ handles data from one Cassandra table.
     it is possible for ERDDAP to convert tabular data requests into  
     CQL Bound/PreparedStatements. 
     ERDDAP logs the statement in 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
     as<tt> 
     <br>&nbsp;&nbsp;statement as text: <i>theStatementAsText</i></tt> 
     <br>Note that the version of the statement you see
@@ -3255,9 +3304,9 @@ handles data from one Cassandra table.
   is obviously the best 
   (as opposed to the midnight before or after, where it is less obvious which is best).
   <li>ERDDAP has a utility to 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
     a Numeric Time to/from a String Time</a>.
-  <li>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
+  <li>See <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
      ERDDAP Deals with Time</a>.
      <br>&nbsp;
   </ul>
@@ -3341,7 +3390,7 @@ handles data from one Cassandra table.
     CQL injection.
     In any case, Cassandra is inherently less susceptible to CQL injection
     than traditional databases are to 
-    <a rel="help" href="http://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>.
+    <a rel="help" href="https://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>.
   <br>&nbsp;
   </ul>
 
@@ -3350,7 +3399,7 @@ handles data from one Cassandra table.
   <ul>
   <li>In General -
     <br>The nature of CQL is that queries are 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Declarative_programming">declarative<img 
+    <a rel="help" href="https://en.wikipedia.org/wiki/Declarative_programming">declarative<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
     They just specify what the user wants. 
@@ -3572,7 +3621,7 @@ handles data from one Cassandra table.
 
 
 <p><a name="EDDTableFromDatabase"><b>EDDTableFromDatabase</b></a> handles data from one
-database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(database)">view<img 
+database table or <a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">view<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
 <ul>
@@ -3626,13 +3675,13 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
         title="This link to an external web site does not constitute an endorsement."/></a>
     <br>The <tt>&lt;driverName&gt;</tt> to use in datasets.xml (see below) is probably <tt>org.mariadb.jdbc.Driver</tt> .
   <li>For MySQL and Amazon RDS, try 
-    <a rel="help" href="http://dev.mysql.com/downloads/connector/j/"
-      >http://dev.mysql.com/downloads/connector/j/<img 
+    <a rel="help" href="https://dev.mysql.com/downloads/connector/j/"
+      >https://dev.mysql.com/downloads/connector/j/<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>        
     <br>The <tt>&lt;driverName&gt;</tt> to use in datasets.xml (see below) is probably <tt>com.mysql.jdbc.Driver</tt> .
   <li>For Oracle, try 
-    <a rel="help" href="http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html"
+    <a rel="help" href="https://www.oracle.com/technetwork/database/features/jdbc/index-091264.html"
       >http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
@@ -3694,7 +3743,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   EDDTableFromDatabase is limited to getting data from one table, but that shouldn't be a problem.
   If a table of interest has foreign keys which link to other tables,
   you can ask the database administrator to create a 
-      <a rel="help" href="http://en.wikipedia.org/wiki/View_(database)">VIEW<img 
+      <a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">VIEW<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
   Views "can join and simplify multiple tables into a single virtual table" (Wikipedia).
@@ -3730,11 +3779,15 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> . 
   <li>For MySQL and Amazon RDS, you need to run the database with
-    <a rel="help" href="http://dev.mysql.com/doc/refman/5.7/en/server-sql-mode.html">--sql-mode=ANSI_QUOTES<img 
+    <a rel="help"
+    href="https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_ansi_quotes"
+    >--sql-mode=ANSI_QUOTES<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> .
   <li>Oracle supports ANSI-SQL-standard double quotes 
-    <a rel="help" href="http://docs.oracle.com/goldengate/1212/gg-winux/GWURF/gg_parameters180.htm">by default</a>.
+    <a rel="help"
+    href="https://docs.oracle.com/database/121/SQLRF/sql_elements008.htm#SQLRF00223"
+    >by default</a>.
   <li>PostgreSQL supports ANSI-SQL-standard double quotes by default.
   </ul>  
   <br>Don't use a reserved word for a database, catalog, schema or table's name.
@@ -3805,9 +3858,9 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   is obviously the best 
   (as opposed to the midnight before or after, where it is less obvious which is best).
   <li>ERDDAP has a utility to 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
     a Numeric Time to/from a String Time</a>.
-  <li>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How ERDDAP
+  <li>See <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How ERDDAP
      Deals with Time</a>.
      <br>&nbsp;
   </ul>
@@ -3863,7 +3916,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <li>Requests from clients are parsed and checked for validity before generating the SQL requests
     for the database.
   <li>Requests to the database are made with SQL PreparedStatements, to prevent 
-    <a rel="help" href="http://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>.
+    <a rel="help" href="https://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>.
   <li>Requests to the database are submitted with executeQuery (not executeStatement) to limit
     requests to be read-only (so attempted SQL injection to alter the database will fail for this
     reason, too).
@@ -3881,7 +3934,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     <br>ERDDAP requests with <tt>&amp;distinct()</tt> and/or <tt>&amp;orderBy(<i>variables</i>)</tt> will add
       <tt>DISTINCT</tt> and/or <tt>ORDER BY <i>variables</i></tt> to the SQL prepared statement. In general, this will greatly slow down the response from the database.
     <br>ERDDAP logs the PreparedStatement in 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
     as<tt> 
     <br>&nbsp;&nbsp;statement=<i>thePreparedStatement</i></tt>
     <br>Note that this will be a text representation of the PreparedStatement, which 
@@ -3894,7 +3947,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <ul>
   <li>In General -
     <br>The nature of SQL is that queries are 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Declarative_programming">declarative<img 
+    <a rel="help" href="https://en.wikipedia.org/wiki/Declarative_programming">declarative<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
     They just specify what the user wants. 
@@ -3941,7 +3994,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
 
   <li>Vacuum the Table -
     <br>MySQL and Amazon RDS will respond much faster if you use
-    <a rel="help" href="http://dev.mysql.com/doc/refman/5.5/en/optimize-table.html">OPTIMIZE TABLE<img 
+    <a rel="help" href="https://dev.mysql.com/doc/refman/5.7/en/optimize-table.html">OPTIMIZE TABLE<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
     <br>MariaDB will respond much faster if you use
@@ -3954,7 +4007,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
         title="This link to an external web site does not constitute an endorsement."/></a> the table.
     <br>Oracle doesn't have or need an analogous command.
 
-  <li>Make <a rel="help" href="http://en.wikipedia.org/wiki/Database_index">Indexes<img 
+  <li>Make <a rel="help" href="https://en.wikipedia.org/wiki/Database_index">Indexes<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
     for Commonly Constrained Variables - 
@@ -3980,17 +4033,18 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
       <br>  username="<i>myUsername</i>" password="<i>myPassword</i>"
       <br>  initialSize="0" maxActive="8" minIdle="0" maxIdle="0" maxWait="-1"/&gt;</tt>
       <br>General information about using a DataSource is at
-        <a rel="help" href="http://docs.oracle.com/javase/tutorial/jdbc/basics/sqldatasources.html">http://docs.oracle.com/javase/tutorial/jdbc/basics/sqldatasources.html<img 
+        <a rel="help" href="https://docs.oracle.com/javase/tutorial/jdbc/basics/sqldatasources.html"
+             >https://docs.oracle.com/javase/tutorial/jdbc/basics/sqldatasources.html<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
       <br>See 
         <a rel="help"
-        href="http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html#JDBC_Data_Sources">Tomcat
+        href="https://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html#JDBC_Data_Sources">Tomcat
         DataSource information<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> and 
         <a rel="help"
-        href="http://tomcat.apache.org/tomcat-7.0-doc/jndi-datasource-examples-howto.html">Tomcat DataSource examples<img 
+        href="https://tomcat.apache.org/tomcat-7.0-doc/jndi-datasource-examples-howto.html">Tomcat DataSource examples<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
         or search the web for examples of using DataSources with other application servers.
@@ -4134,7 +4188,7 @@ lets you create an EDDTable dataset from any EDDGrid dataset.
 <p><a name="EDDTableFromFileNames"><b>EDDTableFromFileNames</b></a> 
 creates a dataset from information about a group of files in the server's file system, 
 including a URL for each file so that users can download the files via ERDDAP's 
-<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files" system</a>.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files" system</a>.
 Unlike all of the 
 <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a> 
 subclasses, this dataset type does not serve data from within the files. 
@@ -4181,7 +4235,7 @@ subclasses, this dataset type does not serve data from within the files.
   In the table, there will be columns with:
   <ul>
   <li>url - The URL that users can use to download the file via ERDDAP's
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files" system</a>.
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files" system</a>.
   <li>name - The file's name (without a directory name).
   <li>lastModified - The time the file was last modified (stored as doubles
       with "seconds since 1970-01-01T00:00:00Z").
@@ -4200,7 +4254,9 @@ subclasses, this dataset type does not serve data from within the files.
     based on two attributes that you specify in the metadata for each additional
     column/dataVariable: 
     <ul>
-    <li>extractRegex - This is a <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+    <li>extractRegex - This is a <a rel="help" 
+    href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
       (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
@@ -4245,7 +4301,8 @@ subclasses, this dataset type does not serve data from within the files.
       extract the characters which match the first capture group ("20150103000000")
       as dataType=String, 
       then use the units
-      (see <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html">Joda DateTimeFormat<img 
+      (see <a rel="help" href="http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html"
+      >Joda DateTimeFormat<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>) 
       to interpret that as a time data value (2015-01-03T00:00:00Z).
@@ -4315,10 +4372,16 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
       <a rel="help" href="http://www.opendap.org/download/hyrax.html">Hyrax OPeNDAP server<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
+  <li><a rel="help" href="#EDDTableFromMultidimNcFiles">EDDTableFromMultidimNcFiles</a> 
+    aggregates data from .nc 
+    (or <a rel="help" href="#NcML">.ncml</a>)
+    files with several variables, 
+    each with shared dimensions (for example, time, altitude (or depth), latitude, longitude).
   <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> aggregates data from .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
     files with several variables, 
     each with shared dimensions (for example, time, altitude (or depth), latitude, longitude).
+    For new datasets, try using the newer EDDTableFromMultidimNcFiles first.
   <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
     aggregates data from .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
@@ -4331,7 +4394,9 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
   <li><a rel="help" href="#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a> aggregates data from 
     files with several variables with
     shared dimensions served by a 
-    <a rel="help" href="http://www.unidata.ucar.edu/projects/THREDDS/">THREDDS OPeNDAP server<img 
+    <a rel="help" 
+    href="http://www.unidata.ucar.edu/software/thredds/current/tds/"
+    >THREDDS OPeNDAP server<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
   <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> 
@@ -4414,7 +4479,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   <li>If you want to encourage ERDDAP to update the stored dataset information 
     (for example, if you just added, removed, or changed some files to the dataset's data directory), 
     use the 
-      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>
       to force ERDDAP to update the cached file information.
     <br>&nbsp;
   </ul>
@@ -4444,12 +4509,12 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
       dataset's information in datasets.xml.
     <li>The dataset is reloaded as soon as possible whenever ERDDAP detects that you have added,
        removed, 
-        <a rel="help" href="http://en.wikipedia.org/wiki/Touch_(Unix)">touch'd<img 
+        <a rel="help" href="https://en.wikipedia.org/wiki/Touch_(Unix)">touch'd<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         (to change the file's lastModified time), or changed a datafile.
     <li>The dataset is reloaded as soon as possible if you use the 
-        <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>.
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>.
     </ul>
   When the dataset is reloaded, ERDDAP compares the currently available files to the cached file
   information table.
@@ -4472,7 +4537,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   dataset won't be updated every time a file is changed. So EDDTableFromFiles won't be aware of
   the changed files.
   (You could use the 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>,
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>,
       but this might lead to ERDDAP reloading the dataset almost continually.
   So in most cases, we don't recommend it.)
   Instead, EDDTableFromFiles deals with this by the following system:
@@ -4527,7 +4592,8 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   <br>&nbsp;
 
 <li><b>Remote Directories and HTTP Range Requests</b> (AKA Byte Serving, Byte Range Requests) - 
-  <br>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles,  
+  <br>EDDGridFromNcFiles, EDDTableFromMultidimNcFiles,
+  EDDTableFromNcFiles, and EDDTableFromNcCFFiles,  
   can sometimes serve data from .nc files on remote servers and accessed via HTTP
   if the server supports
   <a href="https://en.wikipedia.org/wiki/Byte_serving"
@@ -4616,7 +4682,9 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   If you don't need part or all of this system, just don't specify these tags or use "" values.
   <ul>
   <li><tt>preExtractRegex</tt> is a 
-      <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+      <a rel="help" 
+      href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+      >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
       (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
@@ -4756,9 +4824,10 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
   &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;!-- 0 or 1. Indicates if subdirectories
     of fileDir have data files, too. --&gt;
-  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. If recursive is "true", only full path
-    names which match the pathRegex (default=".*") will be accepted. --&gt;
-  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. Only directory names which 
+    match the pathRegex (default=".*") will be accepted. --&gt;
+  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+  >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
     (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
@@ -4790,12 +4859,13 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   &lt;sortedColumnSourceName&gt;...&lt;/sortedColumnSourceName&gt; 
     &lt;-- The <a rel="help" href="#sourceName">sourceName</a> of the numeric column that the data files are 
     usually already sorted by within each file, for example, "time".
-    Use null or "" if no variable is suitable.
+    Don't specify this or use an empty string if no variable is suitable.
     It is ok if not all files are sorted by this column.
     If present, this can greatly speed up some data requests. 
-    For EDDTableFromHyraxFiles, EDDTableFromNcFiles and 
-    EDDTableFromThreddsFiles, this must be the leftmost axis 
-    variable. --&gt;
+    For EDDTableFromHyraxFiles, EDDTableFromNcFiles and EDDTableFromThreddsFiles, 
+    this must be the leftmost axis variable. 
+    EDDTableFromNcMultidimFiles ignores this because it has a better system.
+    --&gt;
   &lt;sortFilesBySourceNames&gt;...&lt;/sortFilesBySourceNames&gt;
     &lt;-- This is a space-separated list of <a rel="help" href="#sourceName">sourceName</a>s 
     which specifies how the internal list of files should be sorted
@@ -4808,16 +4878,17 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     second name is used if there is a tie for the first column; the
     third is used if there is a tie for the first and second columns; ...
     This is OPTIONAL (the default is fileDir+fileName order). --&gt;
-  &lt;isLocal&gt;false&lt;isLocal&gt; &lt;!-- (may be true or false, 
+  <!--&lt;isLocal&gt;false&lt;isLocal&gt; &lt;!-- (may be true or false, 
     the default). This is only used by EDDTableFromNcCFFiles. It 
     indicates if the files are local (actual files) or remote 
     (accessed via the web). The two types are treated slightly 
-    differently.
+    differently.-->
+  
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   <a rel="help" href="#fileTableInMemory">&lt;fileTableInMemory&gt;</a>...&lt;/fileTableInMemory&gt; &lt;!-- 0 or 1 (true or false (the default)) --&gt;
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more --&gt;
-    &lt;-- For EDDTableFromHyraxFiles, EDDTableFromNcFiles, and 
+    &lt;-- For EDDTableFromHyraxFiles, EDDTableFromMultidimNcFiles, EDDTableFromNcFiles, and 
     EDDTableFromThreddsFiles, the source's axis variables (for example, time) needn't
     be first or in any specific order. --&gt;
 &lt;/dataset&gt;
@@ -4995,7 +5066,13 @@ tags in the chunk of XML for this dataset:
   because each file usually seems to contain the observation from just one time point.  
   So there may be a large number of files.  If you want to improve performance,
   consider consolidating groups of observations (a week's worth?) in .nc files
-  and using <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> to serve the data.
+  (best: .nc files with the 
+  <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG) Contiguous Ragged Array format<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+  and using <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
+        (or <a href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>) 
+  to serve the data.
 
 <li>See this class' superclass, 
   <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, for information
@@ -5092,6 +5169,70 @@ on how this class works and how to use this class.
 </ul>
 
 
+<p><a name="EDDTableFromMultidimNcFiles"><b>EDDTableFromMultidimNcFiles</b></a> 
+  aggregates data from .nc 
+  (or <a rel="help" href="#NcML">.ncml</a>)
+  files with several variables, each with one or more shared dimensions.
+  The files may have character variables with or without an additional dimension (for example, STRING14).
+  See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
+  for information on how this class works and how to use this class.
+<ul>
+<li>If the .nc files use one of the  
+  <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  file formats, try using 
+    <a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcCFFiles</a> before trying this.
+
+<li>For new tabular datasets from .nc files, use this option before trying the older 
+  <a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a>.
+  Some advantages of this class are:
+  <ul>
+  <li>This class can read more variables from a wider variety of file structures.
+    So when you specify a DimensionsCSV in GenerateDatasetXml, this class
+    will find more matching variables.
+  <li>This class can often reject files very quickly if they don't match a request's constraints.
+    So reading data from large collections will often go much faster.
+  <li>This class handles true char variables (non-String variables) correctly.
+  <li>This class can trim String variables when the creator didn't use 
+    Netcdf-java's writeStrings (which appends char #0 to mark the end of the string).
+  <li>This class is better at dealing with individual files that lack certain
+    variables or dimensions.
+  <li>This class can remove blocks of rows with missing values as 
+    specified for 
+    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#idp6424656">CF Discrete Sampling Geometries (DSG) Incomplete Multidimensional Array files<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  </ul>
+
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+
+  <p>The first thing GenerateDatasetsXml does for this type of dataset 
+  after you answer the questions is print the ncdump-like structure of the sample file.
+  So if you enter a few goofy answers for the first loop through GenerateDatasetsXml,
+  at least you'll be able to see if ERDDAP can read the file and see
+  what dimensions and variables are in the file.
+  Then you can give better answers for the second loop through GenerateDatasetsXml.
+
+  <p>DimensionsCSV - GenerateDatasetsXml will ask for a "DimensionsCSV" string.
+  This is a comma-separated-value list of source names of a set of dimensions. 
+  GenerateDatasetsXml will find the data variables in sample .nc file which uses 
+  any or all of those dimensions (and no other dimensions) 
+  and all of the scalar variables in the file
+  and make the dataset from those data variables. 
+  <br>If you specify nothing (an empty string), GenerateDatasetsXml will look for 
+  the variables with the most dimensions, on the theory that they will be
+  the most interesting, but there may be times when you will want to 
+  make a dataset from some other group of data variables that uses some
+  other group of dimensions. 
+  <br>If you just specify a dimension name that doesn't exist 
+  (e.g., <tt>NO_MATCH</tt>), ERDDAP will just find all of the scalar variables. 
+</ul>
+
+
 <p><a name="EDDTableFromNcFiles"><b>EDDTableFromNcFiles</b></a> 
   aggregates data from .nc 
   (or <a rel="help" href="#NcML">.ncml</a>)
@@ -5101,26 +5242,41 @@ on how this class works and how to use this class.
   The files must have the same dimension names.
   A given file may have multiple values for each of the dimensions and the values may be
   different in different files.
-  The files may have character variables with an additional dimension (for example, nCharacters).
+  The files may have character variables with an additional dimension (for example, STRING14).
   See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.
 <ul>
+<li>If the .nc files use one of the  
+  <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  file formats, try using 
+    <a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcCFFiles</a> before trying this.
+
+<li>For new tabular datasets from .nc files, try the newer 
+  <a rel="help" href="#EDDTableFromMultidimNcFiles">EDDTableFromMultidimNcFiles</a> first.
+
 <li>We strongly recommend using the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
   to make a rough draft of the datasets.xml chunk for this dataset.
   You can then edit that to fine tune it.
 
+  <p>The first thing GenerateDatasetsXml does for this type of dataset 
+  after you answer the questions is print the ncdump-like structure of the sample file.
+  So if you enter a few goofy answers for the first loop through GenerateDatasetsXml,
+  at least you'll be able to see if ERDDAP can read the file and see
+  what dimensions and variables are in the file.
+  Then you can give better answers for the second loop through GenerateDatasetsXml.
+
   <p>DimensionsCSV - GenerateDatasetsXml will ask for a "DimensionsCSV" string.
-  This is a comma-separated-value list of source names of some set of dimensions. 
+  This is a comma-separated-value list of source names of a set of dimensions. 
   GenerateDatasetsXml will find the data variables in the .nc files which use that
   list of dimensions and make the dataset from those data variables. 
   If you specify nothing (an empty string), GenerateDatasetsXml will look for 
   the variables with the most dimensions, on the theory that they will be
   the most interesting, but there may be times when you will want to 
   make a dataset from some other group of data variables that uses some
-  other group of dimensions. (Install and use "ncdump -h <i>fileName</i>" 
-  to view an overiew of the contents of the file so you can see what your
-  options are.)
+  other group of dimensions. 
 
 <li>1D Example:
   1D files are somewhat different from 2D, 3D, 4D, ... files.
@@ -5337,7 +5493,7 @@ Sensor Observation Service
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> system.
   If you need to convert between the two systems, you can use
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/units.html">ERDDAP's web service to convert UCUM units to/from UDUNITS</a>.
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/units.html">ERDDAP's web service to convert UCUM units to/from UDUNITS</a>.
 <li><a name="EDDTableFromSOSSkeletonXML">The</a> skeleton XML for an EDDTableFromSOS dataset is:
 <pre>
 &lt;dataset type="EDDTableFromSOS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -5378,12 +5534,16 @@ Sensor Observation Service
     * For String String data: an org.joda.time.format.DateTimeFormat 
       string (which is mostly compatible with java.text.SimpleDateFormat)
       describing how to interpret string times  (for example, the 
-      ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ").  See <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html">Joda DateTimeFormat<img 
+      ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ").  See <a rel="help" 
+      href="http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html"
+      >Joda DateTimeFormat<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> --&gt;
   &lt;observationOfferingIdRegex&gt;...&lt;/observationOfferingIdRegex&gt;
     &lt;!-- Only observationOfferings with IDs (usually the station names) 
-    which match this <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression<img 
+    which match this <a rel="help" 
+    href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    >regular expression<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -5407,7 +5567,9 @@ Sensor Observation Service
 <p><a name="EDDTableFromThreddsFiles"><b>EDDTableFromThreddsFiles</b></a> aggregates data files 
   with several variables, each with one or more shared dimensions 
   (for example, time, altitude (or depth), latitude, longitude), and served by a 
-  <a rel="help" href="http://www.unidata.ucar.edu/projects/THREDDS/">THREDDS OPeNDAP server<img 
+  <a rel="help" 
+  href="http://www.unidata.ucar.edu/software/thredds/current/tds/"
+  >THREDDS OPeNDAP server<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
 <ul>
@@ -5598,7 +5760,7 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
 
 <li>Local Files - Each chunk of data is stored in a separate netCDF file in a subdirectory of
   <i>bigParentDirectory</i>/copy/<i>datasetID</i>/ (as specified in 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>).
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>).
   There is one subdirectory level for all but the last extractDestinationName. 
   For example, data for tig17+1017, would be stored in 
     <br><i>bigParentDirectory</i>/copy/sampleDataset/tig17/1017.nc .
@@ -5614,8 +5776,8 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   added to a queue.
   ERDDAP's taskThread processes all the queued requests for chunks of data, one-by-one.
   You can see statistics for the taskThread's activity on the
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage">Status Page</a> and in the 
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#dailyReport">Daily Report</a>.
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#statusPage">Status Page</a> and in the 
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#dailyReport">Daily Report</a>.
   (Yes, ERDDAP could assign multiple tasks to this process, but that would use up 
   lots of the remote data source's bandwidth, memory, and CPU time, and
   lots of the local ERDDAP's bandwidth, memory, and CPU time, neither of which is a good idea.)
@@ -5674,7 +5836,7 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
 <li>WARNING: EDDTableCopy assumes that the data values for each chunk don't ever change. 
   If/when they do, you need to manually delete the chunk files in 
      <i>bigParentDirectory</i>/copy/<i>datasetID</i>/
-  which changed and <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
+  which changed and <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
      the dataset to be reloaded so that the deleted
   chunks will be replaced.
   If you have an email subscription to the dataset, you will get two emails:
@@ -5687,7 +5849,7 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   <ol>
   <li>Change the addAttributes for the source dataset in datasets.xml, as needed. 
   <li>Delete one of the copied files.
-  <li>Set a <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
+  <li>Set a <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a> 
     to reload the dataset immediately.
     If you do use a flag and you have an email subscription to the dataset, you will get two emails:
     one when the dataset first reloads and starts to copy the data, 
@@ -5757,11 +5919,11 @@ Here are detailed descriptions of common tags and attributes.
   comma-separated list of numeric IP addresses which will be blacklisted.
   <ul>
   <li>This can be used to fend off a 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Denial_of_service">Denial of Service attack<img 
+    <a rel="help" href="https://en.wikipedia.org/wiki/Denial_of_service">Denial of Service attack<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>, 
     an overly zealous 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Internet_bot">web robot<img 
+    <a rel="help" href="https://en.wikipedia.org/wiki/Internet_bot">web robot<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>,
     or an overeager user running multiple scripts at one time.
@@ -5777,7 +5939,7 @@ Here are detailed descriptions of common tags and attributes.
       <tt>&lt;requestBlacklist&gt;</tt> in your datasets.xml file.
       To find the troublesome user's IP address, look in the ERDDAP 
       <i>bigParentDirectory</i>/logs/log.txt file (<i>bigParentDirectory</i> is specified in 
-        <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>)
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>)
       to see if this is the case and to find that user's IP address.
       The IP address for every request is listed on the lines starting with 
       "{{{{#" and is 4 numbers separated by periods, for example, 123.45.67.8 .
@@ -5788,7 +5950,7 @@ Here are detailed descriptions of common tags and attributes.
   <li>You don't need to restart ERDDAP for the changes to <tt>&lt;requestBlacklist&gt;</tt> to take effect.
     The changes will be detected the next time ERDDAP checks if any datasets need to be reloaded.
     Or, you can speed up the process by visiting a 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">setDatasetFlag URL</a> 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">setDatasetFlag URL</a> 
     for any dataset.
   <li>Your ERDDAP daily report includes a list/tally of the most active allowed and blocked requesters. 
   <li>If you want to figure out what domain/institution is related to a numeric IP address, 
@@ -5802,7 +5964,7 @@ Here are detailed descriptions of common tags and attributes.
 <li><a name="subscriptionEmailBlacklist"><tt><b>&lt;subscriptionEmailBlacklist&gt;</b></tt></a>
   is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains
   a comma-separated list of email address which are immediately blacklisted from the 
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/subscriptions">subscription system</a>, for example
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/subscriptions">subscription system</a>, for example
   <br><tt>&lt;subscriptionEmailBlacklist&gt;bob@badguy.com, john@badguy.com&lt;/subscriptionEmailBlacklist&gt;</tt>
   <br>If an email address on the list has subscriptions, the subscriptions will be cancelled.
   If an email address on the list tries to subscribe, the request will be refused.
@@ -5812,11 +5974,11 @@ Here are detailed descriptions of common tags and attributes.
   is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag that identifies a user's
   username, password (if authentication=custom), and roles (a comma-separated list).
   The use of username and password varies slightly based on the value of 
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authentication"
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authentication"
   ><tt>&lt;authentication&gt;</tt></a> in your ERDDAP's setup.xml file.
   <ul>
   <li>This is part of ERDDAP's 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">security system</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">security system</a>
     for restricting access to some datasets to some users.
   <li>Make a separate <tt>&lt;user&gt;</tt> tag for each user.
   <li>If there is no <tt>&lt;user&gt;</tt> tag for a client, s/he will only be 
@@ -5838,7 +6000,7 @@ Here are detailed descriptions of common tags and attributes.
     <li>setup.xml's <tt>&lt;passwordEncoding&gt;</tt> determines how passwords are stored in the
       <tt>&lt;user&gt;</tt> tags in datasets.xml.  In order of increasing security, the options are: 
       <ul>
-      <li><a rel="help" href="http://en.wikipedia.org/wiki/MD5">MD5<img 
+      <li><a rel="help" href="https://en.wikipedia.org/wiki/MD5">MD5<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
       (not recommended) - for the password attribute, specify the MD5 hash digest
@@ -5846,11 +6008,11 @@ Here are detailed descriptions of common tags and attributes.
       <li>UEPMD5 (not recommended) - for the password attribute, specify the 
         MD5 hash digest of <i>username</i>:ERDDAP:<i>password</i> .
         The username and "ERDDAP" are used to 
-          <a rel="help" href="http://en.wikipedia.org/wiki/Salt_(cryptography)">salt<img 
+          <a rel="help" href="https://en.wikipedia.org/wiki/Salt_(cryptography)">salt<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         the hash value, making it more difficult to decode. 
-      <li><a rel="help" href="http://en.wikipedia.org/wiki/SHA-2">SHA256<img 
+      <li><a rel="help" href="https://en.wikipedia.org/wiki/SHA-2">SHA256<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
         (not recommended) - for the password attribute, specify the SHA-256 hash digest
@@ -5908,7 +6070,7 @@ Here are detailed descriptions of common tags and attributes.
     <li>DatasetID's are case sensitive, but DON'T create two datasetID's that
       only differ in upper/lower case letters.  It will cause problems
       on Windows computers (yours and/or a user's computer).
-    <li>Best practices: We recommend using <a rel="help" href="http://en.wikipedia.org/wiki/CamelCase">camelCase<img 
+    <li>Best practices: We recommend using <a rel="help" href="https://en.wikipedia.org/wiki/CamelCase">camelCase<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
     <li>Best practices: We recommend that the first part be an acronym or abbreviation of the
@@ -5918,7 +6080,17 @@ Here are detailed descriptions of common tags and attributes.
       For example, we used <tt>datasetID="erdPHssta8day"</tt> for a dataset from the 
       NOAA NMFS SWFSC Environmental Research Division (ERD) which is designated by the source
       to be satellite/PH/ssta/8day.
-      <br>&nbsp;
+    <li>If you want to change a dataset's name, you need to do something 
+      to kill off (err, retire) the dataset with the existing name. 
+      The two solutions are:
+      <ul>
+      <li>Shutdown Tomcat/ERDDAP. Change the name. Restart ERDDAP.
+      <li>Change the name of the dataset and make a dummy, active="false" dataset
+        to kill off (err, retire) the old dataset:
+        <br><tt>&lt;dataset type="EDDTableFromNcFiles" datasetID="<i>theOldName</i>" active="false" /&gt;</tt>
+        <br>You can remove that tag after the old dataset is inactive.
+        <br>&nbsp;
+      </ul>
     </ul>
 
 <li><a name="active"><tt><b>active="<i>boolean</i>"</b></tt></a> is an OPTIONAL attribute within the <tt>&lt;dataset&gt;</tt> tag
@@ -5928,7 +6100,7 @@ Here are detailed descriptions of common tags and attributes.
   <li>Since the default is <tt>true</tt>, you don't need to use this attribute except to use
     <tt>active="false"</tt> 
     to force a 
-        <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#removingDatasets">dataset's removal</a> as soon as possible (if it is alive in ERDDAP) 
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#removingDatasets">dataset's removal</a> as soon as possible (if it is alive in ERDDAP) 
     and to tell ERDDAP not to try to load it in the future.
     <br>&nbsp;
   </ul>
@@ -5951,7 +6123,7 @@ for details.
       <br>
   <ul>
   <li>This is part of ERDDAP's 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">security system</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">security system</a>
     for restricting access to some datasets to some users.
   <li>If this tag is not present, all users (even if they haven't logged in) will have access to
     this dataset.
@@ -5992,8 +6164,8 @@ for details.
     <br><tt>&lt;accessibleViaFiles&gt;true&lt;/accessibleViaFiles&gt;</tt>
     <br>If the value is <tt>true</tt>, ERDDAP will make it so that users can 
     browse and download the dataset's source data files via ERDDAP's 
-<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/">"files" system</a>. See the "files" system's 
-<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">documentation</a>
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/">"files" system</a>. See the "files" system's 
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">documentation</a>
 for more information. 
   <br>&nbsp;
 
@@ -6144,7 +6316,7 @@ for more information.
       For example, the URL might tell some other web service to do something.
       <ul>
       <li>If the URL has a query part (after the "?"), it MUST be already 
-        <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+        <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
         You just need to encode special characters in the right-hand-side values of any
@@ -6195,7 +6367,7 @@ for more information.
     directory are deleted.
   <li>No matter what this is set to, a dataset won't be loaded more frequently than
     <tt>&lt;loadDatasetsMinMinutes&gt;</tt> (default = 15), as specified in 
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>.
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>.
    So if you want datasets to be reloaded very frequently, you need to set both
      reloadEveryNMinutes and loadDatasetsMinMinutes to small values.
   <li>Don't set reloadEveryNMinutes to the same value as loadDatasetsMinMinutes,
@@ -6204,7 +6376,7 @@ for more information.
     Instead, use a smaller (for example, 10) or larger (for example, 20) reloadEveryNMinutes value.
   <li>Regardless of reloadEveryNMinutes, you can manually tell ERDDAP to reload a specific dataset
     as soon as possible via a
-     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag file</a>.
+     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag file</a>.
   <li><a name="ProactiveVsReactive">Proactive vs Reactive</a> - 
     Note that ERDDAP's reload system is proactive --
     datasets are reloaded soon after their reloadEveryNMinutes time is up 
@@ -6329,7 +6501,7 @@ for more information.
       For these datasets, it is better to not use <tt>&lt;updateEveryNMillis&gt;</tt> 
       and to set a 
       <a rel="help" 
-      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag</a> to tell ERDDAP to reload the dataset.
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag</a> to tell ERDDAP to reload the dataset.
     <li><tt>&lt;updateEveryNMillis&gt;</tt> does not update the information associated with the 
       <a rel="help" href="#subsetVariables">&lt;subsetVariables&gt;</a>.
       Normally, this is not a problem, because the subsetVariables have information
@@ -6338,7 +6510,7 @@ for more information.
       If the subsetVariables data changes (for example, when a new station is added
       to the dataset), then contact the
       <a rel="help" 
-        href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag URL</a> 
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag URL</a> 
       for the dataset to tell ERDDAP to reload the dataset.
       Otherwise, ERDDAP won't notice the new subsetVariable information until
       the next time the dataset is reloaded (&lt;reloadEveryNMinutes&gt;).
@@ -6516,7 +6688,7 @@ for more information.
   <li>For most datasets, this is the base of the url that is used to request data.
      For example, for DAP servers, this is the url to which .dods, .das, .dds, or .html could be added.
   <li>If the URL has a query part (after the "?"), it MUST be already 
-     <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+     <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
         You just need to encode special characters in the right-hand-side values of any
@@ -6626,7 +6798,7 @@ for more information.
      >FGDC<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> and
-       <a rel="help" href="http://en.wikipedia.org/wiki/Geospatial_metadata">ISO&nbsp;19115-2/19139<img 
+       <a rel="help" href="https://en.wikipedia.org/wiki/Geospatial_metadata">ISO&nbsp;19115-2/19139<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
        Metadata
@@ -6700,7 +6872,7 @@ for more information.
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
         is a global attribute that indicates the 
-          Unidata <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/CDM/">Common Data Model<img 
+          Unidata <a rel="help" href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/CDM/">Common Data Model<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
         data type for the dataset.    For example,
@@ -6893,7 +7065,7 @@ for more information.
         <li>The NetCDF Attribute Convention for Dataset Discovery (ACDD)
         is the source of many of the recommended and required attributes in ERDDAP. 
         The original 1.0 version of ACDD (a brilliant piece of work by Ethan Davis), was identified as
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">Unidata Dataset Discovery v1.0<img 
+        <a rel="help" href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html">Unidata Dataset Discovery v1.0<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
         The current (starting in 2015) 1.3 version of ACDD is identified as 
@@ -6910,7 +7082,7 @@ for more information.
 
       <li><a name="coverage_content_type"><b>coverage_content_type</b></a> 
         (from the
-        <a rel="help" href="http://en.wikipedia.org/wiki/Geospatial_metadata">ISO 19115<img 
+        <a rel="help" href="https://en.wikipedia.org/wiki/Geospatial_metadata">ISO 19115<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
@@ -7024,7 +7196,7 @@ for more information.
           (topography information is displayed for ocean and land areas).
           <tt>under</tt> is commonly used for all other data.
         <li>If any other value (or no value) is specified, the drawLandMask value from 
-            <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
+            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
           is used.  If none is specified there, <tt>over</tt> is the default.
         </ul>
 
@@ -7085,7 +7257,7 @@ for more information.
           Data Access Form (<i>datasetID</i>.html), 
           Make A Graph web page (<i>datasetID</i>.graph), and other web pages.
         <li>If the URL has a query part (after the "?"), it MUST be already 
-          <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+          <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
         You just need to encode special characters in the right-hand-side values of any
@@ -7125,7 +7297,7 @@ for more information.
            by putting the mouse cursor over the adjacent "?" icon).
         <li>If you add <tt>institution</tt> to the list of <tt>&lt;categoryAttributes&gt;</tt> 
           in ERDDAP's 
-           <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml<img 
+           <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> file,
           users can easily find datasets from the same institution via ERDDAP's 
@@ -7173,12 +7345,12 @@ for more information.
         <ul>
         <li>If "<tt>[standard]</tt>" occurs in the attribute value, it will be replaced by the
           standard ERDDAP license from the <tt>&lt;standardLicense&gt;</tt> tag in 
-           <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#messages.xml">messages.xml</a>.
+           <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#messages.xml">messages.xml</a>.
         </ul>
 
       <li><a name="Metadata_Conventions"><b>Metadata_Conventions</b></a> 
         is from the outdated 
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD 1.0<img 
+        <a rel="help" href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html">ACDD 1.0<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> (which was identified in Metadata_Conventions as
         "Unidata Dataset Discovery v1.0")
@@ -7199,7 +7371,7 @@ for more information.
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standard) 
         is a RECOMMENDED textual description of the processing 
-        (for example, <a rel="help" href="http://en.wikipedia.org/wiki/Remote_sensing#Data_processing_levels">NASA
+        (for example, <a rel="help" href="https://en.wikipedia.org/wiki/Remote_sensing#Data_processing_levels">NASA
         satellite data processing levels<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>, for example, <tt>Level 3</tt>)
@@ -7399,7 +7571,7 @@ for more information.
           that has more information than the title and thus quickly understand what the dataset is.
         <li>Advice: please write the summary so it would work to describe the dataset to some random
           person you meet on the street or to a colleague.  Remember to include the 
-          <a rel="help" href="http://en.wikipedia.org/wiki/Five_Ws">Five W's and one H<img 
+          <a rel="help" href="https://en.wikipedia.org/wiki/Five_Ws">Five W's and one H<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>:
           Who created the dataset?  What information was collected? When was the data collected?
@@ -7772,7 +7944,7 @@ for more information.
               RedWhiteBlue, ReverseRainbow, Topography, WhiteBlack, WhiteBlueBlack,</tt>
               and <tt>WhiteRedBlack</tt>.
             <li>If you have installed
-              <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#palettes">additional palettes</a>, you can refer to one of them.
+              <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#palettes">additional palettes</a>, you can refer to one of them.
             <li>If this attribute isn't present, the default is <tt>BlueWhiteRed</tt> if
               <tt>-1*colorBarMinimum = colorBarMaximum</tt>; otherwise the default is 
               <tt>Rainbow</tt>.
@@ -7845,11 +8017,11 @@ for more information.
       <li><a name="ioos_category"><b>ioos_category</b></a> - 
         This is a REQUIRED variable attribute if <tt>&lt;variablesMustHaveIoosCategory&gt;</tt>
         is set to true (the default) in
-          <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>;
+          <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>;
           otherwise, it is OPTIONAL.  
         <br>For example, <tt>&lt;att name="ioos_category"&gt;Salinity&lt;/att&gt;</tt>
         <br>The categories are from 
-          <a rel="help" href="http://www.ioos.noaa.gov/">NOAA's 
+          <a rel="help" href="https://ioos.noaa.gov/">NOAA's 
           Integrated Ocean Observing System (IOOS)<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
@@ -7857,9 +8029,9 @@ for more information.
         <li>(As of writing this) we aren't aware of formal definitions of these names.
         <li>The core names are from Zdenka Willis' .ppt "Integrated Ocean Observing System (IOOS)
            NOAA's Approach to Building an Initial Operating Capability" and from the
-           <a rel="help" href="http://www.ioos.gov/library/us_ioos_blueprint_ver1.pdf">US IOOS Blueprint<img 
+           <a rel="help" href="http://www.iooc.us/wp-content/uploads/2010/11/US-IOOS-Blueprint-for-Full-Capability-Version-1.0.pdf">US IOOS Blueprint<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.
+        title="This link to an external web site does not constitute an endorsement."/></a> (page 1-5).
         <li>It is likely that this list will be revised in the future.
           If you have requests, please email <tt>bob.simons at noaa.gov</tt>.
         <li>ERDDAP supports a larger list of categories than IOOS does because
@@ -7877,10 +8049,10 @@ for more information.
         <li>There is some overlap and ambiguity between different terms -- do your best.
         <li>If you add ioos_category to the list of <tt>&lt;categoryAttributes&gt;</tt> 
           in ERDDAP's 
-          <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
+          <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
             file, users can easily find datasets with similar data via ERDDAP's
           "Search for Datasets by Category" on the home page.
-          <br><a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/categorize/ioos_category/index.html?page=1&amp;itemsPerPage=1000">Try using ioos_category to search for datasets of interest.</a>
+          <br><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/categorize/ioos_category/index.html?page=1&amp;itemsPerPage=1000">Try using ioos_category to search for datasets of interest.</a>
         </ul>
 
         <p>You may be tempted to set <tt>&lt;variablesMustHaveIoosCategory&gt;</tt> 
@@ -7901,9 +8073,9 @@ for more information.
           sea_surface_temperature vs. sea_water_temperature).
           <br>(Using ioos_category for this purpose is controlled by 
           <tt>&lt;categoryAttributes&gt;</tt> in your setup.xml file.)
-          <br><a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/categorize/ioos_category/index.html?page=1&amp;itemsPerPage=1000">Try using ioos_category to search for datasets of interest.</a>
+          <br><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/categorize/ioos_category/index.html?page=1&amp;itemsPerPage=1000">Try using ioos_category to search for datasets of interest.</a>
         <li>These categories are from 
-          <a rel="help" href="http://www.ioos.noaa.gov/">NOAA's 
+          <a rel="help" href="https://ioos.noaa.gov/">NOAA's 
           Integrated Ocean Observing System (IOOS)<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>. These categories
@@ -7934,9 +8106,6 @@ for more information.
         title="This link to an external web site does not constitute an endorsement."/></a>,
         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>, 
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
         and
         <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
@@ -7964,11 +8133,9 @@ for more information.
         <a name="FillValue"><b>_FillValue</b></a> (default = NaN) 
         (<a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>,
+        title="This link to an external web site does not constitute an endorsement."/></a>
+        and
         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>, and
-        <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>)
         are variable attributes which describe a number
@@ -7993,11 +8160,9 @@ for more information.
         <a name="add_offset"><b>add_offset</b></a> (default = 0)
         (<a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>,
-         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>, and 
-         <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF<img 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+        and
+        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>)
         are OPTIONAL variable attributes which describe data which is packed in a 
@@ -8045,7 +8210,7 @@ for more information.
         <li>If you add <tt>standard_name</tt> to variables' attributes and add 
           <tt>standard_name</tt> to the list of
           <tt>&lt;categoryAttributes&gt;</tt> in ERDDAP's 
-            <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
+            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
             file, users can easily find datasets with
           similar data via ERDDAP's "Search for Datasets by Category" on the home page.
         <li>If you specify a CF standard_name for a variable, 
@@ -8058,7 +8223,7 @@ for more information.
           MUST have units of K, degrees_C, degrees_F, or some UDUnits variant of those names,
           since they are all inter-convertible.
         <li>Best practices: Part of the power of 
-            <a rel="help" href="http://en.wikipedia.org/wiki/Controlled_vocabulary">controlled vocabularies<img 
+            <a rel="help" href="https://en.wikipedia.org/wiki/Controlled_vocabulary">controlled vocabularies<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
             comes from using only the terms
@@ -8117,10 +8282,7 @@ for more information.
         (<a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>,
-         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>,
-         <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF<img 
+        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
          and
@@ -8168,7 +8330,7 @@ for more information.
           You should tell ERDDAP which standard you are using with 
           <tt>&lt;units_standard&gt;</tt>,
           in your
-            <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
+            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
             file.
         <li><a name="timeUnits">For</a> time and timestamp variables, either the variable's <a rel="help" href="#variableAttributes">sourceAttributes</a>
           or <tt>&lt;addAttributes&gt;</tt> (which takes precedence) MUST have 
@@ -8201,7 +8363,7 @@ for more information.
 
              <p>You can test ERDDAP's ability to deal with a specific <tt><i>units</i> since <i>baseTime</i></tt>
              with ERDDAP's 
-             <br><a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Time Converter</a>.
+             <br><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Time Converter</a>.
              Hopefully, you can plug in a number (the first time value from the data source?) 
              and a units string, click on <i>Convert</i>, and ERDDAP will be able to convert it
              into an ISO 8601:2004(E) formatted date time string.
@@ -8227,7 +8389,9 @@ for more information.
             <br>2012-11-20        (missing hours   are assumed to be 0)
             <br>2012-11           (missing date    is  assumed to be 1)
             <br>See 
-              <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html">Joda DateTimeFormat<img 
+              <a rel="help" 
+              href="http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html"
+              >Joda DateTimeFormat<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> .
             
@@ -8268,9 +8432,9 @@ for more information.
 
           <p>See <a rel="help" href="#LLAT">more information about time variables</a>.
           <br>ERDDAP has a utility to 
-            <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
+            <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
             a Numeric Time to/from a String Time</a>.
-          <br>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
+          <br>See <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
             ERDDAP Deals with Time</a>.
         </ul>
 
@@ -8337,9 +8501,9 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.70
-<br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
-    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+<p>ERDDAP, Version 1.72
+<br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;

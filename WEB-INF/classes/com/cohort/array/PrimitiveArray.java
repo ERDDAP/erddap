@@ -249,8 +249,7 @@ public abstract class PrimitiveArray {
      */
     public static PrimitiveArray factory(Class elementClass, int size, String constantValue) {
         if (constantValue == null)
-            throw new RuntimeException(String2.ERROR + 
-                " in PrimitiveArray.factory: constantValue is null.");
+            constantValue = "";
 
         if (elementClass == double.class) {
             Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(double, " + size + ")");
@@ -290,14 +289,14 @@ public abstract class PrimitiveArray {
         }
         if (elementClass == char.class) {
             Math2.ensureMemoryAvailable(size * 2L, "PrimitiveArray.factory(char, " + size + ")");
-            char ar[] = new char[size];
-            Arrays.fill(ar, constantValue.charAt(0)); 
+            char ar[] = new char[size];            
+            Arrays.fill(ar, CharArray.firstChar(constantValue)); 
             return new CharArray(ar);
         }
         if (elementClass == String.class) {
             Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(String, " + size + ")"); //8L is crude estimate of size
             String ar[] = new String[size];
-            Arrays.fill(ar, constantValue); //does to/from String bruise it?
+            Arrays.fill(ar, String2.canonical(constantValue)); 
             return new StringArray(ar);
         }
         throw new IllegalArgumentException(String2.ERROR + 
@@ -555,7 +554,7 @@ public abstract class PrimitiveArray {
     public static PrimitiveArray sqlFactory(int sqlType) {
 
         //see recommended types in table at
-        //  http://download.oracle.com/javase/7/docs/guide/jdbc/getstart/resultset.html
+        //  https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html
         //see JDBC API Tutorial book, pg 1087
         if (sqlType == Types.BIT ||      //PrimitiveArray doesn't have a separate BooleanArray
             sqlType == Types.BOOLEAN ||  //PrimitiveArray doesn't have a separate BooleanArray
@@ -2196,7 +2195,7 @@ public abstract class PrimitiveArray {
      * WARNING: information may be lost from the incoming primitiveArray if this
      * primitiveArray is of a simpler type.
      *
-     * @param primitiveArray primitiveArray must be a narrower data type,
+     * @param primitiveArray primitiveArray must be the same or a narrower data type,
      *  or the data will be rounded.
      */
     abstract public void append(PrimitiveArray primitiveArray);
@@ -3160,6 +3159,7 @@ public abstract class PrimitiveArray {
      * <br>Tests of "nonNaN != NaN" will evaluate to true.
      * <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
      * 
+     * @param morePrecise e.g., for tests of time values which are very precise.
      * @param keep   The test is only applied to keep=true elements.
      *   If the test is false, the keep element is set to false.
      * @param op one of EDDTable.OPERATORS
@@ -3227,7 +3227,7 @@ public abstract class PrimitiveArray {
             int nStillGood = 0;
             double value2d = String2.parseDouble(value2);
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
-                if (testValueOpValueExtra(getDouble(row), op, value2d)) 
+                if (testValueOpValueExtra(getDouble(row), op, value2d)) //extra
                     nStillGood++;
                 else keep.clear(row);
             }
@@ -3239,7 +3239,7 @@ public abstract class PrimitiveArray {
         int nStillGood = 0;
         double value2d = String2.parseDouble(value2);
         for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
-            if (testValueOpValue(getDouble(row), op, value2d)) 
+            if (testValueOpValue(getDouble(row), op, value2d)) //normal
                 nStillGood++;
             else keep.clear(row);
         }

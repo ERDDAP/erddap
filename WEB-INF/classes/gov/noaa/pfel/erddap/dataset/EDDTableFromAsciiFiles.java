@@ -72,7 +72,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
-        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles,
+        boolean tRemoveMVRows) 
         throws Throwable {
 
         super("EDDTableFromAsciiFiles", tDatasetID, 
@@ -86,7 +87,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
-            tFileTableInMemory, tAccessibleViaFiles);
+            tFileTableInMemory, tAccessibleViaFiles, tRemoveMVRows);
     }
 
     /** The constructor for subclasses. */
@@ -104,7 +105,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
-        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles,
+        boolean tRemoveMVRows) 
         throws Throwable {
 
         super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
@@ -118,7 +120,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
-            tFileTableInMemory, tAccessibleViaFiles);
+            tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
 
     }
 
