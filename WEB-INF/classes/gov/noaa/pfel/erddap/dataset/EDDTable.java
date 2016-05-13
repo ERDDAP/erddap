@@ -75,7 +75,8 @@ import org.apache.lucene.document.Field.Store;
 
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -200,7 +201,7 @@ public abstract class EDDTable extends EDD {
         "http://resources.arcgis.com/content/kbase?fa=articleShow&d=27589", //.esriCsv
         "http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
         "http://wiki.geojson.org/Main_Page", //geoJSON
-        "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", //GraphicsCommands
+        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands", //GraphicsCommands
         "http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", //help
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
         "http://www.w3schools.com/html/html_tables.asp", //htmlTable
@@ -236,10 +237,10 @@ public abstract class EDDTable extends EDD {
         EDStatic.fileHelp_transparentPng
     };
     public static String[] imageFileTypeInfo = {
-        "http://earth.google.com/", //kml
-        "http://www.adobe.com/products/acrobat/adobepdf.html", //pdf
-        "http://www.adobe.com/products/acrobat/adobepdf.html", //pdf
-        "http://www.adobe.com/products/acrobat/adobepdf.html", //pdf
+        "https://developers.google.com/kml/", //kml
+        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
+        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
+        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
         "http://www.libpng.org/pub/png/", //png
         "http://www.libpng.org/pub/png/", //png
         "http://www.libpng.org/pub/png/", //png
@@ -1870,7 +1871,7 @@ public abstract class EDDTable extends EDD {
         //String2.log("resultsVariables=" + resultsVariables);
 
         //get the constraints 
-        boolean hasDistinctOrOrderBy = false;
+        boolean hasOrderBy = false;
         for (int p = 1; p < parts.length; p++) {
             //deal with one constraint at a time
             String constraint = parts[p]; 
@@ -1886,22 +1887,23 @@ public abstract class EDDTable extends EDD {
                 continue;
 
             //special case: server-side functions
-            if (constraint.equals("distinct()") ||
-                (constraint.endsWith("\")") &&
+            if (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderBy(\"") ||
                   constraint.startsWith("orderByMax(\"") ||
                   constraint.startsWith("orderByMin(\"") ||
-                  constraint.startsWith("orderByMinMax(\"")))) {
-                if (hasDistinctOrOrderBy) {
+                  constraint.startsWith("orderByMinMax(\""))) {
+
+                //more than 1 orderBy?
+                if (hasOrderBy) {
                     if (repair) continue;
                     throw new SimpleException(EDStatic.queryError +
-                         EDStatic.queryErrorOneDistinctOrderBy);
+                         EDStatic.queryErrorOneOrderBy);
                 } else {
-                    hasDistinctOrOrderBy = true; 
+                    hasOrderBy = true; 
                 }
 
                 //ensure all orderBy vars are in resultsVariables
-                if (!repair && constraint.startsWith("orderBy")) {
+                if (!repair) {
                     int ppo = constraint.indexOf("(\"");
                     StringArray obv = StringArray.fromCSV(constraint.substring(
                         ppo + 2, constraint.length() - 2));
@@ -1914,6 +1916,10 @@ public abstract class EDDTable extends EDD {
                 }
                 continue;
             }
+
+            //special case: server-side functions
+            if (constraint.equals("distinct()"))
+                continue;
 
             //special case: server-side functions
             if (constraint.endsWith("\")") &&
@@ -2841,25 +2847,20 @@ public abstract class EDDTable extends EDD {
         String dir, String fileName, 
         TableWriter tableWriter, String requestUrl, String userDapQuery) throws Throwable {
         
-        //work backwards through parts so tableWriters are added in correct order
         String tNewHistory = getNewHistory(requestUrl, userDapQuery);
-        boolean hasDistinctOrOrderBy = false;
-        String doobError = EDStatic.queryError + EDStatic.queryErrorOneDistinctOrderBy;
         String[] parts = Table.getDapQueryParts(userDapQuery); //decoded
+
+        //handle non-distinct() filters first
+        //work backwards through parts so tableWriters are added in correct order
+        boolean hasOrderBy = false;
+        boolean skipDistinct = false;
+        String obError = EDStatic.queryError + EDStatic.queryErrorOneOrderBy;
         for (int part = parts.length - 1; part >= 0; part--) {
             String p = parts[part];
-            if (p.equals("distinct()")) {
-                if (hasDistinctOrOrderBy) 
-                    throw new SimpleException(doobError); //only 1 is allowed
-                hasDistinctOrOrderBy = true;
-                if (!alwaysDoAll && sourceCanDoDistinct == CONSTRAIN_YES)
-                    continue;
-                tableWriter = new TableWriterDistinct(this, tNewHistory, 
-                    dir, fileName, tableWriter);
-            } else if (p.startsWith("orderBy(\"") && p.endsWith("\")")) {
-                if (hasDistinctOrOrderBy) 
-                    throw new SimpleException(doobError); //only 1 is allowed
-                hasDistinctOrOrderBy = true;
+            if (p.startsWith("orderBy(\"") && p.endsWith("\")")) {
+                if (hasOrderBy) 
+                    throw new SimpleException(obError); //only 1 is allowed
+                hasOrderBy = true;
                 if (!alwaysDoAll && sourceCanOrderBy == CONSTRAIN_YES)
                     continue;
                 TableWriterOrderBy twob = new TableWriterOrderBy(this, tNewHistory, 
@@ -2872,9 +2873,10 @@ public abstract class EDDTable extends EDD {
                             "'orderBy' variable=" + twob.orderBy[ob] + " isn't in the dataset.");
                 }
             } else if (p.startsWith("orderByMax(\"") && p.endsWith("\")")) {
-                if (hasDistinctOrOrderBy) 
-                    throw new SimpleException(doobError); //only 1 is allowed
-                hasDistinctOrOrderBy = true;
+                if (hasOrderBy) 
+                    throw new SimpleException(obError); //only 1 is allowed
+                hasOrderBy = true;
+                skipDistinct = true; //since orderByMax results are inherently distinct
                 TableWriterOrderByMax twobm = new TableWriterOrderByMax(this, tNewHistory, 
                     dir, fileName, tableWriter, p.substring(12, p.length() - 2));
                 tableWriter = twobm;
@@ -2885,9 +2887,10 @@ public abstract class EDDTable extends EDD {
                             "'orderByMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
             } else if (p.startsWith("orderByMin(\"") && p.endsWith("\")")) {
-                if (hasDistinctOrOrderBy) 
-                    throw new SimpleException(doobError); //only 1 is allowed
-                hasDistinctOrOrderBy = true;
+                if (hasOrderBy) 
+                    throw new SimpleException(obError); //only 1 is allowed
+                hasOrderBy = true;
+                skipDistinct = true; //since orderByMin results are inherently distinct
                 TableWriterOrderByMin twobm = new TableWriterOrderByMin(this, tNewHistory, 
                     dir, fileName, tableWriter, p.substring(12, p.length() - 2));
                 tableWriter = twobm;
@@ -2898,9 +2901,10 @@ public abstract class EDDTable extends EDD {
                             "'orderByMin' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
             } else if (p.startsWith("orderByMinMax(\"") && p.endsWith("\")")) {
-                if (hasDistinctOrOrderBy) 
-                    throw new SimpleException(doobError); //only 1 is allowed
-                hasDistinctOrOrderBy = true;
+                if (hasOrderBy) 
+                    throw new SimpleException(obError); //only 1 is allowed
+                hasOrderBy = true;
+                skipDistinct = true; //since orderByMinMax results are inherently distinct
                 TableWriterOrderByMinMax twobm = new TableWriterOrderByMinMax(
                     this, tNewHistory, dir, fileName, tableWriter, 
                     p.substring(15, p.length() - 2));
@@ -2922,6 +2926,17 @@ public abstract class EDDTable extends EDD {
                 }
             }
         }
+
+        //handle distinct() last (so it is the first tableWriter in the chain)
+        //so that orderBy's order has precedence
+        if (skipDistinct ||
+            (!alwaysDoAll && sourceCanDoDistinct == CONSTRAIN_YES)) {
+            //skip distinct(), if any. Database will handle it.
+        } else if (String2.indexOf(parts, "distinct()") >= 0) {
+            tableWriter = new TableWriterDistinct(this, tNewHistory, 
+                dir, fileName, tableWriter);
+        }
+
         return tableWriter;
     }
 
@@ -3139,7 +3154,7 @@ public abstract class EDDTable extends EDD {
 
         //based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
         //see copy in bob's c:/programs/kml/SE-LATEST-MONTH-STA.kml
-        //kml docs: http://earth.google.com/kml/kml_tags.html
+        //kml docs: https://developers.google.com/kml/documentation/kmlreference
         //CDATA is necessary for url's with queries
         //kml/description docs recommend \n<br />
         String courtesy = institution().length() == 0? "" : 
@@ -4276,28 +4291,34 @@ public abstract class EDDTable extends EDD {
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullName + randomInt, false);
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+        
             //items determined by looking at a .nc file; items written in that order 
 
             //define the dimensions
-            Dimension dimension  = nc.addDimension(ROW_NAME, nRows);
+            Dimension dimension  = nc.addDimension(rootGroup, ROW_NAME, nRows);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
+            Variable newVars[] = new Variable[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 Class type = twawm.columnType(col);
                 String tColName = twawm.columnName(col);
                 if (type == String.class) {
                     int max = Math.max(1, twawm.columnMaxStringLength(col)); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension = nc.addDimension(
+                    Dimension lengthDimension = nc.addDimension(rootGroup, 
                         tColName + NcHelper.StringLengthSuffix, max);
-                    nc.addVariable(tColName, DataType.CHAR, 
-                        new Dimension[]{dimension, lengthDimension}); 
+                    newVars[col] = nc.addVariable(rootGroup, tColName, DataType.CHAR, 
+                        Arrays.asList(dimension, lengthDimension)); 
                 } else {
-                    nc.addVariable(tColName, DataType.getType(type), new Dimension[]{dimension}); 
+                    newVars[col] = nc.addVariable(rootGroup, tColName, 
+                        DataType.getType(type), Arrays.asList(dimension)); 
                 }
 //nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
             }
@@ -4313,9 +4334,9 @@ public abstract class EDDTable extends EDD {
                 globalAttributes.set("id", File2.getNameNoExtension(fullName));
 
             //set the attributes
-            NcHelper.setAttributes(nc, "NC_GLOBAL", globalAttributes);
+            NcHelper.setAttributes(rootGroup, globalAttributes);
             for (int col = 0; col < nColumns; col++) 
-                NcHelper.setAttributes(nc, twawm.columnName(col), twawm.columnAttributes(col));
+                NcHelper.setAttributes(newVars[col], twawm.columnAttributes(col));
 
             //leave "define" mode
             nc.create();
@@ -4340,7 +4361,7 @@ public abstract class EDDTable extends EDD {
                     if (debugMode) String2.log(">> col=" + col + " nToGo=" + nToGo + 
                         " ncOffset=" + ncOffset + " bufferSize=" + bufferSize + 
                         " pa.capacity=" + pa.capacity() + " pa.size=" + pa.size());
-                    nc.write(twawm.columnName(col), 
+                    nc.write(newVars[col], 
                         colType == String.class? new int[]{ncOffset, 0} : new int[]{ncOffset},
                         NcHelper.get1DArray(pa.toObjectArray()));  
                     nToGo -= bufferSize;
@@ -4511,7 +4532,7 @@ public abstract class EDDTable extends EDD {
         //If procedure fails half way through, there won't be a half-finished file.
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
-        NetcdfFileWriteable ncCF = null;
+        NetcdfFileWriter ncCF = null;
         try {
             //get info from twawm
             //Note: this uses "feature" as stand-in for profile|timeseries|trajectory
@@ -4578,13 +4599,18 @@ public abstract class EDDTable extends EDD {
 //do a fileSize check here.  <2GB?
 
             //** Create the .ncCF file
-            ncCF = NetcdfFileWriteable.createNew(ncCFName + randomInt, false);
+            ncCF = NetcdfFileWriter.createNew(
+                NetcdfFileWriter.Version.netcdf3, ncCFName + randomInt);
+            Group rootGroup = ncCF.addGroup(null, "");
+            ncCF.setFill(false);
             //define the dimensions
-            Dimension featureDimension = ncCF.addDimension(lcCdmType, nFeatures);
-            Dimension obsDimension     = ncCF.addDimension("obs", 
+            Dimension featureDimension = ncCF.addDimension(rootGroup, lcCdmType, nFeatures);
+            Dimension obsDimension     = ncCF.addDimension(rootGroup, "obs", 
                 nodcMode? maxFeatureNRows : totalNObs);
 
             //add the feature variables, then the obs variables
+            Variable newVars[] = new Variable[ncNCols];
+            Variable rowSizeVar = null;
             for (int so = 0; so < 2; so++) {  //0=feature 1=obs
                 for (int col = 0; col < ncNCols; col++) {
                     if (( isFeatureVar[col] && so == 0) || //is var in currently desired group?
@@ -4603,22 +4629,24 @@ public abstract class EDDTable extends EDD {
                         type = String.class; 
                         maxStringLength = NcHelper.LONG_MAXSTRINGLENGTH;
                     }
-                    ArrayList tDims = new ArrayList();
+                    ArrayList<Dimension> tDimsList = new ArrayList();
                     if (nodcMode) {
                         if (isFeatureVar[col]) {
-                            tDims.add(featureDimension);
+                            tDimsList.add(featureDimension);
                         } else {
                             //obsVar[feature][obs]
-                            tDims.add(featureDimension);
-                            tDims.add(obsDimension);
+                            tDimsList.add(featureDimension);
+                            tDimsList.add(obsDimension);
                         }
                     } else {
-                        tDims.add(isFeatureVar[col]? featureDimension : obsDimension);
+                        tDimsList.add(isFeatureVar[col]? featureDimension : obsDimension);
                     }
                     if (type == String.class) {
-                        ncCF.addStringVariable(tColName, tDims, maxStringLength);
+                        newVars[col] = ncCF.addStringVariable(rootGroup, tColName, 
+                            tDimsList, maxStringLength);
                     } else {
-                        ncCF.addVariable(tColName, DataType.getType(type), tDims); 
+                        newVars[col] = ncCF.addVariable(rootGroup, tColName, 
+                            DataType.getType(type), tDimsList); 
                     }
 
                     //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
@@ -4636,8 +4664,9 @@ public abstract class EDDTable extends EDD {
 
                 //at end of feature vars, add the rowSize variable
                 if (!nodcMode && so == 0) {
-                    ncCF.addVariable(rowSizeName, DataType.getType(int.class), 
-                        new Dimension[]{featureDimension}); 
+                    rowSizeVar = ncCF.addVariable(rootGroup, rowSizeName, 
+                        DataType.getType(int.class), 
+                        Arrays.asList(featureDimension)); 
                     //String2.log("  rowSize variable added");
                 }
             }
@@ -4651,7 +4680,7 @@ public abstract class EDDTable extends EDD {
             cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
-            NcHelper.setAttributes(ncCF, "NC_GLOBAL", cdmGlobalAttributes);
+            NcHelper.setAttributes(rootGroup, cdmGlobalAttributes);
 
 
             //set the variable attributes
@@ -4681,14 +4710,14 @@ public abstract class EDDTable extends EDD {
                 Attributes atts = twawm.columnAttributes(col);
                 if (!isFeatureVar[col] && !isCoordinateVar[col])
                     atts.add("coordinates", coordinates);
-                NcHelper.setAttributes(ncCF, ncColNames[col], atts);
+                NcHelper.setAttributes(newVars[col], atts);
             }
 
             //set the rowSize attributes
             if (!nodcMode) {
-                NcHelper.setAttributes(ncCF, rowSizeName, new Attributes()
-                    .add("ioos_category", "Identifier")
-                    .add("long_name", "Number of Observations for this " + cdmType)
+                NcHelper.setAttributes(rowSizeVar, new Attributes()
+                    .add("ioos_category",    "Identifier")
+                    .add("long_name",        "Number of Observations for this " + cdmType)
                     .add("sample_dimension", "obs"));  
             }
 
@@ -4713,8 +4742,7 @@ public abstract class EDDTable extends EDD {
                 if (isFeatureVar[col]) {
                     //write featureVar[feature]
                     pa.justKeep(featureKeep);
-                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
-                        twawm.columnMaxStringLength(col)); 
+                    NcHelper.write(ncCF, newVars[col], 0, pa); 
 
                 } else if (nodcMode) {
                     //write nodc obsVar[feature][obs]
@@ -4728,7 +4756,7 @@ public abstract class EDDTable extends EDD {
                         int stopRow  = firstRow + tNRows - 1;
                         PrimitiveArray subsetPa = pa.subset(firstRow, 1, stopRow);
                         subsetPa.trimToSize(); //so toObjectArray will be underlying array
-                        NcHelper.write(ncCF, ncColNames[col], 
+                        NcHelper.write(ncCF, newVars[col], 
                             origin, new int[]{1, tNRows}, subsetPa);         
 
                         //and write missing values
@@ -4744,21 +4772,20 @@ public abstract class EDDTable extends EDD {
                                 subsetPa.addNStrings(tNRows, "");
                             else
                                 subsetPa.addNDoubles(tNRows, tSafeMV);
-                            NcHelper.write(ncCF, ncColNames[col], 
+                            NcHelper.write(ncCF, newVars[col], 
                                 origin, new int[]{1, tNRows}, subsetPa);         
                         }
                     }
 
                 } else {
                     //write obsVar[obs]
-                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
-                        twawm.columnMaxStringLength(col)); 
+                    NcHelper.write(ncCF, newVars[col], 0, pa); 
                 }
             }
 
             //write the rowSize values
             if (!nodcMode)
-                NcHelper.write(ncCF, rowSizeName, 0, featureNRows, 0); 
+                NcHelper.write(ncCF, rowSizeVar, 0, featureNRows); 
 
             //if close throws Throwable, it is trouble
             ncCF.close(); //it calls flush() and doesn't like flush called separately
@@ -4847,7 +4874,7 @@ public abstract class EDDTable extends EDD {
         //If procedure fails half way through, there won't be a half-finished file.
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
-        NetcdfFileWriteable ncCF = null;
+        NetcdfFileWriter ncCF = null;
         try {
             //get info from twawm
             //Note: this uses 'feature' as stand-in for timeseries|trajectory 
@@ -4961,15 +4988,21 @@ public abstract class EDDTable extends EDD {
             pidPA = null;
 
             //** Create the .ncCF file
-            ncCF = NetcdfFileWriteable.createNew(ncCFName + randomInt, false);
+            ncCF = NetcdfFileWriter.createNew(
+                NetcdfFileWriter.Version.netcdf3, ncCFName + randomInt);
+            Group rootGroup = ncCF.addGroup(null, "");
+            ncCF.setFill(false);
             //define the dimensions
-            Dimension featureDimension = ncCF.addDimension(olcCdmName, nFeatures);
-            Dimension profileDimension = ncCF.addDimension("profile",  
+            Dimension featureDimension = ncCF.addDimension(rootGroup, olcCdmName, nFeatures);
+            Dimension profileDimension = ncCF.addDimension(rootGroup, "profile",  
                 nodcMode? maxProfilesPerFeature : nProfiles);
-            Dimension obsDimension     = ncCF.addDimension("obs",
+            Dimension obsDimension     = ncCF.addDimension(rootGroup, "obs",
                 nodcMode? maxObsPerProfile : tTableNRows);
 
             //add the feature variables, then profile variables, then obs variables
+            Variable newVars[] = new Variable[ncNCols]; 
+            Variable indexVar = null;
+            Variable rowSizeVar = null;
             for (int opo = 0; opo < 3; opo++) {  //0=feature 1=profile 2=obs
                 for (int col = 0; col < ncNCols; col++) {
                     if (( isFeatureVar[col] && opo == 0) ||   //is var in currently desired group?
@@ -4981,31 +5014,31 @@ public abstract class EDDTable extends EDD {
                     }
                     String tColName = ncColNames[col];
                     //String2.log(" opo=" + opo + " col=" + col + " name=" + tColName);
-                    ArrayList tDims = new ArrayList();
+                    ArrayList<Dimension> tDimsList = new ArrayList();
                     if (nodcMode) {
                         if (isFeatureVar[col]) {
                             //featureVar[feature]     
-                            tDims.add(featureDimension);
+                            tDimsList.add(featureDimension);
                         } else if (isProfileVar[col]) {  
                             //profileVar[feature][profile]
-                            tDims.add(featureDimension);
-                            tDims.add(profileDimension);
+                            tDimsList.add(featureDimension);
+                            tDimsList.add(profileDimension);
                         } else {  
                             //obsVar[feature][profile][obs]
-                            tDims.add(featureDimension);
-                            tDims.add(profileDimension);
-                            tDims.add(obsDimension);
+                            tDimsList.add(featureDimension);
+                            tDimsList.add(profileDimension);
+                            tDimsList.add(obsDimension);
                         }
                     } else {
                         if (isFeatureVar[col]) {  
                             //featureVar[feature]     
-                            tDims.add(featureDimension);
+                            tDimsList.add(featureDimension);
                         } else if (isProfileVar[col]) {
                             //profileVar[profile]
-                            tDims.add(profileDimension);
+                            tDimsList.add(profileDimension);
                         } else {
                             //obsVar[obs]
-                            tDims.add(obsDimension);
+                            tDimsList.add(obsDimension);
                         }
                     }
                     Class type = colEdv[col].destinationDataTypeClass();
@@ -5019,9 +5052,11 @@ public abstract class EDDTable extends EDD {
                     }
 
                     if (type == String.class) {
-                        ncCF.addStringVariable(tColName, tDims, maxStringLength);
+                        newVars[col] = ncCF.addStringVariable(rootGroup, tColName, 
+                            tDimsList, maxStringLength);
                     } else {
-                        ncCF.addVariable(tColName, DataType.getType(type), tDims); 
+                        newVars[col] = ncCF.addVariable(rootGroup, tColName, 
+                            DataType.getType(type), tDimsList); 
                     }
 
                     //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
@@ -5038,10 +5073,12 @@ public abstract class EDDTable extends EDD {
 
                 //at end of profile vars, add 'feature'Index and rowSize variables
                 if (!nodcMode && opo == 1) {
-                    ncCF.addVariable(indexName, DataType.getType(int.class), 
-                        new Dimension[]{profileDimension}); //yes, profile, since there is one for each profile
-                    ncCF.addVariable(rowSizeName, DataType.getType(int.class), 
-                        new Dimension[]{profileDimension}); 
+                    indexVar = ncCF.addVariable(rootGroup, indexName, 
+                        DataType.getType(int.class), 
+                        Arrays.asList(profileDimension)); //yes, profile, since there is one for each profile
+                    rowSizeVar = ncCF.addVariable(rootGroup, rowSizeName, 
+                        DataType.getType(int.class), 
+                        Arrays.asList(profileDimension)); 
                     //String2.log("  featureIndex and rowSize variable added");
                 }
             }
@@ -5055,7 +5092,7 @@ public abstract class EDDTable extends EDD {
             cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
-            NcHelper.setAttributes(ncCF, "NC_GLOBAL", cdmGlobalAttributes);
+            NcHelper.setAttributes(rootGroup, cdmGlobalAttributes);
 
             //set the variable attributes
             //section 9.1.1 says "The coordinates attribute must identify the variables 
@@ -5084,18 +5121,18 @@ public abstract class EDDTable extends EDD {
                 Attributes atts = twawm.columnAttributes(col);
                 if (!isFeatureVar[col] && !isProfileVar[col] && !isCoordinateVar[col])
                     atts.add("coordinates", coordinates);
-                NcHelper.setAttributes(ncCF, ncColNames[col], atts);
+                NcHelper.setAttributes(newVars[col], atts);
             }
 
             if (!nodcMode) {
                 //set the index attributes
-                NcHelper.setAttributes(ncCF, indexName, new Attributes()
+                NcHelper.setAttributes(indexVar, new Attributes()
                     .add("ioos_category", "Identifier")
                     .add("long_name", "The " + olcCdmName + " to which this profile is associated.")
                     .add("instance_dimension", olcCdmName));
 
                 //set the rowSize attributes
-                NcHelper.setAttributes(ncCF, rowSizeName, new Attributes()
+                NcHelper.setAttributes(rowSizeVar, new Attributes()
                     .add("ioos_category", "Identifier")
                     .add("long_name", "Number of Observations for this Profile")
                     .add("sample_dimension", "obs"));
@@ -5121,8 +5158,7 @@ public abstract class EDDTable extends EDD {
                 if (isFeatureVar[col]) {
                     //write featureVar[feature]
                     pa.justKeep(featureKeep);
-                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
-                        twawm.columnMaxStringLength(col));
+                    NcHelper.write(ncCF, newVars[col], 0, pa);
 
                 } else if (isProfileVar[col]) {
                     pa.justKeep(profileKeep);
@@ -5139,7 +5175,7 @@ public abstract class EDDTable extends EDD {
                             firstRow = lastRow + 1;
                             lastRow = firstRow + tnProfiles - 1;
                             PrimitiveArray tpa = pa.subset(firstRow, 1, lastRow);                        
-                            NcHelper.write(ncCF, ncColNames[col], 
+                            NcHelper.write(ncCF, newVars[col], 
                                 origin, new int[]{1, tnProfiles}, tpa);   
                             
                             //write fill values
@@ -5153,13 +5189,13 @@ public abstract class EDDTable extends EDD {
                                     tpa.addNStrings(nmv, "");
                                 else
                                     tpa.addNDoubles(nmv, tSafeMV);
-                                NcHelper.write(ncCF, ncColNames[col], 
+                                NcHelper.write(ncCF, newVars[col], 
                                     origin, new int[]{1, nmv}, tpa);         
                             }
                         }
                     } else {
                         //write ragged array var[profile]
-                        NcHelper.write(ncCF, ncColNames[col], 
+                        NcHelper.write(ncCF, newVars[col], 
                             new int[]{0}, new int[]{pa.size()}, pa);         
                     }
 
@@ -5176,7 +5212,7 @@ public abstract class EDDTable extends EDD {
                         origin[0] = feature;
                         for (int profile = 0; profile < maxProfilesPerFeature; profile++) { 
                             origin[1] = profile;
-                            NcHelper.write(ncCF, ncColNames[col],
+                            NcHelper.write(ncCF, newVars[col],
                                 origin, shape, subsetPa);
                         }
                     }
@@ -5191,20 +5227,19 @@ public abstract class EDDTable extends EDD {
                         int stopRow  = firstRow + tNRows - 1;
                         subsetPa = pa.subset(firstRow, 1, stopRow);
                         shape[2] = tNRows;
-                        NcHelper.write(ncCF, ncColNames[col], origin, shape, subsetPa);         
+                        NcHelper.write(ncCF, newVars[col], origin, shape, subsetPa);         
                     }
 
                 } else {
                     //write obsVar[obs] as Contiguous Ragged Array
-                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
-                        twawm.columnMaxStringLength(col));
+                    NcHelper.write(ncCF, newVars[col], 0, pa);
                 }
             }
 
             if (!nodcMode) {
                 //write the featureIndex and rowSize values
-                NcHelper.write(ncCF, indexName,   0, featureIndex, 0); 
-                NcHelper.write(ncCF, rowSizeName, 0, nObsPerProfile, 0); 
+                NcHelper.write(ncCF, indexVar,   0, featureIndex); 
+                NcHelper.write(ncCF, rowSizeVar, 0, nObsPerProfile); 
             }
 
             //if close throws Throwable, it is trouble
@@ -6240,7 +6275,7 @@ public abstract class EDDTable extends EDD {
             "\n" +
 
             //ArcGIS
-            "<p><b><a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS" +
+            "<p><b><a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/index.html\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "  <a rel=\"help\" href=\"http://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">.esriCsv" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
@@ -6336,7 +6371,7 @@ public abstract class EDDTable extends EDD {
             "      <br>library or toolkit, it should be easy to process all other tables from ERDDAP in a similar way.\n" +
             "\n" +
             //jsonp
-            "  <p><b><a rel=\"help\" href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP" +
+            "  <p><b><a rel=\"help\" href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    (from <a href=\"http://www.json.org/\">.json" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
@@ -6672,16 +6707,16 @@ public abstract class EDDTable extends EDD {
             "<br>ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
             "<br>On Linux or Mac OS X, curl is probably already installed as /usr/bin/curl.\n" +
             "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
-            "  <a rel=\"bookmark\" href=\"http://curl.haxx.se/download.html\">download curl" +
+            "  <a rel=\"bookmark\" href=\"https://curl.haxx.se/download.html\">download curl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "<br>and install it.  To get to a command line in Windows, click on \"Start\" and type\n" + 
             "<br>\"cmd\" into the search textfield.\n" +
             "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me in Windows 7.)\n" +
             "<br><b>Please be kind to other ERDDAP users: run just one script or curl command at a time.</b>\n" +
             "<br>Instructions for using curl are on the \n" +
-                "<a rel=\"help\" href=\"http://curl.haxx.se/download.html\">curl man page" +
+                "<a rel=\"help\" href=\"https://curl.haxx.se/download.html\">curl man page" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and in this\n" +
-                "<a rel=\"help\" href=\"http://curl.haxx.se/docs/httpscripting.html\">curl tutorial" +
+                "<a rel=\"help\" href=\"https://curl.haxx.se/docs/httpscripting.html\">curl tutorial" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "<br>But here is a quick tutorial related to using curl with ERDDAP:\n" +
             "<ul>\n" +
@@ -6814,7 +6849,7 @@ public abstract class EDDTable extends EDD {
             "        <br>But if your computer program or script generates the URLs, it probably needs to do the\n" +
             "        <br>percent encoding itself.  If so, you need to encode all characters other than A-Za-z0-9_-!.~'()*\n" +
             "        <br>in all query values. Programming languages have tools to do this (for example, see Java's\n" +
-                    "<br><a rel=\"help\" href=\"http://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+                    "<br><a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a> and JavaScript's\n" +
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
@@ -6853,12 +6888,12 @@ public abstract class EDDTable extends EDD {
             "        </ul>\n" +
             "      <li><a name=\"regularExpression\"><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
             "          tests if the value from the variable on the left matches the \n" +
-            "         <br><a rel=\"help\" href=\"http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html\">regular expression" +
+            "         <br><a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\">regular expression" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "         on the right.\n" +
             "        <ul>\n" +
             "        <li>tabledap uses the same \n" +
-            "             <a rel=\"help\" href=\"http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html\">regular expression syntax" +
+            "             <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\">regular expression syntax" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "             (<a rel=\"help\" href=\"http://www.vogella.de/articles/JavaRegularExpressions/article.html\">tutorial" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>) as is used by Java.\n" +
@@ -15198,21 +15233,21 @@ if (project != unknown)
 //"              <pubplace>Boulder, Colorado</pubplace>\n" +
 //"              <publish>DOC/NOAA/NESDIS/NGDC &gt; National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce</publish>\n" +
 //"            </pubinfo>\n" +
-//"            <onlink>http://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</onlink>\n" +
+//"            <onlink>https://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</onlink>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</linkage>\n" +
 //"              <name>NOAA Tsunami Inundation Gridding Project</name>\n" +
 //"              <description>Project web page.</description>\n" +
 //"              <function>information</function>\n" +
 //"            </CI_OnlineResource>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/dem/squareCellGrid/map</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/dem/squareCellGrid/map</linkage>\n" +
 //"              <name>Map Interface</name>\n" +
 //"              <description>Graphic geo-spatial search tool for locating completed and planned NOAA tsunami inundation DEMs.</description>\n" +
 //"              <function>search</function>\n" +
 //"            </CI_OnlineResource>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/dem/squareCellGrid/search</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/dem/squareCellGrid/search</linkage>\n" +
 //"              <name>DEM text search tool</name>\n" +
 //"              <description>Text search tool for locating completed and planned NOAA tsunami inundation DEMs.</description>\n" +
 //"              <function>search</function>\n" +
@@ -15294,9 +15329,9 @@ writer.write(
 "              </publish_cntinfo>\n" +
 "            </pubinfo>\n" +
 "            <othercit>29 pages</othercit>\n" +
-"            <onlink>http://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</onlink>\n" +
+"            <onlink>https://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</onlink>\n" +
 "            <CI_OnlineResource>\n" +
-"              <linkage>http://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</linkage>\n" +
+"              <linkage>https://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</linkage>\n" +
 "              <name>Digital Elevation Model of Adak, Alaska: Procedures, Data Sources and Analysis</name>\n" +
 "              <description>Report describing the development of the Adak, Alaska DEM</description>\n" +
 "              <function>download</function>\n" +
@@ -15431,7 +15466,7 @@ writer.write(
 //"        <cntfax>303-497-6513</cntfax>\n" +
 "        <cntemail>" + XML.encodeAsXML(conEmail) + "</cntemail>\n" +
 //"        <hours>9am-5pm, M-F, Mountain Time</hours>\n" +
-//"        <cntinst>Contact NGDC&apos;s Marine Geology and Geophysics Division. http://www.ngdc.noaa.gov/mgg/aboutmgg/contacts.html</cntinst>\n" +
+//"        <cntinst>Contact NGDC&apos;s Marine Geology and Geophysics Division. https://www.ngdc.noaa.gov/mgg/aboutmgg/contacts.html</cntinst>\n" +
 "      </cntinfo>\n" +
 "    </ptcontac>\n");
 
@@ -15510,9 +15545,9 @@ writer.write(
 //"            </origin_cntinfo>\n" +
 //"            <pubdate>2008</pubdate>\n" +
 //"            <title>NOS Hydrographic Surveys</title>\n" +
-//"            <onlink>http://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</onlink>\n" +
+//"            <onlink>https://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</onlink>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</linkage>\n" +
 //"              <name>NOS Hydrographic Survey Database</name>\n" +
 //"              <description>Digital database of NOS hydrographic surveys that date back to the late 19th century.</description>\n" +
 //"              <function>download</function>\n" +
@@ -15890,29 +15925,29 @@ writer.write(
 "  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n" +
 "  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n" +
 "  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n" +
-"  xsi:schemaLocation=\"http://www.isotc211.org/2005/gmi http://www.ngdc.noaa.gov/metadata/published/xsd/schema.xsd\">\n" +
+"  xsi:schemaLocation=\"http://www.isotc211.org/2005/gmi https://www.ngdc.noaa.gov/metadata/published/xsd/schema.xsd\">\n" +
 
 "  <gmd:fileIdentifier>\n" +
 "    <gco:CharacterString>" + datasetID() + "</gco:CharacterString>\n" +
 "  </gmd:fileIdentifier>\n" +
 "  <gmd:language>\n" +
 "    <gmd:LanguageCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" " +
        "codeListValue=\"eng\">eng</gmd:LanguageCode>\n" +
 "  </gmd:language>\n" +
 "  <gmd:characterSet>\n" +
 "    <gmd:MD_CharacterSetCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" " +
        "codeListValue=\"UTF8\">UTF8</gmd:MD_CharacterSetCode>\n" +
 "  </gmd:characterSet>\n" +
 "  <gmd:hierarchyLevel>\n" +
 "    <gmd:MD_ScopeCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
        "codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n" +
 "  </gmd:hierarchyLevel>\n" +
 "  <gmd:hierarchyLevel>\n" +
 "    <gmd:MD_ScopeCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
        "codeListValue=\"service\">service</gmd:MD_ScopeCode>\n" +
 "  </gmd:hierarchyLevel>\n");
         
@@ -15961,7 +15996,7 @@ writer.write(
 "        </gmd:CI_Contact>\n" +
 "      </gmd:contactInfo>\n" +
 "      <gmd:role>\n" +
-"        <gmd:CI_RoleCode codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+"        <gmd:CI_RoleCode codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
          "codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n" +
 "      </gmd:role>\n" +
 "    </gmd:CI_ResponsibleParty>\n" +
@@ -15993,7 +16028,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"column\">column</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -16004,7 +16039,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"row\">row</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -16017,7 +16052,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -16030,7 +16065,7 @@ writer.write(
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
@@ -16087,7 +16122,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "              </gmd:date>\n" +
 "              <gmd:dateType>\n" +
 "                <gmd:CI_DateTypeCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
                    "codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n" +
 "              </gmd:dateType>\n" +
 "            </gmd:CI_Date>\n" +
@@ -16101,7 +16136,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "              </gmd:date>\n" +
 "              <gmd:dateType>\n" +
 "                <gmd:CI_DateTypeCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
                    "codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n" +
 "              </gmd:dateType>\n" +
 "            </gmd:CI_Date>\n" +
@@ -16177,7 +16212,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "                      </gmd:description>\n" +
 "                      <gmd:function>\n" +
 "                        <gmd:CI_OnLineFunctionCode " +
-                           "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
+                           "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
                            "codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n" +
 "                      </gmd:function>\n" +
 "                    </gmd:CI_OnlineResource>\n" +
@@ -16186,7 +16221,7 @@ for (int ii = 0; ii <= iiSubset; ii++) {
 "              </gmd:contactInfo>\n" +
 "              <gmd:role>\n" +
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                    "codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n" +
 "              </gmd:role>\n" +
 "            </gmd:CI_ResponsibleParty>\n" +
@@ -16221,7 +16256,7 @@ if (contributorName != null || contributorRole != null)
 
 "              <gmd:role>\n" +  
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
   //contributor isn't in the codeList. I asked that it be added. 
   // ncISO used something *not* in the list.  Isn't this a controlled vocabulary?
                    "codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n" +
@@ -16299,7 +16334,7 @@ if (ii == iiDataIdentification) {
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
+                       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
                        "codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -16308,7 +16343,7 @@ if (ii == iiDataIdentification) {
 "          </gmd:contactInfo>\n" +
 "          <gmd:role>\n" +
 "            <gmd:CI_RoleCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                "codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n" +
 "          </gmd:role>\n" +
 "        </gmd:CI_ResponsibleParty>\n" +
@@ -16350,7 +16385,7 @@ if (ii == iiDataIdentification) {
             writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" +
@@ -16373,7 +16408,7 @@ if (ii == iiDataIdentification) {
             writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName>\n" +
@@ -16399,7 +16434,7 @@ if (ii == iiDataIdentification) {
 "          </gmd:keyword>\n" +
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"project\">project</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" +
@@ -16419,7 +16454,7 @@ if (ii == iiDataIdentification) {
         writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName>\n" +
@@ -16462,12 +16497,12 @@ if (ii == iiDataIdentification) {
 "          </gmd:aggregateDataSetName>\n" +
 "          <gmd:associationType>\n" +
 "            <gmd:DS_AssociationTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
                "codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n" +
 "          </gmd:associationType>\n" +
 "          <gmd:initiativeType>\n" +
 "            <gmd:DS_InitiativeTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
                "codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n" +
 "          </gmd:initiativeType>\n" +
 "        </gmd:MD_AggregateInformation>\n" +
@@ -16495,12 +16530,12 @@ if (!CDM_OTHER.equals(cdmDataType())) {
 "          </gmd:aggregateDataSetIdentifier>\n" +
 "          <gmd:associationType>\n" +
 "            <gmd:DS_AssociationTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
                "codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n" +
 "          </gmd:associationType>\n" +
 "          <gmd:initiativeType>\n" +
 "            <gmd:DS_InitiativeTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
                "codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n" +
 "          </gmd:initiativeType>\n" +
 "        </gmd:MD_AggregateInformation>\n" +
@@ -16828,7 +16863,7 @@ writer.write(
        //from http://www.schemacentral.com/sc/niem21/t-gco_CodeListValue_Type.html       
 "      <gmd:contentType>\n" +
 "        <gmd:MD_CoverageContentTypeCode " +
-           "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
+           "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
            "codeListValue=\"physicalMeasurement\">physicalMeasurement</gmd:MD_CoverageContentTypeCode>\n" +
 "      </gmd:contentType>\n");
 
@@ -16923,7 +16958,7 @@ writer.write(
 "              </gmd:contactInfo>\n" +
 "              <gmd:role>\n" +   //From list, "distributor" seems best here.
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                    "codeListValue=\"distributor\">distributor</gmd:CI_RoleCode>\n" +
 "              </gmd:role>\n" +
 "            </gmd:CI_ResponsibleParty>\n" +
@@ -17014,7 +17049,7 @@ if (history != null)
 "        <gmd:DQ_Scope>\n" +
 "          <gmd:level>\n" +
 "            <gmd:MD_ScopeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
                "codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n" +
 "          </gmd:level>\n" +
 "        </gmd:DQ_Scope>\n" +

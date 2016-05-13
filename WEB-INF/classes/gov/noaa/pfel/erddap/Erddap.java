@@ -466,7 +466,9 @@ public class Erddap extends HttpServlet {
                     EDStatic.questionQuery(userQuery)));
 
             //refuse request? e.g., to fend of a Denial of Service attack or an overzealous web robot
-            int periodPo = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below
+            int periodPo = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below for IP v4 address
+            if (periodPo < 0)
+                periodPo = ipAddress.lastIndexOf(':'); //to make #:#:#:#:#:#:#:* test below for IP v6 address
             if (EDStatic.requestBlacklist != null &&
                 (EDStatic.requestBlacklist.contains(ipAddress) ||
                  (periodPo >= 0 && EDStatic.requestBlacklist.contains(ipAddress.substring(0, periodPo+1) + "*")))) {
@@ -610,23 +612,9 @@ public class Erddap extends HttpServlet {
                 //Don't email common, unimportant exceptions   e.g., ClientAbortException
                 //Are there others I don't need to see?
                 int slowdown = 0;
-                if (EDStatic.isClientAbortException(t)) {
+                if (EDStatic.isClientAbortException(t)) 
                     String2.log("#" + requestNumber + " Error: ClientAbortException");
-
-                } else {
-                    String message = MustBe.throwableToString(t); //takes significant time
-                    slowdown = EDStatic.slowDownTroubleMillis;
-
-                    if (message.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) {
-                        String2.log("#" + requestNumber + " " + message);
-
-                    } else {
-                        String2.log("#" + requestNumber + " Error for url=" + 
-                            request.getRequestURI() + 
-                                EDStatic.questionQuery(request.getQueryString()) + //not decoded
-                            "\nerror=" + message);
-                    }
-                }
+                else slowdown = EDStatic.slowDownTroubleMillis;
 
                 //"failure" includes clientAbort and there is no data
                 long responseTime = System.currentTimeMillis() - doGetTime;
@@ -636,7 +624,7 @@ public class Erddap extends HttpServlet {
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionLoadDatasets);
                 String2.distribute(responseTime, EDStatic.failureTimesDistribution24);
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);
-                if (verbose) String2.log("}}}}#" + requestNumber + " FAILURE. TIME=" + responseTime + "\n");
+                if (verbose) String2.log("#" + requestNumber + " FAILURE. TIME=" + responseTime);
                 if (slowdown > 0)
                     Math2.sleep(slowdown);
 
@@ -3490,7 +3478,7 @@ writer.write(
                 "as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
                 "Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
                 "(ask a programmer for help). Programming languages have tools to do this (for example, see Java's\n" +
-                "<a rel=\"help\" href=\"http://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+                "<a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and JavaScript's\n" +
                 "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>) and there are\n" +
@@ -3560,7 +3548,7 @@ writer.write(
                 //jsonp
                 "<p><a name=\"jsonp\">jsonp</a>\n" +
                 "<br>Requests for .json files may now include an optional" +
-                "  <a href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">jsonp" +
+                "  <a href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">jsonp" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> request by\n" +
                 "adding \"&amp;.jsonp=<i>functionName</i>\" to the end of the query.  Basically, this tells\n" +
                 "ERDDAP to add \"<i>functionName</i>(\" to the beginning of the response and \")\" to the\n" +
@@ -4320,8 +4308,8 @@ writer.write(
             //deal with the DAP error
 
             //catch errors after the response has begun
-            if (neededToSendErrorCode(request, response, t))
-                return;
+            if (response.isCommitted()) 
+                throw t; //rethrown exception (will be handled in doGet try/catch)
 
             //display dap error message in a web page
             boolean isDapType = 
@@ -4350,6 +4338,7 @@ writer.write(
                         String2.replaceAll(error, "\"", "\\\"") + //see DAP appendix A, quoted-string    
                         "\" ;\n" +
                     "} ; "); //thredds has final ";"; spec doesn't
+                String2.log(String2.ERROR + " message sent to user: " + error);
 
                 //essential
                 writer.flush();
@@ -5203,9 +5192,10 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             //deal with SOS error
+
             //catch errors after the response has begun
-            if (neededToSendErrorCode(request, response, t))
-                return;
+            if (response.isCommitted()) 
+                throw t; //rethrown exception (will be handled in doGet try/catch)
 
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "ExceptionReport", //fileName is not used
@@ -5249,6 +5239,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "    <ExceptionText>" + XML.encodeAsHTML(error) + "</ExceptionText>\n" +
                 "  </Exception>\n" +
                 "</ExceptionReport>\n");
+            String2.log(String2.ERROR + " message sent to user: " + error);
 
             //essential
             writer.flush();
@@ -5307,7 +5298,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     /**
      * Process a WCS request.
      * This WCS service is intended to simulate the THREDDS WCS service (version 1.0.0).
-     * See http://www.unidata.ucar.edu/projects/THREDDS/tech/reference/WCS.html.
+     * See http://www.unidata.ucar.edu/software/thredds/current/tds/reference/WCS.html
      * O&M document(?) says that query names are case insensitive, but query values are case sensitive.
      * Background info: http://www.opengeospatial.org/projects/groups/sensorweb     
      *
@@ -5500,9 +5491,10 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             //deal with the WCS error
+
             //catch errors after the response has begun
-            if (neededToSendErrorCode(request, response, t))
-                return;
+            if (response.isCommitted()) 
+                throw t; //rethrown exception (will be handled in doGet try/catch)
 
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "error", //fileName is not used
@@ -5523,6 +5515,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 error + "\n" +
                 "  </ServiceException>\n" +
                 "</ServiceExceptionReport>\n");
+            String2.log(String2.ERROR + " message sent to user: " + error);
 
             //essential
             writer.flush();
@@ -5770,8 +5763,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             String2.log("  doWms caught Exception:\n" + MustBe.throwableToString(t));
 
             //catch errors after the response has begun
-            if (neededToSendErrorCode(request, response, t))
-                return;
+            if (response.isCommitted()) 
+                throw t; //rethrown exception (will be handled in doGet try/catch)
 
             //send out WMS XML error
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
@@ -5792,6 +5785,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 //security: encodeAsXml important to prevent xml injection
 ">" + XML.encodeAsXML(error) + "</ServiceException>\n" + 
 "</ServiceExceptionReport>\n");
+            String2.log(String2.ERROR + " message sent to user: " + error);
 
             //essential
             writer.flush();
@@ -5866,7 +5860,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<ol>\n" +
                 "<li> <b>In theory, anyone can download, install, and use WMS client software.</b>\n" +
                 "  <br>Some clients are: \n" +
-                "    <a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/\">ArcGIS" +
+                "    <a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
                 "    <a rel=\"bookmark\" href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>, and\n" +
@@ -5887,7 +5881,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  <br>specification and which is utilized by most datasets in ERDDAP's WMS servers.\n" +
                 "  <br>You may find that using a dataset's " + makeAGraphRef + 
                 "     form and selecting the .kml file type\n" +
-                "  <br>(an OGC standard) to load images into <a rel=\"bookmark\" href=\"http://earth.google.com/\">Google Earth" +
+                "  <br>(an OGC standard) to load images into <a rel=\"bookmark\" href=\"https://www.google.com/earth/\">Google Earth" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> provides\n" +            
                 "    a good (non-WMS) map client.\n" +
                 makeAGraphListRef +
@@ -6745,8 +6739,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //exceptions in this block fall to error handling in doWms
             
             //catch errors after the response has begun
-            if (neededToSendErrorCode(request, response, t))
-                return;
+            if (response.isCommitted()) 
+                throw t; //rethrown exception (will be handled in doGet try/catch)
 
             if (exceptions == null)
                 exceptions = "XML";
@@ -6761,8 +6755,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
                 //since handled here 
                 String msg = MustBe.getShortErrorMessage(t);
-                String2.log("  doWms caught Exception (sending " + exceptions + "):\n" + 
-                    MustBe.throwableToString(t)); //log full message with stack trace
+                String2.log(String2.ERROR + " message sent to user in image: " + msg);
 
                 //make image
                 BufferedImage bufferedImage = new BufferedImage(width, height, 
@@ -7365,8 +7358,8 @@ writer.write(
 "          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n" +
 "            xlink:type=\"simple\" \n" +
 "            xlink:href=\"" + 
-    (layeri < 2? "http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html" : 
-                "http://gmt.soest.hawaii.edu/") + 
+    (layeri < 2? "https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html" : 
+                "https://gmt.soest.hawaii.edu/") + 
     "\" />\n" +
          //LogoURL
 "        </Attribution>\n" +
@@ -7765,7 +7758,7 @@ writer.write(
                 "<ol>\n" +
                 "<li> <b>In theory, anyone can download, install, and use WMS client software.</b>\n" +
                 "  <br>Some clients are: \n" +
-                "    <a href=\"http://www.esri.com/software/arcgis/\">ArcGIS" +
+                "    <a href=\"https://www.esri.com/software/arcgis/\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
                 "    <a href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>, and\n" +
@@ -7785,7 +7778,7 @@ writer.write(
                 "  <br>You may find that using\n" +
                 makeAGraphRef + "\n" +
                 "    and selecting the .kml file type (an OGC standard)\n" +
-                "  <br>to load images into <a href=\"http://earth.google.com/\">Google Earth" +
+                "  <br>to load images into <a href=\"https://www.google.com/earth/\">Google Earth" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> provides\n" +            
                 "     a good (non-WMS) map client.\n" +
                 makeAGraphListRef +
@@ -8115,12 +8108,12 @@ writer.write(
 
     /**
      * Deal with /rest or /rest/... via ESRI GeoServices REST Specification v1.0.
-     * http://www.esri.com/library/whitepapers/pdfs/geoservices-rest-spec.pdf 
+     * https://www.esri.com/library/whitepapers/pdfs/geoservices-rest-spec.pdf 
      * A sample server is http://sampleserver3.arcgisonline.com/ArcGIS/rest/services
      * Only call this method if protocol="rest".
      * 
      * <p>When I checked on 2013-06-12, 
-     * http://www.esri.com/industries/landing-pages/geoservices/geoservices states
+     * https://www.esri.com/industries/landing-pages/geoservices/geoservices states
      * "Use of the GeoServices REST Specification is subject to the current Open Web Foundation Agreement."
      * http://www.openwebfoundation.org/announcements/introducingtheopenwebfoundationagreement states
      * "The Open Web Foundation Agreement itself establishes the copyright and 
@@ -9791,9 +9784,10 @@ breadCrumbs + endBreadCrumbs +
             //deal with search error (or just need empty .html searchForm)
             OutputStream out = null;
             Writer writer = null;
+
             //catch errors after the response has begun
-            if (neededToSendErrorCode(request, response, t))
-                return;
+            if (response.isCommitted()) 
+                throw t; //rethrown exception (will be handled in doGet try/catch)
 
             if (String2.indexOf(plainFileTypes, fileTypeName) >= 0) 
                 //for plainFileTypes, rethrow the error
@@ -9811,6 +9805,7 @@ breadCrumbs + endBreadCrumbs +
                 if (error.indexOf("show index") < 0) 
                     writeErrorHtml(writer, request, error);
                 writer.write(getSearchFormHtml(request, loggedInAs, "<h2>", "</h2>", searchFor));
+                String2.log(String2.ERROR + " message sent to user: " + error);
 
                 //writer.write(
                 //    "<p>&nbsp;<hr>\n" +
@@ -14087,33 +14082,6 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         */
     }
 
-
-    /**
-     * This is the first step in handling an exception/error.
-     * If this returns true or throws Throwable, that is all that can be done: caller should call return.
-     * If this returns false, the caller can/should handle the exception (response.isCommitted() is false);
-     *
-     * @returns false if response !isCommitted() and caller needs to handle the error 
-     *   (e.g., send the desired type of error message)
-     *   (this logs the error to String2.log).
-     *   This currently doesn't return true.
-     * @throw Throwable if response isCommitted(), t was rethrown.
-     */
-    public static boolean neededToSendErrorCode(HttpServletRequest request, 
-        HttpServletResponse response, Throwable t) throws Throwable {
-            
-        if (response.isCommitted()) {
-            //rethrow exception (will be handled in doGet try/catch)
-            throw t;
-        }
-
-        //just log it
-        String message = String2.ERROR + " for " + request.getRequestURI() +  
-            EDStatic.questionQuery(request.getQueryString()) + //not decoded
-            "\n" + MustBe.throwableToString(t); //log the details
-        String2.log(message);
-        return false;
-    }
 
     /**
      * This calls response.sendError(500 INTERNAL_SERVER_ERROR, MustBe.throwableToString(t)).

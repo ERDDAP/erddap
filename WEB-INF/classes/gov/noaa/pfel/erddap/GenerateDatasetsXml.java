@@ -164,6 +164,7 @@ public class GenerateDatasetsXml {
             "EDDTableFromErddap",
             "EDDTableFromFileNames",
             "EDDTableFromIoosSOS",
+            "EDDTableFromMultidimNcFiles",
             "EDDTableFromNcFiles",
             "EDDTableFromNcCFFiles",
             "EDDTableFromOBIS",
@@ -431,6 +432,28 @@ public class GenerateDatasetsXml {
 
 
                 //INACTIVE: "EDDTableFromHyraxFiles"
+
+                } else if (eddType.equals("EDDTableFromMultidimNcFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
+                    s4  = get(args,  4,  s4, "DimensionsCSV (or \"\" for default)");                       
+                    s5  = get(args,  5,  s5, reloadEveryNMinutesMessage);
+                    s6  = get(args,  6,  s6, "PreExtractRegex");
+                    s7  = get(args,  7,  s7, "PostExtractRegex");
+                    s8  = get(args,  8,  s8, "ExtractRegex");
+                    s9  = get(args,  9,  s9, "Column name for extract");
+                    s10 = get(args, 10, s10, "Remove missing value rows (true|false)"); //siblings: Sorted column source name");
+                    s11 = get(args, 11, s11, "Sort files by sourceName");
+                    s12 = get(args, 12, s12, "infoUrl");
+                    s13 = get(args, 13, s13, "institution");
+                    s14 = get(args, 14, s14, "summary");
+                    s15 = get(args, 15, s15, "title");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromMultidimNcFiles.generateDatasetsXml(
+                        s1, s2, s3, s4, String2.parseInt(s5, 
+                        EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        s6, s7, s8, s9, String2.parseBoolean(s10), s11, s12, s13, s14, s15, null));
 
                 } else if (eddType.equals("EDDTableFromNcFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");

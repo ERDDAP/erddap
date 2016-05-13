@@ -64,7 +64,7 @@ public class WatchDirectory {
      * @param tWatchDir the starting directory, with \\ or /, with or without trailing slash.  
      *    The results will contain dirs with matching slashes.
      * @param tRecursive
-     * @param tPathRegex
+     * @param tPathRegex  null and "" are treated like .* (which matches all)
      * @param events some combination of CREATE, DELETE, MODIFY, e.g.,
      *   new WatchEvent.Kind[]{CREATE, DELETE, MODIFY}
      *   OVERFLOW events are always automatically included -- don't specify them here.
@@ -75,9 +75,7 @@ public class WatchDirectory {
 
         watchDir = File2.addSlash(tWatchDir);
         recursive = tRecursive;
-        pathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
-        char toSlash = watchDir.indexOf('\\') >= 0? '\\' : '/';
-        char fromSlash = toSlash == '/'? '\\' : '/';        
+        pathRegex = tPathRegex;
 
         Path watchPath = Paths.get(watchDir);
         if (watchPath == null) 
@@ -93,17 +91,15 @@ public class WatchDirectory {
             throw new RuntimeException(
                 "The OS doesn't support WatchService for that file system.");
         if (recursive) {
-            StringArray alps = FileVisitorSubdir.oneStep(watchDir, pathRegex); 
+            StringArray alps = FileVisitorSubdir.oneStep(watchDir, pathRegex); //will have matching slashes and trailing slashes
             int n = alps.size();
             for (int i = 0; i < n; i++) {
                 WatchKey key = Paths.get(alps.get(i)).register(watchService, events);
-                keyToDirMap.put(key, String2.canonical(File2.addSlash(
-                    String2.replaceAll(alps.get(i), fromSlash, toSlash))));
+                keyToDirMap.put(key, alps.get(i));
             }
         } else {
             WatchKey key = watchPath.register(watchService, events);
-            keyToDirMap.put(key, String2.canonical(File2.addSlash(
-                String2.replaceAll(watchDir, fromSlash, toSlash))));
+            keyToDirMap.put(key, String2.canonical(watchDir));
         }
     }
 
@@ -183,10 +179,10 @@ public class WatchDirectory {
         verbose = true;
         ArrayList<WatchEvent.Kind> eventKinds = new ArrayList();
         StringArray contexts  = new StringArray();
-        String sourceDir = "/erddapTest/";
-        String watchDir  = "/erddapTest/watchService/";
-        String subDir    = "/erddapTest/watchService/watchSub/";
-        String subDirNS  = "/erddapTest/watchService/watchSub";
+        String sourceDir = String2.unitTestDataDir;
+        String watchDir  = String2.unitTestDataDir + "watchService/";
+        String subDir    = String2.unitTestDataDir + "watchService/watchSub/";
+        String subDirNS  = String2.unitTestDataDir + "watchService/watchSub";
         String file1     = "columnarAscii.txt";
         String file2     = "csvAscii.txt";
         String results;

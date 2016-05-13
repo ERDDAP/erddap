@@ -1913,7 +1913,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                    
                                     //based on quirky example (but lots of useful info):
                                     //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
-                                    //kml docs: http://earth.google.com/kml/kml_tags.html
+                                    //kml docs: https://developers.google.com/kml/documentation/kmlreference
                                     String west  = String2.genEFormat10(grid.lon[0]);
                                     String east  = String2.genEFormat10(grid.lon[grid.lon.length - 1]);
                                     String south = String2.genEFormat10(grid.lat[0]);
@@ -2406,7 +2406,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //based on quirky example (but lots of useful info):
                                     //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
-                                    //kml docs: http://earth.google.com/kml/kml_tags.html
+                                    //kml docs: https://developers.google.com/kml/documentation/kmlreference
                                     String west  = String2.genEFormat10(grid.lon[0]);
                                     String east  = String2.genEFormat10(grid.lon[grid.lon.length - 1]);
                                     String south = String2.genEFormat10(grid.lat[0]);
@@ -2573,7 +2573,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
                                     //see copy in bob's c:/programs/kml/SE-LATEST-MONTH-STA.kml
-                                    //kml docs: http://earth.google.com/kml/kml_tags.html
+                                    //kml docs: https://developers.google.com/kml/documentation/kmlreference
                                     StringBuilder sb = new StringBuilder();
                                     //kml/description docs recommend \n<br />
                                     String averagesString = 
@@ -2884,7 +2884,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
                                     //see copy in bob's c:/programs/kml/SE-LATEST-MONTH-STA.kml
-                                    //kml docs: http://earth.google.com/kml/kml_tags.html
+                                    //kml docs: https://developers.google.com/kml/documentation/kmlreference
                                     StringBuilder sb = new StringBuilder();
                                     //kml/description docs recommend \n<br />
                                     String averagesString = TimePeriods.getNHours(standardTimePeriodValue) == 0? "" : 
@@ -3181,7 +3181,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     //based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
                                     //see copy in bob's c:/programs/kml/SE-LATEST-MONTH-STA.kml
-                                    //kml docs: http://earth.google.com/kml/kml_tags.html
+                                    //kml docs: https://developers.google.com/kml/documentation/kmlreference
                                     StringBuilder sb = new StringBuilder();
                                     //kml/description docs recommend \n<br />
                                     String nbrCourtesy = tableDataSet.courtesy().length() == 0? "" : 
@@ -3389,7 +3389,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                             } else if (extension.equals("FGDC")) { //always standardized here
                                 response.setContentType("text/xml"); //"text/xml"); //text/plain allows viewing in browser
                             } else if (extension.equals("GoogleEarth")) {
-                                //see http://earth.google.com/kml/kml_tut.html
+                                //see https://developers.google.com/kml/documentation/kml_tut
                                 //which lists both of these content types (in different places)
                                 //application/keyhole is used by the pydap example that works
                                 //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
@@ -3959,10 +3959,10 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "   <br>See <a href=\"" + oneOf.gridFileHelpUrl() + "\">a description of the grid data file types</a>.\n" +
                 "<li>Currently, the bathymetry data source is the \n" +
-                "      <a href=\"http://www.ngdc.noaa.gov/mgg/global/global.html\">ETOPO1</a>\n" +
+                "      <a href=\"https://www.ngdc.noaa.gov/mgg/global/global.html\">ETOPO1</a>\n" +
                 "      (Ice Surface, grid registered,\n" +
                 "    <br>binary, 2 byte int: etopo1_ice_g_i2.zip) data\n" +
-                "      <a href=\"http://www.ngdc.noaa.gov\">NOAA NGDC</a>." +
+                "      <a href=\"https://www.ngdc.noaa.gov\">NOAA NGDC</a>." +
                 "<li>Matlab users can download data from within Matlab. Here is a 3-line example,\n" +
                 "   <br>&nbsp;&nbsp;1) <tt>link='" + fullUrl + "?" +
                     "get=bathymetryData" + 

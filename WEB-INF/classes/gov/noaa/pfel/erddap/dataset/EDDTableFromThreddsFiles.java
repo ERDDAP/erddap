@@ -99,7 +99,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles) throws Throwable {
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows) throws Throwable {
 
         super("EDDTableFromThreddsFiles", tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, 
@@ -112,7 +112,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
     }
 
     /**
@@ -1812,7 +1813,7 @@ expected =
             Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
+                "\nThis often has small metadata changes."); 
         }
 
         //*** test getting dds for entire dataset
@@ -1920,6 +1921,15 @@ expected =
             "http://coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
             "WTEP_2011082.*\\.nc", true, "", //recursive, pathRegex
             fileDir, fileName, fileLastMod);
+        
+        //2016-05-11 sort order was different
+        //I think it doesn't matter for this class, but does for testing,
+        //so sort results.
+        Table table = new Table();
+        table.addColumn("dir", fileDir);
+        table.addColumn("name", fileName);
+        table.addColumn("lastMod", fileLastMod);
+        table.leftToRightSort(3);
 
         results = fileDir.toNewlineString();
         expected = 

@@ -3,7 +3,7 @@
 <html lang="en-US">
 <head>
 <title>ERDDAP - Heavy Loads, Grids, Clusters, Federations, and Cloud Computing</title>
-<link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
+<link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
 <link href="../images/erddap.css" rel="stylesheet" type="text/css">
 </head>
 
@@ -11,7 +11,7 @@
 <table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
   <tr> 
     <td align="center" style="width:100px;"> &nbsp;
-      <img src="http://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
+      <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
       </td> 
     <td align="left">
       <font color="#FFFFFF">
@@ -22,8 +22,8 @@
       <br>Brought to you by 
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
-      <a title="Southwest Fisheries Science Center" rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>  
-      <a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>  
+      <a title="Environmental Research Division" rel="bookmark" href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
       &nbsp; &nbsp;
       </font></td> 
   </tr> 
@@ -47,7 +47,7 @@
 and
 <a href="#cloudComputing">Cloud Computing</a></h1>
 
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/index.html">ERDDAP</a>
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/index.html">ERDDAP</a>
 is a web application and a web service that aggregates scientific data from 
 diverse local and
 remote sources and offers a simple, consistent way to download subsets of the 
@@ -78,9 +78,9 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     Internet connection, ERDDAP's responses will be constrained by how fast ERDDAP can get
     data from the data source. A solution is to copy the dataset onto ERDDAP's hard drive,
     perhaps with 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
   or
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
   <li>ERDDAP's server's bandwidth - Unless ERDDAP's server has a very high bandwidth Internet
     connection, ERDDAP's responses will be constrained by how fast ERDDAP can get data from
     the data sources and how fast ERDDAP can return data to the clients. The only solution
@@ -95,7 +95,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      On a 64-bit server, you can almost entirely avoid the problem but getting
      lots of memory.
      See the 
-     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#initialSetup">-Xmx and -Xms settings</a> 
+     <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#initialSetup">-Xmx and -Xms settings</a> 
      for ERDDAP/Tomcat.     
      An ERDDAP getting heavy usage on a computer with a 64-bit server
      with 8GB of memory and -Xmx set to 4000M is rarely, if ever, constrained by memory.
@@ -109,12 +109,12 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      or SSD drives (if it makes
      sense cost-wise). Another solution is to store different datasets
      on different drives, so that the cumulative hard drive bandwidth is much higher.
-  <li>Too many files in a <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory - 
+  <li>Too many files in a <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory - 
      ERDDAP caches all images, but only caches the 
      data for certain types of data requests. It is possible for the cache directory for a 
      dataset to have a large number of files temporarily. This will slow down requests to see 
      if a file is in the cache (really!). <tt>&lt;cacheMinutes&gt;</tt> in 
-       <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
+       <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
        lets you set how 
      long a file can be in the cache before it is deleted. Setting a smaller 
      number would minimize this problem.
@@ -137,10 +137,14 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   of ERDDAPs which allow the system to handle very heavy use (e.g., for a large data center). 
 
   <p>I'm using 
-    <a href="http://en.wikipedia.org/wiki/Computer_cluster#Grid_computing">grid<img 
+    <a href="https://en.wikipedia.org/wiki/Grid_computing">grid<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
-  as a general term to indicate a type of computer cluster where all of the
+  as a general term to indicate a type of  
+    <a href="https://en.wikipedia.org/wiki/Computer_cluster">computer cluster<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  where all of the
   parts may or may not be physically located in one facility and may or may not be centrally 
   administered. An advantage of co-located, centrally owned and administered grids (clusters) 
   is that they benefit from economies of scale (especially the human workload) and simplify 
@@ -155,7 +159,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     alleviate the bottlenecks. Ideally, each replicated part increases the capacity of that
     part of the system linearly (efficiency of scaling). The system isn't scalable unless
     there is a scalable solution for every bottleneck.  
-    <a href="http://en.wikipedia.org/wiki/Scalability">Scalability<img 
+    <a href="https://en.wikipedia.org/wiki/Scalability">Scalability<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
     is different from efficiency (how quickly a task can be done -- efficiency    
@@ -188,7 +192,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   </ul>  
 
   <p><a name="recommendations">Our recommendations are:</a>
-    <br><img src="http://coastwatch.pfeg.noaa.gov/erddap/download/cluster.png" alt="grid/cluster diagram" align="middle">
+    <br><img src="https://coastwatch.pfeg.noaa.gov/erddap/download/cluster.png" alt="grid/cluster diagram" align="middle">
   <ul>
   <li>Basically, I suggest setting up a Composite ERDDAP 
     (<b>D</b> in the diagram), which is a
@@ -198,14 +202,14 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     (CPU usage, memory usage, bandwidth usage)
     from the Composite ERDDAP to the other ERDDAPs.
   <li>ERDDAP has two special dataset types,
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
     and
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>,
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>,
     which refer to
     <br>datasets on other ERDDAPs. 
   <li>When the composite ERDDAP receives a request for data or images from 
     these datasets, the composite ERDDAP 
-    <a href="http://en.wikipedia.org/wiki/URL_redirection">redirects<img 
+    <a href="https://en.wikipedia.org/wiki/URL_redirection">redirects<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
        the data request to the other ERDDAP server. The result is:
@@ -253,9 +257,9 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
        one dataset and copy the dataset on that ERDDAP's hard drive (see <b>C</b>), 
        perhaps with 
        
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
      </ul>
 
   <p><b><font color="#0000FF">C</font></b>) For every ERDDAP-able data source 
@@ -263,9 +267,9 @@ and/or
     (or is a slow service for other reasons), 
     consider setting up another ERDDAP and storing a copy of the dataset
     on that ERDDAP's hard drives, perhaps with
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
      If several such ERDDAPs
     aren't getting many requests for data, you can consolidate them into one ERDDAP. 
 
@@ -318,9 +322,9 @@ and/or
       can't keep up with the requests because of bandwidth or hard drive limitations, 
       it makes sense to copy the data (again) on to another server+hardDrive+ERDDAP,
       perhaps with
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
        While it may seem ideal to have the original dataset and the
       copied dataset appear seamlessly as one dataset in the composite ERDDAP, this is difficult
       because the two datasets will be in slightly different states at different times (notably,
@@ -329,7 +333,7 @@ and/or
       "... (copy #1)" and "... (copy #2)", or perhaps "(mirror #<i>n</i>)" or "(server #<i>n</i>)") and
       appear as separate datasets in the composite ERDDAP.  
       Users are used to seeing lists of
-      <a href="http://en.wikipedia.org/wiki/Mirror_(computing)">mirror sites<img 
+      <a href="https://en.wikipedia.org/wiki/Website#mirror_site">mirror sites<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
       at popular file download sites, so this shouldn't surprise or disappoint them.
@@ -416,7 +420,7 @@ and/or
       Subsetting is a central focus of the protocols ERDDAP supports for
       requesting data. 
     <li>Encourage transmitting compressed data.  
-      ERDDAP <a href="http://coastwatch.pfeg.noaa.gov/erddap/information.html#compression">compresses</a> 
+      ERDDAP <a href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#compression">compresses</a> 
       a data transmission if it 
       finds "accept-encoding" in the HTTP GET request header. All web browsers use
       "accept-encoding" and automatically decompress the response.  Other clients 
@@ -454,7 +458,7 @@ Several companies offer cloud computing services
       <a href="https://cloud.google.com/">Google Cloud Platform<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>).
-      <a href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies<img 
+      <a href="https://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
       have offered simpler services since the mid-1990's,
@@ -573,9 +577,9 @@ Please send an email with the correction to <tt>bob dot simons at noaa dot gov</
 and include the ERDDAP URL directly related to your question or comment.
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.70
-<br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+<p>ERDDAP, Version 1.72
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
 </td>
 </tr>

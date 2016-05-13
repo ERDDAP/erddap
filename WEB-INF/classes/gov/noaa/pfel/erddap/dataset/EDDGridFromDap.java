@@ -54,7 +54,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -70,8 +71,8 @@ import ucar.ma2.*;  //only Array is needed; all other ucar is for testing netcdf
 /** 
  * This class represents a grid dataset from an opendap DAP source.
  *
- * <p>Note that THREDDS has a default limit of 500MB for opendap responses.
- * See http://www.unidata.ucar.edu/projects/THREDDS/tech/tds4.0/UpgradingTo4.0.html
+ * <p>Note that THREDDS has a default limit of 500MB for opendap responses. See
+ * http://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
  */
@@ -1367,7 +1368,7 @@ public class EDDGridFromDap extends EDDGrid {
      * multiple datasets from a THREDDS server.
      * <br>This calls itself recursively, adding into to fileNameInfo as it is found.
      * <br>If there is trouble (e.g., an exception), this catches it and returns.
-     * <br>http://www.unidata.ucar.edu/projects/THREDDS/tech/catalog/InvCatalogSpec.html
+     * <br>http://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
      *
      * <p>Unsolved problem: this does nothing for detecting groups of files/URLs 
      * that should be aggregated.
@@ -1767,14 +1768,14 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
                 //    <dataType>GRID</dataType>
                 //    <dataFormat>NetCDF</dataFormat>
                 //    <documentation type="Summary">....</documentation>
-                //    <documentation xlink:href="http://coastwatch.pfel.noaa.gov/infog/MH_chla_las.html" xlink:title="Dataset Summary"/>
+                //    <documentation xlink:href="http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html" xlink:title="Dataset Summary"/>
                 //    <creator>
                 //      <name>NASA GSFC (G. Feldman)</name>
                 //      <contact url="" email=""/>
                 //    </creator>
                 //    <publisher>
                 //      <name>NOAA CoastWatch, West Coast Node</name>
-                //      <contact url="http://coastwatch.pfel.noaa.gov" email="dave.foley@noaa.gov"/>
+                //      <contact url="http://coastwatch.pfeg.noaa.gov" email="dave.foley@noaa.gov"/>
                 //        </publisher>
                 } else if (cLevel >= 0 && tags.endsWith("<metadata>")) {
                     if (cLevel > 0 && "true".equals(xmlReader.attributeValue("inherited")))
@@ -5770,7 +5771,7 @@ expected =
 //"2013-08-29T17:33:53Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\n" +
 //"2013-08-29T17:33:53Z 
 expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
-"    String infoUrl \"http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"    String infoUrl \"https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String institution \"NOAA NGDC\";\n" +
 "    String keywords \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
 "altitude, arc, atmosphere, bathymetry, coastal, earth science, hawaii, height, model, ngdc, noaa, oceans, relief, second, station, topography, vol.\";\n" +
@@ -5783,7 +5784,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 23.0;\n" +
-"    String reference \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"    String reference \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String sourceUrl \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "    Float64 Southernmost_Northing 18.0;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
@@ -5852,7 +5853,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 //2013-08-29T17:41:13Z 
         expected = 
 "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
-"  :infoUrl = \"http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"  :infoUrl = \"https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
 "  :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
 "altitude, arc, atmosphere, bathymetry, coastal, earth science, hawaii, height, model, ngdc, noaa, oceans, relief, second, station, topography, vol.\";\n" +
@@ -5865,7 +5866,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "  :Northernmost_Northing = 22.0; // double\n" +
-"  :reference = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"  :reference = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :sourceUrl = \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "  :Southernmost_Northing = 21.0; // double\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
@@ -7733,7 +7734,7 @@ EDStatic.startBodyHtml(null) + "\n" +
      * <br>  will be handled with multiple source queries (one per timePoint).
      *
      * <p>Note that THREDDS has a default limit of 500MB for opendap responses.
-     * See http://www.unidata.ucar.edu/projects/THREDDS/tech/tds4.0/UpgradingTo4.0.html
+     * http://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
      * partialRequestMaxBytes=10^8 stays well under that.
      * 
      */
@@ -9055,6 +9056,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+        try {
 
         //ensure files are reread
         File2.deleteAllFiles(datasetDir("testUInt16Dap"));
@@ -9085,7 +9087,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "        Float32 scale_factor 7.17185E-4;\n" + //32768-> 23.50071808, so many values are higher
 "        Float32 add_offset -2.0;\n" +
 "        Int16 _FillValue -1;\n" + //technically wrong: cf says it should be actual value: 65535(int)
-"        Int16 Fill -1;\n" + //appeared 2015-12-28, disappeared 2016-01-19, appeared 2016-02-25, dis 2016-03-04, appeared 2016-04-12
+//"        Int16 Fill -1;\n" + //appeared 2015-12-28, disappeared 2016-01-19, appeared 2016-02-25, dis 2016-03-04, appeared 2016-04-12, dis 2016-04-29
 "        String Scaling \"linear\";\n" +
 "        String Scaling_Equation \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
 "        Float32 Slope 7.17185E-4;\n" +
@@ -9178,7 +9180,13 @@ EDStatic.startBodyHtml(null) + "\n" +
 "        String stop_time \"23:59:59 UTC\";\n" +
 "    }\n" +
 "}\n";*/
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        try {
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nFlip flop: line=21 Fill comes and goes."); 
+        }
+
 
 //re-pack apparent missing value
 //45.000717 +2=> 47.000717 /7.17185E-4=> 65535
@@ -9235,6 +9243,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    Float32 valid_range -2.0, -1.9985657;\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
+//"    String _lastModified \"2014202164149000\";\n" + //appeared 2016-05-10, disappeared 5/11
 "    String cdm_data_type \"Grid\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_name \"NASA JPL\";\n" +
@@ -9250,7 +9259,12 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        try {
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue("Unexpected error:\n" +
+                MustBe.throwableToString(t));
+        }
 
 //odd flip flop changes from source       
 //        T18:46:21Z http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml\n" +
@@ -9370,6 +9384,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][][]&.land=under", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        } catch (Throwable t2) {
+            String2.pressEnterToContinue("Unexpected error:\n" +
+                MustBe.throwableToString(t2));
+        }
 
     }
 

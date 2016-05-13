@@ -603,7 +603,7 @@ public class XML {
 
     /**
      * This gets a nodeList for an XPath query.
-     * <br>See http://download.oracle.com/javase/7/docs/api/javax/xml/xpath/package-summary.html 
+     * <br>See https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/package-summary.html 
      * <br>See javadoc for xpath
      * <br>See examples at http://javaalmanac.com/egs/org.w3c.dom/xpath_GetElemByAttr.html?l=rel
      * <br>See examples at http://javaalmanac.com/egs/org.w3c.dom/xpath_GetAbsElem.html?l=rel

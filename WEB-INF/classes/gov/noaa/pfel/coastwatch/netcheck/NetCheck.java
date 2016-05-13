@@ -41,7 +41,8 @@ import java.util.HashSet;
  * The .java and .class files for this are in the classes/dods directory.
  * 
  * <p>For reading/writing .nc files, 
- * get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm,
+ * get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar

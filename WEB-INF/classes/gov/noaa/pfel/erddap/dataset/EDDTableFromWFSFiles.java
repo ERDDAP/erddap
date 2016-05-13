@@ -72,7 +72,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
         throws Throwable {
 
         super("EDDTableFromWFSFiles", tDatasetID, 
@@ -85,7 +85,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
     }
 
     /**

@@ -138,12 +138,12 @@ public class EDDGridFromEtopo extends EDDGrid {
         sourceGlobalAttributes.add("Conventions",          "COARDS, CF-1.6, ACDD-1.3");
         sourceGlobalAttributes.add("creator_email", "Barry.Eakins@noaa.gov ");
         sourceGlobalAttributes.add("creator_name", "NOAA NGDC");
-        sourceGlobalAttributes.add("creator_url", "http://www.ngdc.noaa.gov/mgg/global/global.html");
+        sourceGlobalAttributes.add("creator_url", "https://www.ngdc.noaa.gov/mgg/global/global.html");
         sourceGlobalAttributes.add("data_source", "NOAA NGDC ETOPO1");
         sourceGlobalAttributes.add("drawLandMask", "under");
         sourceGlobalAttributes.add("history", "2011-03-14 Downloaded " + SgtMap.BATHYMETRY_SOURCE_URL);
         sourceGlobalAttributes.add("id", "SampledFromETOPO1_ice_g_i2");
-        sourceGlobalAttributes.add("infoUrl", "http://www.ngdc.noaa.gov/mgg/global/global.html");
+        sourceGlobalAttributes.add("infoUrl", "https://www.ngdc.noaa.gov/mgg/global/global.html");
         sourceGlobalAttributes.add("institution", "NOAA NGDC");
         sourceGlobalAttributes.add("keywords", "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
         sourceGlobalAttributes.add("keywords_vocabulary", "GCMD Science Keywords");
@@ -503,7 +503,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"Barry.Eakins@noaa.gov \";\n" +
 "  :creator_name = \"NOAA NGDC\";\n" +
-"  :creator_url = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
+"  :creator_url = \"https://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 "  :data_source = \"NOAA NGDC ETOPO1\";\n" +
 "  :drawLandMask = \"under\";\n" +
 "  :Easternmost_Easting = 178.33333333333331; // double\n" +
@@ -515,7 +515,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 "  :geospatial_lon_min = -180.0; // double\n" +
 "  :geospatial_lon_resolution = 0.016666666666666666; // double\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
-"  :history = \"2011-03-14 Downloaded http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip\n";
+"  :history = \"2011-03-14 Downloaded https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //today + " (local file)\n" +
@@ -523,7 +523,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 expected =   
 " http://localhost:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
 "  :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
-"  :infoUrl = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
+"  :infoUrl = \"https://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
 "  :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +

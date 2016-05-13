@@ -229,7 +229,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
                 "application/json"); //http://dret.net/biblio/reference/rfc4627
 
         } else if (extension.equals(".kml")) {
-            //see http://earth.google.com/kml/kml_tut.html
+            //see https://developers.google.com/kml/documentation/kml_tut
             //which lists both of these content types (in different places)
             //application/keyhole is used by the pydap example that works
             //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta

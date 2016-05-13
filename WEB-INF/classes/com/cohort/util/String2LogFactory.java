@@ -95,13 +95,8 @@ public final class String2LogFactory extends LogFactory {
      * that error level will be used; otherwise INFO_LEVEL will be used.
      *
      * @param clazz Class for which a suitable Log name will be derived
-     *
-     * @throws LogConfigurationException if a suitable <code>Log</code>
-     *  instance cannot be returned
      */
-    public Log getInstance(Class clazz)
-        throws LogConfigurationException
-    {
+    public Log getInstance(Class clazz) {
         return getInstance();
     }
 
@@ -112,17 +107,13 @@ public final class String2LogFactory extends LogFactory {
      * that error level will be used; otherwise INFO_LEVEL will be used.
      *
      * @param name the name of a class for which a suitable Log name will be derived
-     * @throws LogConfigurationException if a suitable <code>Log</code>
-     *  instance cannot be returned
      */
-    public Log getInstance(String name)
-        throws LogConfigurationException
-    {
+    public Log getInstance(String name) {
         return getInstance();
     }
 
     //Bob added this, since I just work with one instance.
-    private Log getInstance() throws LogConfigurationException {
+    private Log getInstance() {
         //String2.log("String2LogFactory.getInstance()");
         if (string2Log == null) {
             String s = System.getProperty("com.cohort.util.String2Log.level");

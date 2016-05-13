@@ -14,20 +14,25 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
+/** The Java DAP classes.  */
+import dods.dap.*;
+
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
-/** The Java DAP classes.  */
-import dods.dap.*;
-
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.Variable;
 
 /**
  * This class has some static convenience methods related to Opendap and the 
@@ -57,7 +62,7 @@ public class OpendapHelper  {
      * <br>But, the JDAP library only seems to be able to read DODS data streams 
      *   that use just LF. It does not work with DODS data streams that use CR LF.
      *   This can be confirmed by looking at the definition of endSequence in 
-     *   dods.dap.HeaderInputStream and by seeing how it is used in getMoreBytes
+     *   HeaderInputStream and by seeing how it is used in getMoreBytes
      *   (in that class).
      * <br>(What about opendap C library?)
      * <br>For now, to be safe and compatible (although not compliant), use just LF.
@@ -189,7 +194,7 @@ public class OpendapHelper  {
         Enumeration names = attributeTable.getNames();
         while (names.hasMoreElements()) {
             String name = (String)names.nextElement();            
-            dods.dap.Attribute attribute = attributeTable.getAttribute(name);
+            Attribute attribute = attributeTable.getAttribute(name);
             if (attribute.isContainer()) {
                 //process an attribute that isContainer by flattening it (name_subname=...)
                 //http://dm1.caricoos.org/thredds/dodsC/content/wrf_archive/wrfout_d01_2009-09-25_12_00_00.nc.das
@@ -220,13 +225,13 @@ public class OpendapHelper  {
                 //   decision: for now, store uint16 and uint32 as int
                 PrimitiveArray pa = null;
                 int type = attribute.getType();
-                if       (type == dods.dap.Attribute.FLOAT32) pa = new FloatArray(); 
-                else if  (type == dods.dap.Attribute.FLOAT64) pa = new DoubleArray();
-                else if  (type == dods.dap.Attribute.INT32 ||
-                          type == dods.dap.Attribute.UINT32)  pa = new IntArray();
-                else if  (type == dods.dap.Attribute.INT16 ||
-                          type == dods.dap.Attribute.UINT16)  pa = new ShortArray();
-                else if  (type == dods.dap.Attribute.BYTE)    pa = new ByteArray();
+                if       (type == Attribute.FLOAT32) pa = new FloatArray(); 
+                else if  (type == Attribute.FLOAT64) pa = new DoubleArray();
+                else if  (type == Attribute.INT32 ||
+                          type == Attribute.UINT32)  pa = new IntArray();
+                else if  (type == Attribute.INT16 ||
+                          type == Attribute.UINT16)  pa = new ShortArray();
+                else if  (type == Attribute.BYTE)    pa = new ByteArray();
                 //ignore STRING, URL, UNKNOWN, etc. (keep as StringArray)
 
                 //move the sa data into pa
@@ -276,7 +281,7 @@ public class OpendapHelper  {
                 return new String[] {};
             }   
 
-            dods.dap.Attribute attribute = at.getAttribute(attributeName);
+            Attribute attribute = at.getAttribute(attributeName);
             if (attribute == null) {
                 String2.log("NOTE: OpendapHelper.getAttributeValues:\n" +
                     "  attribute not found for var=" + variableName + 
@@ -1262,17 +1267,21 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
         //*** make ncOut.    If createNew fails, no clean up needed.
         File2.makeDirectory(File2.getDirectory(fullFileName));
-        ucar.nc2.NetcdfFileWriteable ncOut =
-            ucar.nc2.NetcdfFileWriteable.createNew(fullFileName + randomInt,
-                false); //false says: create a new file and don't fill with missing_values
+        NetcdfFileWriter ncOut =
+            NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3,
+                fullFileName + randomInt);
 
         try {
+            Group rootGroup = ncOut.addGroup(null, "");
+            ncOut.setFill(false);
+
             //define the data variables in ncOut
             StringArray dimNames = new StringArray();
             IntArray    dimSizes = new IntArray();
             ArrayList   dims     = new ArrayList(); //ucar.nc2.Dimension
             int         varShape[][] = new int[nVars][];
             boolean     isString[] = new boolean[nVars];  //all false
+            Variable newVars[] = new Variable[nVars];
             for (int v = 0; v < nVars; v++) {
 
                 BaseType baseType = dds.getVariable(varNames[v]);
@@ -1299,7 +1308,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(dimName, dimSize, true, false, false));
+                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, true, false, false));
                         }
                         tDims.add(dims.get(which));
                         varShape[v][d] = dimSize;
@@ -1314,11 +1323,12 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                         int strlen = varAtts.getInt("DODS_strlen");
                         if (strlen <= 0 || strlen == Integer.MAX_VALUE) //netcdf-java doesn't like 0
                             strlen = 255;
-                        ncOut.addStringVariable(varNames[v], tDims, strlen);
+                        newVars[v] = ncOut.addStringVariable(rootGroup, varNames[v], tDims, strlen);
                     } else {
                         
                         //make numeric variable
-                        ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), tDims);
+                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                            NcHelper.getDataType(tClass), tDims);
                     }
 
                 } else if (baseType instanceof DArray) {
@@ -1337,7 +1347,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(dimName, dimSize, true, false, false));
+                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, true, false, false));
                         }
                         tDims.add(dims.get(which));
                         varShape[v][d] = dimSize;
@@ -1352,10 +1362,12 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                         int strlen = varAtts.getInt("DODS_strlen");
                         if (strlen <= 0 || strlen == Integer.MAX_VALUE)
                             strlen = 255;
-                        ncOut.addStringVariable(varNames[v], tDims, strlen);
+                        newVars[v] = ncOut.addStringVariable(rootGroup, 
+                            varNames[v], tDims, strlen);
                     } else {
                         //make numeric variable
-                        ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), tDims);
+                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                            NcHelper.getDataType(tClass), tDims);
                     }
 
                 } else {
@@ -1380,30 +1392,32 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             which = dimNames.size();
                             dimNames.add(dimName);
                             dimSizes.add(dimSize);
-                            dims.add(ncOut.addDimension(dimName, dimSize, true, false, false));
+                            dims.add(ncOut.addDimension(rootGroup, 
+                                dimName, dimSize, true, false, false));
                         }
                         ArrayList tDims = new ArrayList();
                         tDims.add(dims.get(which));
                         varShape[v] = new int[1];
                         varShape[v][0] = dimSize;
-                        ncOut.addStringVariable(varNames[v], tDims, strlen);
+                        newVars[v] = ncOut.addStringVariable(rootGroup,
+                            varNames[v], tDims, strlen);
 
                     } else {
                         //make numeric scalar variable
                         varShape[v] = new int[0];
-                        ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), 
-                            new ArrayList());
+                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                            NcHelper.getDataType(tClass), new ArrayList());
                     }
                 }
 
                 //write data variable attributes in ncOut
-                NcHelper.setAttributes(ncOut, varNames[v], varAtts);
+                NcHelper.setAttributes(newVars[v], varAtts);
             }
 
             //write global attributes in ncOut
             Attributes gAtts = new Attributes();
             getAttributes(das, "GLOBAL", gAtts);
-            NcHelper.setAttributes(ncOut, "NC_GLOBAL", gAtts);
+            NcHelper.setAttributes(rootGroup, gAtts);
 
             //leave "define" mode in ncOut
             ncOut.create();
@@ -1426,10 +1440,10 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                         ucar.ma2.ArrayObject.D1(String.class, n); 
                     for (int i = 0; i < n; i++)
                         ao.set(i, pas[0].getString(i));
-                    ncOut.writeStringData(varNames[v], ao);
+                    ncOut.writeStringData(newVars[v], ao);
                 } else {
                     //non-String variable
-                    ncOut.write(varNames[v], 
+                    ncOut.write(newVars[v], 
                         ucar.ma2.Array.factory(pas[0].elementClass(), 
                             varShape[v], pas[0].toObjectArray()));
                 }
@@ -1814,24 +1828,26 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
         //*Then* make ncOut.    If createNew fails, no clean up needed.
         File2.makeDirectory(File2.getDirectory(fullFileName));
-        ucar.nc2.NetcdfFileWriteable ncOut =
-            ucar.nc2.NetcdfFileWriteable.createNew(fullFileName + randomInt,
-                false); //false says: create a new file and don't fill with missing_values
+        NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
 
         try {
+            Group rootGroup = ncOut.addGroup(null, "");
+            ncOut.setFill(false);
 
             //define the data variables in ncOut
             int nVars = varNames.length;
             Attributes varAtts[] = new Attributes[nVars];
-            ucar.nc2.Dimension varCharDims[][] = new ucar.nc2.Dimension[nVars][];
-            int varCharShapes[][] = new int[nVars][];
 
             boolean firstValidVar = true;
             int nDims = sss.length / 3;
-            ucar.nc2.Dimension dims[] = new ucar.nc2.Dimension[nDims];
+            ArrayList<Dimension> dims = new ArrayList();
             int shape[] = new int[nDims];
             boolean isDGrid = true; //change if false
 
+            boolean isStringVar[] = new boolean[nVars]; //all false
+            Variable newVars[] = new Variable[nVars];
+            Variable newDimVars[] = new Variable[nDims];
             for (int v = 0; v < nVars; v++) {
                 //String2.log("  create var=" + varNames[v]);
                 if (varNames[v] == null) 
@@ -1860,14 +1876,15 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
                             //String2.log("    dim#" + d + "=" + dimName + " size=" + dimSize);
                             shape[d] = dimSize;
-                            dims[d] = ncOut.addDimension(dimName, dimSize, true, false, false);
+                            dims.add(ncOut.addDimension(rootGroup, dimName, 
+                                dimSize, true, false, false));
                             PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
-                            ncOut.addVariable(dimName, 
+                            newDimVars[d] = ncOut.addVariable(rootGroup, dimName, 
                                 NcHelper.getDataType(getElementClass(pv)), 
-                                new ucar.nc2.Dimension[]{dims[d]}); 
+                                Arrays.asList(dims.get(d))); 
                         } else {
                             //check that dimension names are the same
-                            if (!dimName.equals(dims[d].getName()))
+                            if (!dimName.equals(dims.get(d).getName()))
                                 throw new RuntimeException(beginError + "var=" + varNames[v] + 
                                     " has different dimensions than previous vars.");
                         }
@@ -1878,7 +1895,8 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
                     Class tClass = getElementClass(pv);
                     //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
-                    ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), dims);
+                    newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                        NcHelper.getDataType(tClass), dims);
 
                 } else if (baseType instanceof DArray) {
                     //dArray is usually 1 dim, but may be multidimensional
@@ -1902,12 +1920,12 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
                             //String2.log("    DArray dim#" + d + "=" + dimName + " size=" + dimSize);
                             shape[d] = dimSize;
-                            dims[d] = ncOut.addDimension(dimName, dimSize, 
-                                true, false, false);
+                            dims.add(ncOut.addDimension(rootGroup, dimName, dimSize, 
+                                true, false, false));
                             //don't make a related variable
                         } else {
                             //check that dimension names are the same
-                            if (!dimName.equals(dims[d].getName()))
+                            if (!dimName.equals(dims.get(d).getName()))
                                 throw new RuntimeException(beginError + "var=" + varNames[v] + 
                                     " has different dimensions than previous vars.");
                         }
@@ -1921,10 +1939,8 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
                     if (tClass == String.class) {
                         //a String variable.  Add a dim for nchars
-                        varCharDims[v] = new ucar.nc2.Dimension[nDims + 1];
-                        varCharShapes[v] = new int[nDims + 1];
-                        System.arraycopy(dims,  0, varCharDims[v],   0, nDims);
-                        System.arraycopy(shape, 0, varCharShapes[v], 0, nDims);
+                        isStringVar[v] = true;
+                        ArrayList tDims = new ArrayList(dims);
                         int nChars = varAtts[v].getInt("DODS_strlen");
                         if (nChars == Integer.MAX_VALUE) {
                             if (verbose) String2.log(beginError + "String var=" + varNames[v] + 
@@ -1932,16 +1948,17 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             varNames[v] = null;
                             continue;
                         }
-                        varCharDims[v][nDims] = ncOut.addDimension(
+                        tDims.add(ncOut.addDimension(rootGroup, 
                             varNames[v] + NcHelper.StringLengthSuffix, 
-                            nChars, true, false, false);
-                        varCharShapes[v][nDims] = nChars;
+                            nChars, true, false, false));
 
-                        ncOut.addVariable(varNames[v], ucar.ma2.DataType.CHAR, varCharDims[v]);
+                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                            ucar.ma2.DataType.CHAR, tDims);
 
                     } else {
                         //a regular variable
-                        ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), dims);
+                        newVars[v] = ncOut.addVariable(rootGroup, varNames[v], 
+                            NcHelper.getDataType(tClass), dims);
                     }
 
                 } else {
@@ -1954,15 +1971,15 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             //write global attributes in ncOut
             Attributes tAtts = new Attributes();
             getAttributes(das, "GLOBAL", tAtts);
-            NcHelper.setAttributes(ncOut, "NC_GLOBAL", tAtts);
+            NcHelper.setAttributes(rootGroup, tAtts);
 
             //write dimension attributes in ncOut
             if (isDGrid) {
-                for (int dim = 0; dim < nDims; dim++) {
-                    String dimName = dims[dim].getName();               
+                for (int d = 0; d < nDims; d++) {
+                    String dimName = dims.get(d).getName();               
                     tAtts.clear();
                     getAttributes(das, dimName, tAtts);
-                    NcHelper.setAttributes(ncOut, dimName, tAtts);
+                    NcHelper.setAttributes(newDimVars[d], tAtts);
                 }
             }
 
@@ -1970,7 +1987,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             for (int v = 0; v < nVars; v++) {
                 if (varNames[v] == null)
                     continue;
-                NcHelper.setAttributes(ncOut, varNames[v], varAtts[v]);
+                NcHelper.setAttributes(newVars[v], varAtts[v]);
             }
 
             //leave "define" mode in ncOut
@@ -1981,9 +1998,9 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                 for (int d = 0; d < nDims; d++) {
                     String tProjection = "[" + sss[d*3] + ":" + sss[d*3+1] + ":" + sss[d*3+2] + "]"; 
                     PrimitiveArray pas[] = getPrimitiveArrays(dConnect, 
-                        "?" + dims[d].getName() + tProjection); 
+                        "?" + dims.get(d).getName() + tProjection); 
                     pas[0].trimToSize(); //so underlying array is exact size
-                    ncOut.write(dims[d].getName(), 
+                    ncOut.write(newDimVars[d], 
                         ucar.ma2.Array.factory(pas[0].toObjectArray()));
                 }
             }
@@ -2009,7 +2026,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                             dConnect, "?" + varNames[v] + tProjection); 
                         pas[0].trimToSize(); //so underlying array is exact size
                         //String2.log("pas[0]=" + pas[0].toString());
-                        ncOut.write(varNames[v], origin,
+                        ncOut.write(newVars[v], origin,
                             ucar.ma2.Array.factory(pas[0].elementClass(), 
                                 jplChunkShape, pas[0].toObjectArray()));
                     }
@@ -2020,19 +2037,19 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                         dConnect, "?" + varNames[v] + projection); 
                     pas[0].trimToSize(); //so underlying array is exact size
                     //String2.log("pas[0].size=" + pas[0].size());
-                    if (varCharShapes[v] == null) {
-                        //non-String variable
-                        ncOut.write(varNames[v], 
-                            ucar.ma2.Array.factory(pas[0].elementClass(), 
-                                shape, pas[0].toObjectArray()));
-                    } else {
+                    if (isStringVar[v]) {
                         //String variable
                         int n = pas[0].size();
                         ucar.ma2.ArrayObject.D1 ao = new 
                             ucar.ma2.ArrayObject.D1(String.class, n); 
                         for (int i = 0; i < n; i++)
                             ao.set(i, pas[0].getString(i));
-                        ncOut.writeStringData(varNames[v], ao);
+                        ncOut.writeStringData(newVars[v], ao);
+                    } else {
+                        //non-String variable
+                        ncOut.write(newVars[v], 
+                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                                shape, pas[0].toObjectArray()));
                     }
                 }
 
