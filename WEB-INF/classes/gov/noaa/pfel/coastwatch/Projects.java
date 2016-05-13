@@ -43,7 +43,8 @@ import org.joda.time.*;
 import org.joda.time.format.*;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -2758,7 +2759,7 @@ variables:
         String tempDir = "c:/programs/";
         String[] fileNames = RegexFilenameFilter.list(oldDir, "(.+cdf|.+cdf.gz)");
         NetcdfFile oldFile = null;
-        NetcdfFileWriteable newFile = null;
+        NetcdfFileWriter newFile = null;
         try {
 
             //for each file
@@ -2791,7 +2792,9 @@ variables:
 
                 //open the new file
                 String newName = cdfName.substring(0, cdfName.length() - 3) + "nc";
-                newFile = NetcdfFileWriteable.createNew(newDir + newName);
+                newFile = NetcdfFileWriter.createNew(
+                    NetcdfFileWriter.Version.netcdf3, newDir + newName);
+                Group rootGroup = newFile.addGroup(null, "");
 
                 //find old dimensions
                 Dimension oldTimeDimension  = oldFile.findDimension("time");
@@ -2800,33 +2803,33 @@ variables:
                 Dimension oldLonDimension   = oldFile.findDimension("lon");
 
                 //find variables
-                List<Variable> vars = oldFile.getVariables();
+                List<Variable> oldVars = oldFile.getVariables();
 
                 //create the dimensions
-                Dimension timeDimension  = newFile.addDimension("time", 1);
-                Dimension depthDimension = newFile.addDimension("depth", oldDepthDimension.getLength());
-                Dimension latDimension   = newFile.addDimension("lat",   oldLatDimension.getLength());
-                Dimension lonDimension   = newFile.addDimension("lon",   oldLonDimension.getLength());
+                Dimension timeDimension  = newFile.addDimension(rootGroup, "time", 1);
+                Dimension depthDimension = newFile.addDimension(rootGroup, "depth", oldDepthDimension.getLength());
+                Dimension latDimension   = newFile.addDimension(rootGroup, "lat",   oldLatDimension.getLength());
+                Dimension lonDimension   = newFile.addDimension(rootGroup, "lon",   oldLonDimension.getLength());
 
                 //define each variable
                 double minLon = Double.NaN, maxLon = Double.NaN, lonSpacing = Double.NaN;
                 double minLat = Double.NaN, maxLat = Double.NaN, latSpacing = Double.NaN;
                 double minDepth = Double.NaN, maxDepth = Double.NaN;
 
-                for (int v = 0; v < vars.size(); v++) {
-                    Variable var = vars.get(v);
-                    String varName = var.getName();
+                Variable newVars[] = new Variable[oldVars.size()];
+                for (int v = 0; v < oldVars.size(); v++) {
+                    Variable oldVar = oldVars.get(v);
+                    String varName = oldVar.getName();
                     Attributes atts = new Attributes(); 
-                    NcHelper.getVariableAttributes(var, atts);
-                    Dimension dimensions[];
-                    DataType dataType = var.getDataType();
+                    NcHelper.getVariableAttributes(oldVar, atts);
+                    ArrayList<Dimension> dimensions = new ArrayList();
+                    DataType dataType = oldVar.getDataType();
 
                     //if lon 
                     if (varName.equals("lon")) {
-                        dimensions = new Dimension[1];
-                        dimensions[0] = var.getDimension(0);
+                        dimensions.add(oldVar.getDimension(0));
 
-                        PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
                         minLon = pa.getDouble(0);
                         maxLon = pa.getDouble(pa.size() - 1);
                         if (pa.isEvenlySpaced().length() == 0)
@@ -2842,10 +2845,9 @@ variables:
 
                     //if lat 
                     } else if (varName.equals("lat")) {
-                        dimensions = new Dimension[1];
-                        dimensions[0] = var.getDimension(0);
+                        dimensions.add(oldVar.getDimension(0));
 
-                        PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
                         minLat = pa.getDouble(0);
                         maxLat = pa.getDouble(pa.size() - 1);
                         if (pa.isEvenlySpaced().length() == 0)
@@ -2861,10 +2863,9 @@ variables:
 
                     //if depth
                     } else if (varName.equals("depth")) {
-                        dimensions = new Dimension[1];
-                        dimensions[0] = var.getDimension(0);
+                        dimensions.add(oldVar.getDimension(0));
 
-                        PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
                         minDepth = pa.getDouble(0);
                         maxDepth = pa.getDouble(pa.size() - 1);
 
@@ -2879,13 +2880,12 @@ variables:
 
                     //if time
                     } else if (varName.equals("time")) {
-                        dimensions = new Dimension[1];
-                        dimensions[0] = timeDimension;
+                        dimensions.add(timeDimension);
 
-                        dataType = DataType.INT; //the only var that changes dataType
+                        dataType = DataType.INT; //the only oldVar that changes dataType
 
                         //ensure time size == 1;
-                        PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+                        PrimitiveArray pa = NcHelper.getPrimitiveArray(oldVar);
                         if (pa.size() != 1)
                             throw new Exception("time size=" + pa.size() + "\n" + pa);
 
@@ -2900,11 +2900,10 @@ variables:
                     } else {
 
                         //add time dimension
-                        int rank = var.getRank();
-                        dimensions = new Dimension[rank + 1];
-                        dimensions[0] = timeDimension;
+                        int rank = oldVar.getRank();
+                        dimensions.add(timeDimension);
                         for (int r = 0; r < rank; r++)
-                            dimensions[r + 1] = var.getDimension(r);
+                            dimensions.add(oldVar.getDimension(r));
 
                         atts.add("missing_value", atts.getFloat("_FillValue"));
                         if (varName.equals("temp")) {
@@ -3038,9 +3037,9 @@ variables:
                         }
                     }
 
-                    //define var in new file
-                    newFile.addVariable(varName, dataType, dimensions); 
-                    NcHelper.setAttributes(newFile, varName, atts);
+                    //define newVar in new file
+                    newVars[v] = newFile.addVariable(rootGroup, varName, dataType, dimensions); 
+                    NcHelper.setAttributes(newVars[v], atts);
                 }
 
                 //define GLOBAL metadata 
@@ -3124,30 +3123,30 @@ variables:
                 //has title
                 gatts.add("Westernmost_Easting", minLon);
                 //set the globalAttributes
-                NcHelper.setAttributes(newFile, "NC_GLOBAL", gatts);
+                NcHelper.setAttributes(rootGroup, gatts);
             
                 //leave define mode
                 newFile.create();
 
                 //write data for each variable
-                for (int v = 0; v < vars.size(); v++) {
-                    Variable var = vars.get(v);
-                    String name = var.getName();
+                for (int v = 0; v < oldVars.size(); v++) {
+                    Variable oldVar = oldVars.get(v);
+                    String name = oldVar.getName();
 
                     //if lon, lat, depth
                     if (name.equals("lon") || name.equals("lat") || name.equals("depth")) {
                         //just read it and write it unchanged
-                        newFile.write(name, var.read());
+                        newFile.write(newVars[v], oldVar.read());
 
                     //if time
                     } else if (name.equals("time")) {
                         //just read it and write it unchanged
-                        newFile.write(name, NcHelper.get1DArray(new int[]{months}));
+                        newFile.write(newVars[v], NcHelper.get1DArray(new int[]{months}));
 
                     //if other variables
                     } else {
                         //read it
-                        Array array = var.read();
+                        Array array = oldVar.read();
                         //add time dimension
                         int oldShape[] = array.getShape();
                         int newShape[] = new int[oldShape.length + 1];
@@ -3155,7 +3154,7 @@ variables:
                         System.arraycopy(oldShape, 0, newShape, 1, oldShape.length);
                         array = array.reshape(newShape);
                         //write it
-                        newFile.write(name, array);
+                        newFile.write(newVars[v], array);
                     }
                 }
 
@@ -6968,13 +6967,16 @@ project)
         int shape[] = new int[nDims];
 
         //*Then* make ncOut.    If this fails, no clean up needed.
-        NetcdfFileWriteable ncOut = NetcdfFileWriteable.createNew(fullFileName + randomInt,
-            false); //false says: create a new file and don't fill with missing_values
-
+        NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
         try {
+            Group rootGroup = ncOut.addGroup(null, "");
+            ncOut.setFill(false);
 
             //define the data variables in ncOut
             int nVars = vars.length;
+            Variable newDimVars[] = new Variable[nDims];
+            Variable newVars[] = new Variable[nVars];
             for (int v = 0; v < nVars; v++) {
                 //String2.log("  create var=" + vars[v]);
                 BaseType baseType = dds.getVariable(vars[v]);
@@ -6991,17 +6993,18 @@ project)
                                 tSize = jplLatSize;
                             shape[d] = tSize;
                             //String2.log("    dim#" + d + "=" + tName + " size=" + tSize);
-                            dims[d] = ncOut.addDimension(tName, tSize, true, false, false);
-                            ncOut.addVariable(tName, 
+                            dims[d] = ncOut.addDimension(rootGroup, tName, tSize, true, false, false);
+                            newDimVars[d] = ncOut.addVariable(rootGroup, tName, 
                                 NcHelper.getDataType(pas[d + 1].elementClass()), 
-                                new Dimension[]{dims[d]}); 
+                                Arrays.asList(dims[d])); 
                         }
                     }
 
                     PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); 
                     Class tClass = OpendapHelper.getElementClass(pv);
                     //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
-                    ncOut.addVariable(vars[v], NcHelper.getDataType(tClass), dims);
+                    newVars[v] = ncOut.addVariable(rootGroup, vars[v], 
+                        NcHelper.getDataType(tClass), dims);
 
                 } else {
                    throw new RuntimeException(beginError + 
@@ -7013,21 +7016,21 @@ project)
             //write global attributes in ncOut
             Attributes tAtts = new Attributes();
             OpendapHelper.getAttributes(das, "GLOBAL", tAtts);
-            NcHelper.setAttributes(ncOut, "NC_GLOBAL", tAtts);
+            NcHelper.setAttributes(rootGroup, tAtts);
 
             //write dimension attributes in ncOut
             for (int dim = 0; dim < nDims; dim++) {
                 String dimName = dims[dim].getName();               
                 tAtts.clear();
                 OpendapHelper.getAttributes(das, dimName, tAtts);
-                NcHelper.setAttributes(ncOut, dimName, tAtts);
+                NcHelper.setAttributes(newDimVars[v], tAtts);
             }
 
             //write data attributes in ncOut
             for (int v = 0; v < nVars; v++) {
                 tAtts.clear();
                 OpendapHelper.getAttributes(das, vars[v], tAtts);
-                NcHelper.setAttributes(ncOut, vars[v], tAtts);
+                NcHelper.setAttributes(newVars[v], tAtts);
             }
 
             //leave "define" mode in ncOut
@@ -7044,7 +7047,7 @@ project)
                     for (int d = 0; d < nDims; d++) {
                         PrimitiveArray tpa = jplMode && d == jplLatDim? 
                             jplLatPa : pas[d + 1];
-                        ncOut.write(dims[d].getName(), Array.factory(tpa.toObjectArray()));
+                        ncOut.write(newDimVars[d], Array.factory(tpa.toObjectArray()));
                     }
                 }
 
@@ -7052,7 +7055,7 @@ project)
                     //chunk 0 was read above
                     int origin[] = {0, 0, 0};
                     pas[0].trimToSize(); //so underlying array is exact size
-                    ncOut.write(vars[v], origin,
+                    ncOut.write(newVars[v], origin,
                         Array.factory(pas[0].elementClass(), jplChunkShape, pas[0].toObjectArray()));
 
                     //read other chunks
@@ -7065,7 +7068,7 @@ project)
                         pas = OpendapHelper.getPrimitiveArrays(dConnect, "?" + vars[v] + tProjection); 
                         pas[0].trimToSize(); //so underlying array is exact size
                         //String2.log("pas[0]=" + pas[0].toString());
-                        ncOut.write(vars[v], origin,
+                        ncOut.write(newVars[v], origin,
                             Array.factory(pas[0].elementClass(), jplChunkShape, pas[0].toObjectArray()));
                     }
                 } else {
@@ -7073,7 +7076,7 @@ project)
                         pas = OpendapHelper.getPrimitiveArrays(dConnect, "?" + vars[v] + projection); 
                     pas[0].trimToSize(); //so underlying array is exact size
                     //String2.log("pas[0]=" + pas[0].toString());
-                    ncOut.write(vars[v], 
+                    ncOut.write(newVars[v], 
                         Array.factory(pas[0].elementClass(), shape, pas[0].toObjectArray()));
                 }
 
@@ -7987,23 +7990,27 @@ towTypesDescription);
         double inc = 0.041666666666666666666666666;
 
         if (create) {
-            NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(dir + fileName,
-                false); //false says: create a new file and don't fill with missing_values
+            NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+                NetcdfFileWriter.Version.netcdf3, dir + fileName);
             try {
+                Group rootGroup = nc.addGroup(null, "");
+                nc.setFill(false);
 
                 Attributes atts = new Attributes();
 
                 //lat
                 atts.add("units", "degrees_north");
-                Dimension latDim = nc.addDimension(latName, nLat);
-                nc.addVariable(latName, NcHelper.getDataType(double.class),  new Dimension[]{latDim}); 
-                NcHelper.setAttributes(nc, latName, atts);
+                Dimension latDim = nc.addDimension(rootGroup, latName, nLat);
+                Variable latVar = nc.addVariable(rootGroup, latName, 
+                    NcHelper.getDataType(double.class), Arrays.asList(latDim)); 
+                NcHelper.setAttributes(latVar, atts);
 
                 //lon
                 atts.add("units", "degrees_east");
-                Dimension lonDim = nc.addDimension(lonName, nLon);
-                nc.addVariable(lonName, NcHelper.getDataType(double.class), new Dimension[]{lonDim}); 
-                NcHelper.setAttributes(nc, lonName, atts);
+                Dimension lonDim = nc.addDimension(rootGroup, lonName, nLon);
+                Variable lonVar = nc.addVariable(rootGroup, lonName, 
+                    NcHelper.getDataType(double.class), Arrays.asList(lonDim)); 
+                NcHelper.setAttributes(lonVar, atts);
 
                 //write global attributes
                 //NcHelper.setAttributes(nc, "NC_GLOBAL", ada.globalAttributes());
@@ -8015,13 +8022,13 @@ towTypesDescription);
                 DoubleArray da = new DoubleArray();
                 for (int i = 0; i < nLat; i++)
                     da.add(lat0 - i * inc);
-                nc.write(latName, NcHelper.get1DArray(da.toArray()));
+                nc.write(latVar, NcHelper.get1DArray(da.toArray()));
 
                 //write the lon values
                 da = new DoubleArray();
                 for (int i = 0; i < nLon; i++)
                     da.add(lon0 + i * inc);
-                nc.write(lonName, NcHelper.get1DArray(da.toArray()));
+                nc.write(lonVar, NcHelper.get1DArray(da.toArray()));
 
                 //if close throws Throwable, it is trouble
                 nc.close(); //it calls flush() and doesn't like flush called separately
@@ -8532,7 +8539,7 @@ towTypesDescription);
         table.columnAttributes(3).set("units", "seconds since 2000-01-01");
         table.columnAttributes(4).set("units", "millis since 2010-01-01");
 
-        table.saveAsFlatNc("/erddapTest/simpleTest.nc", "row", false);  //convertToFakeMV=false
+        table.saveAsFlatNc(String2.unitTestDataDir + "simpleTest.nc", "row", false);  //convertToFakeMV=false
     }
 
     /**

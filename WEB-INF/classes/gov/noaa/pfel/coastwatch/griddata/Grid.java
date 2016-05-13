@@ -39,7 +39,8 @@ import java.util.List;
 import java.util.GregorianCalendar;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm,
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -926,8 +927,9 @@ switch to finally clause
      *
      * <p>.grd (GMT-style NetCDF) files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library</a>
-     * from <a href="http://my.unidata.ucar.edu/>Unidata</a> renamed as netcdf-latest.jar.
+     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+     *  >NetCDF Java Library</a>
+     * renamed as netcdf-latest.jar.
      * Get slf4j-jdk14.jar from 
      * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
      * and copy it to <context>/WEB-INF/lib.
@@ -1496,7 +1498,7 @@ switch to finally clause
         File2.delete(testDir + "temp.grd");
 
         //********************  test of GMT 4 file
-        String dir4 = "/erddapTest/gmt/";
+        String dir4 = String2.unitTestDataDir + "gmt/";
         String name4= "TestGMT4";
         grdDump = 
 "netcdf TestGMT4.grd {\n" +  //2013-03-20 changed with ncdumpW: had dir, too
@@ -1917,8 +1919,8 @@ switch to finally clause
      *
      * <p>.nc files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library</a>
-     * from <a href="http://my.unidata.ucar.edu/>Unidata</a> renamed as netcdf-latest.jar.
+     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html">NetCDF Java Library</a>
+     * renamed as netcdf-latest.jar.
      * Get slf4j-jdk14.jar from 
      * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
      * and copy it to <context>/WEB-INF/lib.
@@ -3188,46 +3190,49 @@ try {
 
         //write the data
         //items determined by looking at a .grd file; items written in that order 
-        NetcdfFileWriteable grd = NetcdfFileWriteable.createNew(directory + randomInt, 
-            false); //false says: create a new file and don't fill with missing_values
+        NetcdfFileWriter grd = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, directory + randomInt);
         boolean success = false;
         try {
+            Group rootGroup = grd.addGroup(null, "");
+            grd.setFill(false);
             int nLat = lat.length;
             int nLon = lon.length;
 
-            Dimension sideDimension    = grd.addDimension("side", 2);
-            Dimension xysizeDimension  = grd.addDimension("xysize", nLon * nLat);
-            Dimension sideDimArray[]   = new Dimension[]{sideDimension};
-            Dimension xysizeDimArray[] = new Dimension[]{xysizeDimension};
-            ArrayList sideDimList = new ArrayList();
-            sideDimList.add(sideDimension);
-            ArrayList xysizeDimList = new ArrayList();
-            xysizeDimList.add(xysizeDimension);
+            Dimension sideDimension    = grd.addDimension(rootGroup, "side", 2);
+            Dimension xysizeDimension  = grd.addDimension(rootGroup, "xysize", nLon * nLat);
+            List<Dimension> sideDimList   = Arrays.asList(sideDimension);
+            List<Dimension> xysizeDimList = Arrays.asList(xysizeDimension);
 
             ArrayDouble.D1 x_range = new ArrayDouble.D1(2);
             x_range.set(0, lon[0]);
             x_range.set(1, lon[nLon - 1]);
-            grd.addVariable("x_range", DataType.DOUBLE, sideDimArray); 
+            Variable xRangeVar = grd.addVariable(rootGroup, "x_range", 
+                DataType.DOUBLE, sideDimList); 
 
             ArrayDouble.D1 y_range = new ArrayDouble.D1(2);
             y_range.set(0, lat[0]);
             y_range.set(1, lat[nLat - 1]);
-            grd.addVariable("y_range", DataType.DOUBLE, sideDimArray); 
+            Variable yRangeVar = grd.addVariable(rootGroup, "y_range", 
+                DataType.DOUBLE, sideDimList); 
 
             ArrayDouble.D1 z_range = new ArrayDouble.D1(2);
             z_range.set(0, minData);
             z_range.set(1, maxData);
-            grd.addVariable("z_range", DataType.DOUBLE, sideDimArray); 
+            Variable zRangeVar = grd.addVariable(rootGroup, "z_range", 
+                DataType.DOUBLE, sideDimList); 
 
             ArrayDouble.D1 spacing = new ArrayDouble.D1(2);
             spacing.set(0, nLon <= 1? Double.NaN : lonSpacing);  //if not really know, grd seems to use NaN
             spacing.set(1, nLat <= 1? Double.NaN : latSpacing);
-            grd.addVariable("spacing", DataType.DOUBLE, sideDimArray); 
+            Variable spacingVar = grd.addVariable(rootGroup, "spacing", 
+                DataType.DOUBLE, sideDimList); 
 
             ArrayInt.D1 dimension = new ArrayInt.D1(2);
             dimension.set(0, lon.length);
             dimension.set(1, lat.length);
-            grd.addVariable("dimension", DataType.INT, sideDimArray); 
+            Variable dimensionVar = grd.addVariable(rootGroup, "dimension", 
+                DataType.INT, sideDimList); 
 
             //write values from left to right, starting with the top row
             ArrayFloat.D1 tData = new ArrayFloat.D1(nLon * nLat);
@@ -3235,29 +3240,30 @@ try {
             for (int tLat = nLat - 1; tLat >= 0; tLat--) 
                 for (int tLon = 0; tLon < nLon; tLon++) 
                     tData.set(po++, (float)getData(tLon, tLat));
-            grd.addVariable("z", DataType.FLOAT, xysizeDimArray); //grd files use "z" for the data
+            Variable zVar = grd.addVariable(rootGroup, "z", 
+                DataType.FLOAT, xysizeDimList); //grd files use "z" for the data
 
-            grd.addVariableAttribute("x_range", "units", "user_x_unit");
-            grd.addVariableAttribute("y_range", "units", "user_y_unit");
-            grd.addVariableAttribute("z_range", "units", "user_z_unit");
-            grd.addVariableAttribute("z", "scale_factor", new Double(1.0));
-            grd.addVariableAttribute("z", "add_offset",   new Double(0.0));
-            grd.addVariableAttribute("z", "node_offset",  new Integer(0));
+            xRangeVar.addAttribute(new Attribute("units", "user_x_unit"));
+            yRangeVar.addAttribute(new Attribute("units", "user_y_unit"));
+            zRangeVar.addAttribute(new Attribute("units", "user_z_unit"));
+            zVar.addAttribute(new Attribute("scale_factor", new Double(1.0)));
+            zVar.addAttribute(new Attribute("add_offset",   new Double(0.0)));
+            zVar.addAttribute(new Attribute("node_offset",  new Integer(0)));
 
-            grd.addGlobalAttribute("title", "");
-            grd.addGlobalAttribute("source", "CoastWatch West Coast Node");
+            rootGroup.addAttribute(new Attribute("title",  "")); 
+            rootGroup.addAttribute(new Attribute("source", "CoastWatch West Coast Node"));
 
             //leave "define" mode
             grd.create();
 
             //then add data  (about 70% of time is here; so hard to speed up)
             long tTime = System.currentTimeMillis();
-            grd.write("x_range", x_range);
-            grd.write("y_range", y_range);
-            grd.write("z_range", z_range);
-            grd.write("spacing", spacing);
-            grd.write("dimension", dimension);
-            grd.write("z", tData);
+            grd.write(xRangeVar,    x_range);
+            grd.write(yRangeVar,    y_range);
+            grd.write(zRangeVar,    z_range);
+            grd.write(spacingVar,   spacing);
+            grd.write(dimensionVar, dimension);
+            grd.write(zVar,         tData);
 
             //make sure the file is closed
             grd.close();
@@ -4180,17 +4186,20 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //write the data
         //items determined by looking at a .nc file; items written in that order 
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(directory + randomInt,
-            false); //false says: create a new file and don't fill with missing_values
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, directory + randomInt); 
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+
             int nLat = lat.length;
             int nLon = lon.length;
 
             //define the dimensions
-            Dimension timeDimension = nc.addDimension("time", 1);
-            Dimension altitudeDimension  = nc.addDimension("altitude", 1);
-            Dimension latDimension = nc.addDimension("lat", nLat);
-            Dimension lonDimension = nc.addDimension("lon", nLon);
+            Dimension timeDimension      = nc.addDimension(rootGroup, "time", 1);
+            Dimension altitudeDimension  = nc.addDimension(rootGroup, "altitude", 1);
+            Dimension latDimension       = nc.addDimension(rootGroup, "lat", nLat);
+            Dimension lonDimension       = nc.addDimension(rootGroup, "lon", nLon);
 
             //create the variables (and gather the data) 
             String endString = globalAttributes.getString("time_coverage_end");
@@ -4233,35 +4242,40 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
             ArrayDouble.D1 tTime = new ArrayDouble.D1(1);
             tTime.set(0, hasTime? centeredTimeDouble : 0);
-            nc.addVariable("time", DataType.DOUBLE, new Dimension[]{timeDimension}); 
+            Variable timeVar = nc.addVariable(rootGroup, "time", DataType.DOUBLE, 
+                Arrays.asList(timeDimension)); 
             
             ArrayDouble.D1 tAltitude = new ArrayDouble.D1(1);
             tAltitude.set(0, 0);  //I treat all as altitude=0 !!!!
-            nc.addVariable("altitude", DataType.DOUBLE, new Dimension[]{altitudeDimension}); 
+            Variable altitudeVar = nc.addVariable(rootGroup, "altitude", DataType.DOUBLE, 
+                Arrays.asList(altitudeDimension)); 
             
             ArrayDouble.D1 tLat = new ArrayDouble.D1(nLat);
             for (int i = 0; i < nLat; i++)
                 tLat.set(i, lat[i]);
-            nc.addVariable("lat", DataType.DOUBLE, new Dimension[]{latDimension}); 
+            Variable latVar = nc.addVariable(rootGroup, "lat", DataType.DOUBLE, 
+                Arrays.asList(latDimension)); 
 
             ArrayDouble.D1 tLon = new ArrayDouble.D1(nLon);
             for (int i = 0; i < nLon; i++)
                 tLon.set(i, lon[i]);
-            nc.addVariable("lon", DataType.DOUBLE, new Dimension[]{lonDimension}); 
+            Variable lonVar = nc.addVariable(rootGroup, "lon", DataType.DOUBLE, 
+                Arrays.asList(lonDimension)); 
             
             //write values to ArrayFloat.D4
             ArrayFloat.D4 tGrid = new ArrayFloat.D4(1, 1, nLat, nLon);
             for (int iLat = 0; iLat < nLat; iLat++) {
                 for (int iLon = 0; iLon < nLon; iLon++) {
                     float tData = (float)getData(iLon, iLat); //for cdat, was nLat-1 - iLat); //up side down
-                    tGrid.set(0, 0, iLat, iLon, Float.isNaN(tData)? (float)DataHelper.FAKE_MISSING_VALUE : tData);
+                    tGrid.set(0, 0, iLat, iLon, 
+                        Float.isNaN(tData)? (float)DataHelper.FAKE_MISSING_VALUE : tData);
                 }
             }
             //order of dimensions is specified by the
             //coards standard (http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html)
             //see the topics "Number of dimensions" and "Order of dimensions"
-            nc.addVariable(dataName, DataType.FLOAT, new Dimension[]{
-                timeDimension, altitudeDimension, latDimension, lonDimension}); 
+            Variable dataVar = nc.addVariable(rootGroup, dataName, DataType.FLOAT, 
+                Arrays.asList(timeDimension, altitudeDimension, latDimension, lonDimension)); 
 
             //setStatsAttributes
             setStatsAttributes(false); //false -> save as floats
@@ -4275,56 +4289,58 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                     // lon = a*row + c*col + e
                     // lat = b*row + d*col + f
                     double matrix[] = {0, latSpacing, lonSpacing, 0, lon[0], lat[0]}; //right side up
-                    nc.addGlobalAttribute("et_affine", NcHelper.get1DArray(matrix)); //float64[] {a, b, c, d, e, f}
+                    rootGroup.addAttribute(new Attribute("et_affine", 
+                        NcHelper.get1DArray(matrix))); //float64[] {a, b, c, d, e, f}
                 } else {
-                    nc.addGlobalAttribute(NcHelper.getAttribute(names[i], globalAttributes.get(names[i])));
+                    rootGroup.addAttribute(NcHelper.createAttribute(names[i], globalAttributes.get(names[i])));
                 }
             }
 
             //time attributes
-            if (hasTime) {
-                nc.addVariableAttribute("time", "actual_range",    NcHelper.get1DArray(new double[]{centeredTimeDouble, centeredTimeDouble}));     
-            }
-            nc.addVariableAttribute("time", "fraction_digits",     NcHelper.get1DArray(new int[]{0}));     
-            nc.addVariableAttribute("time", new Attribute("long_name", hasTime? "Centered Time" : "Place Holder for Time"));
-            nc.addVariableAttribute("time", new Attribute("units",               centeredTimeUnits));
-            nc.addVariableAttribute("time", new Attribute("standard_name",       "time"));
-            nc.addVariableAttribute("time", new Attribute("axis",                "T"));
-            nc.addVariableAttribute("time", new Attribute("_CoordinateAxisType", "Time"));
+            if (hasTime) 
+                timeVar.addAttribute(new Attribute("actual_range", 
+                    NcHelper.get1DArray(new double[]{centeredTimeDouble, centeredTimeDouble})));     
+            timeVar.addAttribute(new Attribute("fraction_digits",     new Integer(0)));     
+            timeVar.addAttribute(new Attribute("long_name", hasTime? "Centered Time" : "Place Holder for Time"));
+            timeVar.addAttribute(new Attribute("units",               centeredTimeUnits));
+            timeVar.addAttribute(new Attribute("standard_name",       "time"));
+            timeVar.addAttribute(new Attribute("axis",                "T"));
+            timeVar.addAttribute(new Attribute("_CoordinateAxisType", "Time"));
             if (calendar != null)
-                nc.addVariableAttribute("time", new Attribute("calendar",        calendar));
+                timeVar.addAttribute(new Attribute("calendar",        calendar));
 
             //altitude attributes
-            nc.addVariableAttribute("altitude", "actual_range",           NcHelper.get1DArray(new double[]{0, 0}));     
-            nc.addVariableAttribute("altitude", "fraction_digits",        NcHelper.get1DArray(new int[]{0}));     
-            nc.addVariableAttribute("altitude", new Attribute("long_name",              "Altitude"));
-            nc.addVariableAttribute("altitude", new Attribute("positive",               "up"));
-            nc.addVariableAttribute("altitude", new Attribute("standard_name",          "altitude"));
-            nc.addVariableAttribute("altitude", new Attribute("units",                  "m"));
-            nc.addVariableAttribute("altitude", new Attribute("axis",                   "Z"));
-            nc.addVariableAttribute("altitude", new Attribute("_CoordinateAxisType",    "Height"));
-            nc.addVariableAttribute("altitude", new Attribute("_CoordinateZisPositive", "up"));
+            altitudeVar.addAttribute(new Attribute("actual_range",    
+                NcHelper.get1DArray(new double[]{0, 0})));     
+            altitudeVar.addAttribute(new Attribute("fraction_digits",        new Integer(0)));     
+            altitudeVar.addAttribute(new Attribute("long_name",              "Altitude"));
+            altitudeVar.addAttribute(new Attribute("positive",               "up"));
+            altitudeVar.addAttribute(new Attribute("standard_name",          "altitude"));
+            altitudeVar.addAttribute(new Attribute("units",                  "m"));
+            altitudeVar.addAttribute(new Attribute("axis",                   "Z"));
+            altitudeVar.addAttribute(new Attribute("_CoordinateAxisType",    "Height"));
+            altitudeVar.addAttribute(new Attribute("_CoordinateZisPositive", "up"));
 
             //lat
-            NcHelper.setAttributes(nc, "lat", latAttributes);
-            nc.addVariableAttribute("lat", new Attribute("axis", "Y"));
+            NcHelper.setAttributes(latVar, latAttributes);
+            latVar.addAttribute(new Attribute("axis", "Y"));
 
             //lon
-            NcHelper.setAttributes(nc, "lon", lonAttributes);
-            nc.addVariableAttribute("lon", new Attribute("axis", "X"));
+            NcHelper.setAttributes(lonVar, lonAttributes);
+            lonVar.addAttribute(new Attribute("axis", "X"));
 
             //data
-            NcHelper.setAttributes(nc, dataName, dataAttributes);
+            NcHelper.setAttributes(dataVar, dataAttributes);
 
             //leave "define" mode
             nc.create();
 
             //then add data
-            nc.write("time", tTime);
-            nc.write("altitude", tAltitude);
-            nc.write("lat", tLat);
-            nc.write("lon", tLon);
-            nc.write(dataName, tGrid);
+            nc.write(timeVar,     tTime);
+            nc.write(altitudeVar, tAltitude);
+            nc.write(latVar,      tLat);
+            nc.write(lonVar,      tLon);
+            nc.write(dataVar,     tGrid);
 
             //if close throws exception, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately

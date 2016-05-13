@@ -378,7 +378,7 @@ public class EDDTableFromSOS extends EDDTable{
      *      describing how to interpret numbers 
      *      (e.g., "seconds since 1970-01-01T00:00:00Z"),
      *    <li> a java.text.SimpleDateFormat string describing how to interpret string times  
-     *      (see http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *      (see https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    </ul>
      * @param tDataVariables is an Object[nDataVariables][4]: 
      *    <br>[0]=String sourceName (the field name of the data variable in the tabular results,
@@ -8203,7 +8203,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 //    <ObservationOffering gml:id="station-1612340">
 //        <gml:description>Honolulu</gml:description>
 //        <gml:boundedBy><gml:Envelope><gml:lowerCorner>21.3067 -157.867</gml:lowerCorner>
-//        <observedProperty xlink:href="http://ioos.gov/gml/IOOS/0.6.1/dictionaries/phenomenaDictionary.xml#WaterLevel" />
+//        <observedProperty xlink:href="https://ioos.noaa.gov/gml/IOOS/0.6.1/dictionaries/phenomenaDictionary.xml#WaterLevel" />
 
             if (localTags.equals( "<ObservationOffering>")) {
                 tStationID = xmlReader.attributeValue("gml:id");
@@ -8382,7 +8382,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * @throws Throwable if trouble
      */
     public static void test2DVSameSource() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.test2DVSameSource() *****************\n");
+        String2.log("\n****************** EDDTableFromSOS.test2DVSameSource() *****************\n");
         String error = "shouldn't happen";
         try {
             EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "tabletest2DVSameSource"); 
@@ -8404,7 +8404,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * @throws Throwable if trouble
      */
     public static void test2DVSameDestination() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.test2DVSameDestination() *****************\n");
+        String2.log("\n****************** EDDTableFromSOS.test2DVSameDestination() *****************\n");
         String error = "shouldn't happen";
         try {
             EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "tabletest2DVSameDestination"); 

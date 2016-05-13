@@ -40,7 +40,8 @@ import java.util.Enumeration;
 
 /**
  * NcHelper and ucar classes only used for testing netcdf-java.
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -1016,6 +1017,7 @@ expected2 =
                 expected2, "results=\n" + results);
 
             if (testLocalErddapToo) {
+                try {
                 results = SSR.getUrlResponseString(localUrl + ".das");
                 Test.ensureEqual(results.substring(0, expected.length()), 
                     expected, "\nresults=\n" + results);
@@ -1025,6 +1027,10 @@ expected2 =
                 Test.ensureEqual(results.substring(tPo, 
                     Math.min(results.length(), tPo + expected2.length())), 
                     expected2, "results=\n" + results);
+                } catch (Throwable t) {
+                    String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                        "\nhistory will be off by a day if running tests overnight."); 
+                }
             }
             
             //*** test getting dds for entire dataset

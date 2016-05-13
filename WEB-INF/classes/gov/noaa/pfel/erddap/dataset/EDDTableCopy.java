@@ -530,7 +530,8 @@ public class EDDTableCopy extends EDDTable{
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
-            false); //accessibleViaFiles is always false. parent may or may not be.  
+            false, //accessibleViaFiles is always false. parent may or may not be.  
+            false); //removeMVrows is irrelevant for EDDTableFromNcFiles
     }
 
 

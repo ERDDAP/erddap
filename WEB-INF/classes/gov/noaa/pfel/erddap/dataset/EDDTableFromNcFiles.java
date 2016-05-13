@@ -55,7 +55,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -110,7 +111,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
         throws Throwable {
 
         super("EDDTableFromNcFiles", tDatasetID, 
@@ -123,7 +124,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
 
     }
 
@@ -144,7 +146,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
-        boolean tAccessibleViaFiles) 
+        boolean tAccessibleViaFiles, boolean tRemoveMVRows) 
         throws Throwable {
 
         super(tClassName, tDatasetID, tAccessibleTo, tGraphsAccessibleTo, 
@@ -156,7 +158,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
 
     }
 
@@ -181,7 +184,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         Table table = new Table();
         table.readNDNc(fileDir + fileName, sourceDataNames.toArray(),
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
-                minSorted, maxSorted, 
+            minSorted, maxSorted, 
             getMetadata);
         //String2.log("  EDDTableFromNcFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
         //table.saveAsDDS(System.out, "s");
@@ -1782,8 +1785,8 @@ expected =
         //for each file
         for (int f = 0; f < names.length; f++) {
             NetcdfFile in = null;
-            NetcdfFileWriteable out2 = null;
-            NetcdfFileWriteable out3 = null;
+            NetcdfFileWriter out2 = null;
+            NetcdfFileWriter out3 = null;
 
             try {
                 String2.log("in #" + f + "=" + fromDir + names[f]);
@@ -1791,64 +1794,78 @@ expected =
                     String2.log(NcHelper.dumpString(fromDir + names[f], false));
 
                 in = NcHelper.openFile(fromDir + names[f]);
-                out2 = NetcdfFileWriteable.createNew(dir2 + names[f], false);
-                out3 = NetcdfFileWriteable.createNew(dir3 + names[f], false);
+                out2 = NetcdfFileWriter.createNew(
+                    NetcdfFileWriter.Version.netcdf3, dir2 + names[f]);
+                out3 = NetcdfFileWriter.createNew(
+                    NetcdfFileWriter.Version.netcdf3, dir3 + names[f]);
+                Group rootGroup2 = out2.addGroup(null, "");
+                Group rootGroup3 = out3.addGroup(null, "");
+                out2.setFill(false);
+                out3.setFill(false);
 
                 //write the globalAttributes
                 Attributes atts = new Attributes();
                 NcHelper.getGlobalAttributes(in, atts);
-                NcHelper.setAttributes(out2, "NC_GLOBAL", atts);
-                NcHelper.setAttributes(out3, "NC_GLOBAL", atts);
+                NcHelper.setAttributes(rootGroup2, atts);
+                NcHelper.setAttributes(rootGroup3, atts);
 
                 Variable vars[] = NcHelper.find4DVariables(in, null);
                 Variable timeVar = in.findVariable("TIME");
                 Variable latVar  = in.findVariable("LAT");
                 Variable lonVar  = in.findVariable("LON");
                 EDStatic.ensureArraySizeOkay(timeVar.getSize(), "EDDTableFromNcFiles.makeTestFiles");
-                Dimension tDim2 = out2.addDimension("TIME", (int)timeVar.getSize()); //safe since checked above
-                Dimension tDim3 = out3.addDimension("TIME", (int)timeVar.getSize()); //safe since checked above
-                Dimension yDim2 = out2.addDimension("LAT", 1);
-                Dimension yDim3 = out3.addDimension("LAT", 1);
-                Dimension xDim3 = out3.addDimension("LON", 1);
+                Dimension tDim2 = out2.addDimension(rootGroup2, "TIME", (int)timeVar.getSize()); //safe since checked above
+                Dimension tDim3 = out3.addDimension(rootGroup3, "TIME", (int)timeVar.getSize()); //safe since checked above
+                Dimension yDim2 = out2.addDimension(rootGroup2, "LAT", 1);
+                Dimension yDim3 = out3.addDimension(rootGroup3, "LAT", 1);
+                Dimension xDim3 = out3.addDimension(rootGroup3, "LON", 1);
                 
                 //create axis variables
-                out2.addVariable("TIME", timeVar.getDataType(), new Dimension[]{tDim2}); 
-                out2.addVariable("LAT",  latVar.getDataType(),  new Dimension[]{yDim2}); 
+                Variable timeVar2 = out2.addVariable(rootGroup2, "TIME", 
+                    timeVar.getDataType(), Arrays.asList(tDim2)); 
+                Variable latVar2  = out2.addVariable(rootGroup2, "LAT",  
+                    latVar.getDataType(),  Arrays.asList(yDim2)); 
 
-                out3.addVariable("TIME", timeVar.getDataType(), new Dimension[]{tDim3}); 
-                out3.addVariable("LAT",  latVar.getDataType(),  new Dimension[]{yDim3}); 
-                out3.addVariable("LON",  lonVar.getDataType(),  new Dimension[]{xDim3}); 
+                Variable timeVar3 = out3.addVariable(rootGroup3, "TIME", 
+                    timeVar.getDataType(), Arrays.asList(tDim3)); 
+                Variable latVar3 = out3.addVariable(rootGroup3, "LAT",  
+                    latVar.getDataType(),  Arrays.asList(yDim3)); 
+                Variable lonVar3 = out3.addVariable(rootGroup3, "LON",  
+                    lonVar.getDataType(),  Arrays.asList(xDim3)); 
 
                 //write the axis variable attributes
                 atts.clear();
                 NcHelper.getVariableAttributes(timeVar, atts);
-                NcHelper.setAttributes(out2, "TIME", atts);
-                NcHelper.setAttributes(out3, "TIME", atts);
+                NcHelper.setAttributes(timeVar2, atts);
+                NcHelper.setAttributes(timeVar3, atts);
 
                 atts.clear();
                 NcHelper.getVariableAttributes(latVar, atts);
-                NcHelper.setAttributes(out2, "LAT", atts);
-                NcHelper.setAttributes(out3, "LAT", atts);
+                NcHelper.setAttributes(latVar2, atts);
+                NcHelper.setAttributes(latVar3, atts);
 
                 atts.clear();
                 NcHelper.getVariableAttributes(lonVar, atts);
-                NcHelper.setAttributes(out2, "LON", atts);
-                NcHelper.setAttributes(out3, "LON", atts);
+                NcHelper.setAttributes(lonVar3, atts);
 
                 //create data variables
+                Variable newVars2[] = new Variable[vars.length];
+                Variable newVars3[] = new Variable[vars.length];
                 for (int col = 0; col < vars.length; col++) {
                     //create the data variables
                     Variable var = vars[col];
                     String varName = var.getFullName();
                     Array ar = var.read();
-                    out2.addVariable(varName, var.getDataType(), new Dimension[]{tDim2, yDim2}); 
-                    out3.addVariable(varName, var.getDataType(), new Dimension[]{tDim3, yDim3, xDim3}); 
+                    newVars2[col] = out2.addVariable(rootGroup2, varName, 
+                        var.getDataType(), Arrays.asList(tDim2, yDim2)); 
+                    newVars3[col] = out3.addVariable(rootGroup3, varName, 
+                        var.getDataType(), Arrays.asList(tDim3, yDim3, xDim3)); 
 
                     //write the data variable attributes
                     atts.clear();
                     NcHelper.getVariableAttributes(var, atts);
-                    NcHelper.setAttributes(out2, varName, atts);
-                    NcHelper.setAttributes(out3, varName, atts);
+                    NcHelper.setAttributes(newVars2[col], atts);
+                    NcHelper.setAttributes(newVars3[col], atts);
                 }
 
                 //leave "define" mode
@@ -1857,13 +1874,13 @@ expected =
 
                 //write axis data
                 Array ar = in.findVariable("TIME").read();
-                out2.write("TIME", ar);
-                out3.write("TIME", ar);
+                out2.write(timeVar2, ar);
+                out3.write(timeVar3, ar);
                 ar = in.findVariable("LAT").read();
-                out2.write("LAT", ar);
-                out3.write("LAT", ar);
+                out2.write(latVar2, ar);
+                out3.write(latVar3, ar);
                 ar = in.findVariable("LON").read();
-                out3.write("LON", ar);
+                out3.write(lonVar3, ar);
                  
                 for (int col = 0; col < vars.length; col++) {
                     //write the data for each var
@@ -1873,8 +1890,8 @@ expected =
                     int oldShape[] = ar.getShape();
                     int newShape2[] = {oldShape[0], 1};
                     int newShape3[] = {oldShape[0], 1, 1};
-                    out2.write(varName, ar.reshape(newShape2));
-                    out3.write(varName, ar.reshape(newShape3));
+                    out2.write(newVars2[col], ar.reshape(newShape2));
+                    out3.write(newVars3[col], ar.reshape(newShape3));
                 }
 
                 in.close();
@@ -2672,19 +2689,10 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
-        //quick reject -> distinct + orderBy not allowed  
-        try {
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "station,wtmp&orderBy(\"station\")&distinct()",
-                dir, eddTable.className() + "_qr2", ".csv"); 
-            throw new SimpleException("Shouldn't get here");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            results = t.toString(); 
-            expected = "com.cohort.util.SimpleException: Query error: " +
-                "The query has more than one distinct() or orderBy...() constraint.";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
-        }
+        //distinct() + orderBy is not an error
+        tName = eddTable.makeNewFileForDapQuery(null, null, 
+            "station,wtmp&orderBy(\"station\")&distinct()",
+            dir, eddTable.className() + "_qr2", ".csv"); 
 
         //quick reject -> 2 orderBy not allowed  
         try {
@@ -2696,7 +2704,7 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: " +
-                "The query has more than one distinct() or orderBy...() constraint.";
+                "The query has more than one orderBy...() constraint.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5010,7 +5018,8 @@ expected =
                     String expected = 
 "row,time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
 "0,3.912804E8,24.8,41006,-77.4,29.3,297,4.1,5.3,1.0,8.3,4.8,,1014.7,22.0,,,,,3.7,-1.9\n" +
-"1,3.91284E8,24.7,41006,-77.4,29.3,,,,1.1,9.1,4.5,,1014.6,22.2,,,,,,\n";
+"1,3.91284E8,24.7,41006,-77.4,29.3,,,,1.1,9.1,4.5,,1014.6,22.2,,,,,,\n" +
+"...\n";
                     String2.log("results=\n" + results);
                     Test.ensureEqual(results, expected, "");
                     for (int row = 0; row < nRows; row++) {
@@ -6410,7 +6419,7 @@ today;
         
 expected =
 "  :id = \"ncCF1b\";\n" +
-"  :infoUrl = \"http://swfsc.noaa.gov/GroundfishAnalysis/\";\n" +
+"  :infoUrl = \"https://swfsc.noaa.gov/GroundfishAnalysis/\";\n" +
 "  :institution = \"NOAA SWFSC FED\";\n" +
 "  :keywords = \"bottom, bucket, California, coast, cruise, ctd, data, depth, FED, fisheries, fixed, fluorometer, header, hydrographic, index, juvenile, latitude, longitude, midwater, NMFS, NOAA, pacific, rockfish, salinity, species, station, survey, SWFSC, temperature, thermosalinometer, time, transimissometer, trawl\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
@@ -6456,7 +6465,7 @@ expected =
 "California coast and analysis of these data have been distributed through the\n" +
 "publication of NOAA NMFS Technical Memoranda.\n" +
 "\n" +
-"For more information, see http://swfsc.noaa.gov/GroundfishAnalysis/ and\n" +
+"For more information, see https://swfsc.noaa.gov/GroundfishAnalysis/ and\n" +
 "http://www.sanctuarysimon.org/projects/project_info.php?projectID=100118\";\n" +
 "  :time_coverage_end = \"2001-06-08T10:13:00Z\";\n" +
 "  :time_coverage_start = \"2000-05-12T03:57:00Z\";\n" +
@@ -6760,7 +6769,7 @@ today;
 //today + " http://localhost:8080/cwexperimental/
 expected = 
 "  :id = \"ncCFMA1b\";\n" +
-"  :infoUrl = \"http://swfsc.noaa.gov/GroundfishAnalysis/\";\n" +
+"  :infoUrl = \"https://swfsc.noaa.gov/GroundfishAnalysis/\";\n" +
 "  :institution = \"NOAA SWFSC FED\";\n" +
 "  :keywords = \"bottom, bucket, California, coast, cruise, ctd, data, depth, FED, fisheries, fixed, fluorometer, header, hydrographic, index, juvenile, latitude, longitude, midwater, NMFS, NOAA, pacific, rockfish, salinity, species, station, survey, SWFSC, temperature, thermosalinometer, time, transimissometer, trawl\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
@@ -6806,7 +6815,7 @@ expected =
 "California coast and analysis of these data have been distributed through the\n" +
 "publication of NOAA NMFS Technical Memoranda.\n" +
 "\n" +
-"For more information, see http://swfsc.noaa.gov/GroundfishAnalysis/ and\n" +
+"For more information, see https://swfsc.noaa.gov/GroundfishAnalysis/ and\n" +
 "http://www.sanctuarysimon.org/projects/project_info.php?projectID=100118\";\n" +
 "  :time_coverage_end = \"2001-06-08T10:13:00Z\";\n" +
 "  :time_coverage_start = \"2000-05-12T03:57:00Z\";\n" +
@@ -10576,53 +10585,70 @@ expected =
             NetcdfFile nc = NetcdfDataset.openFile(tUrl, null);
             try {
                 results = nc.toString();
+                //2016-05-10 lots of little formatting changes
+                //including nc.toString now adds cr at end of line (at least on Windows):
+                results = String2.replaceAll(results, "\r", ""); 
                 expected = 
 "netcdf " + String2.replaceAll(EDStatic.erddapUrl, "http:" , "dods:") + //in tests, always use non-https url
         "/tabledap/testGlobecBottle {\n" +
-" variables:\n" +
+"  variables:\n" +
 "\n" + //2009-02-26 this line was added with switch to netcdf-java 4.0
-"   Structure {\n" +
-"     float longitude;\n" +
-"       :_CoordinateAxisType = \"Lon\";\n" +
-"       :actual_range = -126.2f, -124.1f; // float\n" +
-"       :axis = \"X\";\n" +
-"       :colorBarMaximum = -115.0; // double\n" +
-"       :colorBarMinimum = -135.0; // double\n" +
-"       :ioos_category = \"Location\";\n" +
-"       :long_name = \"Longitude\";\n" +
-"       :standard_name = \"longitude\";\n" +
-"       :units = \"degrees_east\";\n" +
-"     float latitude;\n" +
-"       :_CoordinateAxisType = \"Lat\";\n" +
-"       :actual_range = 41.9f, 44.65f; // float\n" +
-"       :axis = \"Y\";\n" +
-"       :colorBarMaximum = 55.0; // double\n" +
-"       :colorBarMinimum = 30.0; // double\n" +
-"       :ioos_category = \"Location\";\n" +
-"       :long_name = \"Latitude\";\n" +
-"       :standard_name = \"latitude\";\n" +
-"       :units = \"degrees_north\";\n" +
-"     int altitude;\n" +
-"       :_CoordinateAxisType = \"Height\";\n" +
-"       :_CoordinateZisPositive = \"up\";\n" +
-"       :actual_range = 0, 0; // int\n" +
-"       :axis = \"Z\";\n" +
-"       :ioos_category = \"Location\";\n" +
-"       :long_name = \"Altitude\";\n" +
-"       :positive = \"up\";\n" +
-"       :standard_name = \"altitude\";\n" +
-"       :units = \"m\";\n" +
-"     double time;\n" +
-"       :_CoordinateAxisType = \"Time\";\n";
-                //odd: the spaces don't show up in console window
+"    Structure {\n" +
+"      String cruise_id;\n" +
+"        :cf_role = \"trajectory_id\";\n" +
+"        :ioos_category = \"Identifier\";\n" +
+"        :long_name = \"Cruise ID\";\n" +
+"      String ship;\n" +
+"        :ioos_category = \"Identifier\";\n" +
+"        :long_name = \"Ship\";\n" +
+"      short cast;\n" +
+"        :_FillValue = 32767S; // short\n" +
+"        :actual_range = 1S, 127S; // short\n" +
+"        :colorBarMaximum = 140.0; // double\n" +
+"        :colorBarMinimum = 0.0; // double\n" +
+"        :ioos_category = \"Identifier\";\n" +
+"        :long_name = \"Cast Number\";\n" +
+"        :missing_value = 32767S; // short\n" +
+"      float longitude;\n" +
+"        :_CoordinateAxisType = \"Lon\";\n" +
+"        :_FillValue = NaNf; // float\n" +
+"        :actual_range = -126.2f, -124.1f; // float\n" +
+"        :axis = \"X\";\n" +
+"        :ioos_category = \"Location\";\n" +
+"        :long_name = \"Longitude\";\n" +
+"        :missing_value = NaNf; // float\n" +
+"        :standard_name = \"longitude\";\n" +
+"        :units = \"degrees_east\";\n" +
+"      float latitude;\n" +
+"        :_CoordinateAxisType = \"Lat\";\n" +
+"        :_FillValue = NaNf; // float\n" +
+"        :actual_range = 41.9f, 44.65f; // float\n" +
+"        :axis = \"Y\";\n" +
+"        :ioos_category = \"Location\";\n" +
+"        :long_name = \"Latitude\";\n" +
+"        :missing_value = NaNf; // float\n" +
+"        :standard_name = \"latitude\";\n" +
+"        :units = \"degrees_north\";\n" +
+"      int altitude;\n" +
+"        :_CoordinateAxisType = \"Height\";\n" +
+"        :_CoordinateZisPositive = \"up\";\n" +
+"        :actual_range = 0, 0; // int\n" +
+"        :axis = \"Z\";\n" +
+"        :ioos_category = \"Location\";\n" +
+"        :long_name = \"Altitude\";\n" +
+"        :positive = \"up\";\n" +
+"        :standard_name = \"altitude\";\n" +
+"        :units = \"m\";\n" +
+"      double time;\n" +
+"        :_CoordinateAxisType = \"Time\";\n";
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
                 expected = 
-" :time_coverage_start = \"2002-05-30T03:21:00Z\";\n" +
-" :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
-" :Westernmost_Easting = -126.2; // double\n" +
+"  :time_coverage_start = \"2002-05-30T03:21:00Z\";\n" +
+"  :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
+"  :Westernmost_Easting = -126.2; // double\n" +
 "}\n";
-                Test.ensureEqual(results.substring(results.indexOf(" :time_coverage_start")), expected, "RESULTS=\n" + results);
+                Test.ensureEqual(results.substring(results.indexOf("  :time_coverage_start")), expected, "RESULTS=\n" + results);
 
                 Attributes attributes = new Attributes();
                 NcHelper.getGlobalAttributes(nc, attributes);
@@ -11309,7 +11335,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2016-04-04 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2016-05-03 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);

@@ -115,7 +115,7 @@ public class SgtMap  {
      * The nationalBoundary and stateBoundary files must be in the refDirectory. 
      *    "gshhs_?.b" (?=f|h|i|l|c) files. 
      *    The files are from the GSHHS project
-     *    (http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html).
+     *    (https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html).
      *    landMaskDir should have slash at end.
      */
     public static String fullRefDirectory = 
@@ -136,7 +136,7 @@ public class SgtMap  {
         "This is the grid/node-registered version: the dataset's latitude and longitude " +
         "values mark the centers of the cells.";
     public final static String BATHYMETRY_SOURCE_URL = 
-        "http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip";
+        "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip";
     public final static String BATHYMETRY_CITE = 
         "Amante, C. and B. W. Eakins, ETOPO1 1 Arc-Minute Global Relief Model: " +
         "Procedures, Data Sources and Analysis. NOAA Technical Memorandum NESDIS NGDC-24, " +
@@ -1930,7 +1930,7 @@ public class SgtMap  {
      * The grid will have the correct stats for this subsample of the data.
      * The data is "grid centered", so the data associated with a given lon,lat represents
      *   the data from a cell centered on that lon,lat.
-     * Data source:  http://www.ngdc.noaa.gov/mgg/global/global.html
+     * Data source:  https://www.ngdc.noaa.gov/mgg/global/global.html
      *
      * <p>Currently, the desired grid is created and then
      * each point in the grid is populated by finding the

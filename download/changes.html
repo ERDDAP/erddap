@@ -3,7 +3,7 @@
 <html lang="en-US">
 <head>
 <title>ERDDAP - Changes</title>
-<link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
+<link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
 <link href="../images/erddap.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -12,7 +12,7 @@
 <table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
   <tr> 
     <td align="center" style="width:100px;"> &nbsp;
-      <img src="http://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
+      <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
       </td> 
     <td align="left">
       <font color="#FFFFFF">
@@ -23,8 +23,8 @@
       <br>Brought to you by 
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
-      <a title="Southwest Fisheries Science Center" rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>  
-      <a title="Environmental Research Division" rel="bookmark"  href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>  
+      <a title="Environmental Research Division" rel="bookmark"  href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
       &nbsp; &nbsp;
       </font></td> 
   </tr> 
@@ -41,6 +41,44 @@
 
 <table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
   cellspacing="0"> 
+
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
+<h2><a name="changes1.70">Changes</a> in ERDDAP version 1.72 (released 2016-05-12)</h2>
+<ul>
+<li><b>New Features (for users):</b> None.
+  <br>&nbsp;
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>NEW EDDTableFromMultidimNc is a new alternative to EDDTableFromNc.
+    It is designed to deal with groups of files with several variables 
+    with shared dimensions, e.g., var1[a][b], var2[a], var3[b], scalarVar.
+    Thanks to the Argo Project, Aurélie Briand, and Roland Schweitzer.
+  <li>BUG FIX: ERDDAP (via the FileVisitorDNLS and FileVistorSubdir classes)
+    now follows symbolic links on Linux.
+    ERDDAP still doesn't follow .lnk's on Windows.
+  <li>BUG FIX of bug introduced in 1.70: 
+    distinct + orderBy were not allowed together in one request. Now they are again. 
+    They are not mutually exclusive/redundant.
+    Thanks to David Karuga.
+  <li>CHANGE to datasets.xml blacklist of IP addresses:
+    <br>IP v4 addresses appear to ERDDAP as 4 period-separated hex numbers.
+    <br>I think IP v6 addresses appear as 8 colon-separated hex numbers.
+    <br>So ERDDAP now supports colons in the IP addresses in that list
+      and :* at the end of the list to block a range of addresses.
+  <li>CHANGE: ERDDAP now uses NetcdfFileWriter to write .nc files instead
+    of the deprecated NetcdfFileWriteable. There should be no discernable change
+    to the resulting files. This opens up the possibility of making
+    big .nc files that use the .nc3 64bit extensions. If you want/need that,
+    please send a request to bob.simons at noaa.gov .
+  <li>CHANGE: Many of the links to remote websites were out-of-date.
+    Now they are up-to-date and use https: instead of http: whenever possible.
+  <li>Many small changes.
+  </ul>    
+</ul>
+
 
 
 <!-- ****************************************************************************** -->
@@ -68,17 +106,17 @@
     Thanks to Favio Medrano.
   <li>The new 
   <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableAggregateRows"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableAggregateRows"
     >EDDTableAggregateRows</a> allows you to make a merged EDDTable dataset
     from two or more EDDTable datasets
     which have the same data variables using the same units.
     Thanks To Kevin O'Brien.  
   <li>New options for EDDTableFromDatabase
     (<a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanOrderBy"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanOrderBy"
     >sourceCanOrderBy</a> and
     <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanDoDistinct"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanDoDistinct"
     >sourceCanDoDistinct</a>)
     let you specify whether ERDDAP, the database, or both, handle
     distinct and orderBy (and all variants) constraints.
@@ -86,7 +124,7 @@
   <li>You can now make a private dataset's graphs and metadata available to 
     the public via the new 
     <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#graphsAccessibleTo"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#graphsAccessibleTo"
     >&lt;graphsAccessibleTo&gt;public&lt;/graphsAccessibleTo&gt;</a>
     tag.
     Thanks to Emanuele Lombardi.
@@ -138,14 +176,14 @@
     <li>The authentication=openid option was removed. It was out-of-date.
     <li>The new, recommended, 
       <a rel="help"
-      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationGoogle"
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationGoogle"
       >authentication=google</a>
       option uses Google Sign-In
       (based on OAuth 2.0) to allow anyone with a Google email account
       (including Google managed accounts like @noaa.gov) to log in.
     <li>The new, 
       <a rel="help"
-      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationEmail"
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#authenticationEmail"
       >authentication=email</a>
       option is a back up for authentication=google.
       It allows users with a &lt;user&gt; tag in datasets.xml 
@@ -156,7 +194,7 @@
 &lt;!-- If you want to restrict access to some datasets, 
 you need to specify the method used for logging on (authentication).
 See the info at 
-http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
 Currently, the options are: "" (logins not supported, the default), 
 "custom", "email", and "google" (recommended).  
 [No longer supported: "basic", "openid"]
@@ -213,7 +251,7 @@ the default).
 You should only use "MD5" or "SHA256" if you need to match 
 values stored that way in an external password database.
 See the info at 
-http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
 --&gt; </pre>
 
     <li>In your setup.xml, please change the description for &lt;baseHttpsUrl&gt; 
@@ -226,7 +264,7 @@ If you make a proxy so that ":8443" isn't needed,
 then don't use ":8443" here.
 This is relevant even if &lt;authentication&gt; is "".
 See the instructions at 
-http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
 For example:
 For running/testing on your personal computer:
   &lt;baseHttpsUrl&gt;https://localhost:8443&lt;/baseHttpsUrl&gt;                  
@@ -295,12 +333,23 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     using a DNS server.
     You can test if a given domain name gets properly resolved by using
     <br><tt>ping <i>some.domain.name</i></tt>
+  <li>In generateDatasets.xml, for remote datasets (e.g., from a THREDDS server),
+    the automatically generated datasetIDs are unchanged for most domains.
+    For a few domains, the first part (i.e., the name) of the automatically 
+    generated datasetID will be a little different.
+    Notably, names that had one part are now more likely to have two parts.
+    For example, datasets from http://oos.soest.hawaii.edu previously
+    led to datasetIDs that started with hawaii_, but now
+    lead to datasetIDs that start with hawaii_soest_ .
+    If this causes problems for you, please email me. There may be a work-around.
   <li>The Cassandra driver was updated to cassandra-driver-core-3.0.0.jar 
     and thus for Cassandra v3.
     EDDTableFromCassandra doesn't take advantage of any new features in Cassandra v3.
     Indexes in Cassandra can now be more complex, but ERDDAP still 
     uses the Cassandra v2 index model, which assumes that an indexed column 
     can be directly queried with '=' constraints.
+    GenerateDatasetsXml for EDDTableFromCassandra no longer detects columns with indexes;
+    if an index is simple, you need to specify it in datasets.xml by hand.
     If you need support for more complex indexes or other new features,
     please email bob.simons at noaa.gov .
   <li>Jars and the Classpath - 
@@ -313,7 +362,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
       when you compile or run ERDDAP or one of its tools, 
       compare your command line's classpath to ERDDAP's
       <a rel="help"
-      href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#classpath"
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#classpath"
       >current classpath</a>      
       to figure out which .jars are missing from your classpath.
     </ul>    
@@ -332,7 +381,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
   <li><a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles_AggregationViaFileNames"
     >EDDGridFromFiles Aggregation via File Names or Global Metadata</a> - 
     <br>All variations of EDDGridFromFiles can now aggregate a group of files 
     by adding a new leftmost
@@ -345,7 +394,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     So if you have that dataset in your ERDDAP, please add this new dataset<tt>
 <br>&lt;dataset type="EDDGridFromErddap" datasetID="jplMURSST41" active="true"&gt;
 <br>&nbsp;&nbsp;&lt;!-- Multi-scale Ultra-high Resolution (MUR) SST analysis fv04.1, Global, 0.011 Degree, Daily --&gt;
-<br>&nbsp;&nbsp;&lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41&lt;/sourceUrl&gt;
+<br>&nbsp;&nbsp;&lt;sourceUrl&gt;https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41&lt;/sourceUrl&gt;
 <br>&lt;/dataset&gt;</tt>
     <br>If you want to remove the old jplMURSST dataset
     from your ERDDAP (it's your choice), 
@@ -414,33 +463,33 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     Or, in a URL that requests a graph, 
     use the new optional 3rd '|' parameter for the     
     <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
     ><tt>&amp;.xRange</tt> and/or <tt>&amp;.yRange</tt> switches</a>,
     which can be nothing (the default), <tt>true</tt>, or <tt>t</tt> to get 
     ascending values, or use <tt>false</tt> or <tt>f</tt> to get descending values. 
     The true|false values are case insensitive.
-    Thanks to John Kerfoot, Luke Campbell, and Cara Wilson.
+    Thanks to Chris Fullilove, John Kerfoot, Luke Campbell, and Cara Wilson.
   <li>Users can now specify the background color for graphs by adding
     a <tt>&amp;.bgColor=0x<i>AARRGGBB</i></tt> switch to the URL which requests the graph. See 
     <tt>.bgColor</tt> in the Graphics Commands section of the 
     <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands"
     >griddap</a> 
     and
     <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands"
     >tabledap</a> documentation.
     Thanks to John Kerfoot and Luke Campbell.
   <li>For tabular datasets, constraints can now refer to 
     <tt>min(<i>someVariableName</i>)</tt> or <tt>max(<i>someVariableName</i>)</tt> .
     See 
     <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#min"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#min"
     >min() and max()</a>.
     Thanks to John Kerfoot.
   <li>For tabular datasets, time constraints that use 
     <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now"
     ><tt>now</tt></a> can now
     specify time units of <tt>milliseconds</tt> or <tt>millis</tt>.
   <li>A request for an image of a tabular dataset now makes a map (not a graph) 
@@ -471,7 +520,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     Thanks to Filipe Rocha Freire.
 
   <li>The new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset"
     >ArchiveADataset</a> 
     tool simplifies making a .tar.gz archive with a 
     subset of a dataset in a way that is suitable for archiving (notably, at NOAA's NCEI).
@@ -480,7 +529,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
 
   <li>The new dataset type 
 <a rel="help"
-href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromNcFilesUnpacked"
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromNcFilesUnpacked"
 >EDDGridFromNcFilesUnpacked</a>    
 is a variant of EDDGridFromNcFiles.
 The difference is that this class unpacks
@@ -500,11 +549,11 @@ with different values of
 in different files in a collection.
 Otherwise, you would have to use a tool like 
 <a rel="help"
-href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NcML"
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NcML"
 >NcML</a>
 or
 <a rel="help"
-href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO"
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO"
 >NCO</a>
 to modify each file
 to remove the differences so that the files could be handled by 
@@ -515,7 +564,7 @@ Thanks to Philippe Makowski.
 
   <li>The new dataset type 
 <a rel="help"
-href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridLonPM180"
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridLonPM180"
 >EDDGridLonPM180</a>
     lets you change datasets 
     that have some longitude values greater than 180 (e.g., the range 0 to 360)
@@ -529,7 +578,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDG
     This bug is fixed in ERDDAP v1.68.
   <li>In 
 <a rel="help"
-href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#GenerateDatasetsXml"
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#GenerateDatasetsXml"
 >GenerateDatasetsXml</a>, a new special dataset type, EDDGridLonPM180FromErddapCatalog,
     lets you generate the datasets.xml for EDDGridLonPM180 datasets
     from all of the EDDGrid datasets in an ERDDAP
@@ -538,7 +587,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#Gene
   <li>For all EDDGrid datasets, in datasets.xml you can now use the 
     optional 
 <br><a rel="help" 
-href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleViaWMS"
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleViaWMS"
 ><tt>&lt;accessibleViaWMS&gt;true|false&lt;/accessibleViaWMS&gt;</tt></a> (default=true).
     Setting this to false forcibly disables the WMS service for this dataset.
     If true, the dataset may still not be accessible via WMS for other reasons
@@ -559,7 +608,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
 
   <li>In setup.xml, you can now specify the maximum size for the 
     <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log"
     >log file</a>
     (when it is renamed to log.txt.previous and a new log.txt is created), in MegaBytes.
     The minimum allowed is 1. The maximum allowed is 2000. The default is 20 (MB).
@@ -568,11 +617,11 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
 
   <li>In datasets.xml, 
     <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#fgdcFile"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#fgdcFile"
     ><tt>&lt;fgdcFile&gt;</tt></a>
      or 
     <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#iso19115File"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#iso19115File"
     ><tt>&lt;iso19115File&gt;</tt></a>     
     can now be a local file (as before)
     or a URL (which will be downloaded so there is a local copy).
@@ -605,7 +654,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     partial message, which won't be completed until the next chunk is written.
   <li>Bug fix related to inotify and the 
     <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
     ><tt>&lt;updateEveryNMillis&gt;</tt></a> system for EDDGridFromFiles
     and EDDTableFromFiles datasets: It is no longer necessary to 
     specify a large of fs.inotify.max_user_watches or fs.inotify.max_user_instances.
@@ -644,9 +693,9 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
   <li>There is now guidance for accessing the password-protected private ERDDAP 
     datasets (https://) via curl and Python.
     See the
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#curl">curl</a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#curl">curl</a>
     and 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#Python">Python</a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#Python">Python</a>
     instructions.
     <br>Thanks to Emilio Mayorga of NANOOS and Paul Janecek of Spyglass Technologies.
     <br>&nbsp;
@@ -662,7 +711,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     (no more security updates) in April 2015.
     This version of ERDDAP will not work with versions of Java below 1.8.
     If you update from Java 1.7x (or earlier), you should also update Tomcat.
-    See the <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"
+    See the <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"
     >ERDDAP Set Up Instructions</a> for download links and advice.
 
   <li>New Data Provider Form.
@@ -680,7 +729,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     but the ERDDAP administrator still has to complete the datasets.xml chunk 
     and deal with getting the data file(s) from the provider or connecting to the database.
     For more information, see the 
-<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#DataProviderForm"
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#DataProviderForm"
 >Data&nbsp;Provider&nbsp;Form&nbsp;description</a>.
 
   <li>New &lt;matchAxisNDigits&gt;
@@ -740,7 +789,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
   <li>Programmers: new /lib .jar files.
     <br>If you compile ERDDAP, please note the new .jar files in the 
     classpath -cp parameter listed in the ERDDAP 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide"
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide"
     >Programmer's Guide</a>.
 
   <li>sea_water_practical_salinity
@@ -783,7 +832,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     with any combination of numeric axes, not just longitude vs. latitude.
     This lets you make x vs y (projected) graphs and various
     <a rel="help" 
-    href="http://en.wikipedia.org/wiki/Hovm%C3%B6ller_diagram">Hovm&ouml;ller Diagrams<img 
+    href="https://en.wikipedia.org/wiki/Hovm%C3%B6ller_diagram">Hovm&ouml;ller Diagrams<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>,
     for example, plotting longitude vs depth, or time vs depth.
@@ -791,10 +840,10 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     Sorry, un-flipping it is not yet an option.]
     Thanks to Cara Wilson and Lynn DeWitt.
   <li>There is a new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/oceanicAtmosphericAcronyms.html">Oceanic/Atmospheric Acronym Converter</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/oceanicAtmosphericAcronyms.html">Oceanic/Atmospheric Acronym Converter</a>
     which lets you convert a common oceanic/atmospheric acronym to/from a full name. 
   <li>There is a new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/oceanicAtmosphericVariableNames.html">Oceanic/Atmospheric Variable Names Converter</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/convert/oceanicAtmosphericVariableNames.html">Oceanic/Atmospheric Variable Names Converter</a>
     which lets you convert a common oceanic/atmospheric variable name to/from a full name.
   </ul>
 
@@ -814,7 +863,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     variables that have valid_range, valid_min, or valid_max have the
     correct values when the datasets appear in the new version of ERDDAP.
     See 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#valid_range">valid_range/min/max documentation</a>.
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#valid_range">valid_range/min/max documentation</a>.
 
   <li>ACDD-1.3
     <br>Previously, ERDDAP (notably GenerateDatasetsXml) 
@@ -828,7 +877,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     which was ratified in early 2015 and is referred to as "ACDD-1.3".
     Fortunately, ACDD-1.3 is highly backward compatibly with version 1.0.
     We RECOMMEND that you 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#switchToACDD13">switch to ACDD-1.3</a>. It isn't hard.
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#switchToACDD13">switch to ACDD-1.3</a>. It isn't hard.
   <li>GenerateDatasetsXml Attributes
     <br>There were a large number of changes to 
     improve the &lt;addAttributes&gt; values suggested by GenerateDatasetsXml
@@ -841,7 +890,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     and changes to the old servers, it is getting harder for ERDDAP to 
     automatically detect the server type from the server's responses. 
     The use of 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromSOSSkeletonXML">&lt;sosServerType&gt;</a> (with a value of 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromSOSSkeletonXML">&lt;sosServerType&gt;</a> (with a value of 
     IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI) is now STRONGLY RECOMMENDED. 
     If any of your datasets of this type have problems in the new version of ERDDAP,
     try re-running GenerateDatasetsXml for the SOS server to
@@ -884,7 +933,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
   <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:<tt>
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:<tt>
     <br>Disallow: /erddap/files/</tt>
   <li>INotify Problem and Solution:
     <br>On Linux computers, 
@@ -925,7 +974,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
 <li><b>New Features (for users):</b> 
   <ul>
   <li>The new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files"</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files"</a>
     system lets you browse a virtual file system and download source 
     data files from many ERDDAP datasets. 
     The "files" system is active by default, 
@@ -943,7 +992,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     ERDDAP supports accessing the latest data, 
     even if it is after the currently-known last time.
     Note that the new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateFiles">&lt;updateEveryNMillis&gt;</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateFiles">&lt;updateEveryNMillis&gt;</a>
     support in EDDGridFromFiles and EDDTableFromFiles datasets 
     updates the time variable's destinationMax.
     Another consequence of this change is that the datasetID=allDatasets dataset
@@ -954,7 +1003,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
   <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:<tt>
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:<tt>
     <br>Disallow: /files/
     <br>Disallow: /erddap/files/</tt>
   <li>Sample datasets.xml - Last year, we recommended several excellent datasets
@@ -967,18 +1016,18 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     <li>Set the erdVH... datasets to <tt>active="false"</tt>.
     </ul>
   <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now support 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a> to make the source data files
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a> to make the source data files
     accessible via the "files" systems.
     By default, this system is off for each dataset. 
     You need to add the tag to enable it.
     Thanks to Philippe Makowski.
   <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now support
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateFiles">&lt;updateEveryNMillis&gt;</a>. 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateFiles">&lt;updateEveryNMillis&gt;</a>. 
     By default, this system is off for each dataset. 
     You need to add the tag to enable it.
     Thanks to Dominic Fuller-Rowell and NGDC.
   <li>The new <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFileNames">EDDTableFromFileNames</a> 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFileNames">EDDTableFromFileNames</a> 
     creates a dataset from information about a group of files 
     in the server's file system, 
     but it doesn't serve data from within the files.
@@ -986,16 +1035,16 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     of image files, audio files, 
     video files, word-processing files, and spreadsheet files.
     This works hand-in-hand with the new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files"</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files"</a>
     system, so that users can download the files.
     Special thanks to Philippe Makowski, who persisted when I was
     slow to appreciate the beauty of this idea.
   <li>The new <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromEDDTable">EDDGridFromEDDTable</a> 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromEDDTable">EDDGridFromEDDTable</a> 
     lets you convert a tabular dataset into a gridded dataset.
     Thanks to Ocean Networks Canada.
   <li>The new <a rel="help" 
-    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles">EDDGridFromMergeIRFiles</a> 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles">EDDGridFromMergeIRFiles</a> 
     aggregates data from a group of local MergeIR .gz files.
     EDDGridFromMergeIRFiles has the distinction of being the first chunk
     of code contributed to ERDDAP.
@@ -1032,23 +1081,23 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
   <li>You probably already know about 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a>
     and 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>
     which let you link to datasets in other ERDDAPs and have them appear
     in your ERDDAP. User requests for actual data from these datasets get 
     routed invisibly to the source ERDDAP, so the data doesn't flow through your
     system or use your bandwidth. There is now a large list of recommended datasets 
     in the
-    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">sample datasets.xml in erddapContent.zip</a>.
+    <a rel="bookmark"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">sample datasets.xml in erddapContent.zip</a>.
     To include them in your ERDDAP, all you have do is copy and paste the 
     ones you want into your datasets.xml.    
     Thanks to Conor Delaney.
   <li>If you compile ERDDAP, you need to add some new .jar files to your 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#developmentEnvironment">classpath 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#developmentEnvironment">classpath 
     -cp switch</a> for javac and java.
   <li>The new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromCassandra">EDDTableFromCassandra</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromCassandra">EDDTableFromCassandra</a>
     handles getting data from 
     <a rel="help" 
     href="http://planetcassandra.org/cassandra/">Cassandra<img 
@@ -1056,7 +1105,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
       title="This link to an external web site does not constitute an endorsement."/></a>.
     Thanks to Ocean Networks Canada.
   <li>The new 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromColumnarAsciiFiles">EDDTableFromColumnarAsciiFiles</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromColumnarAsciiFiles">EDDTableFromColumnarAsciiFiles</a>
     handles getting data from ASCII data files with fixed-width columns.
     Thanks to Philippe Makowski.
   <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now use a new 
@@ -1216,7 +1265,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     to safe Matlab variable names. 
     But I still strongly recommend that you create datasetIDs that are valid variable names:
     starting with a letter and then just using A-Z, a-z, 0-9, and _. 
-    See <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetID">datasetID</a>.
+    See <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetID">datasetID</a>.
     Thanks to Luke Campbell.
   <li>Bug fix in EDDTableFromDatabase: With some types of databases, 
     a NO_DATA response from the database led to a pointless 30 second delay in ERDDAP.
@@ -1242,7 +1291,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     I don't want the name to highlight ERD. 
     I want ERDDAP to highlight your institution and your data.  
   <li>PLEASE 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#customize">customize
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#customize">customize
     the appearance of your ERDDAP installation to highlight your institution and your data</a>. 
     With an hour's work, you can make nice improvements that will last forever.  
   <li>In setup.xml, the &lt;displayDiagnosticInfo&gt; option is now always ignored
@@ -1260,7 +1309,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     and never put their results on the clipboard.
   <li>GenerateDatasetsXml now supports a -i command line parameter which inserts the output 
     into the specified file at a specified place. See the 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#GenerateDatasetsXml">documentation</a>.  Thanks to Terry Rankine.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#GenerateDatasetsXml">documentation</a>.  Thanks to Terry Rankine.
   <li>EDDTableFromDatabase now supports &lt;columnNameQuotes&gt;&lt;/columnNameQuotes&gt;,
     with valid values " (the default), ', or nothing.
     This character (if any) will be used before and after column names in SQL queries.
@@ -1367,13 +1416,13 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     (Shouldn't NOAA be doing this?)
 
   <li>The new 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromWFSFiles"
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromWFSFiles"
     >EDDTableFromWFSFiles</a> makes a local copy of all of the data from an ArcGIS MapServer WFS server
     and so the data can then be re-served quickly to ERDDAP users.
     Thanks to Christy Caudill.
 
   <li>The new
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromEDDGrid"
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromEDDGrid"
     >EDDTableFromEDDGrid</a> lets you create an EDDTable dataset from an EDDGrid dataset.
     Some common reasons for doing this are:
     <ul>
@@ -1454,12 +1503,12 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     with minimal demands on the data source,
     but at the cost of slightly slowing down the processing of some user requests.
     See 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
     >&lt;updateEveryNMillis&gt;</a>
     <br>Thanks to Michael Barry and OOICI.
 
   <li>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles now support 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NcML">NcML .ncml</a> 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NcML">NcML .ncml</a> 
     source files in place of .nc files.
     Thanks to Jose B Rodriguez Rueda.
 
@@ -1478,7 +1527,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     <br>so you can specify the type of SOS server (so ERDDAP doesn't have to figure it out).
     Valid values of <tt>&lt;<i>serverType</i>&gt;</tt> are 
     <tt>IOOS_NDBC, IOOS_NOS, OOSTethys,</tt> and <tt>WHOI</tt> (a newly supported serverType).
-    See <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromSOS"
+    See <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromSOS"
     >EDDTableFromSOS</a>.
     Thanks to Derrick Snowden and Janet Fredericks.
 
@@ -1547,7 +1596,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
   <li>ERDDAP once again can run with Java 1.6.  (ERDDAP v1.40 required Java 1.7.)
     We still strongly recommend using the latest version of Java 1.7.
   <li>A new dataset type, 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a>, 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a>, 
     can read data from a set of
     Automatic Weather Station (AWS) XML data files.
     Thanks to Lynn Dewitt and the Exploratorium.
@@ -1587,7 +1636,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     Thanks to NODC.
   <li>tabledap requests can now include time constraints such as <tt>&amp;time&gt;now-5days</tt>.
     See the 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now">documentation</a>.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now">documentation</a>.
     Thanks to James Gosling.
   </ul>
 
@@ -1604,7 +1653,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
     for the ERDDAP project as well as the more general
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide">ERDDAP Programmer's Guide</a>.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide">ERDDAP Programmer's Guide</a>.
     (This was announced separately a few weeks after the ERDDAP 1.38 release.)
   <li>GenerateDatasetsXml has been improved.
     <ul>
@@ -1616,13 +1665,13 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     <ul>
     <li>Internally, ERDDAP now handles times at millisecond precision (not seconds).
     <li>You can now optionally specify the time precision for a given dataset, see
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision">time_precision</a>.  For example, you might set a dataset to display time values
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision">time_precision</a>.  For example, you might set a dataset to display time values
       with date precision (e.g., 1970-01-01).
     <li>Your current datasets will use the default settings, so they are unaffected
       by these changes and will continue to display time with seconds precision.
     </ul>
     Thanks to Servet Cizmeli and Philip Goldstein.
-  <li><a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>
+  <li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>
     is a new dataset <tt>type</tt> which you can use in your datasets.xml file.
     It can read data from any of the numerous file formats defined by the     
     <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries<img 
@@ -1639,8 +1688,8 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
   <li>Expanded the <a href="#quickRestart">quickRestart</a> system to all relevant 
      EDDGrid and EDDTable subclasses.
   <li>Improved documentation, especially related to how to use 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#fileType">griddap</a> and
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType">tabledap</a> 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#fileType">griddap</a> and
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType">tabledap</a> 
     from various client software.
   <li>Changed advanced search to support minTime and/or maxTime expressed as epochSeconds.
     Thanks to Lynn Dewitt.
@@ -1672,8 +1721,8 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     ISO 19115 and FGDC XML metadata files for each dataset. 
     Links to the files are visible on every list of datasets
     (e.g., from Full Text Search) and also in Web Accessible Folders (WAF)
-    (see the <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/fgdc/xml/">FGDC WAF</a> and
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/iso19115/xml/">ISO 19115 WAF</a>).
+    (see the <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/metadata/fgdc/xml/">FGDC WAF</a> and
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/metadata/iso19115/xml/">ISO 19115 WAF</a>).
     Thanks to Ted Habermann, Dave Neufeld, and many others.
 
   <li>Full Text Searches for Datasets now support <tt>-<i>excludedWord</i></tt>
@@ -1686,7 +1735,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     Thanks to Steve Hankin and the UAF project.
 
   <li>OpenSearch - ERDDAP now supports the
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/opensearch1.1/index.html">OpenSearch 1.1</a>
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/opensearch1.1/index.html">OpenSearch 1.1</a>
     standard for searching for datasets. Among other things, this allows
     catalog aggregation websites to do distributed searches
     (passing a search request to each catalog that it knows about).
@@ -1759,7 +1808,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     <br>So, <b>good dataset metadata leads to good ERDDAP-generated 
     ISO 19115 and FGDC metadata.</b>
     <br><b>See the new documentation for the many new RECOMMENDED
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes">Global Attributes</a>.</b>  
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes">Global Attributes</a>.</b>  
 
   <li>In datasets.xml, if you want to tell ERDDAP to use a pre-made 
     FGDC and/or ISO 19115 file
@@ -1795,8 +1844,8 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     has changed slightly because both classes were just rewritten to be more efficient
     (both classes now always make a local copy of all of the remote data files).
     See the documentation for setting up these classes:
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromHyraxFiles">EDDTableFromHyraxFiles</a> and
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a>.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromHyraxFiles">EDDTableFromHyraxFiles</a> and
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a>.
     In particular, see the revised comments about <tt>&lt;fileDir&gt;</tt> (now irrelevant)
     and <tt>&lt;sourceUrl&gt;</tt> (now essential).
     Also, you should never wrap this class in EDDTableCopy for efficiency.
@@ -1814,7 +1863,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     Thanks to Kevin O'Brien.
 
   <li>If you use EDDTableFromDatabase, see the improved 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">"Speed" documentation</a> 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">"Speed" documentation</a> 
     for additional suggestions to improve performance.
     Thanks to Kevin O'Brien.
 
@@ -1828,13 +1877,13 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
     to the list of jar files in their javac and java command line paths.
 
   <li>ERDDAP has a 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/convert/keywords.html">new service</a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/convert/keywords.html">new service</a>
     to convert a CF Standard Name to/from a GCMD Science Keyword.
     You may find this useful when generating global <tt>keywords</tt>
     metadata for the datasets in your ERDDAP.
 
   <li>Dealing with Bots - Please read this advice to
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">prevent
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">prevent
     bots from crawling your ERDDAP in a stupid way</a>.
 
   <li>Translation - The text on ERDDAP's web pages is now mostly
@@ -1847,7 +1896,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
   <li>Sample datasets.xml - There were several small but significant errors in the
     sample datasets.xml. If you use those datasets, please get the newer versions
     from the new sample datasets.xml in the new
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>.
     Thanks to James Wilkinson.  
 
   <li>Git - I will try hard to make ERDDAP a GitHub project ASAP after 
@@ -1914,7 +1963,7 @@ href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#acce
        <li>If your datasets.xml doesn't have a dataset with 
            <tt>datasetID="erdGlobecBottle"</tt>, add<tt>
          <br>&lt;dataset type="EDDTableFromErddap" datasetID="erdGlobecBottle" active="true"&gt;
-         <br>&nbsp;&nbsp;&lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle&lt;/sourceUrl&gt;
+         <br>&nbsp;&nbsp;&lt;sourceUrl&gt;https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle&lt;/sourceUrl&gt;
          <br>&lt;/dataset&gt;</tt>
        <li>In your setup.xml, replace all of the tags from <tt>&lt;EDDTableIdExample&gt;</tt> through
          <br><tt>&lt;EDDTableMatlabPlotExample&gt;</tt> with <pre>
@@ -1946,7 +1995,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
 &lt;EDDTableDataTimeExample&gt;longitude,latitude,time,bottle_posn,temperature1&amp;amp;time&amp;gt;=2002-08-17T00:00:00Z&amp;amp;time&amp;lt;=2002-08-19T20:18:00Z&lt;/EDDTableDataTimeExample&gt;
 &lt;!-- This is an equivalent example data query, but which specifies time as seconds-since-1970-01-01. 
      If you need to convert a date/time to "seconds since 1970-01-01", use
-     http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html --&gt;
+     https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html --&gt;
 &lt;EDDTableDataValueExample&gt;longitude,latitude,time,bottle_posn,temperature1&amp;amp;time&amp;gt;=1029542400&amp;amp;time&amp;lt;=1029788280&lt;/EDDTableDataValueExample&gt;
 &lt;!-- This is an example query which generates a graph. 
      You could generate your example via your dataset's Make A Graph form in ERDDAP.  --&gt;
@@ -2099,11 +2148,11 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
     If you are using Tomcat 6, consider upgrading to Tomcat version 7.
 
   <li>Please follow all of the instructions for
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#initialSetup">setting up a new ERDDAP</a>, but where relevant,
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#initialSetup">setting up a new ERDDAP</a>, but where relevant,
     you will be copying files from your old installation to the new installation,
     notably the [tomcat]/content/erddap directory and files. 
     As part of that, note the 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#tomcat">new Tomcat setup recommendations</a>.
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#tomcat">new Tomcat setup recommendations</a>.
 
   <li>The default erddap.css is now included in the erddap.war file.
     <ul>
@@ -2167,7 +2216,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
       Notably, each dataset MUST have the correct metadata and variables related to the
       cdm_data_type. If not, the dataset won't load and will throw an error.
       See the documentation for 
-        <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type">cdm_data_type</a>.
+        <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type">cdm_data_type</a>.
     <li>FYI: There is a new dataset type: EDDTableFromAsciiServiceNOS.
     <li>FYI: There are three newly allowed ioos_category options: Hydrology, Quality (e.g., for 
       quality flags), and Statistics (e.g., mean).
@@ -2180,7 +2229,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
       <br>&nbsp;&nbsp;<tt>&lt;att name="long_name"&gt;Altitude&lt;/att&gt;</tt>
       <br>(or a slightly different long_name in special cases).
     <li>Optional: All EDDTableFromFiles subclasses support variable 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalSourceNames">sourceName=global:...</a> 
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalSourceNames">sourceName=global:...</a> 
       to convert global metadata from each file into a data variable. Thanks to Lynn DeWitt.
     </ul>
 
@@ -2341,14 +2390,14 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
 <ul>
 <li><b>New Features:</b>
   <ul>
-  <li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/index.html">Subset web pages</a> 
+  <li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/index.html">Subset web pages</a> 
     use faceted search to select subsets of tabular datasets. Thanks to POST.
-  <li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/search/advanced.html">Advanced Search</a>
+  <li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/search/advanced.html">Advanced Search</a>
     combines all of the other search options and adds longitude, latitude, 
     and time bounding boxes. Thanks to Ellyn Montgomery. (Sorry for the delay.)
-  <li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert Time</a> 
+  <li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert Time</a> 
     web page and service let you convert numeric times to/from ISO string times.
-  <li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/convert/units.html">Convert Units</a>
+  <li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/convert/units.html">Convert Units</a>
     web page and service let you convert UDUNITS to/from UCUM units.
     Thanks to NOAA IOOS SOS.
   <li>If a tabledap request includes <tt>&amp;units("UCUM")</tt>, the units names will be converted
@@ -2376,7 +2425,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
       <li>New <tt>&amp;.land=<i>value</i></tt>, where <i>value</i> can be "under" (show topography) or
         "over" (just show bathymetry).
         If not specified, the default is set by 
-          <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#drawLandMask">drawLandMask</a> in datasets.xml or setup.xml. 
+          <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#drawLandMask">drawLandMask</a> in datasets.xml or setup.xml. 
         Thanks to POST.
       <li>New: lines in the legend that are too long are automatically broken into multiple lines. 
         Thanks to POST.
@@ -2404,7 +2453,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
     </ul>
     Thanks to Jan Mason, Jeff de La Beaujardiere, and NOAA IOOS SOS project.
   <li>GUI improvements to the 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/categorize/index.html">Categorize</a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/categorize/index.html">Categorize</a>
     web pages. 
     Also, the categorize values (other than institution) are now all lower case.  
     Non-lower case requests are accepted (redirected) for backwards compatibility.
@@ -2418,7 +2467,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
   There are lots of changes. Sorry. But each one brings some nice benefit.
   <ul>
   <li>Big changes to GenerateDatasetXml - it now often asks more questions (see the relevant
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">datasetTypes</a> information) and now always generates essentially ready-to-use content for datasets.xml.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">datasetTypes</a> information) and now always generates essentially ready-to-use content for datasets.xml.
     You are still responsible for the setup, so you should still review the datasets.xml content before using it.
     A human putting effort into the project will always do better than a computer program.
     Thanks to the UAF project.
@@ -2485,7 +2534,7 @@ If your ERDDAP allows users to log in, all referenced image files,
   &amp;erddapUrl;/images/[fileName].
 
 favicon.ico is the image that browsers associate with your website.
-More more information, see http://en.wikipedia.org/wiki/Favicon .
+More more information, see https://en.wikipedia.org/wiki/Favicon .
 You can use your own favicon.ico file by putting it in 
   [tomcat]/content/erddap/images. 
 
@@ -2629,19 +2678,19 @@ This particular ERDDAP installation has oceanographic data
     explicitly so that other software can properly interact with your database. Thanks/sorry Michael Urzen.
   <li>HIGHLY RECOMMENDED: In datasets.xml, to enable .subset web pages for faceted search of your tabular datasets, 
     you need to add 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subsetVariables">
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subsetVariables">
       <tt>&lt;subsetVariables&gt;</tt></a> to the dataset's global attributes. 
   <li>RECOMMENDED: In datasets.xml, if you have the dataset with datasetID="pmelGtsppp", 
     please change it to be
     <br>&nbsp;&nbsp;<tt>&lt;dataset type="EDDTableFromDapSequence" datasetID="pmelGtsppp" active="false"&gt;</tt>
     <br>Whether or not you had that dataset, feel free to add this new GTSPP dataset:
-    <br>&nbsp;&nbsp;<tt>&lt;dataset type="EDDTableFromErddap" datasetID="erdGtsppBest"&gt;    <br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest&lt;/sourceUrl&gt;
+    <br>&nbsp;&nbsp;<tt>&lt;dataset type="EDDTableFromErddap" datasetID="erdGtsppBest"&gt;    <br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;sourceUrl&gt;https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest&lt;/sourceUrl&gt;
     <br>&nbsp;&nbsp;&lt;/dataset&gt;</tt>
   <li>RECOMMENDED: In datasets.xml, there are new valid options for the 
-     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type"><tt>&lt;cdm_data_type&gt;</tt></a> global attribute, 
+     <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type"><tt>&lt;cdm_data_type&gt;</tt></a> global attribute, 
      so you should review/change the value for your datasets.
   <li>In datasets.xml, the new 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceNeedsExpandedFP_EQ"><tt>&lt;sourceNeedsExpandedFP_EQ&gt;</tt></a> is helpful if the source server doesn't   
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceNeedsExpandedFP_EQ"><tt>&lt;sourceNeedsExpandedFP_EQ&gt;</tt></a> is helpful if the source server doesn't   
     consistently handle <tt>&amp;<i>variable</i>=<i>value</i></tt> tests correctly
     (because of the 
       <a href="http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm">general 
@@ -2652,11 +2701,11 @@ This particular ERDDAP installation has oceanographic data
       so you don't need to make
     any changes.
   <li>New 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a>. Thanks to Jerry Yun Pan.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a>. Thanks to Jerry Yun Pan.
   <li>New
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a>.  Thanks to Roy Mendelssohn.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a>.  Thanks to Roy Mendelssohn.
   <li>Changes to 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcFiles">EDDTableFromNcFiles</a> lets it be used with a wider range of files. 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcFiles">EDDTableFromNcFiles</a> lets it be used with a wider range of files. 
   <li>EDDTableFromBMDE has been disabled. There are no longer any active, appropriate, data sources.
   <li>In GenerateDatasetXml, the new EDDGridFromThreddsCatalog harvests an entire THREDDS catalog
     (or a subset) and generates datasets.xml content. Thanks to the UAF project.
@@ -2721,7 +2770,7 @@ This particular ERDDAP installation has oceanographic data
 <pre>
 &lt;!-- If you want to restrict access to some datasets, you need to 
 specify the method used for logging on (authentication). See the info 
-at http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+at https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
 Currently, the options are: "" (logins not supported, the default),
 "custom", "openid". Note that openid login doesn't work when testing 
 with localhost (https://127.0.0.1:8443).
@@ -2734,7 +2783,7 @@ The options (in order of increasing security) are: "plaintext", "MD5",
 or "UEPMD5" (MD5(UserName:ERDDAP:Password), the default).
 You should only use "plaintext" or "MD5" if you need to match values 
 stored that way in an external password database.  See the info at
-http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
 --&gt;
 &lt;passwordEncoding&gt;UEPMD5&lt;/passwordEncoding&gt;
 
@@ -2760,9 +2809,9 @@ The default is 10000.
 </pre>
 
 <li>New dataset types 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
   and
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>
   make and maintain a local copy 
   of another EDDGrid or EDDTable dataset's data and serve data from the local copy. 
   These are very easy to use and very effective 
@@ -2780,17 +2829,17 @@ The default is 10000.
   of remote data sources and *add metadata* while copying the data.
 
   <p>These dataset types are part of a complete set of features that simplify the creation of 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">grids/clusters/federations of 
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">grids/clusters/federations of 
   ERDDAPs</a> 
   to handle very heavy loads (e.g., in a data center).
 
 <li>New dataset type
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>
   gets data from a local or remote database table.
 <li>ERDDAP now has a <a href="#security">security</a> system that supports authentication (letting users log in)
   and authorization (granting them access to certain private datasets).
 <li>There are 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#Tools">two, new, command-line tools</a>
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#Tools">two, new, command-line tools</a>
     to help ERDDAP administrators generate the XML for a new dataset 
   in datasets.xml:
   <ul>
@@ -2803,7 +2852,7 @@ The default is 10000.
     view the status of an ERDDAP 
   from any browser by going to [baseUrl]/erddap/status.html .
 <li>Tabledap now supports      
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#functions">server-side functions</a>:
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#functions">server-side functions</a>:
   <ul>
   <li>&amp;distinct() removes duplicate rows from the response table,
   <li>&amp;orderBy(...) lets you specify how the response table should be sorted,
@@ -2823,7 +2872,7 @@ The default is 10000.
   sitemap.xml file.
 <li>ERDDAP's error messages are now much shorter and geared to clients (not programmers).
    Thanks to Greg Williams.
-<li><a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"><tt>&lt;requestBlacklist&gt;</tt></a>
+<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"><tt>&lt;requestBlacklist&gt;</tt></a>
 now also supports IP addresses where the last number has been replaced by *.
 <li>Requests for .json and .geoJson files may now include an optional 
   <a href="http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp<img 
@@ -2876,7 +2925,7 @@ now also supports IP addresses where the last number has been replaced by *.
     Instead: <b>undeploy the old ERDDAP, restart Tomcat (or the server), then deploy the new ERDDAP.</b>
     It's always a good idea to do that when installing a new version.
   <li>Please add 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><tt>&lt;requestBlacklist&gt;&lt;/requestBlacklist&gt;</tt></a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><tt>&lt;requestBlacklist&gt;&lt;/requestBlacklist&gt;</tt></a>
     to your datasets.xml.
     This can be used to specify a list of client IP addresses to be blocked 
     (e.g., to fend off a Denial of Service attack or an overly zealous web robot).
@@ -2899,22 +2948,22 @@ now also supports IP addresses where the last number has been replaced by *.
 <li>Changes for users:
   <ul>
   <li>In grid data requests, ERDDAP now supports: 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#last">last-n</a> 
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#last">last-n</a> 
       where n is an integer number of indices and
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#lastInParentheses">(last-d)</a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#lastInParentheses">(last-d)</a>
       where d is a numeric value (for time, it is in seconds).
   <li>In tabular data requests, String constraints now require 
-     <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#DoubleQuotes">double quotes</a>
+     <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#DoubleQuotes">double quotes</a>
      around the value, for example,
      <tt>&amp;id="NDBC40121"</tt>
      This is required by the DAP protocol.
   <li>In tabular data requests, ERDDAP now requires that 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#PercentEncode">all constraints be properly percent encoded</a>. 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#PercentEncode">all constraints be properly percent encoded</a>. 
     Browsers do this automatically, so this mostly affects computer programs/scripts that are
     accessing ERDDAP.
   <li><a name="percent26">Previously,</a> the
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html">embed a graph web page</a> and the 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">ERDDAP Google Gadget web page</a>
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/images/embed.html">embed a graph web page</a> and the 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">ERDDAP Google Gadget web page</a>
     said to replace the "&amp;" in the image's URL with "%26".
     From now on, you should replace the "&amp;" in the image's URL with "&amp;amp;".
     So you need to replace any "%26" in existing web pages and Google Gadgets with "&amp;amp;". (Sorry)
@@ -2969,44 +3018,44 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
       tag to specify the internal order for the files,
       which determines the overall order of the data returned.
     </ol>
-    For details, see <a   href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFiles">EDDTableFromFiles</a>.
+    For details, see <a   href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFiles">EDDTableFromFiles</a>.
   <li>In the past, for EDDTableFromDapSequence, for OPeNDAP DRDS servers, in datasets.xml, we used 
     <tt>&lt;sourceCanConstrainStringsRegex&gt;~=&lt;/sourceCanConstrainStringRegex&gt;</tt>.
     But we now see that the DRDS regex support is more limited than ERDDAP's, so we recommend
     <tt>&lt;sourceCanConstrainStringsRegex&gt;&lt;/sourceCanConstrainStringRegex&gt;</tt>
     so that regex constraints are not passed to the source, but are instead handled by ERDDAP.
   <li>Revamped handling of sourceCanConstrain... in datasets.xml by 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDapSequence">EDDTableFromDapSequence</a> 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDapSequence">EDDTableFromDapSequence</a> 
     and (internally) all EDDTable dataset types.  
     The new system is simpler and better reflects the variability of different data sources.
     You may need to modify the XML for your datasets in datasets.xml.
   </ul>
 <li>There are several new features which are useful by themselves, 
   but when combined, also facilitate the creation of 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#grids">grids/clusters/federations of ERDDAPs</a>.
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#grids">grids/clusters/federations of ERDDAPs</a>.
   <ul>
   <li>New dataset types:
     <ul>
-    <li><a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
+    <li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
       and 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>
       which let one ERDDAP include a dataset 
       from another ERDDAP in a very simple and very efficient way.
-    <li><a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles">EDDGridFromFiles</a> 
+    <li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles">EDDGridFromFiles</a> 
       (and its subclass, 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromNcFiles">EDDGridFromNcFiles</a> 
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromNcFiles">EDDGridFromNcFiles</a> 
       which can read NetCDF .nc, 
       GRIB .grb, and HDF .hdf files).
-    <li><a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcFiles">EDDTableFromNcFiles</a>
+    <li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcFiles">EDDTableFromNcFiles</a>
       which can read NetCDF .nc which have a table-like structure.
     </ul>
   <li>RunLoadDatasets and LoadDatasets were revamped so that ERDDAP is very responsive to reloading 
     datasets based on files in the 
       <a href="#flag">flag</a> directory (often &lt;5 seconds if main loadDatasets is currently done).
   <li>New service to allow <a href="#setDatasetFlag">a URL to create a flag file</a> for a given dataset, e.g.,
-   <br>http://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=rPmelTao&amp;flagKey=123456789
+   <br>https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=rPmelTao&amp;flagKey=123456789
    <br>creates a flag file in the flag directory for rPmelTao (although the flagKey here is wrong). 
-  <li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/subscriptions">subscription</a> 
+  <li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/subscriptions">subscription</a> 
         service so that any client can specify an action 
     which will be done when a specific dataset is created (when ERDDAP is restarted) and 
     whenever the dataset changes in any way.
@@ -3014,10 +3063,10 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
     The ERDDAP <a href="#dailyReport">Daily Report</a> now lists all of the subscriptions and includes
     the URL needed to cancel each one, in case you feel the system is being abused.
     In datasets.xml, there is a new, optional 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subscriptionsEmailBlacklist"><tt>&lt;subscriptionsEmailBlacklist&gt;</tt></a> tag so that administrators 
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subscriptionsEmailBlacklist"><tt>&lt;subscriptionsEmailBlacklist&gt;</tt></a> tag so that administrators 
     can specify a comma-separated list of email address which are immediately blacklisted from the 
     subscription system.
-  <li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#onChange"><tt>&lt;onChange&gt;</tt></a> 
+  <li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#onChange"><tt>&lt;onChange&gt;</tt></a> 
         attribute in datasets.xml lets the ERDDAP administrator specify an action 
     which will be done when a specific dataset is created (when ERDDAP is restarted) and 
     whenever the dataset changes in any way.
@@ -3032,7 +3081,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
   <li>ERDDAP now makes a [bigParentDirectory]/cache/(datasetID) directory for each dataset since 
     there may be lots of files cached.
   </ul>
-<li>New <a href="http://coastwatch.pfeg.noaa.gov/erddap/information.html#subscriptions">RSS 2.01</a> 
+<li>New <a href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#subscriptions">RSS 2.01</a> 
   feed for each dataset (look for the orange RSS icons on lists of datasets, Data Access Forms,
   and Make A Graph web pages).
 <li> EDDGrid .kml responses now use tiled images ("superoverlays" - dynamically generated quadtree images).
@@ -3070,11 +3119,11 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
 <li>New sliders on some Data Access Forms and Make A Graph web pages.
   They simplify (crude) specification of the desired data and offer good visual feedback.
 <li>A new option for the <tt>&lt;dataset&gt;</tt> tags in datasets.xml: 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#active">active="false"</a>.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#active">active="false"</a>.
 <li>References to ERD's ERDDAP changed from coastwatch.pfel (still works via proxy) to coastwatch.pfeg
   (preferred).
 <li>New support for 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#data_min">data_min and data_max</a> variable metadata attributes.
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#data_min">data_min and data_max</a> variable metadata attributes.
 <li>A partial solution to the <a href="#waitThenTryAgain">WaitThenTryAgain / Partial Results Exception</a>:
   Now, some requests that previously failed when a data source change was detected
   will succeed because ERDDAP will reload the dataset and re-request the data automatically,
@@ -3110,7 +3159,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
 <ul>
 <li>New "colorBar" metadata for data variables in datasets.xml defines the default color bar settings 
   for graphs and maps. See 
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">more information</a>.
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">more information</a>.
   This is important because it greatly improves the appearance of the default graphs and maps 
   produced by Make A Graph and because the default graphs and maps now have a consistent color
   bar even when the client changes the requested time or geographic range.
@@ -3118,15 +3167,15 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
 <li> ERDDAP now serves most grid data via a WMS service. This is important because it shows that, 
   in addition to getting data from many types of data servers, ERDDAP can distribute data via 
   different protocols (DAP, WMS, ... more in future).  See the
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/wms/documentation.html">client documentation</a>.
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/wms/documentation.html">client documentation</a>.
   Or the
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#WMS">documentation for administrators</a>. 
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#WMS">documentation for administrators</a>. 
   Or  
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/wms/index.html">try it out</a>. 
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/wms/index.html">try it out</a>. 
 <li> New support for longitude values &gt;180 in .kml files.
 <li> New cdm_data_type: Other .
 <li> ERDDAP now supports "boolean" source dataType.  See
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#booleanData">more information</a>
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#booleanData">more information</a>
   This will become useful for the future EDDTableFromDatabase.
 <li> New EDDTableFromBMDE supports DiGIR/BMDE data sources.
 <li> EDVGridAxis now allows descending sorted values. The pmelOscar datasets needed this.
@@ -3141,7 +3190,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
 <li>In datasets.xml, for any EDDTableFromSOS datasets, change "observedProperty" metadata to 
   "sourceObservedProperty".
 <li>The rules for an axisVariable or dataVariable's destinationName are now 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataVariable">stricter</a>. 
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataVariable">stricter</a>. 
   You need to check that your variable names are valid.
   Either check them by hand, or run ERDDAP and look at the error messages in the report that is 
   emailed to the administrator.
@@ -3150,7 +3199,7 @@ affected. See also the subscriptionEmailBlacklist in datasets.xml.
   <br> &nbsp; &lt;att name="colorBarMinimum" type="double"&gt;0&lt;/att&gt;
   <br> &nbsp; &lt;att name="colorBarMaximum" type="double"&gt;32&lt;/att&gt;</tt>
   <br>See
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#WMS">more information</a>.
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#WMS">more information</a>.
 
 <li>Add the following to your <a href="#setup.xml">setup.xml</a> (but customize with your information): <pre>
 
@@ -3296,9 +3345,9 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.70
-<br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+<p>ERDDAP, Version 1.72
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
 </td>
 </tr>

@@ -132,9 +132,20 @@ public class TestAll  {
 //    double td = tl;
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
+//    Table.testAddIndexColumns();
+//    Table.testReadMultidimNc();
+//    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
+//    {
+//      Table table = new Table();
+//      table.readMultidimNc("/u00/data/points/trinidadCTD/CoralSea_CS150513.nc", 
+//          null, null, 
+//          true, true, true,
+//          null, null, null);
+//      String2.log(table.toCSVString());
+//    }
 //    Table.testReadGocdNcCF();
 
-//    Table.debugMode = true; DasDds.main(new String[]{"erdVH3chla1day", "-verbose"});
+//    Table.debugMode = true; DasDds.main(new String[]{"argoNmdis_tabledap", "-verbose"});
 
 /*    if (false) { //one time fixup of scrippsGliders
         String dir = "/u00/data/points/scrippsGliders/batch2/";
@@ -148,19 +159,26 @@ public class TestAll  {
         }
     } /* */
 
-//    String2.log(NcHelper.dumpString("/u00/satellite/MUR41/ssta/1day/20020601090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc", false));
+//    String2.log(NcHelper.dumpString("/data/argo/briand/2901175_prof.nc", false));
 //    String2.log(NcHelper.dumpString("/u00/data/points/scrippsGliders/batch4/sp050-20160401T042500.nc", false)); 
-//    String2.log(NcHelper.dumpString("/data/jplMUR/ssta_1day.ncml", true)); //short data
+//    String2.log(NcHelper.dumpString("/u00/data/points/trinidadCTD/CoralSea_CS150513.nc", false)); //short data
 
-//    Table table = new Table();
-////    table.readNDNc("c:/data/rutgers/NOAA_COOPS_WIND_STATIONS_SUBSET.nc", 
-////        new String[]{"longitude","latitude","station","time"}, //loadVars
-////        "", Double.NaN, Double.NaN, true);
-//    table.readNcCF("c:/data/rutgers/NOAA_COOPS_WIND_STATIONS_SUBSET.nc", 
-//       StringArray.fromCSV("longitude,latitude,station,time"), //loadVars
+//    Table table = new Table(); Table.debugMode = true;
+//    table.readNDNc("/data/argo/briand/2901175_prof.nc", 
+//        new String[]{"LATITUDE","LONGITUDE","JULD","CYCLE_NUMBER","DC_REFERENCE",
+//        "PLATFORM_NUMBER","PROJECT_NAME","PI_NAME","DATA_CENTRE","PRES","PRES_QC",
+//        "PRES_ADJUSTED","PRES_ADJUSTED_QC","PRES_ADJUSTED_ERROR","TEMP","TEMP_QC",
+//        "TEMP_ADJUSTED","TEMP_ADJUSTED_QC","TEMP_ADJUSTED_ERROR","PSAL","PSAL_QC",
+//        "PSAL_ADJUSTED","PSAL_ADJUSTED_QC","PSAL_ADJUSTED_ERROR"}, //loadVars
+//        "", Double.NaN, Double.NaN, true);
+   
+//    table.readNcCF("/data/argo/briand/2901175_prof_profile.nc", 
+//       StringArray.fromCSV("PLATFORM_NUMBER,PROJECT_NAME,JULD,LATITUDE,LONGITUDE,PRES,TEMP"), //loadVars
 //       StringArray.fromCSV(""),  //names
 //       StringArray.fromCSV(""),  //ops
 //       StringArray.fromCSV(""));  //values
+//    String2.log(table.toCSVString(20));
+
 //    table.saveAsDAS(System.out, "s");
 //    table.saveAsDDS(System.out, "s");
 
@@ -299,9 +317,7 @@ public class TestAll  {
 //            String2.appendFile("/Temp/AWSDatasets.txt", 
 //                EDDGridFromNcFiles.generateDatasetsXml(
 //        "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/", 
-//        ".*" + opt[opti] + ".*\\.nc", 
-//        "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS" + opt[opti] + "200601-201012.nc",
-//        1000000, null));
+//                ".*" + opt[opti] + ".*\\.nc", "", 1000000, null));
 //            } catch (Throwable t) {
 //                String2.appendFile("/Temp/AWSDatasets.txt", MustBe.throwableToString(t));
 //            }
@@ -340,7 +356,7 @@ public class TestAll  {
 //    }
 //    if (true) {
 //        String s = EDDGridFromNcFiles.generateDatasetsXml(
-//        "/u00/satellite/VH2/r671/mday/",  ".*\\.nc", "", 1440, null);
+//        "/u00/satellite/MUR41/climatology/1day/",  ".*\\.nc", "", 1440, null);
 //        String2.setClipboardString(s);
 //        String2.log(s);
 //    } else {
@@ -608,6 +624,7 @@ public class TestAll  {
 //        ".*<role>(Originator)</role>.*", 1, -1);
          //data-set type= tally: "": 583, Database: 118, Mixed: 53, Other: 28, Files: 22, SAS files: 2, CSV Files: 1, GIS: 1
 //        ".*<data-set type=\"(.*)\".*", 1, -1); 
+//    FileVisitorDNLS.testPathRegex(); 
 //    EDD.testInPortXml();
 //    String2.log("\n" + EDDTableFromAsciiFiles.generateDatasetsXmlFromInPort(
 //         url, typeCodeRegex, datasetTypeRegex);
@@ -664,8 +681,8 @@ public class TestAll  {
 //    EDDTableFromHyraxFiles.testJpl(true); //deleteCachedInfoAndOneFile
 
 //    String s = EDDTableFromNcCFFiles.generateDatasetsXml(
-//        "/data/gocd/", "gocd_v3_sadcp\\.nc", 
-//        "/data/gocd/gocd_v3_sadcp.nc", 10080, 
+//        "/data/argo/briand/", ".*\\.nc", 
+//        "", 10080, //sample file
 //        "", "", "", 
 //        "", "", 
 //        "", "", "", "", new Attributes()); 
@@ -681,7 +698,7 @@ public class TestAll  {
 
 //String2.log(tTable.toCSVString());
 //
-//    EDDTableFromNcFiles.testMinMaxConstraints(); 
+//    EDDTableFromNcFiles.testOrderBy(); 
 //    NOT FINISHED  EDDTableFromNcFiles.bobConsolidateWOD("APB", "1960-01-01"); 
 //      EDDTableFromNcFiles.getAllSourceVariableNames(
 //          "c:/data/wod/monthly/APB/", ".*\\.nc"); //201103-201103/
@@ -709,6 +726,11 @@ public class TestAll  {
         //String tSortFilesBySourceNames, 
         //String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         //Attributes externalAddGlobalAttributes) throws Throwable {
+//    String s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
+//        "/u00/data/points/trinidadCTD/", "CoralSea_.*\\.nc", "", //sample file
+//        "", 10080, //dimensions
+//        "", "", "", "", true, //removeMVRows 
+//        "", "", "", "", "", new Attributes()); 
 
 //    *** To update GTSPP (~10th of every month):
       //Don't add source_id or stream_ident: they are usually (always?) empty
@@ -841,6 +863,7 @@ public class TestAll  {
          EDDTableFromNcCFFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml2();
+         EDDTableFromMultidimNcFiles.testGenerateDatasetsXml();
          //EDDTableFromNWISDV.testGenerateDatasetsXml(); //inactive
          EDDTableFromOBIS.testGenerateDatasetsXml();
          EDDTableFromSOS.testGenerateDatasetsXml(true); //useCachedInfo); 
@@ -1207,6 +1230,7 @@ SgtMap sgtMap;
 SgtUtil sgtUtil;
 Shared shared;
 gov.noaa.pfel.coastwatch.sgt.PathCartesianRenderer sgtptcr;
+String2LogFactory s2lf;
 
 gov.noaa.pmel.sgt.AnnotationCartesianRenderer sgtacr;
 gov.noaa.pmel.sgt.AxisTransform sgtat;
@@ -1302,6 +1326,7 @@ EDDTableFromAsciiFiles eddtfaf;
 EDDTableFromColumnarAsciiFiles eddtffaf;
 EDDTableFromHyraxFiles eddtfhf;
 //EDDTableFromMWFS eddtfm; 
+EDDTableFromMultidimNcFiles eddtfmdnf; 
 EDDTableFromNcFiles eddtfnf; 
 EDDTableFromNWISDV eddtfnwisdv;
 EDDTableFromOBIS eddtfo; 
@@ -1541,6 +1566,7 @@ WaitThenTryAgainException wttae;
         EDDTableFromFiles.test(); 
         EDDTableFromNcFiles.test(true); //doGraphicsTests); //the best table graphics tests are always done
         EDDTableFromNcCFFiles.test();  
+        EDDTableFromMultidimNcFiles.test(); 
         EDDTableFromHyraxFiles.test(); 
         EDDTableFromAsciiFiles.test(false); //rarely: true=delete cached info
         EDDTableFromColumnarAsciiFiles.test(); 

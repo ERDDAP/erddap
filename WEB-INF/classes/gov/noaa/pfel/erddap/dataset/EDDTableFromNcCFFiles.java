@@ -76,7 +76,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
-        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles,
+        boolean tRemoveMVRows) 
         throws Throwable {
 
         super("EDDTableFromNcCFFiles",  
@@ -91,8 +92,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, //irrelevant
             tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
-
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
     }
 
     /**
@@ -1333,7 +1334,8 @@ directionsForGenerateDatasetsXml() +
 "1,3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
 "2,3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
 "3,3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
-"4,3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n";
+"4,3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
+"...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //read the .ncml via table.readNcCF -- just station info
@@ -1361,14 +1363,14 @@ directionsForGenerateDatasetsXml() +
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-        /* 
+        /* */
         testGenerateDatasetsXml();
         test1(true); //deleteCachedDatasetInfo
         test1(false); 
         testKevin20130109();
         testNoAttName();
         testBridger();
-*/        testNcml();
+        testNcml();
 
         //not usually run
     }

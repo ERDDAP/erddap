@@ -56,8 +56,8 @@ import ucar.nc2.NetcdfFile;
 
 /**
  * This class implements a Thredds (version 3.16 or higher) Dataset Source Plugin for 
- * www.iobis.org data source.
- * See http://www.unidata.ucar.edu/projects/THREDDS/tech/reference/DatasetSource.html .
+ * www.iobis.org data source. See 
+ * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/DatasetSource.html
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2007-05-07
  */

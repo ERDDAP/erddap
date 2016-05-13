@@ -89,7 +89,7 @@ public class GenerateThreddsXml {
      * </ul>
      * 
      * <p> Very terse catalog.xml documentation is at 
-     *   http://www.unidata.ucar.edu/projects/THREDDS/tech/catalog/InvCatalogSpec.html#catalog
+     *   http://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
      * <p> The finished files are in, e.g., on otter
      *   /opt/tomcat1/content/thredds/Satellite/aggregsatAG/ssta/catalog.xml
      * <p> Bob has some of Jerome/Yao's handmade files
@@ -557,7 +557,8 @@ public class GenerateThreddsXml {
                                      //vocabulary name is required, but CF standard name list (and hence
                                      //DataSet.properties) often doesn't have an appropriate standardName!    
                                      //Yao had non-standard name, e.g., Wind Stress.  
-                                     //Examples in http://www.unidata.ucar.edu/projects/THREDDS/tech/catalog/InvCatalogSpec.html#catalog
+                                     //Examples in 
+                                     //http://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
                                      //  are like Yao's -- not strict CF, but closer -- just humanized versions.
                                      //Tests with thredds show that value = "" is fine with Thredds.
                                      "vocabulary_name=\"" + standardName + "\" " + 

@@ -347,8 +347,8 @@ public class EDDTableFromDatabase extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
-     *        http://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *        http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -638,7 +638,7 @@ public class EDDTableFromDatabase extends EDDTable{
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //good summary of using statements, queries, resultSets, ...
-        //  http://download.oracle.com/javase/7/docs/guide/jdbc/getstart/resultset.html
+        //  https://docs.oracle.com/javase/7/docs/api/java/sql/ResultSet.html
 
         //get the sourceDapQuery (a query that the source can handle)
         StringArray resultsVariables    = new StringArray();
@@ -654,9 +654,12 @@ public class EDDTableFromDatabase extends EDDTable{
         //orderBy...? database handles it if sourceCanOrderBy   = PARTIAL or YES
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
         //but orderBy may be slow/hard for database (faster to do it in erddap?)
-        //Checking for >1 distinct() or orderBy has already been done by getSourceQueryFromDapQuery.
+        //Checking for >1 orderBy has already been done by getSourceQueryFromDapQuery.
         String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
-        boolean distinct = false;
+        //If orderByMin|Max|MinMax and distinct() is requested, distinct isn't necessary
+        //but keep it because it may significantly reduce data transmitted from database to ERDDAP.
+        boolean distinct = false; 
+        StringArray distinctOrderBy = null; //used as queryOrderBy if distinct() and no queryOrderBy
         StringArray queryOrderBy = null;  //the query orderBy or distinct source variable names 
         for (int pi = 0; pi < parts.length; pi++) {
             String p = parts[pi];
@@ -668,7 +671,7 @@ public class EDDTableFromDatabase extends EDDTable{
                 //To ERDDAP,    DISTINCT does imply a sort order.
                 //So if database is going to handle DISTINCT, also tell it to sort the results.
                 //http://stackoverflow.com/questions/691562/does-select-distinct-imply-a-sort-of-the-results
-                queryOrderBy = (StringArray)(resultsVariables.clone());
+                distinctOrderBy = (StringArray)(resultsVariables.clone());
                 //String2.log(">>distinct() -> queryOrderBy=" + queryOrderBy.toString());
 
             } else if (p.startsWith("orderBy") && //doesn't matter if orderByMax|Min|MinMax|... 
@@ -689,6 +692,9 @@ public class EDDTableFromDatabase extends EDDTable{
                 }
             }
         }
+        //if no orderBy, use distinct order (if any)
+        if (queryOrderBy == null)
+            queryOrderBy = distinctOrderBy;
 
         //no need to further prune constraints
 
@@ -1656,7 +1662,7 @@ expected =
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"" + today + "T.{8}Z \\(source database\\)\n" +
 today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
-"    String infoUrl \"http://swfsc.noaa.gov/erd.aspx\";\n" +
+"    String infoUrl \"https://swfsc.noaa.gov/erd.aspx\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"birthdate, category, first, height, last, weight\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -1791,7 +1797,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "A\n" +
 "B\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("  orderBy subsetVars time=" + (System.currentTimeMillis() - eTime)); 
 
             //orderBy()  
             eTime = System.currentTimeMillis();
@@ -1807,7 +1813,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "B,Smith,Stan\n" +
 ",Zule,Zele\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime)); 
 
             //orderBy()  
             eTime = System.currentTimeMillis();
@@ -1818,7 +1824,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
                        tDatasetID.equals("testMyDatabasePartial")?
 //ERDDAP sorts "" at top.
 "category,last,first\n" +
-",,\n" +
+",,\n" + //units
 ",Zule,Zele\n" +
 "A,Bucher,Bob\n" +
 "A,Johnson,John\n" +
@@ -1826,7 +1832,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 "B,Smith,Stan\n" :
 //Postgres sorts "" at bottom
 "category,last,first\n" +
-",,\n" +
+",,\n" + //units
 "A,Bucher,Bob\n" +
 "A,Johnson,John\n" +
 "B,Bach,Betty\n" +
@@ -1834,7 +1840,31 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 ",Zule,Zele\n";
 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
-            String2.log("  distinct time=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("  orderBy time=" + (System.currentTimeMillis() - eTime)); 
+
+            //orderBy() and distinct()
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"category,last\")&distinct()",
+                dir, tedd.className() + "_orderBy4", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            //same expected as above
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  orderBy + distinct time=" + (System.currentTimeMillis() - eTime)); 
+
+            //orderByMax()  and distinct()
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderByMax(\"category,last\")&distinct()",
+                dir, tedd.className() + "_orderBy5", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+//ERDDAP sorts "" at top and it is ERDDAP's orderByMax that is done last
+expected = 
+"category,last,first\n" +
+",,\n" + //units
+",Zule,Zele\n" +
+"A,Johnson,John\n" +
+"B,Smith,Stan\n";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  orderByMax + distinct time=" + (System.currentTimeMillis() - eTime)); 
 
             //no matching data (database determined)
             eTime = System.currentTimeMillis();

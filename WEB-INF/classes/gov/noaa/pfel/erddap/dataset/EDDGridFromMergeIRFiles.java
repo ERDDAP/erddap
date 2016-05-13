@@ -623,7 +623,7 @@ directionsForGenerateDatasetsXml() +
 "<dataset type=\"EDDGridFromMergeIRFiles\" datasetID=\"mergeIR\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>/erddapTest/mergeIR/</fileDir>\n" +
+"    <fileDir>" + String2.unitTestDataDir + "mergeIR/</fileDir>\n" +
 "    <fileNameRegex>merg_[0-9]{10}_4km-pixel\\.gz</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +

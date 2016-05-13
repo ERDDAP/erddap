@@ -20,7 +20,7 @@ import java.util.Vector;
  * THIS WAS NOT FINISHED AND IS NOT ACTIVE.
  * This class can convert an gridded .asc file (in CoastWatch's ArcView format)
  * into an ArcView shapefile.
- * See Shapefile documentation at www.esri.com/library/whitepapers/pdfs/shapefile.pdf
+ * See Shapefile documentation at https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
  *
  * This class only relies on DataStream and String2 -- no other classes(?).
  *

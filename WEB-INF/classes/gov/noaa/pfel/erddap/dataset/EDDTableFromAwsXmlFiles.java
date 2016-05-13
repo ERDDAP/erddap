@@ -64,7 +64,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
         boolean tSourceNeedsExpandedFP_EQ, 
-        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles,
+        boolean tRemoveMVRows) 
         throws Throwable {
 
         super("EDDTableFromAwsXmlFiles", tDatasetID, 
@@ -78,7 +79,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
-            tFileTableInMemory, tAccessibleViaFiles);
+            tFileTableInMemory, tAccessibleViaFiles,
+            tRemoveMVRows);
 
     }
 

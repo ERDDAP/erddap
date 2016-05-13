@@ -19,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -100,9 +101,12 @@ public class SaveOpendap  {
         try {
 
             //open the file (before 'try'); if it fails, no temp file to delete
-            NetcdfFileWriteable out = NetcdfFileWriteable.createNew(fullName + randomInt, false);
+            NetcdfFileWriter out = NetcdfFileWriter.createNew(
+                NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
             
             try {
+                Group outRootGroup = out.addGroup(null, "");
+                out.setFill(false);
 
                 //get the list of dimensions
     //getDimensions is deprecated
@@ -114,7 +118,7 @@ public class SaveOpendap  {
                 for (int i = 0; i < nGlobalDim; i++) {
                     Dimension dim = (Dimension)globalDimList.get(i);
                     String dimName = dim.getName();
-                    out.addDimension(dimName, dim.getLength(), true, //shared
+                    out.addDimension(outRootGroup, dimName, dim.getLength(), true, //shared
                         dim.isUnlimited(), false);  //isUnknownLength
                     if (verbose) String2.log("    dimName" + i + "=" + dimName);
                 }
@@ -125,6 +129,7 @@ public class SaveOpendap  {
                 //add the variables to .nc
                 int nVars = varList.size();
                 if (verbose) String2.log("  nVars=" + nVars);
+                Variable newVars[] = new Variable[nVars];
                 for (int v = 0; v < nVars; v++) {
                     //get the variable
                     Variable var = (Variable)varList.get(v);
@@ -136,19 +141,20 @@ public class SaveOpendap  {
                     int nTDim = tDimList.size();
 
                     //create dimension[] 
-                    Dimension dimArray[] = new Dimension[nTDim];
+                    ArrayList<Dimension> dimList = new ArrayList();
                     for (int d = 0; d < nTDim; d++) 
-                        dimArray[d] = (Dimension)tDimList.get(d);
+                        dimList.add((Dimension)tDimList.get(d));
 
                     //add the variable to 'out'
-                    out.addVariable(varName, var.getDataType(), dimArray); 
+                    newVars[v] = out.addVariable(outRootGroup, varName, 
+                        var.getDataType(), dimList); 
 
                     //write Attributes   (after adding variables)
                     List attList = var.getAttributes();
                     int nAtt = attList.size();
                     for (int a = 0; a < nAtt; a++) {
                         Attribute att = (Attribute)attList.get(a);
-                        out.addVariableAttribute(varName, att.getName(), att.getValues());
+                        newVars[v].addAttribute(att);
                     }
                 }
 
@@ -159,7 +165,7 @@ public class SaveOpendap  {
                 for (int a = 0; a < nGlobalAtt; a++) {
                     Attribute att = (Attribute)globalAttList.get(a);
                     if (verbose) String2.log("  globalAtt name=" + att.getName());
-                    out.addGlobalAttribute(att.getName(), att.getValues());
+                    outRootGroup.addAttribute(att);
                 }
 
                 //leave "define" mode
@@ -172,7 +178,7 @@ public class SaveOpendap  {
                     if (verbose) String2.log("  writing data var=" + var.getName());
 
                     //write the data
-                    out.write(var.getName(), var.read());
+                    out.write(newVars[v], var.read());
                 }
 
                 //I care about this exception

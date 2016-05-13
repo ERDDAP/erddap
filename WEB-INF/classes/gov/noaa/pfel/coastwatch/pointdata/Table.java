@@ -86,7 +86,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 //import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -190,7 +191,6 @@ public class Table  {
          "=", "<", ">"}; 
     public final static String SEQUENCE_NAME = "s"; 
     public static String QUERY_ERROR = "Query error: ";
-    public static String unitTestDataDir = "/erddapTest/";
 
     //Bob: see identical css in ERDDAP's setup.xml <startHeadHtml>
     public static String ERD_TABLE_CSS =
@@ -206,7 +206,7 @@ public class Table  {
     public static BitSet ncCFcc = null;  //null=inactive, new BitSet() = active
 
     /** An arrayList to hold 0 or more PrimitiveArray's with data.  */
-    private ArrayList columns = new ArrayList();  
+    private ArrayList<PrimitiveArray> columns = new ArrayList();  
 
     /** An arrayList to hold the column names. */
     private StringArray columnNames = new StringArray();
@@ -227,7 +227,7 @@ public class Table  {
      * this uses ArrayList to preserve the order of the attributes.
      * This may be null if not in use.
      */
-    private ArrayList columnAttributes = new ArrayList();
+    private ArrayList<Attributes> columnAttributes = new ArrayList();
 
 
     /** testDir is used for tests. */
@@ -290,7 +290,7 @@ public class Table  {
         tTable.globalAttributes = (Attributes)globalAttributes.clone(); 
 
         for (int col = 0; col < columnAttributes.size(); col++) 
-            tTable.columnAttributes.add(((Attributes)columnAttributes.get(col)).clone()); 
+            tTable.columnAttributes.add((Attributes)columnAttributes.get(col).clone()); 
 
         return tTable;
     }
@@ -353,7 +353,7 @@ public class Table  {
         if (col < 0 || col >= columns.size())
             throw new IllegalArgumentException(
                 String2.ERROR + " in Table.getColumn: col=" + col + " must be 0 ... " + (columns.size()-1) + "."); 
-        return (PrimitiveArray)columns.get(col);
+        return columns.get(col);
     }
 
     /**
@@ -368,7 +368,7 @@ public class Table  {
         if (col < 0)
             throw new IllegalArgumentException(
                 String2.ERROR + " in Table.getColumn: columnName=" + columnName + " not found."); 
-        return (PrimitiveArray)columns.get(col);
+        return columns.get(col);
     }
 
     /**
@@ -441,7 +441,7 @@ public class Table  {
     public void writeRowToDOS(int row, DataOutputStream dos) throws Exception {
         int nColumns = columns.size();
         for (int col = 0; col < nColumns; col++) 
-            ((PrimitiveArray)columns.get(col)).writeDos(dos, row);
+            columns.get(col).writeDos(dos, row);
     }
 
     /** 
@@ -451,7 +451,7 @@ public class Table  {
     public void readRowFromDIS(DataInputStream dis) throws Exception {
         int nColumns = columns.size();
         for (int col = 0; col < nColumns; col++) 
-            ((PrimitiveArray)columns.get(col)).readDis(dis, 1); //read 1 value
+            columns.get(col).readDis(dis, 1); //read 1 value
     }
 
     /**
@@ -1382,6 +1382,7 @@ public class Table  {
      * This shows row numbers.
      * 
      * @param showFirstNRows  use Integer.MAX_VALUE for all rows.
+     *  If not all rows are shown, this adds a "..." line to the output.
      */
     public String toCSVString(int showFirstNRows) {
         if (showFirstNRows < 0) 
@@ -1400,6 +1401,9 @@ public class Table  {
     /**
      * This is convenience for dataToCSVString(int showFirstNRows, showRowNumber=true).
      * This shows row numbers.
+     * 
+     * @param showFirstNRows  use Integer.MAX_VALUE for all rows.
+     *  If not all rows are shown, this adds a "..." line to the output.
      */
     public String dataToCSVString(int showFirstNRows) {
         return dataToCSVString(showFirstNRows, true);
@@ -1409,17 +1413,28 @@ public class Table  {
      * This prints the data to a CSV table.
      * 
      * @param showFirstNRows  use Integer.MAX_VALUE for all rows.
+     *  If not all rows are shown, this adds a "..." line to the output.
      */
     public String dataToCSVString(int showFirstNRows, boolean showRowNumber) {
+        return dataToCSVString(0, showFirstNRows, showRowNumber);
+    }
+
+    /**
+     * This prints a range of rows to a CSV table.
+     * 
+     * @param start the first row to be included
+     * @param stop one past the last row to be included.
+     *  If not all rows are shown, this adds a "..." line to the output.
+     */
+    public String dataToCSVString(int start, int stop, boolean showRowNumber) {
         ensureValid();
-        if (showFirstNRows < 0) 
-            return "";
+        start = Math.max(start, 0);
+        stop = Math.min(stop, nRows());
         StringBuilder sb = new StringBuilder();
         int nCols = nColumns();
-        showFirstNRows = Math.min(showFirstNRows, nRows());
         sb.append((showRowNumber? "row," : "") + 
             getColumnNamesCSVString() + "\n");
-        for (int row = 0; row < showFirstNRows; row++) {
+        for (int row = start; row < stop; row++) {
             if (showRowNumber)
                 sb.append(row + ",");
             for (int col = 0; col < nCols; col++) {
@@ -1434,8 +1449,11 @@ public class Table  {
                     sb.append(",");
             }
         }
+        if (stop < nRows())
+            sb.append("...\n");
         return sb.toString();
     }
+
 
     /**
      * This makes a string representation (toString(true)) of this point data.
@@ -1528,7 +1546,7 @@ public class Table  {
      * @return the ArrayList with the attributes for the column
      */
     public Attributes columnAttributes(int column) {
-        return (Attributes)columnAttributes.get(column);
+        return columnAttributes.get(column);
     }
 
     /**
@@ -2383,7 +2401,7 @@ public class Table  {
         String2.log("\nTable.testReadAsciiCsvASCIIFile");
         String results, expected;
         StringArray sa = new StringArray();
-        String fileName = "/erddapTest/csvAscii.txt";
+        String fileName = String2.unitTestDataDir + "csvAscii.txt";
         Table table;
 
 //    public void readASCII(String fullFileName, int columnNamesLine, int dataStartLine,
@@ -2468,7 +2486,7 @@ public class Table  {
         String2.log("\nTable.testReadAsciiSsvASCIIFile");
         String results, expected;
         StringArray sa = new StringArray();
-        String fileName = "/erddapTest/ssvAscii.txt";
+        String fileName = String2.unitTestDataDir + "ssvAscii.txt";
         Table table;
 
 //    public void readASCII(String fullFileName, int columnNamesLine, int dataStartLine,
@@ -2846,7 +2864,7 @@ public class Table  {
         String2.log("\nTable.testReadColumnarASCIIFile");
         String results, expected;
         StringArray sa = new StringArray();
-        String fullFileName = "/erddapTest/columnarAscii.txt";
+        String fullFileName = String2.unitTestDataDir + "columnarAscii.txt";
         String colNames[] = {
             "aDouble", "aString","aChar","aBoolean","aByte","aShort", "anInt","aLong","aFloat"};
         int start[] = {       
@@ -3511,7 +3529,7 @@ public class Table  {
 "99130000000005,NAD 83,Location recorded as received from official permit application converted to NAD83 if required,4301,G.L.,ft,verti" +
 "cal,4301,701,Onondaga Limestone,108,F,Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwis" +
 "e used given bottom hole temperature on log header if available,4280,Marcellus Shale,Well Temperature Log,TL | GR,38.894705000000044,-" +
-"81.799129999999934,,,,\n";
+"81.799129999999934,,,,\n...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         
@@ -5376,25 +5394,1238 @@ Dataset {
     }
 
 
-    /** This tests readNDNC. */
-    public static void testReadArgoProfile() throws Exception {
+    /**
+     * This reads and flattens a group of variables which share dimensions
+     * from a multidimensional .nc file.  (A new alternative to readNDNc().)
+     * One difference between using this and readNcCF: this doesn't require/expect
+     * that the file follows the nc CF DSG MA standard.
+     * <br>This does not unpack the values or convert to standardMissingValues.
+     * 
+     * @param fullName This may be a local file name, an "http:" address of a
+     *   .nc file, an .ncml file (which must end with ".ncml"), or an opendap url.
+     *   <p>If the fullName is an http address, the name needs to start with "http://" 
+     *   or "https://" (upper or lower case) and the server needs to support "byte ranges"
+     *   (see ucar.nc2.NetcdfFile documentation). 
+     *   But this is very slow, so not recommended.
+     * @param loadVarNames  
+     *   If loadVarNames is specified, those variables will be loaded.
+     *   If loadVarNames isn't specified, this method reads vars which use
+     *   the specified loadDimNames.
+     *   <br>If a specified var isn't in the file, there won't be a column 
+     *   in the results table for it and it isn't an error.
+     * @param loadDimNames. If loadVarNames is specified, this is ignored.  
+     *   If loadDimNames is used, all variables using any of these dimensions
+     *   (and dimension-less variables) will be loaded.
+     *   Don't include string-length dimensions.
+     *   Almost always, there will be 1+ variables which use all of these dimensions.
+     *   If a given dimension isn't it the file, it is removed from the list.
+     *   If loadDimNames isn't specified (or size=0), this method finds the var which uses
+     *     the most dimensions, and uses for loadDimNames.
+     *   So if you want to get just the scalar vars, request a nonexistent
+     *      dimension (e.g., ZZTOP).
+     * @param getMetadata if true, global and variable metadata is read
+     * @param trimStrings if true, string values are trimmed.
+     * @param removeMVRows This removes any block of rows at the
+     *   end of a group where all the values are missing_value, _FillValue,
+     *   or the CoHort ...Array native missing value (or char=#32 for CharArrays).
+     *   This is for the CF DSG Multidimensional Array file type and similar files.
+     *   If true, this does the proper test and so always loads all the 
+     *   max dim variables, so it may take extra time. 
+     * @param conVars the names of the constraint variables.
+     *   It is up to this method how much they will be used.
+     *   Currently, the constraints are just used for *quick* tests to see if the
+     *   file has no matching data.  May be null.
+     * @param conOps the operators for the constraints.
+     *   All ERDDAP ops are supported. May be null.
+     * @param conVals the values of the constraints. May be null.
+     * @throws Exception if unexpected trouble.
+     *    But if none of the specified loadVariableNames are present
+     *    or a requested dimension's size=0, 
+     *    it is not an error and it returns an empty table.
+     */
+    public void readMultidimNc(String fullName, 
+        StringArray loadVarNames, StringArray loadDimNames, 
+        boolean getMetadata, boolean trimStrings, boolean removeMVRows,
+        StringArray conVars, StringArray conOps, StringArray conVals) throws Exception {
+
+        //clear the table
+        clear();
+        if (loadVarNames == null)
+            loadVarNames = new StringArray();
+        if (loadDimNames == null)
+            loadDimNames = new StringArray();
+        if (verbose) String2.log("Table.readMultidimNc " + fullName);
+        if (reallyVerbose) String2.log("  loadVars:" + loadVarNames); 
+        long time = System.currentTimeMillis();
+        String warningInMethod = "Table.readMultidimNc read " + fullName + ":\n";
+        boolean haveConstraints = 
+            conVars != null && conVars.size() > 0 &&
+            conOps  != null && conOps.size() == conVars.size() &&
+            conVals != null && conVals.size() == conVars.size();
+
+        //read the file
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
+            Group rootGroup = ncFile.getRootGroup();
+
+            //load the global metadata
+            if (getMetadata)
+                NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+
+            //In order to be able to tell the difference between multiDimensional 
+            //char vars and String vars,
+            //I need to know which dims are non-String-length dimensions.
+            //This isn't perfect / fool-proof.
+            //(It is done this way because it easier/more reliable to generate this list
+            //than the list of string dimensions.)
+            HashSet<Dimension> notStringLengthDims = new HashSet();
+            List<Variable> allVars = rootGroup.getVariables();
+            int nAllVars = allVars.size();
+            for (int v = 0; v < nAllVars; v++) {
+                Variable tVar = allVars.get(v);
+                List<Dimension> tDims = tVar.getDimensions(); //won't be null
+                int tnDims = tDims.size();
+                //here, assume the last dim of any multiDim char var
+                //is the string length dimension, so skip it
+                if (tVar.getDataType() == DataType.CHAR) 
+                    tnDims--;
+                for (int d = 0; d < tnDims; d++)
+                    notStringLengthDims.add(tDims.get(d));
+            }
+
+            // *** first half: make loadVars
+            ArrayList<Variable> loadVars = new ArrayList();  //which we will actually load
+            ArrayList<Dimension> loadDims = new ArrayList(); //which we actually need
+            if (loadVarNames.size() > 0) {
+                //loadVarNames was specified
+
+                //gather the loadVars and loadDims
+                loadDimNames.clear();
+                for (int v = 0; v < loadVarNames.size(); v++) { 
+                    Variable var = ncFile.findVariable(loadVarNames.get(v));
+                    if (var == null) {
+                        loadVarNames.remove(v--); //var not in file, so don't try to load it
+                    } else {
+                        loadVars.add(var);
+                        List<Dimension> tDims = var.getDimensions(); //won't be null
+                        boolean isString = var.getDataType() == DataType.CHAR &&
+                            tDims.size() > 0 && 
+                            !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                        int ntDims = tDims.size() - (isString? 1 : 0);
+                        for (int d = 0; d < ntDims; d++) {
+                            Dimension tDim = tDims.get(d);
+                            if (loadDims.indexOf(tDim) < 0) {
+                                loadDims.add(tDim);
+                                loadDimNames.add(tDim.getFullName());
+                            }   
+                        }
+                    }
+                }
+                if (loadVars.size() == 0) {
+                    if (reallyVerbose) String2.log(warningInMethod + 
+                        "Returning an empty table because none of the requested variables are in the file. " +
+                        "time=" + (System.currentTimeMillis() - time));
+                    return;
+                }
+
+            } else {
+                //loadVarNames wasn't specified
+
+                if (loadDimNames.size() == 0) {
+                    //loadDimNames wasn't specified either
+
+                    //find var(s) that use the most dimensions
+                    Variable tVars[] = NcHelper.findMaxDVariables(ncFile);
+                    if (tVars == null || tVars.length == 0) {
+                        //FUTURE: read all static variables
+                        String2.log("Note: The file has no variables with dimensions.");
+                    } else {
+                        //gather loadDims from the first of those vars
+                        Variable tVar = tVars[0];
+                        List<Dimension> tDims = tVar.getDimensions(); //won't be null
+                        boolean isString = tVar.getDataType() == DataType.CHAR &&
+                            tDims.size() > 0 && 
+                            !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                        int ntDims = tDims.size() - (isString? 1 : 0);
+                        for (int d = 0; d < ntDims; d++) {
+                            Dimension dim = tDims.get(d);
+                            loadDims.add(dim);
+                            loadDimNames.add(dim.getFullName());
+                        }
+                    }
+
+                } else {
+                    //loadDimNames was specified
+                    //gather the specified loadDims
+                    for (int d = 0; d < loadDimNames.size(); d++) {
+                        String dimName = loadDimNames.get(d);
+                        Dimension dim = ncFile.findDimension(dimName);
+                        if (dim == null) {
+                            String2.log("Removing dimName=" + dimName + ": it isn't in the file.");
+                            loadDimNames.remove(d--);
+                        } else {
+                            loadDims.add(dim);
+                        }
+                    }
+                    if (loadDimNames.size() == 0) 
+                        String2.log("None of the requested loadDimNames is in the file.");
+                }
+
+                //now, loadDims is known, but loadVars isn't
+                //find vars that use any subset of loadDims (and no others)
+                //including scalar vars
+                boolean dimUsed[] = new boolean[loadDims.size()];
+                LOADVARS_V:
+                for (int v = 0; v < nAllVars; v++) {
+                    Variable var = allVars.get(v);
+                    List<Dimension> tDims = var.getDimensions(); //won't be null
+                    boolean isString = var.getDataType() == DataType.CHAR &&
+                        tDims.size() > 0 && 
+                        !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                    int ntDims = tDims.size() - (isString? 1 : 0);
+                    for (int d = 0; d < ntDims; d++) {
+                        int whichDim = loadDims.indexOf(tDims.get(d));
+                        if (whichDim < 0) 
+                            continue LOADVARS_V;
+                        dimUsed[whichDim] = true;
+                    }
+                    loadVars.add(var);
+                    loadVarNames.add(var.getFullName());
+                }
+                if (loadVars.size() == 0) {
+                    if (reallyVerbose) String2.log(warningInMethod +  
+                        "Returning an empty table because there are no scalar variables " +
+                        "and no variables in the file use any of these dimensions: " + 
+                        loadDimNames + ". " +
+                        "time=" + (System.currentTimeMillis() - time));
+                    return;
+                }
+
+                //remove unused dimensions
+                for (int d = loadDims.size() - 1; d >= 0; d--) { //backwards since may delete
+                    if (!dimUsed[d])
+                        loadDims.remove(d);
+                }
+                if (loadDims.size() == 0)
+                    String2.log("After analysis, loadDims.size is now 0!");
+            }
+
+            //loadVars is known and only uses loadDims
+            //loadDims is known and only has dims used by loadVars
+            if (debugMode) String2.log(
+                ">> loadVars=" + loadVarNames + 
+              "\n>> loadDims=" + loadDimNames);
+            int nLoadVars = loadVars.size();
+
+
+            // *** quick reject file? (by testing constraints on small (scalar and 1D) vars)
+//FUTURE: this could be a little smarter: maintain separate keep bitsets for each 1D var 
+//(and for scalars) so that the constraints are cumulative for each dimension.
+            PrimitiveArray knownPAs[] = new PrimitiveArray[nLoadVars]; //read vars will be cached here
+            if (haveConstraints) {
+                int nCons = conVars.size();
+                
+                //go through the load vars looking for 0D or 1D vars that have constraints
+                for (int v = 0; v < nLoadVars; v++) {
+                    //is there at least 1 constraint of this var?
+                    String varName = loadVarNames.get(v);
+                    int con1 = conVars.indexOf(varName);
+                    if (con1 < 0)
+                        continue;
+
+                    //is this a 0D or 1D var?
+                    Variable tVar = loadVars.get(v);
+                    List<Dimension> tDims = tVar.getDimensions(); //won't be null
+                    boolean isString = tVar.getDataType() == DataType.CHAR &&
+                        tDims.size() > 0 && 
+                        !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                    int ntDims = tDims.size() - (isString? 1 : 0);
+                    if (ntDims > 1)
+                        continue;
+                   
+                    //test it
+                    PrimitiveArray pa = NcHelper.getPrimitiveArray(tVar, isString);
+                    knownPAs[v] = pa;
+                    BitSet keep = new BitSet();
+                    keep.set(0, pa.size());
+                    for (int con = con1; con < nCons; con++) {
+                        if (!conVars.get(con).equals(varName))
+                            continue;
+                        if (pa.applyConstraint(false, //less precise, so more likely to pass the test
+                            keep, conOps.get(con), conVals.get(con)) == 0) {
+                            if (reallyVerbose) String2.log(warningInMethod +
+                                "Returning an empty table because var=" + varName + 
+                                " failed its constraints, including " + 
+                                conOps.get(con) + conVals.get(con) +
+                                ". time=" + (System.currentTimeMillis() - time));
+                            return;
+                        }
+                    }
+                }
+            }
+
+
+            // *** second half: load the loadVars
+            
+            //find vars with all of the loadDims
+            //If loadDims size=0, this finds scalar vars
+            BitSet loaded = new BitSet(nLoadVars); //all false
+            int shape[] = new int[loadDims.size()];
+            ALL_DIMS_V:
+            for (int v = 0; v < nLoadVars; v++) {
+                Variable tVar = loadVars.get(v);
+                List<Dimension> tDims = tVar.getDimensions(); //won't be null
+                boolean isString = tVar.getDataType() == DataType.CHAR &&
+                    tDims.size() > 0 && 
+                    !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                int ntDims = tDims.size() - (isString? 1 : 0);
+                if (ntDims != loadDims.size())
+                    continue;
+                if (nColumns() == 0) {
+                    //first var with all dims: set loadDims to be in that order
+                    for (int d = 0; d < ntDims; d++) {
+                        Dimension dim = tDims.get(d);
+                        loadDims.set(d, dim); //perhaps change loadDims to different order
+                        loadDimNames.set(d, dim.getFullName());
+                        shape[d] = dim.getLength();
+                        if (shape[d] == 0) {
+                            if (reallyVerbose) String2.log(warningInMethod +
+                                "Returning an empty table because dim=" + dim.getFullName() + 
+                                "'s length=0! " +
+                                "time=" + (System.currentTimeMillis() - time));
+                            return;
+                        }
+                    }
+                } else {
+                    //subsequent vars
+                    //ensure same order of same dims. If not, read the var in next section.
+                    for (int d = 0; d < ntDims; d++) {
+                        if (!loadDims.get(d).equals(tDims.get(d))) 
+                            continue ALL_DIMS_V;
+                    }
+                }
+                //yes, load this var, it has all of the dimensions in the expected order
+                Attributes atts = new Attributes();
+                if (getMetadata || removeMVRows)
+                    NcHelper.getVariableAttributes(tVar, atts);  //needed for removeMVRows
+                PrimitiveArray pa = knownPAs[v] != null? knownPAs[v] :  //v is loadVars v
+                    NcHelper.getPrimitiveArray(tVar, isString);
+                knownPAs[v] = null;
+                loaded.set(v);
+//FUTURE: be smarter? just trim values that are STRING_LENGTH long?
+                if (pa instanceof StringArray && trimStrings)
+                    ((StringArray)pa).trimAll();
+                addColumn(nColumns(), tVar.getFullName(), pa, atts);
+            }
+            if (debugMode) String2.log(Math2.memoryString() + "\n" +
+                ">> this table after load varsWithAllDims:\n" + 
+                dataToCSVString(5));
+
+            //if loadDims size is 0, we're done because all scalars have been read
+            if (loadDims.size() == 0) {
+                if (haveConstraints) {
+                    BitSet keep = new BitSet();
+                    keep.set(0, nRows()); //should be just 1 row, all true
+                    int nAfter = tryToApplyConstraints(-1, conVars, conOps, conVals, keep);
+                    if (nAfter == 0) {
+                        if (reallyVerbose) String2.log(warningInMethod +
+                            "Returning an empty table after applying constraints to scalars. " +
+                            "time=" + (System.currentTimeMillis() - time));
+                        clear();
+                        return;
+                    } //else: no need to justKeep() because there is 1 row and it is valid
+                }
+                return;  //empty table if no scalars
+            }
+
+            //make a table with index columns for all indices
+            if (nColumns() == 0) {
+                //no vars have all loadDims
+                if (debugMode) String2.log(Math2.memoryString() + "\n" +
+                    ">> no vars have all loadDims");
+                for (int d = 0; d < loadDims.size(); d++) {
+                    Dimension dim = loadDims.get(d);
+                    shape[d] = dim.getLength();
+                    if (shape[d] == 0) {
+                        if (reallyVerbose) String2.log(warningInMethod +
+                            "Returning an empty table because dim=" + dim.getFullName() + 
+                            "'s length=0! " +
+                            "time=" + (System.currentTimeMillis() - time));
+                        return;
+                    }
+                }
+            }
+            Table allIndicesTable = new Table();
+            allIndicesTable.addIndexColumns(shape);
+            if (debugMode) String2.log(Math2.memoryString() + "\n" +
+                ">> allIndicesTable=" + 
+                allIndicesTable.dataToCSVString(5));
+
+
+            //*** removeMVRows
+            if (removeMVRows && nColumns() > 0) {
+                //ensure all vars that use all loadDims are loaded
+                int onCols = nColumns();
+                REMOVE_MV_V:
+                for (int v = 0; v < nAllVars; v++) {
+                    Variable tVar = allVars.get(v);
+                    if (findColumnNumber(tVar.getFullName()) >= 0) //already in the table
+                        continue;
+                    List<Dimension> tDims = tVar.getDimensions(); //won't be null
+                    boolean isString = tVar.getDataType() == DataType.CHAR &&
+                        tDims.size() > 0 && 
+                        !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                    int ntDims = tDims.size() - (isString? 1 : 0);
+                    if (ntDims != loadDims.size())
+                        continue;
+                    //ensure same order of same dims 
+                    for (int d = 0; d < ntDims; d++) {
+                        if (!loadDims.get(d).equals(tDims.get(d))) 
+                            continue REMOVE_MV_V;
+                    }
+                    //yes, load this var TEMPORARILY, it has all of the dimensions in the expected order
+                    Attributes atts = new Attributes();
+                    NcHelper.getVariableAttributes(tVar, atts);   //needed for removeMVRows
+                    //don't use knownPAs here: different vars and different v's.
+                    PrimitiveArray pa = NcHelper.getPrimitiveArray(tVar, isString);
+//FUTURE: be smarter? just trim values that are STRING_LENGTH long?
+                    if (pa instanceof StringArray && trimStrings)
+                        ((StringArray)pa).trimAll();
+                    addColumn(nColumns(), tVar.getFullName(), pa, atts);
+                }
+
+                //move all the allIndices columns into the main table
+                int nLoadDims = loadDims.size();
+                for (int d = 0; d < nLoadDims; d++) 
+                    addColumn(d, allIndicesTable.getColumnName(d), 
+                        allIndicesTable.getColumn(d), 
+                        allIndicesTable.columnAttributes(d));
+                int nColumns = nColumns(); //including indicesColumns
+                int onRows = nRows();
+
+                //gather the missing_value and _FillValue values for each column
+                boolean isDouble[] = new boolean[nColumns];
+                boolean isLong[]   = new boolean[nColumns];
+                boolean isChar[]   = new boolean[nColumns];
+                double doubleMvs[] = new double[nColumns];
+                double doubleFvs[] = new double[nColumns];
+                long   longMvs[]   = new long[nColumns];
+                long   longFvs[]   = new long[nColumns];
+                for (int c = nLoadDims; c < nColumns; c++) {
+                    PrimitiveArray pa = columns.get(c);
+                    isDouble[c] = pa instanceof FloatArray ||
+                                  pa instanceof DoubleArray;
+                    isLong[c]   = pa instanceof ByteArray  ||
+                                  pa instanceof ShortArray ||
+                                  pa instanceof IntArray   ||
+                                  pa instanceof LongArray;
+                    isChar[c]   = pa instanceof CharArray;
+                    if (isDouble[c]) {
+                        doubleMvs[c] = columnAttributes(c).getDouble("missing_value");
+                        doubleFvs[c] = columnAttributes(c).getDouble("_FillValue");
+                    } else if (isLong[c]) {
+                        longMvs[c] = columnAttributes(c).getLong("missing_value");
+                        longFvs[c] = columnAttributes(c).getLong("_FillValue");
+                    }
+                }
+
+                //walk backwards.   Work within each cycle of the last dim.
+                BitSet keep = new BitSet();
+                keep.set(0, onRows); //all true
+                PrimitiveArray lastDimCol = columns.get(nLoadDims - 1);
+                for (int row = onRows - 1; row >= 0; row--) { 
+                    boolean hasData = false;
+                    for (int c = nLoadDims; c < nColumns; c++) {
+                        //if (debugMode && row > onRows - 200)
+                        //    String2.log(">> row=" + row + " col=" + c + " " +
+                        //        (isDouble[c]) + " " + (isLong[c]) + " " + (isChar[c]) + " " + 
+                        //        " val=" + columns.get(c).getString(row));
+                        if (isDouble[c]) {
+                            double d = columns.get(c).getDouble(row);
+                            if (Double.isNaN(d) || 
+                                Math2.almostEqual(5, d, doubleMvs[c]) ||
+                                Math2.almostEqual(5, d, doubleFvs[c])) { 
+                            } else {
+                                hasData = true;
+                                break;
+                            }
+                        } else if (isLong[c]) {
+                            long tl = columns.get(c).getLong(row);
+                            if (tl == Long.MAX_VALUE ||
+                                tl == longMvs[c] ||
+                                tl == longFvs[c]) { 
+                            } else {
+                                hasData = true;
+                                break;
+                            }
+                        } else if (isChar[c]) {
+                            int tc = columns.get(c).getInt(row);
+                            if (tc == 0 ||
+                                tc == 32 ||
+                                tc == Integer.MAX_VALUE) { 
+                            } else {
+                                hasData = true;
+                                break;
+                            }
+                        } else {
+                            String s = columns.get(c).getString(row).trim();
+                            if (s.length() > 0) { 
+                                hasData = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasData) {
+                        //jump to next group
+                        while (lastDimCol.getInt(row) > 0)
+                            row--; //the loop's row-- will get to next group
+                    } else {
+                        keep.clear(row);
+                    }
+                }
+                if (debugMode) {
+                    String2.log(">> removeMVRows nRows before=" + onRows + 
+                        " after=" + keep.cardinality());
+                    //one time debugging:
+                    if (false) {
+                        PrimitiveArray pa = getColumn(nLoadDims);
+                        for (int row = 0; row < onRows; row++) {
+                            if (keep.get(row) && pa.getDouble(row) == -99999) 
+                                String2.log(">> remaining row with mv:\n" +
+                                    dataToCSVString(row-1, row+2, true));
+                        }
+                    }
+                }
+
+                //remove index columns and data columns just added for the MV testing
+                removeColumns(0, nLoadDims);
+                removeColumns(onCols, nColumns()); 
+
+                //apply constraints
+                if (haveConstraints) {
+                    tryToApplyConstraints(-1, conVars, conOps, conVals, keep);
+                    if (debugMode) String2.log(
+                        ">> removeMVRows + constraints nRows before=" + onRows + 
+                        " after=" + keep.cardinality());
+                }
+
+                //just keep
+                justKeep(keep); 
+                allIndicesTable.justKeep(keep); 
+                if (nRows() == 0) {
+                    if (reallyVerbose) String2.log(warningInMethod +
+                        "Returning an empty table after removeMVRows and applying constraints. " +
+                        "time=" + (System.currentTimeMillis() - time));
+                    clear();
+                    return;
+                }
+
+            } else if (haveConstraints && nColumns() > 0) {
+                //apply constraints to vars that have all loadDims
+                int onRows = nRows();
+                BitSet keep = new BitSet();
+                keep.set(0, onRows); //all true
+                int nAfter = tryToApplyConstraints(-1, conVars, conOps, conVals, keep);
+                if (nAfter == 0) {
+                    if (reallyVerbose) String2.log(warningInMethod +
+                        "Returning an empty table after applying constraints. " +
+                        "time=" + (System.currentTimeMillis() - time));
+                    clear();
+                    return;
+                }
+                if (debugMode)
+                    String2.log(Math2.memoryString() + "\n" +
+                        ">> after bigVar constraints, justKeep nRows before=" + 
+                        onRows + " after=" + nAfter);
+                justKeep(keep); 
+                allIndicesTable.justKeep(keep); 
+            } 
+
+            //read all of the other variables:
+            //repeatedly, read batches of vars with same dimensions, and JOIN to main table
+//FUTURE: it would be better if this looked for groups of vars that are constrained FIRST.
+            while (loaded.cardinality() < nLoadVars) {
+                Table lut = new Table(); //look up table which will be JOINed into main table
+                List<Dimension> cDims = null;
+                int ncDims = -1;
+
+                BATCH_V:
+                for (int v = 0; v < nLoadVars; v++) {
+                    if (loaded.get(v))
+                        continue;
+                    //if (debugMode) {
+                    //    String2.log(">> v=" + v + " cDims==null?" + (cDims==null) +
+                    //        " lut: nCols=" + lut.nColumns() + " nRows=" + lut.nRows());
+                    //    String2.log(">> lut=" + lut.dataToCSVString(5));
+                    //}
+
+                    //look for an unloaded var (and other vars with same dimensions)
+                    Variable tVar = loadVars.get(v);
+                    List<Dimension> tDims = tVar.getDimensions(); //won't be null
+                    boolean isString = tVar.getDataType() == DataType.CHAR &&
+                        tDims.size() > 0 && 
+                        !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
+                    int ntDims = tDims.size() - (isString? 1 : 0);
+                    if (cDims == null) {
+                        //this is the first variable found in this loop
+                        cDims = tDims;
+                        ncDims = ntDims;
+                        int cShape[] = new int[ncDims];
+                        for (int d = 0; d < ncDims; d++) {
+                            //which dim is it in loadDims?
+                            Dimension cDim = cDims.get(d);
+                            cShape[d] = cDim.getLength();  
+                            int whichDim = loadDims.indexOf(cDim);
+                            //insert that index in main table
+                            addColumn(d, "_index_" + whichDim, 
+                                allIndicesTable.getColumn(whichDim)); //will throw error if whichDim=-1
+                        }
+
+                        //insert index columns in lut
+                        if (ncDims == 0) {
+                            //if scalar vars, make key columns with 0's
+                            //in lut
+                            lut.addColumn(0, "_scalar_", new IntArray(new int[]{0}), 
+                                new Attributes());
+                            //and in main table
+                            IntArray ia = new IntArray(nRows(), false);
+                            ia.addN(nRows(), 0);
+                            //String2.log("nRows=" + nRows() + " ia.size=" + ia.size());
+                            addColumn(0, "_scalar_", ia, new Attributes());
+                        } else {
+                            lut.addIndexColumns(cShape);
+                        }
+
+                    } else {
+                        //does this var have the exact same dimensions, in same order?
+                        if (ntDims != ncDims)
+                            continue BATCH_V;
+                        for (int d = 0; d < ncDims; d++) {
+                            if (!cDims.get(d).equals(tDims.get(d))) 
+                                continue BATCH_V;
+                        }
+                    }
+
+                    //read this var into lut
+                    PrimitiveArray pa = knownPAs[v] != null? knownPAs[v] : //v is loadVars v
+                        NcHelper.getPrimitiveArray(tVar, isString);
+                    knownPAs[v] = null;
+                    loaded.set(v);
+//FUTURE: be smarter? just trim values that are STRING_LENGTH long?
+                    if (pa instanceof StringArray && trimStrings)
+                        ((StringArray)pa).trimAll();
+                    Attributes atts = new Attributes();
+                    if (getMetadata)
+                        NcHelper.getVariableAttributes(tVar, atts);
+                    lut.addColumn(lut.nColumns(), loadVarNames.get(v), 
+                        pa, atts);
+                }
+
+                //apply constraints to lut
+                if (haveConstraints) {
+                    int onLutRows = lut.nRows();
+                    BitSet keep = new BitSet();
+                    keep.set(0, onLutRows); //all true
+                    int nAfter = lut.tryToApplyConstraints(-1, conVars, conOps, conVals, keep);
+                    if (nAfter == 0) {
+                        if (reallyVerbose) String2.log(warningInMethod +
+                            "Returning an empty table after applying constraints to lut. " +
+                            "time=" + (System.currentTimeMillis() - time));
+                        clear();
+                        return;
+                    }
+                    lut.justKeep(keep); 
+                    if (debugMode)
+                        String2.log(Math2.memoryString() + "\n" +
+                            ">> after lut constraints, justKeep lut.nRows before=" + 
+                            onLutRows + " after=" + nAfter);
+                }
+
+                //JOIN lut into main table
+                //if (debugMode) String2.log(">> lut=\n" + lut.dataToCSVString(5));
+                int nMatchingCols = Math.max(1, ncDims); //even scalars have 1 matching column
+                BitSet keep = join(nMatchingCols, 0, "", lut); //"" = mvKey not needed
+                //remove the index columns from the main table
+                removeColumns(0, nMatchingCols); 
+                //if (debugMode) String2.log(">> this table after join:\n" + dataToCSVString(5));
+
+                //remove unmatched rows
+                int tnRows = keep.cardinality();
+                if (tnRows == 0) {
+                    clear();
+                    if (reallyVerbose) String2.log(warningInMethod +
+                        "Returning an empty table after a join. " +
+                        "time=" + (System.currentTimeMillis() - time));
+                    return;
+                }
+                justKeep(keep);
+                allIndicesTable.justKeep(keep);
+            }
+            //and Bob's your uncle! we have all of the data
+
+            //this will be either the order that was requested, or their order in the file
+            reorderColumns(loadVarNames, false); //discardOthers=false, should be irrelevant
+
+
+        } finally  {
+            //make sure ncFile is explicitly closed
+            try {
+                ncFile.close(); 
+            } catch (Exception e2) {
+                //don't care
+            }
+
+        }
+        if (debugMode) String2.log(Math2.memoryString());                
+        if (verbose) String2.log("  readMultidimNc finished. nRows=" + nRows() + 
+            " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time));
+    }
+
+    /** 
+     * This inserts columns starting at column #0 with the indices for the
+     * specified shape (0, 1, 2, ..., for each dimension in shape[]).
+     *
+     * @param shape 
+     * @throws RuntimeException if this requires &gt;= Integer.MAX_VALUE rows.
+     */
+    public void addIndexColumns(int shape[]) {
+        if (shape == null || shape.length ==0)
+            return;
+        int nDims = shape.length;
+        IntArray indexPAs[] = new IntArray[nDims];
+        NDimensionalIndex ndIndex = new NDimensionalIndex(shape);
+        long totalSizeL = ndIndex.size();
+        if (totalSizeL >= Integer.MAX_VALUE)
+            throw new RuntimeException("Too many rows of data.");
+        int totalSize = Math2.narrowToInt(totalSizeL); 
+        for (int d = 0; d < nDims; d++) {
+            indexPAs[d] = new IntArray(totalSize, false);
+            addColumn(d, "_index_" + d, indexPAs[d], new Attributes());
+        }
+        int current[] = ndIndex.getCurrent();
+        while (ndIndex.increment()) {
+            for (int d = 0; d < nDims; d++) 
+                indexPAs[d].add(current[d]);
+        }
+    }
+
+    public static void testAddIndexColumns() throws Exception {
+        Table table = new Table();
+        table.addIndexColumns(new int[]{3,2,4});
+        String results = table.dataToCSVString();
+        String expected = 
+"_index_0,_index_1,_index_2\n" +
+"0,0,0\n" +
+"0,0,1\n" +
+"0,0,2\n" +
+"0,0,3\n" +
+"0,1,0\n" +
+"0,1,1\n" +
+"0,1,2\n" +
+"0,1,3\n" +
+"1,0,0\n" +
+"1,0,1\n" +
+"1,0,2\n" +
+"1,0,3\n" +
+"1,1,0\n" +
+"1,1,1\n" +
+"1,1,2\n" +
+"1,1,3\n" +
+"2,0,0\n" +
+"2,0,1\n" +
+"2,0,2\n" +
+"2,0,3\n" +
+"2,1,0\n" +
+"2,1,1\n" +
+"2,1,2\n" +
+"2,1,3\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+    }
+
+
+    /** This tests readMultidimNc by reading an Argo Profile file. */
+    public static void testReadMultidimNc() throws Exception {
         verbose = true;
         reallyVerbose = true;
-        String2.log("\n*** Table.testReadArgoProfile");
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+        String2.log("\n*** Table.testReadMultidimNc");
         Table table = new Table();
-        String results, expected;
-        String fiName = "/data/argo/latest_data/D20130117_prof.nc";
-        table.readNDNc(fiName, 
-            new String[]{"PLATFORM_NUMBER","PROJECT_NAME","PI_NAME","CYCLE_NUMBER","DIRECTION","DATA_CENTRE",
-            "DC_REFERENCE","DATA_STATE_INDICATOR","DATA_MODE","INST_REFERENCE",
-            "WMO_INST_TYPE","JULD","JULD_QC","JULD_LOCATION","LATITUDE","LONGITUDE",
-            "POSITION_QC","POSITIONING_SYSTEM","PROFILE_PRES_QC","PROFILE_TEMP_QC",
-            "PROFILE_PSAL_QC","PRES","PRES_QC","PRES_ADJUSTED","PRES_ADJUSTED_QC",
-            "PRES_ADJUSTED_ERROR","TEMP","TEMP_QC","TEMP_ADJUSTED","TEMP_ADJUSTED_QC",
-            "TEMP_ADJUSTED_ERROR","PSAL","PSAL_QC","PSAL_ADJUSTED","PSAL_ADJUSTED_QC",
-            "PSAL_ADJUSTED_ERROR"}, 
-            null, 0, 0, true);
-        String2.log(table.toCSVString(5));
+        String fiName = "/erddapTest/nc/2901175_prof.nc";
+        String2.log(NcHelper.dumpString(fiName, false));
+        String results, expectedStart, expectedEnd;
+        /* */
+
+        //** don't specify varNames or dimNames -- it find vars with most dims
+        table.readMultidimNc(fiName, new StringArray(), new StringArray(), 
+            true, true, false, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3);
+        expectedStart = 
+//static vars and vars like  char SCIENTIFIC_CALIB_COEFFICIENT(N_PROF=254, N_CALIB=1, N_PARAM=3, STRING256=256);
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,STATION_PARAMETERS,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PARAMETER,SCIENTIFIC_CALIB_EQUATION,SCIENTIFIC_CALIB_COEFFICIENT,SCIENTIFIC_CALIB_COMMENT,SCIENTIFIC_CALIB_DATE\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,PRES,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,PRES,PRES_ADJUSTED = PRES - dP,dP =  0.1 dbar.,Pressures adjusted by using pressure offset at the sea surface. The quoted error is manufacturer specified accuracy in dbar.,20110628060155\n" +
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,TEMP,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,TEMP,none,none,The quoted error is manufacturer specified accuracy with respect to ITS-90 at time of laboratory calibration.,20110628060155\n" +
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,PSAL,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,PSAL,\"PSAL_ADJUSTED = sw_salt( sw_cndr(PSAL,TEMP,PRES), TEMP, PRES_ADJUSTED ); PSAL_ADJ corrects conductivity cell therm mass (CTM), Johnson et al, 2007, JAOT;\",\"same as for PRES_ADJUSTED; CTL: alpha=0.0267, tau=18.6;\",No significant salinity drift detected; SBE sensor accuracy,20110628060155\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 762, "nRows"); //254*3
+
+        //* same but quick reject based on constraint
+        table.readMultidimNc(fiName, new StringArray(), new StringArray(), 
+            true, true, false, //readMetadata, trimStrings, removeMVRows
+            StringArray.fromCSV("FORMAT_VERSION,FORMAT_VERSION"), //conVars
+            StringArray.fromCSV("=,="), //conOps
+            StringArray.fromCSV("3.1,3.2")); //conVals
+        Test.ensureEqual(table.nRows(), 0, "nRows"); 
+
+
+        //* test don't removeMVRows
+        table.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), 
+            true, true, false, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.toCSVString(3);
+        expectedStart = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 18034 ;\n" +
+"\tDATA_TYPE_strlen = 12 ;\n" +
+"\tFORMAT_VERSION_strlen = 3 ;\n" +
+"\tHANDBOOK_VERSION_strlen = 3 ;\n" +
+"\tREFERENCE_DATE_TIME_strlen = 14 ;\n" +
+"\tDATE_CREATION_strlen = 14 ;\n" +
+"\tDATE_UPDATE_strlen = 14 ;\n" +
+"\tPLATFORM_NUMBER_strlen = 7 ;\n" +
+"\tPROJECT_NAME_strlen = 18 ;\n" +
+"\tPI_NAME_strlen = 11 ;\n" +
+"\tDATA_CENTRE_strlen = 2 ;\n" +
+"\tDC_REFERENCE_strlen = 14 ;\n" +
+"\tDATA_STATE_INDICATOR_strlen = 2 ;\n" +
+"\tPLATFORM_TYPE_strlen = 4 ;\n" +
+"\tFLOAT_SERIAL_NO_strlen = 13 ;\n" +
+"\tFIRMWARE_VERSION_strlen = 6 ;\n" +
+"\tWMO_INST_TYPE_strlen = 3 ;\n" +
+"\tPOSITIONING_SYSTEM_strlen = 5 ;\n" +
+"\tVERTICAL_SAMPLING_SCHEME_strlen = 26 ;\n" +
+"variables:\n" +
+"\tchar DATA_TYPE(row, DATA_TYPE_strlen) ;\n" +
+"\t\tDATA_TYPE:conventions = \"Argo reference table 1\" ;\n" +
+"\t\tDATA_TYPE:long_name = \"Data type\" ;\n" +
+"\tchar FORMAT_VERSION(row, FORMAT_VERSION_strlen) ;\n" +
+"\t\tFORMAT_VERSION:long_name = \"File format version\" ;\n" +
+"\tchar HANDBOOK_VERSION(row, HANDBOOK_VERSION_strlen) ;\n" +
+"\t\tHANDBOOK_VERSION:long_name = \"Data handbook version\" ;\n" +
+"\tchar REFERENCE_DATE_TIME(row, REFERENCE_DATE_TIME_strlen) ;\n" +
+"\t\tREFERENCE_DATE_TIME:conventions = \"YYYYMMDDHHMISS\" ;\n" +
+"\t\tREFERENCE_DATE_TIME:long_name = \"Date of reference for Julian days\" ;\n" +
+"\tchar DATE_CREATION(row, DATE_CREATION_strlen) ;\n" +
+"\t\tDATE_CREATION:conventions = \"YYYYMMDDHHMISS\" ;\n" +
+"\t\tDATE_CREATION:long_name = \"Date of file creation\" ;\n" +
+"\tchar DATE_UPDATE(row, DATE_UPDATE_strlen) ;\n" +
+"\t\tDATE_UPDATE:conventions = \"YYYYMMDDHHMISS\" ;\n" +
+"\t\tDATE_UPDATE:long_name = \"Date of update of this file\" ;\n" +
+"\tchar PLATFORM_NUMBER(row, PLATFORM_NUMBER_strlen) ;\n" +
+"\t\tPLATFORM_NUMBER:conventions = \"WMO float identifier : A9IIIII\" ;\n" +
+"\t\tPLATFORM_NUMBER:long_name = \"Float unique identifier\" ;\n" +
+"\tchar PROJECT_NAME(row, PROJECT_NAME_strlen) ;\n" +
+"\t\tPROJECT_NAME:long_name = \"Name of the project\" ;\n" +
+"\tchar PI_NAME(row, PI_NAME_strlen) ;\n" +
+"\t\tPI_NAME:long_name = \"Name of the principal investigator\" ;\n" +
+"\tint CYCLE_NUMBER(row) ;\n" +
+"\t\tCYCLE_NUMBER:_FillValue = 99999 ;\n" +
+"\t\tCYCLE_NUMBER:conventions = \"0...N, 0 : launch cycle (if exists), 1 : first complete cycle\" ;\n" +
+"\t\tCYCLE_NUMBER:long_name = \"Float cycle number\" ;\n" +
+"\tchar DIRECTION(row) ;\n" +
+"\t\tDIRECTION:conventions = \"A: ascending profiles, D: descending profiles\" ;\n" +
+"\t\tDIRECTION:long_name = \"Direction of the station profiles\" ;\n" +
+"\tchar DATA_CENTRE(row, DATA_CENTRE_strlen) ;\n" +
+"\t\tDATA_CENTRE:conventions = \"Argo reference table 4\" ;\n" +
+"\t\tDATA_CENTRE:long_name = \"Data centre in charge of float data processing\" ;\n" +
+"\tchar DC_REFERENCE(row, DC_REFERENCE_strlen) ;\n" +
+"\t\tDC_REFERENCE:conventions = \"Data centre convention\" ;\n" +
+"\t\tDC_REFERENCE:long_name = \"Station unique identifier in data centre\" ;\n" +
+"\tchar DATA_STATE_INDICATOR(row, DATA_STATE_INDICATOR_strlen) ;\n" +
+"\t\tDATA_STATE_INDICATOR:conventions = \"Argo reference table 6\" ;\n" +
+"\t\tDATA_STATE_INDICATOR:long_name = \"Degree of processing the data have passed through\" ;\n" +
+"\tchar DATA_MODE(row) ;\n" +
+"\t\tDATA_MODE:conventions = \"R : real time; D : delayed mode; A : real time with adjustment\" ;\n" +
+"\t\tDATA_MODE:long_name = \"Delayed mode or real time data\" ;\n" +
+"\tchar PLATFORM_TYPE(row, PLATFORM_TYPE_strlen) ;\n" +
+"\t\tPLATFORM_TYPE:conventions = \"Argo reference table 23\" ;\n" +
+"\t\tPLATFORM_TYPE:long_name = \"Type of float\" ;\n" +
+"\tchar FLOAT_SERIAL_NO(row, FLOAT_SERIAL_NO_strlen) ;\n" +
+"\t\tFLOAT_SERIAL_NO:long_name = \"Serial number of the float\" ;\n" +
+"\tchar FIRMWARE_VERSION(row, FIRMWARE_VERSION_strlen) ;\n" +
+"\t\tFIRMWARE_VERSION:long_name = \"Instrument firmware version\" ;\n" +
+"\tchar WMO_INST_TYPE(row, WMO_INST_TYPE_strlen) ;\n" +
+"\t\tWMO_INST_TYPE:conventions = \"Argo reference table 8\" ;\n" +
+"\t\tWMO_INST_TYPE:long_name = \"Coded instrument type\" ;\n" +
+"\tdouble JULD(row) ;\n" +
+"\t\tJULD:_FillValue = 999999.0 ;\n" +
+"\t\tJULD:axis = \"T\" ;\n" +
+"\t\tJULD:conventions = \"Relative julian days with decimal part (as parts of day)\" ;\n" +
+"\t\tJULD:long_name = \"Julian day (UTC) of the station relative to REFERENCE_DATE_TIME\" ;\n" +
+"\t\tJULD:resolution = 0.0 ;\n" +
+"\t\tJULD:standard_name = \"time\" ;\n" +
+"\t\tJULD:units = \"days since 1950-01-01 00:00:00 UTC\" ;\n" +
+"\tchar JULD_QC(row) ;\n" +
+"\t\tJULD_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tJULD_QC:long_name = \"Quality on date and time\" ;\n" +
+"\tdouble JULD_LOCATION(row) ;\n" +
+"\t\tJULD_LOCATION:_FillValue = 999999.0 ;\n" +
+"\t\tJULD_LOCATION:conventions = \"Relative julian days with decimal part (as parts of day)\" ;\n" +
+"\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n" +
+"\t\tJULD_LOCATION:resolution = 0.0 ;\n" +
+"\t\tJULD_LOCATION:units = \"days since 1950-01-01 00:00:00 UTC\" ;\n" +
+"\tdouble LATITUDE(row) ;\n" +
+"\t\tLATITUDE:_FillValue = 99999.0 ;\n" +
+"\t\tLATITUDE:axis = \"Y\" ;\n" +
+"\t\tLATITUDE:long_name = \"Latitude of the station, best estimate\" ;\n" +
+"\t\tLATITUDE:standard_name = \"latitude\" ;\n" +
+"\t\tLATITUDE:units = \"degree_north\" ;\n" +
+"\t\tLATITUDE:valid_max = 90.0 ;\n" +
+"\t\tLATITUDE:valid_min = -90.0 ;\n" +
+"\tdouble LONGITUDE(row) ;\n" +
+"\t\tLONGITUDE:_FillValue = 99999.0 ;\n" +
+"\t\tLONGITUDE:axis = \"X\" ;\n" +
+"\t\tLONGITUDE:long_name = \"Longitude of the station, best estimate\" ;\n" +
+"\t\tLONGITUDE:standard_name = \"longitude\" ;\n" +
+"\t\tLONGITUDE:units = \"degree_east\" ;\n" +
+"\t\tLONGITUDE:valid_max = 180.0 ;\n" +
+"\t\tLONGITUDE:valid_min = -180.0 ;\n" +
+"\tchar POSITION_QC(row) ;\n" +
+"\t\tPOSITION_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tPOSITION_QC:long_name = \"Quality on position (latitude and longitude)\" ;\n" +
+"\tchar POSITIONING_SYSTEM(row, POSITIONING_SYSTEM_strlen) ;\n" +
+"\t\tPOSITIONING_SYSTEM:long_name = \"Positioning system\" ;\n" +
+"\tchar PROFILE_PRES_QC(row) ;\n" +
+"\t\tPROFILE_PRES_QC:conventions = \"Argo reference table 2a\" ;\n" +
+"\t\tPROFILE_PRES_QC:long_name = \"Global quality flag of PRES profile\" ;\n" +
+"\tchar PROFILE_TEMP_QC(row) ;\n" +
+"\t\tPROFILE_TEMP_QC:conventions = \"Argo reference table 2a\" ;\n" +
+"\t\tPROFILE_TEMP_QC:long_name = \"Global quality flag of TEMP profile\" ;\n" +
+"\tchar PROFILE_PSAL_QC(row) ;\n" +
+"\t\tPROFILE_PSAL_QC:conventions = \"Argo reference table 2a\" ;\n" +
+"\t\tPROFILE_PSAL_QC:long_name = \"Global quality flag of PSAL profile\" ;\n" +
+"\tchar VERTICAL_SAMPLING_SCHEME(row, VERTICAL_SAMPLING_SCHEME_strlen) ;\n" +
+"\t\tVERTICAL_SAMPLING_SCHEME:conventions = \"Argo reference table 16\" ;\n" +
+"\t\tVERTICAL_SAMPLING_SCHEME:long_name = \"Vertical sampling scheme\" ;\n" +
+"\tint CONFIG_MISSION_NUMBER(row) ;\n" +
+"\t\tCONFIG_MISSION_NUMBER:_FillValue = 99999 ;\n" +
+"\t\tCONFIG_MISSION_NUMBER:conventions = \"1...N, 1 : first complete mission\" ;\n" +
+"\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n" +
+"\tfloat PRES(row) ;\n" +
+"\t\tPRES:_FillValue = 99999.0f ;\n" +
+"\t\tPRES:axis = \"Z\" ;\n" +
+"\t\tPRES:C_format = \"%7.1f\" ;\n" +
+"\t\tPRES:FORTRAN_format = \"F7.1\" ;\n" +
+"\t\tPRES:long_name = \"Sea water pressure, equals 0 at sea-level\" ;\n" +
+"\t\tPRES:resolution = 1.0f ;\n" +
+"\t\tPRES:standard_name = \"sea_water_pressure\" ;\n" +
+"\t\tPRES:units = \"decibar\" ;\n" +
+"\t\tPRES:valid_max = 12000.0f ;\n" +
+"\t\tPRES:valid_min = 0.0f ;\n" +
+"\tchar PRES_QC(row) ;\n" +
+"\t\tPRES_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tPRES_QC:long_name = \"quality flag\" ;\n" +
+"\tfloat PRES_ADJUSTED(row) ;\n" +
+"\t\tPRES_ADJUSTED:_FillValue = 99999.0f ;\n" +
+"\t\tPRES_ADJUSTED:axis = \"Z\" ;\n" +
+"\t\tPRES_ADJUSTED:C_format = \"%7.1f\" ;\n" +
+"\t\tPRES_ADJUSTED:FORTRAN_format = \"F7.1\" ;\n" +
+"\t\tPRES_ADJUSTED:long_name = \"Sea water pressure, equals 0 at sea-level\" ;\n" +
+"\t\tPRES_ADJUSTED:resolution = 1.0f ;\n" +
+"\t\tPRES_ADJUSTED:standard_name = \"sea_water_pressure\" ;\n" +
+"\t\tPRES_ADJUSTED:units = \"decibar\" ;\n" +
+"\t\tPRES_ADJUSTED:valid_max = 12000.0f ;\n" +
+"\t\tPRES_ADJUSTED:valid_min = 0.0f ;\n" +
+"\tchar PRES_ADJUSTED_QC(row) ;\n" +
+"\t\tPRES_ADJUSTED_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tPRES_ADJUSTED_QC:long_name = \"quality flag\" ;\n" +
+"\tfloat PRES_ADJUSTED_ERROR(row) ;\n" +
+"\t\tPRES_ADJUSTED_ERROR:_FillValue = 99999.0f ;\n" +
+"\t\tPRES_ADJUSTED_ERROR:C_format = \"%7.1f\" ;\n" +
+"\t\tPRES_ADJUSTED_ERROR:FORTRAN_format = \"F7.1\" ;\n" +
+"\t\tPRES_ADJUSTED_ERROR:long_name = \"Contains the error on the adjusted values as determined by the delayed mode QC process\" ;\n" +
+"\t\tPRES_ADJUSTED_ERROR:resolution = 1.0f ;\n" +
+"\t\tPRES_ADJUSTED_ERROR:units = \"decibar\" ;\n" +
+"\tfloat TEMP(row) ;\n" +
+"\t\tTEMP:_FillValue = 99999.0f ;\n" +
+"\t\tTEMP:C_format = \"%9.3f\" ;\n" +
+"\t\tTEMP:FORTRAN_format = \"F9.3\" ;\n" +
+"\t\tTEMP:long_name = \"Sea temperature in-situ ITS-90 scale\" ;\n" +
+"\t\tTEMP:resolution = 0.001f ;\n" +
+"\t\tTEMP:standard_name = \"sea_water_temperature\" ;\n" +
+"\t\tTEMP:units = \"degree_Celsius\" ;\n" +
+"\t\tTEMP:valid_max = 40.0f ;\n" +
+"\t\tTEMP:valid_min = -2.5f ;\n" +
+"\tchar TEMP_QC(row) ;\n" +
+"\t\tTEMP_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tTEMP_QC:long_name = \"quality flag\" ;\n" +
+"\tfloat TEMP_ADJUSTED(row) ;\n" +
+"\t\tTEMP_ADJUSTED:_FillValue = 99999.0f ;\n" +
+"\t\tTEMP_ADJUSTED:C_format = \"%9.3f\" ;\n" +
+"\t\tTEMP_ADJUSTED:FORTRAN_format = \"F9.3\" ;\n" +
+"\t\tTEMP_ADJUSTED:long_name = \"Sea temperature in-situ ITS-90 scale\" ;\n" +
+"\t\tTEMP_ADJUSTED:resolution = 0.001f ;\n" +
+"\t\tTEMP_ADJUSTED:standard_name = \"sea_water_temperature\" ;\n" +
+"\t\tTEMP_ADJUSTED:units = \"degree_Celsius\" ;\n" +
+"\t\tTEMP_ADJUSTED:valid_max = 40.0f ;\n" +
+"\t\tTEMP_ADJUSTED:valid_min = -2.5f ;\n" +
+"\tchar TEMP_ADJUSTED_QC(row) ;\n" +
+"\t\tTEMP_ADJUSTED_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tTEMP_ADJUSTED_QC:long_name = \"quality flag\" ;\n" +
+"\tfloat TEMP_ADJUSTED_ERROR(row) ;\n" +
+"\t\tTEMP_ADJUSTED_ERROR:_FillValue = 99999.0f ;\n" +
+"\t\tTEMP_ADJUSTED_ERROR:C_format = \"%9.3f\" ;\n" +
+"\t\tTEMP_ADJUSTED_ERROR:FORTRAN_format = \"F9.3\" ;\n" +
+"\t\tTEMP_ADJUSTED_ERROR:long_name = \"Contains the error on the adjusted values as determined by the delayed mode QC process\" ;\n" +
+"\t\tTEMP_ADJUSTED_ERROR:resolution = 0.001f ;\n" +
+"\t\tTEMP_ADJUSTED_ERROR:units = \"degree_Celsius\" ;\n" +
+"\tfloat PSAL(row) ;\n" +
+"\t\tPSAL:_FillValue = 99999.0f ;\n" +
+"\t\tPSAL:C_format = \"%9.3f\" ;\n" +
+"\t\tPSAL:FORTRAN_format = \"F9.3\" ;\n" +
+"\t\tPSAL:long_name = \"Practical salinity\" ;\n" +
+"\t\tPSAL:resolution = 0.001f ;\n" +
+"\t\tPSAL:standard_name = \"sea_water_salinity\" ;\n" +
+"\t\tPSAL:units = \"psu\" ;\n" +
+"\t\tPSAL:valid_max = 41.0f ;\n" +
+"\t\tPSAL:valid_min = 2.0f ;\n" +
+"\tchar PSAL_QC(row) ;\n" +
+"\t\tPSAL_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tPSAL_QC:long_name = \"quality flag\" ;\n" +
+"\tfloat PSAL_ADJUSTED(row) ;\n" +
+"\t\tPSAL_ADJUSTED:_FillValue = 99999.0f ;\n" +
+"\t\tPSAL_ADJUSTED:C_format = \"%9.3f\" ;\n" +
+"\t\tPSAL_ADJUSTED:FORTRAN_format = \"F9.3\" ;\n" +
+"\t\tPSAL_ADJUSTED:long_name = \"Practical salinity\" ;\n" +
+"\t\tPSAL_ADJUSTED:resolution = 0.001f ;\n" +
+"\t\tPSAL_ADJUSTED:standard_name = \"sea_water_salinity\" ;\n" +
+"\t\tPSAL_ADJUSTED:units = \"psu\" ;\n" +
+"\t\tPSAL_ADJUSTED:valid_max = 41.0f ;\n" +
+"\t\tPSAL_ADJUSTED:valid_min = 2.0f ;\n" +
+"\tchar PSAL_ADJUSTED_QC(row) ;\n" +
+"\t\tPSAL_ADJUSTED_QC:conventions = \"Argo reference table 2\" ;\n" +
+"\t\tPSAL_ADJUSTED_QC:long_name = \"quality flag\" ;\n" +
+"\tfloat PSAL_ADJUSTED_ERROR(row) ;\n" +
+"\t\tPSAL_ADJUSTED_ERROR:_FillValue = 99999.0f ;\n" +
+"\t\tPSAL_ADJUSTED_ERROR:C_format = \"%9.3f\" ;\n" +
+"\t\tPSAL_ADJUSTED_ERROR:FORTRAN_format = \"F9.3\" ;\n" +
+"\t\tPSAL_ADJUSTED_ERROR:long_name = \"Contains the error on the adjusted values as determined by the delayed mode QC process\" ;\n" +
+"\t\tPSAL_ADJUSTED_ERROR:resolution = 0.001f ;\n" +
+"\t\tPSAL_ADJUSTED_ERROR:units = \"psu\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:Conventions = \"Argo-3.1 CF-1.6\" ;\n" +
+"\t\t:featureType = \"trajectoryProfile\" ;\n" +
+"\t\t:history = \"2016-04-15T20:47:22Z creation\" ;\n" +
+"\t\t:institution = \"Coriolis GDAC\" ;\n" +
+"\t\t:references = \"http://www.argodatamgt.org/Documentation\" ;\n" +
+"\t\t:source = \"Argo float\" ;\n" +
+"\t\t:title = \"Argo float vertical profile\" ;\n" +
+"\t\t:user_manual_version = \"3.1\" ;\n" +
+"}\n";
+        Test.ensureEqual(results.substring(0, expectedStart.length()), expectedStart, "results=\n" + results);
+
+        results = table.dataToCSVString(3);
+        expectedStart = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,5.9,49,5.8,49,2.4,24.989,49,24.989,49,0.002,34.555,49,34.55511,49,0.01\n" +
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,10.0,49,9.9,49,2.4,24.99,49,24.99,49,0.002,34.554,49,34.55505,49,0.01\n" +
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,20.1,49,20.0,49,2.4,24.69,49,24.69,49,0.002,34.56,49,34.56191,49,0.01\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 18034, "nRows"); //254*71
+ 
+        //and the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        expectedEnd = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1899.9,49,1899.3,49,99999.0,2.055,49,2.055,49,99999.0,34.612,49,34.612,49,99999.0\n" +
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1950.0,49,1949.4,49,99999.0,2.014,49,2.014,49,99999.0,34.617,49,34.617,49,99999.0\n" +
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,99999.0,32,99999.0,32,99999.0,99999.0,32,99999.0,32,99999.0,99999.0,32,99999.0,32,99999.0\n";
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+
+        //* test do removeMVRows
+        table.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows");
+
+         //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        expectedEnd = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1850.0,49,1849.4,49,99999.0,2.106,49,2.106,49,99999.0,34.604,49,34.604,49,99999.0\n" +
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1899.9,49,1899.3,49,99999.0,2.055,49,2.055,49,99999.0,34.612,49,34.612,49,99999.0\n" +
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1950.0,49,1949.4,49,99999.0,2.014,49,2.014,49,99999.0,34.617,49,34.617,49,99999.0\n";
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+        //* same but quick reject based on constraint   LAT,LON 26.587,154.853
+        //*** this takes 9ms while test above takes 99ms!
+        table.readMultidimNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            StringArray.fromCSV("LATITUDE"), //conVars
+            StringArray.fromCSV("="), //conOps
+            StringArray.fromCSV("45")); //conVals
+        Test.ensureEqual(table.nRows(), 0, "nRows"); 
+
+        //* test different dim order (should be rearranged so the same)
+        table.readMultidimNc(fiName, null, StringArray.fromCSV("N_LEVELS, ZZTOP, N_PROF"), 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows");
+ 
+        //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+
+        //* test different varNames
+        table.readMultidimNc(fiName, 
+            StringArray.fromCSV("DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR"), 
+            null, 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows");
+ 
+        //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+
+        //* test do removeMVRows when loadVariables is limited (to ensure all are loaded for the test)
+        table.readMultidimNc(fiName, StringArray.fromCSV("LONGITUDE,PRES,PSAL_ADJUSTED_ERROR"), null,
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,LONGITUDE,PRES,PSAL_ADJUSTED_ERROR\n" +
+"0,123.36499786376953,5.9,0.01\n" +
+"1,123.36499786376953,10.0,0.01\n" +
+"2,123.36499786376953,20.1,0.01\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows"); //same as when all variables were explicitly loaded
+ 
+        //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        expectedEnd = 
+"row,LONGITUDE,PRES,PSAL_ADJUSTED_ERROR\n" + 
+"0,154.853,1850.0,99999.0\n" +  //these rows were're removed because other full-dim vars had values
+"1,154.853,1899.9,99999.0\n" +
+"2,154.853,1950.0,99999.0\n";   
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+
+        //* test read JULD
+        table.readMultidimNc(fiName, StringArray.fromCSV("JULD"), null,
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,JULD\n" +
+"0,21660.34238425926\n" +
+"1,21670.351828703704\n" +
+"2,21680.386898148146\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 254, "nRows"); //same as when all variables were explicitly loaded
+
+        table.removeRows(0, 251);
+        results = table.dataToCSVString(1000, true);
+        expectedStart = 
+"row,JULD\n" +
+"0,24190.451828703703\n" +
+"1,24200.381412037037\n" +
+"2,24210.44662037037\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+ 
+
+        //* test read JULD && PRES
+        table.readMultidimNc(fiName, StringArray.fromCSV("JULD,PRES"), null,
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,JULD,PRES\n" +
+"0,21660.34238425926,5.9\n" + //JULD is correctly JOINed
+"1,21660.34238425926,10.0\n" +
+"2,21660.34238425926,20.1\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows"); //same as when all variables were explicitly loaded
+
+        table.removeRows(0, 17263);
+        results = table.dataToCSVString(1000, true);
+        expectedStart = 
+"row,JULD,PRES\n" +
+"0,24210.44662037037,1850.0\n" + //JULD is correctly JOINed
+"1,24210.44662037037,1899.9\n" +
+"2,24210.44662037037,1950.0\n";
+         Test.ensureEqual(results, expectedStart, "results=\n" + results);
+ 
+
+        //* test read just static vars, in a different order 
+        table.readMultidimNc(fiName, 
+            StringArray.fromCSV("HANDBOOK_VERSION,FORMAT_VERSION,DATA_TYPE"), 
+            null, 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,HANDBOOK_VERSION,FORMAT_VERSION,DATA_TYPE\n" +
+"0,1.2,3.1,Argo profile\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+
+
+        //* test read 0 dim variable -> empty table
+        table.readMultidimNc(fiName, 
+            StringArray.fromCSV("HISTORY_INSTITUTION"), 
+            null, 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+        //* test read non-existent dim -> just scalar vars
+        table.readMultidimNc(fiName, 
+            null, 
+            StringArray.fromCSV("ZZTOP"), 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+
+        //* test read non-existent Var -> empty table
+        table.readMultidimNc(fiName, 
+            StringArray.fromCSV("ZZTOP"), 
+            null, 
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+
+        //done
+        /* */
+        debugMode = oDebugMode;
     }
 
     /** This tests readNDNC. */
@@ -5617,11 +6848,11 @@ Dataset {
 
         //test specify vars (including out-of-order axis var, and nonsense var), !getMetadata
         table.readNDNc(fiName, new String[]{"temperature", "lat", "salinity", "junk"},  "depth", 100, 200, false);
-        results = table.dataToCSVString(Integer.MAX_VALUE);
+        results = table.dataToCSVString();
         expected = 
-"row,time,depth,lat,lon,temperature,salinity\n" +
-"0,6.3612E7,147.0,33.31667,-128.53333,11.45,33.36\n" +
-"1,6.3612E7,194.0,33.31667,-128.53333,9.32,33.55\n";
+"time,depth,lat,lon,temperature,salinity\n" +
+"6.3612E7,147.0,33.31667,-128.53333,11.45,33.36\n" +
+"6.3612E7,194.0,33.31667,-128.53333,9.32,33.55\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test String vars 
@@ -5633,7 +6864,8 @@ Dataset {
 "0,0,52038_A69-1303_1059305,BARBARA BLOCK,-146.1137,60.7172,1.2192849E9,,SALMON SHARK,1.273271649385E9,,,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
 "1,1,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325298E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
 "2,2,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325733E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
-"3,3,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325998E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n";
+"3,3,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325998E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test 4D but request axis vars only, with constraints
@@ -5650,7 +6882,8 @@ Dataset {
 "0,-162.279,23.445,1.20519E9\n" +    //pre 2013-06-20 last 9 was 828
 "1,-162.279,23.445,1.2051936E9\n" +  //and 936 was 864
 "2,-162.279,23.445,1.2051972E9\n" +  //and 972 was 9
-"3,-162.279,23.445,1.2052008E9\n";   //and 2008 was 1936
+"3,-162.279,23.445,1.2052008E9\n" +
+"...\n";   //and 2008 was 1936
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         } catch (Throwable t) {
@@ -5830,39 +7063,39 @@ Dataset {
         //test specify 0D and 1D data vars (out-of-order, implied axis var, and nonsense var), !getMetadata
         table.readNDNc(fiName, new String[]{
             "lon", "lat", "time", "Temperature", "WOD_cruise_identifier", "junk"},  "z", 100, 200, false);
-        results = table.dataToCSVString(Integer.MAX_VALUE);
+        results = table.dataToCSVString();
         expected = 
-"row,z,Temperature,WOD_cruise_identifier,lat,lon,time\n" +
-"0,120.0,7.8,US025547,45.28,-142.24,83369.90625\n" +
-"1,166.0,7.5,US025547,45.28,-142.24,83369.90625\n";
+"z,Temperature,WOD_cruise_identifier,lat,lon,time\n" +
+"120.0,7.8,US025547,45.28,-142.24,83369.90625\n" +
+"166.0,7.5,US025547,45.28,-142.24,83369.90625\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //request axis vars only, with constraints
         table.readNDNc(fiName, new String[]{"z"},  "z", 100, 200, false);
-        results = table.dataToCSVString(4);
+        results = table.dataToCSVString();
         expected = 
-"row,z\n" +
-"0,120.0\n" +
-"1,166.0\n";
+"z\n" +
+"120.0\n" +
+"166.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         //request 0D vars only, with constraints (ignored)
         table.readNDNc(fiName, new String[]{
             "WOD_cruise_identifier", "Project", "junk", "lon", "lat"},  "z", 100, 200, false);
-        results = table.dataToCSVString(4);
+        results = table.dataToCSVString();
         expected = 
-"row,WOD_cruise_identifier,lat,lon,Project\n" +
-"0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
+"WOD_cruise_identifier,lat,lon,Project\n" +
+"US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         //request axis var and 0D vars only, with constraints
         table.readNDNc(fiName, new String[]{
             "WOD_cruise_identifier", "Project", "z", "junk", "lon", "lat"},  "z", 100, 200, false);
-        results = table.dataToCSVString(4);
+        results = table.dataToCSVString();
         expected = 
-"row,z,WOD_cruise_identifier,lat,lon,Project\n" +
-"0,120.0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n" +
-"1,166.0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
+"z,WOD_cruise_identifier,lat,lon,Project\n" +
+"120.0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n" +
+"166.0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
     }
@@ -5878,7 +7111,7 @@ Dataset {
     }
 
     /**
-     * This reads and flattens all specified variables from a .nc CF into a table.
+     * This reads and flattens all specified variables from a .nc CF DSG file into a table.
      * <br>This does not unpack the values or convert to standardMissingValues.
      * 
      * @param fullName The full name of a local file.
@@ -5994,7 +7227,8 @@ Dataset {
                 -1;
             if (nLevels == -1)
                 throw new SimpleException(errorInMethod + 
-                    "featureType=" + featureType + " isn't a valid CF featureType.");
+                    "featureType=" + featureType + " isn't a valid CF featureType." +
+                String2.annotatedString(featureType));
 
             //make ERDDAP-preferred capitalization, e.g., cdm_data_type = TimeSeriesProfile 
             String cdmName = Character.toUpperCase(featureType.charAt(0)) + featureType.substring(1);
@@ -6521,7 +7755,7 @@ Dataset {
                     "  Debug: outerTable has nCols=" + outerTableNColumns + 
                     " nRows=" + outerTableNRows + " nKeepRows=" + outerNGood + 
                     (outerTableNRows == 0? "" : 
-                        "\n" + outerTable.dataToCSVString(5) + (outerTableNRows <= 5? "" : "..."))); 
+                        "\n" + outerTable.dataToCSVString(5))); 
 
 
             //*** read nLevels=1 obs data
@@ -7352,7 +8586,7 @@ Dataset {
                         removeAllColumns();
                         return;
                     }
-                    if (debugMode) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString(5) + "...");
+                    if (debugMode) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString(5));
 
                     //are we done?
                     if (nLoadOrConVariablesInFile == nLoadOrConVariablesInInteriorTable) {
@@ -7564,7 +8798,7 @@ Dataset {
         String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected;
-        String fileName = unitTestDataDir + "CFPointConventions/point/point-H.1/point-H.1.nc"; 
+        String fileName = String2.unitTestDataDir + "CFPointConventions/point/point-H.1/point-H.1.nc"; 
         Attributes gatts;
 
 /* */
@@ -7581,7 +8815,8 @@ Dataset {
 "1,1,179.0,68.0,3.0855444414144264,2248,12.695349,67.73824\n" +
 "2,2,10.0,11.0,3.254759157455159,71,21.193731,48.589462\n" +
 "3,3,106.0,22.0,4.549437636401848,1714,35.339344,39.594116\n" +
-"4,4,75.0,16.0,6.061720687265453,1209,22.593496,28.170149\n";
+"4,4,75.0,16.0,6.061720687265453,1209,22.593496,28.170149\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#1a " + pauseMessage); 
@@ -7738,7 +8973,7 @@ Dataset {
         String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected;
-        String profileFileName = unitTestDataDir + "nccf/Profile.nc"; 
+        String profileFileName = String2.unitTestDataDir + "nccf/Profile.nc"; 
         Attributes gatts;
 
 /* */
@@ -7758,7 +8993,8 @@ Dataset {
 "1,465958,163.08,39.0,1.107754559E9,-58.0,,,,,,,,,9.9,0.0\n" +
 "2,465958,163.08,39.0,1.107754559E9,-96.0,,,,,,,,,9.2,0.0\n" +
 "3,465958,163.08,39.0,1.107754559E9,-138.0,,,,,,,,,8.8,0.0\n" +
-"4,465958,163.08,39.0,1.107754559E9,-158.0,,,,,,,,,8.1,0.0\n";
+"4,465958,163.08,39.0,1.107754559E9,-158.0,,,,,,,,,8.1,0.0\n" +
+"...\n";
         Test.ensureEqual(results, expected, "");
         Test.ensureEqual(table.nRows(), 118, table.toCSVString());
         results = table.columnAttributes(0).toString();
@@ -8063,7 +9299,7 @@ Dataset {
             //ncCF1b and ncCFMA1b have same data, so tests are the same!
             String fileType = type == 0? "contiguous" : "multidimensional";
             //from EDDTableFromNcFiles.testNcCF1b() and testNcCFMA1b();
-            String fileName = unitTestDataDir + "nccf/" + (type == 0? "ncCF1b.nc" : "ncCFMA1b.nc");
+            String fileName = String2.unitTestDataDir + "nccf/" + (type == 0? "ncCF1b.nc" : "ncCFMA1b.nc");
 
             String2.log("\n\n** Testing nLevels=1/" + fileType + "\n" +
                 "  " + fileName);
@@ -8080,7 +9316,8 @@ String2.log(table.toCSVString());
 "1,076.7_100,-124.32333,33.388332,-214.1,1.10064E9,Chauliodus macouni,3,number of larvae\n" +
 "2,076.7_100,-124.32333,33.388332,-214.1,1.10064E9,Danaphos oculatus,4,number of larvae\n" +
 "3,076.7_100,-124.32333,33.388332,-214.1,1.10064E9,Diogenichthys atlanticus,3,number of larvae\n" +
-"4,076.7_100,-124.32333,33.388332,-214.1,1.10064E9,Idiacanthus antrostomus,3,number of larvae\n";
+"4,076.7_100,-124.32333,33.388332,-214.1,1.10064E9,Idiacanthus antrostomus,3,number of larvae\n" +
+"...\n";
             Test.ensureEqual(results, expected, "");
             Test.ensureEqual(table.nRows(), 23, table.toCSVString());
             results = table.columnAttributes(0).toString();
@@ -8324,7 +9561,7 @@ String2.log(table.toCSVString());
         //********* expected errors
         String2.log("\n** Expected errors");
         try {
-            table.readNcCF(unitTestDataDir + "nccf/badIndexed1To6.nc", null, null, null, null);
+            table.readNcCF(String2.unitTestDataDir + "nccf/badIndexed1To6.nc", null, null, null, null);
             throw new SimpleException("Shouldn't get here.");
         } catch (Exception e) {
             if (e.toString().indexOf(
@@ -8436,7 +9673,7 @@ String2.log(table.toCSVString());
         //  this tests if var[scalarDim][obs] was read (e.g., depth[obs]
         //File dims are outerDim=[scalarDim], inner=[time], obs=[obs]
         table = new Table();
-        fileName = unitTestDataDir + "gocdNcCF/gocd_v3_sadcp.nc"; 
+        fileName = String2.unitTestDataDir + "gocdNcCF/gocd_v3_sadcp.nc"; 
         String2.log("\n\n** Testing " + fileName);
         results = NcHelper.dumpString(fileName, false); //"u");  //false);
         String2.log(results);
@@ -8764,7 +10001,8 @@ String2.log(table.toCSVString());
 "1,9999.9,21.0958,-158.3554,1,1,40.0,1,38730.9986,1,-0.008,1,0.169,1,0.1692,1,357.3,1,9999.9,0\n" +
 "2,9999.9,21.0958,-158.3554,1,1,50.0,1,38730.9986,1,-0.01,1,0.165,1,0.1653,1,356.5,1,9999.9,0\n" +
 "3,9999.9,21.0958,-158.3554,1,1,60.0,1,38730.9986,1,-0.009,1,0.163,1,0.1632,1,356.8,1,9999.9,0\n" +
-"4,9999.9,21.0958,-158.3554,1,1,70.0,1,38730.9986,1,-0.012,1,0.173,1,0.1734,1,356.0,1,9999.9,0\n";
+"4,9999.9,21.0958,-158.3554,1,1,70.0,1,38730.9986,1,-0.012,1,0.173,1,0.1734,1,356.0,1,9999.9,0\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = table.dataToCSVString(); //no row numbers
@@ -8858,7 +10096,8 @@ String2.log(table.toCSVString());
 "1,24.34,1,38621.7448,1,0.0279,1,-0.008,1,0.0292,1,106.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
 "2,22.34,1,38621.7448,1,0.0325,1,2.0E-4,1,0.033,1,89.7,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
 "3,20.34,1,38621.7448,1,-0.0094,1,0.0011,1,0.0121,1,277.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"4,18.34,1,38621.7448,1,-0.0383,1,-0.0367,1,0.0532,1,226.2,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n";
+"4,18.34,1,38621.7448,1,-0.0383,1,-0.0367,1,0.0532,1,226.2,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = table.dataToCSVString(); //no row numbers
@@ -8897,7 +10136,8 @@ String2.log(table.toCSVString());
 "1,1980.0,1,31662.46666666679,1,-0.0045,1,0.0933,1,0.0934,1,357.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
 "2,1980.0,1,31662.508333333302,1,-0.0072,1,0.0856,1,0.0859,1,355.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
 "3,1980.0,1,31662.549999999814,1,-0.0065999995,1,0.1025,1,0.1027,1,356.3,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
-"4,1980.0,1,31662.59166666679,1,-0.0036,1,0.11200001,1,0.1121,1,358.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n";
+"4,1980.0,1,31662.59166666679,1,-0.0036,1,0.11200001,1,0.1121,1,358.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         /* */
 
@@ -8940,7 +10180,8 @@ String2.log(table.toCSVString());
             //ncCF2b and ncCFMA2b have same data, so tests are the same!
             String fileType = type == 0? "ragged" : "multidimensional";
             //from EDDTableFromNcFiles.testNcCF2b() and testNcCFMA2b();
-            String fileName = unitTestDataDir + "nccf/" + (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
+            String fileName = String2.unitTestDataDir + "nccf/" + 
+                (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
 
             String2.log("\n\n** Testing nLevels=2/" + fileType + "\n" +
                 "  " + fileName);
@@ -8956,7 +10197,8 @@ String2.log(table.toCSVString());
 "1,33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,10.0,-1.84,35.64\n" +
 "2,33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,20.0,-1.83,35.64\n" +
 "3,33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,30.0,-1.83,35.64\n" +
-"4,33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,49.0,-1.83,35.64\n";
+"4,33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,49.0,-1.83,35.64\n" +
+"...\n";
             Test.ensureEqual(results, expected, "");
             Test.ensureEqual(table.nRows(), 53, table.toCSVString());
             results = table.columnAttributes(0).toString();
@@ -9528,7 +10770,7 @@ if (fileType.equals("ragged"))
 
 /* */
         //***************  profile contiguous
-        fileName = unitTestDataDir + "CFPointConventions/profile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Contiguous-Ragged-MultipleProfiles-H.3.4/" +
             "profile-Contiguous-Ragged-MultipleProfiles-H.3.4.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -9563,7 +10805,8 @@ if (fileType.equals("ragged"))
 "14,11.0,95.0,1,3600,6.854408,21.065716,83.941765\n" +
 "15,11.0,95.0,1,3600,9.321201,31.395382,17.139112\n" +
 "16,176.0,17.0,2,7200,7.2918577,17.65049,66.33111\n" +
-"17,176.0,17.0,2,7200,3.270435,35.854877,17.296724\n";
+"17,176.0,17.0,2,7200,3.270435,35.854877,17.296724\n" +
+"...\n";
 
 
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -9796,7 +11039,7 @@ if (fileType.equals("ragged"))
 
 
         //***************  profile incomplete multidimensional --- 
-        fileName = unitTestDataDir + "CFPointConventions/profile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2/" +
             "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2.nc";
         String2.log("\n\n** Testing incomplete\n" +
@@ -9850,7 +11093,8 @@ if (fileType.equals("ragged"))
 "41,171.0,119.0,0,0,6.9384937,7.619196,-999.9,33.569344\n" +
 "42,155.0,158.0,1,3600,2.1733663,4.981018,-999.9,41.24567\n" +
 "43,155.0,158.0,1,3600,2.189715,16.313164,-999.9,8.15441\n" +
-"44,155.0,158.0,1,3600,9.445334,18.173727,-999.9,52.259445\n";
+"44,155.0,158.0,1,3600,9.445334,18.173727,-999.9,52.259445\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         //  42 * 142 = 5964 obs spaces, so it is incomplete 
         Test.ensureEqual(table.nRows(), 5754, ""); 
@@ -10044,7 +11288,7 @@ if (fileType.equals("ragged"))
 
         //***************  profile indexed        IMPORTANT - I didn't have sample of indexed
     try {
-        fileName = unitTestDataDir + "CFPointConventions/profile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Indexed-Ragged-MultipleProfiles-H.3.5/" +
             "profile-Indexed-Ragged-MultipleProfiles-H.3.5.nc";
         String2.log("\n\n** Testing indexed file\n" +
@@ -10074,7 +11318,8 @@ String2.log(table.dataToCSVString());
 "16,169.0,145.0,2,7200,1.9213479,7.1473145,11.227387\n" +
 "17,169.0,145.0,2,7200,3.328237,27.21546,29.352453\n" +
 "18,112.0,9.0,3,10800,0.009190708,6.3910594,56.909916\n" +
-"19,112.0,9.0,3,10800,0.013856917,13.634793,63.741573\n";
+"19,112.0,9.0,3,10800,0.013856917,13.634793,63.741573\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 100, "");
         results = table.columnAttributes(0).toString();
@@ -10332,7 +11577,7 @@ String2.log(table.dataToCSVString());
 
 
         //***************  profile orthogonal        
-        fileName = unitTestDataDir + "CFPointConventions/profile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/profile/" +
             "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1/" +
             "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1.nc";
         String2.log("\n\n** Testing orthogonal file\n" +
@@ -10396,7 +11641,8 @@ String2.log(table.dataToCSVString());
 "51,109.0,178.0,1,3600,9.60608,27.2307,74.25348\n" +
 "52,109.0,178.0,1,3600,9.839138,15.706074,86.22133\n" +
 "53,109.0,178.0,1,3600,6.2004266,34.751484,79.71265\n" +
-"54,109.0,178.0,1,3600,6.9113455,16.43026,30.387852\n";
+"54,109.0,178.0,1,3600,6.9113455,16.43026,30.387852\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 5964, "");
         results = table.columnAttributes(0).toString();
@@ -10506,7 +11752,7 @@ String2.log(table.dataToCSVString());
 
  
         //***************  timeseries orthogonal 
-        fileName = unitTestDataDir + "CFPointConventions/timeseries/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/timeseries/" +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/" +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc";
         String2.log("\n\n** Testing orthogonal file\n" +
@@ -10529,7 +11775,8 @@ String2.log(table.dataToCSVString());
 "8,101.0,80.0,Station-8,7.470208,0,6.9397545,72.75068\n" +
 "9,167.0,57.0,Station-9,0.6709764,0,28.991974,71.65753\n" +
 "10,8.0,146.0,Station-0,0.8488673,3600,3.0675685,53.43748\n" +
-"11,4.0,53.0,Station-1,1.8478156,3600,37.31892,46.79294\n";
+"11,4.0,53.0,Station-1,1.8478156,3600,37.31892,46.79294\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 1000, "");
         results = table.columnAttributes(5).toString(); //temperature
@@ -10854,7 +12101,8 @@ String2.log(table.dataToCSVString());
 "1,3600\n" +
 "2,7200\n" +
 "3,10800\n" +
-"4,14400\n";
+"4,14400\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 100, "");
 
@@ -10984,7 +12232,7 @@ String2.log(table.dataToCSVString());
      
 
         //***************  timeseries incomplete multidimensional --- 
-        fileName = unitTestDataDir + "CFPointConventions/timeseries/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/timeseries/" +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/" +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc";
         String2.log("\n\n** Testing incomplete file\n" +
@@ -11017,7 +12265,8 @@ String2.log(table.dataToCSVString());
 "20,150.0,73.0,2.6002314,1,Station-1,4.052759,0,25.0,73.0\n" +
 "21,150.0,73.0,2.6002314,1,Station-1,4.052759,3600,29.0,74.0\n" +
 "22,150.0,73.0,2.6002314,1,Station-1,4.052759,7200,33.0,88.0\n" +
-"23,150.0,73.0,2.6002314,1,Station-1,4.052759,10800,25.0,3.0\n";
+"23,150.0,73.0,2.6002314,1,Station-1,4.052759,10800,25.0,3.0\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 200, "");
         results = table.columnAttributes(7).toString();  //temperature
@@ -11279,7 +12528,7 @@ String2.log(table.dataToCSVString());
 
 /* */
         //***************  trajectory contiguous 
-        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3/" +
             "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -11308,7 +12557,8 @@ String2.log(table.dataToCSVString());
 "16,38.596996,-67.64374,1,Trajectory1,10800,3.0,23.615097,59.626125\n" +
 "17,24.085066,-63.833694,1,Trajectory1,14400,4.0,30.743101,35.862038\n" +
 "18,24.221394,-57.373817,1,Trajectory1,18000,5.0,39.391495,28.661589\n" +
-"19,22.637892,-47.858807,1,Trajectory1,21600,6.0,1.2310536,55.708595\n";
+"19,22.637892,-47.858807,1,Trajectory1,21600,6.0,1.2310536,55.708595\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 163, ""); 
         results = table.columnAttributes(5).toString(); //temperature
@@ -11504,7 +12754,7 @@ String2.log(table.dataToCSVString());
         //***************  trajectory multiple multidimensional --- 
    try {
 
-        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1.nc";
         String2.log("\n\n** Testing multiple multidimensional file\n" +
@@ -11763,7 +13013,8 @@ String2.log(table.dataToCSVString());
 "37,41.583824,-52.047775,1,Trajectory1,3600,1.0,23.026224,25.034555\n" +
 "38,14.176689,-15.26571,1,Trajectory1,7200,2.0,21.750353,61.35738\n" +
 "39,23.482225,-69.246284,1,Trajectory1,10800,3.0,25.214777,70.63098\n" +
-"40,8.910114,-12.47847,1,Trajectory1,14400,4.0,29.234118,53.387733\n";
+"40,8.910114,-12.47847,1,Trajectory1,14400,4.0,29.234118,53.387733\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 200, "");
         results = table.columnAttributes(5).toString();  //temperature
@@ -11790,7 +13041,7 @@ String2.log(table.dataToCSVString());
     }
 
         //***************  trajectory single multidimensional --- 
-        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2/" +
             "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2.nc";
         String2.log("\n\n** Testing single multidimensional file\n" +
@@ -11804,7 +13055,8 @@ String2.log(table.dataToCSVString());
 "1,8.972063,-46.335754,3600,1.0,25.658121,1.0647067,0,Trajectory1\n" +
 "2,25.841967,-49.1959,7200,2.0,35.43442,13.059927,0,Trajectory1\n" +
 "3,35.699753,-40.790943,10800,3.0,35.752117,48.576355,0,Trajectory1\n" +
-"4,11.132234,-25.553247,14400,4.0,6.082586,64.91749,0,Trajectory1\n";
+"4,11.132234,-25.553247,14400,4.0,6.082586,64.91749,0,Trajectory1\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 100, "");
         results = table.columnAttributes(4).toString();  //temperature
@@ -11995,7 +13247,7 @@ String2.log(table.dataToCSVString());
             Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  trajectory indexed --- 
-        fileName = unitTestDataDir + "CFPointConventions/trajectory/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/trajectory/" +
             "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4/" +
             "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4.nc";
         String2.log("\n\n** Testing indexed file\n" +
@@ -12009,7 +13261,8 @@ String2.log(table.dataToCSVString());
 "1,26.104128,-2.6626983,3,Trajectory3,111600,7.372036,24.243849,12.862466\n" +
 "2,22.414213,-23.53803,4,Trajectory4,68400,5.7999315,1.4940661,20.668322\n" +
 "3,22.181162,-34.355854,4,Trajectory4,122400,20.127024,6.8310843,55.93755\n" +
-"4,2.177301,-58.388607,5,Trajectory5,162000,1.764841,27.893003,28.2276\n";
+"4,2.177301,-58.388607,5,Trajectory5,162000,1.764841,27.893003,28.2276\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 213, "");
         results = table.columnAttributes(6).toString();  //temperature
@@ -12217,16 +13470,18 @@ String2.log(table.dataToCSVString());
         String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
-        String orthoMultiDimH51FileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
+        String orthoMultiDimH51FileName = String2.unitTestDataDir + 
+            "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1/" +
             "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1.nc";
-        String raggedSingleStationFileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
+        String raggedSingleStationFileName = String2.unitTestDataDir + 
+            "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Ragged-SingleStation-H.5.3/" +
             "timeSeriesProfile-Ragged-SingleStation-H.5.3.nc";
 
   
         //***************  timeSeriesProfile multidimensional --- 
-        fileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1/" +
             "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1.nc";
         String2.log("\n\n** Testing incomplete file\n" +
@@ -12240,7 +13495,8 @@ String2.log(table.dataToCSVString());
 "1,37.5,-76.5,0,Station1,2.5,0,0.1\n" +
 "2,37.5,-76.5,0,Station1,5.0,0,0.2\n" +
 "3,37.5,-76.5,0,Station1,7.5,0,0.3\n" +
-"4,37.5,-76.5,0,Station1,10.0,0,0.4\n";
+"4,37.5,-76.5,0,Station1,10.0,0,0.4\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 240, "");
         results = table.columnAttributes(0).toString();
@@ -12447,7 +13703,7 @@ String2.log(table.dataToCSVString());
             Test.ensureEqual(table.nColumns(), 0, "");
 
         //***************  timeSeriesProfile multidimensional single station
-        fileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Multidimensional-SingleStation-H.5.2/" +
             "timeSeriesProfile-Multidimensional-SingleStation-H.5.2.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -12703,7 +13959,8 @@ String2.log(table.dataToCSVString());
 "8,37.5,-76.5,0.0,0,Station1,3600,31.059647,65.01694\n" +
 "9,32.5,-78.3,0.0,1,Station2,3600,33.374344,22.771135\n" +
 "10,37.5,-76.5,10.0,0,Station1,3600,5.680936,35.675472\n" +
-"11,32.5,-78.3,10.0,1,Station2,3600,17.763374,38.54674\n";
+"11,32.5,-78.3,10.0,1,Station2,3600,17.763374,38.54674\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 800, "");
         results = table.columnAttributes(0).toString();
@@ -12930,7 +14187,8 @@ String2.log(table.dataToCSVString());
 "8,37.5,-76.5,0.0,0,Station1,7200,6.518481,12.735875\n" +
 "9,37.5,-76.5,10.0,0,Station1,7200,4.463567,47.44697\n" +
 "10,37.5,-76.5,20.0,0,Station1,7200,29.448772,20.438272\n" +
-"11,37.5,-76.5,30.0,0,Station1,7200,37.245636,62.655357\n";
+"11,37.5,-76.5,30.0,0,Station1,7200,37.245636,62.655357\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 400, "");
         results = table.columnAttributes(0).toString();
@@ -13142,10 +14400,10 @@ String2.log(table.dataToCSVString());
             StringArray.fromCSV("station_name"), 
             StringArray.fromCSV("="), 
             StringArray.fromCSV("Station1"));
-        results = table.dataToCSVString(5);
+        results = table.dataToCSVString();
         expected = 
-"row,lat,lon,station_name\n" +
-"0,37.5,-76.5,Station1\n";
+"lat,lon,station_name\n" +
+"37.5,-76.5,Station1\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 1, "");
         results = table.columnAttributes(0).toString();
@@ -13296,7 +14554,7 @@ String2.log(table.dataToCSVString());
 
         //*******
         //***************  timeSeriesProfile ragged --- 
-        fileName = unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
+        fileName = String2.unitTestDataDir + "CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Ragged-MultipeStations-H.5.3/" +
             "timeSeriesProfile-Ragged-MultipeStations-H.5.3.nc";
         String2.log("\n\n** Testing timeSeriesProfile ragged file\n" +
@@ -14021,17 +15279,20 @@ String2.log(table.dataToCSVString());
         String pauseMessage = "\nOK?";
         Table table = new Table();
         String results, expected, fileName;
-        String orthoMultiDimH61FileName = unitTestDataDir + "CFPointConventions/trajectoryProfile/" +
+        String orthoMultiDimH61FileName = String2.unitTestDataDir + 
+            "CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1/" +
             "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1.nc";
-        String raggedMultipleStationFileName = unitTestDataDir + "CFPointConventions/trajectoryProfile/" +
+        String raggedMultipleStationFileName = String2.unitTestDataDir + 
+            "CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3/" +
             "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3.nc";
 
 /* */  
         //***************  trajectoryProfile multidimensional single station
         try {
-        fileName = unitTestDataDir + "CFPointConventions/trajectoryProfile/" +
+        fileName = String2.unitTestDataDir + 
+            "CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2/" +
             "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -14293,7 +15554,8 @@ String2.log(table.dataToCSVString());
 "10,39.43245,-57.711514,1,5.0,0,28.784224,13.940006\n" +
 "11,39.43245,-57.711514,1,6.0,0,19.139135,53.46242\n" +
 "12,25.034857,-62.39183,1,0.0,3600,24.302265,62.551056\n" +
-"13,25.034857,-62.39183,1,1.0,3600,11.195762,4.3670874\n";  
+"13,25.034857,-62.39183,1,1.0,3600,11.195762,4.3670874\n" +
+"...\n";  
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 65, "");
         results = table.columnAttributes(0).toString();
@@ -15634,13 +16896,14 @@ String2.log(table.dataToCSVString());
      * @param lookUpTable with its keyCol(s) as column 0+, in the same order
      *   as in this table (but not necessarily with identical columnNames). 
      *   This method won't change the lookUpTable.
-     * @return the number of key values in this column which were matched in the lookUpTable
+     * @return a 'keep' BitSet indicating which rows were matched (set bits) 
+     *   and which rows had no match in the lookUpTable (clear bits).
      * @throws RuntimeException if trouble (e.g., nKeys < 1, keyCol is invalid,
      *   or lookUpTable is null
      */
-    public int join(int nKeys, int keyCol, String mvKey, Table lookUpTable) {
+    public BitSet join(int nKeys, int keyCol, String mvKey, Table lookUpTable) {
         if (debugMode) {
-            String2.log("  Debug: join(nKeys=" + nKeys + 
+            String2.log("  Debug: pre join(nKeys=" + nKeys + 
                 " keyCol=#" + keyCol + "=" + getColumnName(keyCol) +  
                 " mvKey=" + mvKey + "\n" +
                 "    this table:  nColumns=" + nColumns() + ": " + getColumnNamesCSSVString());
@@ -15687,7 +16950,7 @@ String2.log(table.dataToCSVString());
         //make hashtable of keys->new Integer(row#) in lookUpTable
         //so join is fast with any number of rows in lookUpTable
         int lutNRows = lutKeyPA[0].size();
-        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * lutNRows));
+        HashMap<String,Integer> hashMap = new HashMap(Math2.roundToInt(1.4 * lutNRows));
         for (int row = 0; row < lutNRows; row++) {
             StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
             for (int key = 1; key < nKeys; key++) 
@@ -15704,23 +16967,26 @@ String2.log(table.dataToCSVString());
         StringArray insertedColumnNames = new StringArray();
         for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) {
             lutPA[lutCol] = lookUpTable.getColumn(lutCol);
-            newPA[lutCol] = PrimitiveArray.factory(lutPA[lutCol].elementClass(), nRows, false);
-            String colName = lookUpTable.getColumnName(lutCol);
-            insertedColumnNames.add(colName);
+            Class tClass = lutPA[lutCol].elementClass();
             Attributes lutAtts = lookUpTable.columnAttributes(lutCol);
-            addColumn(keyCol + lutCol, colName, newPA[lutCol],
-                (Attributes)(lutAtts.clone()));
             mvString[lutCol] = lutAtts.getString("missing_value"); //preferred
             if (mvString[lutCol] == null) {
                 mvString[lutCol] = lutAtts.getString("_FillValue"); //second choice
-                if (mvString[lutCol] == null) {
+                if (mvString[lutCol] == null) 
                     mvString[lutCol] = ""; //default
-                }
             }
+
+            newPA[lutCol] = PrimitiveArray.factory(tClass, nRows, mvString[lutCol]);
+            String colName = lookUpTable.getColumnName(lutCol);
+            insertedColumnNames.add(colName);
+            addColumn(keyCol + lutCol, colName, newPA[lutCol],
+                (Attributes)(lutAtts.clone()));
         }
 
         //fill the new columns by matching the looking up the key value
         int nMatched = 0;
+        BitSet matched = new BitSet();
+        matched.set(0, nRows); //all true
         for (int row = 0; row < nRows; row++) {
             StringBuilder sb = new StringBuilder(keyPA[0].getString(row));
             for (int key = 1; key < nKeys; key++) 
@@ -15728,18 +16994,17 @@ String2.log(table.dataToCSVString());
             String s = sb.toString();
             if (s.length() == nKeys-1) //just tabs separating ""
                 s = mvKey;
-            Object obj = hashMap.get(s);
+            Integer obj = hashMap.get(s);
             if (obj == null) {
-                //add missing values
+                //don't change the missing values already in the pa
+                matched.clear(row);
                 if (debugMode) notMatchedTally.add("NotMatched", s);
-                for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) 
-                    newPA[lutCol].addString(mvString[lutCol]);
             } else {
                 //copy values from lutPA's to newPA's
                 nMatched++;
-                int fRow = ((Integer)obj).intValue();
+                int fRow = obj.intValue();
                 for (int lutCol = nKeys; lutCol < lutNCols; lutCol++) 
-                    newPA[lutCol].addFromPA(lutPA[lutCol], fRow);
+                    newPA[lutCol].setFromPA(row, lutPA[lutCol], fRow);
             }
         }
         if (reallyVerbose) 
@@ -15754,7 +17019,7 @@ String2.log(table.dataToCSVString());
             ensureValid();
         }
 
-        return nMatched;
+        return matched;
     }
     
     /**
@@ -15907,8 +17172,9 @@ String2.log(table.dataToCSVString());
      *
      * <p>netcdf files use the ucar.nc2.dods classes are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library</a>
-     * from <a href="http://my.unidata.ucar.edu/>Unidata</a> renamed as netcdf-latest.jar.
+     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+     * >NetCDF Java Library</a>
+     * renamed as netcdf-latest.jar.
      * Get slf4j-jdk14.jar from 
      * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
      * and copy it to <context>/WEB-INF/lib.
@@ -16567,7 +17833,10 @@ String2.log(table.dataToCSVString());
      * The table won't be changed.
      *
      * @param idCol  For reallyVerbose only: rejected rows will log the value 
-     *    in this column (e.g., stationID) (or row= if idCol < 0). 
+     *    in this column (e.g., stationID) (or row# if idCol < 0). 
+     * @param keep the bitset that will be modified. 
+     *    If you are setting up keep for this, set the bit for each row to true.
+     *    Rows where the bit is initially false won't even be checked.    
      * @return the number of keep=true rows (may be 0).  No rows are actually removed.
      */
     public int tryToApplyConstraints(int idCol,
@@ -16598,8 +17867,9 @@ String2.log(table.dataToCSVString());
      *    This correctly deals with float, double, and other data types.
      * @param conOp    an EDDTable-operator, e.g., "="
      * @param conVal  
-     * @param keep   only the rows with set bits are tested.
-     *     If a test fails, the bit for that row is cleared.
+     * @param keep the bitset that will be modified. 
+     *    If you are setting up keep for this, set the bit for each row to true.
+     *    Rows where the bit is initially false won't even be checked.    
      * @return keep.cardinality()
      */
     public int tryToApplyConstraint(int idCol,
@@ -16613,6 +17883,9 @@ String2.log(table.dataToCSVString());
      * This is like tryToApplyConstraint, but requires that the constraintVariable exist
      * in the table.
      *
+     * @param keep the bitset that will be modified. 
+     *    If you are setting up keep for this, set the bit for each row to true.
+     *    Rows where the bit is initially false won't even be checked.    
      * @return keep.cardinality()
      */
     public int applyConstraint(int idCol,
@@ -16623,6 +17896,9 @@ String2.log(table.dataToCSVString());
 
     /** The low level method for tryToApplyConstraint and applyConstraint 
      *
+     * @param keep the bitset that will be modified. 
+     *    If you are setting up keep for this, set the bit for each row to true.
+     *    Rows where the bit is initially false won't even be checked.    
      * @return keep.cardinality()
      */
     public int lowApplyConstraint(boolean requireConName, int idCol,
@@ -16680,7 +17956,7 @@ String2.log(table.dataToCSVString());
     /**
      * Make a subset of this data by retaining only the keep(row)==true rows.
      * 
-     * @param keep
+     * @param keep This method won't modify the values in keep.
      */
     public void justKeep(BitSet keep) {
         int nColumns = nColumns();
@@ -18707,8 +19983,12 @@ String2.log(table.dataToCSVString());
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullName + randomInt, false);
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+        
             //items determined by looking at a .nc file; items written in that order 
 
             int nRows = nRows();
@@ -18720,12 +20000,13 @@ String2.log(table.dataToCSVString());
             PrimitiveArray tPA[] = new PrimitiveArray[nColumns];
 
             //define the dimensions
-            Dimension dimension  = nc.addDimension(dimensionName, nRows);
+            Dimension dimension  = nc.addDimension(rootGroup, dimensionName, nRows);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
+            Variable colVars[] = new Variable[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 String tColName = getColumnNameWithoutSpaces(col);
                 PrimitiveArray pa = getColumn(col);
@@ -18739,12 +20020,13 @@ String2.log(table.dataToCSVString());
 
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension = nc.addDimension(
+                    Dimension lengthDimension = nc.addDimension(rootGroup, 
                         tColName + NcHelper.StringLengthSuffix, max);
-                    nc.addVariable(tColName, DataType.CHAR, 
-                        new Dimension[]{dimension, lengthDimension}); 
+                    colVars[col] = nc.addVariable(rootGroup, tColName, DataType.CHAR, 
+                        Arrays.asList(dimension, lengthDimension)); 
                 } else {
-                    nc.addVariable(tColName, DataType.getType(type), new Dimension[]{dimension}); 
+                    colVars[col] = nc.addVariable(rootGroup, tColName, DataType.getType(type), 
+                        Arrays.asList(dimension)); 
                 }
 //nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
             }
@@ -18759,7 +20041,7 @@ String2.log(table.dataToCSVString());
                 globalAttributes.set("id", File2.getNameNoExtension(fullName));
 
             //set the globalAttributes
-            NcHelper.setAttributes(nc, "NC_GLOBAL", globalAttributes);
+            NcHelper.setAttributes(rootGroup, globalAttributes);
 
             for (int col = 0; col < nColumns; col++) {
                 //convert to fake MissingValues   (in time to write attributes)
@@ -18767,7 +20049,7 @@ String2.log(table.dataToCSVString());
                     tPA[col].elementClass() != String.class) //type check sidesteps long->String columns
                     convertToFakeMissingValues(col);
 
-                NcHelper.setAttributes(nc, getColumnNameWithoutSpaces(col), columnAttributes(col));
+                NcHelper.setAttributes(colVars[col], columnAttributes(col));
             }
 
             //leave "define" mode
@@ -18775,8 +20057,7 @@ String2.log(table.dataToCSVString());
 
             //write the data
             for (int col = 0; col < nColumns; col++) {
-                nc.write(getColumnNameWithoutSpaces(col), 
-                    NcHelper.get1DArray(tPA[col].toObjectArray()));
+                nc.write(colVars[col], NcHelper.get1DArray(tPA[col].toObjectArray()));
 
                 //convert back to standard MissingValues
                 if (convertToFakeMissingValues && 
@@ -18840,19 +20121,24 @@ String2.log(table.dataToCSVString());
         int nRows = nRows();
         int strlens[] = new int[nCols];  //all 0's
         boolean fileExists = File2.isFile(fileName);
-        NetcdfFileWriteable file = null;
+        NetcdfFileWriter file = null;
+        Group rootGroup = null;
         Dimension dim;
 
         try {
             
             if (fileExists) {
-                file = NetcdfFileWriteable.openExisting(fileName);
+                file = NetcdfFileWriter.openExisting(fileName);
+                rootGroup = file.getRootGroup();
                 dim = file.findDimension(dimName);
 
             } else {
                 //create the file
-                file = NetcdfFileWriteable.createNew(fileName);
-                NcHelper.setAttributes(file, "NC_GLOBAL", globalAttributes());
+                file = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, 
+                    fileName);
+                rootGroup = file.addGroup(null, "");
+
+                NcHelper.setAttributes(rootGroup, globalAttributes());
 
                 //define unlimited dimension
                 dim = file.addUnlimitedDimension(dimName);
@@ -18860,6 +20146,7 @@ String2.log(table.dataToCSVString());
                 dims.add(dim);
 
                 //define Variables
+                Variable colVars[] = new Variable[nCols];
                 for (int col = 0; col < nCols; col++) {
                     String colName = getColumnName(col);
                     PrimitiveArray pa = column(col);
@@ -18876,14 +20163,15 @@ String2.log(table.dataToCSVString());
                         ArrayList tDims = new ArrayList();
                         tDims.add(dim);
                         tDims.add(tDim);
-                        file.addStringVariable(colName, dims, strlen);                        
+                        colVars[col] = file.addStringVariable(colName, dims, strlen);                        
 
                     } else {
                         //create a non-string variable
-                        file.addVariable(colName, NcHelper.getDataType(pa.elementClass()), dims);
+                        colVars[col] = file.addVariable(rootGroup, colName, 
+                            NcHelper.getDataType(pa.elementClass()), dims);
                     }
 
-                    NcHelper.setAttributes(file, colName, atts);
+                    NcHelper.setAttributes(colVars[col], atts);
                 }
 
                 //switch to create mode
@@ -18941,11 +20229,11 @@ String2.log(table.dataToCSVString());
                     int n = pa.size();
                     for (int i = 0; i < n; i++) 
                         ac.setString(i, pa.getString(i));
-                    file.write(colName, origin2, ac);
+                    file.write(colVars[col], origin2, ac);
                     
                 } else {
                     //write non-string data
-                    file.write(colName, origin1, Array.factory(pa.toArray()));
+                    file.write(colVars[col], origin1, Array.factory(pa.toArray()));
                 }
             }
 
@@ -19062,10 +20350,14 @@ String2.log(table.dataToCSVString());
         }
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullName + randomInt, false);
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
         long make4IndicesTime = -1;
         
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
+
             //if (verbose) {
             //    String2.log("Table.saveAs4DNc" +
             //        "\n     raw X " + getColumn(xColumn).statsString() + 
@@ -19120,15 +20412,16 @@ String2.log(table.dataToCSVString());
             int stringLength[] = new int[nColumns];
 
             //define the dimensions
-            Dimension xDimension  = nc.addDimension(getColumnNameWithoutSpaces(xColumn), nX);
-            Dimension yDimension  = nc.addDimension(getColumnNameWithoutSpaces(yColumn), nY);
-            Dimension zDimension  = nc.addDimension(getColumnNameWithoutSpaces(zColumn), nZ);
-            Dimension tDimension  = nc.addDimension(getColumnNameWithoutSpaces(tColumn), nT);
+            Dimension xDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(xColumn), nX);
+            Dimension yDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(yColumn), nY);
+            Dimension zDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(zColumn), nZ);
+            Dimension tDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(tColumn), nT);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
+            Variable colVars[] = new Variable[nColumns];
             for (int col = 0; col < nColumns; col++) {
 
                 //for x/y/z/t make a 1D variable
@@ -19145,13 +20438,14 @@ String2.log(table.dataToCSVString());
                     if (type == String.class) {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
-                        Dimension lengthDimension = nc.addDimension(
+                        Dimension lengthDimension = nc.addDimension(rootGroup, 
                             tColName + NcHelper.StringLengthSuffix, max);
-                        nc.addVariable(tColName, DataType.CHAR, 
-                            new Dimension[]{aDimension, lengthDimension}); 
+                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                            DataType.CHAR, 
+                            Arrays.asList(aDimension, lengthDimension)); 
                     } else {
-                        nc.addVariable(tColName, DataType.getType(type), 
-                            new Dimension[]{aDimension}); 
+                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                            DataType.getType(type), Arrays.asList(aDimension)); 
                     }
                 } else {
 
@@ -19162,13 +20456,17 @@ String2.log(table.dataToCSVString());
                     if (type == String.class) {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
-                        Dimension lengthDimension  = nc.addDimension(
+                        Dimension lengthDimension  = nc.addDimension(rootGroup, 
                             tColName + NcHelper.StringLengthSuffix, max);
-                        nc.addVariable(tColName, DataType.CHAR, 
-                            new Dimension[]{tDimension, zDimension, yDimension, xDimension, lengthDimension}); 
+                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                            DataType.CHAR, 
+                            Arrays.asList(tDimension, zDimension, yDimension, 
+                                xDimension, lengthDimension)); 
                     } else {
-                        nc.addVariable(tColName, DataType.getType(type), 
-                            new Dimension[]{tDimension, zDimension, yDimension, xDimension}); 
+                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                            DataType.getType(type), 
+                            Arrays.asList(tDimension, zDimension, yDimension, 
+                                xDimension)); 
                     }
 
                     //convert to fake MissingValues
@@ -19187,22 +20485,23 @@ String2.log(table.dataToCSVString());
             globalAttributes.set("id", File2.getNameNoExtension(fullName));
 
             //write Attributes   (after adding variables since mv's and related attributes adjusted)
-            NcHelper.setAttributes(nc, "NC_GLOBAL", globalAttributes);
+            NcHelper.setAttributes(rootGroup, globalAttributes);
             for (int col = 0; col < nColumns; col++) 
-                NcHelper.setAttributes(nc, getColumnNameWithoutSpaces(col), columnAttributes(col));
+                NcHelper.setAttributes(colVars[col], columnAttributes(col));
 
             //create the stringVariable
+            Variable stringVar = null;
             if (stringVariableName != null) {
                 stringVariableName = String2.replaceAll(stringVariableName, " ", "_");
 
-                Dimension lengthDimension = nc.addDimension(
+                Dimension lengthDimension = nc.addDimension(rootGroup, 
                     stringVariableName + NcHelper.StringLengthSuffix, 
                     Math.max(1, stringVariableValue.length())); //nclib wants at least 1
-                nc.addVariable(stringVariableName, DataType.CHAR, 
-                    new Dimension[]{lengthDimension}); 
+                stringVar = nc.addVariable(rootGroup, stringVariableName, DataType.CHAR, 
+                    Arrays.asList(lengthDimension)); 
 
                 //save the attributes
-                NcHelper.setAttributes(nc, stringVariableName, stringVariableAttributes);
+                NcHelper.setAttributes(stringVar, stringVariableAttributes);
             }
 
             //leave "define" mode
@@ -19289,7 +20588,7 @@ String2.log(table.dataToCSVString());
                 }
 
                 //write the data
-                nc.write(getColumnNameWithoutSpaces(col), ar);
+                nc.write(colVars[col], ar);
 
                 //undo fakeMissingValue
                 if  (col != xColumn && col != yColumn && 
@@ -19304,7 +20603,7 @@ String2.log(table.dataToCSVString());
             if (stringVariableName != null) {
                 //ArrayChar.D1 ar = new ArrayChar.D1(stringVariableValue.length());
                 //ar.setString(stringVariableValue);
-                nc.write(stringVariableName, 
+                nc.write(stringVar, 
                     NcHelper.get1DArray(stringVariableValue));
             }
 
@@ -19793,7 +21092,7 @@ String2.log(table.dataToCSVString());
         String query = "SELECT * FROM " + tableName;
         Table table = new Table();
         table.readSql(con, query);
-        String2.log(table.dataToCSVString(5) + "...");
+        String2.log(table.dataToCSVString(5));
     }
 
 
@@ -21064,7 +22363,7 @@ touble: because table is JsonObject, info may not be in expected order
 
     /**
      * This mimics the a simple directory listing web page created by Apache.
-     * <br>It mimics http://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
+     * <br>It mimics https://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
      * stored on Bob's computer as c:/programs/apache/listing.html
      * The hr's on that page cause HTML warnings, but this sticks with mimicking Apache.
      *  See also http://www.ndbc.noaa.gov/data/realtime2/?C=N;O=A
@@ -21254,7 +22553,7 @@ touble: because table is JsonObject, info may not be in expected order
                 }
                 sb.append(
                     "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
-                        "align=\"absbottom\"> " +
+                        "align=\"top\"> " +  
                     "<a href=\"" + 
                     XML.encodeAsHTMLAttribute(dirName + (dirName.equals("..")? "" : "/")) + 
                     "\">" + XML.encodeAsXML(showDirName) + "</a>" +
@@ -21353,7 +22652,7 @@ touble: because table is JsonObject, info may not be in expected order
                 String encodedFileName = XML.encodeAsHTMLAttribute(fileName);
                 sb.append(
                     "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
-                        "align=\"absbottom\"> " +
+                        "align=\"top\"> " +  
                     "<a href=\"" + encodedFileName + "\">" + encodedFileName + "</a>" +
                     String2.makeString(' ',  nameSpaces - fileName.length()) + " " +
                     String2.left(modifiedPA.getString(row), dateSpaces) + " " +
@@ -23196,7 +24495,8 @@ touble: because table is JsonObject, info may not be in expected order
 "row,YY,MM,DD,hh,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS\n" +
 "0,90,01,01,00,161,08.6,10.7,01.50,05.00,04.80,999,1017.2,22.7,22.0,999.0,99.0\n" +
 "1,90,01,01,01,163,09.3,11.3,01.50,05.00,04.90,999,1017.3,22.7,22.0,999.0,99.0\n" +
-"2,90,01,01,01,164,09.2,10.6,01.60,04.80,04.90,999,1017.3,22.7,22.0,999.0,99.0\n";
+"2,90,01,01,01,164,09.2,10.6,01.60,04.80,04.90,999,1017.3,22.7,22.0,999.0,99.0\n" +
+"...\n";
                 Test.ensureEqual(results, expected, "results=\n" + results);
                 Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
                 Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
@@ -23221,7 +24521,7 @@ touble: because table is JsonObject, info may not be in expected order
 
         try {
             //warmup
-            String fileName = "/erddapTest/cPostDet3.files.json"; 
+            String fileName = String2.unitTestDataDir + "cPostDet3.files.json"; 
             long time = 0;
 
             for (int attempt = 0; attempt < 3; attempt++) {
@@ -23287,7 +24587,8 @@ touble: because table is JsonObject, info may not be in expected order
 "row,TIME,DEPTH,LAT,LON,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV,ID\n" +
 "0,1.235556E8,0.0,32.309,-75.483,149,1.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,15.5,-9999999.0,5.4,-9999999.0,-9999999.0,-9999999.0,-0.8,1.3,41002\n" +
 "1,1.235592E8,0.0,32.309,-75.483,145,0.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,13.9,-9999999.0,7.3,-9999999.0,-9999999.0,-9999999.0,-0.2,0.2,41002\n" +
-"2,1.235628E8,0.0,32.309,-75.483,315,1.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,11.4,-9999999.0,6.5,-9999999.0,-9999999.0,-9999999.0,1.0,-1.0,41002\n";
+"2,1.235628E8,0.0,32.309,-75.483,315,1.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,11.4,-9999999.0,6.5,-9999999.0,-9999999.0,-9999999.0,1.0,-1.0,41002\n" +
+"...\n";
                 Test.ensureEqual(results, expected, "results=\n" + results);
                 Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
                 Test.ensureTrue(table.nRows() >= 309736, "nRows=" + table.nRows()); 
@@ -23329,7 +24630,8 @@ touble: because table is JsonObject, info may not be in expected order
 "row,station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
 "0,41009,-80.166,28.519,9.151488E8,0,1.9,2.7,1.02,11.11,6.49,,1021.0,20.4,24.2,-9999999.0,-9999999.0,-9999999.0,-9999999.0,0.0,-1.9\n" +
 "1,41009,-80.166,28.519,9.151524E8,53,1.5,2.8,0.99,11.11,6.67,,1021.0,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" +
-"2,41009,-80.166,28.519,9.15156E8,154,1.0,2.2,1.06,11.11,6.86,,1021.2,20.6,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.4,0.9\n";
+"2,41009,-80.166,28.519,9.15156E8,154,1.0,2.2,1.06,11.11,6.86,,1021.2,20.6,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.4,0.9\n" +
+"...\n";
                 Test.ensureEqual(results, expected, "results=\n" + results);
 
                 Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
@@ -23908,28 +25210,52 @@ expected =
     /** 
      * This tests reading data from a ncCF multidimensional dataset
      * where the dimensions are in the discouraged order (e.g., var[time][station]).
+     * Very large test file has discharge[time=758001][station=18]  4vars[station=18],
+     *   so when flattened 758001 * 18 * 5vars * 8bytes =~545MB
+     * + 2 indexColumns: 758001 * 18 * 2vars * 4bytes =~109MB
+     *
+     * @param readAsNcCF if true, this reads the file via readNcCF.
+     *   If false, this reads the file via readMultidimNc
      */
-    public static void testReadNcCFMATimeSeriesReversed() throws Exception {
-        String2.log("\n*** testReadNcCFMATimeSeriesReversed");
+    public static void testReadNcCFMATimeSeriesReversed(boolean readAsNcCF) throws Exception {
+        String2.log("\n*** testReadNcCFMATimeSeriesReversed readAsNcCF=" + readAsNcCF);
         //time is days since 2006-01-01 00:00:00.  file has  2007-10-01T04 through 2013-11-14T17:06
         boolean oDebug = debugMode;
         debugMode = true;
         Table table = new Table();
         String results, expected;
         long time; 
+        //was "/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc"
+        String fileName = String2.unitTestDataDir + "nccf/MATimeSeriesReversedDim.nc"; 
+        String2.log(NcHelper.dumpString(fileName, false));
+
 /* */
         //               read all vars  when obs is constrained
         String2.log("\n* read all vars  when obs is constrained");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            null, //all vars
-            StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                null, //all vars
+                StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
+        else 
+            table.readMultidimNc(fileName, 
+                null, null, //read default dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
+//EEK! I don't think they should be different.
+//I think readMultidimNc is correct, because the -99999.0 values are from
+//rows with earlier time than valid data rows from same station at later time.
+//I think readNcCF is too aggressive at removing MV rows.
 "discharge,station,time,longitude,latitude\n" +
-"80.98618241999999,1327750.0,3426.6979166667443,-73.5958333,43.26944444\n" +
-"181.2278208,1357500.0,3426.6979166667443,-73.7075,42.78527778\n" +
+(readAsNcCF? "" : 
+"-99999.0,1327750.0,3426.691666666651,-73.5958333,43.26944444\n") +
+"80.98618241999999,1327750.0,3426.6979166667443,-73.5958333,43.26944444\n" + //same station, later time
+(readAsNcCF? "" : 
+"-99999.0,1357500.0,3426.691666666651,-73.7075,42.78527778\n") +
+"181.2278208,1357500.0,3426.6979166667443,-73.7075,42.78527778\n" + //same station, later time
 "183.77633703,1357500.0,3426.708333333372,-73.7075,42.78527778\n" +
 "-56.06735706,1484085.0,3426.691666666651,-75.3976111,39.05830556\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -23937,9 +25263,16 @@ expected =
         //               just read station vars (all stations)  no constraints
         String2.log("\n* just read station vars (all stations)  no constraints");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            StringArray.fromCSV("station,latitude,longitude"), 
-            null, null, null);
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                StringArray.fromCSV("station,latitude,longitude"), 
+                null, null, null);
+        else
+            table.readMultidimNc(fileName, 
+                StringArray.fromCSV("station,latitude,longitude"), 
+                null, //dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                null, null, null);
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
@@ -23964,12 +25297,20 @@ expected =
 "1484080.0,39.01061275,-75.45794828\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
+
         //               just read station vars (a few stations because lat is constrained)
         String2.log("\n* just read station vars (a few stations because lat is constrained)");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            StringArray.fromCSV("station,latitude,longitude"), 
-            StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                StringArray.fromCSV("station,latitude,longitude"), 
+                StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
+        else 
+            table.readMultidimNc(fileName, 
+                StringArray.fromCSV("station,latitude,longitude"), 
+                null, //dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
@@ -23982,9 +25323,16 @@ expected =
         //               just read obs vars  (obs is constrained)
         String2.log("\n* just read obs vars  (obs is constrained)");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            StringArray.fromCSV("time,discharge"), 
-            StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                StringArray.fromCSV("time,discharge"), 
+                StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        else
+            table.readMultidimNc(fileName, 
+                StringArray.fromCSV("time,discharge"), 
+                null, //dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
@@ -24006,58 +25354,101 @@ expected =
         //               read all vars when station is constrained, 
         String2.log("\n* read all vars when station is constrained");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
-            StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+                StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
+        else 
+            table.readMultidimNc(fileName, 
+                StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+                null, //dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
+//EEK! Again, readMultidimNc has additional rows with discharge=MV.
+//I think readMultidimNc is correct.
 "station,latitude,longitude,time,discharge\n" +
 "1463500.0,40.22166667,-74.7780556,638.1666666666279,92.02975275\n" +
 "1463500.0,40.22166667,-74.7780556,638.1770833332557,92.02975275\n" +
 "1463500.0,40.22166667,-74.7780556,638.1875,92.02975275\n" +
 "1463500.0,40.22166667,-74.7780556,638.1979166666279,92.87925815999999\n" +
 "1463500.0,40.22166667,-74.7780556,638.2083333332557,93.72876357\n" +
+(readAsNcCF? "" : 
+"1463500.0,40.22166667,-74.7780556,638.2083333333721,-99999.0\n" +
+"1463500.0,40.22166667,-74.7780556,638.2125000000233,-99999.0\n" +
+"1463500.0,40.22166667,-74.7780556,638.2166666666744,-99999.0\n") +
 "1463500.0,40.22166667,-74.7780556,638.21875,93.72876357\n" +
+(readAsNcCF? "" : 
+"1463500.0,40.22166667,-74.7780556,638.2208333333256,-99999.0\n" +
+"1463500.0,40.22166667,-74.7780556,638.2250000000931,-99999.0\n") +
 "1463500.0,40.22166667,-74.7780556,638.2291666666279,94.86143745\n" +
-"1463500.0,40.22166667,-74.7780556,638.2395833332557,95.71094286\n" +
-"1463500.0,40.22166667,-74.7780556,638.25,95.71094286\n" +
-"1463500.0,40.22166667,-74.7780556,638.2604166666279,95.71094286\n" +
-"1463500.0,40.22166667,-74.7780556,638.2708333332557,97.40995368\n";  //stop there
+(readAsNcCF? "" : 
+"1463500.0,40.22166667,-74.7780556,638.2291666667443,-99999.0\n" +
+"1463500.0,40.22166667,-74.7780556,638.2333333333954,-99999.0\n" +
+"1463500.0,40.22166667,-74.7780556,638.2375000000466,-99999.0\n") +
+"1463500.0,40.22166667,-74.7780556,638.2395833332557,95.71094286\n";  //stop there
         results = results.substring(0, expected.length());
         Test.ensureEqual(results, expected, "results=\n" + results);
-        Test.ensureEqual(table.nRows(), 256610, "wrong nRows");
+        Test.ensureEqual(table.nRows(), readAsNcCF? 256610 : 757994, "wrong nRows");
 
         //               read all data 
         String2.log("\n* read all data");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            null, null, null, null);
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                null, null, null, null);
+        else
+            table.readMultidimNc(fileName, 
+                null, null, //read all dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                null, null, null);
         String2.log("time=" + (System.currentTimeMillis() - time));
-        results = table.dataToCSVString();
+        results = table.dataToCSVString(10);
         expected = 
-"discharge,station,time,longitude,latitude\n" +
-"92.02975275,1463500.0,638.1666666666279,-74.7780556,40.22166667\n" +
-"92.02975275,1463500.0,638.1770833332557,-74.7780556,40.22166667\n" +
-"92.02975275,1463500.0,638.1875,-74.7780556,40.22166667\n" +
-"92.87925815999999,1463500.0,638.1979166666279,-74.7780556,40.22166667\n" +
-"93.72876357,1463500.0,638.2083333332557,-74.7780556,40.22166667\n" +
-"93.72876357,1463500.0,638.21875,-74.7780556,40.22166667\n" +
-"94.86143745,1463500.0,638.2291666666279,-74.7780556,40.22166667\n" +
-"95.71094286,1463500.0,638.2395833332557,-74.7780556,40.22166667\n" +
-"95.71094286,1463500.0,638.25,-74.7780556,40.22166667\n" +
-"95.71094286,1463500.0,638.2604166666279,-74.7780556,40.22166667\n";  //stop there
-        results = results.substring(0, expected.length());
+readAsNcCF?
+"row,discharge,station,time,longitude,latitude\n" +
+"0,92.02975275,1463500.0,638.1666666666279,-74.7780556,40.22166667\n" +
+"1,92.02975275,1463500.0,638.1770833332557,-74.7780556,40.22166667\n" +
+"2,92.02975275,1463500.0,638.1875,-74.7780556,40.22166667\n" +
+"3,92.87925815999999,1463500.0,638.1979166666279,-74.7780556,40.22166667\n" +
+"4,93.72876357,1463500.0,638.2083333332557,-74.7780556,40.22166667\n" +
+"5,93.72876357,1463500.0,638.21875,-74.7780556,40.22166667\n" +
+"6,94.86143745,1463500.0,638.2291666666279,-74.7780556,40.22166667\n" +
+"7,95.71094286,1463500.0,638.2395833332557,-74.7780556,40.22166667\n" +
+"8,95.71094286,1463500.0,638.25,-74.7780556,40.22166667\n" +
+"9,95.71094286,1463500.0,638.2604166666279,-74.7780556,40.22166667\n" +
+"...\n" :
+"row,discharge,station,time,longitude,latitude\n" +
+"0,92.02975275,1463500.0,638.1666666666279,-74.7780556,40.22166667\n" +
+"1,92.02975275,1463500.0,638.1770833332557,-74.7780556,40.22166667\n" +
+"2,92.02975275,1463500.0,638.1875,-74.7780556,40.22166667\n" +
+"3,92.87925815999999,1463500.0,638.1979166666279,-74.7780556,40.22166667\n" +
+"4,93.72876357,1463500.0,638.2083333332557,-74.7780556,40.22166667\n" +
+"5,-99999.0,1463500.0,638.2083333333721,-74.7780556,40.22166667\n" +
+"6,-99999.0,1463500.0,638.2125000000233,-74.7780556,40.22166667\n" +
+"7,-99999.0,1463500.0,638.2166666666744,-74.7780556,40.22166667\n" +
+"8,93.72876357,1463500.0,638.21875,-74.7780556,40.22166667\n" +
+"9,-99999.0,1463500.0,638.2208333333256,-74.7780556,40.22166667\n" +
+"...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        Test.ensureEqual(table.nRows(), 2315617, "wrong nRows");
+        Test.ensureEqual(table.nRows(), readAsNcCF? 2315617 : 7539127, "wrong nRows");
 
 
         //               read all vars when obs is constrained, 
         String2.log("\n* read all vars when obs is constrained");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
-            StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+                StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        else 
+            table.readMultidimNc(fileName, 
+                StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+                null, //dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
@@ -24079,9 +25470,16 @@ expected =
         //               read all vars when station and obs are constrained, 
         String2.log("\n* read all vars when station and obs are constrained");
         time = System.currentTimeMillis();
-        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
-            StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
-            StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
+        if (readAsNcCF)
+            table.readNcCF(fileName, 
+                StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+                StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
+        else 
+            table.readMultidimNc(fileName, 
+                StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+                null, //dimensions
+                true, true, true, //getMetadata, trimStrings, removeMVRows,
+                StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
         String2.log("time=" + (System.currentTimeMillis() - time));
         results = table.dataToCSVString();
         expected = 
@@ -24123,6 +25521,7 @@ expected =
         testGetDapQueryParts();
         testParseDapQuery();
         testSubsetViaDapQuery();
+        testAddIndexColumns();
         
         //readWrite tests
         testASCII();
@@ -24140,6 +25539,7 @@ expected =
         testReadNDNc2();
         testJoin();
         testReadStandardTabbedASCII();
+        testReadMultidimNc();
 
         //readNcCF tests
         ncCFcc = new BitSet();  //turn on test of readNcCF code coverage
@@ -24151,7 +25551,8 @@ expected =
         testReadNcCFASATrajectory(false);
         testReadNcCFASATimeSeriesProfile(false);
         testReadNcCFASATrajectoryProfile(false);
-        testReadNcCFMATimeSeriesReversed();
+        testReadNcCFMATimeSeriesReversed(true); //read as ncCF
+        testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
         testReadGocdNcCF();
         if (ncCFcc != null) {
             ncCFcc.flip(0, 100);  //there are currently 99 code coverage tests

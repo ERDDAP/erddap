@@ -22,12 +22,14 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
 /**
- * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * Get netcdf-X.X.XX.jar from 
+ * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
@@ -182,7 +184,8 @@ public class CacheOpendapStation {
 
             try {
                 //open the file (before 'try'); if it fails, no temp file to delete
-                NetcdfFileWriteable out = new NetcdfFileWriteable(fullStationFileName + randomInt, false);
+                NetcdfFileWriter out = new NetcdfFileWriter(
+                    NetcdfFileWriter.Version.netcdf3, fullStationFileName + randomInt, false);
                 
                 try {
 //stopped here
@@ -201,10 +204,10 @@ public class CacheOpendapStation {
                                 "\n" + newHistory;
                             values = DataHelper.getNc1DArray(history);
                         }
-                        out.addGlobalAttribute(att.getName(), values);
+                        out.addGroupAttribute(rootGroup, att.getName(), values);
                     }
                     if (history == null) 
-                        out.addGlobalAttribute("history", DataHelper.getNc1DArray(newHistory));
+                        out.addGroupAttribute(rootGroup, "history", DataHelper.getNc1DArray(newHistory));
 
                     //get the first variable from in
                     Variable variable0 = in.findVariable(variableNames[0]);
@@ -214,7 +217,7 @@ public class CacheOpendapStation {
                     List dimList0 = variable0.getDimensions();
                     Dimension timeDimension = (Dimension)dimList0.get(0);
                     opendapTimeDimensionSize = timeDimension.getLength();
-                    out.addGlobalAttribute(OPENDAP_TIME_DIMENSION_SIZE, 
+                    out.addGroupAttribute(rootGroup, OPENDAP_TIME_DIMENSION_SIZE, 
                         DataHelper.getNc1DArray(new int[]{opendapTimeDimensionSize}));
 
                     //for each variable
@@ -232,7 +235,7 @@ public class CacheOpendapStation {
                         boolean isStringVariable = variable.getDataType() == DataType.CHAR;
 
                         //get dimensions
-                        List dimList = variable.getDimensions();
+                        List<Dimension> dimList = variable.getDimensions();
                         Test.ensureTrue(
                             (dimList.size() == 4 && !isStringVariable) ||
                             (dimList.size() == 5 &&  isStringVariable), 
@@ -240,9 +243,8 @@ public class CacheOpendapStation {
                                 "  dimList.size=" + dimList.size() + 
                                 " for variable=" + variable.getName() + 
                                 " isStringVariable=" + isStringVariable); 
-                        Dimension dimArray[] = new Dimension[dimList.size()];
                         for (int d = 0; d < dimList.size(); d++) {
-                            Dimension dim = (Dimension)dimList.get(d);
+                            Dimension dim = dimList.get(d);
                             String dimName = dim.getName();
 
                             //first 4 dimensions must be same as for variable0
@@ -254,7 +256,7 @@ public class CacheOpendapStation {
                             //add the dimension
                             if (!dimHashSet.contains(dimName)) {
                                 dimHashSet.add(dimName);
-                                out.addDimension(dimName, dim.getLength(), true, //shared
+                                out.addDimension(rootGroup, dimName, dim.getLength(), true, //shared
                                     dim.isUnlimited(), false);  //isUnknownLength
 
                                 //add the related variable (5th/char dimension doesn't have a variable(?))
@@ -264,9 +266,9 @@ public class CacheOpendapStation {
                                     if (d == 3) lonName = dimName;
                                     Variable dimVariable = in.findVariable(dimName);
                                     cumulativeVariableList.add(dimVariable);
-                                    Dimension tDimArray[] = new Dimension[1];
-                                    tDimArray[0] = dim;
-                                    out.addVariable(dimName, dimVariable.getDataType(), tDimArray); 
+                                    out.addVariable(rootGroup, dimName, 
+                                        dimVariable.getDataType(), 
+                                        Arrays.asList(dim)); 
 
                                     //write the related variable's attributes   (after adding the variable)
                                     List attList = dimVariable.getAttributes();
@@ -285,13 +287,11 @@ public class CacheOpendapStation {
                                             errorInMethod + "lon dimension (" + dimName + ") length isn't 1!");
                                 }
                             }
-
-                            //add dim to the dimArray 
-                            dimArray[d] = dim;
                         }
 
                         //add the variable to 'out'
-                        out.addVariable(variable.getName(), variable.getDataType(), dimArray); 
+                        out.addVariable(rootGroup, variable.getName(), 
+                            variable.getDataType(), dimList); 
                         cumulativeVariableList.add(variable);
                         variableInColumn[v] = cumulativeVariableList.size() - 1;
                         //ensure variableInColumn[v] == 4 + v
@@ -451,9 +451,13 @@ public class CacheOpendapStation {
 
             try {
                 //open the file (before 'try'); if it fails, no temp file to delete
-                NetcdfFileWriteable out = NetcdfFileWriteable.createNew(fullStationFileName + randomInt, false);
+                NetcdfFileWriter out = NetcdfFileWriter.createNew(
+                    NetcdfFileWriter.Version.netcdf3, fullStationFileName + randomInt);
                 
                 try {
+                    Group outRootGroup = out.addGroup(null, "");
+                    out.setFill(false);
+
                     //transfer global attributes  (with updated 'history' attribute)
                     List globalAttList = in.getGlobalAttributes();
                     int nGlobalAtt = globalAttList.size();
@@ -467,63 +471,68 @@ public class CacheOpendapStation {
                         if (att.getName().equals("history")) {
                             history = PrimitiveArray.factory(NcHelper.getArray(values)).getString(0) +
                                 "\n" + newHistory;
-                            out.addGlobalAttribute(new ucar.nc2.Attribute(att.getName(), history));
+                            out.addGroupAttribute(outRootGroup, new ucar.nc2.Attribute(att.getName(), history));
                         } else {
-                            out.addGlobalAttribute(new ucar.nc2.Attribute(att.getName(), values));
+                            out.addGroupAttribute(outRootGroup, new ucar.nc2.Attribute(att.getName(), values));
                         }
                     }
                     if (history == null) 
-                        out.addGlobalAttribute(new ucar.nc2.Attribute("history", newHistory));
+                        out.addGroupAttribute(outRootGroup, new ucar.nc2.Attribute("history", newHistory));
 
                     //get the first variable from in
                     Variable variable0 = in.findVariable(variableNames[0]);
                     
                     //get its dimensions  
                     //and add global attribute OPENDAP_TIME_DIMENSION_SIZE
-                    List dimList0 = variable0.getDimensions();
-                    Dimension timeDimension = (Dimension)dimList0.get(0);
+                    List inDimList0 = variable0.getDimensions();
+                    Dimension timeDimension = (Dimension)inDimList0.get(0);
                     opendapTimeDimensionSize = timeDimension.getLength();
-                    out.addGlobalAttribute(OPENDAP_TIME_DIMENSION_SIZE, 
-                        NcHelper.get1DArray(new int[]{opendapTimeDimensionSize}));
+                    outRootGroup.addAttribute(new ucar.nc2.Attribute(
+                        OPENDAP_TIME_DIMENSION_SIZE, 
+                        new Integer(opendapTimeDimensionSize)));
 
                     //for each variable
-                    HashSet dimHashSet = new HashSet();
-                    ArrayList cumulativeVariableList = new ArrayList();
+                    HashSet<String> dimNameHashSet = new HashSet();
+                    ArrayList<Variable> inCumulativeVariableList = new ArrayList();
+                    ArrayList<Variable> outCumulativeVariableList = new ArrayList();
                     int variableInColumn[] = new int[variableNames.length];
                     String latName = null;
                     String lonName = null;
                     String timeName = null;
+                    Variable newVars[] = new Variable[variableNames.length];
                     for (int v = 0; v < variableNames.length; v++) {
 
                         //get the variable
-                        Variable variable = in.findVariable(variableNames[v]);
-                        Test.ensureNotNull(variable, errorInMethod + "variable not found: " + variableNames[v]);
-                        boolean isStringVariable = variable.getDataType() == DataType.CHAR;
+                        Variable inVariable = in.findVariable(variableNames[v]);
+                        Test.ensureNotNull(inVariable, errorInMethod + "variable not found: " + variableNames[v]);
+                        boolean isStringVariable = inVariable.getDataType() == DataType.CHAR;
 
                         //get dimensions
-                        List dimList = variable.getDimensions();
+                        List<Dimension> inDimList = inVariable.getDimensions();
                         Test.ensureTrue(
-                            (dimList.size() == 4 && !isStringVariable) ||
-                            (dimList.size() == 5 &&  isStringVariable), 
+                            (inDimList.size() == 4 && !isStringVariable) ||
+                            (inDimList.size() == 5 &&  isStringVariable), 
                             errorInMethod + 
-                                "  dimList.size=" + dimList.size() + 
-                                " for variable=" + variable.getName() + 
+                                "  inDimList.size=" + inDimList.size() + 
+                                " for variable=" + inVariable.getName() + 
                                 " isStringVariable=" + isStringVariable); 
-                        Dimension dimArray[] = new Dimension[dimList.size()];
-                        for (int d = 0; d < dimList.size(); d++) {
-                            Dimension dim = (Dimension)dimList.get(d);
+                        Dimension newDims[] = new Dimension[inDimList.size()];
+                        Variable newDimVars[] = new Variable[inDimList.size()];
+                        for (int d = 0; d < inDimList.size(); d++) {
+                            Dimension dim = inDimList.get(d);
                             String dimName = dim.getName();
 
                             //first 4 dimensions must be same as for variable0
                             if (d < 4)
-                                Test.ensureEqual(dimName, ((Dimension)dimList0.get(d)).getName(), 
+                                Test.ensureEqual(dimName, ((Dimension)inDimList0.get(d)).getName(), 
                                     errorInMethod + "  unexpected dimension #" + d + 
-                                    " for variable=" + variable.getName()); 
+                                    " for variable=" + inVariable.getName()); 
 
                             //add the dimension
-                            if (!dimHashSet.contains(dimName)) {
-                                dimHashSet.add(dimName);
-                                out.addDimension(dimName, dim.getLength(), true, //shared
+                            if (!dimNameHashSet.contains(dimName)) {
+                                dimNameHashSet.add(dimName);
+                                newDims[d] = out.addDimension(outRootGroup, 
+                                    dimName, dim.getLength(), true, //shared
                                     dim.isUnlimited(), false);  //isUnknownLength
 
                                 //add the related variable (5th/char dimension doesn't have a variable(?))
@@ -531,18 +540,19 @@ public class CacheOpendapStation {
                                     if (d == 0) timeName = dimName;
                                     if (d == 2) latName = dimName;
                                     if (d == 3) lonName = dimName;
-                                    Variable dimVariable = in.findVariable(dimName);
-                                    cumulativeVariableList.add(dimVariable);
-                                    Dimension tDimArray[] = new Dimension[1];
-                                    tDimArray[0] = dim;
-                                    out.addVariable(dimName, dimVariable.getDataType(), tDimArray); 
+                                    Variable inDimVariable = in.findVariable(dimName);
+                                    inCumulativeVariableList.add(inDimVariable);
+                                    newDimVars[d] = out.addVariable(outRootGroup, dimName, 
+                                        inDimVariable.getDataType(), Arrays.asList(dim)); 
+                                    outCumulativeVariableList.add(newDimVars[d]);
 
                                     //write the related variable's attributes   (after adding the variable)
-                                    List attList = dimVariable.getAttributes();
+                                    List attList = inDimVariable.getAttributes();
                                     int nAtt = attList.size();
                                     for (int a = 0; a < nAtt; a++) {
-                                        ucar.nc2.Attribute att = (ucar.nc2.Attribute)attList.get(a);
-                                        out.addVariableAttribute(dimName, att.getName(), att.getValues());                                 
+                                        ucar.nc2.Attribute att = 
+                                            (ucar.nc2.Attribute)attList.get(a);
+                                        newDimVars[d].addAttribute(att);                                 
                                     }
 
                                     //test that nLat and nLon are 1
@@ -554,26 +564,25 @@ public class CacheOpendapStation {
                                             errorInMethod + "lon dimension (" + dimName + ") length isn't 1!");
                                 }
                             }
-
-                            //add dim to the dimArray 
-                            dimArray[d] = dim;
                         }
 
                         //add the variable to 'out'
-                        out.addVariable(variable.getName(), variable.getDataType(), dimArray); 
-                        cumulativeVariableList.add(variable);
-                        variableInColumn[v] = cumulativeVariableList.size() - 1;
+                        newVars[v] = out.addVariable(outRootGroup, inVariable.getName(), 
+                            inVariable.getDataType(), inDimList); 
+                        inCumulativeVariableList.add(inVariable);
+                        outCumulativeVariableList.add(newVars[v]);
+                        variableInColumn[v] = inCumulativeVariableList.size() - 1;
                         //ensure variableInColumn[v] == 4 + v
                         //this affects whether all columns are updated in updateCache
                         Test.ensureEqual(variableInColumn[v], 4 + v,
                             errorInMethod + "unexpected variableInColumn for v=" + v);
 
                         //write Attributes   (after adding the variable)
-                        List attList = variable.getAttributes();
+                        List attList = inVariable.getAttributes();
                         int nAtt = attList.size();
                         for (int a = 0; a < nAtt; a++) {
                             ucar.nc2.Attribute att = (ucar.nc2.Attribute)attList.get(a);
-                            out.addVariableAttribute(variable.getName(), att.getName(), att.getValues());
+                            newVars[v].addAttribute(att);
                         }
                     }
 
@@ -582,18 +591,19 @@ public class CacheOpendapStation {
                     out.create();
 
                     //write the data
-                    for (int v = 0; v < cumulativeVariableList.size(); v++) {
-                        Variable variable = (Variable)cumulativeVariableList.get(v);
-                        if (verbose) String2.log("  writing data var=" + variable.getName());
+                    for (int v = 0; v < inCumulativeVariableList.size(); v++) {
+                        Variable inVariable  = inCumulativeVariableList.get(v);
+                        Variable outVariable = outCumulativeVariableList.get(v);
+                        if (verbose) String2.log("  writing data var=" + inVariable.getName());
 
                         //write the data
                         //??? what if data has been added to variable since dimensions were defined???
-                        Array array = variable.read();
-                        out.write(variable.getName(), array);
+                        Array array = inVariable.read();
+                        out.write(outVariable, array);
 
                         //ensure that all time values are reasonable 
                         //mbari opendap server sometimes returns gibberish values
-                        if (variable.getName().equals(timeName)) {
+                        if (inVariable.getName().equals(timeName)) {
 
                             //ensure time values are ascending
                             DoubleArray timeDA = new DoubleArray(NcHelper.toDoubleArray(array));
@@ -615,8 +625,8 @@ public class CacheOpendapStation {
 
                         //ensure that all lat and lon values are reasonable 
                         //mbari opendap server sometimes returns gibberish values
-                        if (variable.getName().equals(lonName) ||
-                            variable.getName().equals(latName)) {
+                        if (inVariable.getName().equals(lonName) ||
+                            inVariable.getName().equals(latName)) {
                             DoubleArray da = new DoubleArray(NcHelper.toDoubleArray(array));
                             double stats[] = da.calculateStats();
                             double daMin = stats[PrimitiveArray.STATS_MIN];
@@ -624,7 +634,7 @@ public class CacheOpendapStation {
                             String testString = "latitude";
                             double testMin = -90;
                             double testMax = 90;
-                            if (variable.getName().equals(lonName)) {
+                            if (inVariable.getName().equals(lonName)) {
                                 testString = "longitude";
                                 testMin = -180;
                                 testMax = 360;

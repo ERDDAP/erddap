@@ -73,12 +73,13 @@ import org.apache.lucene.document.Field.Store;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
-
+import ucar.nc2.Group;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
-import ucar.nc2.NetcdfFileWriteable;
+import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.Variable;
 import ucar.unidata.geoloc.LatLonRect;
 import ucar.unidata.geoloc.LatLonPointImpl;
 
@@ -175,7 +176,7 @@ public abstract class EDDGrid extends EDD {
         //"http://gmt.soest.hawaii.edu/gmt/doc/html/GMT_Docs/node60.html", //grd
         //"http://www.hdfgroup.org/products/hdf4/", //hdf
         "http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
-        "http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", //GraphicsCommands
+        "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", //GraphicsCommands
         "http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", //help
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
         "http://www.w3schools.com/html/html_tables.asp", //htmlTable
@@ -214,10 +215,10 @@ public abstract class EDDGrid extends EDD {
     };  //.transparentPng: if lon and lat are evenly spaced, .png size will be 1:1; otherwise, 1:1 but morphed a little
     public static String[] imageFileTypeInfo = {
         "http://trac.osgeo.org/geotiff/", //geotiff
-        "http://earth.google.com/", //kml
-        "http://www.adobe.com/products/acrobat/adobepdf.html", //pdf
-        "http://www.adobe.com/products/acrobat/adobepdf.html", //pdf
-        "http://www.adobe.com/products/acrobat/adobepdf.html", //pdf
+        "https://developers.google.com/kml/", //kml
+        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
+        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
+        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
         "http://www.libpng.org/pub/png/", //png
         "http://www.libpng.org/pub/png/", //png
         "http://www.libpng.org/pub/png/", //png
@@ -6178,7 +6179,7 @@ Attributes {
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null). 
      *   e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
      *   This method extracts the jsonp text to be prepended to the results (or null if none).
-     *     See http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
+     *     See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
      *     and http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
      *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
      * @param outputStreamSource the source of an outputStream (usually already 
@@ -6229,7 +6230,7 @@ Attributes {
 
     /**
      * This writes grid data (not axis data) to the outputStream in Google Earth's 
-     * .kml format (http://earth.google.com/).
+     * .kml format (https://developers.google.com/kml/documentation/kmlreference ).
      * If no exception is thrown, the data was successfully written.
      * For .kml, dataVariable queries can specify multiple longitude, latitude,
      * and time values, but just one value for other dimensions.
@@ -6420,7 +6421,7 @@ Attributes {
         //Based on http://code.google.com/apis/kml/documentation/kml_21tutorial.html#superoverlays
         //Was based on quirky example (but lots of useful info):
         //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
-        //kml docs: http://earth.google.com/kml/kml_tags.html
+        //kml docs: https://developers.google.com/kml/documentation/kmlreference
         //CDATA is necessary for url's with queries
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
             outputStreamSource.outputStream("UTF-8"), "UTF-8"));
@@ -6880,37 +6881,40 @@ Attributes {
 
             //write the data
             //items determined by looking at a .nc file; items written in that order 
-            NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullFileName + randomInt,
-                false); //false says: create a new file and don't fill with missing_values
+            NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+                NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
             try {
+                Group rootGroup = nc.addGroup(null, "");
+                nc.setFill(false);
 
                 //define the dimensions
                 Array axisArrays[] = new Array[nRAV];
+                Variable newAxisVars[] = new Variable[nRAV];
                 for (int av = 0; av < nRAV; av++) {
                     String destName = ada.axisVariables(av).destinationName();
                     PrimitiveArray pa = ada.axisValues(av);
-                    Dimension dimension = nc.addDimension(destName, pa.size());
+                    Dimension dimension = nc.addDimension(rootGroup, destName, pa.size());
                     axisArrays[av] = Array.factory(
                         pa.elementClass(),
                         new int[]{pa.size()},
                         pa.toObjectArray());
-                    nc.addVariable(destName, 
+                    newAxisVars[av] = nc.addVariable(rootGroup, destName, 
                         NcHelper.getDataType(pa.elementClass()), 
-                        new Dimension[]{dimension}); 
+                        Arrays.asList(dimension)); 
 
                     //write axis attributes
-                    NcHelper.setAttributes(nc, destName, ada.axisAttributes(av));
+                    NcHelper.setAttributes(newAxisVars[av], ada.axisAttributes(av));
                 }
 
                 //write global attributes
-                NcHelper.setAttributes(nc, "NC_GLOBAL", ada.globalAttributes());
+                NcHelper.setAttributes(rootGroup, ada.globalAttributes());
 
                 //leave "define" mode
                 nc.create();
 
                 //write the axis values
                 for (int av = 0; av < nRAV; av++) 
-                    nc.write(ada.axisVariables(av).destinationName(), axisArrays[av]);
+                    nc.write(newAxisVars[av], axisArrays[av]);
 
                 //if close throws Throwable, it is trouble
                 nc.close(); //it calls flush() and doesn't like flush called separately
@@ -6962,9 +6966,11 @@ Attributes {
 
         //write the data
         //items determined by looking at a .nc file; items written in that order 
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullFileName + randomInt,
-            false); //false says: create a new file and don't fill with missing_values
+        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+            NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
         try {
+            Group rootGroup = nc.addGroup(null, "");
+            nc.setFill(false);
 
             //find active axes
             IntArray activeAxes = new IntArray();
@@ -6975,8 +6981,9 @@ Attributes {
 
             //define the dimensions
             int nActiveAxes = activeAxes.size();
-            Dimension dimensions[] = new Dimension[nActiveAxes];
+            ArrayList<Dimension> axisDimensionList = new ArrayList();
             Array axisArrays[] = new Array[nActiveAxes];
+            Variable newAxisVars[] = new Variable[nActiveAxes];
             int stdShape[] = new int[nActiveAxes];
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
@@ -6984,7 +6991,7 @@ Attributes {
                 PrimitiveArray pa = gda.axisValues(av);
                 //if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
                 stdShape[a] = pa.size();
-                dimensions[a] = nc.addDimension(avName, pa.size());
+                axisDimensionList.add(nc.addDimension(rootGroup, avName, pa.size()));
                 if (av == lonIndex)
                     pa.scaleAddOffset(1, lonAdjust);
                 axisArrays[a] = Array.factory(
@@ -6992,12 +6999,13 @@ Attributes {
                     new int[]{pa.size()},
                     pa.toObjectArray());
                 //if (reallyVerbose) String2.log(" create var=" + avName);
-                nc.addVariable(avName, 
+                newAxisVars[a] = nc.addVariable(rootGroup, avName, 
                     NcHelper.getDataType(pa.elementClass()), 
-                    new Dimension[]{dimensions[a]});
+                    Arrays.asList(axisDimensionList.get(a)));
             }            
 
             //define the data variables
+            Variable newVars[] = new Variable[tDataVariables.length];
             for (int dv = 0; dv < tDataVariables.length; dv++) {
                 String destName = tDataVariables[dv].destinationName();
                 Class destClass = tDataVariables[dv].destinationDataTypeClass();
@@ -7006,33 +7014,31 @@ Attributes {
                 //String data? need to create a strlen dimension for this variable
                 if (destClass == String.class) {
                     StringArray tsa = (StringArray)gdaa.getPrimitiveArray(dv);
-                    Dimension tDims[] = new Dimension[nActiveAxes + 1];
-                    System.arraycopy(dimensions, 0, tDims, 0, nActiveAxes);
-                    tDims[nActiveAxes] = nc.addDimension(
+                    ArrayList<Dimension> tDimList = new ArrayList(axisDimensionList);
+                    tDimList.add(nc.addDimension(rootGroup, 
                         destName + NcHelper.StringLengthSuffix, //"_strlen"
-                        tsa.maxStringLength());
-                    nc.addVariable(destName, DataType.CHAR, tDims);
+                        tsa.maxStringLength()));
+                    newVars[dv] = nc.addVariable(rootGroup, destName, 
+                        DataType.CHAR, tDimList);
 
                 } else {
-                    nc.addVariable(destName, NcHelper.getDataType(destClass), 
-                        dimensions);
+                    newVars[dv] = nc.addVariable(rootGroup, destName, 
+                        NcHelper.getDataType(destClass), axisDimensionList);
                 }
             }
 
             //write global attributes
-            NcHelper.setAttributes(nc, "NC_GLOBAL", gda.globalAttributes);
+            NcHelper.setAttributes(rootGroup, gda.globalAttributes);
 
             //write axis attributes
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
-                NcHelper.setAttributes(nc, axisVariables[av].destinationName(), 
-                    gda.axisAttributes[av]);
+                NcHelper.setAttributes(newAxisVars[a], gda.axisAttributes[av]);
             }
 
             //write data attributes
             for (int dv = 0; dv < tDataVariables.length; dv++) {
-                NcHelper.setAttributes(nc, tDataVariables[dv].destinationName(), 
-                    gda.dataAttributes[dv]);
+                NcHelper.setAttributes(newVars[dv], gda.dataAttributes[dv]);
             }
 
             //leave "define" mode
@@ -7041,7 +7047,7 @@ Attributes {
             //write the axis variables
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
-                nc.write(axisVariables[av].destinationName(), axisArrays[a]);
+                nc.write(newAxisVars[a], axisArrays[a]);
             }
 
             //write the data variables
@@ -7053,8 +7059,8 @@ Attributes {
                 Array array = Array.factory(edvClass, 
                     stdShape, gdaa.getPrimitiveArray(dv).toObjectArray());
                 if (edvClass == String.class)
-                     nc.writeStringData(destName, array);
-                else nc.write(destName, array);
+                     nc.writeStringData(newVars[dv], array);
+                else nc.write(newVars[dv], array);
             }
 
             //if close throws Throwable, it is trouble
@@ -7366,7 +7372,7 @@ Attributes {
             avPa[av] = PrimitiveArray.factory(tClass, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(av, edv.destinationName(), avPa[av], 
-                gridDataAccessor.axisAttributes(av)); //(Attributes)edv.combinedAttributes().clone());
+                gridDataAccessor.axisAttributes(av)); //(Attributes)(edv.combinedAttributes().clone());
         }
         for (int dv = 0; dv < nDv; dv++) {
             EDV edv = queryDataVariables[dv];
@@ -7377,7 +7383,7 @@ Attributes {
             dvPa[dv] = PrimitiveArray.factory(tClass, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(nAv + dv, edv.destinationName(), dvPa[dv], 
-                gridDataAccessor.dataAttributes(dv)); //(Attributes)edv.combinedAttributes().clone());
+                gridDataAccessor.dataAttributes(dv)); //(Attributes)(edv.combinedAttributes().clone());
         }
 
         //write the data
@@ -7849,7 +7855,7 @@ Attributes {
             "\n" +
 
             //ArcGIS
-            "<p><b><a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS" +
+            "<p><b><a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/index.html\">ArcGIS" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a><a name=\"ArcGIS\">&nbsp;</a>\n" +
             "     <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Esri_grid\">.esriAsc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
@@ -7969,7 +7975,7 @@ Attributes {
             "      <br>library or toolkit, it should be easy to process all other tables from ERDDAP in a similar way.\n" +
             "\n" +
             //jsonp
-            "  <p><b><a rel=\"help\" href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP" +
+            "  <p><b><a rel=\"help\" href=\"https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    (from <a href=\"http://www.json.org/\">.json" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)</b> -\n" +
@@ -8005,7 +8011,7 @@ Attributes {
             "  The numbers at the end of the first line specify the range for the color mapping. \n" +
             "  <br>The 'set' command flips the map to make it upright.\n" +
             "  <p>There are also Matlab\n" +
-            "    <a rel=\"bookmark\" href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
+            "    <a rel=\"bookmark\" href=\"https://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
             "    which are particularly useful for\n" +
             "  <br>getting environmental data related to points along an animal's track (e.g.,\n" +
             "    <a rel=\"bookmark\" href=\"http://gtopp.org/\">GTOPP" +
@@ -8185,7 +8191,7 @@ Attributes {
             "  <br>For example,\n" +
             "<pre>  download.file(url=\"" + fullTimeCsvExample + "\", destfile=\"/home/bsimons/test.csv\")\n" +
                  "  test&lt;-read.csv(file=\"/home/bsimons/test.csv\")</pre>\n" +
-            "  There are also R <a rel=\"bookmark\" href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
+            "  There are also R <a rel=\"bookmark\" href=\"https://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
             "    which are particularly useful for getting\n" +
             "  <br>environmental data related to points along an animal's track (e.g.,\n" +
             "    <a rel=\"bookmark\" href=\"http://gtopp.org/\">GTOPP" +
@@ -8271,16 +8277,16 @@ Attributes {
             "<br>ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
             "<br>On Linux or Mac OS X, curl is probably already installed as /usr/bin/curl.\n" +
             "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
-            "  <a rel=\"bookmark\" href=\"http://curl.haxx.se/download.html\">download curl" +
+            "  <a rel=\"bookmark\" href=\"https://curl.haxx.se/download.html\">download curl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "<br>and install it.  To get to a command line in Windows, click on \"Start\" and type\n" + 
             "<br>\"cmd\" into the search textfield.\n" +
             "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me in Windows 7.)\n" +            
             "<br><b>Please be kind to other ERDDAP users: run just one script or curl command at a time.</b>\n" +
             "<br>Instructions for using curl are on the \n" +
-                "<a rel=\"help\" href=\"http://curl.haxx.se/download.html\">curl man page" +
+                "<a rel=\"help\" href=\"https://curl.haxx.se/download.html\">curl man page" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and in this\n" +
-                "<a rel=\"help\" href=\"http://curl.haxx.se/docs/httpscripting.html\">curl tutorial" +
+                "<a rel=\"help\" href=\"https://curl.haxx.se/docs/httpscripting.html\">curl tutorial" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "<br>But here is a quick tutorial related to using curl with ERDDAP:\n" +
             "<ul>\n" +
@@ -8297,7 +8303,7 @@ Attributes {
             "   <br>2 digit hexadecimal value of the character, for example, space becomes %20. Characters\n" +
             "   <br>above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded.\n" +
             "   <br>Programming languages have tools to do this (for example, see Java's\n" +
-            "   <br><a rel=\"help\" href=\"http://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+            "   <br><a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "     and JavaScript's\n" +
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
@@ -9891,7 +9897,7 @@ Attributes {
 
 
             /*
-            http://www.esri.com/software/arcgis/\">ArcGIS</a>,\n" +
+            https://www.esri.com/software/arcgis/\">ArcGIS</a>,\n" +
             "    <a rel=\"bookmark\" href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>, and\n" +
             "    <a rel=\"bookmark\" href=\"http://udig.refractions.net//\">uDig" +
@@ -9911,7 +9917,7 @@ Attributes {
             "  <br>You may find that using\n" +
             makeAGraphRef + "\n" +
             "    and selecting the .kml file type (an OGC standard)\n" +
-            "  <br>to load images into <a rel=\"bookmark\" href=\"http://earth.google.com/\">Google Earth" +
+            "  <br>to load images into <a rel=\"bookmark\" href=\"https://www.google.com/earth/\">Google Earth" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> provides\n" +            
             "     a good (non-WMS) map client.\n" +
             makeAGraphListRef +
@@ -10312,8 +10318,8 @@ Attributes {
      * and includes the NASA extensions for remotely sensed data FGDC-STD-012-2002
      * "Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata"
      * XML to the writer.
-     * <br>The template is initially based on a sample file from Dave Neufeld:
-     * <br>http://www.unidata.ucar.edu/projects/THREDDS/tech/tds4.2/tutorial/NcML.htm
+     * <br>The template is initially based on a sample file from Dave Neufeld: maybe
+     * <br>https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/Tutorial.html
      * <br>(stored on Bob's computer as F:/programs/fgdc/258Neufeld20110830.xml).
      * <br>Made pretty via TestAll: XML.prettyXml(in, out);
      *
@@ -10621,21 +10627,21 @@ if (project != unknown)
 //"              <pubplace>Boulder, Colorado</pubplace>\n" +
 //"              <publish>DOC/NOAA/NESDIS/NGDC &gt; National Geophysical Data Center, NESDIS, NOAA, U.S. Department of Commerce</publish>\n" +
 //"            </pubinfo>\n" +
-//"            <onlink>http://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</onlink>\n" +
+//"            <onlink>https://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</onlink>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/mgg/inundation/tsunami/inundation.html</linkage>\n" +
 //"              <name>NOAA Tsunami Inundation Gridding Project</name>\n" +
 //"              <description>Project web page.</description>\n" +
 //"              <function>information</function>\n" +
 //"            </CI_OnlineResource>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/dem/squareCellGrid/map</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/dem/squareCellGrid/map</linkage>\n" +
 //"              <name>Map Interface</name>\n" +
 //"              <description>Graphic geo-spatial search tool for locating completed and planned NOAA tsunami inundation DEMs.</description>\n" +
 //"              <function>search</function>\n" +
 //"            </CI_OnlineResource>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/dem/squareCellGrid/search</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/dem/squareCellGrid/search</linkage>\n" +
 //"              <name>DEM text search tool</name>\n" +
 //"              <description>Text search tool for locating completed and planned NOAA tsunami inundation DEMs.</description>\n" +
 //"              <function>search</function>\n" +
@@ -10717,9 +10723,9 @@ writer.write(
 "              </publish_cntinfo>\n" +
 "            </pubinfo>\n" +
 "            <othercit>29 pages</othercit>\n" +
-"            <onlink>http://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</onlink>\n" +
+"            <onlink>https://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</onlink>\n" +
 "            <CI_OnlineResource>\n" +
-"              <linkage>http://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</linkage>\n" +
+"              <linkage>https://www.ngdc.noaa.gov/dem/squareCellGrid/getReport/258</linkage>\n" +
 "              <name>Digital Elevation Model of Adak, Alaska: Procedures, Data Sources and Analysis</name>\n" +
 "              <description>Report describing the development of the Adak, Alaska DEM</description>\n" +
 "              <function>download</function>\n" +
@@ -10862,7 +10868,7 @@ writer.write(
 //"        <cntfax>303-497-6513</cntfax>\n" +
 "        <cntemail>" + XML.encodeAsXML(conEmail) + "</cntemail>\n" +
 //"        <hours>9am-5pm, M-F, Mountain Time</hours>\n" +
-//"        <cntinst>Contact NGDC&apos;s Marine Geology and Geophysics Division. http://www.ngdc.noaa.gov/mgg/aboutmgg/contacts.html</cntinst>\n" +
+//"        <cntinst>Contact NGDC&apos;s Marine Geology and Geophysics Division. https://www.ngdc.noaa.gov/mgg/aboutmgg/contacts.html</cntinst>\n" +
 "      </cntinfo>\n" +
 "    </ptcontac>\n");
 
@@ -10941,9 +10947,9 @@ writer.write(
 //"            </origin_cntinfo>\n" +
 //"            <pubdate>2008</pubdate>\n" +
 //"            <title>NOS Hydrographic Surveys</title>\n" +
-//"            <onlink>http://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</onlink>\n" +
+//"            <onlink>https://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</onlink>\n" +
 //"            <CI_OnlineResource>\n" +
-//"              <linkage>http://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</linkage>\n" +
+//"              <linkage>https://www.ngdc.noaa.gov/mgg/bathymetry/hydro.html</linkage>\n" +
 //"              <name>NOS Hydrographic Survey Database</name>\n" +
 //"              <description>Digital database of NOS hydrographic surveys that date back to the late 19th century.</description>\n" +
 //"              <function>download</function>\n" +
@@ -11308,29 +11314,29 @@ writer.write(
 "  xmlns:gco=\"http://www.isotc211.org/2005/gco\"\n" +
 "  xmlns:gmd=\"http://www.isotc211.org/2005/gmd\"\n" +
 "  xmlns:gmi=\"http://www.isotc211.org/2005/gmi\"\n" +
-"  xsi:schemaLocation=\"http://www.isotc211.org/2005/gmi http://www.ngdc.noaa.gov/metadata/published/xsd/schema.xsd\">\n" +
+"  xsi:schemaLocation=\"http://www.isotc211.org/2005/gmi https://www.ngdc.noaa.gov/metadata/published/xsd/schema.xsd\">\n" +
 
 "  <gmd:fileIdentifier>\n" +
 "    <gco:CharacterString>" + datasetID() + "</gco:CharacterString>\n" +
 "  </gmd:fileIdentifier>\n" +
 "  <gmd:language>\n" +
 "    <gmd:LanguageCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:LanguageCode\" " +
        "codeListValue=\"eng\">eng</gmd:LanguageCode>\n" +
 "  </gmd:language>\n" +
 "  <gmd:characterSet>\n" +
 "    <gmd:MD_CharacterSetCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CharacterSetCode\" " +
        "codeListValue=\"UTF8\">UTF8</gmd:MD_CharacterSetCode>\n" +
 "  </gmd:characterSet>\n" +
 "  <gmd:hierarchyLevel>\n" +
 "    <gmd:MD_ScopeCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
        "codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n" +
 "  </gmd:hierarchyLevel>\n" +
 "  <gmd:hierarchyLevel>\n" +
 "    <gmd:MD_ScopeCode " +
-       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
        "codeListValue=\"service\">service</gmd:MD_ScopeCode>\n" +
 "  </gmd:hierarchyLevel>\n");
         
@@ -11379,7 +11385,7 @@ writer.write(
 "        </gmd:CI_Contact>\n" +
 "      </gmd:contactInfo>\n" +
 "      <gmd:role>\n" +
-"        <gmd:CI_RoleCode codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+"        <gmd:CI_RoleCode codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
          "codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n" +
 "      </gmd:role>\n" +
 "    </gmd:CI_ResponsibleParty>\n" +
@@ -11415,7 +11421,7 @@ for (int av = axisVariables.length - 1; av >= 0; av--) {
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"column\">column</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize>\n" +  
@@ -11434,7 +11440,7 @@ for (int av = axisVariables.length - 1; av >= 0; av--) {
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"row\">row</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize>\n" +
@@ -11454,7 +11460,7 @@ for (int av = axisVariables.length - 1; av >= 0; av--) {
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize>\n" +
@@ -11476,7 +11482,7 @@ for (int av = axisVariables.length - 1; av >= 0; av--) {
 "        <gmd:MD_Dimension>\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"temporal\">temporal</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize>\n" +
@@ -11497,7 +11503,7 @@ for (int av = axisVariables.length - 1; av >= 0; av--) {
 "        <gmd:MD_Dimension id=\"" + edvGA.destinationName() + "\">\n" +
 "          <gmd:dimensionName>\n" +
 "            <gmd:MD_DimensionNameTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_DimensionNameTypeCode\" " +
                "codeListValue=\"unknown\">unknown</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
 "          <gmd:dimensionSize>\n" +
@@ -11517,7 +11523,7 @@ for (int av = axisVariables.length - 1; av >= 0; av--) {
 writer.write(
 "      <gmd:cellGeometry>\n" +
 "        <gmd:MD_CellGeometryCode " +
-          "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" " + 
+          "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CellGeometryCode\" " + 
           "codeListValue=\"area\">area</gmd:MD_CellGeometryCode>\n" +
 "      </gmd:cellGeometry>\n" +
 "      <gmd:transformationParameterAvailability gco:nilReason=\"unknown\"/>\n" + 
@@ -11556,7 +11562,7 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "              </gmd:date>\n" +
 "              <gmd:dateType>\n" +
 "                <gmd:CI_DateTypeCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
                    "codeListValue=\"creation\">creation</gmd:CI_DateTypeCode>\n" +
 "              </gmd:dateType>\n" +
 "            </gmd:CI_Date>\n" +
@@ -11570,7 +11576,7 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "              </gmd:date>\n" +
 "              <gmd:dateType>\n" +
 "                <gmd:CI_DateTypeCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_DateTypeCode\" " +
                    "codeListValue=\"issued\">issued</gmd:CI_DateTypeCode>\n" +
 "              </gmd:dateType>\n" +
 "            </gmd:CI_Date>\n" +
@@ -11646,7 +11652,7 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "                      </gmd:description>\n" +
 "                      <gmd:function>\n" +
 "                        <gmd:CI_OnLineFunctionCode " +
-                           "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
+                           "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
                            "codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n" +
 "                      </gmd:function>\n" +
 "                    </gmd:CI_OnlineResource>\n" +
@@ -11655,7 +11661,7 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "              </gmd:contactInfo>\n" +
 "              <gmd:role>\n" +
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                    "codeListValue=\"originator\">originator</gmd:CI_RoleCode>\n" +
 "              </gmd:role>\n" +
 "            </gmd:CI_ResponsibleParty>\n" +
@@ -11690,7 +11696,7 @@ if (contributorName != null || contributorRole != null)
 
 "              <gmd:role>\n" +  
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
   //contributor isn't in the codeList. I asked that it be added. 
   // ncISO used something *not* in the list.  Isn't this a controlled vocabulary?
                    "codeListValue=\"contributor\">contributor</gmd:CI_RoleCode>\n" +
@@ -11768,7 +11774,7 @@ if (ii == iiDataIdentification) {
 "                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
-                       "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
+                       "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
                        "codeListValue=\"information\">information</gmd:CI_OnLineFunctionCode>\n" +
 "                  </gmd:function>\n" +
 "                </gmd:CI_OnlineResource>\n" +
@@ -11777,7 +11783,7 @@ if (ii == iiDataIdentification) {
 "          </gmd:contactInfo>\n" +
 "          <gmd:role>\n" +
 "            <gmd:CI_RoleCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                "codeListValue=\"pointOfContact\">pointOfContact</gmd:CI_RoleCode>\n" +
 "          </gmd:role>\n" +
 "        </gmd:CI_ResponsibleParty>\n" +
@@ -11819,7 +11825,7 @@ if (ii == iiDataIdentification) {
             writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" +
@@ -11842,7 +11848,7 @@ if (ii == iiDataIdentification) {
             writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName>\n" +
@@ -11868,7 +11874,7 @@ if (ii == iiDataIdentification) {
 "          </gmd:keyword>\n" +
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"project\">project</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName gco:nilReason=\"unknown\"/>\n" +
@@ -11888,7 +11894,7 @@ if (ii == iiDataIdentification) {
         writer.write(
 "          <gmd:type>\n" +
 "            <gmd:MD_KeywordTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_KeywordTypeCode\" " +
                "codeListValue=\"theme\">theme</gmd:MD_KeywordTypeCode>\n" +
 "          </gmd:type>\n" +
 "          <gmd:thesaurusName>\n" +
@@ -11931,12 +11937,12 @@ if (ii == iiDataIdentification) {
 "          </gmd:aggregateDataSetName>\n" +
 "          <gmd:associationType>\n" +
 "            <gmd:DS_AssociationTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
                "codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n" +
 "          </gmd:associationType>\n" +
 "          <gmd:initiativeType>\n" +
 "            <gmd:DS_InitiativeTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
                "codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n" +
 "          </gmd:initiativeType>\n" +
 "        </gmd:MD_AggregateInformation>\n" +
@@ -11964,12 +11970,12 @@ if (!CDM_OTHER.equals(cdmDataType())) {
 "          </gmd:aggregateDataSetIdentifier>\n" +
 "          <gmd:associationType>\n" +
 "            <gmd:DS_AssociationTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_AssociationTypeCode\" " +
                "codeListValue=\"largerWorkCitation\">largerWorkCitation</gmd:DS_AssociationTypeCode>\n" +
 "          </gmd:associationType>\n" +
 "          <gmd:initiativeType>\n" +
 "            <gmd:DS_InitiativeTypeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:DS_InitiativeTypeCode\" " +
                "codeListValue=\"project\">project</gmd:DS_InitiativeTypeCode>\n" +
 "          </gmd:initiativeType>\n" +
 "        </gmd:MD_AggregateInformation>\n" +
@@ -12232,7 +12238,7 @@ writer.write(
        //from http://www.schemacentral.com/sc/niem21/t-gco_CodeListValue_Type.html       
 "      <gmd:contentType>\n" +
 "        <gmd:MD_CoverageContentTypeCode " +
-           "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
+           "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
            "codeListValue=\"" + coverageType + "\">" + coverageType + "</gmd:MD_CoverageContentTypeCode>\n" +
 "      </gmd:contentType>\n");
 
@@ -12357,7 +12363,7 @@ writer.write(
 "              </gmd:contactInfo>\n" +
 "              <gmd:role>\n" +   //From list, "distributor" seems best here.
 "                <gmd:CI_RoleCode " +
-                   "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
+                   "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_RoleCode\" " +
                    "codeListValue=\"distributor\">distributor</gmd:CI_RoleCode>\n" +
 "              </gmd:role>\n" +
 "            </gmd:CI_ResponsibleParty>\n" +
@@ -12448,7 +12454,7 @@ if (history != null)
 "        <gmd:DQ_Scope>\n" +
 "          <gmd:level>\n" +
 "            <gmd:MD_ScopeCode " +
-               "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
+               "codeList=\"https://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_ScopeCode\" " +
                "codeListValue=\"dataset\">dataset</gmd:MD_ScopeCode>\n" +
 "          </gmd:level>\n" +
 "        </gmd:DQ_Scope>\n" +
