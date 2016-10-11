@@ -738,7 +738,9 @@ public class EDDTableFromDapSequence extends EDDTable{
         throws Throwable {
 
         String2.log("EDDTableFromDapSequence.generateDatasetsXml" +
-            "\n  tLocalSourceUrl=" + tLocalSourceUrl);
+            "\ntLocalSourceUrl=" + tLocalSourceUrl +
+            "\nreloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nexternalGlobalAttributes=" + externalGlobalAttributes);
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
 
         //get DConnect
@@ -855,6 +857,8 @@ public class EDDTableFromDapSequence extends EDDTable{
                 suggestKeywords(dataSourceTable, dataAddTable)));
         if (outerSequenceName == null)
             throw new SimpleException("No Sequence variable was found for " + tLocalSourceUrl + ".dds.");
+
+        //don't suggestSubsetVariables(), instead:
         dataAddTable.globalAttributes().add("subsetVariables", tSubsetVariables.toString());
 
         //write the information
@@ -1001,8 +1005,8 @@ directionsForGenerateDatasetsXml() +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Depth</att>\n" +
 "            <att name=\"standard_name\">depth</att>\n" +

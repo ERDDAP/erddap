@@ -1685,6 +1685,18 @@ widgets.dualSlider(4, bgWidth, "align=\"left\"") +
 widgets.slider(5, bgWidth, "align=\"left\"") +
 "</td></tr>\n" +
 
+"<tr><td>Chars 128-143: " + XML.encodeAsHTML(
+"\u0080\u0081\u0082\u0083\u0084\u0085\u0086\u0087\u0088\u0089\u008a\u008b\u008c\u008d\u008e\u008f") +
+"</td></tr>\n" +
+"<tr><td>Chars 144-159: " + XML.encodeAsHTML(
+"\u0090\u0091\u0092\u0093\u0094\u0095\u0096\u0097\u0098\u0099\u009a\u009b\u009c\u009d\u009e\u009f") +
+"</td></tr>\n" +
+"<tr><td>Chars 160-175: " + XML.encodeAsHTML(
+"\u00a0\u00a1\u00a2\u00a3\u00a4\u00a5\u00a6\u00a7\u00a8\u00a9\u00aa\u00ab\u00ac\u00ad\u00ae\u00af") +
+"</td></tr>\n" +
+"<tr><td>Char 255 (y uml): " + XML.encodeAsHTML("\u00ff") +
+"</td></tr>\n" +
+
 "\n" +
 "<tr><td>\n" +
 "Something Else\n" +

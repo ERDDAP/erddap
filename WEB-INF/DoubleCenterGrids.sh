@@ -13,6 +13,6 @@
 
 commandLine=$0
 thisDir=`echo $commandLine | dirname $0`
-java -cp classes:lib/netcdfAll-latest.jar:lib/slf4j.jar:lib/activation.jar:lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.DoubleCenterGrids $1 $2 $3 $4 $5
+java -cp classes:lib/netcdfAll-latest.jar:lib/slf4j.jar:lib/activation.jar:lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.DoubleCenterGrids "$@"
 
 # finished 

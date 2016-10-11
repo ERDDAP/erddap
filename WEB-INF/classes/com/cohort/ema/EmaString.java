@@ -78,7 +78,7 @@ public class EmaString extends EmaAttribute {
         getStandardProperties();
         
         //get size, maxlength, and regex now, 
-        //    so subclass constructors can override them
+        //    so subclass constructors can overwrite them
         ResourceBundle2 classRB2 = parent.getClassResourceBundle2();
         size = classRB2.getInt(name + ".size", 20);
         minlength = classRB2.getInt(name + ".minlength", 0);

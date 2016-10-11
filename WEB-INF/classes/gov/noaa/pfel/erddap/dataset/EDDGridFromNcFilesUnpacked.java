@@ -934,6 +934,680 @@ expected =
     }
 
 
+    /**
+     * Test files from http://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI
+     * and stored in /erddapTest/unsigned/
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testMissingValue() throws Throwable {
+        String2.log("\n*** testMissingValue");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery;
+        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+        String fileDir = EDStatic.unitTestDataDir + "unpacked/";
+        String fileName1 = "A2003001.L3m_DAY_POC_poc_4km.nc";
+        String fileName2 = "A2016241.L3m_DAY_POC_poc_4km.nc";
+        NetcdfFile ncFile;
+        Variable var;
+        Attributes atts;
+        Array array;
+        PrimitiveArray pa;
+        boolean oDebugMode = NcHelper.debugMode;
+NcHelper.debugMode = true;
+
+        //**** fileName1 -- not packed data: poc is float
+        //DumpString
+        results = NcHelper.dumpString(fileDir + fileName1, false);
+        expected = 
+"netcdf A2003001.L3m_DAY_POC_poc_4km.nc {\n" +
+"  dimensions:\n" +
+"    lon = 8640;\n" +
+"    eightbitcolor = 256;\n" +
+"    rgb = 3;\n" +
+"    lat = 4320;\n" +
+"  variables:\n" +
+"    float poc(lat=4320, lon=8640);\n" +
+"      :long_name = \"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\";\n" +
+"      :units = \"mg m^-3\";\n" +
+"      :standard_name = \"mole_concentration_of_particulate_organic_carbon_in_sea_water\";\n" +
+"      :_FillValue = -32767.0f; // float\n" +
+"      :valid_min = 0.0f; // float\n" +
+"      :valid_max = 1000.0f; // float\n" +
+"      :display_scale = \"log\";\n" +
+"      :display_min = 10.0; // double\n" +
+"      :display_max = 1000.0; // double\n" +
+"      :scale_factor = 1.0f; // float\n" +
+"      :add_offset = 0.0f; // float\n" +
+"      :reference = \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
+"      :_ChunkSizes = 64, 64; // int\n" +
+"\n" +
+"    float lon(lon=8640);\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :units = \"degree_east\";\n" +
+"      :_FillValue = -32767.0f; // float\n" +
+"      :valid_min = -180.0f; // float\n" +
+"      :valid_max = 180.0f; // float\n" +
+"\n" +
+"    byte palette(rgb=3, eightbitcolor=256);\n" +
+"      :_FillValue = -1UB; // byte\n" +
+"      :_Unsigned = \"true\";\n" +
+"\n" +
+"    float lat(lat=4320);\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :units = \"degree_north\";\n" +
+"      :_FillValue = -32767.0f; // float\n" +
+"      :valid_min = -90.0f; // float\n" +
+"      :valid_max = 90.0f; // float\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+        ncFile = NcHelper.openFile(fileDir + fileName1);
+
+        //lon
+        var = ncFile.findVariable("lon");
+        atts = new Attributes();
+        NcHelper.getVariableAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=-32767.0\n" +
+"    long_name=\"Longitude\"\n" +
+"    units=\"degree_east\"\n" +
+"    valid_max=180.0\n" +
+"    valid_min=-180.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        NcHelper.unpackAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=NaN\n" +  //converted to PA standard mv
+"    long_name=\"Longitude\"\n" +
+"    units=\"degree_east\"\n" +
+"    valid_max=180.0\n" +
+"    valid_min=-180.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //palette
+        var = ncFile.findVariable("palette");
+        atts = new Attributes();
+        NcHelper.getVariableAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=-1\n" +
+"    _Unsigned=\"true\"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        NcHelper.unpackAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=32767\n"; //byte -> short  //converted to PA standard mv
+//"    _Unsigned=\"true\"\n"; //removed
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //palette as unsigned byte
+        pa = NcHelper.getPrimitiveArray(
+            var.read(new int[]{0,0}, new int[]{1, 10})); //origin, shape
+        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        results = pa.toString();
+        expected = 
+"-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //palette unpacked as short
+        pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
+        Test.ensureEqual(pa.elementClassString(), "short", "");
+        results = pa.toString();
+        expected = 
+"147, 0, 108, 144, 0, 111, 141, 0, 114, 138";  //unsigned
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //poc
+        var = ncFile.findVariable("poc");
+        atts = new Attributes();
+        NcHelper.getVariableAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _ChunkSizes=64, 64\n" +
+"    _FillValue=-32767.0\n" +
+"    add_offset=0.0\n" +
+"    display_max=1000.0\n" +
+"    display_min=10.0\n" +
+"    display_scale=\"log\"\n" +
+"    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
+"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+"    scale_factor=1.0\n" +
+"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
+"    units=\"mg m^-3\"\n" +
+"    valid_max=1000.0\n" +
+"    valid_min=0.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        NcHelper.unpackAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _ChunkSizes=64, 64\n" +
+"    _FillValue=NaN\n" +  //standardized
+//"    add_offset=0.0\n" +  //removed
+"    display_max=1000.0\n" +
+"    display_min=10.0\n" +
+"    display_scale=\"log\"\n" +
+"    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
+"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+//"    scale_factor=1.0\n" + //removed
+"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
+"    units=\"mg m^-3\"\n" +
+"    valid_max=1000.0\n" +
+"    valid_min=0.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //poc as packed values (shorts)
+        pa = NcHelper.getPrimitiveArray(   
+            var.read(new Section("(0:4100:1000,0:8100:1000)"))); //start:end:stride 
+        Test.ensureEqual(pa.elementClassString(), "float", "");
+        results = pa.toString();
+        expected = 
+"-32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, " +
+"-32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, " +
+"-32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, " +
+"-32767.0, -32767.0, 29.476826, -32767.0, -32767.0, -32767.0, 431.7499, -32767.0, " +
+"36.19993, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, -32767.0, " +
+"-32767.0, -32767.0, -32767.0, -32767.0, -32767.0";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //poc as unpacked values (float)
+        pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
+        Test.ensureEqual(pa.elementClassString(), "float", "");
+        results = pa.toString();
+        expected = //standardized mv
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 29.476826, NaN, NaN, NaN, " +
+"431.7499, NaN, 36.19993, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        
+
+        //**** fileName2 -- packed data: poc is short
+        //DumpString
+        results = NcHelper.dumpString(fileDir + fileName2, false);
+        expected = 
+"netcdf A2016241.L3m_DAY_POC_poc_4km.nc {\n" +
+"  dimensions:\n" +
+"    eightbitcolor = 256;\n" +
+"    rgb = 3;\n" +
+"    lat = 4320;\n" +
+"    lon = 8640;\n" +
+"  variables:\n" +
+"    short poc(lat=4320, lon=8640);\n" +
+"      :long_name = \"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\";\n" +
+"      :scale_factor = 0.2f; // float\n" +
+"      :add_offset = 6400.0f; // float\n" +
+"      :units = \"mg m^-3\";\n" +
+"      :standard_name = \"mole_concentration_of_particulate_organic_carbon_in_sea_water\";\n" +
+"      :_FillValue = -32767S; // short\n" +
+"      :valid_min = -32000S; // short\n" +
+"      :valid_max = -27000S; // short\n" +
+"      :reference = \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
+"      :display_scale = \"log\";\n" +
+"      :display_min = 10.0f; // float\n" +
+"      :display_max = 1000.0f; // float\n" +
+"      :_ChunkSizes = 40, 1729; // int\n" +
+"\n" +
+"    byte palette(rgb=3, eightbitcolor=256);\n" +
+"      :_FillValue = -1UB; // byte\n" +
+"      :_Unsigned = \"true\";\n" +
+"\n" +
+"    float lat(lat=4320);\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :units = \"degree_north\";\n" +
+"      :_FillValue = -999.0f; // float\n" +
+"      :valid_min = -90.0f; // float\n" +
+"      :valid_max = 90.0f; // float\n" +
+"\n" +
+"    float lon(lon=8640);\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :units = \"degree_east\";\n" +
+"      :_FillValue = -999.0f; // float\n" +
+"      :valid_min = -180.0f; // float\n" +
+"      :valid_max = 180.0f; // float\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+        ncFile = NcHelper.openFile(fileDir + fileName2);
+
+        //lon
+        var = ncFile.findVariable("lon");
+        atts = new Attributes();
+        NcHelper.getVariableAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=-999.0\n" +
+"    long_name=\"Longitude\"\n" +
+"    units=\"degree_east\"\n" +
+"    valid_max=180.0\n" +
+"    valid_min=-180.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        NcHelper.unpackAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=NaN\n" + //converted to PA standard mv
+"    long_name=\"Longitude\"\n" +
+"    units=\"degree_east\"\n" +
+"    valid_max=180.0\n" +
+"    valid_min=-180.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //palette
+        var = ncFile.findVariable("palette");
+        atts = new Attributes();
+        NcHelper.getVariableAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=-1\n" +
+"    _Unsigned=\"true\"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        NcHelper.unpackAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _FillValue=32767\n"; //byte -> short  //converted to PA standard mv
+//"    _Unsigned=\"true\"\n"; //removed
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //palette as unsigned byte
+        pa = NcHelper.getPrimitiveArray(
+            var.read(new int[]{0,0}, new int[]{1, 10})); //origin, shape
+        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        results = pa.toString();
+        expected = 
+"-109, 0, 108, -112, 0, 111, -115, 0, 114, -118";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //palette unpacked as short
+        pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
+        Test.ensureEqual(pa.elementClassString(), "short", "");
+        results = pa.toString();
+        expected = 
+"147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //poc
+        var = ncFile.findVariable("poc");
+        atts = new Attributes();
+        NcHelper.getVariableAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _ChunkSizes=40, 1729\n" +
+"    _FillValue=-32767\n" +
+"    add_offset=6400.0\n" +
+"    display_max=1000.0\n" +
+"    display_min=10.0\n" +
+"    display_scale=\"log\"\n" +
+"    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
+"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+"    scale_factor=0.2\n" +
+"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
+"    units=\"mg m^-3\"\n" +
+"    valid_max=-27000\n" +
+"    valid_min=-32000\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        NcHelper.unpackAttributes(var, atts);
+        results = atts.toString();
+        expected = 
+"    _ChunkSizes=40, 1729\n" +
+"    _FillValue=NaN\n" +  //standardized
+//"    add_offset=6400.0\n" +  //removed
+"    display_max=1000.0\n" +
+"    display_min=10.0\n" +
+"    display_scale=\"log\"\n" +
+"    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
+"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+//"    scale_factor=0.2\n" + removed
+"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
+"    units=\"mg m^-3\"\n" +
+"    valid_max=1000.0\n" + //unpacked
+"    valid_min=0.0\n";     //unpacked
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //poc as packed values (shorts)
+        pa = NcHelper.getPrimitiveArray(   //odd start to catch some data, not just mv
+            var.read(new Section("(70:4100:1000,70:8100:1000)"))); //start:end:stride 
+        Test.ensureEqual(pa.elementClassString(), "short", "");
+        results = pa.toString();
+        expected = 
+"-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
+"-32767, -32767, -31518, -32767, -31186, -32767, -32767, -31609, -32767, -32767, " +
+"-32767, -32767, -32767, -32767, -32767, -32767, -31867, -32767, -32767, -32767, " +
+"-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
+"-32767, -32767, -32767, -32767, -32767";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //poc as unpacked values (float)
+        pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
+        Test.ensureEqual(pa.elementClassString(), "float", "");
+        results = pa.toString();
+        expected = 
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 96.4, NaN, 162.8, " +
+"NaN, NaN, 78.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 26.6, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        
+        //***** test erdMPOC1day dataset
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMPOC1day");
+
+        //.das     
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0414224e+9, 1.472472e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Centered Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 89.97916, -89.97918;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float32 valid_max 90.0;\n" +
+"    Float32 valid_min -90.0;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range -179.9792, 179.9792;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float32 valid_max 180.0;\n" +
+"    Float32 valid_min -180.0;\n" +
+"  }\n" +
+"  poc {\n" +
+"    Float64 colorBarMaximum 1000.0;\n" +
+"    Float64 colorBarMinimum 10.0;\n" +
+"    String colorBarScale \"Log\";\n" +
+"    String ioos_category \"Ocean Color\";\n" +
+"    String long_name \"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\";\n" +
+"    String reference \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
+"    String standard_name \"mole_concentration_of_particulate_organic_carbon_in_sea_water\";\n" +
+"    String units \"mg m^-3\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _CoordSysBuilder \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
+"    String _lastModified \"2016-08-30T07:47:52.000Z\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
+"    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
+"    String creator_name \"NASA/GSFC/OBPG\";\n" +
+"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String date_created \"2016-08-30T07:47:52.000Z\";\n" +
+"    Float64 Easternmost_Easting 179.9792;\n" +
+"    Float64 geospatial_lat_max 89.97916;\n" +
+"    Float64 geospatial_lat_min -89.97918;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 179.9792;\n" +
+"    Float64 geospatial_lon_min -179.9792;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    String history \"Datafiles are downloaded ASAP from http://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA NMFS SWFSC ERD.\n" +
+"NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add a time variable and slightly modify the metadata.\n" +
+"Direct read of HDF4 file through CDM library.\n";
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+       
+expected = 
+//"2015-10-30T18:17:10Z (local files)
+//2015-10-30T18:17:10Z http://localhost:8080/cwexperimental/griddap/testUInt16File.das";
+"    String identifier_product_doi \"10.5067/AQUA/MODIS_OC.2014.0\";\n" +
+"    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
+"    String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/MPOC_las.html\";\n" +
+"    String institution \"NASA/GSFC OBPG\";\n" +
+"    String instrument \"MODIS\";\n" +
+"    String keywords \"443/555, biology, carbon, center, chemistry, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, moderate, modis, mole, mole_concentration_of_particulate_organic_carbon_in_sea_water, nasa, ocean, ocean color, oceans,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll; Oceans > Ocean Optics > Ocean Color,\n" +
+"optics, organic, particulate, poc, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, stramski, time, version, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String map_projection \"Equidistant Cylindrical\";\n" +
+"    String measure \"Mean\";\n" +
+"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    Float64 Northernmost_Northing 89.97916;\n" +
+"    String platform \"Aqua\";\n" +
+"    String processing_control_input_parameters_apply_pal \"yes\";\n" +
+"    String processing_control_input_parameters_central_meridian \"-999\";\n" +
+"    String processing_control_input_parameters_deflate \"4\";\n" +
+"    String processing_control_input_parameters_east \"180.000\";\n" +
+"    String processing_control_input_parameters_fudge \"1.0\";\n" +
+"    String processing_control_input_parameters_ifile \"A2016242.L3b_DAY_POC.nc\";\n" +
+"    String processing_control_input_parameters_interp \"area\";\n" +
+"    String processing_control_input_parameters_north \"90.000\";\n" +
+"    String processing_control_input_parameters_ofile \"A2016242.L3m_DAY_POC_poc_4km.nc\";\n" +
+"    String processing_control_input_parameters_oformat \"2\";\n" +
+"    String processing_control_input_parameters_oformat2 \"png\";\n" +
+"    String processing_control_input_parameters_palette_dir \"$OCDATAROOT/common/palette\";\n" +
+"    String processing_control_input_parameters_par \"A2016242.L3m_DAY_POC_poc_4km.nc.param\";\n" +
+"    String processing_control_input_parameters_product \"poc\";\n" +
+"    String processing_control_input_parameters_product_rgb \"rhos_645,rhos_555,rhos_469\";\n" +
+"    String processing_control_input_parameters_projection \"smi\";\n" +
+"    String processing_control_input_parameters_pversion \"2014.0.1QL\";\n" +
+"    String processing_control_input_parameters_quiet \"false\";\n" +
+"    String processing_control_input_parameters_resolution \"4km\";\n" +
+"    String processing_control_input_parameters_south \"-90.000\";\n" +
+"    String processing_control_input_parameters_threshold \"0\";\n" +
+"    String processing_control_input_parameters_use_quality \"yes\";\n" +
+"    String processing_control_input_parameters_use_rgb \"no\";\n" +
+"    String processing_control_input_parameters_west \"-180.000\";\n" +
+"    String processing_control_l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
+"    String processing_control_software_name \"l3mapgen\";\n" +
+"    String processing_control_software_version \"1.0.1-r13111\";\n" +
+"    String processing_control_source \"A2016242.L3b_DAY_POC.nc\";\n" +
+"    String processing_level \"L3 Mapped\";\n" +
+"    String processing_version \"2014.0.1QL\";\n" +
+"    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
+"    String publisher_email \"erd.data@noaa.gov\";\n" +
+"    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
+"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -89.97918;\n" +
+"    String spatialResolution \"4.64 km\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String summary \"MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)\";\n" +
+"    String temporal_range \"day\";\n" +
+"    String time_coverage_end \"2016-08-29T12:00:00Z\";\n" +
+"    String time_coverage_start \"2003-01-01T12:00:00Z\";\n" +
+"    String title \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon (1 Day Composite)\";\n" +
+"    Float64 Westernmost_Easting -179.9792;\n" +
+"  }\n" +
+"}\n";
+        int tpo = results.indexOf(expected.substring(0, 50));
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
+
+
+        //.dds     dds isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 4];\n" +   //2 unpacked files + 2 packed files
+"  Float32 latitude[latitude = 4320];\n" +
+"  Float32 longitude[longitude = 8640];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 poc[time = 4][latitude = 4320][longitude = 8640];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 4];\n" +
+"      Float32 latitude[latitude = 4320];\n" +
+"      Float32 longitude[longitude = 8640];\n" +
+"  } poc;\n" +
+"} erdMPOC1day;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv time values
+        userDapQuery = "time"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "time", ".csv"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = 
+"time\n" +
+"UTC\n" +
+"2003-01-01T12:00:00Z\n" +
+"2003-01-02T12:00:00Z\n" +
+"2016-08-28T12:00:00Z\n" +
+"2016-08-29T12:00:00Z\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv poc values
+        userDapQuery = "poc[(2003-01-01T12:00:00Z)][0:1000:4000][0:1000:8000]"; //match direct read above
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc1", ".csv"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = 
+"time,latitude,longitude,poc\n" +
+"UTC,degrees_north,degrees_east,mg m^-3\n" +
+"2003-01-01T12:00:00Z,89.979164,-179.97917,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,-138.3125,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,-96.64583,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,-54.979168,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,-13.312495,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,28.354177,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,70.020836,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,111.68752,NaN\n" +
+"2003-01-01T12:00:00Z,89.979164,153.35417,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,-179.97917,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,-138.3125,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,-96.64583,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,-54.979168,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,-13.312495,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,28.354177,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,70.020836,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,111.68752,NaN\n" +
+"2003-01-01T12:00:00Z,48.3125,153.35417,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,-179.97917,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,-138.3125,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,-96.64583,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,-54.979168,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,-13.312495,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,28.354177,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,70.020836,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,111.68752,NaN\n" +
+"2003-01-01T12:00:00Z,6.6458306,153.35417,29.476826\n" +
+"2003-01-01T12:00:00Z,-35.020832,-179.97917,NaN\n" +
+"2003-01-01T12:00:00Z,-35.020832,-138.3125,NaN\n" +
+"2003-01-01T12:00:00Z,-35.020832,-96.64583,NaN\n" +
+"2003-01-01T12:00:00Z,-35.020832,-54.979168,431.7499\n" +
+"2003-01-01T12:00:00Z,-35.020832,-13.312495,NaN\n" +
+"2003-01-01T12:00:00Z,-35.020832,28.354177,36.19993\n" +
+"2003-01-01T12:00:00Z,-35.020832,70.020836,NaN\n" +
+"2003-01-01T12:00:00Z,-35.020832,111.68752,NaN\n" +
+"2003-01-01T12:00:00Z,-35.020832,153.35417,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,-179.97917,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,-138.3125,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,-96.64583,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,-54.979168,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,-13.312495,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,28.354177,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,70.020836,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,111.68752,NaN\n" +
+"2003-01-01T12:00:00Z,-76.68751,153.35417,NaN\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv poc values 70:4100:1000,70:8100:1000
+        userDapQuery = "poc[(2016-08-28T12:00:00Z)][70:1000:4100][70:1000:8100]"; //match direct read above
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc2", ".csv"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = 
+"time,latitude,longitude,poc\n" +
+"UTC,degrees_north,degrees_east,mg m^-3\n" +
+"2016-08-28T12:00:00Z,87.0625,-177.0625,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,-135.39583,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,-93.729164,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,-52.062496,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,-10.3958235,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,31.270834,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,72.93751,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,114.60418,NaN\n" +
+"2016-08-28T12:00:00Z,87.0625,156.27083,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,-177.0625,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,-135.39583,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,-93.729164,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,-52.062496,96.3999\n" +
+"2016-08-28T12:00:00Z,45.395832,-10.3958235,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,31.270834,162.79991\n" +
+"2016-08-28T12:00:00Z,45.395832,72.93751,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,114.60418,NaN\n" +
+"2016-08-28T12:00:00Z,45.395832,156.27083,78.199905\n" +
+"2016-08-28T12:00:00Z,3.7291667,-177.0625,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,-135.39583,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,-93.729164,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,-52.062496,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,-10.3958235,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,31.270834,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,72.93751,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,114.60418,NaN\n" +
+"2016-08-28T12:00:00Z,3.7291667,156.27083,26.599905\n" +
+"2016-08-28T12:00:00Z,-37.937504,-177.0625,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,-135.39583,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,-93.729164,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,-52.062496,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,-10.3958235,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,31.270834,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,72.93751,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,114.60418,NaN\n" +
+"2016-08-28T12:00:00Z,-37.937504,156.27083,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,-177.0625,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,-135.39583,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,-93.729164,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,-52.062496,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,-10.3958235,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,31.270834,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,72.93751,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,114.60418,NaN\n" +
+"2016-08-28T12:00:00Z,-79.60418,156.27083,NaN\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //display an image
+        String2.log("\n\n* PNG ");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "poc[(2016-08-28T12:00:00Z)][][]", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        NcHelper.debugMode = oDebugMode;
+    }
+
+
 
     /**
      * This tests this class.
@@ -941,10 +1615,11 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-/* 
+ 
         testGenerateDatasetsXml();
         testBasic(deleteCachedDatasetInfo);
-   */     testUInt16File();
+        testUInt16File();
+        testMissingValue();
     }
 
 

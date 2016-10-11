@@ -38,6 +38,10 @@ public class EDVDepthGridAxis extends EDVGridAxis {
 
         super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
 
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the depth variable must be a numeric dataType.");
+
         longName = DEPTH_LONGNAME;
         units = DEPTH_UNITS;
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata

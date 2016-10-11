@@ -365,12 +365,22 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
         throws Throwable {
 
-        String2.log("EDDTableFromHyraxFiles.generateDatasetsXml" +
-            "\n  tLocalDirUrl=" + tLocalDirUrl + 
-            "\n  oneFileDapUrl=" + oneFileDapUrl);
+        String2.log("\n*** EDDTableFromHyraxFiles.generateDatasetsXml" +
+            "\nlocalDirUrl=" + tLocalDirUrl + " fileNameRegex=" + tFileNameRegex + 
+            "\noneFileDapUrl=" + oneFileDapUrl +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nextract pre=" + tPreExtractRegex + " post=" + tPostExtractRegex + " regex=" + tExtractRegex +
+            " colName=" + tColumnNameForExtract +
+            "\nsortedColumn=" + tSortedColumnSourceName + 
+            " sortFilesBy=" + tSortFilesBySourceNames + 
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         if (!String2.isSomething(tLocalDirUrl))
             throw new IllegalArgumentException("localDirUrl wasn't specified.");
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
+        tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
+            tColumnNameForExtract.trim() : "";
+        tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
+            tSortedColumnSourceName.trim() : "";
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
         if (!String2.isSomething(oneFileDapUrl)) 
@@ -449,11 +459,24 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
+        //subsetVariables
+        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
+               dataAddTable.globalAttributes().getString("subsetVariables") == null) 
+            dataAddTable.globalAttributes().add("subsetVariables",
+                suggestSubsetVariables(dataSourceTable, dataAddTable, 1)); //nFiles
+
         //write the information
         StringBuilder sb = new StringBuilder();
-        if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = (tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
+        if (tSortFilesBySourceNames.length() == 0) {
+            if (tColumnNameForExtract.length() > 0 &&
+                tSortedColumnSourceName.length() > 0 &&
+                !tColumnNameForExtract.equals(tSortedColumnSourceName))
+                tSortFilesBySourceNames = tColumnNameForExtract + ", " + tSortedColumnSourceName;
+            else if (tColumnNameForExtract.length() > 0)
+                tSortFilesBySourceNames = tColumnNameForExtract;
+            else 
+                tSortFilesBySourceNames = tSortedColumnSourceName;
+        }
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +

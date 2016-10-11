@@ -192,6 +192,102 @@ public class Table  {
     public final static String SEQUENCE_NAME = "s"; 
     public static String QUERY_ERROR = "Query error: ";
 
+    /** 
+     * Igor Text File File reference: in Bob's /programs/igor/ or 
+     *   http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf
+     * <br>Command reference: in Bob's /programs/igor/ or 
+     *   http://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf
+     */
+    public final static String IgorCharset = "ISO-8859-1"; //they are vague, but it is 1-byte, not UTF variant
+    public final static String IgorNanString = "NaN"; //Igor Text File Format: use "NaN"
+    public final static String IgorEndOfLine = "\r";  //Igor Text File Format: "a carriage return at the end of the line"
+    //Igor Text File Format: "use the standard Igor date format (number of seconds since 1/1/1904)"
+    public final static double IgorBaseSeconds = -2.0828448E9; 
+    public final static double IgorFactorToGetSeconds = 1;    
+    /**
+     * Igor reserved names are selected names from "Built-In Operations by Category"
+     * from http://www.wavemetrics.net/doc/igorman/IgorMan.pdf
+     */
+    public final static String[] IgorReservedNamesSA = { //sorted for simplicity (not required)
+        "abs", "acos", "AddLitItem", "airyA", "airyAD", "airyB", "alog", 
+        "AnnotationInfo", "AnnotationList", 
+        "area", "asin", "Append", "areaXY", "atan", "AxisInfo", "AxisList",
+        "BackgroundInfo", "Besseli", "Besselj", "Besselk", "Bessely", 
+        "bessI", "bessJ", "bessK", "bessY", 
+        "beta", "betai", "binomial", "BoundingBall", "break", "BrowseURL", 
+        "cabs", "CaptureHistory", "catch", "cd", "ceil", "cequal", "Chart", "char2num", 
+        "CheckBox", "CheckName", "CleanupName", 
+        "cmplx", "cmpstr",
+        "ColorScale", "Concatenate", "conj", "Constant", "continue", 
+        "ContourInfo", "ContourZ", "ControlBar", 
+        "ConvexHull", "Convolve", 
+        "Correlate", "CountObjects", "cos", "cot", "coth", "cpowi", 
+        "CreationDate", "Cross", "csc", "CsrInfo", 
+        "CsrWave", "CsrWaveRef", "CTabList", "Cursor", "CurveFit", "CWT",
+        "DataFolderDir", "DataFolderExists", "date", "date2secs", "date2Julian", 
+        "DateTime", "dawson", "default", "DefaultFont", 
+        "deltax", "DFREF", "Differentiate", "digamma", "dimDelta", "DimOffset", "DimSize", 
+        "Dir", "Display", "Duplicate", "DWT",
+        "e", "EdgeStats", "Edit", "ei", "End", "EndMacro", "enoise", "erf", "erfc", "erfcw", 
+        "exists", "exp", "ExperimentModified", "expInt", "expnoise", "Extract",
+        "factorial", "FakeData", "FastGaussTransform", "faverage", 
+        "FFT", "FilterIIR", "FindLevel", "FindListItem", "FindValue", "FitFunc", "floor", 
+        "FontList", "FStatus", "FTPDownload", "FTPUpload", "FUNCREF", "FuncRefInfo", 
+        "Function", "FunctionInfo", "FunctionList", "FunctionPath", 
+        "gamma", "gammaInc", "gammaln", "gammaNoise", "gammp", "gammq", 
+        "Gauss", "Gauss2D", "gcd", "gnoise", "Graph", "GraphMarquee", "GraphStyle", 
+        "GridStyle", "GuideInfo", 
+        "Hanning", "Hash", "hcsr", "hermite", "hide", "HilbertTransform", "Histogram",         
+        "i", "IFFT", "ilim", "imag", "ImageFilter", 
+        "ImageHistogram", "ImageInfo", "ImageNameList", 
+        "ImageRotate", "ImageSave", "ImageStats", 
+        "ImageThreshold", "ImageTransform", "ImageWindow", 
+        "IndexedDir", "IndexedFile", "IndexSort", "Inf", "InsertPoints", "Integrate", 
+        "IntegrateID", "interp", "Interp2D", "Interp3D", "inverseErf", "inverseErfc",
+        "ItemsInList", 
+        "j", "jlim", "JulianToDate", 
+        "Label", "laguerre", "Layout", "LayoutInfo", "Legend", "limit", "ListMatch", 
+        "ln", "LoadData", "Loess", "log", "LowerStr",
+        "Macro", "magsqr", "Make", "MakeIndex", "MatrixDet", "MatrixDot", "MatrixFilter", 
+        "MatrixRank", "MatrixTrace", 
+        "max", "mean", "Menu", "min", "mod", "modDate", "Modify", "ModuleName", 
+        "norm", "note", "Note", "Notebook", "num2char", "num2str", "numpnts", "numtype", "NVAR",
+        "Open", "OperationList", "Optimize", "Override", 
+        "p", "p2rect", "PadString", "Panel", "ParamIsDefault", 
+        "PathInfo", "PathList", "PCA", "pcsr", "Pi", "PICTList", "Picture", "PlaySound", 
+        "pnt2x", "Point", "poly", "poly2D", "PolygonArea", "popup", 
+        "Preferences", "Print", "Proc", "ProcGlobal", "ProcedureText", "Project", "Prompt", 
+        "PulseStats", "pwd",
+        "q", "qcsr", "Quit", 
+        "r", "r2polar", "real", "Rect", "Redimension", "Remove", "Rename", "Resample", "return", 
+        "Reverse", "RGBColor", "rightx", "root", "Rotate", "round", "rtGlobals", 
+        "s", "Save", "SaveData", "ScreenResolution", "sec", "Secs2Date", "Secs2Time", 
+        "SelectNumber", "SelectString", "SetAxis", 
+        "SetBackground", "SetDimLabel", "SetDrawLayer", 
+        "SetRandomSeed", "SetScale", "sign", "sin", "sinc", "sinh", 
+        "Sleep", "Slow", "Smooth", "Sort", "SortList", 
+        "SpecialDirPath", "SplitString", "sqrt", 
+        "Stack", "startMSTimer", "Static", "stopMSTimer", "str2num",  
+        "Strconstant", "String", "StringByKey", 
+        "StringCRC", "StringFromList", "StringList", "StringMatch", 
+        "strlen", "strsearch", "STRUCT", "Structure", "Submenu", "sum", "SVAR", 
+        "t", "Table", "TableInfo", "TableStyle", "Tag", "TagVal", 
+        "tan", "tanh", "TextBox", "TextFile", "ticks", 
+        "Tile", "TileWindows", "time", "TraceInfo", "trunc", 
+        "UniqueName", "Unwrap", "UpperStr", "URLDecode", "URLEncode", 
+        "Variable", "VariableList", "Variance", "vcsr", "version", 
+        "WAVE", "WaveCRC", "WaveDims", "WaveExists", "WaveMeanStdv", 
+        "WaveMax", "WaveMin", "WaveName", 
+        "WaveStats", "WaveTransform", "WaveType", "WaveUnits", 
+        "WhichListItem", "Window", "WinName", "wnoise", 
+        "x", "x2pnt", "xcsr", "y", "z", "zcsr"};
+        
+    public final static HashSet IgorReservedNames = new HashSet();
+    static {
+        for (String s : IgorReservedNamesSA)
+            IgorReservedNames.add(String2.canonical(s));
+    }
+
     //Bob: see identical css in ERDDAP's setup.xml <startHeadHtml>
     public static String ERD_TABLE_CSS =
         "<style type=\"text/CSS\">\n" +
@@ -303,35 +399,6 @@ public class Table  {
     public Object clone() {
         return subset(0, 1, nRows() - 1);
     }
-
-    /**
-     * This converts a string with a double value or a date/time 
-     * (matching at least the start of a date time formatted as 
-     * 1970-01-01T00:00:00, where 'T' can be any non-digit)
-     * into a double.
-     *
-     * @param s
-     * @return a double value (or NaN if trouble)
-     */
-/*
-//what is this method and why is it in Table???
-//who calls it??? no one
-    public static double parse(String s) {
-        //future: handle degrees? see gmt appendix B
-        s = s.trim();
-
-        //is it a date?
-        int po = s.indexOf('-');
-        if (po > 0 &&   //not a negative number, e.g., -1
-//is this a good test for sci notation?
-            Character.toLowerCase(s.charAt(po - 1)) == 'e') {  //not sci notation, e.g., 1.5e-12
-            return Calendar2.isoStringToEpochSeconds(s);
-        }
-
-        //regular number
-        return String2.parseDouble(s);
-    }
-*/
 
     /**
      * This returns the current number of columns.
@@ -1841,6 +1908,8 @@ public class Table  {
         //remove actual_range
         for (int col = 0; col < nColumns(); col++) {
             Attributes atts = columnAttributes(col);
+            atts.remove("actual_min");
+            atts.remove("actual_max");
             atts.remove("actual_range");
             atts.remove("data_min");
             atts.remove("data_max");
@@ -2199,21 +2268,38 @@ public class Table  {
         //clear everything
         clear();
 
+        //remove empty rows at end
+        int nRows = lines.length - dataStartLine;
+        while (nRows > 0) {
+            String ts = lines[dataStartLine + nRows - 1].trim();
+            if (ts.length() == 0 || ts.equals("\r"))
+                nRows--;
+            else break;
+        }        
+
         //determine column separator
-        String oneLine = lines[dataStartLine];
-        char colSeparator = '\t';
-        int tpo = oneLine.indexOf('\t');
-        if (tpo < 0) {
-            colSeparator = ',';
-            tpo = oneLine.indexOf(',');
-            if (tpo < 0) {
-                colSeparator = ' ';
-                tpo = oneLine.indexOf(' '); 
-                if (tpo < 0)
-                    //if tpo is still -1, only one datum per line; colSeparator irrelevant        
-                    colSeparator = '\u0000';
-            }
-        } 
+        //look for separator that appears the most and on in 3 test lines
+        int nTab   = 1;
+        int nComma = 1;
+        int nSemi  = 1;
+        int nSpace = 1;
+        String oneLine;
+        for (int row = 0; row < Math.min(3, nRows); row++) {
+            oneLine = lines[dataStartLine + row];
+            nTab   *= String2.countAll(oneLine, "\t");
+            nComma *= String2.countAll(oneLine, ",");
+            nSemi  *= String2.countAll(oneLine, ";");
+            nSpace *= String2.countAll(oneLine, " ");
+        }
+        char colSeparator = 
+            nTab   >= 1 && nTab   >= Math.max(nComma, nSemi)? '\t':
+            nComma >= 1 && nComma >= Math.max(nTab,   nSemi)? ',' :
+            nSemi  >= 1?                            ';' : 
+            nSpace >= 1?                            ' ' : 
+                '\u0000'; //only one datum per line; colSeparator irrelevant        
+        if (debugMode)
+            String2.log(">> separator=#" + (int)colSeparator + " nTab=" + nTab + 
+                " nComma=" + nComma + " nSemi=" + nSemi + " nSpace=" + nSpace);
 
         //read the file's column names
         StringArray fileColumnNames = new StringArray();
@@ -2237,15 +2323,6 @@ public class Table  {
             }
             //if (verbose) String2.log("fileColumnNames=" + fileColumnNames);
         }
-
-        //remove empty rows at end
-        int nRows = lines.length - dataStartLine;
-        while (nRows > 0) {
-            String ts = lines[dataStartLine + nRows - 1].trim();
-            if (ts.length() == 0 || ts.equals("\r"))
-                nRows--;
-            else break;
-        }        
 
         //get the data
         int testColumnNumbers[] = null;
@@ -2416,7 +2493,7 @@ public class Table  {
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 "\"b,d\",Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"short:,,,,,,,,\n" +
+"needs,1comma:,,,,,,,\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1e200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2e200\n" +
 "i,I,TRUE,13,12003,12000,120000000,1.23,3e200\n" +
@@ -2442,7 +2519,7 @@ public class Table  {
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 "\"b,d\",Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"short:,,,,,,,,\n" +
+"needs,1comma:,,,,,,,\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1.0E200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
 "i,I,TRUE,13,12003,12000,120000000,1.23,3.0E200\n" +
@@ -2469,7 +2546,7 @@ public class Table  {
         results = table.dataToCSVString();
         expected = 
 "aDouble,aString,aByte\n" +
-",short:,\n" +
+",needs,\n" +
 "4.0E200,j,14\n" +
 "5.0E200,k,15\n" +
 "6.0E200,l,16\n";
@@ -2501,7 +2578,7 @@ public class Table  {
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 " b d ,Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"short:,,,,,,,,\n" +
+"needs1space,E,,,,,,,\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1e200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2e200\n" +
 "i,I,TRUE,13,12003,12000,120000000,1.23,3e200\n" +
@@ -2527,7 +2604,7 @@ public class Table  {
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 " b d ,Ab,t,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"short:,,,,,,,,\n" +
+"needs1space,E,,,,,,,\n" +
 "fg,F,true,11,12001,1200000,12000000000,1.21,1.0E200\n" +
 "h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
 "i,I,TRUE,13,12003,12000,120000000,1.23,3.0E200\n" +
@@ -2554,7 +2631,7 @@ public class Table  {
         results = table.dataToCSVString();
         expected = 
 "aDouble,aString,aByte\n" +
-",short:,\n" +
+",needs1space,\n" +
 "4.0E200,j,14\n" +
 "5.0E200,k,15\n" +
 "6.0E200,l,16\n";
@@ -2843,6 +2920,7 @@ public class Table  {
                 else if (arChar[col] != null)
                     arChar[col].add(s.length() > 0? s.charAt(0) : Character.MAX_VALUE);
                 else pa[col].addString(s);
+                //if (row < dataStartLine + 3) String2.log(">> row=" + row + " col=" + col + " s=" + s);
             }
         }
 
@@ -3744,7 +3822,7 @@ String stationsXml =
     }
 
     /**
-     * This reads all data from one Aws file.
+     * This reads all data from one Automatic Weather Station (AWS) file.
      * All columns will be String columns.
      * !!! Note, some units in the file have HTML character entities.  
      *   ERDDAP converts them to ASCII / UDUnits.
@@ -3797,7 +3875,13 @@ String stationsXml =
                                 //fix common units problems in AWS xml files
                                 String tUnits = atts.getString("units");
                                 tUnits = String2.replaceAll(tUnits, "&deg;",  "degree_");
-                                if (tUnits.indexOf('\"') >= 0) {
+                                //String2.pressEnterToContinue("tUnits=" + String2.annotatedString(tUnits));
+                                if (tUnits.indexOf('\u0094') >= 0) { //a Windows special "
+                                    if (tag2.indexOf("pressure") >= 0) 
+                                         tUnits = String2.replaceAll(tUnits, "\u0094", "inch_Hg");
+                                    else tUnits = String2.replaceAll(tUnits, "\u0094", "inches");
+                                }
+                                if (tUnits.indexOf('"') >= 0) {
                                     if (tag2.indexOf("pressure") >= 0) 
                                          tUnits = String2.replaceAll(tUnits, "\"", "inch_Hg");
                                     else tUnits = String2.replaceAll(tUnits, "\"", "inches");
@@ -3892,14 +3976,14 @@ String stationsXml =
             " time=" + (System.currentTimeMillis() - time));
     }
 
-    /** Test readAwsXmlFile.
+    /** Test readAwsXmlFile.   Automatic Weather Station
      *
      * @throws Exception if trouble
      */
     public static void testReadAwsXmlFile() throws Exception {
         String2.log("\nTable.testReadAwsXmlFile");
         Table table = new Table();
-        table.readAwsXmlFile("c:/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml");
+        table.readAwsXmlFile(String2.unitTestDataDir + "aws/xml/SNFLS-2012-11-03T20_30_01Z.xml");
         String results = table.toCSVString();
         String expected = 
 "{\n" +
@@ -5410,12 +5494,12 @@ Dataset {
      * @param loadVarNames  
      *   If loadVarNames is specified, those variables will be loaded.
      *   If loadVarNames isn't specified, this method reads vars which use
-     *   the specified loadDimNames.
+     *   the specified loadDimNames and scalar vars.
      *   <br>If a specified var isn't in the file, there won't be a column 
      *   in the results table for it and it isn't an error.
      * @param loadDimNames. If loadVarNames is specified, this is ignored.  
      *   If loadDimNames is used, all variables using any of these dimensions
-     *   (and dimension-less variables) will be loaded.
+     *   (and dimension-less variables) will be loaded, plus all scalar vars.
      *   Don't include string-length dimensions.
      *   Almost always, there will be 1+ variables which use all of these dimensions.
      *   If a given dimension isn't it the file, it is removed from the list.
@@ -5431,10 +5515,12 @@ Dataset {
      *   This is for the CF DSG Multidimensional Array file type and similar files.
      *   If true, this does the proper test and so always loads all the 
      *   max dim variables, so it may take extra time. 
-     * @param conVars the names of the constraint variables.
+     * @param conVars the names of the constraint variables. May be null.
      *   It is up to this method how much they will be used.
      *   Currently, the constraints are just used for *quick* tests to see if the
-     *   file has no matching data.  May be null.
+     *   file has no matching data.  
+     *   If a conVar isn't in the loadVarNames (provided or derived),
+     *   then the constraint isn't used.
      * @param conOps the operators for the constraints.
      *   All ERDDAP ops are supported. May be null.
      * @param conVals the values of the constraints. May be null.
@@ -5466,7 +5552,6 @@ Dataset {
         //read the file
         NetcdfFile ncFile = NcHelper.openFile(fullName);
         try {
-            Group rootGroup = ncFile.getRootGroup();
 
             //load the global metadata
             if (getMetadata)
@@ -5479,7 +5564,7 @@ Dataset {
             //(It is done this way because it easier/more reliable to generate this list
             //than the list of string dimensions.)
             HashSet<Dimension> notStringLengthDims = new HashSet();
-            List<Variable> allVars = rootGroup.getVariables();
+            List<Variable> allVars = ncFile.getVariables();
             int nAllVars = allVars.size();
             for (int v = 0; v < nAllVars; v++) {
                 Variable tVar = allVars.get(v);
@@ -5496,6 +5581,7 @@ Dataset {
             // *** first half: make loadVars
             ArrayList<Variable> loadVars = new ArrayList();  //which we will actually load
             ArrayList<Dimension> loadDims = new ArrayList(); //which we actually need
+            boolean hasVlenDims = false;
             if (loadVarNames.size() > 0) {
                 //loadVarNames was specified
 
@@ -5517,6 +5603,8 @@ Dataset {
                             if (loadDims.indexOf(tDim) < 0) {
                                 loadDims.add(tDim);
                                 loadDimNames.add(tDim.getFullName());
+                                if (tDim.isVariableLength())
+                                    hasVlenDims = true;
                             }   
                         }
                     }
@@ -5584,10 +5672,13 @@ Dataset {
                         !notStringLengthDims.contains(tDims.get(tDims.size() - 1));
                     int ntDims = tDims.size() - (isString? 1 : 0);
                     for (int d = 0; d < ntDims; d++) {
-                        int whichDim = loadDims.indexOf(tDims.get(d));
+                        Dimension tDim = tDims.get(d);
+                        int whichDim = loadDims.indexOf(tDim);
                         if (whichDim < 0) 
                             continue LOADVARS_V;
                         dimUsed[whichDim] = true;
+                        if (tDim.isVariableLength())
+                            hasVlenDims = true;
                     }
                     loadVars.add(var);
                     loadVarNames.add(var.getFullName());
@@ -5614,7 +5705,7 @@ Dataset {
             //loadDims is known and only has dims used by loadVars
             if (debugMode) String2.log(
                 ">> loadVars=" + loadVarNames + 
-              "\n>> loadDims=" + loadDimNames);
+              "\n>> hasVlenDims=" + hasVlenDims + " loadDims=" + loadDimNames);
             int nLoadVars = loadVars.size();
 
 
@@ -5645,6 +5736,8 @@ Dataset {
                    
                     //test it
                     PrimitiveArray pa = NcHelper.getPrimitiveArray(tVar, isString);
+                    if (trimStrings && pa instanceof StringArray) 
+                        ((StringArray)pa).trimAll();
                     knownPAs[v] = pa;
                     BitSet keep = new BitSet();
                     keep.set(0, pa.size());
@@ -5708,8 +5801,12 @@ Dataset {
                 Attributes atts = new Attributes();
                 if (getMetadata || removeMVRows)
                     NcHelper.getVariableAttributes(tVar, atts);  //needed for removeMVRows
-                PrimitiveArray pa = knownPAs[v] != null? knownPAs[v] :  //v is loadVars v
-                    NcHelper.getPrimitiveArray(tVar, isString);
+                PrimitiveArray pa = knownPAs[v];  //v is loadVars v
+                if (knownPAs[v] == null) {
+                    pa = NcHelper.getPrimitiveArray(tVar, isString);
+                    if (trimStrings && pa instanceof StringArray) 
+                        ((StringArray)pa).trimAll();
+                }
                 knownPAs[v] = null;
                 loaded.set(v);
 //FUTURE: be smarter? just trim values that are STRING_LENGTH long?
@@ -5788,8 +5885,8 @@ Dataset {
                     NcHelper.getVariableAttributes(tVar, atts);   //needed for removeMVRows
                     //don't use knownPAs here: different vars and different v's.
                     PrimitiveArray pa = NcHelper.getPrimitiveArray(tVar, isString);
-//FUTURE: be smarter? just trim values that are STRING_LENGTH long?
-                    if (pa instanceof StringArray && trimStrings)
+                    //FUTURE: be smarter? just trim values that are STRING_LENGTH long?
+                    if (trimStrings && pa instanceof StringArray)
                         ((StringArray)pa).trimAll();
                     addColumn(nColumns(), tVar.getFullName(), pa, atts);
                 }
@@ -6007,8 +6104,12 @@ Dataset {
                     }
 
                     //read this var into lut
-                    PrimitiveArray pa = knownPAs[v] != null? knownPAs[v] : //v is loadVars v
-                        NcHelper.getPrimitiveArray(tVar, isString);
+                    PrimitiveArray pa = knownPAs[v]; //v is loadVars v
+                    if (pa == null) {
+                        pa = NcHelper.getPrimitiveArray(tVar, isString);
+                        if (trimStrings && pa instanceof StringArray)
+                            ((StringArray)pa).trimAll();
+                    }
                     knownPAs[v] = null;
                     loaded.set(v);
 //FUTURE: be smarter? just trim values that are STRING_LENGTH long?
@@ -6151,6 +6252,7 @@ Dataset {
         debugMode = true;
         String2.log("\n*** Table.testReadMultidimNc");
         Table table = new Table();
+        //ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
         String fiName = "/erddapTest/nc/2901175_prof.nc";
         String2.log(NcHelper.dumpString(fiName, false));
         String results, expectedStart, expectedEnd;
@@ -6489,6 +6591,58 @@ Dataset {
         results = table.dataToCSVString(5, true);
         Test.ensureEqual(results, expectedEnd, "results=\n" + results);
 
+        //* test read all and constrain PLATFORM_NUMBER
+        //Roland reported this problem 2016-06-21: returned 0 rows, saying:
+        //"Returning an empty table because var=PLATFORM_NUMBER failed its constraints, including =2901175. time=0" 
+
+        table.readMultidimNc(fiName, StringArray.fromCSV(
+            "DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, " +
+            "DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, CYCLE_NUMBER, DIRECTION, " +
+            "DATA_CENTRE, DC_REFERENCE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, " +
+            "FLOAT_SERIAL_NO, FIRMWARE_VERSION, WMO_INST_TYPE, JULD, JULD_QC, JULD_LOCATION, " +
+            "LATITUDE, LONGITUDE, POSITION_QC, POSITIONING_SYSTEM, PROFILE_PRES_QC, " +
+            "PROFILE_TEMP_QC, PROFILE_PSAL_QC, VERTICAL_SAMPLING_SCHEME, " +
+            "CONFIG_MISSION_NUMBER, PRES, PRES_QC, PRES_ADJUSTED, PRES_ADJUSTED_QC, " +
+            "PRES_ADJUSTED_ERROR, TEMP, TEMP_QC, TEMP_ADJUSTED, TEMP_ADJUSTED_QC, " +
+            "TEMP_ADJUSTED_ERROR, PSAL, PSAL_QC, PSAL_ADJUSTED, PSAL_ADJUSTED_QC, " +
+            "PSAL_ADJUSTED_ERROR"), null,
+            true, true, true, //readMetadata, trimStrings, removeMVRows
+            StringArray.fromCSV("PLATFORM_NUMBER"),  //conVars, conOps, conVals
+            StringArray.fromCSV("="),
+            StringArray.fromCSV("2901175")); 
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION," +
+"DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE," +
+"DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO," +
+"FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE," +
+"POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC," +
+"VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED," +
+"PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC," +
+"TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR\n" +
+
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175," +
+"CHINA ARGO PROJECT,JIANPING XU,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846," +
+"21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49," +
+"ARGOS,65,65,65,,1,5.9,49,5.8,49,2.4,24.989,49,24.989,49,0.002,34.555,49,34.55511," +
+"49,0.01\n" +
+
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175," +
+"CHINA ARGO PROJECT,JIANPING XU,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846," +
+"21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49," +
+"ARGOS,65,65,65,,1,10.0,49,9.9,49,2.4,24.99,49,24.99,49,0.002,34.554,49,34.55505," +
+"49,0.01\n" +
+
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175," +
+"CHINA ARGO PROJECT,JIANPING XU,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846," +
+"21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49," +
+"ARGOS,65,65,65,,1,20.1,49,20.0,49,2.4,24.69,49,24.69,49,0.002,34.56,49,34.56191," +
+"49,0.01\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows"); //same as when all variables were explicitly loaded
+
+
 
         //* test different varNames
         table.readMultidimNc(fiName, 
@@ -6618,6 +6772,198 @@ Dataset {
             StringArray.fromCSV("ZZTOP"), 
             null, 
             true, true, true, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+
+        //done
+        /* */
+        debugMode = oDebugMode;
+    }
+
+    /** This tests readVlenNc. */
+    public static void testReadVlenNc() throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+        String2.log("\n*** Table.testReadMultidimNc");
+        Table table = new Table();
+        String fiName = "/erddapTestBig/nccf/vlen/rr2_vlen_test.nc";
+        String2.log(NcHelper.dumpString(fiName, false));
+        String results, expectedStart, expectedEnd;
+        /* */
+
+        //** don't specify varNames or dimNames -- it find vars with most dims
+        table.readMultidimNc(fiName, new StringArray(), new StringArray(), 
+            true, true, false, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3);
+        expectedStart = 
+//static vars and vars like  char SCIENTIFIC_CALIB_COEFFICIENT(N_PROF=254, N_CALIB=1, N_PARAM=3, STRING256=256);
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,STATION_PARAMETERS,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PARAMETER,SCIENTIFIC_CALIB_EQUATION,SCIENTIFIC_CALIB_COEFFICIENT,SCIENTIFIC_CALIB_COMMENT,SCIENTIFIC_CALIB_DATE\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,PRES,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,PRES,PRES_ADJUSTED = PRES - dP,dP =  0.1 dbar.,Pressures adjusted by using pressure offset at the sea surface. The quoted error is manufacturer specified accuracy in dbar.,20110628060155\n" +
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,TEMP,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,TEMP,none,none,The quoted error is manufacturer specified accuracy with respect to ITS-90 at time of laboratory calibration.,20110628060155\n" +
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,PSAL,1,65,HZ,0066_80617_001,2C,68,,APEX_SBE_4136,,846,21660.34238425926,49,21660.345046296297,21.513999938964844,123.36499786376953,49,ARGOS,65,65,65,,1,PSAL,\"PSAL_ADJUSTED = sw_salt( sw_cndr(PSAL,TEMP,PRES), TEMP, PRES_ADJUSTED ); PSAL_ADJ corrects conductivity cell therm mass (CTM), Johnson et al, 2007, JAOT;\",\"same as for PRES_ADJUSTED; CTL: alpha=0.0267, tau=18.6;\",No significant salinity drift detected; SBE sensor accuracy,20110628060155\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 762, "nRows"); //254*3
+/*
+        //* same but quick reject based on constraint
+        table.readVlenNc(fiName, new StringArray(), new StringArray(), 
+            true, true, false, //readMetadata, trimStrings, removeMVRows
+            StringArray.fromCSV("FORMAT_VERSION,FORMAT_VERSION"), //conVars
+            StringArray.fromCSV("=,="), //conOps
+            StringArray.fromCSV("3.1,3.2")); //conVals
+        Test.ensureEqual(table.nRows(), 0, "nRows"); 
+
+
+
+        //* test do removeMVRows
+        table.readVlenNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), 
+            true, true, false, //readMetadata, trimStrings, removeMVRows
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows");
+
+         //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        expectedEnd = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1850.0,49,1849.4,49,99999.0,2.106,49,2.106,49,99999.0,34.604,49,34.604,49,99999.0\n" +
+"1,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1899.9,49,1899.3,49,99999.0,2.055,49,2.055,49,99999.0,34.612,49,34.612,49,99999.0\n" +
+"2,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,24210.44662037037,49,24210.44662037037,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1950.0,49,1949.4,49,99999.0,2.014,49,2.014,49,99999.0,34.617,49,34.617,49,99999.0\n";
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+        //* same but quick reject based on constraint   LAT,LON 26.587,154.853
+        //*** this takes 9ms while test above takes 99ms!
+        table.readVlenNc(fiName, null, StringArray.fromCSV("ZZTOP, N_PROF, N_LEVELS"), 
+            true, true,  //readMetadata, trimStrings, 
+            StringArray.fromCSV("LATITUDE"), //conVars
+            StringArray.fromCSV("="), //conOps
+            StringArray.fromCSV("45")); //conVals
+        Test.ensureEqual(table.nRows(), 0, "nRows"); 
+
+        //* test different dim order (should be rearranged so the same)
+        table.readVlenNc(fiName, null, StringArray.fromCSV("N_LEVELS, ZZTOP, N_PROF"), 
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows");
+ 
+        //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+
+        //* test different varNames
+        table.readVlenNc(fiName, 
+            StringArray.fromCSV("DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PRES,PRES_QC,PRES_ADJUSTED,PRES_ADJUSTED_QC,PRES_ADJUSTED_ERROR,TEMP,TEMP_QC,TEMP_ADJUSTED,TEMP_ADJUSTED_QC,TEMP_ADJUSTED_ERROR,PSAL,PSAL_QC,PSAL_ADJUSTED,PSAL_ADJUSTED_QC,PSAL_ADJUSTED_ERROR"), 
+            null, 
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows");
+ 
+        //and test data at the end of that table
+        table.removeRows(0, table.nRows() - 3);
+        results = table.dataToCSVString(5, true);
+        Test.ensureEqual(results, expectedEnd, "results=\n" + results);
+
+
+        //* test read JULD
+        table.readVlenNc(fiName, StringArray.fromCSV("JULD"), null,
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,JULD\n" +
+"0,21660.34238425926\n" +
+"1,21670.351828703704\n" +
+"2,21680.386898148146\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 254, "nRows"); //same as when all variables were explicitly loaded
+
+        table.removeRows(0, 251);
+        results = table.dataToCSVString(1000, true);
+        expectedStart = 
+"row,JULD\n" +
+"0,24190.451828703703\n" +
+"1,24200.381412037037\n" +
+"2,24210.44662037037\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+ 
+
+        //* test read JULD && PRES
+        table.readVlenNc(fiName, StringArray.fromCSV("JULD,PRES"), null,
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,JULD,PRES\n" +
+"0,21660.34238425926,5.9\n" + //JULD is correctly JOINed
+"1,21660.34238425926,10.0\n" +
+"2,21660.34238425926,20.1\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 17266, "nRows"); //same as when all variables were explicitly loaded
+
+        table.removeRows(0, 17263);
+        results = table.dataToCSVString(1000, true);
+        expectedStart = 
+"row,JULD,PRES\n" +
+"0,24210.44662037037,1850.0\n" + //JULD is correctly JOINed
+"1,24210.44662037037,1899.9\n" +
+"2,24210.44662037037,1950.0\n";
+         Test.ensureEqual(results, expectedStart, "results=\n" + results);
+ 
+
+        //* test read just static vars, in a different order 
+        table.readVlenNc(fiName, 
+            StringArray.fromCSV("HANDBOOK_VERSION,FORMAT_VERSION,DATA_TYPE"), 
+            null, 
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,HANDBOOK_VERSION,FORMAT_VERSION,DATA_TYPE\n" +
+"0,1.2,3.1,Argo profile\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+
+
+        //* test read 0 dim variable -> empty table
+        table.readVlenNc(fiName, 
+            StringArray.fromCSV("HISTORY_INSTITUTION"), 
+            null, 
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        Test.ensureEqual(table.nRows(), 0, "");
+        Test.ensureEqual(table.nColumns(), 0, "");
+
+        //* test read non-existent dim -> just scalar vars
+        table.readVlenNc(fiName, 
+            null, 
+            StringArray.fromCSV("ZZTOP"), 
+            true, true,  //readMetadata, trimStrings, 
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToCSVString(3, true);
+        expectedStart = 
+"row,DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE\n" +
+"0,Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+
+        //* test read non-existent Var -> empty table
+        table.readVlenNc(fiName, 
+            StringArray.fromCSV("ZZTOP"), 
+            null, 
+            true, true,  //readMetadata, trimStrings, 
             null, null, null); //conVars, conOps, conVals
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
@@ -7116,6 +7462,7 @@ Dataset {
      * 
      * @param fullName The full name of a local file.
      * @param loadVariableNames if null or length 0, all vars are read.
+     *    <br>Any specified name must be the fullName, e.g., group1/var1
      *    <br>!!!!! conNames MUST be included in loadVariableNames.
      *     This code is written to handle them if not included, but the number of tests
      *     to verify is astronomical.
@@ -7145,7 +7492,7 @@ Dataset {
         if (conNames == null) 
             conNames = new StringArray();
         if (verbose) String2.log("Table.readNcCF " + fullName);
-        if (debugMode && loadVariableNames.size() > 0)
+        if (debugMode)
             String2.log("  loadVars: " + loadVariableNames.toString()); 
         //String2.log("DEBUG:\n" + NcHelper.dumpString(fullName, false));
         long time = System.currentTimeMillis();
@@ -7172,8 +7519,8 @@ Dataset {
         clear();
 
         //if loadVariableNames was specified, 
-        //ENSURE all conNames are in loadVariableNames
         if (loadVariableNames.size() > 0) {
+            //ENSURE all conNames are in loadVariableNames
             HashSet loadVarHS = loadVariableNames.toHashSet();
             for (int c = 0; c < conNames.size(); c++) {
                 if (!loadVarHS.contains(conNames.get(c)))
@@ -7249,9 +7596,11 @@ Dataset {
                 if (ncCFcc != null) ncCFcc.set(1);
                 ncFile.close();
                 ncFile = null;
+                if (debugMode) String2.log("PointType.  loadVars=" + loadVariableNames);
                 StringArray loadCon = new StringArray(loadVariableNames);
                 if (loadCon.size() > 0) //if loadVars specified, then add conNames
                     loadCon.append(conNames);
+                //readNDNc always includes scalar vars
                 readNDNc(fullName, (loadCon.toHashSet()).toArray(new String[0]), 
                     null, 0, 0, true);
 
@@ -7268,6 +7617,20 @@ Dataset {
                 return;
             }
 
+            //if loadVariableNames was specified, 
+            if (loadVariableNames.size() > 0) {
+                //remove any vars not in this file
+                BitSet keepV = new BitSet();
+                for (int v = 0; v < loadVariableNames.size(); v++) 
+                    keepV.set(v, ncFile.findVariable(loadVariableNames.get(v)) != null);
+                if (keepV.cardinality() == 0) {
+                    String2.log("None of the loadVariableNames are in this file: " + 
+                        loadVariableNames.toString() + ".");
+                    return; //return an empty table
+                }
+                loadVariableNames.justKeep(keepV);
+            }
+
             //find all dimensions
             List dimsList = ncFile.getDimensions();
             int nDims = dimsList.size();
@@ -7281,7 +7644,7 @@ Dataset {
             int outerDim = -1, innerDim = -1, obsDim = -1; 
 
             //find out about all vars
-            List varsList = ncFile.getRootGroup().getVariables(); 
+            List varsList = ncFile.getVariables(); //all vars in all groups
             int nVars = varsList.size();
             Variable vars[] = new Variable[nVars];
             String varNames[] = new String[nVars];
@@ -7294,17 +7657,42 @@ Dataset {
             boolean hasScalarVars = false;
             Attributes varAtts[] = new Attributes[nVars];
             int rowSizeVar = -1; //e.g., in level 1 contiguous and level 2 ragged files
+            boolean rowSizeVarIsRequired = false; //is current rowSizeVar required for a loadVar?
             int indexVar   = -1; //e.g., in level 1 indexed and most level 2 ragged files
             boolean loadVariableNamesWasEmpty = loadVariableNames.size() == 0;
             int nLoadOrConVariablesInFile = 0;
+            String firstSampleDimName = null;
+            //if (debugMode) String2.log("Debug: nVars=" + nVars);
             for (int v = 0; v < nVars; v++) {
-                //note, but temporarily reject non-multidimensional vars
                 if (ncCFcc != null) ncCFcc.set(2);
                 vars[v] = (Variable)varsList.get(v);                
-                varNames[v] = vars[v].getShortName();
+                varNames[v] = vars[v].getFullName();
                 varIsChar[v] = vars[v].getDataType() == DataType.CHAR;
                 int rank = vars[v].getRank();
                 varNDims[v] = rank - (varIsChar[v]? 1 : 0);
+                varAtts[v] = new Attributes();
+                NcHelper.getVariableAttributes(vars[v], varAtts[v]);
+                //String2.log("Debug: loadVarNames.see v[" + v + "]=" + varNames[v] + "  nNonCharDims=" + varNDims[v]);
+                //2016-06-07 scalar continue was here
+
+                //add to nLoadOrConVariablesInFile
+                //!!!Note that I don't detect vars with unexpected dimensions
+                //partly because file type isn't known at this point.
+                //But var dimensions are always checked when the var is read,
+                //so other vars will simply be skipped. (Better if warning/error.)
+                if (loadVariableNamesWasEmpty) {
+                    //String2.log("Debug: loadVarNames.add v[" + v + "]=" + varNames[v]);
+                    loadVariableNames.add(varNames[v]);
+                    varInLoadOrConVariables[v] = true;
+                } else {
+                    varInLoadOrConVariables[v] = 
+                        loadVariableNames.indexOf(varNames[v]) >= 0 ||
+                        conNames.indexOf(varNames[v]) >= 0;
+                }
+                if (varInLoadOrConVariables[v]) 
+                    nLoadOrConVariablesInFile++;
+
+                //scalars  
                 if (varNDims[v] <= 0) {
                     if (ncCFcc != null) ncCFcc.set(3);
                     hasScalarVars = true;
@@ -7312,19 +7700,6 @@ Dataset {
                     varUsesDim[v][scalarDim] = true;
                     continue;
                 }
-
-                //add to nLoadOrConVariablesInFile
-                //!!!Note that I don't detect vars with unexpected dimensions
-                //partly because file type isn't known at this point.
-                //But var dimensions are always checked when the var is read,
-                //so other vars will simply be skipped. (Better if warning/error.)
-                if (loadVariableNamesWasEmpty)
-                    loadVariableNames.add(varNames[v]);
-                varInLoadOrConVariables[v] = 
-                    loadVariableNames.indexOf(varNames[v]) >= 0 ||
-                    conNames.indexOf(varNames[v]) >= 0;
-                if (varInLoadOrConVariables[v]) 
-                    nLoadOrConVariablesInFile++;
 
                 //go through the dimensions
                 for (int d = 0; d < varNDims[v]; d++) {
@@ -7364,17 +7739,51 @@ Dataset {
                 }
 
                 //isContiguous? look for rowSizeVar with sample_dimension attribute
-                varAtts[v] = new Attributes();
-                NcHelper.getVariableAttributes(vars[v], varAtts[v]);
-                String s = varAtts[v].getString("sample_dimension");
-                if (s != null) {
-                    if (rowSizeVar >= 0)
-                        throw new SimpleException(errorInMethod + 
-                            "Invalid file: two variables (" + varNames[rowSizeVar] + 
-                            " and " + varNames[v] + 
-                            ") have a sample_dimension attribute.");
+                //If file has multiple sample_dimension's, 
+                //  use the one used by the loadVars (if specified), 
+                //  else use the first one found (and skip the others).
+                //  See testReadNcCF7SampleDims()
+                String sd = varAtts[v].getString("sample_dimension");
+                //if (firstSampleDimName == null)
+                //    firstSampleDimName = sd;
+
+                //determine if this particular sample_dimension isRequired for a loadVar
+                boolean isRequired = false;
+                if (sd != null && 
+                    !loadVariableNamesWasEmpty) { //loadVars was specified
+                    //if already have one, don't keepGoing/ skip this one
+                    if (debugMode) String2.log("Debug:          sample_dimension=" + sd);
+                    //is this sample_dimension used (and thus, required) by any of the loadVars?
+                    for (int lvi = 0; lvi < loadVariableNames.size(); lvi++) {
+                        Variable var = ncFile.findVariable(loadVariableNames.get(lvi)); //won't be null
+                        if (var.getRank() > 0 && sd.equals(var.getDimension(0).getFullName())) {
+                            if (debugMode) String2.log("Debug: sample_dimension=" + 
+                                sd + " isRequired by loadVar=" + loadVariableNames.get(lvi));
+                            isRequired = true;
+                            break; //lvi
+                        }
+                    }
+                }
+
+                if (rowSizeVarIsRequired && isRequired) {
+                    //2 different sample_dimensions are required by loadVariableNames!
+                    throw new SimpleException(errorInMethod + 
+                        "Invalid request: loadVariables includes variables " +
+                        "that use two different sample_dimension's (" + 
+                        (obsDim >= 0? dimNames[obsDim] : "null") +  //null shouldn't happen
+                        " and " + sd + ").");
+                } else if (sd != null && !isRequired && rowSizeVar >= 0) {
+                    //skip this sample_dimension
+                    if (debugMode) String2.log("Debug: skipping sample_dimension=" + sd);
+                    sd = null;
+                    
+                } else if (sd != null && (isRequired || rowSizeVar < 0)) { 
+                    //keep this sample_dimension info  (If !isRequired, then may be temporary.)
+                    if (debugMode) String2.log("Debug:  keeping sample_dimension=" + sd);
+
                     if (ncCFcc != null) ncCFcc.set(13);
                     rowSizeVar = v;
+                    rowSizeVarIsRequired = isRequired;
                     //this is an internal variable. Request can't include it or constrain it.
                     if (varInLoadOrConVariables[v]) {
                         varInLoadOrConVariables[v] = false;
@@ -7391,10 +7800,10 @@ Dataset {
                     }
 
                     //sample_dimension
-                    obsDim = String2.indexOf(dimNames, s);
+                    obsDim = String2.indexOf(dimNames, sd);
                     if (obsDim < 0)
                         throw new SimpleException(errorInMethod + 
-                            "Invalid file: file says sample_dimension is " + s + 
+                            "Invalid file: file says sample_dimension is " + sd + 
                             ", but there is no dimension with that name.");
 
                     //outerDim or innerDim
@@ -7407,8 +7816,8 @@ Dataset {
                 }
 
                 //isIndexed? look for indexVar with instance_dimension attribute
-                s = varAtts[v].getString("instance_dimension");
-                if (s != null) {
+                String id = varAtts[v].getString("instance_dimension");
+                if (id != null) {
                     if (indexVar >= 0)
                         throw new SimpleException(errorInMethod + 
                             "Invalid file: two variables (" + 
@@ -7433,10 +7842,10 @@ Dataset {
                     }
 
                     //intance_dimension
-                    outerDim = String2.indexOf(dimNames, s);
+                    outerDim = String2.indexOf(dimNames, id);
                     if (outerDim < 0)
                         throw new SimpleException(errorInMethod + 
-                            "Invalid file: file says instance_dimension is " + s + 
+                            "Invalid file: file says instance_dimension is " + id + 
                             ", but there is no dimension with that name.");
 
                     //its dim 
@@ -7448,6 +7857,9 @@ Dataset {
                     else              innerDim = whichDim; //nLevels == 2
                 }
             }
+
+            if (debugMode && loadVariableNamesWasEmpty) 
+                String2.log("  Debug: #1 loadVars (was empty): " + loadVariableNames.toString());
 
             Dimension outerDimDim = outerDim < 0? null : (Dimension)dimsList.get(outerDim);     
             Dimension innerDimDim = innerDim < 0? null : (Dimension)dimsList.get(innerDim);
@@ -7463,25 +7875,14 @@ Dataset {
 
             //if outerDim not found, try using scalarDim (scalar vars)
             if (outerDim == -1 && hasScalarVars) {
-                if (ncCFcc != null) ncCFcc.set(16);
+                if (ncCFcc != null) { //some things removed, so 3 flags are set
+                    ncCFcc.set(16); 
+                    ncCFcc.set(17);  
+                    ncCFcc.set(18);
+                }
                 outerDim     = scalarDim;
                 outerDimName = scalarDimName;
                 outerDimSize = scalarDimSize;
-                for (int v = 0; v < nVars; v++) {
-                    if (ncCFcc != null) ncCFcc.set(17);
-                    if (varUsesDim[v][scalarDim]) {
-                        if (ncCFcc != null) ncCFcc.set(18);
-                        varAtts[v] = new Attributes();
-                        NcHelper.getVariableAttributes(vars[v], varAtts[v]);
-                        if (loadVariableNamesWasEmpty && loadVariableNames.indexOf(varNames[v]) < 0) 
-                            loadVariableNames.add(varNames[v]);
-                        varInLoadOrConVariables[v] = 
-                            loadVariableNames.indexOf(varNames[v]) >= 0 ||
-                            conNames.indexOf(varNames[v]) >= 0;
-                        if (varInLoadOrConVariables[v]) 
-                            nLoadOrConVariablesInFile++;
-                    }
-                }
             }
 
             //Deal with nLevels=1 or 2, outerDim=scalarDim: 
@@ -7499,6 +7900,7 @@ Dataset {
                     StringArray loadCon = new StringArray(loadVariableNames);
                     if (loadCon.size() > 0) //if loadVars specified, then add conNames
                         loadCon.append(conNames);
+                    //readNDNc always includes scalar vars
                     readNDNc(fullName, (loadCon.toHashSet()).toArray(new String[0]), 
                         null, 0, 0, true);
 
@@ -7589,7 +7991,7 @@ Dataset {
 
             if (debugMode) {
                 if (loadVariableNamesWasEmpty) 
-                    String2.log("  Debug: loadVars (was empty): " + loadVariableNames.toString());
+                    String2.log("  Debug: #2 loadVars (was empty): " + loadVariableNames.toString());
                 String2.log(
                     "  Debug: nTotalVarsInFile=" + nVars + 
                     " nLoadOrConVarsInFile=" + nLoadOrConVariablesInFile + 
@@ -7599,8 +8001,8 @@ Dataset {
                     " inner=" + innerDimName + "[" + innerDimSize + "]" +
                     " obs=" + obsDimName + "[" + obsDimSize + "]");
             }
+            if (ncCFcc != null) ncCFcc.set(27);
             if (nLoadOrConVariablesInFile == 0) {
-                if (ncCFcc != null) ncCFcc.set(27);
                 if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                     " (no requested vars in the file)" + 
                     " time=" + (System.currentTimeMillis() - time));
@@ -7667,7 +8069,7 @@ Dataset {
             if (debugMode) String2.log("  Debug: read outerDim variables into a table: all nLevels, all featureTypes");
             Table outerTable = new Table(); 
             int nLoadOrConVariablesInOuterTable = 0;
-            StringArray cdmOuterVars = new StringArray();
+            StringArray subsetVars = new StringArray();
             for (int v = 0; v < nVars; v++) {
                 //normally, get just varInLoadOrConVariables vars
                 //but if multidimensional, get ALL outerDim vars !!!
@@ -7682,19 +8084,43 @@ Dataset {
                     if (varInLoadOrConVariables[v]) {
                         if (ncCFcc != null) ncCFcc.set(33);
                         nLoadOrConVariablesInOuterTable++;
-                        cdmOuterVars.add(varNames[v]); //so in file's order; that's consistent; that's good
+                        if (varAtts[v].get("instance_dimension") == null)
+                            //don't include if dimension, since var isn't in results table
+                            subsetVars.add(varNames[v]); //so in file's order; that's consistent; that's good
                     }
                     outerTable.addColumn(outerTable.nColumns(), varNames[v], 
                         NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                 }
             }
+
+            //add scalar vars 2016-06-06
+            int ttNRows = Math.max(1, outerTable.nRows());
+            for (int v = 0; v < nVars; v++) {
+                if (varNDims[v] == 1 && varUsesDim[v][scalarDim] && //scalars are stored with odd info
+                    (loadVariableNamesWasEmpty || varInLoadOrConVariables[v]) &&
+                    outerTable.findColumnNumber(varNames[v]) < 0) {  //not already in table
+                    nLoadOrConVariablesInOuterTable++;
+                    if (varAtts[v].get("instance_dimension") == null)
+                        //don't include if dimension, since var isn't in results table
+                        subsetVars.add(varNames[v]); //so in file's order; that's consistent; that's good
+                    PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
+                    //make doubly sure it is 1 element
+                    if (pa.size() == 0)
+                        pa.addString("");
+                    else pa.removeRange(1, pa.size());            
+                    //duplicate the scalar to nRows
+                    pa.addNStrings(ttNRows - 1, pa.getString(0)); 
+                    outerTable.addColumn(outerTable.nColumns(), varNames[v], pa, varAtts[v]);
+                }
+            }
+
             if (debugMode) String2.log("  Debug: outerTable(nRows=" + outerTable.nRows() + 
                 ") nLoadOrConVariablesInOuterTable=" + nLoadOrConVariablesInOuterTable + 
                 " First <=3 rows:\n" + outerTable.dataToCSVString(3));
-            globalAttributes.set(cdmOuterName,      cdmOuterVars.toString()); //may be "", that's okay
+            globalAttributes.set(cdmOuterName,      subsetVars.toString()); //may be "", that's okay
             if (cdmInnerName != null)
                 globalAttributes.set(cdmInnerName,  "");  //nLevel=2 will set it properly below
-            globalAttributes.set("subsetVariables", cdmOuterVars.toString()); //nLevel=2 will set it properly below
+            globalAttributes.set("subsetVariables", subsetVars.toString()); //nLevel=2 will set it properly below
 
             //apply constraints  (if there is data)
             BitSet outerKeep = null; //implies outerTable.nColumns = 0, so assume all are good
@@ -7725,6 +8151,8 @@ Dataset {
                 //order of rows is important, so *don't* justKeep(outerKeep)
 
                 //Are we done? Are those all the variables we need that are in the file?
+                if (debugMode) String2.log("Debug: nLoadOrCon inFile=" + nLoadOrConVariablesInFile +
+                    " inOuterTable=" + nLoadOrConVariablesInOuterTable);
                 if (nLoadOrConVariablesInFile == nLoadOrConVariablesInOuterTable) {
                     outerTable.justKeep(outerKeep);
                     //globalAttributes already set
@@ -7917,6 +8345,7 @@ Dataset {
 
                         //read the keep rows of requested variable[obs]
                         for (int v = 0; v < nVars; v++) {       
+                            //String2.log("var[" + v + "]=" + varNames[v] + " ndim=" + varNDims[v] + " usesObsDim=" + varUsesDim[v][obsDim]);
                             if (varInLoadOrConVariables[v] &&
                                 varNDims[v] == 1 && varUsesDim[v][obsDim]) {  //ensure correct dim
                                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
@@ -8229,8 +8658,8 @@ Dataset {
                 innerTableNColumns = innerTable.nColumns(); //It has no index columns
                 innerTableNRows    = innerTable.nRows();
                 globalAttributes.set(cdmInnerName, cdmInnerVars.toString());      //may be "", that's okay
-                cdmOuterVars.append(cdmInnerVars);
-                globalAttributes.set("subsetVariables", cdmOuterVars.toString()); //may be "", that's okay
+                subsetVars.append(cdmInnerVars);
+                globalAttributes.set("subsetVariables", subsetVars.toString()); //may be "", that's okay
 
                 //read the outerIndexPA from vars[indexVar] and ensure valid
                 //next 3 lines: as if no indexVar (outerDim == scalarDim)
@@ -8433,8 +8862,8 @@ Dataset {
                 innerTableNColumns = innerTable.nColumns();  //It has no index columns
                 innerTableNRows    = innerTable.nRows();
                 globalAttributes.set(cdmInnerName, cdmInnerVars.toString());      //may be "", that's okay
-                cdmOuterVars.append(cdmInnerVars);
-                globalAttributes.set("subsetVariables", cdmOuterVars.toString()); //may be "", that's okay 
+                subsetVars.append(cdmInnerVars);
+                globalAttributes.set("subsetVariables", subsetVars.toString()); //may be "", that's okay 
 
                 //trouble?  look for truly orthogonal: just variable[innerDim] 
                 if (innerTableNColumns == 0) {
@@ -8787,6 +9216,245 @@ Dataset {
             "). nRows=" + nRows() + " nCols=" + nColumns() + 
             " time=" + (System.currentTimeMillis() - time));
     }
+
+
+    /** This tests reading an ncCF Contiguous Ragged Array file with 7(!) sample_dimension's.
+     */
+    public static void testReadNcCF7SampleDims() throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
+        String2.log("\n*** Table.testReadNcCF7SampleDims");
+        Table table = new Table();
+        String results, expected;
+        //From Ajay Krishnan, NCEI/NODC, from
+        //http://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
+        String fileName = String2.unitTestDataDir + 
+            "nccf/ncei/ind199105_ctd.nc";
+        Attributes gatts;
+        String scalarVars = ",crs,WODf,WODfd";
+
+        String2.log("\n\n** Testing " + fileName);
+        String2.log(NcHelper.dumpString(fileName, false));
+        //String2.pressEnterToContinue(NcHelper.dumpString(fileName, "crs,WODf,WODfd"));
+        //String2.pressEnterToContinue(NcHelper.dumpString(fileName, 
+        //    "Temperature_row_size,Salinity_row_size,Oxygen_row_size,Pressure_row_size,Chlorophyll_row_size"));
+
+        //test reading just specified legit "z_obs" outer and inner variables
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "zztop,wod_unique_cast,lat,lon,time,z,z_WODflag" + scalarVars),
+            null, null, null);
+        results = table.dataToCSVString(5);
+        expected = 
+//with netcdf-java 4.6.5 and before, the last 3 vars had 0's.
+//with netcdf-java 4.6.6 and after, they are the default cf missing values
+//Unidata says it is not a bug. 4.6.6 is correct. see email from Sean Arms June 15, 2016
+//I notified source of files: Ajay Krisnan, but he never replied.
+//so I'm going with 4.6.6 and odd values
+//was
+//"row,wod_unique_cast,lat,lon,time,z,z_WODflag,crs,WODf,WODfd\n" +
+//"0,3390296,-43.7802,67.3953,80838.31180554628,2.9759612,0,0,0,0\n" +
+//"1,3390296,-43.7802,67.3953,80838.31180554628,3.967939,0,0,0,0\n" +
+//"2,3390296,-43.7802,67.3953,80838.31180554628,5.9518795,0,0,0,0\n" +
+//"3,3390296,-43.7802,67.3953,80838.31180554628,7.9358006,0,0,0,0\n" +
+//"4,3390296,-43.7802,67.3953,80838.31180554628,9.919703,0,0,0,0\n" +
+//"...\n";
+"row,wod_unique_cast,lat,lon,time,z,z_WODflag,crs,WODf,WODfd\n" +
+"0,3390296,-43.7802,67.3953,80838.31180554628,2.9759612,0,-2147483647,-32767,-32767\n" +
+"1,3390296,-43.7802,67.3953,80838.31180554628,3.967939,0,-2147483647,-32767,-32767\n" +
+"2,3390296,-43.7802,67.3953,80838.31180554628,5.9518795,0,-2147483647,-32767,-32767\n" +
+"3,3390296,-43.7802,67.3953,80838.31180554628,7.9358006,0,-2147483647,-32767,-32767\n" +
+"4,3390296,-43.7802,67.3953,80838.31180554628,9.919703,0,-2147483647,-32767,-32767\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test reading just specified legit "Temperature_obs" outer and inner variables
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "zztop,wod_unique_cast,lat,lon,time,Temperature,Temperature_WODflag" + scalarVars), 
+            null, null, null);
+        results = table.dataToCSVString(5);
+        expected = 
+//was
+//"row,wod_unique_cast,lat,lon,time,Temperature,Temperature_WODflag,crs,WODf,WODfd\n" +
+//"0,3390296,-43.7802,67.3953,80838.31180554628,14.519,0,0,0,0\n" +
+//"1,3390296,-43.7802,67.3953,80838.31180554628,14.526,0,0,0,0\n" +
+//"2,3390296,-43.7802,67.3953,80838.31180554628,14.537,0,0,0,0\n" +
+//"3,3390296,-43.7802,67.3953,80838.31180554628,14.533,0,0,0,0\n" +
+//"4,3390296,-43.7802,67.3953,80838.31180554628,14.532,0,0,0,0\n" +
+//"...\n";
+"row,wod_unique_cast,lat,lon,time,Temperature,Temperature_WODflag,crs,WODf,WODfd\n" +
+"0,3390296,-43.7802,67.3953,80838.31180554628,14.519,0,-2147483647,-32767,-32767\n" +
+"1,3390296,-43.7802,67.3953,80838.31180554628,14.526,0,-2147483647,-32767,-32767\n" +
+"2,3390296,-43.7802,67.3953,80838.31180554628,14.537,0,-2147483647,-32767,-32767\n" +
+"3,3390296,-43.7802,67.3953,80838.31180554628,14.533,0,-2147483647,-32767,-32767\n" +
+"4,3390296,-43.7802,67.3953,80838.31180554628,14.532,0,-2147483647,-32767,-32767\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test reading just specified legit outer variables
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "zztop,wod_unique_cast,lat,lon,time" + scalarVars),
+            null, null, null);
+        results = table.dataToCSVString(5);
+        expected = 
+//was
+//"row,wod_unique_cast,lat,lon,time,crs,WODf,WODfd\n" +
+//"0,3390296,-43.7802,67.3953,80838.31180554628,0,0,0\n" +
+//"1,3390301,-44.5177,67.9403,80838.68055558205,0,0,0\n" +
+//"2,3390310,-45.2592,68.3755,80839.08888889104,0,0,0\n" +
+//"3,3390318,-46.0113,68.7568,80839.39652776718,0,0,0\n" +
+//"4,3390328,-47.0115,69.431,80839.87291669846,0,0,0\n" +
+//"...\n";
+"row,wod_unique_cast,lat,lon,time,crs,WODf,WODfd\n" +
+"0,3390296,-43.7802,67.3953,80838.31180554628,-2147483647,-32767,-32767\n" +
+"1,3390301,-44.5177,67.9403,80838.68055558205,-2147483647,-32767,-32767\n" +
+"2,3390310,-45.2592,68.3755,80839.08888889104,-2147483647,-32767,-32767\n" +
+"3,3390318,-46.0113,68.7568,80839.39652776718,-2147483647,-32767,-32767\n" +
+"4,3390328,-47.0115,69.431,80839.87291669846,-2147483647,-32767,-32767\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test reading just specified legit "Temperature_obs" inner variables
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "zztop,Temperature,Temperature_WODflag" + scalarVars),
+            null, null, null);
+        results = table.dataToCSVString(5);
+        expected = 
+//was
+//"row,Temperature,Temperature_WODflag,crs,WODf,WODfd\n" +
+//"0,14.519,0,0,0,0\n" +
+//"1,14.526,0,0,0,0\n" +
+//"2,14.537,0,0,0,0\n" +
+//"3,14.533,0,0,0,0\n" +
+//"4,14.532,0,0,0,0\n" +
+//"...\n";
+"row,Temperature,Temperature_WODflag,crs,WODf,WODfd\n" +
+"0,14.519,0,-2147483647,-32767,-32767\n" +
+"1,14.526,0,-2147483647,-32767,-32767\n" +
+"2,14.537,0,-2147483647,-32767,-32767\n" +
+"3,14.533,0,-2147483647,-32767,-32767\n" +
+"4,14.532,0,-2147483647,-32767,-32767\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test reading just specified legit scalar variables
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "zztop,WODf,crs"), 
+            null, null, null);
+        results = table.dataToCSVString(5);
+        expected = 
+//was
+//"row,WODf,crs\n" +
+//"0,0,0\n";
+"row,WODf,crs\n" +
+"0,-32767,-2147483647\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test reading WHOLE file (should just catch z_obs dimension)
+        table.readNcCF(fileName, null, null, null, null);
+        results = table.dataToCSVString(3);
+        expected = 
+//note it catches z_obs dimension (z, z_WODflag, z_sigfig), not others.
+// Temperature_row_size, and Temperature_WODprofileflag are [casts], and don't use Temperature_obs.
+"row,country,WOD_cruise_identifier,originators_cruise_identifier,wod_unique_cast," +
+"lat,lon,time,date,GMT_time,Access_no,Project,Platform,Institute,Cast_Tow_number," +
+"Orig_Stat_Num,Bottom_Depth,Cast_Duration,Cast_Direction,High_res_pair,dataset," +
+"dbase_orig,origflagset,z,z_WODflag,z_sigfig,Temperature_row_size," +
+"Temperature_WODprofileflag,Temperature_Scale,Temperature_Instrument," +
+"Salinity_row_size,Salinity_WODprofileflag,Salinity_Scale,Salinity_Instrument," +
+"Oxygen_row_size,Oxygen_WODprofileflag,Oxygen_Instrument,Oxygen_Original_units," +
+"Pressure_row_size,Chlorophyll_row_size,Chlorophyll_WODprofileflag," +
+"Chlorophyll_Instrument,Chlorophyll_uncalibrated,Conductivit_row_size,crs,WODf,WODfp,WODfd\n" +
+
+"0,FRANCE,FR008787,35MF68SUZIL,3390296,-43.7802,67.3953,80838.31180554628," +
+"19910501,7.483333,841,WORLD OCEAN CIRCULATION EXPERIMENT (WOCE)," +
+"MARION DUFRESNE (C.s.FNGB;built 1972;decomm-d 1995;renamed Fres;IMO7208388)," +
+"NATIONAL MUSEUM OF NATURAL HISTORY (PARIS),1,37.0,4438.0,9.96921E36,,7498735," +
+"CTD,WHO/CCHDO,WOCE,2.9759612,0,3,2204,0,,CTD: NEIL BROWN MARK IIIB,2204,0,," +
+"CTD: NEIL BROWN MARK IIIB,2204,5,CTD: NEIL BROWN MARK IIIB,umol/kg,2204,0,0,," +
+//was "-2147483647,0,0,0,0,0\n" +
+"-2147483647,0,-2147483647,-32767,-32767,-32767\n" +
+
+"1,FRANCE,FR008787,35MF68SUZIL,3390296,-43.7802,67.3953,80838.31180554628," +
+"19910501,7.483333,841,WORLD OCEAN CIRCULATION EXPERIMENT (WOCE)," +
+"MARION DUFRESNE (C.s.FNGB;built 1972;decomm-d 1995;renamed Fres;IMO7208388)," +
+"NATIONAL MUSEUM OF NATURAL HISTORY (PARIS),1,37.0,4438.0,9.96921E36,,7498735," +
+"CTD,WHO/CCHDO,WOCE,3.967939,0,3,2204,0,,CTD: NEIL BROWN MARK IIIB,2204,0,," +
+"CTD: NEIL BROWN MARK IIIB,2204,5,CTD: NEIL BROWN MARK IIIB,umol/kg,2204,0,0,," +
+//was "-2147483647,0,0,0,0,0\n" +
+"-2147483647,0,-2147483647,-32767,-32767,-32767\n" +
+
+"2,FRANCE,FR008787,35MF68SUZIL,3390296,-43.7802,67.3953,80838.31180554628," +
+"19910501,7.483333,841,WORLD OCEAN CIRCULATION EXPERIMENT (WOCE)," +
+"MARION DUFRESNE (C.s.FNGB;built 1972;decomm-d 1995;renamed Fres;IMO7208388)," +
+"NATIONAL MUSEUM OF NATURAL HISTORY (PARIS),1,37.0,4438.0,9.96921E36,,7498735," +
+"CTD,WHO/CCHDO,WOCE,5.9518795,0,3,2204,0,,CTD: NEIL BROWN MARK IIIB,2204,0,," +
+"CTD: NEIL BROWN MARK IIIB,2204,5,CTD: NEIL BROWN MARK IIIB,umol/kg,2204,0,0,," +
+//was "-2147483647,0,0,0,0,0\n" +
+"-2147483647,0,-2147483647,-32767,-32767,-32767\n" +
+
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = table.globalAttributes().getString("cdm_data_type");
+        expected = "Profile";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = table.globalAttributes().getString("subsetVariables");
+        expected = 
+"country, WOD_cruise_identifier, originators_cruise_identifier, wod_unique_cast, " +
+"lat, lon, time, date, GMT_time, Access_no, Project, Platform, Institute, " +
+"Cast_Tow_number, Orig_Stat_Num, Bottom_Depth, Cast_Duration, Cast_Direction, " +
+"High_res_pair, dataset, dbase_orig, origflagset, Temperature_row_size, " +
+"Temperature_WODprofileflag, Temperature_Scale, Temperature_Instrument, " +
+"Salinity_row_size, Salinity_WODprofileflag, Salinity_Scale, Salinity_Instrument, " +
+"Oxygen_row_size, Oxygen_WODprofileflag, Oxygen_Instrument, Oxygen_Original_units, " +
+"Pressure_row_size, " +
+"Chlorophyll_row_size, Chlorophyll_WODprofileflag, Chlorophyll_Instrument, " +
+"Chlorophyll_uncalibrated, Conductivit_row_size, crs, WODf, WODfp, WODfd";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = table.globalAttributes().getString("cdm_profile_variables");
+        //same expected
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test reading row_size vars -- are they actually read?
+        table.readNcCF(fileName, StringArray.fromCSV(
+            "zztop,z_row_size,Temperature_row_size,Salinity_row_size,Oxygen_row_size," +
+            "Pressure_row_size,Chlorophyll_row_size,Conductivity_row_size"),
+            null, null, null);
+        results = table.dataToCSVString(7);
+        expected = //verified with dumpString above
+"row,Temperature_row_size,Salinity_row_size,Oxygen_row_size,Pressure_row_size,Chlorophyll_row_size\n" +
+"0,2204,2204,2204,2204,0\n" +
+"1,1844,1844,1844,1844,0\n" +
+"2,1684,1684,1684,1684,0\n" +
+"3,1587,1587,1587,1587,0\n" +
+"4,357,357,357,357,0\n" +
+"5,34,34,0,34,34\n" +
+"6,34,34,0,34,34\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        //test request for vars with 2 different sample_dimensions
+        //  second sample_dim throws error
+        results = "shouldn't happen";
+        try {
+            table.readNcCF(fileName, StringArray.fromCSV(
+                "zztop,wod_unique_cast,lat,lon,time,z,z_WODflag,Temperature,Temperature_WODflag" + scalarVars),
+                null, null, null);
+            results = table.dataToCSVString(5);
+        } catch (Throwable t2) {
+            results = t2.toString();
+        }
+        expected = "Invalid request: loadVariables includes variables that use two different sample_dimension's (z_obs and Temperature_obs).";
+        int po = Math.max(0, results.indexOf(expected));        
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+    }
+
 
     /** This tests readNcCF reading point files. */
     public static void testReadNcCFPoint(boolean pauseAfterEach) throws Exception {
@@ -9712,6 +10380,11 @@ String2.log(table.toCSVString());
         expected = 
 "Attributes {\n" +
 " s {\n" +
+"  sampling_interval {\n" +
+"    Float32 _FillValue 9999.9;\n" +
+"    String long_name \"Sampling Interval\";\n" +
+"    String units \"minutes\";\n" +
+"  }\n" +
 "  seafloor_depth {\n" +
 "    Float32 _FillValue 9999.9;\n" +
 "    String long_name \"Seafloor Depth\";\n" +
@@ -9875,11 +10548,6 @@ String2.log(table.toCSVString());
 "    Int32 flag_values 1, 2, 3, 4, 5, 6, 7, 8, 9;\n" +
 "    String long_name \"Current Direction QC Flags\";\n" +
 "  }\n" +
-"  sampling_interval {\n" +
-"    Float32 _FillValue 9999.9;\n" +
-"    String long_name \"Sampling Interval\";\n" +
-"    String units \"minutes\";\n" +
-"  }\n" +
 "  crs {\n" +
 "    String epsg_code \"EPSG:4326\";\n" +
 "    String grid_mapping_name \"latitude_longitude\";\n" +
@@ -9966,6 +10634,7 @@ String2.log(table.toCSVString());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
+"    Float32 sampling_interval;\n" +
 "    Float32 seafloor_depth;\n" +
 "    Float32 latitude;\n" +
 "    Float32 longitude;\n" +
@@ -9983,7 +10652,6 @@ String2.log(table.toCSVString());
 "    Int32 current_speed_quality_flag;\n" +
 "    Float32 current_direction;\n" +
 "    Int32 current_direction_quality_flag;\n" +
-"    Float32 sampling_interval;\n" +
 "    Int32 crs;\n" +
 "  } s;\n" +
 "} s;\n";
@@ -9992,27 +10660,27 @@ String2.log(table.toCSVString());
         //String2.log(table.toCSVString());
         results = table.dataToCSVString(5);
         expected = 
-"row,seafloor_depth,latitude,longitude,latitude_quality_flag,longitude_quality_flag," +
+"row,sampling_interval,seafloor_depth,latitude,longitude,latitude_quality_flag,longitude_quality_flag," +
   "depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
   "current_speed,current_speed_quality_flag,current_direction," +
-  "current_direction_quality_flag,sampling_interval,crs\n" +
-// sfDpth lat      lon          depth  time         u        v       cspeed  cdir    sampInt,crs
-"0,9999.9,21.0958,-158.3554,1,1,30.0,1,38730.9986,1,-0.004,1,0.174,1,0.174,1,358.7,1,9999.9,0\n" +
-"1,9999.9,21.0958,-158.3554,1,1,40.0,1,38730.9986,1,-0.008,1,0.169,1,0.1692,1,357.3,1,9999.9,0\n" +
-"2,9999.9,21.0958,-158.3554,1,1,50.0,1,38730.9986,1,-0.01,1,0.165,1,0.1653,1,356.5,1,9999.9,0\n" +
-"3,9999.9,21.0958,-158.3554,1,1,60.0,1,38730.9986,1,-0.009,1,0.163,1,0.1632,1,356.8,1,9999.9,0\n" +
-"4,9999.9,21.0958,-158.3554,1,1,70.0,1,38730.9986,1,-0.012,1,0.173,1,0.1734,1,356.0,1,9999.9,0\n" +
+  "current_direction_quality_flag,crs\n" +
+// sapmInt,sfDpth lat      lon          depth  time         u        v       cspeed  cdir  crs
+"0,9999.9,9999.9,21.0958,-158.3554,1,1,30.0,1,38730.9986,1,-0.004,1,0.174,1,0.174,1,358.7,1,0\n" +
+"1,9999.9,9999.9,21.0958,-158.3554,1,1,40.0,1,38730.9986,1,-0.008,1,0.169,1,0.1692,1,357.3,1,0\n" +
+"2,9999.9,9999.9,21.0958,-158.3554,1,1,50.0,1,38730.9986,1,-0.01,1,0.165,1,0.1653,1,356.5,1,0\n" +
+"3,9999.9,9999.9,21.0958,-158.3554,1,1,60.0,1,38730.9986,1,-0.009,1,0.163,1,0.1632,1,356.8,1,0\n" +
+"4,9999.9,9999.9,21.0958,-158.3554,1,1,70.0,1,38730.9986,1,-0.012,1,0.173,1,0.1734,1,356.0,1,0\n" +
 "...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = table.dataToCSVString(); //no row numbers
         expected =     //why are cspeed and cdir known, but u,v not?
-//sfDpth lat      lon          depth   time         u         v         cspeed   cdir   sampInt,crs
-"9999.9,-14.2758,-170.6805,1,1,680.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
-"9999.9,-14.2758,-170.6805,1,1,690.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
-"9999.9,-14.2758,-170.6805,1,1,700.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
-"9999.9,-14.2758,-170.6805,1,1,710.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n" +
-"9999.9,-14.2758,-170.6805,1,1,720.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,9999.9,0\n";
+//sampInt sfDpth lat      lon          depth   time         u         v         cspeed   cdir   crs
+"9999.9,9999.9,-14.2758,-170.6805,1,1,680.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
+"9999.9,9999.9,-14.2758,-170.6805,1,1,690.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
+"9999.9,9999.9,-14.2758,-170.6805,1,1,700.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
+"9999.9,9999.9,-14.2758,-170.6805,1,1,710.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
+"9999.9,9999.9,-14.2758,-170.6805,1,1,720.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n";
         po = results.indexOf(expected.substring(0, 40));
         Test.ensureEqual(results.substring(po), expected, 
             "results=\n" + results.substring(po));
@@ -10061,6 +10729,12 @@ String2.log(table.toCSVString());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
+"    Float32 sampling_interval;\n" +
+"    Float32 seafloor_depth;\n" +
+"    Float32 latitude;\n" +
+"    Float32 longitude;\n" +
+"    Int32 latitude_quality_flag;\n" +
+"    Int32 longitude_quality_flag;\n" +
 "    Float32 depth;\n" +
 "    Int32 depth_quality_flag;\n" +
 "    Float64 time;\n" +
@@ -10073,12 +10747,6 @@ String2.log(table.toCSVString());
 "    Int32 current_speed_quality_flag;\n" +
 "    Float32 current_direction;\n" +
 "    Int32 current_direction_quality_flag;\n" +
-"    Float32 sampling_interval;\n" +
-"    Float32 seafloor_depth;\n" +
-"    Float32 latitude;\n" +
-"    Float32 longitude;\n" +
-"    Int32 latitude_quality_flag;\n" +
-"    Int32 longitude_quality_flag;\n" +
 "    Int32 crs;\n" +
 "  } s;\n" +
 "} s;\n";
@@ -10087,29 +10755,29 @@ String2.log(table.toCSVString());
         //String2.log(table.toCSVString());
         results = table.dataToCSVString(5);
         expected = 
-"row,depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
+"row,sampling_interval,seafloor_depth,latitude,longitude," +
+"latitude_quality_flag,longitude_quality_flag,depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
 "current_speed,current_speed_quality_flag,current_direction," +
-"current_direction_quality_flag,sampling_interval,seafloor_depth,latitude,longitude," +
-"latitude_quality_flag,longitude_quality_flag,crs\n" +
-// depth q time       q u      q v      q cspeed q cDir q si   sDepth  lat      lon       q q crs
-"0,26.34,1,38621.7448,1,0.0066,1,0.0072,1,0.0111,1,42.8,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"1,24.34,1,38621.7448,1,0.0279,1,-0.008,1,0.0292,1,106.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"2,22.34,1,38621.7448,1,0.0325,1,2.0E-4,1,0.033,1,89.7,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"3,20.34,1,38621.7448,1,-0.0094,1,0.0011,1,0.0121,1,277.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"4,18.34,1,38621.7448,1,-0.0383,1,-0.0367,1,0.0532,1,226.2,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
+"current_direction_quality_flag,crs\n" +
+// si   sDepth  lat      lon       q q depth q time       q u      q v      q cspeed q cDir q crs
+"0,60.0,32.6386,42.37859,-70.78094,1,1,26.34,1,38621.7448,1,0.0066,1,0.0072,1,0.0111,1,42.8,1,0\n" +
+"1,60.0,32.6386,42.37859,-70.78094,1,1,24.34,1,38621.7448,1,0.0279,1,-0.008,1,0.0292,1,106.0,1,0\n" +
+"2,60.0,32.6386,42.37859,-70.78094,1,1,22.34,1,38621.7448,1,0.0325,1,2.0E-4,1,0.033,1,89.7,1,0\n" +
+"3,60.0,32.6386,42.37859,-70.78094,1,1,20.34,1,38621.7448,1,-0.0094,1,0.0011,1,0.0121,1,277.0,1,0\n" +
+"4,60.0,32.6386,42.37859,-70.78094,1,1,18.34,1,38621.7448,1,-0.0383,1,-0.0367,1,0.0532,1,226.2,1,0\n" +
 "...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = table.dataToCSVString(); //no row numbers
         //String2.log(results);
         expected =     //why are cspeed and cdir known, but u,v not?
-//depth q time     q u       q v       q cspeed q cDir  q si   sDepth  lat      lon       q q crs
-"8.34,1,38754.5365,1,-0.0177,1,-0.0152,1,0.0257,1,229.2,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"6.34,1,38754.5365,1,-0.0186,1,-0.0145,1,0.0251,1,232.0,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"4.34,1,38754.5365,1,-0.0149,1,-0.0181,1,0.03,1,219.4,1,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"2.34,1,38754.5365,1,-0.0026,2,-0.0202,2,0.0293,1,187.4,2,60.0,32.6386,42.37859,-70.78094,1,1,0\n" +
-"0.34,1,38754.5365,1,9999.9,9,9999.9,9,9999.9,9,45.0,9,60.0,32.6386,42.37859,-70.78094,1,1,0\n";
-        po = results.indexOf(expected.substring(0, 40));
+//si   sDepth  lat      lon       q q depth q time     q u       q v       q cspeed q cDir  q crs
+"60.0,32.6386,42.37859,-70.78094,1,1,8.34,1,38754.5365,1,-0.0177,1,-0.0152,1,0.0257,1,229.2,1,0\n" +
+"60.0,32.6386,42.37859,-70.78094,1,1,6.34,1,38754.5365,1,-0.0186,1,-0.0145,1,0.0251,1,232.0,1,0\n" +
+"60.0,32.6386,42.37859,-70.78094,1,1,4.34,1,38754.5365,1,-0.0149,1,-0.0181,1,0.03,1,219.4,1,0\n" +
+"60.0,32.6386,42.37859,-70.78094,1,1,2.34,1,38754.5365,1,-0.0026,2,-0.0202,2,0.0293,1,187.4,2,0\n" +
+"60.0,32.6386,42.37859,-70.78094,1,1,0.34,1,38754.5365,1,9999.9,9,9999.9,9,9999.9,9,45.0,9,0\n";
+        po = results.indexOf(expected.substring(0, 80));
         Test.ensureEqual(results.substring(po), expected, 
             "results=\n" + results.substring(po));
         /* */
@@ -10127,16 +10795,16 @@ String2.log(table.toCSVString());
         String2.log(table.dataToCSVString());
         results = table.dataToCSVString(5);
         expected = 
-"row,depth,depth_quality_flag,time,time_quality_flag,u,u_quality_flag,v,v_quality_flag," +
-"current_speed,current_speed_quality_flag,current_direction,current_direction_quality_flag," +
-"sampling_interval,seafloor_depth,latitude,longitude,latitude_quality_flag," +
-"longitude_quality_flag,crs\n" +
-// depth  q time               q u     q v      q cSpeed p dir q si   sd     lat       lon        q q crs
-"0,1980.0,1,31662.424999999814,1,0.015,1,0.0865,1,0.0878,1,9.8,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
-"1,1980.0,1,31662.46666666679,1,-0.0045,1,0.0933,1,0.0934,1,357.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
-"2,1980.0,1,31662.508333333302,1,-0.0072,1,0.0856,1,0.0859,1,355.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
-"3,1980.0,1,31662.549999999814,1,-0.0065999995,1,0.1025,1,0.1027,1,356.3,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
-"4,1980.0,1,31662.59166666679,1,-0.0036,1,0.11200001,1,0.1121,1,358.2,1,60.0,2640.0,62.894997,-35.857998,1,1,0\n" +
+"row,sampling_interval,seafloor_depth,latitude,longitude,latitude_quality_flag," +
+"longitude_quality_flag,depth,depth_quality_flag,time,time_quality_flag," +
+"u,u_quality_flag,v,v_quality_flag,current_speed,current_speed_quality_flag," +
+"current_direction,current_direction_quality_flag,crs\n" +
+//si   sd     lat       lon        q q depth  q time               q u     q v      q cSpeed p dir q crs
+"0,60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.424999999814,1,0.015,1,0.0865,1,0.0878,1,9.8,1,0\n" +
+"1,60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.46666666679,1,-0.0045,1,0.0933,1,0.0934,1,357.2,1,0\n" +
+"2,60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.508333333302,1,-0.0072,1,0.0856,1,0.0859,1,355.2,1,0\n" +
+"3,60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.549999999814,1,-0.0065999995,1,0.1025,1,0.1027,1,356.3,1,0\n" +
+"4,60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.59166666679,1,-0.0036,1,0.11200001,1,0.1121,1,358.2,1,0\n" +
 "...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         /* */
@@ -13050,16 +13718,16 @@ String2.log(table.dataToCSVString());
         table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString(5);
         expected = 
-"row,lat,lon,time,z,temperature,humidity,trajectory_info,trajectory_name\n" +
-"0,42.003387,-7.9335957,0,0.0,12.522581,35.668747,0,Trajectory1\n" +
-"1,8.972063,-46.335754,3600,1.0,25.658121,1.0647067,0,Trajectory1\n" +
-"2,25.841967,-49.1959,7200,2.0,35.43442,13.059927,0,Trajectory1\n" +
-"3,35.699753,-40.790943,10800,3.0,35.752117,48.576355,0,Trajectory1\n" +
-"4,11.132234,-25.553247,14400,4.0,6.082586,64.91749,0,Trajectory1\n" +
+"row,lat,lon,trajectory_info,trajectory_name,time,z,temperature,humidity\n" +
+"0,42.003387,-7.9335957,0,Trajectory1,0,0.0,12.522581,35.668747\n" +
+"1,8.972063,-46.335754,0,Trajectory1,3600,1.0,25.658121,1.0647067\n" +
+"2,25.841967,-49.1959,0,Trajectory1,7200,2.0,35.43442,13.059927\n" +
+"3,35.699753,-40.790943,0,Trajectory1,10800,3.0,35.752117,48.576355\n" +
+"4,11.132234,-25.553247,0,Trajectory1,14400,4.0,6.082586,64.91749\n" +
 "...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 100, "");
-        results = table.columnAttributes(4).toString();  //temperature
+        results = table.columnAttributes(table.findColumnNumber("temperature")).toString();  
         expected = 
 "    coordinates=\"time lat lon z\"\n" +
 "    long_name=\"Air Temperature\"\n" +
@@ -13712,29 +14380,29 @@ String2.log(table.dataToCSVString());
         table.readNcCF(fileName, null, null, null, null);  
         results = table.dataToCSVString();
         expected = 
-"alt,time,temperature,lat,lon,station_info,station_name\n" +
-"0.0,0,0.0,37.5,-76.5,0,Station1\n" +
-"2.5,0,0.1,37.5,-76.5,0,Station1\n" +
-"5.0,0,0.2,37.5,-76.5,0,Station1\n" +
-"7.5,0,0.3,37.5,-76.5,0,Station1\n" +
-"10.0,0,0.4,37.5,-76.5,0,Station1\n";
+"lat,lon,station_info,station_name,alt,time,temperature\n" +
+"37.5,-76.5,0,Station1,0.0,0,0.0\n" +
+"37.5,-76.5,0,Station1,2.5,0,0.1\n" +
+"37.5,-76.5,0,Station1,5.0,0,0.2\n" +
+"37.5,-76.5,0,Station1,7.5,0,0.3\n" +
+"37.5,-76.5,0,Station1,10.0,0,0.4\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         expected = 
-"287.5,10800,11.5,37.5,-76.5,0,Station1\n" +
-"290.0,10800,11.6,37.5,-76.5,0,Station1\n" +
-"292.5,10800,11.7,37.5,-76.5,0,Station1\n" +
-"295.0,10800,11.8,37.5,-76.5,0,Station1\n" +
-"297.5,10800,11.9,37.5,-76.5,0,Station1\n";
+"37.5,-76.5,0,Station1,287.5,10800,11.5\n" +
+"37.5,-76.5,0,Station1,290.0,10800,11.6\n" +
+"37.5,-76.5,0,Station1,292.5,10800,11.7\n" +
+"37.5,-76.5,0,Station1,295.0,10800,11.8\n" +
+"37.5,-76.5,0,Station1,297.5,10800,11.9\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), 
             expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 120, "");
-        results = table.columnAttributes(0).toString();
+        results = table.columnAttributes(table.findColumnNumber("alt")).toString();
         expected = 
 "    axis=\"Z\"\n" +
 "    positive=\"up\"\n" +
 "    units=\"m\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        results = table.columnAttributes(2).toString();
+        results = table.columnAttributes(table.findColumnNumber("temperature")).toString();
         expected = 
 "    coordinates=\"time lat lon alt\"\n" +
 "    long_name=\"Water Temperature\"\n" +
@@ -14793,20 +15461,20 @@ String2.log(table.dataToCSVString());
         table.readNcCF(fileName, null, null, null, null);
         results = table.dataToCSVString();
         expected = 
-"profile,time,height,temperature,lat,lon,station_info,station_name\n" +
-"0,0,0.5,6.7,37.5,-76.5,0,Station1\n" +
-"0,0,1.5,6.9,37.5,-76.5,0,Station1\n" +
-"1,3600,0.5,6.8,37.5,-76.5,0,Station1\n" +
-"1,3600,1.5,7.9,37.5,-76.5,0,Station1\n" +
-"2,7200,0.5,6.8,37.5,-76.5,0,Station1\n" +
-"2,7200,1.5,7.9,37.5,-76.5,0,Station1\n" +
-"2,7200,2.5,8.4,37.5,-76.5,0,Station1\n" +
-"3,10800,0.5,5.7,37.5,-76.5,0,Station1\n" +
-"3,10800,1.5,9.2,37.5,-76.5,0,Station1\n" +
-"3,10800,2.5,8.3,37.5,-76.5,0,Station1\n";
+"lat,lon,station_info,station_name,profile,time,height,temperature\n" +
+"37.5,-76.5,0,Station1,0,0,0.5,6.7\n" +
+"37.5,-76.5,0,Station1,0,0,1.5,6.9\n" +
+"37.5,-76.5,0,Station1,1,3600,0.5,6.8\n" +
+"37.5,-76.5,0,Station1,1,3600,1.5,7.9\n" +
+"37.5,-76.5,0,Station1,2,7200,0.5,6.8\n" +
+"37.5,-76.5,0,Station1,2,7200,1.5,7.9\n" +
+"37.5,-76.5,0,Station1,2,7200,2.5,8.4\n" +
+"37.5,-76.5,0,Station1,3,10800,0.5,5.7\n" +
+"37.5,-76.5,0,Station1,3,10800,1.5,9.2\n" +
+"37.5,-76.5,0,Station1,3,10800,2.5,8.3\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 10, "");
-        results = table.columnAttributes(0).toString();
+        results = table.columnAttributes(table.findColumnNumber("profile")).toString();
         expected = 
 "    cf_role=\"profile_id\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -15301,26 +15969,26 @@ String2.log(table.dataToCSVString());
         table.readNcCF(fileName, null, null, null, null);  
         results = table.dataToCSVString();
         expected = 
-"lat,lon,alt,time,temperature,salinity,trajectory\n" +
-"4.9986253,-35.718536,0.0,0,3.2502668,79.006065,0\n" +
-"4.9986253,-35.718536,1.0,0,30.566391,37.089394,0\n" +
-"4.9986253,-35.718536,2.0,0,0.8428718,20.478456,0\n" +
-"1.4658529,-25.19569,0.0,3600,27.982288,17.57356,0\n" +
-"1.4658529,-25.19569,1.0,3600,15.750698,11.152985,0\n" +
-"1.4658529,-25.19569,2.0,3600,39.36954,31.84863,0\n" +
-"1.4658529,-25.19569,3.0,3600,8.506618,77.88138,0\n" +
-"1.4658529,-25.19569,4.0,3600,39.580475,77.575645,0\n" +
-"38.299484,-55.72639,0.0,7200,36.646107,77.1104,0\n";
+"lat,lon,trajectory,alt,time,temperature,salinity\n" +
+"4.9986253,-35.718536,0,0.0,0,3.2502668,79.006065\n" +
+"4.9986253,-35.718536,0,1.0,0,30.566391,37.089394\n" +
+"4.9986253,-35.718536,0,2.0,0,0.8428718,20.478456\n" +
+"1.4658529,-25.19569,0,0.0,3600,27.982288,17.57356\n" +
+"1.4658529,-25.19569,0,1.0,3600,15.750698,11.152985\n" +
+"1.4658529,-25.19569,0,2.0,3600,39.36954,31.84863\n" +
+"1.4658529,-25.19569,0,3.0,3600,8.506618,77.88138\n" +
+"1.4658529,-25.19569,0,4.0,3600,39.580475,77.575645\n" +
+"38.299484,-55.72639,0,0.0,7200,36.646107,77.1104\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         Test.ensureEqual(table.nRows(), 20, "");
-        results = table.columnAttributes(0).toString();
+        results = table.columnAttributes(table.findColumnNumber("lat")).toString();
         expected = 
 "    long_name=\"Latitude\"\n" +
 "    missing_value=-999.9\n" +
 "    standard_name=\"latitude\"\n" +
 "    units=\"degrees_north\"\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        results = table.columnAttributes(2).toString();
+        results = table.columnAttributes(table.findColumnNumber("alt")).toString();
         expected = 
 "    axis=\"Z\"\n" +
 "    long_name=\"height below mean sea level\"\n" +
@@ -16583,6 +17251,13 @@ String2.log(table.dataToCSVString());
             PrimitiveArray pa = lastRow == -1?
                 NcHelper.getPrimitiveArray(variable) :
                 NcHelper.getPrimitiveArray(variable, firstRow, lastRow);
+            //2016-05-20 If chars in ArrayChar.D1 were read as 1 string, 
+            //  convert the 1 string into a CharArray
+            if (variable.getDataType() == DataType.CHAR && 
+                variable.getRank() == 1 &&
+                pa instanceof StringArray && pa.size() == 1) {                
+                pa = new CharArray(pa.getString(0).toCharArray());
+            }
             if (needToAddColumns) {
                 addColumn(variable.getShortName(), pa);
             } else getColumn(col).append(pa);
@@ -18258,7 +18933,7 @@ String2.log(table.dataToCSVString());
             constraintValues.add(tValue);
             double conValueD = Double.NaN;
 
-            if (debugMode) String2.log(">>constraint: " + tName + OPERATORS[op] + tValue);
+            if (debugMode) String2.log(">> constraint: " + tName + OPERATORS[op] + tValue);
 
             //convert <time><op><isoString> to <time><op><epochSeconds>   
             boolean constrainTimeStamp = Calendar2.isTimeUnits(
@@ -19748,14 +20423,14 @@ String2.log(table.dataToCSVString());
      * @param structureName the name to use for the Matlab structure which holds all of the data, 
      *    usually the dataset's internal name.
      *    If varName isn't a valid Matlab variable name,
-     *    it will be made so via String2.modifyToBeVariableNameSafe().
+     *    it will be made so via String2.encodeMatlabNameSafe().
      * @throws Exception 
      */
     public void saveAsMatlab(OutputStream outputStream, String structureName) 
         throws Exception {
         if (verbose) String2.log("Table.saveAsMatlab outputStream"); 
         long time = System.currentTimeMillis();
-        structureName = String2.modifyToBeVariableNameSafe(structureName);
+        structureName = String2.encodeMatlabNameSafe(structureName);
 
         String errorInMethod = String2.ERROR + " in Table.saveAsMatlab:\n";
 
@@ -19830,7 +20505,9 @@ String2.log(table.dataToCSVString());
         String nulls = String2.makeString('\u0000', 32);
         for (int col = 0; col < nCols; col++) 
             stream.write(String2.toByteArray(
-                String2.noLongerThan(getColumnName(col), 31) + nulls), 0, 32); //EEEK! better not be longer!!!
+                String2.noLongerThan(
+                    String2.encodeMatlabNameSafe(getColumnName(col)), 
+                    31) + nulls), 0, 32); //EEEK! better not be longer!!!
 
         //write the structure's elements (one for each col)
         for (int col = 0; col < nCols; col++) 
@@ -22305,6 +22982,184 @@ touble: because table is JsonObject, info may not be in expected order
 
     }
 */
+
+    /**
+     * This returns an Igor-safe column name which doesn't match a name
+     * already in IgorReservedNames or the cNamesHashset.
+     * The new name will be added to colNamesHashset.
+     *
+     * @param colName The raw, initial column name.
+     * @param colNamesHashset
+     * @return the safe name.
+     */
+    public static String makeUniqueIgorColumnName(String colName, HashSet colNamesHashset) {
+        colName = String2.encodeMatlabNameSafe(colName);
+        for (int i = 1; i < 1000000; i++) {
+            String tColName = colName + (i == 1? "" : "" + i);
+            if (!IgorReservedNames.contains(tColName) &&
+                colNamesHashset.add(tColName)) //true if not already present
+                return tColName;
+        }
+        return colName + "ShouldntHappen";
+    }
+
+    /** 
+     * This writes one column (pa) to a Igor Text File .itx.
+     * 
+     * @param colName This should be a name returned by makeUniqueIgorColumnName().
+     * @param dimInfo The dimension info if multidimensional
+     *   (e.g., "/N=(nY,nX,nZ,nT)", note flipped x,y order!)
+     *   or null or "" if not.
+     * @param pa If multidimensional, it is in standard ERDDAP row-major order.
+     *  This should be already done: convertToStandardMissingValues() 
+            atts.getDouble("_FillValue"), 
+            atts.getDouble("missing_value"));
+     * @param writer  At the end, it is flushed, not closed.
+     * @param isTimeStamp if true, pa should be DoubleArray with epochSeconds values.
+     * @param setScaleForDims ready-to-use SetScale info for the dimensions, or "".
+     * @throws Exception if IO trouble.
+     */
+    public static void writeIgorWave(Writer writer, String colName, 
+        String dimInfo, PrimitiveArray pa, String units, boolean isTimeStamp,
+        String setScaleForDims) 
+        throws Exception {
+
+        int nRows = pa.size();
+        double stats[] = pa.calculateStats(); //okay because using standardMissingValues       
+        double colMin = stats[PrimitiveArray.STATS_MIN]; //may be NaN       
+        double colMax = stats[PrimitiveArray.STATS_MAX]; //may be NaN       
+
+        boolean isString = pa instanceof StringArray; 
+        String safeColName = String2.encodeMatlabNameSafe(colName);
+        if (dimInfo == null)
+            dimInfo = "";
+        writer.write(
+            "WAVES/" + 
+                //byte short char int long float double string
+                //promote char to int, long to double, 
+                "BWIIDSDT".charAt(pa.elementClassIndex()) + 
+                dimInfo +
+                //don't use /O to overwrite existing waves. If conflict, user will be asked.                
+                " " + safeColName + IgorEndOfLine + 
+            "BEGIN" + IgorEndOfLine);
+
+        //write the data
+        if (isString) {
+            for (int row = 0; row < nRows; row++) {
+                //String data written as json strings (in double quotes with \ encoded chars)
+                writer.write(String2.toJson(pa.getString(row)));
+                writer.write(IgorEndOfLine);
+            }
+        } else if (isTimeStamp) {
+            for (int row = 0; row < nRows; row++) {
+                //igor stores datetime as seconds since 1/1/1904
+                double d = pa.getDouble(row);
+                if (Math2.isFinite(d)) {
+                    d = Calendar2.epochSecondsToUnitsSince(
+                        IgorBaseSeconds, IgorFactorToGetSeconds, d);
+                    writer.write("" + d);
+                } else {
+                    writer.write(IgorNanString);
+                }
+                writer.write(IgorEndOfLine);
+           }
+        } else { //numeric
+            for (int row = 0; row < nRows; row++) {
+                String s = pa.getString(row); //ints will be formatted as ints
+                writer.write(s.length() == 0? IgorNanString : s);
+                writer.write(IgorEndOfLine);
+            }
+        }
+
+        //END
+        writer.write("END" + IgorEndOfLine);
+
+        //SetScale
+        if (!isString) {
+            if (units == null) units = "";
+            if (isTimeStamp) {
+                units = "dat"; //special case in igor
+                colMin = Calendar2.epochSecondsToUnitsSince(
+                    IgorBaseSeconds, IgorFactorToGetSeconds, colMin);
+                colMax = Calendar2.epochSecondsToUnitsSince(
+                    IgorBaseSeconds, IgorFactorToGetSeconds, colMax);
+            }
+            writer.write(
+                "X SetScale d " + //d=specifying data full scale, ',' after d???
+                (Double.isNaN(colMin)? "0,0" :  //???no non-MV data values; 0,0 is used in their examples
+                 pa instanceof DoubleArray || 
+                 pa instanceof LongArray? colMin + "," + colMax :
+                 pa instanceof FloatArray? Math2.doubleToFloatNaN(colMin) + "," +
+                                           Math2.doubleToFloatNaN(colMax) :
+                 Math2.roundToInt(colMin) + "," + Math2.roundToInt(colMax)) + 
+                ", " + String2.toJson(units) + 
+                ", " + safeColName +
+                IgorEndOfLine);
+        }
+        if (String2.isSomething(setScaleForDims))
+            writer.write(setScaleForDims);
+
+        writer.write(IgorEndOfLine);
+        writer.flush(); //essential (at the end)
+
+    }
+
+    /**
+     * Save the table's data as an Igor Text File .itx file.
+     * <br>File reference: in Bob's /programs/igor/ or 
+     *   http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf
+     * <br>Command reference: in Bob's /programs/igor/ or 
+     *   http://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf
+     * <br>The file extension should be .itx
+     *
+     * <br>Timestamp columns should have epochSeconds vaules.
+     * <br>This assumes missing values haven't yet been standardized (e.g., to NaN).
+     * <br>This is tested by EDDGridFromNcFiles.testIgor() since
+     *   EDDGrid.saveAsIgor uses this to save axisVars-only response.
+     * 
+     * @param writer
+     * @throws Throwable 
+     */
+    public void saveAsIgor(Writer writer) throws Throwable {
+
+        if (reallyVerbose) String2.log("Table.saveAsIgor"); 
+        long time = System.currentTimeMillis();
+
+        if (nRows() == 0)
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsIgor)");
+
+        //open an OutputStream   
+        writer.write("IGOR" + IgorEndOfLine);
+
+        //write each col as a wave separately, so data type is preserved
+        HashSet colNamesHashset = new HashSet();
+        int nCols = nColumns();
+        for (int col = 0; col < nCols; col++) {
+            Attributes atts = columnAttributes(col);
+            String units = atts.getString("units");
+            boolean isTimeStamp = units != null && 
+                (units.equals(Calendar2.SECONDS_SINCE_1970) || //EDV.TIME_UNITS
+                 units.equals("s{since 1970-01-01T00:00:00Z}")); //EDV.TIME_UCUM_UNITS
+
+            PrimitiveArray pa = getColumn(col);
+            pa.convertToStandardMissingValues(
+                atts.getDouble("_FillValue"), 
+                atts.getDouble("missing_value"));
+
+            writeIgorWave(writer, 
+                makeUniqueIgorColumnName(getColumnName(col), colNamesHashset), 
+                "", pa, units, 
+                isTimeStamp, "");
+        }
+
+        //done!
+        writer.flush(); //essential
+
+        if (reallyVerbose) String2.log("  Table.saveAsIgor done. TIME=" + 
+            (System.currentTimeMillis() - time) + "\n");
+    }
+
+
     /**
      * This reads a table structure (everything but data) from an ERDDAP info url
      * for a TableDap dataset.
@@ -22862,7 +23717,7 @@ touble: because table is JsonObject, info may not be in expected order
             String tempDir = File2.getSystemTempDirectory();
             if (verbose) String2.log("unzipping to systemTempDir = " + tempDir);
  
-            SSR.unzip(inFullName, tempDir, true, 10000);
+            SSR.unzip(inFullName, tempDir, true, 10000, null);
             inFullName = tempDir + 
                 File2.getNameAndExtension(inFullName).substring(0, inFullName.length() - 4); //without .zip at end          
         }
@@ -23914,20 +24769,326 @@ touble: because table is JsonObject, info may not be in expected order
         int nRows;
         String url;
         float lon, lat;
-/* */
+        String results, expected;
+
+        //2016-07-25 test for Kevin's dataset: from remote erddap
+        try {    
+            url = "http://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
+                "prof,id,cast,cruise,time,longitude,lon360,latitude&time>=2012-09-04&time<=2012-09-07&distinct()"; 
+            table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
+            results = table.toString("row", 3);
+            expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 2 ;\n" +
+"\tid_strlen = 10 ;\n" +
+"\tcast_strlen = 3 ;\n" +
+"\tcruise_strlen = 6 ;\n" +
+"variables:\n" +
+"\tdouble prof(row) ;\n" +
+"\t\tprof:actual_range = 1.0, 1.0 ;\n" +
+"\t\tprof:axis = \"E\" ;\n" +
+"\t\tprof:long_name = \"Prof\" ;\n" +
+"\t\tprof:point_spacing = \"even\" ;\n" +
+"\tchar id(row, id_strlen) ;\n" +
+"\t\tid:cf_role = \"profile_id\" ;\n" +
+"\t\tid:long_name = \"profile id\" ;\n" +
+"\tchar cast(row, cast_strlen) ;\n" +
+"\t\tcast:colorBarMaximum = 100.0 ;\n" +
+"\t\tcast:colorBarMinimum = 0.0 ;\n" +
+"\t\tcast:long_name = \"cast number\" ;\n" +
+"\tchar cruise(row, cruise_strlen) ;\n" +
+"\t\tcruise:long_name = \"Cruise name\" ;\n" +
+"\tdouble time(row) ;\n" +
+"\t\ttime:_CoordinateAxisType = \"Time\" ;\n" +
+"\t\ttime:_FillValue = NaN ;\n" +
+"\t\ttime:actual_range = 1.28368572E9, 1.34697582E9 ;\n" +
+"\t\ttime:axis = \"T\" ;\n" +
+"\t\ttime:ioos_category = \"Time\" ;\n" +
+"\t\ttime:long_name = \"Time\" ;\n" +
+"\t\ttime:missing_value = NaN ;\n" +
+"\t\ttime:standard_name = \"time\" ;\n" +
+"\t\ttime:time_origin = \"01-JAN-1970 00:00:00\" ;\n" +
+"\t\ttime:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tfloat longitude(row) ;\n" +
+"\t\tlongitude:_CoordinateAxisType = \"Lon\" ;\n" +
+"\t\tlongitude:_FillValue = -1.0E34f ;\n" +
+"\t\tlongitude:actual_range = -174.6603f, -157.1593f ;\n" +
+"\t\tlongitude:axis = \"X\" ;\n" +
+"\t\tlongitude:colorBarMaximum = 180.0 ;\n" +
+"\t\tlongitude:colorBarMinimum = -180.0 ;\n" +
+"\t\tlongitude:ioos_category = \"Location\" ;\n" +
+"\t\tlongitude:long_name = \"station longitude\" ;\n" +
+"\t\tlongitude:missing_value = -1.0E34f ;\n" +
+"\t\tlongitude:standard_name = \"longitude\" ;\n" +
+"\t\tlongitude:units = \"degrees_east\" ;\n" +
+"\tfloat lon360(row) ;\n" +
+"\t\tlon360:_FillValue = -1.0E34f ;\n" +
+"\t\tlon360:actual_range = 185.3397f, 202.8407f ;\n" +
+"\t\tlon360:colorBarMaximum = 180.0 ;\n" +
+"\t\tlon360:colorBarMinimum = -180.0 ;\n" +
+"\t\tlon360:long_name = \"station longitude 360\" ;\n" +
+"\t\tlon360:missing_value = -1.0E34f ;\n" +
+"\t\tlon360:standard_name = \"longitude\" ;\n" +
+"\t\tlon360:units = \"degrees_east\" ;\n" +
+"\tfloat latitude(row) ;\n" +
+"\t\tlatitude:_CoordinateAxisType = \"Lat\" ;\n" +
+"\t\tlatitude:_FillValue = -1.0E34f ;\n" +
+"\t\tlatitude:actual_range = 54.34184f, 73.11517f ;\n" +
+"\t\tlatitude:axis = \"Y\" ;\n" +
+"\t\tlatitude:colorBarMaximum = 90.0 ;\n" +
+"\t\tlatitude:colorBarMinimum = -90.0 ;\n" +
+"\t\tlatitude:history = \"From mb1101c070.nc_copy\" ;\n" +
+"\t\tlatitude:ioos_category = \"Location\" ;\n" +
+"\t\tlatitude:long_name = \"station latitude\" ;\n" +
+"\t\tlatitude:missing_value = -1.0E34f ;\n" +
+"\t\tlatitude:standard_name = \"latitude\" ;\n" +
+"\t\tlatitude:units = \"degrees_north\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:CAST = \"070\" ;\n" +
+"\t\t:cdm_data_type = \"Profile\" ;\n" +
+"\t\t:cdm_profile_variables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n" +
+"\t\t:Conventions = \"CF-1.6, COARDS, ACDD-1.3\" ;\n" +
+"\t\t:COORD_SYSTEM = \"GEOGRAPHICAL\" ;\n" +
+"\t\t:creation_date = \"14:48 21-JUN-2013\" ;\n" +
+"\t\t:creator_email = \"peggy.sullivan@noaa.gov\" ;\n" +
+"\t\t:creator_name = \"Phyllis Stabeno, Margaret Sullivan\" ;\n" +
+"\t\t:CRUISE = \"Ch2011\" ;\n" +
+"\t\t:DATA_CMNT = \"Data from Seasoft File chaoz2011070.cnv\" ;\n" +
+"\t\t:DATA_TYPE = \"CTD\" ;\n" +
+"\t\t:Easternmost_Easting = -157.1593 ;\n" +
+"\t\t:EPIC_FILE_GENERATOR = \"SEASOFT2EPIC_CTD (Version 1.37, 14-Oct-2011)\" ;\n" +
+"\t\t:featureType = \"Profile\" ;\n" +
+"\t\t:geospatial_lat_max = 73.11517 ;\n" +
+"\t\t:geospatial_lat_min = 54.34184 ;\n" +
+"\t\t:geospatial_lat_units = \"degrees_north\" ;\n" +
+"\t\t:geospatial_lon_max = -157.1593 ;\n" +
+"\t\t:geospatial_lon_min = -174.6603 ;\n" +
+"\t\t:geospatial_lon_units = \"degrees_east\" ;\n" +
+"\t\t:geospatial_vertical_max = 166.0 ;\n" +
+"\t\t:geospatial_vertical_min = 0.0 ;\n" +
+"\t\t:geospatial_vertical_positive = \"down\" ;\n" +
+"\t\t:geospatial_vertical_units = \"m\" ;\n" +
+"\t\t:history = \"FERRET V7  13-Jun-16\n";
+//2016-10-03T22:25:01Z (local files)
+//2016-10-03T22:25:01Z 
+  Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+      
+expected = 
+"http://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
+"\t\t:infoUrl = \"www.ecofoci.noaa.gov\" ;\n" +
+"\t\t:INST_TYPE = \"Sea-Bird CTD SBE911\" ;\n" +
+"\t\t:institution = \"PMEL EcoFOCI\" ;\n" +
+"\t\t:keywords = \"2010-2012, active, ammonia, ammonium, bottle, calibration, cast, chemistry, chlorophyll, chukchi, concentration, concentration_of_chlorophyll_in_sea_water, cooperative, cruise, data, density, depth, dissolved, ecofoci, environmental, factory, fisheries, fisheries-oceanography, flourescence, foci, fraction, fractional, fractional_saturation_of_oxygen_in_sea_water, investigations, laboratory, latitude, lon360, longitude, marine, ml/l, mmoles, mmoles/kg, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_dissolved_molecular_oxygen_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, molecular, n02, name, nh4, niskin, nitrate, nitrite, no2, no3, noaa, number, nutrients, O2, ocean, ocean_chlorophyll_a_concentration_factoryCal, ocean_chlorophyll_fluorescence_raw, ocean_dissolved_oxygen_concentration_1_mLperL, ocean_dissolved_oxygen_concentration_1_mMperkg, ocean_dissolved_oxygen_concentration_2_mLperL, ocean_dissolved_oxygen_concentration_2_mMperkg, ocean_oxygen_saturation_1, ocean_practical_salinity_1, ocean_practical_salinity_2, ocean_sigma_t, ocean_temperature_1, ocean_temperature_2, oceanography, oceans,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"oxygen, pacific, percent, phosphate, photosynthetically, photosynthetically_active_radiation, pmel, po4, practical, prof, profile, pss, pss-78, psu, radiation, raw, salinity, saturation, scale, sea, sea_water_ammonium_concentration, sea_water_nitrate_concentration, sea_water_nitrite_concentration, sea_water_nutrient_bottle_number, sea_water_phosphate_concentration, sea_water_practical_salinity, sea_water_silicate_concentration, seawater, sigma, sigma-t, silicate, station, temperature, time, unit, volume, volume_fraction_of_oxygen_in_sea_water, water\" ;\n" +
+"\t\t:keywords_vocabulary = \"GCMD Science Keywords\" ;\n" +
+"\t\t:license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\" ;\n" +
+"\t\t:Northernmost_Northing = 73.11517 ;\n" +
+"\t\t:PROG_CMNT1 = \"cat_ctd v1.36 06Aug2010\" ;\n" +
+"\t\t:PROG_CMNT2 = \"Variables Extrapolated from 2 db to 0\" ;\n" +
+"\t\t:sourceUrl = \"(local files)\" ;\n" +
+"\t\t:Southernmost_Northing = 54.34184 ;\n" +
+"\t\t:standard_name_vocabulary = \"CF Standard Name Table v29\" ;\n" +
+"\t\t:STATION_NAME = \"Unimak3\" ;\n" +
+"\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n" +
+"\t\t:summary = \"Pacific Marine Environmental Laboratory (PMEL) Fisheries-Oceanography Cooperative Investigations (FOCI) Chukchi Sea. PMEL EcoFOCI data from a local source.\" ;\n" +
+"\t\t:time_coverage_end = \"2012-09-06T23:57:00Z\" ;\n" +
+"\t\t:time_coverage_start = \"2010-09-05T11:22:00Z\" ;\n" +
+"\t\t:title = \"PMEL EcoFOCI Chukchi Sea profile data, 2010-2012\" ;\n" +
+"\t\t:WATER_DEPTH = 0 ;\n" +
+"\t\t:WATER_MASS = \"A\" ;\n" +
+"\t\t:Westernmost_Easting = -174.6603 ;\n" +
+"}\n" +
+"    Row            prof             id           cast         cruise           time      longitude         lon360       latitude\n" +
+"      0               1     aq1201c069            069         aq1201     1346974560    -164.044693     195.955307      56.866001\n" +
+"      1               1     aq1201c070            070         aq1201     1346975820    -164.048996     195.951004      56.863998\n";
+            int po = results.indexOf(expected.substring(0, 60));
+            Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
+        }
+
+        try {    
+            url = "http://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
+                "prof,id,cast,cruise,time,longitude,lon360,latitude&time>=2012-09-04&time<=2012-09-07"; 
+            table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
+            results = table.toString("row", 3);
+            expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 2 ;\n" +
+"\tid_strlen = 10 ;\n" +
+"\tcast_strlen = 3 ;\n" +
+"\tcruise_strlen = 6 ;\n" +
+"variables:\n" +
+"\tdouble prof(row) ;\n" +
+"\t\tprof:actual_range = 1.0, 1.0 ;\n" +
+"\t\tprof:axis = \"E\" ;\n" +
+"\t\tprof:long_name = \"Prof\" ;\n" +
+"\t\tprof:point_spacing = \"even\" ;\n" +
+"\tchar id(row, id_strlen) ;\n" +
+"\t\tid:cf_role = \"profile_id\" ;\n" +
+"\t\tid:long_name = \"profile id\" ;\n" +
+"\tchar cast(row, cast_strlen) ;\n" +
+"\t\tcast:colorBarMaximum = 100.0 ;\n" +
+"\t\tcast:colorBarMinimum = 0.0 ;\n" +
+"\t\tcast:long_name = \"cast number\" ;\n" +
+"\tchar cruise(row, cruise_strlen) ;\n" +
+"\t\tcruise:long_name = \"Cruise name\" ;\n" +
+"\tdouble time(row) ;\n" +
+"\t\ttime:_CoordinateAxisType = \"Time\" ;\n" +
+"\t\ttime:_FillValue = NaN ;\n" +
+"\t\ttime:actual_range = 1.28368572E9, 1.34697582E9 ;\n" +
+"\t\ttime:axis = \"T\" ;\n" +
+"\t\ttime:ioos_category = \"Time\" ;\n" +
+"\t\ttime:long_name = \"Time\" ;\n" +
+"\t\ttime:missing_value = NaN ;\n" +
+"\t\ttime:standard_name = \"time\" ;\n" +
+"\t\ttime:time_origin = \"01-JAN-1970 00:00:00\" ;\n" +
+"\t\ttime:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tfloat longitude(row) ;\n" +
+"\t\tlongitude:_CoordinateAxisType = \"Lon\" ;\n" +
+"\t\tlongitude:_FillValue = -1.0E34f ;\n" +
+"\t\tlongitude:actual_range = -174.6603f, -157.1593f ;\n" +
+"\t\tlongitude:axis = \"X\" ;\n" +
+"\t\tlongitude:colorBarMaximum = 180.0 ;\n" +
+"\t\tlongitude:colorBarMinimum = -180.0 ;\n" +
+"\t\tlongitude:ioos_category = \"Location\" ;\n" +
+"\t\tlongitude:long_name = \"station longitude\" ;\n" +
+"\t\tlongitude:missing_value = -1.0E34f ;\n" +
+"\t\tlongitude:standard_name = \"longitude\" ;\n" +
+"\t\tlongitude:units = \"degrees_east\" ;\n" +
+"\tfloat lon360(row) ;\n" +
+"\t\tlon360:_FillValue = -1.0E34f ;\n" +
+"\t\tlon360:actual_range = 185.3397f, 202.8407f ;\n" +
+"\t\tlon360:colorBarMaximum = 180.0 ;\n" +
+"\t\tlon360:colorBarMinimum = -180.0 ;\n" +
+"\t\tlon360:long_name = \"station longitude 360\" ;\n" +
+"\t\tlon360:missing_value = -1.0E34f ;\n" +
+"\t\tlon360:standard_name = \"longitude\" ;\n" +
+"\t\tlon360:units = \"degrees_east\" ;\n" +
+"\tfloat latitude(row) ;\n" +
+"\t\tlatitude:_CoordinateAxisType = \"Lat\" ;\n" +
+"\t\tlatitude:_FillValue = -1.0E34f ;\n" +
+"\t\tlatitude:actual_range = 54.34184f, 73.11517f ;\n" +
+"\t\tlatitude:axis = \"Y\" ;\n" +
+"\t\tlatitude:colorBarMaximum = 90.0 ;\n" +
+"\t\tlatitude:colorBarMinimum = -90.0 ;\n" +
+"\t\tlatitude:history = \"From mb1101c070.nc_copy\" ;\n" +
+"\t\tlatitude:ioos_category = \"Location\" ;\n" +
+"\t\tlatitude:long_name = \"station latitude\" ;\n" +
+"\t\tlatitude:missing_value = -1.0E34f ;\n" +
+"\t\tlatitude:standard_name = \"latitude\" ;\n" +
+"\t\tlatitude:units = \"degrees_north\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:CAST = \"070\" ;\n" +
+"\t\t:cdm_data_type = \"Profile\" ;\n" +
+"\t\t:cdm_profile_variables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n" +
+"\t\t:Conventions = \"CF-1.6, COARDS, ACDD-1.3\" ;\n" +
+"\t\t:COORD_SYSTEM = \"GEOGRAPHICAL\" ;\n" +
+"\t\t:creation_date = \"14:48 21-JUN-2013\" ;\n" +
+"\t\t:creator_email = \"peggy.sullivan@noaa.gov\" ;\n" +
+"\t\t:creator_name = \"Phyllis Stabeno, Margaret Sullivan\" ;\n" +
+"\t\t:CRUISE = \"Ch2011\" ;\n" +
+"\t\t:DATA_CMNT = \"Data from Seasoft File chaoz2011070.cnv\" ;\n" +
+"\t\t:DATA_TYPE = \"CTD\" ;\n" +
+"\t\t:Easternmost_Easting = -157.1593 ;\n" +
+"\t\t:EPIC_FILE_GENERATOR = \"SEASOFT2EPIC_CTD (Version 1.37, 14-Oct-2011)\" ;\n" +
+"\t\t:featureType = \"Profile\" ;\n" +
+"\t\t:geospatial_lat_max = 73.11517 ;\n" +
+"\t\t:geospatial_lat_min = 54.34184 ;\n" +
+"\t\t:geospatial_lat_units = \"degrees_north\" ;\n" +
+"\t\t:geospatial_lon_max = -157.1593 ;\n" +
+"\t\t:geospatial_lon_min = -174.6603 ;\n" +
+"\t\t:geospatial_lon_units = \"degrees_east\" ;\n" +
+"\t\t:geospatial_vertical_max = 166.0 ;\n" +
+"\t\t:geospatial_vertical_min = 0.0 ;\n" +
+"\t\t:geospatial_vertical_positive = \"down\" ;\n" +
+"\t\t:geospatial_vertical_units = \"m\" ;\n" +
+"\t\t:history = \"FERRET V7  13-Jun-16\n";
+//2016-10-03T22:32:26Z (local files)
+//2016-10-03T22:32:26Z 
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+
+expected = 
+"http://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
+"\t\t:infoUrl = \"www.ecofoci.noaa.gov\" ;\n" +
+"\t\t:INST_TYPE = \"Sea-Bird CTD SBE911\" ;\n" +
+"\t\t:institution = \"PMEL EcoFOCI\" ;\n" +
+"\t\t:keywords = \"2010-2012, active, ammonia, ammonium, bottle, calibration, cast, chemistry, chlorophyll, chukchi, concentration, concentration_of_chlorophyll_in_sea_water, cooperative, cruise, data, density, depth, dissolved, ecofoci, environmental, factory, fisheries, fisheries-oceanography, flourescence, foci, fraction, fractional, fractional_saturation_of_oxygen_in_sea_water, investigations, laboratory, latitude, lon360, longitude, marine, ml/l, mmoles, mmoles/kg, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_dissolved_molecular_oxygen_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, molecular, n02, name, nh4, niskin, nitrate, nitrite, no2, no3, noaa, number, nutrients, O2, ocean, ocean_chlorophyll_a_concentration_factoryCal, ocean_chlorophyll_fluorescence_raw, ocean_dissolved_oxygen_concentration_1_mLperL, ocean_dissolved_oxygen_concentration_1_mMperkg, ocean_dissolved_oxygen_concentration_2_mLperL, ocean_dissolved_oxygen_concentration_2_mMperkg, ocean_oxygen_saturation_1, ocean_practical_salinity_1, ocean_practical_salinity_2, ocean_sigma_t, ocean_temperature_1, ocean_temperature_2, oceanography, oceans,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"oxygen, pacific, percent, phosphate, photosynthetically, photosynthetically_active_radiation, pmel, po4, practical, prof, profile, pss, pss-78, psu, radiation, raw, salinity, saturation, scale, sea, sea_water_ammonium_concentration, sea_water_nitrate_concentration, sea_water_nitrite_concentration, sea_water_nutrient_bottle_number, sea_water_phosphate_concentration, sea_water_practical_salinity, sea_water_silicate_concentration, seawater, sigma, sigma-t, silicate, station, temperature, time, unit, volume, volume_fraction_of_oxygen_in_sea_water, water\" ;\n" +
+"\t\t:keywords_vocabulary = \"GCMD Science Keywords\" ;\n" +
+"\t\t:license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\" ;\n" +
+"\t\t:Northernmost_Northing = 73.11517 ;\n" +
+"\t\t:PROG_CMNT1 = \"cat_ctd v1.36 06Aug2010\" ;\n" +
+"\t\t:PROG_CMNT2 = \"Variables Extrapolated from 2 db to 0\" ;\n" +
+"\t\t:sourceUrl = \"(local files)\" ;\n" +
+"\t\t:Southernmost_Northing = 54.34184 ;\n" +
+"\t\t:standard_name_vocabulary = \"CF Standard Name Table v29\" ;\n" +
+"\t\t:STATION_NAME = \"Unimak3\" ;\n" +
+"\t\t:subsetVariables = \"prof, id, cast, cruise, time, longitude, lon360, latitude\" ;\n" +
+"\t\t:summary = \"Pacific Marine Environmental Laboratory (PMEL) Fisheries-Oceanography Cooperative Investigations (FOCI) Chukchi Sea. PMEL EcoFOCI data from a local source.\" ;\n" +
+"\t\t:time_coverage_end = \"2012-09-06T23:57:00Z\" ;\n" +
+"\t\t:time_coverage_start = \"2010-09-05T11:22:00Z\" ;\n" +
+"\t\t:title = \"PMEL EcoFOCI Chukchi Sea profile data, 2010-2012\" ;\n" +
+"\t\t:WATER_DEPTH = 0 ;\n" +
+"\t\t:WATER_MASS = \"A\" ;\n" +
+"\t\t:Westernmost_Easting = -174.6603 ;\n" +
+"}\n" +
+"    Row            prof             id           cast         cruise           time      longitude         lon360       latitude\n" +
+"      0               1     aq1201c069            069         aq1201     1346974560    -164.044693     195.955307      56.866001\n" +
+"      1               1     aq1201c070            070         aq1201     1346975820    -164.048996     195.951004      56.863998\n";
+            int po = results.indexOf(expected.substring(0, 60));
+            Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            String2.pressEnterToContinue("\nRecover from opendapSequence failure?");
+        }
+
+
         //************* SINGLE SEQUENCE *****************************
         try {
             //read data from opendap
             table.readOpendapSequence(
                 "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude", false);
-            String results = table.toString("row", 5);
+            results = table.toString("row", 5);
             String2.log(results);
 
             nRows = 3763; //2013-0620 was 3779;
             Test.ensureEqual(table.nColumns(), 3, "");
             Test.ensureEqual(table.nRows(), nRows, "");
 
-            String expected = 
+            expected = 
 "{\n" +
 "dimensions:\n" +
 "\trow = 3763 ;\n" +
@@ -24078,9 +25239,9 @@ touble: because table is JsonObject, info may not be in expected order
         try {
             url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude&program=\"MESO_1\"";
             table.readOpendapSequence(url, false);
-            String results = table.dataToCSVString();
+            results = table.dataToCSVString();
             String2.log(results);
-            String expected =
+            expected =
 /* oceanwatch was 
 ...
 "    Row             lat           long       abund_m3\n" +
@@ -24107,7 +25268,7 @@ touble: because table is JsonObject, info may not be in expected order
             //nRows=16507 nColumns=28  readTime=5219 ms  processTime=94 ms
             url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt";
             table.readOpendapSequence(url, false);
-            String results = table.dataToCSVString(5);
+            results = table.dataToCSVString(5);
             //on oceanwatch, was
 //    Row        datetime   datetime_utc datetime_utc_e           year        program      cruise_id        cast_no         stn_id
 //lat           long        lat1000        lon1000    water_depth      sample_id min_sample_dep max_sample_dep    month_local      day_local
@@ -24117,7 +25278,7 @@ touble: because table is JsonObject, info may not be in expected order
 //002    -124.169998          44650        -124170             60              1              0             55              4             25
 //        -9999          -9999            VPT        0.19635          0.202          14.46            WTP          -9999            1.1    611
 //8010204#     6118010204 CALANUS_MARSHA        3;_CIII          11.49
-            String expected = 
+            expected = 
 "row,cruise_id,longitude,latitude,time,cast_no,station_id,abund_m3,comments,counter_id,d_n_flag,gear_area,gear_mesh,gear_type,genus_species,life_stage,local_code,max_sample_depth,min_sample_depth,nodc_code,perc_counted,program,sample_id,vol_filt,water_depth\n" +
 "0,EL010403,-124.17,44.65,9.88261731E8,0,NH05,11.49,-9999,WTP,-9999,0.19635,0.202,VPT,CALANUS_MARSHALLAE,3;_CIII,6118010204#,55,0,6118010204,1.1,NH,0,14.46,60\n" +
 "1,EL010403,-124.17,44.65,9.88261731E8,0,NH05,74.72,-9999,WTP,-9999,0.19635,0.202,VPT,BIVALVIA,Veliger,55V,55,0,55,1.1,NH,0,14.46,60\n" +
@@ -24149,8 +25310,8 @@ touble: because table is JsonObject, info may not be in expected order
                 new String[]{"abund_m3","latitude","longitude"},
                 false); 
 
-            String results = table.dataToCSVString();
-            String expected = 
+            results = table.dataToCSVString();
+            expected = 
 "abund_m3,latitude,longitude\n" +
 "0.24896266,44.6517,-124.65\n" +
 "0.24896266,44.6517,-124.65\n";
@@ -25226,7 +26387,7 @@ expected =
         String results, expected;
         long time; 
         //was "/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc"
-        String fileName = String2.unitTestDataDir + "nccf/MATimeSeriesReversedDim.nc"; 
+        String fileName = String2.unitTestBigDataDir + "nccf/MATimeSeriesReversedDim.nc"; 
         String2.log(NcHelper.dumpString(fileName, false));
 
 /* */
@@ -25554,6 +26715,7 @@ readAsNcCF?
         testReadNcCFMATimeSeriesReversed(true); //read as ncCF
         testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
         testReadGocdNcCF();
+        testReadNcCF7SampleDims();
         if (ncCFcc != null) {
             ncCFcc.flip(0, 100);  //there are currently 99 code coverage tests
             String2.pressEnterToContinue("\nTable.readNcCF code coverage: notTested=" + ncCFcc.toString());

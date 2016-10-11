@@ -758,7 +758,7 @@ public class Subscriptions {
                 byte status = readStatus(row);
                 sb.append(
                     String2.left(readDatasetID(row), 20) +
-                    (status == STATUS_VALID? "valid   " : "pending ") +
+                    (status == STATUS_VALID? " valid   " : " pending ") +
                     String2.left(readAction(row), 35) + " " +
                     erddapUrl + "/" + REMOVE_HTML   + "?subscriptionID=" + row + "&key=" + readKey(row) + "\n");
             }          
@@ -967,13 +967,13 @@ public class Subscriptions {
 "(nEmailAddress=2, nPendingSubscriptions=5, nValidSubscriptions=0)\n" +
 "\n" +
 "jane.smith@company.com\n" +
-"rPmelTao            pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
+"rPmelTao             pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
 "\n" +
 "john.smith@company.com\n" +
-"pmelTao             pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
-"pmelTao             pending http://www.google.com               http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
-"rPmelTao            pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
-"rPmelTao            pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"pmelTao              pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"pmelTao              pending http://www.google.com               http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"rPmelTao             pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"rPmelTao             pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n",
             "results=\n" + results);
 

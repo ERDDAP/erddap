@@ -65,6 +65,8 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
 <li><a rel="help" href="#notes">Notes</a> (Please read all of this.)
   <ul>
   <li><a rel="help" href="#useCtrlF">Use Ctrl-F To Find Things On This Web Page</a>
+  <li><a rel="help" href="#ChoosingTheDatasetType">Choosing the Dataset Type</a>
+  <li><a rel="help" href="#ServingTheDataAsIs">Serving the Data As Is</a>
   <li><a rel="help" href="#encodingSpecialCharacters">Encoding Special Characters</a>
   <li><a rel="help" href="#noSyntaxErrors">XML doesn't tolerate syntax errors.</a>
   <li><a rel="help" href="#diagnoseProblems">Other Ways To Help Diagnose Problems With Datasets</a>
@@ -269,17 +271,30 @@ After you finish, I'll contact you to work out the final details.
    you can find and use these programs in the <i>tomcat</i>/webapps/erddap/WEB-INF directory.
    There are Linux/Unix shell scripts (with the extension .sh) and
    Windows scripts (with the extension .bat) for each program.
+   [On Linux, run these tools as the same user (tomcat?) that will run Tomcat.]
    When you run each program, it will ask you questions.
    For each question, type a response, then press Enter. 
    Or press ^C to exit a program at any time.
 
    <p><a name="OldVersionOfJava">Program won't run?</a>
-    <br>If you are using a version of Java that is too old for a program,
-    the program won't run and you will see an error message like
-    <br><tt>Exception in thread "main" java.lang.UnsupportedClassVersionError: 
-    <br><i>some/class/name</i>: Unsupported major.minor version <i>someNumber</i></tt>
-    <br>The solution is to update to the most recent version of Java
-    and make sure the .sh or .bat file for the program is using it.
+   <ul>
+   <li>If you get a <tt>unknown program</tt> (or similar) error message, 
+     the problem is probably that the operating system couldn't find Java.
+     You need to figure out where Java is on your computer, then
+     edit the java reference in the .bat or .sh file that you are trying to use.
+
+   <li>If you get a <tt>jar file not found</tt> or <tt>class not found</tt> 
+     error message, then Java couldn't find one of the classes listed in the 
+     .bat or .sh file you are trying to use. The solution is to figure out
+     where that .jar file is, and edit the java reference to it in the .bat or .sh file.
+
+   <li>If you are using a version of Java that is too old for a program,
+     the program won't run and you will see an error message like
+     <br><tt>Exception in thread "main" java.lang.UnsupportedClassVersionError: 
+     <br><i>some/class/name</i>: Unsupported major.minor version <i>someNumber</i></tt>
+     <br>The solution is to update to the most recent version of Java
+     and make sure the .sh or .bat file for the program is using it.
+   </ul>
 
    <p><a name="ErrorVsWarning">The tools print various diagnostic messages:</a>
     <ul>
@@ -288,7 +303,10 @@ After you finish, I'll contact you to work out the final details.
     <li>The word "WARNING" is used when something went wrong, but the procedure was able to complete. 
       These are pretty rare.
     <li>Anything else is just an informative message. 
-      You can add <tt>-verbose</tt> to the GenerateDatasetsXml or DasDds command line to get 
+      You can add <tt>-verbose</tt> to the 
+      <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a> or
+      <a rel="help" href="#DasDds">DasDds</a>
+      command line to get 
       additional informative messages, which sometimes helps solve problems.
     </ul>
 
@@ -346,7 +364,7 @@ After you finish, I'll contact you to work out the final details.
       <li>If you answer the questions correctly (or reasonably correctly), 
          GenerateDatasetsXml will connect
          to the dataset's source and gather basic information (for example, variable names and metadata).
-         <br>For datasets that are from local .nc and related files,
+         <br>For datasets that are from local NetCDF .nc and related files,
          GenerateDatasetsXml will often print the ncdump-like structure of the
          file after it first reads the file. This may give you information
          to answer the questions better on a subsequent loop through GenerateDatasetsXml.
@@ -356,7 +374,9 @@ After you finish, I'll contact you to work out the final details.
       <li>The rough draft of the dataset XML will be written to 
         <i>bigParentDirectory</i>/logs/GenerateDatasetsXml.out .
       <li><a name="GenerateDatasetsXml_0Files">"0 files" Error Message</a>
-          <br>If you run GenerateDatasetsXml or DasDds, or if you try to load an 
+          <br>If you run GenerateDatasetsXml or 
+          <a rel="help" href="#DasDds">DasDds</a>, 
+          or if you try to load an 
           EDDGridFrom...Files or EDDTableFrom...Files dataset in ERDDAP, 
           and you get a "0 files" error message indicating that
           ERDDAP found 0 matching files in the directory 
@@ -382,7 +402,8 @@ After you finish, I'll contact you to work out the final details.
         Similarly, if it seems like the appropriate EDDType for a given dataset
         doesn't work with that dataset, or if there is no appropriate EDDType,
         please send an email to Bob with the details (and a sample file if relevant).
-      <li>You can then use DasDds (see below) to repeatedly test the XML for that dataset
+      <li>You can then use <a rel="help" href="#DasDds">DasDds</a>
+        (see below) to repeatedly test the XML for that dataset
         to ensure that the resulting dataset appears as you want it to in ERDDAP.
       <li>Feel free to make small changes by hand, for example, supply a better <tt>infoUrl,
         summary,</tt> or <tt>title</tt>.             
@@ -441,7 +462,7 @@ After you finish, I'll contact you to work out the final details.
         <a rel="help" href="#datasetTypes">List of Dataset Types</a>) 
       and
       generate one datasets.xml chunk to create one dataset from one specific data source.
-      There are a few exceptions:
+      There are a few exceptions and special cases:
       <ul>
       <li>EDDGridFromErddap 
         <br>This EDDType generates all of the datasets.xml chunks needed to make
@@ -544,11 +565,91 @@ After you finish, I'll contact you to work out the final details.
           just to generate this information,
         <li>This option may not do a great job of guessing the best EDDType for a given 
           group of data files, but it is a quick, easy, and worth a try.
-          If the sourse files are suitable, it works well and is a good first 
+          If the source files are suitable, it works well and is a good first 
           step in generating the datasets.xml for a file system with lots of 
           subdirectories, each with data files from different datasets.
           <br>&nbsp;
         </ul>      
+
+      <li><a name="EDDTableFromEML">EDDTableFromEML</a> and EDDTableFromEMLBatch
+          <br>These special EDDType generates the datasets.xml to make an 
+            <a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> dataset
+            from each of the tables described in an 
+            <a rel="help"
+            href="https://knb.ecoinformatics.org/#external//emlparser/docs/index.html"
+            >Ecological Metadata Language<img 
+          src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+            XML file. 
+        The "Batch" variant works on all of the EML files in a local or remote directory.  
+        Please see the separate
+            <a rel="help"
+            href="https://coastwatch.pfeg.noaa.gov/erddap/download/EDDTableFromEML.html"
+            >documentation&nbsp;for&nbsp;EDDTableFromEML</a>.
+          <br>&nbsp;
+
+      <li><a name="EDDTableFromInPort">EDDTableFromInPort</a>
+          <br>This special EDDType generates the datasets.xml to make an 
+            <a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> dataset
+            from the main &lt;data-attributes&gt; 
+            and from each of the &lt;child-entity&gt;'s in a NOAA 
+            <a rel="help" href="https://inport.nmfs.noaa.gov/inport"
+            >InPort<img 
+          src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+            XML file.
+        This rarely creates a ready-to-use chunk of XML for datasets.xml, 
+        but it will create a good rough draft that is a good starting point
+        for editing by a human.
+        The following steps outline how to edit the chunk of datasets.xml 
+        that GenerateDatasetsXml created in order to get a working ERDDAP dataset.
+        It takes a little work, but if you can get access to the actual data,
+        it should work.
+        <ol>
+        <li>Find a way to access the actual data. (If the information is in the
+          InPort file, it may appear in the 
+          <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a> 
+          tag in the chunk of datasets.xml that GenerateDatasetsXml created. 
+          Otherwise, contact the person identified in the &lt;creator_name&gt; 
+          tag.)
+        <li>If the source data isn't in ASCII data files, change the "type"           
+          attribute in the &lt;dataset&gt; tag
+          from EDDTableFromAsciiFiles to the correct type. (See the
+          <a rel="help" href="#datasetTypes">list of dataset types</a>.)
+        <li>Revise the 
+          <a rel="help" href="#globalAttributes">global &lt;addAttributes&gt;</a> 
+          as needed/desired.
+        <li>Add/revise the 
+          <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a> 
+          information as needed/desired to describe each of the variables.
+          Be sure you properly identify each variable's
+          <br><a rel="help" href="#sourceName">&lt;sourceName&gt;</a> 
+            (as it appears in the source), 
+          <br><a rel="help" href="#destinationName">&lt;destinationName&gt;</a>
+            (which has more limitations on allowed characters than sourceName), 
+          <br><a rel="help" href="#units">&lt;units&gt;</a>
+            (especially if it is a 
+            <a rel="help" href="#timeStampVariable">time or timestamp variable</a>
+            where the units need to 
+            specify the format), and
+          <br><a rel="help" href="#missing_value">&lt;missing_value&gt;</a>,
+        <li>When you are close to finishing, repeatedly use the
+          <a rel="help" href="#DasDds">DasDds</a> 
+          tool to quickly see if the dataset description is valid and if
+          the dataset will appear in ERDDAP as you want it to.
+        </ol>
+        It would be great if people using InPort to document their datasets 
+        would also use ERDDAP to make the actual data available 
+        via ERDDAP's web services
+        and thereby meet the US government's and NOAA's
+        <a rel="help" 
+          href="https://www.whitehouse.gov/blog/2013/02/22/expanding-public-access-results-federally-funded-research"
+          >Public Access to Research Results (PARR) requirements</a>
+        by making the data available via a web service.
+        This is a solution that could be used right now.
+        (bob.simons at noaa.gov is happy to help.)
+        <br>&nbsp;
+
       </ul>
 
 
@@ -603,7 +704,9 @@ It is possible that other encodings will be allowed in the future, but for now, 
 <hr>
 <h2><a name="notes">Notes</a></h2>
 Working with the datasets.xml file is a non-trivial project. 
-Please read this entire web page carefully, especially these notes.
+Please read all of these notes carefully.
+After you pick a <a rel="help" href="#datasetTypes">dataset type</a>, 
+please read the detailed description of it carefully.
 
 <ul>
 <li><b><a name="useCtrlF">Use</a> Ctrl-F To Find Things On This Web Page</b> 
@@ -614,6 +717,76 @@ The advantage of one .html web page is that you can use Ctrl-F (Command-F on a M
 in your web browser to search for text (for example, <tt>time_precision</tt>) within this web page.
 <p>Alternatively, at the top of this document, there is a 
 <a rel="help" href="#TableOfContents">Table of Contents</a>.
+
+<li><b><a name="ChoosingTheDatasetType">Choosing the Dataset Type</a></b> 
+<br>In most cases, 
+there is just one ERDDAP dataset type that is appropriate 
+for a given data source. In a few cases (e.g., .nc files), there are a 
+few possibilities, but usually one of them is definitely best. 
+The first and biggest decision you must make is: is it appropriate to treat the 
+dataset as a group of multidimension arrays (if so see the 
+  <a rel="help" href="#EDDGrid">EDDGrid dataset types</a>)
+or as a database-like table of data (if so see the 
+  <a rel="help" href="#EDDTable">EDDTable dataset types</a>).
+<br>&nbsp;
+
+<li><b><a name="ServingTheDataAsIs">Serving the Data As Is</a></b>
+<br>Usually, there is no need to modify the data source
+(e.g., convert the files to some other file type) so that ERDDAP can serve it. 
+One of the assumptions of ERDDAP is that the data source will be used as is. 
+Usually this works fine. Some exceptions are:
+  <ul>
+  <li>Relational Databases and Cassandra - ERDDAP can serve data directly
+    from relational databases and Cassandra. But for security, load balancing, 
+    and performance issues,
+    you may chose to set up another database with the same data or
+    save the data to NetCDF v3 .nc files and have ERDDAP serve the data from
+    the new data source. See
+    <a rel="help" href="#EDDTableFromDatabase">EDDTableFromDatabase</a> and
+    <a rel="help" href="#EDDTableFromDatabase">EDDTableFromCassandra</a>.
+
+  <li>Not Supported Data Sources - ERDDAP can support a large number of types
+  of data source, but the world is filled with 1000's (millions?) of different
+  data sources (notably, data file structures). If ERDDAP doesn't support 
+  your data source:
+    <ul>
+    <li>If the data source is NetCDF .nc files, you can use 
+      <a rel="help" href="#NcML">NcML</a> to modify the data files on-the-fly,
+      or use <a rel="help" href="#NCO">NCO</a> to permanently modify the data files.
+    <li>You can write the data to a data source type that ERDDAP supports.
+      NetCDF-3 .nc files are a good, general recommendation because they are binary files
+      that ERDDAP can read very quickly.
+      For tabular data, consider storing the data in a collection of 
+      .nc files that use the 
+      <a rel="help"
+      href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
+      >CF Discrete Sampling Geometries (DSG)<img 
+          src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+      Contiguous Ragged Array data structures and so can be handled with ERDDAP's
+      <a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>).
+      If they are logically organized (each with data for a chunk of space and time), 
+      ERDDAP can extract data from them very quickly.
+    <li>You can request that support for that data source be added to ERDDAP by 
+      emailing bob.simons at noaa.gov.
+    <li>You can add support for that data source by writing the code to handle
+      it yourself. See 
+      <a rel="help" 
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide"
+      >the ERDDAP Programmer's Guide</a>
+    </ul>
+
+  <li>Speed - ERDDAP can read data from some data sources much faster than others. 
+    For example, reading NetCDF v3 .nc files is fast and reading ASCII files is slower. 
+    And if there is a large (&gt;1000) or huge (&gt;10,000) number of source data files,
+    ERDDAP will respond to some data requests slowly.
+    Usually, the difference isn't noticeable to humans. 
+    However, if you think ERDDAP is slow for a given dataset, 
+    you may choose to solve the problem by writing the data to a more efficient setup 
+    (usually: a few, well-structured, NetCDF v3 .nc files). For tabular data, see
+    <a rel="help" href="#EDDTableFromFiles_MillionsOfFiles">this advice</a>.
+    <br>&nbsp;
+  </ul>
 
 <li><b>Hint</b>
 <br>It is often easier to generate the XML for a dataset by 
@@ -841,7 +1014,7 @@ by pasting the XML text into an XML checker like
 
 <li><a name="NcML"><b>NcML .ncml Files</b></a>
 <br>NcML files let you specify on-the-fly changes to one or more
-  original source .nc (3 or 4), .grib, .bufr, or .hdf (4 or 5) files, 
+  original source NetCDF (v3 or v4) .nc, .grib, .bufr, or .hdf (v4 or v5) files, 
   and then have ERDDAP treat the .ncml files as the source files.
   ERDDAP datasets will accept .ncml files whenever .nc files are expected.
   The NcML files MUST have the extension .ncml.
@@ -895,7 +1068,7 @@ A2003001.L3m_DAY_PIC_pic_4km.nc:
 
 <li><a name="NCO"><b>NetCDF Operators (NCO)</b></a>
 <br>"The netCDF Operators (NCO) comprise a dozen standalone, command-line
-programs that take netCDF [3 or 4], HDF [4 or 5], [.grib, .bufr,] and/or DAP 
+programs that take netCDF [v3 or v4], HDF [v4 or v5], [.grib, .bufr,] and/or DAP 
 files as input, then operate 
 (e.g., derive new data, compute statistics, print, hyperslab, manipulate metadata)
 and output the results to screen or files in text, binary, or netCDF formats. 
@@ -1023,14 +1196,15 @@ limits on the size of the subset that can be requested by a user in a single req
 (often related to &gt;2 billion of something or ~9e18 of something),
 but it is far more likely that a user will hit the file-type-specific limits.
 <ul>
-<li>.nc (version 3) files are limited to 2GB bytes. 
+<li>NetCDF version 3 .nc files are limited to 2GB bytes. 
   (If this is really a problem for someone, let me know: 
-  I could add support for the .nc 64-bit extension, 
+  I could add support for the NetCDF version 3 .nc 64-bit extension
+  or NetCDF Version 4, 
   which would increase the limit significantly, but not infinitely.) 
 <li>Browsers crash after only ~500MB of data, 
   so ERDDAP limits the response to .htmlTable requests to ~400MB of data. 
 <li>Many data analysis programs have similar limits
-  (for example, the maximum size of a dimension is ~2 billion values),
+  (for example, the maximum size of a dimension is often ~2 billion values),
   so there is no reason to work hard to get around the file-type-specific limits.
 <li>The file-type-specific limits are useful in that they prevent naive requests for truly 
   huge amounts of data (for example, "give me all of this dataset" when the dataset has
@@ -1044,7 +1218,9 @@ but it is far more likely that a user will hit the file-type-specific limits.
 
 
 <li><b><a name="switchToACDD13">Switch to ACDD-1.3</a></b>
-<br>We (notably GenerateDatasetsXml) currently recommend
+<br>We (notably 
+<a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>)
+currently recommend
   <a rel="bookmark" 
   href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD version 1.3</a>,
   which was ratified in early 2015 
@@ -1087,7 +1263,8 @@ but it is far more likely that a user will hit the file-type-specific limits.
     <br>&nbsp;
 
   <li>Although ACDD-1.0 included global attributes for 
-    <tt>creator_name, creator_email, creator_url</tt>, GenerateDatasetsXml
+    <tt>creator_name, creator_email, creator_url</tt>, 
+    <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>
     didn't automatically add them until sometime around ERDDAP v1.50. 
     This is important information:
     <ul>
@@ -1112,7 +1289,10 @@ but it is far more likely that a user will hit the file-type-specific limits.
 <br>&nbsp;
 <hr>
 <p><b><a name="datasetTypes">List</a> of Types Datasets</b>
-<br>Datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</a>)
+<p>If you need help chosing the right dataset type, see 
+  <a rel="help" href="#ChoosingTheDatasetType">Choosing the Dataset Type</a>.
+
+<p>The types of datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</a>)
 <ul>
 <li><a name="EDDGrid"><b>EDDGrid</b></a> datasets handle gridded data. 
   <ul>
@@ -1160,10 +1340,10 @@ but it is far more likely that a user will hit the file-type-specific limits.
       <li><a rel="help" href="#EDDGridFromMergeIRFiles">EDDGridFromMergeIRFiles</a> 
         aggregates data from a group of local MergeIR .gz files.
       <li><a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a> 
-        aggregates data from a group of local NetCDF .nc files.
+        aggregates data from a group of local NetCDF (v3 or v4) .nc files.
       <li><a rel="help" href="#EDDGridFromNcFilesUnpacked">EDDGridFromNcFilesUnpacked</a> 
         is a variant if EDDGridFromNcFiles which also aggregates data from a 
-        group of local NetCDF .nc files, which ERDDAP unpacks at a low level.
+        group of local NetCDF (v3 or v4) .nc files, which ERDDAP unpacks at a low level.
       <li><a rel="help" href="#EDDGridLonPM180">EDDGridLonPM180</a> 
         modifies the longitude values of a child EDDGrid so that they are in 
         the range -180 to 180.
@@ -1194,7 +1374,7 @@ but it is far more likely that a user will hit the file-type-specific limits.
   <li>The EDDTable dataset types are:
       <ul>
       <li><a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> aggregates data from 
-      comma-, tab-, or space-separated tabular ASCII data files.
+      comma-, tab-, semicolon-, or space-separated tabular ASCII data files.
       <li><a rel="help" href="#EDDTableFromAsciiService">EDDTableFromAsciiService</a> is the superclass
         of all EDDTableFromAsciiService... classes. 
       <li><a rel="help" href="#EDDTableFromAsciiServiceNOS">EDDTableFromAsciiServiceNOS</a>
@@ -1230,12 +1410,15 @@ but it is far more likely that a user will hit the file-type-specific limits.
           src="../images/external.png" align="bottom" alt=" (external link)" 
           title="This link to an external web site does not constitute an endorsement."/></a>.
       <li><a rel="help" href="#EDDTableFromMultidimNcFiles">EDDTableFromMultidimNcFiles</a> 
-        aggregates data from .nc files with several variables with shared dimensions.
+        aggregates data from NetCDF (v3 or v4) .nc files with several variables 
+        with shared dimensions.
       <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
-        aggregates data from .nc files with several variables with shared dimensions.
+        aggregates data from NetCDF (v3 or v4) .nc files with several variables 
+        with shared dimensions.
         For new datasets, try using the newer EDDTableFromMultidimNcFiles first.
       <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
-        aggregates data from .nc files which use one of the file formats specified by the 
+        aggregates data from NetCDF (v3 or v4) .nc files which use one of the 
+        file formats specified by the 
         <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG)<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
@@ -1381,7 +1564,9 @@ but it is far more likely that a user will hit the file-type-specific limits.
 <li>dataVariables vs. axisVariables - The underlying EDDTable has only dataVariables.
   An EDDGridFromEDDTable dataset will have some axisVariables (created from 
   some of the EDDTable dataVariables) and some dataVariables (created from the
-  remaining EDDTable dataVariables). GenerateDatasetsXml will make a guess 
+  remaining EDDTable dataVariables). 
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a> 
+  will make a guess 
   as to which EDDTable dataVariables should become EDDGridFromEDDTable axisVariables,
   but it is just a guess. You need to modify the output of GenerateDatasetsXml
   to specify which dataVariables will become axisVariables, and in which 
@@ -1734,18 +1919,19 @@ Instead, use a subclass of EDDGridFromFiles to handle the specific file type:
       <a rel="help" href="https://en.wikipedia.org/wiki/GRIB">GRIB .grb<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files,
-      <a rel="help" href="https://www.hdfgroup.org/">HDF .hdf 4 (and 5?)<img 
+      <a rel="help" href="https://www.hdfgroup.org/">HDF (v4 or v5) .hdf<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files,
       <a rel="help" href="#NcML">.ncml</a> files, and 
-      <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF .nc<img 
+      <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF (v3 or v4) .nc<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files.
       This may work with other file types (for example, BUFR), we just haven't tested it -- 
       please send us some sample files if you are interested.
 
    <li><a rel="help" href="#EDDGridFromNcFilesUnpacked">EDDGridFromNcFilesUnpacked</a> 
-   is a variant of EDDGridFromNcFiles which handles data from gridded .nc and other files, 
+   is a variant of EDDGridFromNcFiles which handles data from gridded 
+   NetCDF (v3 or v4) .nc and related files, 
    which ERDDAP unpacks at a low level.
 
    </ul>
@@ -1753,7 +1939,8 @@ Currently, no other file types are supported.
 But it is usually relatively easy to add support for other file types. 
 Contact us if you have a request.
 Or, if your data is in an old file format that you would like to move away from, 
-we recommend converting the files to be NetCDF .nc files. NetCDF is a widely supported format, 
+we recommend converting the files to be NetCDF v3 .nc files. 
+NetCDF is a widely supported, binary format, 
 allows fast random access to the data, and is already supported by ERDDAP.
 
 <p><a name="EDDGridFromFiles_Details">Details</a> - 
@@ -1855,7 +2042,8 @@ or Global Metadata</b></a> -
         date time format. You will often need a shortened version of this, e.g.,
         yyyyMMdd.
       <li><tt>yyyyDDD</tt> - which is the year plus the zero-padded day of the year 
-        (e.g, 001 = Jan 1, 365 = Dec 31 in a non-leap year).
+        (e.g, 001 = Jan 1, 365 = Dec 31 in a non-leap year; this is sometimes 
+        called the Julian date).
       </ul>
 
     <li><i>extractRegex</i> - This is the 
@@ -2134,7 +2322,7 @@ the response will include the line
   and creates tables (one row for each file) with information about each valid file 
   and each "bad" (different or invalid) file. 
   <ul>
-  <li>The tables are also stored on disk, as .nc files in <i>bigParentDirectory</i>/dataset/<i>last2CharsOfDatasetID</i>/<i>datasetID</i>/ in
+  <li>The tables are also stored on disk, as NetCDF v3 .nc files in <i>bigParentDirectory</i>/dataset/<i>last2CharsOfDatasetID</i>/<i>datasetID</i>/ in
     files named:
     <br>&nbsp;&nbsp;dirTable.nc (which holds a list of unique directory names),
     <br>&nbsp;&nbsp;fileTable.nc (which holds the table with each valid file's information),
@@ -2214,7 +2402,10 @@ the response will include the line
   After the FTP process is complete, rename the file to the correct name.
   The renaming process will cause the file to become relevant in an instant.
 <li><a name="EDDGridFromFiles_0Files"><b>"0 files" Error Message</b></a> - 
-  If you run GenerateDatasetsXml or DasDds, or if you try to load an EDDGridFrom...Files
+  If you run 
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a> 
+  or <a rel="help" href="#DasDds">DasDds</a>, 
+  or if you try to load an EDDGridFrom...Files
   dataset in ERDDAP, and you get a "0 files" error message indicating that
   ERDDAP found 0 matching files in the directory 
   (when you think that there are matching files in that directory):
@@ -2337,12 +2528,12 @@ for general information on how this class works and how to use this class.
     <a rel="help" href="https://en.wikipedia.org/wiki/GRIB">GRIB .grb and .grb2<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files,
-    <a rel="help" href="http://www.hdfgroup.org/">HDF .hdf 4 (and 5?)<img 
+    <a rel="help" href="http://www.hdfgroup.org/">HDF (v4 or v5) .hdf<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
 files,
     <a rel="help" href="#NcML">.ncml</a> files, and 
-    <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF .nc<img 
+    <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF (v3 or v4) .nc<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> files.
 This may work with other file types (for example, BUFR), we just haven't tested it -- please send us
@@ -2372,7 +2563,7 @@ on how this class works and how to use this class.
 <p><a name="EDDGridFromNcFilesUnpacked"><b>EDDGridFromNcFilesUnpacked</b></a> 
 is a variant of 
 <a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a>
-which aggregates data from local, gridded .nc and related files.
+which aggregates data from local, gridded NetCDF (v3 or v4) .nc and related files.
 The difference is that this class unpacks
 each data file before EDDGridFromFiles looks at the files: 
   <ul>
@@ -2631,8 +2822,8 @@ dimension and another child might have 365 values (for 2005) for the time dimens
   All of the other children MUST be almost identical datasets (differing just in the values
   for the first dimension) and are specified by just their sourceUrl.
 <li>The aggregate dataset gets its metadata from the first child.
-<li>The <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> can make a rough draft of the 
-    datasets.xml for an
+<li>The <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  can make a rough draft of the datasets.xml for an
   EDDGridAggregateExistingDimension based on a set of files served by a Hyrax or THREDDS server.
   For example, use this input for the program (the "/1988" in the URL makes the example run faster):<tt>
   <br>&nbsp;&nbsp;EDDType? EDDGridAggregateExistingDimension
@@ -2749,7 +2940,7 @@ of another EDDGrid's data and serves data from the local copy.
   problems, EDDGridCopy can't be used. 
   (Sorry, we hope to have a solution for this problem in the future.)
 
-<li>Local Files - Each chunk of data is stored in a separate netCDF file in a 
+<li>Local Files - Each chunk of data is stored in a separate NetCDF file in a 
   subdirectory of
   <i>bigParentDirectory</i>/copy/<i>datasetID</i>/ (as specified in 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>).
@@ -2901,7 +3092,7 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
     &lt;!- - If you read the XML response from the sourceUrl, the source code (for example, prbo05) 
     is the value from one of the &lt;resource&gt;&lt;code&gt; tags. - -&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
-  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!- - 0 or 1 - - &gt;
@@ -3507,7 +3698,8 @@ handles data from one Cassandra table.
     <br>&nbsp;
 
   <li>If all else fails, 
-    <br>consider storing the data in a collection of .nc files (especially .nc files that use the 
+    <br>consider storing the data in a collection of NetCDF v3 .nc files 
+    (especially .nc files that use the 
     <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -4057,7 +4249,8 @@ database table or <a rel="help" href="https://en.wikipedia.org/wiki/View_(databa
     We may add optional connection pooling in the future.  -->
 
   <li>If all else fails, 
-    <br>consider storing the data in a collection of .nc files (especially .nc files that use the 
+    <br>consider storing the data in a collection of NetCDF v3 .nc files 
+    (especially .nc files that use the 
     <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -4209,7 +4402,7 @@ subclasses, this dataset type does not serve data from within the files.
   in an EDDTableFromFileNames dataset is a table that ERDDAP creates
   on-the-fly with information about a group of local files.
   In the table, there is a row for each file. 
-  Three special attributes in the    
+  Four special attributes in the    
   <a rel="help" href="#EDDTableFromFileNamesSkeletonXML">datasets.xml for this dataset</a>
   determine which files will be included in this dataset:
     <ul>
@@ -4224,13 +4417,17 @@ subclasses, this dataset type does not serve data from within the files.
       <br>and that directory has a file named jplMURSST20150103000000.png, 
       <br>then the url that will be shown to users for that file will be
       <br>http://<i>serverUrl</i>/erddap/jplMURSST/jplMURSST20150103000000.png .
-    <li>&lt;fileRegex&gt; - Only the file names where the whole file name
-      (not including the directory name) match the &lt;fileRegex&gt;
-      will be included in this dataset. For example, <tt>jplMURSST.{14}\.png</tt> .
     <li>&lt;recursive&gt; - Files in subdirectories of &lt;fileDir&gt;
       with names which match &lt;fileRegex&gt; will appear in the same subdirectories
       in the "files" URL if &lt;recursive&gt; is set to <tt>true</tt>.  
       The default is <tt>false</tt>.
+    <li>&lt;pathRegex&gt; - If recursive=true, Only directory names which 
+      match the pathRegex (default=".*") will be accepted.
+      If recursive=false, this is ignored.
+      This is rarely used, but can be very useful in unusual circumstances.
+    <li>&lt;fileRegex&gt; - Only the file names where the whole file name
+      (not including the directory name) match the &lt;fileRegex&gt;
+      will be included in this dataset. For example, <tt>jplMURSST.{14}\.png</tt> .
     </ul>  
   In the table, there will be columns with:
   <ul>
@@ -4343,8 +4540,10 @@ subclasses, this dataset type does not serve data from within the files.
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a rel="help" href="#EDDTableFromFileNamesData">&lt;fileDir&gt;</a>...&lt;/fileDir&gt; 
-  <a rel="help" href="#EDDTableFromFileNamesData">&lt;fileNameRegex&gt;</a>...&lt;/fileNameRegex&gt; 
   <a rel="help" href="#EDDTableFromFileNamesData">&lt;recursive&gt;</a>...&lt;/recursive&gt;  &lt;!-- true or false (the default) --&gt;
+  &lt;pathRegex&gt;...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. Only directory names which 
+    match the pathRegex (default=".*") will be accepted. --&gt;
+  <a rel="help" href="#EDDTableFromFileNamesData">&lt;fileNameRegex&gt;</a>...&lt;/fileNameRegex&gt; 
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more.
      Each dataVariable MUST include <a rel="help" href="#dataType"><tt>&lt;dataType&gt;</tt></a> tag. --&gt;
@@ -4361,7 +4560,7 @@ You can't use EDDTableFromFiles directly.
 Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
   <ul>
   <li><a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> aggregates data from 
-       comma-, tab-, or space-separated tabular ASCII data files.
+       comma-, tab-, semicolon-, or space-separated tabular ASCII data files.
   <li><a rel="help" href="#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a> aggregates data from 
        a set of Automatic Weather Station (AWS) XML files.
   <li><a rel="help" href="#EDDTableFromColumnarAsciiFiles">EDDTableFromColumnarAsciiFiles</a> 
@@ -4373,17 +4572,18 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
   <li><a rel="help" href="#EDDTableFromMultidimNcFiles">EDDTableFromMultidimNcFiles</a> 
-    aggregates data from .nc 
+    aggregates data from NetCDF (v3 or v4) .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
     files with several variables, 
     each with shared dimensions (for example, time, altitude (or depth), latitude, longitude).
-  <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> aggregates data from .nc 
+  <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> aggregates
+    data from NetCDF (v3 or v4) .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
     files with several variables, 
     each with shared dimensions (for example, time, altitude (or depth), latitude, longitude).
     For new datasets, try using the newer EDDTableFromMultidimNcFiles first.
   <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
-    aggregates data from .nc 
+    aggregates data from NetCDF (v3 or v4) .nc 
     (or <a rel="help" href="#NcML">.ncml</a>)
     files which use one of the file formats specified by the 
     <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
@@ -4406,7 +4606,7 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
 Currently, no other file types are supported. 
 But it is usually relatively easy to add support for other file types. Contact us if you have a request.
 Or, if your data is in an old file format that you would like to move away from, 
-we recommend converting the files to be NetCDF .nc files
+we recommend converting the files to be NetCDF v3 .nc files
 (and especially .nc files with the  
 <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
 >CF Discrete Sampling Geometries (DSG)<img 
@@ -4414,7 +4614,7 @@ we recommend converting the files to be NetCDF .nc files
     title="This link to an external web site does not constitute an endorsement."/></a> 
 Contiguous Ragged Array data structure -- 
 ERDDAP can extract data from them very quickly). 
-NetCDF is a widely supported format, 
+NetCDF is a widely supported, binary format, 
 allows fast random access to the data, and is already supported by ERDDAP.
 
 <p><a name="EDDTableFromFiles_Details">Details</a> - 
@@ -4450,7 +4650,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   and creates tables (one row for each file) with information about each valid file and each "bad" 
   (different or invalid) file. 
   <ul>
-  <li>The tables are also stored on disk, as .nc files in <i>bigParentDirectory</i>/dataset/<i>last2CharsOfDatasetID</i>/<i>datasetID</i>/ in
+  <li>The tables are also stored on disk, as NetCDF v3 .nc files in <i>bigParentDirectory</i>/dataset/<i>last2CharsOfDatasetID</i>/<i>datasetID</i>/ in
     files named:
     <br>&nbsp;&nbsp;dirTable.nc (which holds a list of unique directory names),
     <br>&nbsp;&nbsp;fileTable.nc (which holds the table with each valid file's information),
@@ -4566,7 +4766,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   one year (or one month).
   Then, when a new datum arrives, only the file with this year's (or month's) data is affected.
   <ul>
-  <li>Best: Use .nc files with an unlimited dimension (time). Then,
+  <li>Best: Use NetCDF v3 .nc files with an unlimited dimension (time). Then,
   to add new data, you can just append the new data without having to read and re-write the entire file.
   The change is made very efficiently and essentially atomically,
   so the file isn't ever in an inconsistent state.
@@ -4639,7 +4839,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     If the dataset has near-real-time data, run the script to regenerate the 
     file for the current time period (e.g., this month) frequently 
     (every 10 minutes? every hour?).
-    Requests to ERDDAP for .ncCF files create a .nc file that uses the 
+    Requests to ERDDAP for .ncCF files create a NetCDF v3 .nc file that uses the 
     <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -4776,7 +4976,10 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
   you MUST add a new value for the attribute.
 
 <li><a name="EDDTableFromFiles_0Files"><b>"0 files" Error Message</b></a> - 
-  If you run GenerateDatasetsXml or DasDds, or if you try to load an EDDTableFrom...Files
+  If you run 
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a> or
+  <a rel="help" href="#DasDds">DasDds</a>, 
+  or if you try to load an EDDTableFrom...Files
   dataset in ERDDAP, and you get a "0 files" error message indicating that
   ERDDAP found 0 matching files in the directory 
   (when you think that there are matching files in that directory):
@@ -4864,7 +5067,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     If present, this can greatly speed up some data requests. 
     For EDDTableFromHyraxFiles, EDDTableFromNcFiles and EDDTableFromThreddsFiles, 
     this must be the leftmost axis variable. 
-    EDDTableFromNcMultidimFiles ignores this because it has a better system.
+    EDDTableFromMultidimNcFiles ignores this because it has a better system.
     --&gt;
   &lt;sortFilesBySourceNames&gt;...&lt;/sortFilesBySourceNames&gt;
     &lt;-- This is a space-separated list of <a rel="help" href="#sourceName">sourceName</a>s 
@@ -4878,7 +5081,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     second name is used if there is a tie for the first column; the
     third is used if there is a tie for the first and second columns; ...
     This is OPTIONAL (the default is fileDir+fileName order). --&gt;
-  <!--&lt;isLocal&gt;false&lt;isLocal&gt; &lt;!-- (may be true or false, 
+  <!--&lt;isLocal&gt;false&lt;isLocal&gt; &lt;!- - (may be true or false, 
     the default). This is only used by EDDTableFromNcCFFiles. It 
     indicates if the files are local (actual files) or remote 
     (accessed via the web). The two types are treated slightly 
@@ -5008,7 +5211,7 @@ tags in the chunk of XML for this dataset:
 &lt;dataset type="EDDTableFromMWFS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
-  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;! - - 0 or 1 - - &gt;
   <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;! - - 0 or 1 - - &gt;
@@ -5032,7 +5235,7 @@ tags in the chunk of XML for this dataset:
 
 
 <p><a name="EDDTableFromAsciiFiles"><b>EDDTableFromAsciiFiles</b></a> aggregates data from
-  comma-, tab-, or space-separated tabular ASCII data files.
+  comma-, tab-, semicolon-, or space-separated tabular ASCII data files.
 <ul>
 <li>Most often, the files will have column names on the first row and data 
   starting on the second row. (Here, the first row of the file is called row number 1.)
@@ -5043,8 +5246,11 @@ tags in the chunk of XML for this dataset:
   ERDDAP assumes that the missing data values are the final columns in the row.
   ERDDAP assigns the standard missing value values for the missing data values. (added v1.56)
 <li>ASCII files are easy to work with, but they are not an efficient way to store/retreive data. 
-  For greater efficiency, save the files as .nc files (which one dimension, "row", shared by 
-  all variables) instead.
+  For greater efficiency, save the files as NetCDF v3 .nc files 
+  (which one dimension, "row", shared by all variables) instead.
+  You can 
+  <a rel="help" href="#EDDTableFromFiles_MillionsOfFiles"
+  >use ERDDAP to generate the new files</a>.
 <li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.
 <li>We strongly recommend using the
@@ -5065,7 +5271,8 @@ tags in the chunk of XML for this dataset:
 <li>This type of file is a simple but inefficient way to store the data, 
   because each file usually seems to contain the observation from just one time point.  
   So there may be a large number of files.  If you want to improve performance,
-  consider consolidating groups of observations (a week's worth?) in .nc files
+  consider consolidating groups of observations (a week's worth?) 
+  in NetCDF v3 .nc files
   (best: .nc files with the 
   <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries (DSG) Contiguous Ragged Array format<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -5073,6 +5280,9 @@ tags in the chunk of XML for this dataset:
   and using <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> 
         (or <a href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>) 
   to serve the data.
+  You can 
+  <a rel="help" href="#EDDTableFromFiles_MillionsOfFiles"
+  >use ERDDAP to generate the new files</a>.
 
 <li>See this class' superclass, 
   <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, for information
@@ -5118,9 +5328,13 @@ tags in the chunk of XML for this dataset:
     <a rel="help" href="#fixedValue">fixed-value</a>
     and <a rel="help" href="#fileNameExtracts">file-name-extract</a>
     variables. 
-<li>ASCII files are easy to work with, but they are not an efficient way to store/retreive data. 
-  For greater efficiency, save the files as .nc files (which one dimension, "row", shared by 
-  all variables) instead.
+<li>ASCII files are easy to work with, but they are not an efficient way to 
+  store/retreive data. 
+  For greater efficiency, save the files as NetCDF v3 .nc files 
+  (which one dimension, "row", shared by all variables) instead.
+  You can 
+  <a rel="help" href="#EDDTableFromFiles_MillionsOfFiles"
+  >use ERDDAP to generate the new files</a>.
 <li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.
 <li>We strongly recommend using the
@@ -5132,8 +5346,345 @@ tags in the chunk of XML for this dataset:
   <br>&nbsp;
 </ul>
 
+<!--
+<p><a name="EDDTableFromHttpGet"><b>EDDTableFromHttpGet</b></a> is different 
+from all other datasets in ERDDAP in that it has a system whereby 
+specific "authors" can be add data to, or delete data from, the dataset 
+by regular HTTP GET requests 
+(e.g., from a computer program, a script or a browser). 
+The dataset is queriable by users in the same way that all other EDDTable 
+datasets are queriable in ERDDAP.
+See the description of this class's superclass, 
+<a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>,
+to read about the features which are inherited from that superclass.
+<br>The unique features of EDDTableFromHttpGet are described below. 
 
-<p><a name="EDDTableFromHyraxFiles"><b>EDDTableFromHyraxFiles</b></a> aggregates data files with several variables, each with
+<ul>
+<li>.insert and .delete
+<br>When you send a request to ERDDAP for a subset of the data in a dataset,
+you specify the file type that you want for the response, e.g.,
+.csv, .htmlTable, .nc, .json.
+EDDTableFromHttpGet extends this system to support two additional "file types"
+which can modify the dataset:
+  <ul>
+  <li>.insert - 
+    For example, 
+    <br> ...
+    <br>tells ERDDAP to add or change the ...
+  <li>.delete -
+    For example,
+    <br>https://coat
+    <br>tells ERDDAP to delete the data where ...
+  </ul>
+
+<li>Log files
+<br>When EDDTableFromHttpGet receives .insert and .delete commands, it
+simply appends the information to the relevant file in a set of log files, 
+each of which is a table stored in a flat .nc files. 
+When a user makes a request for data, ERDDAP quickly reads the relevant log files, 
+applies the changes to the dataset in the order they were made, and then 
+filters the request via the user's constraints like any other ERDDAP data request.
+The partitioning of the data into various log files, the storage of 
+various pieces of information (e.g., the timestamp of the command, and whether 
+the command was .insert or .delete), and various aspects of the setup of the dataset,
+all make it possible for ERDDAP
+to manage this dataset very quickly and very efficiently.
+
+<li>Real Time
+<br>EDDTableFromHttpGet is designed to be a simple way for data to get 
+from a sensor(s) into ERDDAP quickly, and then be immediately available 
+for users to access. In most cases, a remote 
+computer can update the dataset in ERDDAP in a fraction of a second.
+Even then, the vast majority of the time is due to internet connection time,
+which is out of ERDDAP's control.
+EDDTableFromHttpGet was designed to handle these commands very quickly.
+
+<li>Security and Author
+<br>Every .insert and .delete command must include <tt>&author=<i>authorName_key</i></tt>
+as the lat parameter,
+where authorID_key is composed of the author's identifier (you chose: name, initials,
+psuedonym) and a secret key. The ERDDAP administrator will work with authors
+to generate the list of valid authorID_key values, which can be changed at any time.
+
+<br>When EDDTableFromHttpGet receives an .insert or .delete command,
+it makes sure that the authorID_key is the last parameter and valid. 
+Because it is the last parameter, it indicates that the entire command line 
+reached ERDDAP and wasn't truncated.
+The secret key ensures that only specific authors may insert or delete
+data in the dataset.
+
+ERDDAP then extracts the authorID and saves that in the author variable, so that 
+anyone can see who was responsible for a given change to the dataset.
+
+<br>.insert and .delete commands can only be made via https: (secure) ERDDAP URLs.
+This ensures that the information being transferred is kept secret during transit.
+
+<li>Timestamp
+<br>As part of the log system, EDDTableFromHttpGet adds a timestamp to each 
+command that it stores in the log files.
+Because ERDDAP generates the timestamp, not the authors,  
+it doesn't matter if different authors are making changes from computers 
+with clocks set to different times. The timestamp reliably indicates 
+the time when the change was made to the dataset.
+
+<li>Versioning
+<br>Because EDDTableFromHttpGet stores a log of all of the changes to the dataset
+with the timestamp and the author of each change, it can quickly recreate that dataset 
+as of any point in time. In a sense, there is a version for any point in time.
+If a user's request for data includes a timestamp constraint, 
+e.g., &timestamp<=2016-06-23T16:32:22.128Z
+(or any time point), ERDDAP will respond to the request by first generating
+a version of the dataset as of that point in time. Then, ERDDAP applies
+the user's other constraints, as with any other request for data from ERDDAP.
+EDDTableFromHttpGet is set up so that this process is very fast and efficient,
+even for very large datasets.
+
+<br>Similarly, a user can find out when the dataset was last updated by requesting
+...?timestamp&timestamp=max(timestamp)&distinct()
+
+<br>And for any request for data, for any version of the dataset, users can see
+which author made which changes, and when they made them.
+
+<br>Not everyone has a need for this type of fine-grained versioning, 
+but it is exceedingly useful, perhaps necessary, 
+in the context of a large data management organization where a dataset
+can have multiple authors, 
+e.g., OOI, Earth Cube, Data One, and NOAA's NCEI. 
+<br>[History: 
+The need for this type of versioning first came up for me (Bob) when reading about
+and discussing OOI in 2007. 
+At the time, OOI had a cumbersome, slow, inefficient system for versioning 
+based on Git. Git is great for what it was designed for, but not this. 
+In 2007, while at an OOI discussion, I designed an extensive, efficient 
+alternative-to-OOI system for data management, 
+including many of the features that I have added to ERDDAP since then,
+and including this versioning system. 
+At that time and since, OOI was committed to their versioning system 
+and not interested in alternatives. 
+I waited until 2016 when the reason to implement it and a place to implement it
+finally appeared.
+Even now, I'm not aware of any other scientific data system that that offers
+such quick and easy access to a version of the data from any point in time,
+for frequently changing datasets.
+Simple file systems don't offer this. Relational databases don't. Cassandra doesn't.]
+
+
+<li>CRUD
+<br>In computer science, the four fundamental commands for working with a 
+dataset are 
+<a rel="help" href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete"
+    >CREATE, READ, UPDATE, DELETE (CRUD)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
+SQL, the language for working with relational databases, has the equivalent in
+INSERT, SELECT, UPDATE, and DELETE.
+In EDDTableFromHttpGet, 
+<ul>
+<li>.insert is a combination of CREATE and UPDATE.
+<li>.delete is DELETE.
+<li>The regular system for requesting subsets of data is READ.
+</ul>
+Thus, EDDTableFromHttpGet supports all of the fundamental commands for working with a dataset.
+
+<li>Reliability
+<br>It's reasonable to expect 
+one server with ERDDAP to have 99.9% uptime - that's about 9 hours of downtime per year
+(although, you can use that up in one bad night!).
+<br>If you are diligent and lucky, you might get 99.99% uptime (53 minutes downtime per year),
+since just a few restarts for updates will take that much time.
+<br>You would have to take extreme measures (a separate backup server, 
+uninterruptable power supply, backup air conditioning, 
+24x7x365 personnel to monitor the site, etc.) to have a slim chance at 99.999% uptime
+(5.25 minutes downtime per year).  Even then, it is extremely unlikely that
+you will attain 99.999% uptime (or even 99.99%) because problems are often 
+outside of your control.
+For example, Amazon Web Service and Google offer astonishingly reliable web services, 
+yet big sections of them are sometimes down for hours. 
+
+<p>Face it, your want ERDDAP to have 100% uptime, or at least the vaunted "six nines" 
+(99.9999% uptime equals 32 seconds of downtime per year), 
+but there's no way you're going to get it no matter how much time, effort, and
+money you spend. 
+
+<p>But ERDDAP uptime isn't the real goal here. 
+The goal is to build a reliable <b>system</b>, one that doesn't lose any data.
+This is a solvable problem.  
+
+<p>The solution is: build fault-tolerance into the computer software 
+that is sending the data to ERDDAP.
+Specifically, that software should maintain a queue
+of data waiting to go to ERDDAP. 
+When data is added to the queue, the software should check the response from 
+ERDDAP. If the response doesn't include <tt>Data received. No errors.</tt>,
+then the software should leave the data in the queue.
+When more data is generated and added to the queue, the software should again 
+try to .insert the data in the queue (perhaps with the [] system).
+It will succeed or fail. If it fails, it will try again later.
+If you write the software to work this way and if the software is prepared to 
+queue a few days worth of data, you actually do have a good chance of uploading 
+100% of the sensor's data to ERDDAP. And you will have done it without
+going to great effort or expense.
+
+<p>[Background: We didn't think this up.
+<a rel="help" href="https://en.wikipedia.org/wiki/Reliability_(computer_networking)"
+    >This is how computer networks achieve reliability.<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+Computer networks are inherently unreliable. So when you transfer a file from
+one computer to another, the sending software knows/expects that some packets may be lost.
+If it doesn't get a proper acknowledgment for a given packet from the receiver, 
+it resends the lost packet. With this approach, relatively simple sender and
+receiver software can build a reliable file transfer system on top of an unreliable 
+network.]
+
+
+<li>"What about HTTP PUT and DELETE?!"
+<br><a rel="help" href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol">Hypertext Transfer Protocol (HTTP)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+is the basis of the World Wide Web and the reason that web page URLs begin with "http://".
+Every day, browsers, scripts and computer programs make billions of HTTP <b>GET</b>
+requests to get information from remote sources.
+HTTP also includes other 
+<a rel="help" href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods"
+>verbs<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+notably PUT (to push data to the server) and DELETE
+(to DELETE data from the server). Yes, PUT and DELETE are the proper way to 
+insert data into, and delete data from, a dataset via HTTP. 
+We chose to use GET for everything because
+GET is supported by every piece of software that can work with HTTP.
+GET is really easy to work with. Everyone already knows how to work with GET.
+Very few people (even few computer programmers) have ever worked with PUT and DELETE.
+PUT and DELETE are generally only supported by computer languages,
+so using them requires a skillful program. So PUT and DELETE are a much more
+cumbersome approach given the way the tools have evolved. 
+
+<li>Thanks to CHORDS for the basic idea.
+<br>The basic idea for EDDTableFromHttpGet (i.e., using an HTTP GET request
+to add data to a dataset) is from UCAR's
+<a rel="help" href="https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services"
+>Cloud-Hosted Real-time Data Services (CHORDS)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> project.
+It is a brilliant idea, and even more so because it meshes so perfectly with 
+ERDDAP's existing system for dealing with tabular data.
+EDDTableFromHttpGet uses that basic idea, combined with several others, 
+to make a system in ERDDAP for uploading data.
+The EDDTableFromHttpGet implementation is different and entirely independent of 
+CHORDS, but we are grateful to them for the idea.
+
+</ul>
+
+This class requires a few unusual things for set up:
+<ul>
+<li>"requiredColumns" Global Attribute
+<br>Part of what makes this whole system work is the required global attribute
+"requiredColumns", which is a comma-separated list of the dataVariable source names
+which uniquely identify a row of data.
+This should be as minimal as possible and will almost always include the time variable.
+For example, here are the recommended requiredColumns for each of the 
+<a rel="help"
+  href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
+  >CF Discrete Sampling Geometries (DSG)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>:
+<br>(Of course, the ID names may be different in your dataset.)
+  <ul>
+  <li>For TimeSeries: stationID, time.
+  <li>For Trajectory: trajectoryID, time.
+  <li>For Profile: stationID, time, depth.
+  <li>For TimeSeriesProfile: stationID, time, depth.
+  <li>For TrajectoryProfile: trajectoryID, time, depth.
+  <ul>
+<br>Taking TimeSeries as an example: 
+<br>Given a .insert command that includes stationID=46088 and 
+time=2016-06-23T19:53:00Z (and other values for other variables):
+<br>If there is no existing data for that station and that time, then the effect
+will be to add the data to the dataset.
+<br>If there is existing data for that station and that time, then the effect
+will be to replace the existing row of data with this new data. (Of course,
+since ERDDAP keeps the log of every command it receives, the old data is 
+still in the log. If a user requests data from a version of the dataset
+before this change, they will see the older data.)
+
+<li>"directoryStructure" Global Attribute and Log File Names
+<br>Part of what makes this whole system work is that ERDDAP creates
+a set of log files, each with a different chunk of the dataset. 
+If these are set up well, ERDDAP will be able to respond quickly to 
+most requests for data.
+This setup is specified by the "directoryStructure" global attribute,
+which is a String that looks like a relative file name,
+e.g., "10years/stationID",
+but is actually a specification for the directory structure.
+Each part of the that indicates how directory and file names for the log files
+will be constructed.
+  <ul>
+  <li>If a part is an integer (&gt;= 1) plus a timePeriod 
+    (millisecond, second, minute,
+    hour, date, month, year, or their plurals), e.g., 10years, then 
+    the EDDTableFromHttpGet will take the time value for the row of data
+    (e.g., 2016-06-23T19:53:00Z), calculate the time truncated to that precision
+    (e.g., 2010), and make a folder or fileName from that.
+    <p>The goal is to get a reasonably large chunk of data into each file,
+      but far less than 2GB.
+      
+  <li>Otherwise, the part of the specification must be a dataVariable's sourceName.
+    In this case, EDDTableFromHttpGet will make a folder or file name
+    from the value of that variable for the new row of data (e.g., 46088).
+  </ul>
+Because the .insert and .delete command data is stored in specific log files,
+EDDTableFromHttpGet usually only needs to open a few log files to find the
+data for a given user request. And because each log file has all of the
+relevant information for its chunk of the dataset, it is fast and easy
+for EDDTableFromHttpGet to make a specific version (or the current version)
+of the dataset for the data in that file (and not have to generate the requested 
+version of the entire dataset).
+
+<p>General guidelines are based on the
+  quantity and frequency of the data.
+  If we assume 100 bytes per row of data, then ...
+  <table class="erd" cellspacing="0">
+  <tr> <th>Frequency<br>of measurements</th> <th>Recommended<br>"directoryStructure"</th> </tr>
+  <tr> <td>1 per second</td> <td><i>featureID</i>/1year/1day</td> </tr>
+  <tr> <td>1 per minute</td> <td><i>featureID</i>/2months</td> </tr>
+  <tr> <td>1 per hour</td>   <td><i>featureID</i>/10years</td> </tr>
+  <tr> <td>1 per day</td>    <td><i>featureID</i></td> </tr>
+  </table>
+
+<p>For example, if the directory structure is <tt>stationID/2months</tt>
+and you insert data from two stations (46088 and 46155) with time values 
+from Dec 2015 through May 2016, EDDTableFromHttpGet will create directories
+named 46088 and 46155 and create files in each named 
+2015-11.nc, 2016-01.nc, 2016-03.nc, 2016-05.nc (each holding 2 months worth
+of data for the relevant station).
+At any time in the future, 
+if you use .insert or .delete to change or delete the data for,
+for example, station 46088 at 2016-04-05T14:45:00Z,
+EDDTableFromHttpGet will append that command to 46088/2016-03.nc,
+the relevant log file.
+
+
+<li>Don't change things!
+<br>Once the dataset has been created, you MUST NOT ever change:
+  <ul>
+  <li>DON'T add or remove any dataVariables.
+  <li>DON'T change the sourceName of the dataVariables.
+      But you can change the destinationNames.
+  <li>DON'T change the dataType of the dataVariables.
+      But you can change the dataVariable's metadata.
+  <li>DON'T change the "requiredColumns" global attribute.
+  <li>DON'T change the "directoryStructure" global attribute.
+  </ul>
+If you need to make any of these changes, make a new dataset and transfer all of the 
+data to the new dataset.
+
+</ul>
+-->
+
+<p><a name="EDDTableFromHyraxFiles"><b>EDDTableFromHyraxFiles</b></a> 
+  aggregates data files with several variables, each with
   one or more shared dimensions (for example, time, altitude (or depth), latitude, longitude), and served by a 
   <a rel="help" href="http://www.opendap.org/download/hyrax.html">Hyrax OPeNDAP server<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -5170,7 +5721,7 @@ on how this class works and how to use this class.
 
 
 <p><a name="EDDTableFromMultidimNcFiles"><b>EDDTableFromMultidimNcFiles</b></a> 
-  aggregates data from .nc 
+  aggregates data from NetCDF (v3 or v4) .nc 
   (or <a rel="help" href="#NcML">.ncml</a>)
   files with several variables, each with one or more shared dimensions.
   The files may have character variables with or without an additional dimension (for example, STRING14).
@@ -5234,7 +5785,7 @@ on how this class works and how to use this class.
 
 
 <p><a name="EDDTableFromNcFiles"><b>EDDTableFromNcFiles</b></a> 
-  aggregates data from .nc 
+  aggregates data from NetCDF (v3 or v4) .nc 
   (or <a rel="help" href="#NcML">.ncml</a>)
   files with several variables, each with one shared
   dimension (for example, time) or more than one shared dimensions 
@@ -5281,47 +5832,55 @@ on how this class works and how to use this class.
 <li>1D Example:
   1D files are somewhat different from 2D, 3D, 4D, ... files.
   <ul>
-  <li>You might have a set of .nc data files where each file has one month's worth of data from one
-    drifting buoy.
+  <li>You might have a set of .nc data files where each file has one month's
+    worth of data from one drifting buoy.
   <li>Each file will have 1 dimension, for example, time (size = [many]).
-  <li>Each file will have one or more 1D variables which use that dimension, for example, time, longitude,
-    latitude, air temperature, ....
+  <li>Each file will have one or more 1D variables which use that dimension, 
+    for example, time, longitude, latitude, air temperature, ....
   <li>Each file may have 2D character variables, for example, with dimensions (time,nCharacters).
   </ul>
 <li>2D Example:
   <ul>
-  <li>You might have a set of .nc data files where each file has one month's worth of data from one
-    drifting buoy.
+  <li>You might have a set of .nc data files where each file has one month's 
+    worth of data from one drifting buoy.
   <li>Each file will have 2 dimensions, for example, time (size = [many]) and id (size = 1).
-  <li>Each file will have 2 1D variables with the same names as the dimensions and using the
-    same-name dimension, for example, time(time), id(id).
-    These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s in the dataset's XML. 
-  <li>Each file will have one or more 2D variables, for example, longitude, latitude, air temperature, water
-    temperature, ...
+  <li>Each file will have 2 1D variables with the same names as the dimensions
+    and using the same-name dimension, for example, time(time), id(id).
+    These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s 
+    in the dataset's XML. 
+  <li>Each file will have one or more 2D variables, for example, longitude, 
+    latitude, air temperature, water temperature, ...
   <li>Each file may have 3D character variables, for example, with dimensions (time,id,nCharacters).
   </ul>
 <li>3D Example:
   <ul>
-  <li>You might have a set of .nc data files where each file has one month's worth of data from one
-    stationary buoy.
-  <li>Each file will have 3 dimensions, for example, time (size = [many]), lat (size = 1), and lon (size = 1).
-  <li>Each file will have 3 1D variables with the same names as the dimensions and using the
-    same-name dimension, for example, time(time), lat(lat), lon(lon).
-    These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s in the dataset's XML. 
-  <li>Each file will have one or more 3D variables, for example, air temperature, water temperature, ...
+  <li>You might have a set of .nc data files where each file has one month's
+    worth of data from one stationary buoy.
+  <li>Each file will have 3 dimensions, for example, time (size = [many]), 
+    lat (size = 1), and lon (size = 1).
+  <li>Each file will have 3 1D variables with the same names as the dimensions 
+    and using the same-name dimension, for example, time(time), lat(lat), lon(lon).
+    These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s 
+    in the dataset's XML. 
+  <li>Each file will have one or more 3D variables, for example, air temperature, 
+    water temperature, ...
   <li>Each file may have 4D character variables, for example, with dimensions (time,lat,lon,nCharacters).
   <li>The file's name might have the buoy's name within the file's name.
   </ul>
 <li>4D Example:
   <ul>
-  <li>You might have a set of .nc data files where each file has one month's worth of data from one
+  <li>You might have a set of .nc data files where each file has one month's 
+    worth of data from one
     station. At each time point, the station takes readings at a series of depths.
-  <li>Each file will have 4 dimensions, for example, time (size = [many]), depth (size = [many]), lat (size = 1),
-    and lon (size = 1).
-  <li>Each file will have 4 1D variables with the same names as the dimensions and using the
+  <li>Each file will have 4 dimensions, for example, time (size = [many]), 
+    depth (size = [many]), lat (size = 1), and lon (size = 1).
+  <li>Each file will have 4 1D variables with the same names as the dimensions 
+    and using the
     same-name dimension, for example, time(time), depth(depth), lat(lat), lon(lon).
-    These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s in the dataset's XML. 
-  <li>Each file will have one or more 4D variables, for example, air temperature, water temperature, ...
+    These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s 
+    in the dataset's XML. 
+  <li>Each file will have one or more 4D variables, for example, air temperature, 
+    water temperature, ...
   <li>Each file may have 5D character variables, for example, with dimensions (time,depth,lat,lon,nCharacters).
   <li>The file's name might have the buoy's name within the file's name.
     <br>&nbsp;
@@ -5331,7 +5890,7 @@ on how this class works and how to use this class.
 
 <p><a name="EDDTableFromNcCFFiles"><b>EDDTableFromNcCFFiles</b></a> 
   aggregates data aggregates data from 
-  .nc 
+  NetCDF (v3 or v4) .nc 
   (or <a rel="help" href="#NcML">.ncml</a>)
   files which use one of the file formats specified by the 
   <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
@@ -5362,7 +5921,8 @@ on how this class works and how to use this class.
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> source,
   which uses
-  SOAP+XML for requests and responses.  It is very specific to NOAA NOS's XML.
+  <a rel="help" href="http://www.w3schools.com/xml/xml_soap.asp">SOAP+XML</a>  
+  for requests and responses.  It is very specific to NOAA NOS's XML.
   See the sample EDDTableFromNOS dataset in datasets2.xml.
   <br>&nbsp;
 
@@ -5662,13 +6222,20 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
     (which have some different variables and some variables in common --
     in which case you'll have to make special variants for the child datasets,
     with just the in-common variables).
+  <li>You could have several standalone datasets, each with the same type of
+    data but from a different station. You could leave those datasets intact,
+    but also create an EDDTableAggregateRows dataset which has 
+    data from all of the stations -- each of the child datasets could
+    be a simple       
+    <a rel="help" href="#EDDTableFromErddap">EDDTableFromErddap</a>, 
+    which points to one of the existing station datasets. 
+    If you do this, give each of the EDDTableFromErddap datasets
+    a different datasetID than the original standalone datasets,
+    e.g., by appending "Child" to the orginal datasetID.
   </ul>
-<li>The "source" 
-  <a rel="help" href="#globalAttributes"><tt>globalAttributes</tt></a> 
-  for the EDDTableAggregateRows is the combined globalAttributes from the first child dataset.
-  The EDDTableAggregateRows can have a global &lt;addAttributes&gt; to provide
-  additional global attributes or override the source global attributes.
-<li>All child datasets must have the same 
+<li>Each of the child <tt>&lt;dataset&gt;</tt>'s specified must be a complete
+  dataset, as if it were a stand-alone dataset. 
+  Each must have the same 
   <a rel="help" href="#dataVariable"><tt>dataVariables</tt></a>, 
   in the same order, with the same 
   <a rel="help" href="#destinationName"><tt>destinationNames</tt></a>, 
@@ -5682,12 +6249,21 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   but EDDTableAggregateRows will update the 
   <a rel="help" href="#actual_range"><tt>actual_range</tt></a> metadata
   to be the actual range for all of the children.
+<li>Recommendation: Get each of the child datasets working as stand-alone
+  datasets. Then try to make the EDDTableAggregateRows dataset
+  by cutting and pasting the datasets.xml chunk for each into the new
+  EDDTableAggregateRows dataset.
 <li>Dataset Default Sort Order - The order of the child datasets determines the 
   overall default sort order of the results. 
   Of course, users can request a different sort order 
   for a given set of results by appending 
   <tt>&amp;orderBy("<i>comma-separated list of variables</i>")</tt>
   to the end of their query.
+<li>The "source" 
+  <a rel="help" href="#globalAttributes"><tt>globalAttributes</tt></a> 
+  for the EDDTableAggregateRows is the combined globalAttributes from the first child dataset.
+  The EDDTableAggregateRows can have a global &lt;addAttributes&gt; to provide
+  additional global attributes or override the source global attributes.
 <li><a name="EDDTableAggregateRowsSkeletonXML">Skeleton</a> XML - The skeleton XML for an EDDTableAggregateRows dataset is:
 <pre>
 &lt;dataset type="EDDTableAggregateRows" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -5758,7 +6334,7 @@ can make an EDDTable dataset from a group of "child" EDDTable datasets.
   which serves to subdivide the profiles.
   That leads to fewer data files in a given directory, which may lead to faster access.
 
-<li>Local Files - Each chunk of data is stored in a separate netCDF file in a subdirectory of
+<li>Local Files - Each chunk of data is stored in a separate NetCDF file in a subdirectory of
   <i>bigParentDirectory</i>/copy/<i>datasetID</i>/ (as specified in 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>).
   There is one subdirectory level for all but the last extractDestinationName. 
@@ -6490,7 +7066,7 @@ for more information.
       <tt>&lt;updateEveryNMillis&gt;</tt> will work well if the changes appear
       atomically (in an instant) and the file is always a valid file.
       For example, the netcdf-java library allow for additions to the
-      unlimited dimension of a "classic" .nc3 file to be made atomically.
+      unlimited dimension of a "classic" .nc v3 file to be made atomically.
       <br><tt>&lt;updateEveryNMillis&gt;</tt> will work badly if the file is invalid
       while the changes are being made.
     <li><tt>&lt;updateEveryNMillis&gt;</tt> will work well for datasets where 
@@ -7593,7 +8169,7 @@ for more information.
         title="This link to an external web site does not constitute an endorsement."/></a> 
         metadata standards) 
         is a REQUIRED global attribute with the short description of the dataset
-        (usually &lt;80 characters).   For example,
+        (usually &lt;=95 characters).   For example,
         <br><tt>&lt;att name="title"&gt;VIIRSN Level-3 Mapped, Global, 4km, Chlorophyll a, Daily&lt;/att&gt;</tt>
         <ul>
         <li>Either the dataset's global <a rel="help" href="#globalAttributes">sourceAttributes</a> or its 
@@ -7607,9 +8183,6 @@ for more information.
           Many lists of datasets (for example, in response to a category search), show a subset
           of the full list and in a different order.
           So the title for each dataset should stand on its own.
-        <li>If a title is longer than 80 characters, only the first and last 40 characters will be 
-          visible in the list of datasets (but the whole title can be seen by putting the mouse
-          cursor over the adjacent "?" icon).
         <li>If the title contains the word "DEPRECATED" (all capital letters),
           then the dataset will get a lower ranking in searches.
           <br>&nbsp;
@@ -7735,6 +8308,7 @@ for more information.
           int (32-bit signed integer), short (16-bit signed integer), 
           byte (8-bit signed integer),
           char (essentially: 16-bit unsigned integer), boolean, and String (any length).
+          These case-sensitive.
         <li><a name="booleanData">"boolean"</a> is a special case. 
           <ul>
           <li>Internally, ERDDAP doesn't support a boolean type because booleans can't store
@@ -7835,13 +8409,17 @@ for more information.
         <li>If the data is packed with 
           <a rel="help" href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
           actual_range should have packed values.
-        <li>When the data comes from some sources (for example, files), ERDDAP determines the 
+        <li>For some data sources (for example, all EDDTableFrom...Files datasets),
+          ERDDAP determines the 
           actual_range of each variable and sets the actual_range attribute. 
-          With other data sources (for example, databases and remote OPeNDAP data sources), ERDDAP can't. 
+          With other data sources (for example, relational databases, Cassandra,
+          DAPPER, Hyrax), it might be troublesome or burdensome for the source
+          to calculate the range, so ERDDAP doesn't request it. 
           In this case, it is best if you can set actual_range (especially for the 
           longitude, latitude, altitude, depth, and time variables)
           by adding an actual_range attribute to each variable's 
-          <tt>&lt;addAttributes&gt;</tt> for this dataset in datasets.xml, for example,
+          <a rel="help" href="#addAttributes"><tt>&lt;addAttributes&gt;</tt></a>
+          for this dataset in datasets.xml, for example,
           <br><tt>&lt;att name="actual_range" 
             <a rel="help" href="#attributeType">type="doubleList"</a>&gt;-180 180&lt;/att&gt;</tt>
         <li>For numeric <a rel="help" href="#timeUnits">time and timestamp variables</a>,
@@ -7855,15 +8433,18 @@ for more information.
           1985-01-17 until NOW, use
           <br><tt>&lt;att name="actual_range" 
             <a rel="help" href="#attributeType">type="doubleList"</a>&gt;16 NaN&lt;/att&gt;</tt>
-        <li>For all EDDTableFrom...Files datasets where the files are real, local files 
-          (not virutual files), ERDDAP will automatically generate the actual_range information
-          and add it to the variable's metadata.
         <li>If actual_range is known (either by ERDDAP calculating it or by you adding it via
           <tt>&lt;addAttributes&gt;</tt>), ERDDAP will display it
           to the user on the Data Access Form (<i>datasetID</i>.html)
           and Make A Graph web pages (<i>datasetID</i>.graph) for that dataset
           and use it when generating the FGDC and ISO 19115 metadata.
           Also, the last 7 days of time's actual_range are used as the default time subset.         
+        <li>If actual_range is known, users can
+          use the 
+          <a rel="help" 
+          href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#min"
+          >min() and max() functions</a> in requests,
+          which is often very useful.
         <li>For all EDDTable... datasets, if actual_range is known (either by you specifying it or
           by ERDDAP calculating it), ERDDAP will be able to quickly reject any requests for 
           data outside that range.  For example, if the dataset's lowest time value corresponds to 
@@ -7872,9 +8453,10 @@ for more information.
           This makes actual_range a very important piece of metadata, as it can 
           save ERDDAP a lot of effort and save the user a lot of time.
         <li>When a user selects a subset of data and requests a file type 
-          that includes metadata (for example, .nc), ERDDAP modifies actual_range in the response file
-          to reflect the subset's range.
-        <li>See also <a rel="help" href="#data_min">data_min and data_max</a>.
+          that includes metadata (for example, .nc), ERDDAP modifies actual_range
+          in the response file to reflect the subset's range.
+        <li>See also <a rel="help" href="#data_min">data_min and data_max</a>,
+          which are an alternative way to specify the actual_range.
         </ul>
 
       <li><a name="colorBar"><b>Color Bar Attributes</b></a> - 
@@ -7940,8 +8522,9 @@ for more information.
                 <!--the standard palettes are listed in 'palettes' in Bob's messages.xml, 
                     EDDTable.java, EDDGrid.java, and setupDatasetsXml.html -->
               <tt>BlackBlueWhite, 
-              BlackRedWhite, BlackWhite, BlueWhiteRed, LightRainbow, Ocean, Rainbow,
-              RedWhiteBlue, ReverseRainbow, Topography, WhiteBlack, WhiteBlueBlack,</tt>
+              BlackRedWhite, BlackWhite, BlueWhiteRed, LightRainbow, Ocean, OceanDepth, Rainbow,
+              RedWhiteBlue, ReverseRainbow, Topography, TopographyDepth [added in v1.74], 
+              WhiteBlack, WhiteBlueBlack,</tt>
               and <tt>WhiteRedBlack</tt>.
             <li>If you have installed
               <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#palettes">additional palettes</a>, you can refer to one of them.
@@ -8129,8 +8712,8 @@ for more information.
           <a rel="help" href="#standard_name">standard_name</a> (if present) or the destinationName. 
         </ul>
 
-      <li><a name="missing_value"><b>missing_value</b></a> (default = NaN)  and
-        <a name="FillValue"><b>_FillValue</b></a> (default = NaN) 
+      <li><a name="missing_value"><b>missing_value</b></a> and
+        <a name="FillValue"><b>_FillValue</b></a> 
         (<a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>
@@ -8142,18 +8725,40 @@ for more information.
         (for example, -9999) which is used to represent a missing value.  For example,
         <br><tt>&lt;att name="missing_value" 
           <a rel="help" href="#attributeType">type="double"</a>&gt;-9999&lt;/att&gt;</tt>
-        <br>
+        <br>For String variables, the default for both is "" (the empty string).
+        <br>For numeric variables, the default for both is NaN.
         <ul>
-        <li>ERDDAP supports missing_value and _FillValue, since some data sources assign
+        <li>ERDDAP supports both missing_value and _FillValue, since some data sources assign
           slightly different meanings to them.
         <li>If present, they should be of the same data type as the variable.
         <li>If the data is packed with 
           <a rel="help" href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
           the missing_value and _FillValue values should be likewise packed.
-        <li>If a variable uses these special numbers, the missing_value and/or _FillValue
+          Similarly, for a column with String date/time values that use a local
+          <a rel="help" 
+          href="#time_zone"><tt>time_zone</tt></a>,
+          the missing_value and _FillValue values should use the local time zone.
+        <li>If a variable uses these special values, the missing_value and/or _FillValue
           attributes are REQUIRED.
-        <li>For some output data formats, ERDDAP will leave this special numbers intact.
-        <li>For other output data formats, ERDDAP will replace these special numbers with NaN or "".
+        <li>For 
+          <a rel="help" href="#timeUnits">time and timestamp variables</a>
+          (whether the source is strings or numeric),
+          missing_values and _FillValues appear as "" (the empty string) when
+          the time is written as a String and as NaN when the time is written 
+          as a double. 
+          The source values for missing_value and _FillValue will not appear 
+          in the variable's metadata.
+        <li>For String variables, ERDDAP always converts any missing_values or _FillValue
+          data values into "" (the empty string). 
+          The source values for missing_value and _FillValue will not appear 
+          in the variable's metadata.
+        <li>For numeric variables:
+          <br>The missing_value and _FillValue will appear in the variable's metadata.
+          <br>For some output data formats, 
+            ERDDAP will leave this special numbers intact, e.g., you will see -9999.
+          <br>For other output data formats (notably text-like formats like 
+            .csv and .htmlTable), 
+            ERDDAP will replace these special numbers with NaN or "".
         </ul>
 
       <li><a name="scale_factor"><b>scale_factor</b></a> (default = 1) and 
@@ -8277,7 +8882,29 @@ for more information.
             the request will fail unexpectedly.
           </ul>
         </ul>
-
+      <li><a name="time_zone"><b>time_zone</b></a> 
+        <ul>
+        <li>time_zone is an OPTIONAL attribute used by ERDDAP (and no metadata standards)
+          for <a rel="help" href="#timeUnits">time and timestamp variables</a>,
+          which may be in gridded datasets or tabular datasets.
+        <li>The default is "Zulu" (which is modern time zone version of GMT).
+        <li>For timestamp variables with source data from Strings, this attributes
+          lets you specify a time zone which leads ERDDAP to convert the 
+          local-time-zone source times (some in Standard time, 
+          some in Daylight Savings time) into Zulu times (which are always in Standard time).
+          The list of valid time zone names is probably identical to the list 
+          in the TZ column at
+          <a rel="help" 
+            href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+            >https://en.wikipedia.org/wiki/List_of_tz_database_time_zones<img 
+            src="../images/external.png" align="bottom" alt=" (external link)" 
+            title="This link to an external web site does not constitute an endorsement."/></a>.
+          Common US time zones are:
+          US/Hawaii, US/Alaska, US/Pacific, US/Mountain, US/Arizona, US/Central, US/Eastern.
+        <li>For timestamp variables with numeric source data, you can specify the
+          "time_zone" attribute, but the value must be "Zulu" or "UTC". If you 
+          need support for other time zones, please email bob.simons at noaa.gov .
+        </ul>
       <li><a name="units"><b>units</b></a> 
         (<a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -8501,7 +9128,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.72
+<p>ERDDAP, Version 1.74
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;

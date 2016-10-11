@@ -37,7 +37,7 @@ public class ByteArray extends PrimitiveArray {
     public byte[] array;
 
     /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
-     * The integer type classes override this.
+     * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return true;
@@ -135,6 +135,9 @@ public class ByteArray extends PrimitiveArray {
      * <li>numeric uses StandardMissingValue-&gt;StandardMissingValue, 
      *    0-&gt;false, others-&gt;true.
      * </ul>
+     *
+     * @param pa the values of pa are interpreted as boolean, which are then
+     *   converted to bytes.
      */
     public static ByteArray toBooleanToByte(PrimitiveArray pa) {
         int size = pa.size();
@@ -769,7 +772,7 @@ public class ByteArray extends PrimitiveArray {
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
      *
-     * <p>All integerTypes override this.
+     * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -808,7 +811,7 @@ public class ByteArray extends PrimitiveArray {
      * (e.g., ByteArray missingValue=127) AS IS.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
-     * <p>All integerTypes override this.
+     * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed

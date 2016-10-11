@@ -336,6 +336,25 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     }
 
     /**
+     * This returns a list of childDatasetIDs.
+     * Most dataset types don't have any children. A few, like
+     * EDDGridSideBySide do, so they overwrite this method to return the IDs.
+     *
+     * @return a new list of childDatasetIDs. 
+     */
+    public StringArray childDatasetIDs() {
+        StringArray sa = new StringArray();
+        try {
+            for (int i = 0; i < childDatasets.length; i++)  
+                sa.add(childDatasets[i].datasetID());
+        } catch (Exception e) {
+            String2.log("Error caught in edd.childDatasetIDs(): " + MustBe.throwableToString(e));
+        }
+        return sa;
+    }
+
+
+    /**
      * This makes a sibling dataset, based on the new sourceUrl.
      *
      * @throws Throwable always (since this class doesn't support sibling())
@@ -549,6 +568,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     public static String generateDatasetsXml(String serverType, String startUrl, 
         String fileNameRegex, int tReloadEveryNMinutes) throws Throwable {
 
+        String2.log("\n*** EDDGridAggregateExistingDimension.generateDatasetsXml" +
+            "\nserverType=" + serverType + " startUrl=" + startUrl + 
+            "\nfileNameRegex=" + fileNameRegex + 
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes);
         long time = System.currentTimeMillis();
 
         StringBuilder sb = new StringBuilder();
@@ -646,7 +669,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
@@ -884,7 +907,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +

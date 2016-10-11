@@ -11,4 +11,4 @@ cp1="classes:lib/lucene-core.jar:lib/mail.jar:"
 cp2="lib/netcdfAll-latest.jar:lib/slf4j.jar:lib/activation.jar"
 cp0="$cp1$cp2"
 
-java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml $1 $2
+java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml "$@"

@@ -159,10 +159,17 @@ public class LoadDatasets extends Thread {
             long startTime = System.currentTimeMillis();
             int oldNGrid = erddap.gridDatasetHashMap.size();
             int oldNTable = erddap.tableDatasetHashMap.size();
+            HashSet<String> orphanIDSet = null;
+            if (majorLoad) {
+                orphanIDSet = new HashSet(erddap.gridDatasetHashMap.keySet());
+                orphanIDSet.addAll(       erddap.tableDatasetHashMap.keySet());
+                orphanIDSet.remove(EDDTableFromAllDatasets.DATASET_ID);
+            }
             HashMap tUserHashMap = new HashMap(); //no need for thread-safe, all puts are here (1 thread); future gets are thread safe
             StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
             HashSet datasetIDSet = new HashSet(); //to detect duplicates, just local use, no need for thread-safe
             StringArray duplicateDatasetIDs = new StringArray(); //list of duplicates
+
 
             //ensure EDDTableFromAllDatasets exists
             //If something causes it to not exist, this will recreate it soon.
@@ -218,6 +225,11 @@ public class LoadDatasets extends Thread {
                     //just load minimal datasets?
                     nDatasets++;
                     String tId = xmlReader.attributeValue("datasetID"); 
+                    if (tId == null)
+                        throw new RuntimeException(startError + xmlReader.lineNumber() + ": " +
+                            "This <dataset> doesn't have a datasetID!");
+                    if (majorLoad)
+                        orphanIDSet.remove(tId);
 
                     //Looking for reasons to skip loading this dataset.
                     //Test first: skip dataset because it is a duplicate datasetID?  
@@ -244,10 +256,25 @@ public class LoadDatasets extends Thread {
 
                     //Test third: look at flag/age  or active=false
                     if (!skip) {
-                        boolean isFlagged = File2.delete(EDStatic.fullResetFlagDirectory + tId);
+                        //always check both flag locations
+                        boolean isFlagged     = File2.delete(EDStatic.fullResetFlagDirectory + tId);
+                        boolean isHardFlagged = File2.delete(EDStatic.fullHardFlagDirectory  + tId);
                         if (isFlagged) {
                             String2.log("*** reloading datasetID=" + tId + 
-                                " because it was in flag directory.");
+                                " because it was in the flag directory.");
+                        } else if (isHardFlagged) {
+                            String2.log("*** reloading datasetID=" + tId + 
+                                " because it was in the hardFlag directory.");
+                            EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
+                            if (oldEdd == null)
+                                oldEdd = erddap.tableDatasetHashMap.get(tId);
+                            if (oldEdd != null) {
+                                StringArray childDatasetIDs = oldEdd.childDatasetIDs();
+                                for (int cd = 0; cd < childDatasetIDs.size(); cd++)
+                                    EDD.deleteCachedDatasetInfo(childDatasetIDs.get(cd)); //delete the children's info
+                            }
+                            tryToUnload(erddap, tId, new StringArray(), true); //needToUpdateLucene
+                            EDD.deleteCachedDatasetInfo(tId); //the important difference
                         } else {
                             //does the dataset already exist and is young?
                             EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
@@ -613,10 +640,16 @@ public class LoadDatasets extends Thread {
                 (majorLoad? "major" : "minor") + " LoadDatasets) = " + ndf + "\n" +
                 (datasetsThatFailedToLoadSB.length() == 0? "" :
                     "    " + dtftl + "(end)\n");
-            String duplicateDatasetIDsMsg = majorLoad && duplicateDatasetIDs.size() > 0?         
+            String errorsDuringMajorReload = majorLoad && duplicateDatasetIDs.size() > 0?         
                 String2.ERROR + ": Duplicate datasetIDs in datasets.xml:\n    " +
                     String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ") + "\n" :
                 "";
+            if (majorLoad && orphanIDSet.size() > 0) 
+                errorsDuringMajorReload +=
+                    String2.ERROR + ": n Orphan Datasets (datasets in ERDDAP but not in datasets.xml) = " + orphanIDSet.size() + "\n" +
+                    "    " + 
+                    String2.noLongLinesAtSpace(String2.toCSSVString(orphanIDSet), 100, "    ") + 
+                    "(end)\n";
 
             EDStatic.nGridDatasets = erddap.gridDatasetHashMap.size();
             EDStatic.nTableDatasets = erddap.tableDatasetHashMap.size();
@@ -638,8 +671,6 @@ public class LoadDatasets extends Thread {
                 String2.distribute(loadDatasetsTime, EDStatic.minorLoadDatasetsDistribution24);
                 String2.distribute(loadDatasetsTime, EDStatic.minorLoadDatasetsDistributionTotal);
                 String2.log(datasetsThatFailedToLoad);
-                if (duplicateDatasetIDsMsg.length() > 0)
-                    String2.log(duplicateDatasetIDsMsg);
             }
 
             //majorLoad?
@@ -656,7 +687,7 @@ public class LoadDatasets extends Thread {
                     "\n  change for this run of major Load Datasets (MB) = " + ((Math2.getMemoryInUse() - memoryInUse) / Math2.BytesPerMB) + "\n");
 
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
-                EDStatic.duplicateDatasetIDsMsg   = duplicateDatasetIDsMsg;   //swap into place
+                EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
                 EDStatic.memoryUseLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + memoryString + "\n");
                 EDStatic.failureTimesLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + 
                     String2.getBriefDistributionStatistics(EDStatic.failureTimesDistributionLoadDatasets) + "\n");
@@ -845,11 +876,14 @@ public class LoadDatasets extends Thread {
             }
 
         } catch (Throwable t) {
+            String subject = String2.ERROR + " while processing " + 
+                (xmlReader == null? "" : "line #" + xmlReader.lineNumber() + " ") + 
+                "datasets.xml";
             if (xmlReader != null) 
                 xmlReader.close();
             if (!isInterrupted()) {
-                String subject = "Error while processing datasets.xml at " + 
-                    Calendar2.getCurrentISODateTimeStringLocal();
+                EDStatic.errorsDuringMajorReload  = 
+                    subject + ": see log.txt for details.\n";  //swap into place
                 String content = MustBe.throwableToString(t); 
                 unexpectedError = subject + ": " + content;
                 String2.log(unexpectedError);

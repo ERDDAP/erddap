@@ -234,13 +234,29 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
-        String2.log("EDDTableFromNcFiles.generateDatasetsXml" +
-            "\n  sampleFileName=" + sampleFileName);
+        String2.log("\n*** EDDTableFromNcFiles.generateDatasetsXml" +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
+            "\nsampleFileName=" + sampleFileName +
+            "\nuseDimensionsCSV=" + useDimensionsCSV + 
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nextract pre=" + tPreExtractRegex + " post=" + tPostExtractRegex + " regex=" + tExtractRegex +
+            " colName=" + tColumnNameForExtract +
+            "\nsortedColumn=" + tSortedColumnSourceName + 
+            " sortFilesBy=" + tSortFilesBySourceNames + 
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
 
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         String[] useDimensions = StringArray.arrayFromCSV(useDimensionsCSV);
+        tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
+            tColumnNameForExtract.trim() : "";
+        tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
+            tSortedColumnSourceName.trim() : "";
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
         if (!String2.isSomething(sampleFileName)) 
@@ -336,6 +352,12 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
+        //subsetVariables
+        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
+               dataAddTable.globalAttributes().getString("subsetVariables") == null) 
+            dataAddTable.globalAttributes().add("subsetVariables",
+                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
             Attributes atts = new Attributes();
@@ -351,9 +373,16 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String suggestedRegex = (tFileNameRegex == null || tFileNameRegex.length() == 0)? 
             ".*\\" + File2.getExtension(sampleFileName) :
             tFileNameRegex;
-        if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = (tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
+        if (tSortFilesBySourceNames.length() == 0) {
+            if (tColumnNameForExtract.length() > 0 &&
+                tSortedColumnSourceName.length() > 0 &&
+                !tColumnNameForExtract.equals(tSortedColumnSourceName))
+                tSortFilesBySourceNames = tColumnNameForExtract + ", " + tSortedColumnSourceName;
+            else if (tColumnNameForExtract.length() > 0)
+                tSortFilesBySourceNames = tColumnNameForExtract;
+            else 
+                tSortFilesBySourceNames = tSortedColumnSourceName;
+        }
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +
@@ -515,6 +544,7 @@ cdmSuggestion() +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">depth, latitude, longitude, TIDE, ID</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -565,8 +595,8 @@ cdmSuggestion() +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2579,6 +2609,9 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
 
+        String2.pressEnterToContinue(
+            "This test is very memory intensive. Please close unneeded applications.\n");
+
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
 
@@ -2694,19 +2727,6 @@ expected =
             "station,wtmp&orderBy(\"station\")&distinct()",
             dir, eddTable.className() + "_qr2", ".csv"); 
 
-        //quick reject -> 2 orderBy not allowed  
-        try {
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "station,wtmp&orderBy(\"station\")&orderByMax(\"station\")",
-                dir, eddTable.className() + "_qr2", ".csv"); 
-            throw new SimpleException("Shouldn't get here");
-        } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
-            results = t.toString(); 
-            expected = "com.cohort.util.SimpleException: Query error: " +
-                "The query has more than one orderBy...() constraint.";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
-        }
 
     }
 
@@ -3066,7 +3086,7 @@ expected =
         DEFAULT_RELOAD_EVERY_N_MINUTES, 
         "", "\\.nc", ".*", //tPreExtractRegex, tPostExtractRegex, tExtractRegex
         "station_id", "depth", //tColumnNameForExtract, tSortedColumnSourceName
-        "time station_id", //tSortFilesBySourceNames
+        "time, station_id", //tSortFilesBySourceNames
         "http://www.nodc.noaa.gov/GTSPP/", "NOAA NODC", //tInfoUrl, tInstitution        
         "put the summary here", //summary
         "Global Temperature-Salinity Profile Program", //tTitle
@@ -3288,7 +3308,7 @@ expected =
                     
                     //previous method
                     //SSR.unzip(sourceZipName,
-                    //    tempDir, true, 100 * 60); //ignoreZipDirectories, timeOutSeconds 100 minutes
+                    //    tempDir, true, 100 * 60, null); //ignoreZipDirectories, timeOutSeconds 100 minutes
                 }
 
                 //read each file and put data in proper table
@@ -4262,7 +4282,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 25398255;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 27116426;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4307,12 +4327,10 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue NaN;\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.4593392e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 6.31152e\\+8, 1.4750658e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
-"    Float64 missing_value NaN;\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -4371,7 +4389,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2016-04-16 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2016-10-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4381,7 +4399,7 @@ expected =
 "    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +                  //2 changes below:
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2016-03-24&time%3C=2016-04-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2016-09-24&time%3C=2016-10-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4399,9 +4417,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2016-04-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
+"    String history \"2016-10-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2016-04-16 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2016-10-08 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4420,7 +4438,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-04-16 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-10-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4445,7 +4463,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the March 2016 data\\) but is a subset of the " + //month changes
+    "up to and including the September 2016 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4457,7 +4475,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2016-03-30T12:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2016-09-28T12:30:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -5671,6 +5689,40 @@ landings.landings[12][1][1]
 [11][0], 73743
 */
 
+    }
+
+    /** Tests Kerfoot bug fix "problem with time units" bug
+     * related to updateEveryNMinutes with numeric time
+     * data and units other than "seconds since 1970-01-01T00:00:00Z" */
+    public static void testTimeSince19000101() throws Throwable {
+        String2.log("\n*** EDDTableFromNcFiles.testTimeSince19000101");
+
+        EDDTable eddTable;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String tName, results;
+        String query = 
+            "http://localhost:8080/cwexperimental/tabledap/allDatasets.csv?" +
+            "datasetID,minTime,maxTime&datasetID=\"testTimeSince19000101\"";
+        String expected = 
+"datasetID,minTime,maxTime\n" +
+",UTC,UTC\n" +
+"testTimeSince19000101,2016-05-06T22:42:59Z,2016-05-29T23:49:32Z\n";
+//before fix, this showed 2086-05-06 after dataset's update.
+
+        //ensure the dataset is loaded in local ERDDAP 
+        //and initial time range is correct
+        results = SSR.getUrlResponseString(query);
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        
+        //"touch" the file back 
+        File2.touch("/erddapTest/time/since19000101.nc"); //one time
+
+        //wait a second (so update isn't skipped because time elapsed is too small)
+        Math2.sleep(1000);
+
+        //look at allDatasets time range
+        results = SSR.getUrlResponseString(query);
+        Test.ensureEqual(results, expected, "results=\n" + results);
     }
 
     /**
@@ -7108,13 +7160,11 @@ expected =
 "\n" +
 "    double time(profile=2);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
-"      :_FillValue = NaN; // double\n" +
 "      :actual_range = 1.02974748E9, 1.02975156E9; // double\n" +
 "      :axis = \"T\";\n" +
 "      :cf_role = \"profile_id\";\n" +
 "      :ioos_category = \"Time\";\n" +
 "      :long_name = \"Time\";\n" +
-"      :missing_value = NaN; // double\n" +
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -7343,13 +7393,11 @@ expected =
 "\n" +
 "    double time(trajectory=1, profile=2);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
-"      :_FillValue = NaN; // double\n"+
 "      :actual_range = 1.02974748E9, 1.02975156E9; // double\n" +
 "      :axis = \"T\";\n" +
 "      :cf_role = \"profile_id\";\n" +
 "      :ioos_category = \"Time\";\n" +
 "      :long_name = \"Time\";\n" +
-"      :missing_value = NaN; // double\n"+
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -7693,12 +7741,10 @@ expected =
 "\n" +                                                                   
 "    double time\\(profile=3\\);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
-"      :_FillValue = NaN; // double\n" +
 "      :actual_range = 1.33514142E9, 1.335216E9; // double\n" +
 "      :axis = \"T\";\n" +
 "      :ioos_category = \"Time\";\n" +
 "      :long_name = \"Time\";\n" +
-"      :missing_value = NaN; // double\n" +
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -8093,12 +8139,10 @@ expected =
 "\n" +
 "    double time\\(trajectory=2, profile=2\\);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
-"      :_FillValue = NaN; // double\n" +
 "      :actual_range = 1.33514142E9, 1.335216E9; // double\n" +
 "      :axis = \"T\";\n" +
 "      :ioos_category = \"Time\";\n" +
 "      :long_name = \"Time\";\n" +
-"      :missing_value = NaN; // double\n" +
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -9182,13 +9226,11 @@ String expected3 = expected2 +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
 "    String axis \"T\";\n" +
 "    String cf_role \"profile_id\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
-"    Float64 missing_value NaN;\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -9982,13 +10024,11 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "\n" +
 "    double time(row=100);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
-"      :_FillValue = NaN; // double\n" +
 "      :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
 "      :axis = \"T\";\n" +
 "      :cf_role = \"profile_id\";\n" +
 "      :ioos_category = \"Time\";\n" +
 "      :long_name = \"Time\";\n" +
-"      :missing_value = NaN; // double\n" +
 "      :standard_name = \"time\";\n" +  
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -11262,7 +11302,7 @@ expected =
 "    String units \"m\";\n" +
 "  \\}\n" +
 "  AT_21 \\{\n" +
-"    Float32 actual_range 14.37, 34.14;\n" + //before 2013-08-28 was 17.05, before 2012-09-06 was 0.03, before 2012-03-20 was 2.59, 41.84;\n" +
+"    Float32 actual_range 14.37, 34.14;\n" + //first value gets smaller sometimes; 2012-03-20 was 2.59, 41.84;\n" + and bigger sometimes 2016-09-16 was 4.28
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
 "    Int32 epic_code 21;\n" +
@@ -11335,7 +11375,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2016-05-03 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2016-10-03 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -11465,6 +11505,7 @@ So the changes seem good. */
 "0n85w\n" +
 "0n90e\n" +
 "0n95w\n" +
+"1.5n67e\n" + //added 2016-10-04
 "1.5n80.5e\n" +
 "1.5n90e\n" +
 "1.5s67e\n" + //added 2013-09-05
@@ -11699,7 +11740,7 @@ So the changes seem good. */
         Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
 
         gc = Calendar2.newGCalendarZulu(nowMillis); 
-        gc.add(Calendar2.HOUR, -4);
+        gc.add(Calendar2.HOUR_OF_DAY, -4);
         String2.log("now-4hours   = " + Calendar2.formatAsISODateTimeT3(gc));
         //non-regex EDVTimeStamp conValues will be ""+epochSeconds 
         tedd.parseUserDapQuery("time&time=now-4hours", rv, cv, co, cv2, false); 
@@ -14044,6 +14085,163 @@ expected =
 
     }
 
+    /**
+     * This tests writing Igor Text Files .itx.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testIgor() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testIgor() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String error = "";
+        int po;
+        EDV edv;
+
+        String id = "cwwcNDBCMet";
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+        
+        userDapQuery = "station,longitude,latitude,time,wd,wspd,vis,wspu,wspv&station=%2246088%22&time>=2016-02-03T04:00:00&time<=2016-02-03T06:00:00";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            "Igor1", ".itx"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.replaceAll(results, '\r', '\n');
+        //String2.log(results);
+        expected = 
+"IGOR\n" +
+"WAVES/T station\n" +
+"BEGIN\n" +
+"\"46088\"\n" +
+"\"46088\"\n" +
+"\"46088\"\n" +
+"END\n" +
+"\n" +
+"WAVES/S longitude\n" +
+"BEGIN\n" +
+"-123.167\n" +
+"-123.167\n" +
+"-123.167\n" +
+"END\n" +
+"X SetScale d -123.167,-123.167, \"degrees_east\", longitude\n" +
+"\n" +
+"WAVES/S latitude\n" +
+"BEGIN\n" +
+"48.333\n" +
+"48.333\n" +
+"48.333\n" +
+"END\n" +
+"X SetScale d 48.333,48.333, \"degrees_north\", latitude\n" +
+"\n" +
+"WAVES/D time2\n" +  //since time is an Igor reserved word
+"BEGIN\n" +
+"3.5373168E9\n" +
+"3.5373204E9\n" +
+"3.537324E9\n" +
+"END\n" +
+"X SetScale d 3.5373168E9,3.537324E9, \"dat\", time2\n" +
+"\n" +
+"WAVES/W wd\n" +
+"BEGIN\n" +
+"110\n" +
+"162\n" +
+"125\n" +
+"END\n" +
+"X SetScale d 110,162, \"degrees_true\", wd\n" +
+"\n" +
+"WAVES/S wspd\n" +
+"BEGIN\n" +
+"6.7\n" +
+"4.7\n" +
+"4.1\n" +
+"END\n" +
+"X SetScale d 4.1,6.7, \"m s-1\", wspd\n" +
+"\n" +
+"WAVES/S vis\n" +
+"BEGIN\n" +
+"NaN\n" +
+"NaN\n" +
+"NaN\n" +
+"END\n" +
+"X SetScale d 0,0, \"km\", vis\n" +
+"\n" +
+"WAVES/S wspu\n" +
+"BEGIN\n" +
+"-6.3\n" +
+"-1.5\n" +
+"-3.4\n" +
+"END\n" +
+"X SetScale d -6.3,-1.5, \"m s-1\", wspu\n" +
+"\n" +
+"WAVES/S wspv\n" +
+"BEGIN\n" +
+"2.3\n" +
+"4.5\n" +
+"2.4\n" +
+"END\n" +
+"X SetScale d 2.3,4.5, \"m s-1\", wspv\n" +
+"\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    }
+
+    /** This tests hardFlag.
+     */
+    public static void testHardFlag() throws Throwable {
+        String2.log("\n*** EDDTableFromNcFiles.testHardFlag()\n" +
+            "This test requires testTimeSince19000101 be loaded in the local ERDDAP.");
+
+        //set hardFlag
+        String startTime = Calendar2.getCurrentISODateTimeStringLocal();
+        Math2.sleep(1000);
+        String2.writeToFile(EDStatic.fullHardFlagDirectory + "testTimeSince19000101", "test");
+        String2.log("I just set a hardFlag for testTimeSince19000101.\n" +
+            "Now I'm waiting 10 seconds.");
+        Math2.sleep(10000);
+        //flush the log file
+        String tIndex = SSR.getUrlResponseString("http://localhost:8080/cwexperimental/status.html");
+        Math2.sleep(3000);
+        //read the log file
+        String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
+        String expected = // ***
+          "unloading datasetID=testTimeSince19000101\n" +
+"\\*\\*\\* deleting cached dataset info for datasetID=testTimeSince19000101\n" +
+"\n" +
+"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T........)\n" +
+"\n" +
+"\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
+"LoadDatasets.run EDStatic.developmentMode=true ..........T........\n" +
+"  datasetsRegex=\\(testTimeSince19000101\\) inputStream=null majorLoad=false";
+        
+        int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 40)));
+        int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
+        String tResults = tLog.substring(po, po + expected.length());
+        String2.log("tResults=\"\n" + tResults + "\n\"\n");
+        Test.testLinesMatch(tResults, expected, "");
+        
+        //so far so good, tResults matches expected
+        int po3 = tResults.indexOf("thread at ");
+        String reloadTime = tResults.substring(po3 + 10, po3 + 29);
+        String2.log(" startTime=" + startTime + "\n" +
+                    "reloadTime=" + reloadTime);
+        Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");
+
+        //test that the dirTable and fileTable weren't found    after that
+        expected = 
+"table file doesn't exist: c:/u00/cwatch/erddap2/dataset/01/testTimeSince19000101/dirTable.nc\n" +
+"table file doesn't exist: c:/u00/cwatch/erddap2/dataset/01/testTimeSince19000101/fileTable.nc\n" +
+"creating new dirTable and fileTable (dirTable=null?true fileTable=null?true badFileMap=null?false)";
+        int po4 = tLog.indexOf(expected, po);
+        Test.ensureTrue(po4 > 0, "\"" + expected + "\" wasn't found after po=" + po + " !");
+
+        //test that the dataset was successfully constructed after that
+        int po5 = tLog.indexOf(
+            "*** EDDTableFromFiles testTimeSince19000101 constructor finished. TIME=",
+            po4);
+        Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
+
+
+
+    }
 
 
     /**
@@ -14068,7 +14266,7 @@ expected =
         testLatLon();
         testId();
         testDistinct();
-        testOrderBy();
+        testOrderBy(); 
         testOrderByMax();
         testOrderByMin();
         testOrderByMinMax();
@@ -14109,6 +14307,9 @@ expected =
         testUpdate();
         testQuickRestart();
         testNewTime();
+        testIgor();
+        testTimeSince19000101();
+        testHardFlag();
         /* */
 
         //not usually run

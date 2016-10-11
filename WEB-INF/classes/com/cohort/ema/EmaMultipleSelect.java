@@ -290,7 +290,7 @@ public class EmaMultipleSelect extends EmaAttribute {
      * Whether this class is a JSP or a servlet, this handles
      * a "request" from a user, storing incoming attributes
      * as session values.
-     * <p>This overrides EmaAttribute's version because unchecked checkboxes
+     * <p>This overwrites EmaAttribute's version because unchecked checkboxes
      * are not returned in the request.
      * <p>Also, this combines all the separate name+i check box widget values
      * into the \f separated 'value' for the overall widget 'name'.

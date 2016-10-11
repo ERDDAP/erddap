@@ -142,7 +142,7 @@ public class Erddap extends HttpServlet {
      */
     public static String plainFileTypes[] = {
         //no need for .csvp or .tsvp, because plainFileTypes never write units
-        ".csv", ".htmlTable", ".json", ".mat", ".nc", ".tsv", ".xhtml"};
+        ".csv", ".htmlTable", ".itx", ".json", ".mat", ".nc", ".tsv", ".xhtml"};
     public static String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
 
@@ -3502,6 +3502,9 @@ writer.write(
                 "<li>.htmlTable - an .html web page with the data in a table.\n" +
                     "(<a rel=\"help\" href=\"http://www.w3schools.com/html/html_tables.asp\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
+                "<li>.itx - an Igor Text File with a wave for each column of data.\n" +
+                    "(<a rel=\"help\" href=\"http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf\">more&nbsp;info" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.json - a table-like JSON file.\n" +
                     "(<a rel=\"help\" href=\"http://www.json.org/\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> or\n" +
@@ -4887,7 +4890,8 @@ writer.write(
                 writer.write(nMatchingHtml +
                     "<br>&nbsp;\n");
 
-                table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);        
+                table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, 
+                    false); //allowWrap
 
                 if (lastPage > 1)
                     writer.write("\n<p>" + nMatchingHtml);
@@ -10907,10 +10911,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         
         //gather the matching datasets
         Table table = new Table();
-        IntArray rankPa = new IntArray();
-        StringArray idPa = new StringArray();
-        int rankCol = table.addColumn("rank", rankPa); 
-        int idCol   = table.addColumn("id", idPa);
+        IntArray    rankPa  = new IntArray();
+        StringArray titlePa = new StringArray();
+        StringArray idPa    = new StringArray();
+        //order added is important, because it uses leftToRightSort below
+        table.addColumn("rank",  rankPa); 
+        table.addColumn("title", titlePa); 
+        table.addColumn("id",    idPa);
 
         //do the search; populate the results table 
         String roles[] = EDStatic.getRoles(loggedInAs);
@@ -11048,24 +11055,24 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                             continue;
                         
                         //ensure user is allowed to know this dataset exists
-                        if (EDStatic.listPrivateDatasets) {
-                            //list all datasets, private or not
-                            rankPa.add(i);  //they are already in sorted order
+                        EDD edd = gridDatasetHashMap.get(tDatasetID);
+                        if (edd == null)
+                            edd = tableDatasetHashMap.get(tDatasetID);
+                        if (edd == null)  //just deleted?
+                            continue;                         
+                        if (EDStatic.listPrivateDatasets || //list all datasets, private or not
+                            edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) || //accessibleTo
+                            edd.graphsAccessibleToPublic()) {  //graphsAccessibleToPublic
+                            //add penalty for DEPRECATED
+                            int penalty = edd.title().indexOf("DEPRECATED") >= 0? nHits : 0;
+                            rankPa.add(i + penalty);
+                            titlePa.add(edd.title());
                             idPa.add(tDatasetID);
-                        } else {
-                            //add if accessibleTo
-                            EDD edd = gridDatasetHashMap.get(tDatasetID);
-                            if (edd == null)
-                                edd = tableDatasetHashMap.get(tDatasetID);
-                            if (edd == null)  //just deleted?
-                                continue;
-                            if (edd.isAccessibleTo(EDStatic.getRoles(loggedInAs)) ||
-                                edd.graphsAccessibleToPublic()) {  //search for datasets
-                                rankPa.add(i);
-                                idPa.add(tDatasetID);
-                            }
                         }
                     }
+
+                //it needs to be sorted because of DEPRECATION penalty
+                table.leftToRightSort(3);
 
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -11100,19 +11107,24 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         edd = tableDatasetHashMap.get(tId);
                     if (edd == null)  //just deleted?
                         continue;
-                    if (!EDStatic.listPrivateDatasets && !edd.isAccessibleTo(roles) &&
+                    if (!EDStatic.listPrivateDatasets && 
+                        !edd.isAccessibleTo(roles) &&
                         !edd.graphsAccessibleToPublic()) //search for datasets is always a metadata request
                         continue;
                     nDatasetsSearched++;
                     int rank = edd.searchRank(isNegative, searchWordsB, jumpB);           
                     if (rank < Integer.MAX_VALUE) {
-                        rankPa.add(rank);
+                        // /10 makes rank less sensitive to exact char positions
+                        // so more likely to be tied,
+                        // so similar datasets are more likely to sort by title
+                        rankPa.add(rank / 10); 
+                        titlePa.add(edd.title());
                         idPa.add(tId);
                     }
                 }
 
                 //sort
-                table.sort(new int[]{rankCol, idCol}, new boolean[]{true,true});
+                table.leftToRightSort(3);
             }
         }
         if (verbose) {
@@ -12907,9 +12919,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
         //parse the userQuery
         HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
-        String defaultAcronym   = "NOAA";
+        String defaultAcronym  = "NOAA";
         String defaultFullName = "National Oceanic and Atmospheric Administration";
-        String queryAcronym     = queryMap.get("acronym"); 
+        String queryAcronym    = queryMap.get("acronym"); 
         String queryFullName   = queryMap.get("fullName");
         if (queryAcronym   == null) queryAcronym = "";
         if (queryFullName == null) queryFullName = "";
@@ -13046,7 +13058,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 widgets.select("fullName", fullNameTooltip, 1, options,
                     String2.indexOf(options, selectedFullName), 
                     "onchange=\"this.form.submit();\"") +
-                "\n<b> to a full name. </b>&nbsp;&nbsp;" +
+                "\n<b> to an acronym. </b>&nbsp;&nbsp;" +
                 //widgets.button("submit", null, "", 
                 //    "Convert",
                 //    "") + 
@@ -14686,11 +14698,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             //only title, summary, institution, id are always accessible if !listPrivateDatasets
             String tTitle = edd.title();
             plainTitleCol.add(tTitle);
-            if (tTitle.length() > 95) 
+            /*if (tTitle.length() > EDStatic.TITLE_DOT_LENGTH) 
                 titleCol.add(
                     "<table style=\"border:0px;\" width=\"100%\" cellspacing=\"0\" cellpadding=\"2\">\n" +
                     "<tr>\n" +
-                    //45 + 45 + 5 (for " ... ") = 95
+                    //45 + 45 + 5 (for " ... ") = EDStatic.TITLE_DOT_LENGTH
                     "  <td nowrap style=\"border:0px; padding:0px\" >" + 
                         XML.encodeAsHTML(tTitle.substring(0, 45)) + " ...&nbsp;</td>\n" +
                     //length of [time][depth][latitude][longitude] is 34, some are longer
@@ -14700,7 +14712,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         "</td>\n" +
                     "</tr>\n" +
                     "</table>\n");
-            else titleCol.add(XML.encodeAsHTML(tTitle));
+            else titleCol.add(XML.encodeAsHTML(tTitle)); */
+            String ttTitle = String2.noLongLines(tTitle, EDStatic.TITLE_DOT_LENGTH, ""); //insert newlines
+            ttTitle = XML.encodeAsHTML(ttTitle); //newlines intact
+            ttTitle = String2.replaceAll(ttTitle, "\n", "<br>");
+            titleCol.add(ttTitle);
+
             summaryCol.add("&nbsp;&nbsp;&nbsp;" + EDStatic.htmlTooltipImage(loggedInAs, 
                 XML.encodeAsPreHTML(edd.extendedSummary(), 100)));
             infoCol.add(!graphsAccessible? "" : 
@@ -14802,6 +14819,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         } else if (fileTypeName.equals(".csv")) {
             TableWriterSeparatedValue.writeAllAndFinish(null, null, table, outSource,
                 ",", true, true, '0', "NaN"); //separator, quoted, writeColumnNames, writeUnits
+
+        } else if (fileTypeName.equals(".itx")) {
+
+            table.saveAsIgor(new OutputStreamWriter(
+                outSource.outputStream(Table.IgorCharset))); 
 
         } else if (fileTypeName.equals(".mat")) {
             //avoid troublesome var names (e.g., with spaces)

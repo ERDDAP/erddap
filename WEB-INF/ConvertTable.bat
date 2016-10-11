@@ -19,6 +19,6 @@ rem CoastWatch/Bob Simons  bob.simons@noaa.gov
 rem
 
 set thisDir=%~dp0
-java -cp %thisDir%/classes;%thisDir%/lib/netcdfAll-latest.jar;lib/slf4j.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.pointdata.ConvertTable %1 %2 %3 %4 %5
+java -cp %thisDir%/classes;%thisDir%/lib/netcdfAll-latest.jar;lib/slf4j.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.pointdata.ConvertTable %*
 
 rem finished 

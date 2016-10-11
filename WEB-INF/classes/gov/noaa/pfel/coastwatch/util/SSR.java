@@ -5,6 +5,7 @@
 package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.array.ByteArray;
+import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
@@ -710,72 +711,67 @@ public class SSR {
      *    all files are stored in baseDir itself.
      *    If false, new directories will be created as needed.
      * @param timeOutSeconds (use -1 for no time out)
+     * @param resultingFullFileNames If this isn't null, 
+     *   that full names of unzipped files are added to this.
+     *   This method doesn't initially cleared this StringArray!
      * @throws Exception
      */
     public static void unzip(String fullZipName, String baseDir, 
-        boolean ignoreZipDirectories, int timeOutSeconds) throws Exception {
+        boolean ignoreZipDirectories, int timeOutSeconds,
+        StringArray resultingFullFileNames) throws Exception {
 
         //if Linux, it is faster to use the zip utility
         long tTime = System.currentTimeMillis();
-        if (String2.OSIsLinux) {
-            //-d: the directory to put the files in
-            if (verbose) String2.log("Using Linux's unzip on " + fullZipName);
-            cShell("unzip -o " + //-o overwrites existing files without asking
-                (ignoreZipDirectories? "-j " : "") +
-                fullZipName + " " +
-                "-d " + baseDir.substring(0, baseDir.length() - 1),  //remove trailing slash   necessary?
-                timeOutSeconds);
-        } else {
-            //use Java's zip procedures for all other operating systems
-            if (verbose) String2.log("Using Java's unzip on " + fullZipName);
-            ZipInputStream in = new ZipInputStream(new FileInputStream(fullZipName));
-        
-            //create a buffer for reading the files
-            byte[] buf = new byte[4096];
-        
-            //unzip the files
-            ZipEntry entry = in.getNextEntry();
-            while (entry != null) {
-
-                //isDirectory?
-                String name = entry.getName();
-                if (verbose) String2.log("  unzipping " + name);
-                if (entry.isDirectory()) {
-                    if (ignoreZipDirectories) {
-                    } else {
-                        File tDir = new File(baseDir + name);
-                        if (!tDir.exists())
-                            tDir.mkdirs();
-                    }
-                } else {
-                    //open an output file
-                    //???do I need to make the directory???
-                    if (ignoreZipDirectories) 
-                        name = File2.getNameAndExtension(name); //remove dir info
-                    OutputStream out = new FileOutputStream(baseDir + name);
+        if (verbose) String2.log("Using Java's unzip on " + fullZipName);
+        ZipInputStream in = new ZipInputStream(new FileInputStream(fullZipName));
     
-                    //transfer bytes from the .zip file to the output file
-                    //in.read reads from current zipEntry
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
-                        out.write(buffer, 0, bytesRead);
-                    }
+        //create a buffer for reading the files
+        byte[] buf = new byte[4096];
+    
+        //unzip the files
+        ZipEntry entry = in.getNextEntry();
+        while (entry != null) {
 
-                    //close the output file
-                    out.close();
+            //isDirectory?
+            String name = entry.getName();
+            if (verbose) String2.log("  unzipping " + name);
+            if (entry.isDirectory()) {
+                if (ignoreZipDirectories) {
+                } else {
+                    File tDir = new File(baseDir + name);
+                    if (!tDir.exists())
+                        tDir.mkdirs();
+                }
+            } else {
+                //open an output file
+                //???do I need to make the directory???
+                if (ignoreZipDirectories) 
+                    name = File2.getNameAndExtension(name); //remove dir info
+                OutputStream out = new FileOutputStream(baseDir + name);
+
+                //transfer bytes from the .zip file to the output file
+                //in.read reads from current zipEntry
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer, 0, buf.length)) > 0) {
+                    out.write(buffer, 0, bytesRead);
                 }
 
-                //close this entry
-                in.closeEntry();
-
-                //get the next entry
-                entry = in.getNextEntry();
+                //close the output file
+                out.close();
+                if (resultingFullFileNames != null)
+                    resultingFullFileNames.add(baseDir + name);
             }
 
-            //close the input file
-            in.close();
+            //close this entry
+            in.closeEntry();
+
+            //get the next entry
+            entry = in.getNextEntry();
         }
+
+        //close the input file
+        in.close();
 
         if (verbose) String2.log("  unzip done. TIME=" + 
             (System.currentTimeMillis() - tTime) + "\n");
@@ -891,7 +887,7 @@ public class SSR {
         }
 
         //unzip the file
-        unzip(oldDir + oldName, newDir, true, timeOutSeconds);
+        unzip(oldDir + oldName, newDir, true, timeOutSeconds, null);
 
         //rename the file
         String oldNameNoZip = oldName.substring(0, oldName.length() - 4);
@@ -2197,7 +2193,7 @@ public class SSR {
         for (int i = 0; i < names.length; i++) {
             try {
                 //unzip to temp dir
-                unzip(names[i], emptyDir, true, 10);
+                unzip(names[i], emptyDir, true, 10, null);
 
                 //if internal file was already chla, delete internal file and continue
                 String tNames[] = RegexFilenameFilter.list(emptyDir, ".+");
@@ -2257,7 +2253,7 @@ public class SSR {
         for (int i = 0; i < names.length; i++) {
             try {
                 //unzip to temp dir
-                unzip(names[i], emptyDir, true, 10);
+                unzip(names[i], emptyDir, true, 10, null);
 
                 //if internal file was already GA, delete internal file and continue
                 String tNames[] = RegexFilenameFilter.list(emptyDir, ".+");
@@ -2317,7 +2313,7 @@ public class SSR {
         for (int i = 0; i < names.length; i++) {
             try {
                 //unzip to temp dir
-                unzip(names[i], emptyDir, true, 10);
+                unzip(names[i], emptyDir, true, 10, null);
 
                 //if internal file was already GA, delete internal file and continue
                 String tNames[] = RegexFilenameFilter.list(emptyDir, ".+");

@@ -160,10 +160,25 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("EDDTableFromAwsXmlFiles.generateDatasetsXml" +
-            "\n  sampleFileName=" + sampleFileName);
+            "\nsampleFileName=" + sampleFileName +
+            " columnNamesRow=" + columnNamesRow + " firstDataRow=" + firstDataRow +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nextract pre=" + tPreExtractRegex + " post=" + tPostExtractRegex + " regex=" + tExtractRegex +
+            " colName=" + tColumnNameForExtract +
+            "\nsortedColumn=" + tSortedColumnSourceName + 
+            " sortFilesBy=" + tSortFilesBySourceNames + 
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
+            tColumnNameForExtract.trim() : "";
+        tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
+            tSortedColumnSourceName.trim() : "";
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
         if (!String2.isSomething(sampleFileName)) 
@@ -236,11 +251,24 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
+        //subsetVariables
+        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
+               dataAddTable.globalAttributes().getString("subsetVariables") == null) 
+            dataAddTable.globalAttributes().add("subsetVariables",
+                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+
         //write the information
         StringBuilder sb = new StringBuilder();
-        if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = (tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
+        if (tSortFilesBySourceNames.length() == 0) {
+            if (tColumnNameForExtract.length() > 0 &&
+                tSortedColumnSourceName.length() > 0 &&
+                !tColumnNameForExtract.equals(tSortedColumnSourceName))
+                tSortFilesBySourceNames = tColumnNameForExtract + ", " + tSortedColumnSourceName;
+            else if (tColumnNameForExtract.length() > 0)
+                tSortFilesBySourceNames = tColumnNameForExtract;
+            else 
+                tSortFilesBySourceNames = tSortedColumnSourceName;
+        }
         sb.append(
             directionsForGenerateDatasetsXml() +
             " * Since the source files don't have any metadata, you must add metadata\n" +
@@ -293,8 +321,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             Attributes externalAddAttributes = new Attributes();
             externalAddAttributes.add("title", "New Title!");
             String results = generateDatasetsXml(
-                "c:/data/aws/xml/",  ".*\\.xml",
-                "c:/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml", 
+                String2.unitTestDataDir + "aws/xml/",  ".*\\.xml", "", 
                 1, 2, 1440,
                 "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
                 "ob-date", "station-id ob-date", 
@@ -304,8 +331,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromAwsXmlFiles",
-                "c:/data/aws/xml/",  ".*\\.xml",
-                "c:/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml", 
+                String2.unitTestDataDir + "aws/xml/",  ".*\\.xml", "", 
                 "1", "2", "1440",
                 "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
                 "ob-date", "station-id ob-date", 
@@ -319,10 +345,10 @@ directionsForGenerateDatasetsXml() +
 "   below, notably 'units' for each of the dataVariables.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromAwsXmlFiles\" datasetID=\"xml_fa11_d004_6990\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromAwsXmlFiles\" datasetID=\"xml_5540_32bf_7f9d\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>c:/data/aws/xml/</fileDir>\n" +
+"    <fileDir>" + String2.unitTestDataDir + "aws/xml/</fileDir>\n" +
 "    <fileNameRegex>.*\\.xml</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
@@ -959,7 +985,7 @@ directionsForGenerateDatasetsXml() +
             //ensure it is ready-to-use by making a dataset from it
             //!!! actually this will fail with a specific error which is caught below
             EDD edd = oneFromXmlFragment(null, results);
-            Test.ensureEqual(edd.datasetID(), "xml_fa11_d004_6990", "");
+            Test.ensureEqual(edd.datasetID(), "xml_5540_32bf_7f9d", "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, altitude, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg", "");

@@ -704,6 +704,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         
         if (genericCompressed ||         //include all genericCompressed types
             extension.equals(".csv")  || 
+            extension.equals(".itx")  || 
             extension.equals(".js")   || 
              fileType.equals(".json") || //not .jsonText
             extension.equals(".kml")  || 

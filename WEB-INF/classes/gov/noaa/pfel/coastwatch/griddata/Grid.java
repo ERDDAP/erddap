@@ -4953,7 +4953,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
                 //unzip
                 if (inZip) {
-                    SSR.unzip(inDir + tDaveNameExt, inDir, true, 10); //10=seconds time out
+                    SSR.unzip(inDir + tDaveNameExt, inDir, true, 10, null); //10=seconds time out
                     tDaveNameExt = tDaveNameExt.substring(0, tDaveNameExt.length() - 4); 
                 }
                 if (inGz) {
@@ -5475,7 +5475,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //String dir = "c:\\programs\\GrdFiles\\";
         //String[] zipFiles = RegexFilenameFilter.list(dir, ".*\\.zip");
         //for (int i = 0; i < zipFiles.length; i++)
-        //    SSR.unzip(dir + zipFiles[i], dir, true);
+        //    SSR.unzip(dir + zipFiles[i], dir, true, null);
         //if (true) return;
         
         //test for memory leak in readGrd

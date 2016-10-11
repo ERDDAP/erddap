@@ -198,7 +198,7 @@ public abstract class EmaAttribute {
 
     /**
      * This adds all of the default attribute values to the session.
-     * EmaAttributes which use more than 1 control must override this
+     * EmaAttributes which use more than 1 control must overwrite this
      * to deal with separate sub-values.
      *
      * @param session is the session associated with a user
@@ -212,7 +212,7 @@ public abstract class EmaAttribute {
 
     /**
      * This removes all of this attribute's values from the session.
-     * EmaAttributes which use more than 1 control must override this
+     * EmaAttributes which use more than 1 control must overwrite this
      * to deal with separate sub-values.
      *
      * @param session is the session associated with a user
@@ -224,7 +224,7 @@ public abstract class EmaAttribute {
 
     /**
      * This gets the value of one of the EmaAttributes.
-     * EmaAttributes which use more than one control must override this
+     * EmaAttributes which use more than one control must overwrite this
      * to construct the value String from all of the separate sub-values.
      * This is called for every EmaAttribute every time the user submits a form.
      *
@@ -375,7 +375,7 @@ public abstract class EmaAttribute {
      * Whether this class is a JSP or a servlet, this handles
      * a "request" from a user, storing incoming attributes
      * as session values.
-     * EmaAttributes which have more than 1 control have to override
+     * EmaAttributes which have more than 1 control have to overwrite
      * this to handle the sub-values.
      *
      * @param request 

@@ -40,7 +40,8 @@ public class Attributes {
      * This constructs a new Attributes object which is a clone of 
      *   'attributes'.
      *
-     * @param attributes 
+     * @param attributes a set of attributes, each of which will be cloned 
+     *   to make a new Attributes object.
      */
     public Attributes(Attributes attributes) {
         attributes.copyTo(this);
@@ -52,8 +53,9 @@ public class Attributes {
      * This constructs a new Attributes object which has the
      * contents of moreImportant and lessImportant.
      *
-     * @param moreImportant
-     * @param lessImportant
+     * @param moreImportant the basis for a new Attributes. If one of the keys
+     *   is the same as in lessImportant, the value from this takes precedence.
+     * @param lessImportant the basis for a new Attributes.
      */
     public Attributes(Attributes moreImportant, Attributes lessImportant) {
         lessImportant.copyTo(this);
@@ -94,7 +96,7 @@ public class Attributes {
      * This returns the value of a specific attribute (or null
      * if the name isn't defined).
      * 
-     * @param name
+     * @param name the name (key) of the desired attribute
      * @return the attribute's value (a PrimitiveArray).
      */
     public PrimitiveArray get(String name) {
@@ -610,7 +612,12 @@ public class Attributes {
         return sb.toString();
     }
 
-    /** This removes any entry which has a String value of 'value'. */
+    /** 
+     * This removes any entry which has a String value of 'value'. 
+     *
+     * @param value Any attribute that has this value (when evaluated as a String)
+     *   will be removed.
+     */
     public void removeValue(String value) {
         Iterator it = hashmap.keySet().iterator(); //iterator (not enumeration) since I use it.remove() below
         while (it.hasNext()) {
@@ -627,8 +634,10 @@ public class Attributes {
      * <p>This nc-style version is used to print netcdf header attributes. 
      * It uses String2.toJson for String attributes. 
      *
-     * @param prefix
-     * @param suffix
+     * @param prefix The text to be precede "[name]=[value]" on each line,
+     *   perhaps "".
+     * @param suffix The text to follow "[name]=[value]" on each line,
+     *   perhaps "".
      * @return the desired string representation
      */
     public String toNcString(String prefix, String suffix) {
@@ -712,7 +721,7 @@ public class Attributes {
      * This returns a netcdf-style String representation of a PrimitiveArray:
      * StringArray is newline separated, others are comma separated.
      *
-     * @param pa
+     * @param pa any PrimitiveArray
      * @return a String representation of a value PrimitiveArray.
      */
     public static String valueToNcString(PrimitiveArray pa) {
@@ -725,7 +734,7 @@ public class Attributes {
      * This removes keys and values from this Attributes which 
      * are the same in otherAtts.
      * 
-     * @param otherAtts
+     * @param otherAtts another Attributes object
      */
     public void removeIfSame(Attributes otherAtts) {
         Iterator it = hashmap.keySet().iterator(); //iterator (not enumeration) since I use it.remove() below
@@ -749,12 +758,12 @@ public class Attributes {
             String name = (String)it.next();
             String tName = name.trim();
             PrimitiveArray pa = null;
-            if (!name.equals(tName)) {
+            if (name.equals(tName)) {
+                pa = get(name);
+            } else {
                 //switch to trim'd name
                 pa = remove(name);
                 set(name = tName, pa);
-            } else {
-                pa = get(name);
             }
 
             //trim value?
@@ -767,9 +776,44 @@ public class Attributes {
     }
 
     /**
+     * This trim()s and makesValidUnicode all names/keys and all 1 String values.
+     * For multi-string values, this makes them valid Unicode.
+     */
+    public void trimAndMakeValidUnicode() {
+        Iterator it = hashmap.keySet().iterator(); 
+        while (it.hasNext()) {
+            String name = (String)it.next();
+            String tName = String2.makeValidUnicode(name.trim(), "\r\n\t");
+
+            PrimitiveArray pa = null;
+            if (name.equals(tName)) {
+                pa = get(name);
+            } else {
+                //switch to trim/valid name
+                pa = remove(name);
+                set(name = tName, pa);
+            }
+
+            //trim/makeValid the value?
+            if (pa instanceof StringArray && pa.size() > 0) {
+                int tSize = pa.size();
+                pa.setString(0, String2.trimStart(pa.getString(0)));
+                pa.setString(tSize - 1, String2.trimEnd(pa.getString(tSize - 1)));
+                for (int i = 0; i < tSize; i++) 
+                    pa.setString(0, String2.makeValidUnicode(pa.getString(i), "\r\n\t"));
+            }
+        }
+
+    }
+
+    /**
      * This makes a set of addAttributes which are needed to change a into b.
      * If an attribute in 'a' needs to be set to null, this sets it to the String 
      *   "null" instead of just nulling it.
+     *
+     * @param a an Attributes object
+     * @param b another Attributes object
+     * @return a set of Attributes which are needed to change a into b.
      */
     public static Attributes makeALikeB(Attributes a, Attributes b) {
         Attributes addAtts = new Attributes();
@@ -799,12 +843,10 @@ public class Attributes {
         return addAtts;
     }
 
-
-
-
-
     /**
      * This tests the methods in this class.
+     *
+     * @throws Exception if trouble
      */
     public static void test() throws Exception {
         String2.log("\n*** test Attributes...");

@@ -134,7 +134,7 @@ public class EmaDateTimeSelect2 extends EmaAttribute {
 
     /**
      * This removes all of this attribute's values from the session.
-     * EmaAttributes which use more than 1 control must override this
+     * EmaAttributes which use more than 1 control must overwrite this
      * to deal with separate sub-values.
      *
      * @param session is the session associated with a user
@@ -177,7 +177,7 @@ public class EmaDateTimeSelect2 extends EmaAttribute {
      * Whether this class is a JSP or a servlet, this handles
      * a "request" from a user, storing incoming attributes
      * as session values.
-     * Since this has more than 1 control, I have to override
+     * Since this has more than 1 control, I have to overwrite
      * super to handle widget#1 and widget#2.
      *
      * @param request 

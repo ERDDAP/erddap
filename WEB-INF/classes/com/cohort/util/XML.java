@@ -52,10 +52,13 @@ public class XML {
         "Z", "[", "\\", "]", "^",   "_", "`", "a", "b", "c",   //90..
         "d", "e", "f", "g", "h",   "i", "j", "k", "l", "m",   //100..
         "n", "o", "p", "q", "r",   "s", "t", "u", "v", "w",   //110..
-        "x", "y", "z", "{", "|",   "}", "~", "", "", "",   //120..
-"&#130;","&#131;","&#132;","&#133;","&#134;","&#135;","&#136;","&#137;","&#138;","&#139;",   //130.. "forbidden"!
-"&#140;","",      "&#142;","",      "",      "&#145;","&#146;","&#147;","&#148;","&#149;",   //140.. "forbidden"!
-"&#150;","&#151;","&#152;","&#153;","&#154;","&#155;","&#156;","",      "&#158;","&#159;",   //150.. "forbidden"!
+        "x", "y", "z", "{", "|",   "}", "~", "",   //120..
+//Assume 128-159 are from Windows https://en.wikipedia.org/wiki/Windows-1252
+//So convert them to ASCII (a few) or HTML character entity.
+//                                                upArrow  upDownArrow                                                    Zcaron
+"&euro;", "",  ",","&fnof;",",,",    "&hellip;", "&#8224;","&#8225;","^","&permil;","&Scaron;", "&lsaquo;","&OElig;", "", "&#381;", "",        //128..
+"",       "'", "'","&quot;","&quot;","&bull;",   "&ndash;","&mdash;","~","&trade;", "&scaron;", "&rsaquo;","&oelig;", "", "&#382;", "&Yuml;",  //144
+
 "&nbsp;","&iexcl;","&cent;","&pound;","&curren;", //160
 "&yen;","&brvbar;","&sect;","&uml;","&copy;", //165
 "&ordf;","&laquo;","&not;","&shy;","&reg;", //170
@@ -79,7 +82,10 @@ public class XML {
     
     public static HashMap<String,Character> ENTITY_TO_CHAR_HASHMAP = new HashMap();
     static {
+        Test.ensureEqual(HTML_ENTITIES.length, 256, "HTML_ENTITIES.length");
         for (int i = 0; i < 256; i++) {
+            if (i >= 128 && i < 160) //but not the Windows-1252 characters
+                continue;
             String ent = HTML_ENTITIES[i];
             if (ent.length() > 0)
                 ENTITY_TO_CHAR_HASHMAP.put(ent, new Character((char)i));
@@ -835,6 +841,8 @@ public class XML {
             "Hi%%%% &<>\"\u00a0°°", "decode");
 
         for (int ch = 0; ch < 260; ch++) {
+            if (ch >= 128 && ch < 160) //don't test Windows-1252 characters
+                continue;
             char ch1 = (char)ch;
             String ch2 = decodeEntities(encodeAsXML("" + ch1));
             if (ch2.length() > 0 && ch != 160)   //#160=nbsp decodes as #20=' ' 

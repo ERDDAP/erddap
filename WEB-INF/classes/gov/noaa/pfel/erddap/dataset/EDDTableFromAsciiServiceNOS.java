@@ -1472,16 +1472,16 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 //9752619,"Isabel Segunda, Vieques Island",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153,2015-02-02T00:00:00Z,1,J1,0.0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,mm,,\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {

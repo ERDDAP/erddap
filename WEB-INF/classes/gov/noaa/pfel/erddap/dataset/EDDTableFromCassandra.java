@@ -227,6 +227,7 @@ import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 //import java.util.Properties;
 
@@ -1163,6 +1164,9 @@ public class EDDTableFromCassandra extends EDDTable{
             BoundStatement boundStatement = new BoundStatement(preparedStatement);
 
             //assign values to nPartitionKeys constraints then nCon constraints
+            StringBuilder requestSB = reallyVerbose? 
+                new StringBuilder(">> statement: pkdRow=" + pkdRow + ", ") : 
+                null;
             for (int i = 0; i < nPartitionKeys + nCon; i++) { 
                 boolean usePK = i < nPartitionKeys;
                 int coni = i - nPartitionKeys; //which con to use: only used if not !usePK
@@ -1171,6 +1175,9 @@ public class EDDTableFromCassandra extends EDDTable{
                 PrimitiveArray pa = usePK? pkdPA[i] : null;
                 Class tClass = edv.sourceDataTypeClass();
                 String conVal = usePK? null : constraintValues.get(coni);
+                if (requestSB != null)
+                    requestSB.append(edv.sourceName() + " is " + 
+                        (usePK? pa.getDouble(pkdRow) : conVal) + ", ");
 
                 //handle special cases first
                 if (edv instanceof EDVTimeStamp) {
@@ -1178,6 +1185,7 @@ public class EDDTableFromCassandra extends EDDTable{
                         new Date(Math.round(
                             (usePK? pa.getDouble(pkdRow) : String2.parseDouble(conVal)) 
                             * 1000))); //round to nearest milli
+
                 } else if (edv.isBoolean()) {
                     boundStatement.setBool(i, 
                         (usePK? pa.getInt(pkdRow) == 1 : String2.parseBoolean(conVal)));
@@ -1207,6 +1215,8 @@ public class EDDTableFromCassandra extends EDDTable{
                 }
             }
             //boundStatement.toString() is useless
+            if (requestSB != null)
+                String2.log(requestSB.toString());
 
             //get the data
             table = getDataForCassandraQuery(loggedInAs, requestUrl, userDapQuery,
@@ -1216,15 +1226,17 @@ public class EDDTableFromCassandra extends EDDTable{
                 break;
         }
 
-        //write any data in table
+        //write any data remaining in table
         //C* doesn't seem to have resultSet.close, statement.close(), ...
         //(In any case, gc should close them.)
-        preStandardizeResultsTable(loggedInAs, table); 
-        if (table.nRows() > 0) {
-            //String2.log("preStandardize=\n" + table.dataToCSVString());
-            standardizeResultsTable(requestUrl, userDapQuery, table);
-            stats[3] += table.nRows();
-            tableWriter.writeSome(table); //ok if 0 rows
+        if (!tableWriter.noMoreDataPlease) {
+            preStandardizeResultsTable(loggedInAs, table); 
+            if (table.nRows() > 0) {
+                //String2.log("preStandardize=\n" + table.dataToCSVString());
+                standardizeResultsTable(requestUrl, userDapQuery, table);
+                stats[3] += table.nRows();
+                tableWriter.writeSome(table); //ok if 0 rows
+            }
         }
         if (verbose) String2.log("* Cassandra stats: partitionKeyTable: " +
             pkdTableNRows + "/" + oPkdTableNRows + "=" + fraction + " <= " + 
@@ -1240,6 +1252,8 @@ public class EDDTableFromCassandra extends EDDTable{
      * This doesn't call tableWriter.finish();
      *
      * @param resultsDVI dataVariables[i] (DVI) for each resultsVariable
+     * @param table May have some not-yet-tableWritten data when coming in.
+     *   May have some not-yet-tableWritten data when returning.
      * @param stats is int[4]. stats[0]++; stats[1]+=nRows; stats[2]+=nExpandedRows; 
      *    stats[3]+=nRowsAfterStandardize
      * @return the same or a different table (usually with some results rows)
@@ -1265,7 +1279,7 @@ public class EDDTableFromCassandra extends EDDTable{
         TypeCodec rvToTypeCodec[] = new TypeCodec[nRv];
         for (int rv = 0; rv < nRv; rv++) {
             //find corresponding resultSet column (may not be 1:1) and other info
-            ////stored as 0..   -1 if not found
+            //stored as 0..   -1 if not found
             String sn = rvToResultsEDV[rv].sourceName();
             rvToRsCol[rv] = columnDef.getIndexOf(sn); 
             if (rvToRsCol[rv] < 0) {
@@ -1287,10 +1301,18 @@ public class EDDTableFromCassandra extends EDDTable{
             paArray[rv] = table.getColumn(rv);
 
         //process the resultSet rows of data
-        Row row;
         int maxNRows = -1;
         boolean toStringErrorShown = false;
-        while ((row = rs.one()) != null) {
+        //while ((row = rs.one()) != null) {   //2016-06-20 not working. returns last row repeatedly
+        //So use their code from fetchMoreResults() to the solve problem 
+        //  and improve performance by prefetching results.
+        //see https://docs.datastax.com/en/drivers/java/3.0/com/datastax/driver/core/ResultSet.html#one--
+        Iterator<Row> iter = rs.iterator();
+        while (iter.hasNext()) {
+            if (rs.getAvailableWithoutFetching() == 100 && !rs.isFullyFetched())
+                rs.fetchMoreResults();
+            Row row = iter.next();
+
             stats[1]++;
             int listSizeDVI = -1;
             int listSize = -1; //initially unknown 
@@ -1428,7 +1450,8 @@ public class EDDTableFromCassandra extends EDDTable{
                     tableWriter.writeSome(table); //okay if 0 rows
                 }
 
-                //triggerNRows + 1000 since lists expand, so hard to catch exactly
+                //triggerNRows + 1000 since lists expand, so hard to know exactly
+                maxNRows = -1;
                 table = makeEmptySourceTable(rvToResultsEDV, triggerNRows + 1000);
                 for (int rv = 0; rv < nRv; rv++) 
                     paArray[rv] = table.getColumn(rv);
@@ -1481,7 +1504,17 @@ public class EDDTableFromCassandra extends EDDTable{
         Attributes externalAddGlobalAttributes)
         throws Throwable {
 
-        String2.log("EDDTableFromCassandra.generateDatasetsXml keyspace=" + keyspace);         
+        String2.log("\n*** EDDTableFromCassandra.generateDatasetsXml" +
+            "\nurl=" + url +
+            "\nconnectionProperties=" + String2.toCSVString(tConnectionProperties) +
+            "\nkeyspace=" + keyspace + " tableName=" + tableName +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
+
         if (tReloadEveryNMinutes < suggestReloadEveryNMinutesMin ||
             tReloadEveryNMinutes > suggestReloadEveryNMinutesMax)
             tReloadEveryNMinutes = 1440; //not the usual DEFAULT_RELOAD_EVERY_N_MINUTES;
@@ -1661,7 +1694,9 @@ public class EDDTableFromCassandra extends EDDTable{
                 "cassandra/" + keyspace + "/" + tableName, //fake file dir.  Cass identifiers are [a-zA-Z0-9_]*
                 externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
-        
+
+        //don't suggestSubsetVariables() since no real sourceTable data
+ 
         //write the information
         StringBuilder sb = new StringBuilder();
         sb.append(
@@ -1857,7 +1892,7 @@ expected =
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
@@ -2087,8 +2122,8 @@ expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Depth</att>\n" +
 "            <att name=\"standard_name\">depth</att>\n" +
@@ -2159,7 +2194,7 @@ expected =
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
@@ -2246,8 +2281,8 @@ expected =
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Depth</att>\n" +
 "            <att name=\"standard_name\">depth</att>\n" +

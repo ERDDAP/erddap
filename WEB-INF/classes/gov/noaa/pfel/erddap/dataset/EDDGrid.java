@@ -125,14 +125,14 @@ public abstract class EDDGrid extends EDD {
         ".asc", ".csv", ".csvp", ".csv0", ".das", ".dds", ".dods", 
         ".esriAscii", //".grd", ".hdf", 
         ".fgdc", ".graph", ".help", ".html", ".htmlTable",
-        ".iso19115", ".json", 
+        ".iso19115", ".itx", ".json", 
         ".mat", ".nc", ".ncHeader", ".ncml",
         ".odvTxt", ".tsv", ".tsvp", ".tsv0", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
         ".asc", ".csv", ".csv", ".csv", ".das", ".dds", ".dods", 
         ".asc", //".grd", ".hdf", 
         ".xml", ".html", ".html", ".html", ".html",
-        ".xml", ".json", 
+        ".xml", ".itx", ".json", 
         ".mat", ".nc", ".txt", ".xml", //.subset currently isn't included
         ".txt", ".tsv", ".tsv", ".tsv", ".xhtml"};
     public static String[] dataFileTypeDescriptions = {
@@ -152,6 +152,7 @@ public abstract class EDDGrid extends EDD {
         EDStatic.fileHelp_html,
         EDStatic.fileHelp_htmlTable,
         EDStatic.fileHelp_iso19115,
+        EDStatic.fileHelp_itxGrid,
         EDStatic.fileHelp_json,
         EDStatic.fileHelp_mat,
         EDStatic.fileHelpGrid_nc,
@@ -181,6 +182,7 @@ public abstract class EDDGrid extends EDD {
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
         "http://www.w3schools.com/html/html_tables.asp", //htmlTable
         "https://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
+        "http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", //igor
         "http://www.json.org/", //json
         "http://www.mathworks.com/", //mat
         "http://www.unidata.ucar.edu/software/netcdf/", //nc
@@ -2261,6 +2263,11 @@ public abstract class EDDGrid extends EDD {
             return;
         }
         
+        if (fileTypeName.equals(".itx")) {
+            saveAsIgor(requestUrl, userDapQuery, outputStreamSource);
+            return;
+        }
+
         if (fileTypeName.equals(".json")) {
             saveAsJson(requestUrl, userDapQuery, outputStreamSource);
             return;
@@ -3404,7 +3411,7 @@ public abstract class EDDGrid extends EDD {
                     bgColor = new Color(String2.parseInt(tBGColorAr[0]), true); //hasAlpha
                 }
             }
-            //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
+            //always add .bgColor to graphQuery so this ERDDAP's setting overwrites remote ERDDAP's
             graphQuery.append("&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8));
 
             //yRange
@@ -3527,7 +3534,7 @@ public abstract class EDDGrid extends EDD {
                 "      q += \"\\x26.yRange=\" + yRMin + \"%7C\" + yRMax + \"%7C\" + (yRAsc==0); \n");
             if (zoomTime) writer.write(
                 "    q += \"&.timeRange=\" + d.f1.timeN.value + \",\" + d.f1.timeUnits.value; \n");
-            //always add .bgColor to graphQuery so this ERDDAP's setting overrides remote ERDDAP's
+            //always add .bgColor to graphQuery so this ERDDAP's setting overwrites remote ERDDAP's
             writer.write(
                 "    q += \"&.bgColor=" + String2.to0xHexString(bgColor.getRGB(), 8) + "\"; \n");
             writer.write(
@@ -6629,6 +6636,179 @@ Attributes {
     }
 
     /**
+     * Save the TableWriterAllWithMetadata data as an Igor Text File .itx file.
+     * <br>File reference: in Bob's /programs/igor/ or 
+     *   http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf
+     * <br>Command reference: in Bob's /programs/igor/ or 
+     *   http://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf
+     * <br>The file extension should be .itx
+     * 
+     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded 
+     *   (shouldn't be null). 
+     *   e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
+     * @param outputStreamSource the source of an outputStream (usually already 
+     *   buffered) to receive the results.
+     *   At the end of this method the outputStream is flushed, not closed.
+     * @throws Throwable 
+     */
+    public void saveAsIgor(String requestUrl, String userDapQuery, 
+        OutputStreamSource oss) throws Throwable {
+        if (reallyVerbose) String2.log("  EDDGrid.saveAsIgor"); 
+        long time = System.currentTimeMillis();
+
+        //handle axisDapQuery
+        if (isAxisDapQuery(userDapQuery)) {
+            //get axisDataAccessor first, in case of error when parsing query
+            AxisDataAccessor ada = new AxisDataAccessor(this, requestUrl, userDapQuery);
+            int nRAV = ada.nRequestedAxisVariables();
+
+            //make a table and saveAsIgor
+            Table table = new Table();
+            for (int av = 0; av < nRAV; av++) {
+                table.addColumn(av, ada.axisVariables(av).destinationName(),
+                    ada.axisValues(av), ada.axisAttributes(av));
+            }
+            table.saveAsIgor(new BufferedWriter(new OutputStreamWriter(
+                oss.outputStream(Table.IgorCharset), Table.IgorCharset)));
+
+            //diagnostic
+            if (reallyVerbose) String2.log("  EDDGrid.saveAsIgor axis done\n");
+            //String2.log(NcHelper.dumpString(fullFileName, false));
+
+            return;
+        }
+
+        //** create gridDataAccessor first, 
+        //to check for error when parsing query or getting data,
+        //and to check n values
+        GridDataAccessor gda = new GridDataAccessor(this, requestUrl, userDapQuery, 
+            true, true);  //rowMajor, convertToNaN         
+        EDV tDataVariables[] = gda.dataVariables();
+        int nDV = tDataVariables.length; 
+
+        //ensure < Integer.MAX_VALUE items  
+        //No specific limit in Igor. But this is suggested as very large.
+        //And this is limit for PrimitiveArray size.
+        NDimensionalIndex totalIndex = gda.totalIndex();
+        if (nDV * totalIndex.size() >= Integer.MAX_VALUE)
+            throw new SimpleException(Math2.memoryTooMuchData + " (" + 
+                (nDV * totalIndex.size()) + " values is more than " + 
+                (Integer.MAX_VALUE - 1) + ")");
+        int nAV = axisVariables.length;
+        if (nAV > 4)
+            throw new SimpleException("Igor Text Files can handle 4 dimensions, not " + nAV);
+
+        //** Then get gridDataAllAccessor
+        //AllAccessor so I can just request PA with a var's values.
+        GridDataAllAccessor gdaa = new GridDataAllAccessor(gda); 
+
+        //write the data
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+            oss.outputStream(Table.IgorCharset), Table.IgorCharset));
+        writer.write("IGOR" + Table.IgorEndOfLine);
+
+        HashSet colNamesHashset = new HashSet();
+        StringBuilder setScaleForDims = new StringBuilder();
+        StringArray avUNames = new StringArray();
+        for (int av = 0; av < nAV; av++) {
+            Attributes atts = gda.axisAttributes(av);
+            String units = atts.getString("units");
+            boolean isTimeStamp = units != null && 
+                (units.equals(EDV.TIME_UNITS) || 
+                 units.equals(EDV.TIME_UCUM_UNITS));
+
+            PrimitiveArray pa = gda.axisValues(av);  
+            //pa.convertToStandardMissingValues( //no need, since no missing values
+            //    atts.getDouble("_FillValue"), 
+            //    atts.getDouble("missing_value"));
+
+            String uName = Table.makeUniqueIgorColumnName(
+                axisVariables[av].destinationName(), colNamesHashset);
+            Table.writeIgorWave(writer, uName, "", pa, units, isTimeStamp, "");
+            avUNames.add(uName);
+            
+            //setScaleForDims
+            setScaleForDims.append("X SetScale ");
+            if (pa.size() == 1 || pa.isEvenlySpaced().length() > 0) {
+                //just 1 value or isn't evenlySpaced
+                setScaleForDims.append(
+                    "/I " + "xyzt".charAt(nAV - av - 1) + ", " + 
+                    pa.getString(0) + "," +
+                    pa.getString(pa.size() - 1));
+
+            } else {
+                //isEvenlySpaced, num2 is average spacing
+                setScaleForDims.append(
+                    "/P " + "xyzt".charAt(nAV - av - 1) + ", " + 
+                    pa.getString(0) + "," +
+                    ((pa.getDouble(pa.size() - 1) - pa.getDouble(0)) / (pa.size() - 1))
+                    );
+            }
+            String tUnits = isTimeStamp? "dat" :
+                String2.isSomething(units)? units :""; //space?
+            setScaleForDims.append(
+                ", " + String2.toJson(tUnits) + ", $WAVE_NAME$" + 
+                Table.IgorEndOfLine);
+
+        }
+
+        StringBuilder dimInfo = new StringBuilder();
+        StringBuilder notes = new StringBuilder(); //the in-common quoted part
+        for (int av = nAV-1; av >= 0; av--) {
+            //write each axisVar as a wave separately, so data type is preserved
+            //Igor wants the dimension definition to be nRow, nColumn, nLayer, nChunk !
+            int n = gda.axisValues(av).size();
+            if      (av == nAV-1) dimInfo.append(n);
+            else if (av == nAV-2) dimInfo.insert(0, n + ",");
+            else                  dimInfo.append("," + n);
+
+            //e.g., X Note analysed_sst_mod, "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
+            if (notes.length() > 0)
+                notes.append(';');
+            notes.append(
+                (av == nAV-1? "RowsDim" :
+                 av == nAV-2? "ColumnsDim" :
+                 av == nAV-3? "LayersDim" :
+                 av == nAV-4? "ChunkDim" :
+                 "Dim" + (nAV-av-1)) + //shouldn't happen since limited to 4 dims above
+                ":" + avUNames.get(av));
+        }
+
+        //write each dataVar as a wave separately, so data type is preserved
+        //Igor wants same row-major order as ERDDAP:
+        //  "Igor expects the data to be in column/row/layer/chunk order." [t,z,y,x]
+        for (int dv = 0; dv < nDV; dv++) {
+            Attributes atts = gda.dataAttributes(dv);
+            String units = atts.getString("units");
+            boolean isTimeStamp = units != null && 
+                (units.equals(EDV.TIME_UNITS) || 
+                 units.equals(EDV.TIME_UCUM_UNITS));
+
+            PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
+            //converted to NaN by "convertToNaN" above
+
+            String uName = Table.makeUniqueIgorColumnName(
+                tDataVariables[dv].destinationName(), colNamesHashset);
+            Table.writeIgorWave(writer, uName,  
+                "/N=(" + dimInfo + ")", pa, units, isTimeStamp, 
+                String2.replaceAll(setScaleForDims.toString(), 
+                    "$WAVE_NAME$", uName) +
+                //e.g., X Note analysed_sst_mod, "RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2"
+                "X Note " + uName + ", \"" + notes + "\"" + Table.IgorEndOfLine);
+        }
+
+        //done!
+        writer.flush(); //essential
+
+        //diagnostic
+        if (reallyVerbose) String2.log("  EDDGrid.saveAsIgor done.  TIME=" + 
+            (System.currentTimeMillis() - time) + "\n");
+        //String2.log(NcHelper.dumpString(directory + name + ext, false));
+
+    }
+
+    /**
      * This writes the grid from this dataset to the outputStream in 
      * Matlab .mat format.
      * This writes the lon values as they are currently in this grid
@@ -6648,7 +6828,6 @@ Attributes {
 
         if (reallyVerbose) String2.log("  EDDGrid.saveAsMatlab");
         long time = System.currentTimeMillis();
-        String structureName = String2.modifyToBeVariableNameSafe(datasetID);
 
         //handle axisDapQuery
         if (isAxisDapQuery(userDapQuery)) {
@@ -6667,7 +6846,7 @@ Attributes {
 
             //then get the modified outputStream
             DataOutputStream dos = new DataOutputStream(outputStreamSource.outputStream(""));
-            table.saveAsMatlab(dos, structureName);
+            table.saveAsMatlab(dos, datasetID);  //it makes structure and varNames Matlab-safe
             dos.flush(); //essential
 
             if (reallyVerbose) String2.log("  EDDGrid.saveAsMatlab axis done.\n");
@@ -6678,6 +6857,7 @@ Attributes {
         GridDataAccessor mainGda = new GridDataAccessor(this, requestUrl, userDapQuery, 
             false, //Matlab is one of the few drivers that needs column-major order
             true); //convertToNaN
+        String structureName = String2.encodeMatlabNameSafe(datasetID);
 
         //Make sure no String data and that gridsize isn't > Integer.MAX_VALUE bytes (Matlab's limit)
         EDV tDataVariables[] = mainGda.dataVariables();
@@ -6777,10 +6957,14 @@ Attributes {
         String nulls = String2.makeString('\u0000', 32);
         for (int av = 0; av < nAv; av++)
             stream.write(String2.toByteArray(
-                String2.noLongerThan(axisVariables[av].destinationName(), 31) + nulls), 0, 32); //EEEK! Better not be longer.
+                String2.noLongerThan(
+                    String2.encodeMatlabNameSafe(axisVariables[av].destinationName()), 
+                    31) + nulls), 0, 32); //EEEK! Better not be longer.
         for (int dv = 0; dv < ntDv; dv++) 
             stream.write(String2.toByteArray(
-                String2.noLongerThan(tDataVariables[dv].destinationName(), 31) + nulls), 0, 32);//EEEK! Better not be longer.
+                String2.noLongerThan(
+                    String2.encodeMatlabNameSafe(tDataVariables[dv].destinationName()),
+                    31) + nulls), 0, 32);//EEEK! Better not be longer.
 
         //write the axis miMatrix
         for (int av = 0; av < nAv; av++)
@@ -6851,7 +7035,8 @@ Attributes {
      * If no exception is thrown, the file was successfully created.
      * 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
-     * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null). 
+     * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded 
+     *   (shouldn't be null). 
      *   e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
      * @param fullFileName the name for the file (including directory and extension)
      * @param keepUnusedAxes if true, axes with size=1 will be stored in the file.
@@ -6935,7 +7120,7 @@ Attributes {
                 }
 
                 //delete the partial file
-                File2.delete(fullFileName);
+                File2.delete(fullFileName + randomInt);
 
                 throw t;
             }
@@ -7086,12 +7271,13 @@ Attributes {
             }
 
             //delete the partial file
-            File2.delete(fullFileName);
+            File2.delete(fullFileName + randomInt);
 
             throw t;
         }
 
     }
+ 
  
     /**
      * This writes the grid data to the outputStream in comma-separated-value 
@@ -7544,7 +7730,7 @@ Attributes {
                                    edvga.lastDestinationValue();
             String tStop = edvga.destinationToString(tdv);
  
-            //if possible, override defaults via userDapQuery
+            //if possible, overwrite defaults via userDapQuery
             if (userDapQuery.length() > 0) {
                 int tAv = isAxisDapQuery?
                     destinationNames.indexOf(edvga.destinationName()) :
@@ -8529,7 +8715,7 @@ Attributes {
             "        <li><i>palette</i> - All ERDDAP installations support a standard set of palettes:\n" + 
             "          <br>BlackBlueWhite, BlackRedWhite, BlackWhite, BlueWhiteRed, LightRainbow,\n" + 
             "          <br>Ocean, OceanDepth, Rainbow, RedWhiteBlue, ReverseRainbow, Topography,\n" + 
-            "          <br>WhiteBlack, WhiteBlueBlack, WhiteRedBlack.\n" +
+            "          <br>TopographyDepth, WhiteBlack, WhiteBlueBlack, WhiteRedBlack.\n" +
             "          <br>Some ERDDAP installations support additional options. See a Make A Graph\n" + 
             "          <br>web page for a complete list.\n" +
             "          <br>The default varies based on min and max: if -1*min ~= max, the default\n" + 
@@ -8676,6 +8862,11 @@ Attributes {
             "      <br>&nbsp;\n" +
             "  </ul>\n" +
             "<li><a name=\"specialVariables\"><b>Special Variables</b></a>\n" +
+            "  <br>ERDDAP is aware of the spatial and temporal features of each dataset. The longitude,\n" +
+            "  <br>latitude, altitude, depth, and time axis variables (when present) always have specific\n" +
+            "  <br>names and units. This makes it easier for you to identify datasets with relevant data,\n" +
+            "  <br>to request spatial and temporal subsets of the data, to make images with maps or\n" +
+            "  <br>time-series, and to save data in geo-referenced file types (e.g., .esriAscii and .kml).\n" +
             "  <ul>\n" +
             "  <li>In griddap, a longitude axis variable (if present) always has the name \"" + EDV.LON_NAME + "\"\n" + 
             "    <br>and the units \"" + EDV.LON_UNITS + "\".\n" +
@@ -8692,10 +8883,6 @@ Attributes {
             "    <br>If you request data and specify a start and/or stop value for the time axis,\n" +
             "    <br>you can specify the time as a number (in seconds since 1970-01-01T00:00:00Z)\n" +
             "    <br>or as a String value (e.g., \"2002-12-25T07:00:00Z\" in the GMT/Zulu time zone).\n" +
-            "  <li>Because the longitude, latitude, altitude, depth, and time axis variables are specifically\n" +
-            "    <br>recognized, ERDDAP is aware of the spatiotemporal features of each dataset.\n" +
-            "    <br>This is useful when making images with maps or time-series, and when saving data\n" +
-            "    <br>in geo-referenced file types (e.g., .esriAscii and .kml).\n" +
             "    <br>&nbsp;\n" +
             "  </ul>\n" +
             "<li><a name=\"incompatibilities\"><b>Incompatibilities</b></a>\n" +
@@ -8707,6 +8894,33 @@ Attributes {
             "    <br>&nbsp;\n" +
             "  </ul>\n" +
             "<li>" + OutputStreamFromHttpResponse.acceptEncodingHtml(tErddapUrl) +
+            "    <br>&nbsp;\n" +
+"<li><a name=\"citeDataset\"><b>How to Cite a Dataset in a Paper</b></a>\n" +
+"<br>It is important to let readers of your paper know how you got the data that\n" +
+"<br>you used in your paper. For each dataset that you used, please look at the\n" +
+"<br>dataset's metadata in the Dataset Attribute Structure section at the bottom\n" +
+"<br>of the .html page for the dataset, e.g.,\n" +
+"<br><a rel=\"help\" \n" +
+"  href=\"https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html\"\n" +
+"  >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html</a> .\n" +
+"<br>The metadata sometimes includes a required or suggested citation format for\n" +
+"<br>the dataset. The \"license\" metadata sometimes lists restrictions on the\n" +
+"<br>use of the data.\n" +
+"\n" +
+"<p>To generate a citation for a dataset:\n" +
+"<br>If you think of the dataset as a scientific article, you can generate a \n" +
+"<br>citation based on the author (see the \"creator_name\" or \"institution\" metadata),\n" +
+"<br>the date that you downloaded the data, the title (see the \"title\" metadata),\n" +
+"<br>and the publisher (use the Data Access Form URL for the dataset, e.g.,\n" +
+"<br>https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html ). If the\n" +
+"<br>dataset's metadata includes a \n" +
+"<a rel=\"help\" \n" +
+"  href=\"https://en.wikipedia.org/wiki/Digital_object_identifier\"\n" +
+"  >Digital Object Identifier (DOI)<img \n" +
+"  src=\"" + tErddapUrl + "/images/external.png\" align=\"bottom\" alt=\"(external link)\"\n" +
+"  title=\"This link to an external web site does not constitute an endorsement.\"/></a>, please\n" +
+"<br>include that in the citation you create.\n" +
+
             "</ul>\n" +
             "<h2><a name=\"contact\">Contact Us</a></h2>\n" +
             "If you have questions, suggestions, or comments about ERDDAP in general (not this specific\n" +

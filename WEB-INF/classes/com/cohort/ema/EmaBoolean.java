@@ -100,7 +100,7 @@ public class EmaBoolean extends EmaAttribute {
      * Whether this class is a JSP or a servlet, this handles
      * a "request" from a user, storing incoming attributes
      * as session values.
-     * This overrides EmaAttribute's version because unchecked checkboxes
+     * This overwrites EmaAttribute's version because unchecked checkboxes
      * are not returned in the request.
      *
      * @param request 

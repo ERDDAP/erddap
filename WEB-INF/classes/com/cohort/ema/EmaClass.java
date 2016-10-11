@@ -40,19 +40,19 @@ import javax.servlet.ServletException;
  * <li> "formName" is the name of the HTML form (default = "emaForm").
  *      It must be length&gt;1 with no spaces (like a variable name).
  * <li> (optional) There are several default strings inherited from 
- *      com/cohort/ema/Ema.properties that you can override by specifying
+ *      com/cohort/ema/Ema.properties that you can overwrite by specifying
  *      a new value in the properties file:
  *    <ul>
- *    <li> "placeHolder" overrides placeHolder. If the background color
+ *    <li> "placeHolder" overwrites placeHolder. If the background color
  *       of the form isn't white, change this to refer to the correct color.
- *    <li> "beginError" overrides beginError.
- *    <li> "endError" overrides endError.
- *    <li> "beginTable" overrides beginTable.
+ *    <li> "beginError" overwrites beginError.
+ *    <li> "endError" overwrites endError.
+ *    <li> "beginTable" overwrites beginTable.
  *        Specify this to change the appearance of the table.
- *    <li> "endTable" overrides endTable.
+ *    <li> "endTable" overwrites endTable.
  *        Specify this to change the appearance of the table.
- *    <li> "clickPlus" overrides clickPlus.
- *    <li> "clickMinus" overrides clickMinus.
+ *    <li> "clickPlus" overwrites clickPlus.
+ *    <li> "clickMinus" overwrites clickMinus.
  *    <li> "requiredTextError" specifies an error message to be displayed
  *        if no text has been entered in a required text field.
  *        If the string contains "{0}", the attribute's name will be substituted.
@@ -125,7 +125,7 @@ public class EmaClass extends HttpServlet {
 
     /** 
      * These default values may be overridden in the class's properties file 
-     * (which would override the defaults in Ema.properties). 
+     * (which would overwrite the defaults in Ema.properties). 
      */
     protected String clickPlusMSD; 
     protected String clickMinusMSD; 
@@ -145,7 +145,7 @@ public class EmaClass extends HttpServlet {
     protected String lengthError;
     protected String componentStyle;
 
-    /** You can override the defaults for these values in the class's properties file. */
+    /** You can overwrite the defaults for these values in the class's properties file. */
     protected boolean defaultRequired;
     protected boolean defaultDoubleWide;
     protected boolean defaultEnterSubmitsForm;

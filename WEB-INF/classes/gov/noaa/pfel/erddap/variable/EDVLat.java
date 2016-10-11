@@ -23,9 +23,9 @@ public class EDVLat extends EDV {
      * are standardized.
      *
      * @param tSourceMin  is pre-scale_factor and add_offset.
-     *   This takes precedence over actual_range, data_min, or data_max metadata.
+     *   This takes precedence over actual_range, actual_min, or data_min metadata.
      * @param tSourceMax  is pre-scale_factor and add_offset.
-     *   This takes precedence over actual_range, data_min, or data_max metadata.
+     *   This takes precedence over actual_range, actual_max, or data_max metadata.
      */
     public EDVLat(String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
@@ -34,6 +34,10 @@ public class EDVLat extends EDV {
 
         super(tSourceName, LAT_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax);
+
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the latitude variable must be a numeric dataType.");
 
         combinedAttributes.set("_CoordinateAxisType", "Lat");  //unidata-related
         combinedAttributes.set("axis", "Y");

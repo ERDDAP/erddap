@@ -148,7 +148,7 @@ This is optional.
 <advancedSearchTimeTooltip><![CDATA[
 This is optional.
 <ul>
-<li>Enter a time string with the format yyyy-MM-dd'T'HH:mm:ssZ, 
+<li>Enter a time string with the format yyyy-MM-ddTHH:mm:ssZ, 
   <br>for example, 2009-01-21T23:00:00Z.
   <br>If you specify something, you must include yyyy-MM-dd.
   <br>You can omit (backwards from the end) Z, :ss, :mm, :HH, and T.
@@ -607,7 +607,7 @@ This web page lets you convert a time value to/from an
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
   in the form
-  <span style="white-space: nowrap;">YYYY-MM-DDThh:mm:ssZ</span> - for example,
+  <span style="white-space: nowrap;">yyyy-MM-ddTHH:mm:ssZ</span> - for example,
   <span style="white-space: nowrap;">1985-01-02T00:00:00Z</span> .
 </ul>
 To avoid time zone and daylight savings confusion,
@@ -779,16 +779,17 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
 
   <br>&nbsp;
 
-<li><a name="BC">BC Years</a> - As specified in the ISO 8601:2004 standard, ERDDAP just uses the AD
-  <br>(not the BC) era for year numbers.  The normal Julian sequence of years near the
-  <br>era transition is 2 BC, 1 BC, 1 AD, 2 AD.  Because oceanographers and climatologists
-  <br>often use year 0000 for climatologies, and because ISO 8601:2004 specifies this, the
-  <br>years near the era transition in ERDDAP are -0001, 0000, 0001, 0002, respectively. 
-  <br>Thus, for BC years: ERDDAPYear = 1 - BCYear (see for yourself: 
-    <a href="{0}/convert/time.html?n=-1&amp;units=days%20since%200001-01-01">test1</a>, 
-    <a href="{0}/convert/time.html?n=1985&amp;units=years%20since%200000-01-01">test2</a> and
-    <a href="{0}/convert/time.html?n=-2&amp;units=years%20since%200000-01-01">test3</a>).
-  <br>With that in mind, ERDDAP should work for dates far in the past and future.
+<li><a name="BCE">BCE</a> <a name="BC">(BC)</a> Years - As specified in the ISO 8601:2004 standard, ERDDAP just uses the
+  <br>Common Era (CE, AD) for year numbers, not BCE.  The normal Julian sequence of
+  <br>years near the era transition is 2 BCE, 1 BCE, 1 CE, 2 CE.  Because oceanographers
+  <br>and climatologists often use year 0000 for climatologies, and because ISO 8601:2004
+  <br>specifies this, the years near the era transition in ERDDAP are -0001, 0000, 0001,
+  <br>0002, respectively. Thus, for BCE years: ERDDAPYear = 1 - BCEYear (see for yourself:
+  <br><a href="{0}/convert/time.html?n=-1&amp;units=days%20since%200001-01-01">test1</a>, 
+      <a href="{0}/convert/time.html?n=1985&amp;units=years%20since%200000-01-01">test2</a> and
+      <a href="{0}/convert/time.html?n=-2&amp;units=years%20since%200000-01-01">test3</a>).
+    With that in mind, ERDDAP should work for dates far in the
+  <br>past and future.
   <br>&nbsp;
 
 <li><a name="UTC">UTC</a> - As much as is practical, ERDDAP, like Unix time and UDUNITS-2, uses the 
@@ -939,10 +940,10 @@ For example, "seconds since 1970-01-01T00:00:00Z".
 <br>&nbsp;&nbsp;mon, mons, month, months,
 <br>&nbsp;&nbsp;yr, yrs, year, or years.
 <p>"since" is required.
-<p>The time can be any time in the format YYYY-MM-DDThh:mm:ss.sssZ,
+<p>The time can be any time in the format yyyy-MM-ddTHH:mm:ss.SSSZ,
 <br>where Z is 'Z' or a &plusmn;hh or &plusmn;hh:mm offset from the Zulu/GMT time zone.
 <br>If you omit Z and the offset, the Zulu/GMT time zone is used.
-<br>Separately, if you omit .sss, :ss.sss, :mm:ss.sss, or Thh:mm:ss.sss, the
+<br>Separately, if you omit .SSS, :ss.SSS, :mm:ss.SSS, or Thh:mm:ss.SSS, the
 <br>missing fields are assumed to be 0. 
 <p>So another example is "hours since 0001-01-01".
 <p>Technically, ERDDAP does NOT follow the UDUNITS standard when converting "years since"
@@ -1659,6 +1660,8 @@ This constraint variable has a limited number of values. They are listed here.
 <fileHelp_html>View an OPeNDAP-style HTML Data Access Form.</fileHelp_html>
 <fileHelp_htmlTable>View a .html web page with the data in a table. Times are ISO 8601 strings.</fileHelp_htmlTable>
 <fileHelp_iso19115>View the dataset's ISO 19115-2/19139 .xml metadata.</fileHelp_iso19115>
+<fileHelp_itxGrid>Download an Igor Text File. Each axis variable and each data variable becomes a wave.</fileHelp_itxGrid>
+<fileHelp_itxTable>Download an Igor Text File. Each response column becomes a wave.</fileHelp_itxTable>
 <fileHelp_json>View a table-like JSON file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_json>
 <fileHelp_mat>Download a MATLAB binary file.</fileHelp_mat>
 <fileHelpGrid_nc>Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpGrid_nc>
@@ -2119,7 +2122,8 @@ Wait {1} minutes, then try again.
 
 <loginProblemGoogleAgain><![CDATA[<li>If the Google button says you are "Signed in", 
   but clicking "Log into ERDDAP" doesn't log you into ERDDAP,
-  <br>click the Google button and sign in to Google again.
+  <br>wait 5 seconds and click "Log into ERDDAP" again. 
+  <br>If that doesn't work, repeat the entire login process.
   <br>&nbsp;
 ]]></loginProblemGoogleAgain>
 
@@ -2553,7 +2557,7 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
   EDDTable.java, EDDGrid.java, and setupDatasetsXml.html.
 -->
 <palettes>BlackBlueWhite, BlackGreenWhite, BlackRedWhite, BlackWhite, BlueWhiteRed,
-BlueWideWhiteRed, LightRainbow, Ocean, OceanDepth, Rainbow, Rainbow2, ReverseRainbow, RedWhiteBlue, RedWideWhiteBlue, Spectrum, Topography, WhiteBlueBlack, WhiteGreenBlack, WhiteRedBlack, WhiteBlack</palettes>
+BlueWideWhiteRed, LightRainbow, Ocean, OceanDepth, Rainbow, Rainbow2, ReverseRainbow, RedWhiteBlue, RedWideWhiteBlue, Spectrum, Topography, TopographyDepth, WhiteBlueBlack, WhiteGreenBlack, WhiteRedBlack, WhiteBlack</palettes>
 
 
 <!-- When possible (and it isn't always possible), ERDDAP breaks data requests
@@ -2634,7 +2638,6 @@ Widths are in ratio 1:2:3.
 <queryErrorNotExpectedAt>"{0}" was not expected at position={1}.</queryErrorNotExpectedAt>
 <queryErrorNotFoundAfter>"{0}" was not found after position={1}.</queryErrorNotFoundAfter>
 <queryErrorOccursTwice>Variable name={0} occurs twice.</queryErrorOccursTwice>
-<queryErrorOneOrderBy>The query has more than one orderBy...() constraint.</queryErrorOneOrderBy>
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 
@@ -2681,7 +2684,7 @@ Widths are in ratio 1:2:3.
   <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
-  <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML<img 
+  <a rel="help" href="http://www.w3schools.com/xml/xml_soap.asp">SOAP+XML<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
   <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP<img 
@@ -3381,6 +3384,7 @@ subsets of scientific datasets in common file formats and make graphs and maps.
   </ul>
 <li><a rel="bookmark" href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
 <li><a rel="bookmark" href="#sustainable">How sustainable is the ERDDAP project?</a>
+<li><a rel="bookmark" href="#citeDataset">How to Cite a Dataset in a Paper</a>
 <li><a rel="bookmark" href="#cite">How to Cite ERDDAP in a Paper</a>
 <li><a rel="bookmark" href="#acronym">What does the acronym "ERDDAP" stand for?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Guidelines for Data Distribution Systems</a>
@@ -3401,15 +3405,6 @@ there are problems ...
 <li>Each site returns the data in a different format (for example, XML, SOAP+XML, OPeNDAP binary
   data stream, ASCII text, HDF 4, HDF 5, NetCDF, ...) and it isn't the common file format
   that you want.
-<!--  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML<img 
-    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."/></a>,
-  <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML</a>,
-  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP binary data stream</a>,
-  <a rel="help" href="http://www.webopedia.com/TERM/A/ASCII.html">ASCII text</a>,
-  <a rel="help" href="http://hdf.ncsa.uiuc.edu/products/hdf4/index.html">HDF 4</a>,
-  <a rel="help" href="http://hdf.ncsa.uiuc.edu/products/hdf5/index.html">HDF 5</a>,
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a>, ...) -->
   <br>&nbsp;
 <li>Data from different sites is hard to compare because the dates+times are expressed in
   different formats for example, "Jan 2, 1985", "02-JAN-1985", "1/2/85", "2/1/85",
@@ -3584,7 +3579,7 @@ remote (accessed via the web) data sources.</b>
       <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
-      standard <span style="white-space: nowrap;">(YYYY-MM-DDThh:mm:ssZ,</span> for example,
+      standard <span style="white-space: nowrap;">(yyyy-MM-ddTHH:mm:ssZ,</span> for example,
       <span style="white-space: nowrap;">"1985-01-02T00:00:00Z").</span>
     (You can convert numeric times to/from ISO string times with ERDDAP's
       <a rel="bookmark" href="&erddapUrl;/convert/time.html">time converter</a>.)
@@ -4136,14 +4131,38 @@ developer, please set them straight by pointing them to the above discussion at 
 for ERDDAP development, please contact me. I sure we can work something out.&lt;/sarc&gt;) -->
 
 <br>&nbsp;
+<p><b><a name="citeDataset">How</a> to Cite a Dataset in a Paper</b>
+<br>
+It is important to let readers know how you got the data that you used in your paper.
+For each dataset that you used, please look at the dataset's metadata in the 
+Dataset Attribute Structure section at the bottom of the .html page 
+for the dataset, e.g.,
+<br><a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
+  >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html</a> .
+The metadata sometimes includes a required or suggested citation format for the dataset.
+The "license" metadata sometimes lists restrictions on the use of the data.
+
+<p>To generate a citation for a dataset:
+<br>If you think of the dataset as a scientific article, you can generate a citation 
+based on the author (see the "creator_name" or "institution" metadata),
+the date that you downloaded the data, the title (see the "title" metadata), 
+and the publisher (use the Data Access Form URL for the dataset, e.g., 
+https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html ).
+If the dataset's metadata includes a 
+<a rel="help" 
+  href="https://en.wikipedia.org/wiki/Digital_object_identifier"
+  >Digital Object Identifier (DOI)<img 
+  src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."/></a>,
+please include that in the citation you create.
+
+<br>&nbsp;
 <p><b><a name="cite">How</a> to Cite ERDDAP in a Paper</b>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
 <pre>
 Simons, R.A. 2016. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</pre>
 
-<p>Please always separately cite the dataset: see the "creator" attributes in the dataset's global metadata. Please include the URL of the dataset in ERDDAP so people know how you accessed the data.  
-
-<br>&nbsp;
 <p><b><a name="acronym">What</a> does the acronym "ERDDAP" stand for?</b>
 <br>"ERDDAP" used to be an acronym, but it outgrew that original description.
 Now, please just think of it as a name, not an acronym.
@@ -4165,7 +4184,9 @@ and serve your own data.
   Then, people will have another way to access your data and will be able to download
   the data in additional file formats or as graphs or maps.
 <li>If you have datasets that are in high demand, you can install
-  <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">multiple ERDDAPs
+  <a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  >multiple ERDDAPs
   that work together</a> to scale up and meet the needs of a large data
   distribution center.
 </ul>

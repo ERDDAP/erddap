@@ -296,8 +296,8 @@ public class Test {
         //find end of lines
         int line1End = po;
         int line2End = po;
-        while (line1End < s1.length() && s1.charAt(line1End) != '\n') line1End++;
-        while (line2End < s2.length() && s2.charAt(line2End) != '\n') line2End++;
+        while (line1End < s1.length() && "\r\n".indexOf(s1.charAt(line1End)) < 0) line1End++;
+        while (line2End < s2.length() && "\r\n".indexOf(s2.charAt(line2End)) < 0) line2End++;
         String line1Sample = String2.annotatedString(s1.substring(lastNewlinePo+1, line1End));
         String line2Sample = String2.annotatedString(s2.substring(lastNewlinePo+1, line2End));
         String annS1 = String2.annotatedString(s1);
@@ -318,7 +318,7 @@ public class Test {
      * This tests each line of the source against the regex in each line of the destination
      * to ensure each matches.  If not, this throws a RuntimeException 
      * with the specified message. 
-     * To prepare plain text for this method, you MUST add \\ before these characters {}[]()^$? .
+     * To prepare plain text for this method, you MUST add \\ before these characters {}[]()^$?+*.| .
      * Adding \\ before . is optional (since it will match).
      *
      * @param tText a newline-separated block of text.    Carriage returns are ignored.
@@ -642,22 +642,24 @@ public class Test {
     }
 
     /** 
-     * This ensures s is something (not null or "") and is valid utf-8 (see String2.findInvalidUtf8(s, "\n\t")).
+     * This ensures s is something (not null or "") and is valid Unicode 
+     * (see String2.findInvalidUnicode(s, "\r\n\t")).
      *
      * @param s
      * @param message ending with the item's name
      */
-    public static void ensureSomethingUtf8(String s, String message)
+    public static void ensureSomethingUnicode(String s, String message)
         throws RuntimeException {
         if (s == null || s.trim().length() == 0)
-            error("\n" + String2.ERROR + " in Test.ensureSomethingUtf8():\n" + 
+            error("\n" + String2.ERROR + " in Test.ensureSomethingUnicode():\n" + 
                 message + " wasn't set.");
 
-        int po = String2.findInvalidUtf8(s, "\r\n\t");
+        int po = String2.findInvalidUnicode(s, "\r\n\t");
         if (po >= 0) {
             int max = Math.min(po + 20, s.length());
-            error("\n" + String2.ERROR + " in Test.ensureSomthingUtf8():\n" + 
-                message + " has an invalid UTF-8 character (#" + (int)s.charAt(po) + ") at position=" + po + 
+            error("\n" + String2.ERROR + " in Test.ensureSomthingUnicode():\n" + 
+                message + " has an invalid Unicode character (#" + 
+                (int)s.charAt(po) + ") at position=" + po + 
                 (po > 80? 
                   "\n[#] at the center of \"" + String2.annotatedString(s.substring(po - 20, max)) + "\"" :
                   "\n[#] in \"" + String2.annotatedString(s) + "\""));
@@ -665,24 +667,26 @@ public class Test {
     }  
 
     /** 
-     * This ensures atts isn't null, and the names and attributes in atts are something (not null or "") 
-     * and are valid utf-8 (see String2.findInvalidUtf8(s, "\n\t")).
+     * This ensures atts isn't null, and the names and attributes in atts are 
+     * something (not null or "") and are valid Unicode 
+     * (see String2.findInvalidUnicode(s, "\n\t")).
      * 0 names+attributes is valid.
      *
      * @param atts
      * @param message 
      */
-    public static void ensureSomethingUtf8(Attributes atts, String message)
+    public static void ensureSomethingUnicode(Attributes atts, String message)
         throws RuntimeException {
 
         if (atts == null)
-            error("\n" + String2.ERROR + " in Test.ensureSomethingUtf8():\n" + 
+            error("\n" + String2.ERROR + " in Test.ensureSomethingUnicode():\n" + 
                 message + " wasn't set.");
         String names[] = atts.getNames();
         int n = names.length;
         for (int i = 0; i < n; i++) {
-            ensureSomethingUtf8(names[i], message + ": an attribute name");
-            ensureSomethingUtf8(atts.get(names[i]).toString(), message + ": the attribute value for name=" + names[i]);
+            ensureSomethingUnicode(names[i], message + ": an attribute name");
+            ensureSomethingUnicode(atts.get(names[i]).toString(), message + 
+                ": the attribute value for name=" + names[i]);
         }
     }  
 

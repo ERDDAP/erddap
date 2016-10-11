@@ -114,6 +114,9 @@ public class Calendar2 {
     public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
     public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
 
+    public final static Pattern ISO_DATE_PATTERN = Pattern.compile("-?\\d{4}-\\d{2}.*");
+    public final static Pattern NUMERIC_TIME_PATTERN = Pattern.compile(" *[a-z]+ +since +[0-9].+");
+
     /** 
      * This has alternating regex/timeFormat for formats where the first char is a digit.
      * This is used by suggestDateTimeFormat. 
@@ -210,6 +213,9 @@ public class Calendar2 {
     public static int IDEAL_UNITS_FIELD[] = new int[]{
         SECOND, MINUTE, HOUR_OF_DAY, DATE, MONTH, YEAR};  //month is 0..
 
+    public static int YMDHMSM_FIELDS[] = new int[]{
+        YEAR, MONTH, DATE, HOUR_OF_DAY, MINUTE, SECOND, MILLISECOND};  //month is 0
+
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not by changing the code here)
@@ -235,8 +241,8 @@ public class Calendar2 {
         if (field == MONTH)       return "month";
         if (field == DATE)        return "date";
         if (field == DAY_OF_YEAR) return "day_of_year";
-        if (field == HOUR)        return "hour";
-        if (field == HOUR_OF_DAY) return "hour_of_day";
+        if (field == HOUR)        return "hour";  //hour in am or pm!  0..11
+        if (field == HOUR_OF_DAY) return "hour_of_day";  //0..23
         if (field == MINUTE)      return "minute";
         if (field == SECOND)      return "second";
         if (field == MILLISECOND) return "millisecond";
@@ -253,9 +259,9 @@ public class Calendar2 {
     public static boolean isNumericTimeUnits(String tUnits) {
         if (tUnits == null)
             return false;
-        tUnits = tUnits.toLowerCase();
-        return tUnits.matches(" *[a-z]+ +since +[0-9].+");
+        return NUMERIC_TIME_PATTERN.matcher(tUnits.toLowerCase()).matches();
     }
+
     /**
      * This tests if the units are 
      * numeric time units (regex="[a-zA-Z]+ +since +[0-9].*") or 
@@ -269,7 +275,12 @@ public class Calendar2 {
             return false;
         tUnits = tUnits.toLowerCase();
         return tUnits.indexOf("yy") >= 0 || 
-               tUnits.matches(" *[a-z]+ +since +[0-9].+");
+               NUMERIC_TIME_PATTERN.matcher(tUnits).matches();
+    }
+
+    /** This variant assumes Zulu time zone. */
+    public static double[] getTimeBaseAndFactor(String tsUnits)  {
+        return getTimeBaseAndFactor(tsUnits, null);
     }
 
     /**
@@ -284,10 +295,11 @@ public class Calendar2 {
      *
      * @param tsUnits e.g., "minutes since 1985-01-01".
      *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
+
      * @return double[]{baseSeconds, factorToGetSeconds} 
-     * @throws Exception if trouble (tsUnits is null or invalid)
+     * @throws RuntimeException if trouble (tsUnits is null or invalid)
      */
-    public static double[] getTimeBaseAndFactor(String tsUnits) throws Exception {
+    public static double[] getTimeBaseAndFactor(String tsUnits, TimeZone timeZone)  {
         String errorInMethod = String2.ERROR + " in Calendar2.getTimeBaseAndFactor(" + tsUnits + "):\n";
 
         Test.ensureNotNull(tsUnits, errorInMethod + "units string is null.");       
@@ -295,7 +307,9 @@ public class Calendar2 {
         if (sincePo <= 0)
             throw new SimpleException(errorInMethod + "units string doesn't contain \" since \".");
         double factorToGetSeconds = factorToGetSeconds(tsUnits.substring(0, sincePo)); //it is trimmed
-        GregorianCalendar baseGC = parseISODateTimeZulu(tsUnits.substring(sincePo + 7)); //it is trimmed
+        GregorianCalendar baseGC = parseISODateTime(
+            new GregorianCalendar(timeZone == null? zuluTimeZone : timeZone),
+            tsUnits.substring(sincePo + 7)); //it is trimmed
         double baseSeconds = baseGC.getTimeInMillis() / 1000.0;
         //String2.log("  time unitsString (" + tsUnits + 
         //    ") converted to factorToGetSeconds=" + factorToGetSeconds +
@@ -307,13 +321,14 @@ public class Calendar2 {
      * This converts a unitsSince value into epochSeconds.
      * This properly handles 'special' factorToGetSeconds values (for month and year).
      *
-     * @param baseSeconds
-     * @param factorToGetSeconds
-     * @param unitsSince
+     * @param baseSeconds  from getTimeBaseAndFactor[0]
+     * @param factorToGetSeconds  from getTimeBaseAndFactor[1]
+     * @param unitsSince a numeric time value in the source units
      * @return seconds since 1970-01-01 (or NaN if unitsSince is NaN)
      */
     public static double unitsSinceToEpochSeconds(double baseSeconds, 
         double factorToGetSeconds, double unitsSince)  {
+        double epSec;
         if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {  //i.e. >= a month
             //floor yields consistent results below for decimal months
             int intUnitsSince = Math2.roundToInt(Math.floor(unitsSince)); 
@@ -339,9 +354,12 @@ public class Calendar2 {
                     gc.add(MONTH, Math2.roundToInt(frac * 12)); 
                 }
             }
-            return gcToEpochSeconds(gc);
+            epSec = gcToEpochSeconds(gc);
+        } else {
+            epSec = baseSeconds + unitsSince * factorToGetSeconds;
         }
-        return baseSeconds + unitsSince * factorToGetSeconds;
+
+        return epSec;
     }
         
     /** 
@@ -387,9 +405,9 @@ public class Calendar2 {
      * @return the factor to multiply by 'units' data to get seconds data.
      *    Since there is no exact value for months or years, this returns
      *    special values of 30*SECONDS_PER_DAY and 360*SECONDS_PER_DAY, respectively. 
-     * @throws Exception if trouble (e.g., units is null or not an expected value)
+     * @throws RuntimeException if trouble (e.g., units is null or not an expected value)
      */
-    public static double factorToGetSeconds(String units) throws Exception {
+    public static double factorToGetSeconds(String units) {
         units = units.trim().toLowerCase();
         if (units.equals("ms") || 
             units.equals("msec") || 
@@ -430,7 +448,33 @@ public class Calendar2 {
         Test.error(String2.ERROR + " in Calendar2.factorToGetSeconds: units=\"" + units + "\" is invalid.");
         return Double.NaN; //won't happen, but method needs return statement
     }
+
+    /**
+     * This converts units (e.g. "seconds") into the corresponding Calendar constant
+     * (e.g., Calendar.SECOND).
+     *
+     * @param units e.g., "s", "seconds", "hours" or "Days"
+     * @return the corresponding Calendar constant, e.g., HOUR_OF_DAY (0..23) (not HOUR, which is 0..11).
+     * @throws Exception if trouble (e.g., units is null or not an expected value)
+     */
+    public static int unitsToConstant(String units) throws Exception {
      
+        double d = Calendar2.factorToGetSeconds(units); //e.g., "SECONDS"
+        if (d == 0.001)                  return MILLISECOND;
+        if (d == 1)                      return SECOND;
+        if (d == SECONDS_PER_MINUTE)     return MINUTE;
+        if (d == SECONDS_PER_HOUR)       return HOUR_OF_DAY;
+        if (d == SECONDS_PER_DAY)        return DATE;
+        if (d == SECONDS_PER_DAY * 7)    return Calendar.WEEK_OF_YEAR;
+        if (d == SECONDS_PER_DAY * 30)   return MONTH;
+        if (d == SECONDS_PER_DAY * 360)  return YEAR;
+        //shouldn't get here
+        Test.error(String2.ERROR + " in Calendar2.factorToGetSeconds: units=\"" + units + "\" is invalid.");
+        return -1; //won't happen, but method needs return statement
+    }
+
+
+
     /**
      * This converts an ISO Zulu dateTime String to seconds since 1970-01-01T00:00:00Z,
      * rounded to the nearest milli.
@@ -448,6 +492,14 @@ public class Calendar2 {
      */
     public static double isoStringToEpochSeconds(String isoZuluString) {
         return isoZuluStringToMillis(isoZuluString) / 1000.0;
+    }
+
+    /** A variant of isoStringToEpochSeconds for any TimeZone. 
+     *
+     * @param timeZone mull is interpreted as Zulu
+     */
+    public static double isoStringToEpochSeconds(String isoString, TimeZone timeZone) {
+        return isoStringToMillis(isoString, timeZone) / 1000.0;
     }
 
     /**
@@ -468,7 +520,7 @@ public class Calendar2 {
      * - can also be + or space.
      * units can be singular or plural.
      *
-     * @param nowString  
+     * @param nowString  e.g., now-4days
      * @return epochSeconds  (rounded up to the next second) (or Double.NaN if trouble)
      * @throws SimpleException if trouble
      */
@@ -524,7 +576,7 @@ public class Calendar2 {
             gc.add(MINUTE, n);
         else if (sUnits.equals("hour") || 
                  sUnits.equals("hours"))
-            gc.add(HOUR, n);
+            gc.add(HOUR_OF_DAY, n);
         else if (sUnits.equals("day") || 
                  sUnits.equals("days"))
             gc.add(DATE, n);
@@ -635,7 +687,7 @@ public class Calendar2 {
                 gc.add(MINUTE, n);
             else if (sUnits.equals("hour") || 
                      sUnits.equals("hours"))
-                gc.add(HOUR, n);
+                gc.add(HOUR_OF_DAY, n);
             else if (sUnits.equals("day") || 
                      sUnits.equals("days"))
                 gc.add(DATE, n);
@@ -665,8 +717,8 @@ public class Calendar2 {
      */
     public static boolean isIsoDate(String s) {
         if (s == null)
-            return false;
-        return s.matches("-?\\d{4}-\\d{2}.*");
+            return false;        
+        return ISO_DATE_PATTERN.matcher(s).matches();
     }
 
     /**
@@ -924,82 +976,6 @@ public class Calendar2 {
         return gcZ;
     }
 
-    /**
-     * Given a time in the local time zone, this determines the equivalent 
-     * time in Greenwich England.
-     * Note that the time zone is still local, but the day and hour are correct 
-     * for gmt. 
-     * To try to do this correctly leads to Java's timeZone hell hole.
-     *
-     * @return the same GregorianCalendar object (for convenience)
-     */
-//    public static GregorianCalendar localToUtc(GregorianCalendar gc) {
-//        gc.add(MILLISECOND, -gc.get(ZONE_OFFSET) - gc.get(DST_OFFSET)); 
-//        return gc;
-//    }
-
-    /**
-     * Given a time in Greenwich, this determines the equivalent local time.
-     * The time zone of the gc should be local (even though it holds the day/hour
-     * of a Greenwich time).
-     * To try to do this correctly leads to Java's timeZone hell hole.
-     *
-     * @return the same GregorianCalendar object (for convenience)
-     */
-//    public static GregorianCalendar utcToLocal(GregorianCalendar gc) {
-//        gc.add(MILLISECOND, gc.get(ZONE_OFFSET) + gc.get(DST_OFFSET)); 
-//        return gc;
-//    }
-
-    /**
-     * This converts a GregorianCalendar
-     * (where year/month/day/hour/min/sec indicate UTC time,
-     * but time zone may be incorrect) to millis since Jan 1 1970 UTC.
-     * This is at least correct from 1901 to 2099 (every intervening %4=0 year 
-     * was indeed a leap year). 
-     */
-/*    public static long utcToMillis(GregorianCalendar gc) {
-        int years = getYear(gc) - 1970;
-        //-.1 ensures that x.5 rounds down
-        int leapYears = Math2.roundToInt((years / 4.0) - .1);
-        int nDays = leapYears * 366 + (years - leapYears) * 365 + 
-            gc.get(DAY_OF_YEAR) - 1; //DAY_OF_YEAR is 1..
-        return ((((nDays * 24 +
-                gc.get(HOUR_OF_DAY)) * 60L +
-                gc.get(MINUTE)) * 60L +
-                gc.get(SECOND)) * 1000L) +
-            gc.get(MILLISECOND);
-    }
-*/
-    /**
-     * This sets endGC so that it will appear to have the UTC time created by 
-     * adding 'millis' to 1970-01-01T00:00:00Z (with no daylight savings influence).
-     *
-     * @param millis some number of millis since 1970-01-01T00:00:00Z
-     * @param endGC captures the result.
-     *   It will appear to have the UTC date/time (ignore the time zone).
-     */
-/*    public static void millisToUTC(long millis, GregorianCalendar endGC) {
-        //This is a clumsy approach. Isn't there a better way?
-
-        //
-        endGC.setTimeInMillis(millis);
-//        if (endGC.getTimeZone().inDaylightTime(endGC.getTime()))  //adjust for daylight savings
-//            endGC.add(MILLISECOND, -endGC.getTimeZone().getDSTSavings());
-    }
-*/
-
-    /**
-     * This converts a GregorianCalendar
-     * (where year/month/day/hour/min/sec indicate UTC time,
-     * but time zone may be incorrect) to seconds (rounded) since Jan 1 1970 UTC.
-     * This is at least correct from 1901 to 2099 (every intervening %4=0 year 
-     * was indeed a leap year). 
-     */
-/*    public static int utcToSeconds(GregorianCalendar gc) {
-        return Math2.roundToInt(utcToMillis(gc) / 1000.0);
-    }
-*/
     /**
      * Get a GregorianCalendar object (local time zone) for the specified.
      * [Currently, it is lenient -- e.g., Dec 32 -&gt; Jan 1 of the next year.]
@@ -2073,7 +2049,8 @@ public class Calendar2 {
     public static String getCurrentISODateStringLocal() {
         return formatAsISODate(newGCalendarLocal());
     }
-     /**
+
+    /**
      * This converts an ISO Zulu DateTime string to millis since 1970-01-01T00:00:00Z.
      *
      * @param s the ISO Zulu DateTime string.
@@ -2082,7 +2059,21 @@ public class Calendar2 {
      * @throws RuntimeException if trouble (e.g., s is null or not at least #)
      */
     public static long isoZuluStringToMillis(String s) {
-        GregorianCalendar gc = parseISODateTime(newGCalendarZulu(), s);
+        return isoStringToMillis(s, zuluTimeZone);
+    }
+
+    /**
+     * This converts an ISO DateTime string from the specified timeZone 
+     * to millis since 1970-01-01T00:00:00Z.
+     *
+     * @param s the ISO DateTime string.
+     *   This may include hours, minutes, seconds, millis and Z or timezone offset (default=Zulu).  
+     * @return the millis since 1970-01-01T00:00:00Z 
+     * @throws RuntimeException if trouble (e.g., s is null or not at least #)
+     */
+    public static long isoStringToMillis(String s, TimeZone timeZone) {
+        GregorianCalendar gc = parseISODateTime(
+            new GregorianCalendar(timeZone == null? zuluTimeZone : timeZone), s);
         return gc.getTimeInMillis();
     }
 
@@ -2722,5 +2713,127 @@ public class Calendar2 {
         return da;
 
     } 
+
+    /**
+     * If s is a crude String date time format, this converts it to the 
+     * proper Java Date Time Format, e.g., yyyy-MM-dd'T'HH:mm:ssZ
+     * http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
+     * This does the best it can but it is an impossible task without seeing
+     * all the actual String date time data values.
+     * This assumes hour, if present, is 24 hour.   This doesn't handle am pm.
+     *
+     * @param s a String that might have a poorly defined String date time format.
+     * @return s converted into a correctly defined Java String date time format,
+     *   or the original s if it wasn't a String date time format.
+     */
+    public static String convertToJavaDateTimeFormat(String s) {
+        String os = s;
+
+        if (!String2.isSomething(s))
+            return s;
+        String sLC = s.toLowerCase();
+
+        if (sLC.indexOf("yy") >= 0 || //has years
+            sLC.indexOf("mm") >= 0 || //has month or minutes
+            sLC.indexOf("dd") >= 0 || //has month
+            sLC.indexOf("hh") >= 0) { //has hours
+            //fall through   these are very rare in normal text
+
+        //impossible to know if e.g. y (or m or d) should be y, yy or yyyy
+        } else if (sLC.indexOf("y-m")   >= 0 ||  //ISO
+                   sLC.indexOf("m/d/y") >= 0 ||  //US common
+                   sLC.indexOf("m.d.y") >= 0 ||  //US uncommon
+                   sLC.indexOf("d/m/y") >= 0 ||  //Europe common
+                   sLC.indexOf("ymd")   >= 0 ||  //compact ISO
+                   sLC.indexOf("mdy")   >= 0 ||  //compact US
+                   sLC.indexOf("dmy")   >= 0 ||  //compact Europe
+                   sLC.indexOf("h:m")   >= 0 ||  //time
+                   sLC.indexOf("hms")   >= 0) {  //compact time
+            //fall through   these are very rare in normal text
+
+        } else if (sLC.equals("hm")) {
+                       return "Hm";
+        } else {
+            return s; //no evidence this is a date or time format
+        }
+
+        //fix common problems
+        s = String2.replaceAllIgnoreCase(s, "mon",  "MMM");
+
+        //push iso toward yyyy-MM-dd'T'HH:mm:ssZ and thus Calendar2.parseISODateTime
+        s = String2.replaceAllIgnoreCase(s, "y-m-d", "yyyy-MM-dd");
+        s = String2.replaceAllIgnoreCase(s, "yyyy-mm-dd", "yyyy-MM-dd");
+        if (s.toLowerCase().startsWith("yy-mm-dd"))
+            s = "yyyy-MM-dd" + s.substring(8);
+        if (s.indexOf("yyyy-MM-dd") >= 0) {
+            s = String2.replaceAllIgnoreCase(s, "h:m:s", "HH:mm:ss");
+            if (s.toLowerCase().endsWith("h:m"))
+                s = s.substring(0, s.length() - 3) + "HH:mm";
+        }
+        sLC = s.toLowerCase();
+
+        //deal with different case   -> yyyy-MM-dd'T'HH:mm:ssZ   
+        //Remember: single letter accepts 1/2/4 digit values
+        //This assumes hour, if present, is 24 hour.   This doesn't handle am pm.
+        int ypo = sLC.indexOf('y');
+        int hpo = sLC.indexOf('h');
+        if (ypo < hpo) {  
+            //date (if present) is before time (which is present)
+            //e.g., y-m-d h:m:s, or h:m:s
+            s = String2.replaceAll(s.substring(0, hpo), "Y", "y") + s.substring(hpo);  //year
+            s = String2.replaceAll(s.substring(0, hpo), "m", "M") + //->months
+                String2.replaceAll(s.substring(hpo),    "M", "m");  //->minutes
+            s = String2.replaceAll(s.substring(0, hpo), "D", "d") + s.substring(hpo);  //date
+            s = s.substring(0, hpo) + String2.replaceAll(s.substring(hpo), "h", "H");  //hour
+            s = s.substring(0, hpo) + String2.replaceAll(s.substring(hpo), "S", "s");  //sec
+
+        } else if (hpo >= 0 && hpo < ypo) { 
+            //time and date exists, and time is before date 
+            //e.g., h:m:s y-m-d, or h:m:s m/d/y
+            int po = sLC.indexOf(' ');
+            if (po < 0) {
+                po = sLC.lastIndexOf('s');
+                if (po > 0)
+                    po++;
+            }
+            if (po < 0)
+                po = ypo; //not ideal; too many ambiguous options
+            s = s.substring(0, po) + String2.replaceAll(s.substring(0, po), "Y", "y");  //year
+            s = String2.replaceAll(s.substring(0, po), "M", "m") +  //->minutes
+                String2.replaceAll(s.substring(po),    "m", "M");   //->months                
+            s = s.substring(0, po) + String2.replaceAll(s.substring(0, po), "D", "d");  //date
+            s = String2.replaceAll(s.substring(0, po), "h", "H") + s.substring(po);  //hour
+            s = String2.replaceAll(s.substring(0, po), "S", "s") + s.substring(po);  //sec
+
+        } else { 
+            //hpo = -1,   no time,  just date
+            //e.g., y-m-d  
+            s = String2.replaceAll(s, "Y", "y"); //year
+            s = String2.replaceAll(s, "m", "M"); //month
+            s = String2.replaceAll(s, "D", "d"); //date
+        }
+        
+        //change a single y to yy. 
+        //It won't cause problems parsing dates and will be much easier to identify as data format.
+        ypo = s.indexOf('y');
+        int yypo = s.indexOf("yy");
+        if (ypo >= 0 && yypo < 0)
+            s = s.substring(0, ypo) + "y" + s.substring(ypo);
+
+        //if just MM, assume it's minutes    //but this is just a guess
+        if (s.equals("MM"))
+            s = "mm"; 
+
+        //special cases
+        s = String2.replaceAllIgnoreCase(s, "h:m:s",    "H:m:s");   //unknowable if it should be HH:mm:ss
+        s = String2.replaceAllIgnoreCase(s, "HH:MM:SS", "HH:mm:ss");
+        s = String2.replaceAll(s, "' '", " "); //in case already quoted
+        s = String2.replaceAll(s, " ", "' '");
+        s = String2.replaceAll(s, "'T'", "T"); //in case already quoted
+        s = String2.replaceAll(s, "T", "'T'");
+
+        //String2.log(">Calendar2.convertToJavaDateTimeFormat " + os + " -> " + s);
+        return s;
+    }
 
 }
