@@ -36,7 +36,7 @@ public class IntArray extends PrimitiveArray {
     public int[] array;
 
     /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
-     * The integer type classes override this.
+     * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return true;
@@ -704,7 +704,7 @@ public class IntArray extends PrimitiveArray {
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
      *
-     * <p>All integerTypes override this.
+     * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -742,7 +742,7 @@ public class IntArray extends PrimitiveArray {
      * (e.g., ByteArray missingValue=127) AS IS.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
-     * <p>All integerTypes override this.
+     * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed

@@ -147,13 +147,29 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
-        String2.log("EDDTableFromMultidimNcFiles.generateDatasetsXml" +
-            "\n  sampleFileName=" + sampleFileName);
+        String2.log("\n*** EDDTableFromMultidimNcFiles.generateDatasetsXml" +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex + 
+            "\nsampleFileName=" + sampleFileName +
+            " useDimensionsCSV=" + useDimensionsCSV +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nextract pre=" + tPreExtractRegex + " post=" + tPostExtractRegex + " regex=" + tExtractRegex +
+            " colName=" + tColumnNameForExtract +
+            "\nremoveMVRows=" + tRemoveMVRows + 
+            " sortFilesBy=" + tSortFilesBySourceNames + 
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
 
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
         StringArray useDimensions = StringArray.fromCSV(useDimensionsCSV);
+        tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
+            tColumnNameForExtract.trim() : "";
+        //tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
+        //    tSortedColumnSourceName.trim() : "";
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
             tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
         if (!String2.isSomething(sampleFileName)) 
@@ -208,6 +224,12 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
+        //subsetVariables
+        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
+               dataAddTable.globalAttributes().getString("subsetVariables") == null) 
+            dataAddTable.globalAttributes().add("subsetVariables",
+                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
             Attributes atts = new Attributes();
@@ -224,7 +246,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             ".*\\" + File2.getExtension(sampleFileName) :
             tFileNameRegex;
         if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = tColumnNameForExtract.trim();
+            tSortFilesBySourceNames = tColumnNameForExtract;
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +
@@ -325,12 +347,13 @@ directionsForGenerateDatasetsXml() +
 "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, rdac, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n" +
+"passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">Argo float vertical profile. Coriolis Regional Data Assembly Centres (GDAC) data from a local source.</att>\n" +
+"        <att name=\"subsetVariables\">DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, DIRECTION, DATA_CENTRE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, FLOAT_SERIAL_NO, FIRMWARE_VERSION, WMO_INST_TYPE, JULD_QC, POSITION_QC, POSITIONING_SYSTEM, PROFILE_PRES_QC, PROFILE_TEMP_QC, PROFILE_PSAL_QC, VERTICAL_SAMPLING_SCHEME, CONFIG_MISSION_NUMBER, PRES_QC, PRES_ADJUSTED_QC, PRES_ADJUSTED_ERROR, TEMP_QC, TEMP_ADJUSTED_QC, TEMP_ADJUSTED_ERROR, PSAL_QC, PSAL_ADJUSTED_QC, PSAL_ADJUSTED_ERROR</att>\n" +
+"        <att name=\"summary\">Argo float vertical profile. Coriolis Global Data Assembly Centres (GDAC) data from a local source.</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>fileNumber</sourceName>\n" +
@@ -1093,7 +1116,6 @@ directionsForGenerateDatasetsXml() +
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "argoFloats";
-        deleteCachedDatasetInfo(id);
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
@@ -1112,15 +1134,15 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  data_type {\n" +
 "    String conventions \"Argo reference table 1\";\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Data type\";\n" +
 "  }\n" +
 "  format_version {\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"File format version\";\n" +
 "  }\n" +
 "  handbook_version {\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Data handbook version\";\n" +
 "  }\n" +
 "  reference_date_time {\n" +
@@ -1178,7 +1200,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  data_center {\n" +
 "    String conventions \"Argo reference table 4\";\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Data centre in charge of float data processing\";\n" +
 "  }\n" +
 "  dc_reference {\n" +
@@ -1199,7 +1221,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  platform_type {\n" +
 "    String conventions \"Argo reference table 23\";\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Type of float\";\n" +
 "  }\n" +
 "  float_serial_no {\n" +
@@ -1209,17 +1231,16 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Serial number of the float\";\n" +
 "  }\n" +
 "  firmware_version {\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Instrument firmware version\";\n" +
 "  }\n" +
 "  wmo_inst_type {\n" +
 "    String conventions \"Argo reference table 8\";\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Coded instrument type\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.03197888e+9, 1.460630588e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1237,7 +1258,6 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Quality on date and time\";\n" +
 "  }\n" +
 "  time_location {\n" +
-"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.03197888e+9, 1.460630588e+9;\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\";\n" +
@@ -1282,7 +1302,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Quality on position (latitude and longitude)\";\n" +
 "  }\n" +
 "  positioning_system {\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Positioning system\";\n" +
 "  }\n" +
 "  profile_pres_qc {\n" +
@@ -1311,7 +1331,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  vertical_sampling_scheme {\n" +
 "    String conventions \"Argo reference table 16\";\n" +
-"    String ioos_category \"Unknown\";\n" +
+"    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Vertical sampling scheme\";\n" +
 "  }\n" +
 "  config_mission_number {\n" +
@@ -1518,11 +1538,11 @@ directionsForGenerateDatasetsXml() +
 expected=
    "String infoUrl \"http://www.argo.net/\";\n" +
 "    String institution \"Argo\";\n" +
-"    String keywords \"adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, have, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
+"    String keywords \"adjusted, argo, array, assembly, best, centre, centres, charge, coded, config_mission_number, contains, coriolis, creation, currents, cycle, cycle_number, data, data_centre, data_mode, data_state_indicator, data_type, date, date_creation, date_update, day, days, dc_reference, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, firmware_version, flag, float, float_serial_no, format, format_version, gdac, geostrophic, global, handbook, handbook_version, have, identifier, in-situ, instrument, investigator, its, its-90, juld, juld_location, juld_qc, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
 "Oceans > Ocean Pressure > Water Pressure,\n" +
 "Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
-"passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, rdac, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE\";\n" +
+"passed, performed, pi_name, platform_number, platform_type, position, position_qc, positioning, positioning_system, practical, pres, pres_adjusted, pres_adjusted_error, pres_adjusted_qc, pres_qc, pressure, principal, process, processing, profile, profile_pres_qc, profile_psal_qc, profile_temp_qc, profiles, project, project_name, psal, psal_adjusted, psal_adjusted_error, psal_adjusted_qc, psal_qc, quality, rdac, real, real time, real-time, realtime, reference, reference_date_time, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, temp, temp_adjusted, temp_adjusted_error, temp_adjusted_qc, temp_qc, temperature, through, time, type, unique, update, values, version, vertical, vertical_sampling_scheme, water, wmo_inst_type\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +

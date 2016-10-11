@@ -111,7 +111,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
      * It doesn't add a random number, so will return the same results 
      * if the inputs are the same.
      *
-     * @param loggedInAs is only used for POST datasets (which override EDD.suggestFileName)
+     * @param loggedInAs is only used for POST datasets (which overwrite EDD.suggestFileName)
      *    since loggedInAs is used by POST for row-by-row authorization
      * @param userDapQuery
      * @param fileTypeName

@@ -116,7 +116,7 @@ public class EDDTableAggregateRows extends EDDTable{
                 }
 
             } else if (localTags.equals( "<accessibleTo>")) {}
-            //accessibleTo overrides any child accessibleTo
+            //accessibleTo overwrites any child accessibleTo
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<graphsAccessibleTo>")) {}
             else if (localTags.equals("</graphsAccessibleTo>")) tGraphsAccessibleTo = content;
@@ -428,6 +428,28 @@ public class EDDTableAggregateRows extends EDDTable{
 
 
         return anyChange;
+    }
+
+    /**
+     * This returns a list of childDatasetIDs.
+     * Most dataset types don't have any children. A few, like
+     * EDDGridSideBySide do, so they overwrite this method to return the IDs.
+     *
+     * @return a new list of childDatasetIDs. 
+     */
+    public StringArray childDatasetIDs() {
+        StringArray sa = new StringArray();
+        try {
+            for (int i = 0; i < nChildren; i++) {
+                if (children[i] != null)
+                    sa.add(children[i].datasetID());
+                else if (localChildrenID[i] != null)
+                    sa.add(localChildrenID[i]);
+            }
+        } catch (Exception e) {
+            String2.log("Error caught in edd.childDatasetIDs(): " + MustBe.throwableToString(e));
+        }
+        return sa;
     }
 
     /** This gets the specified child dataset, whether local fromErddap or otherwise. */

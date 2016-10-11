@@ -37,6 +37,10 @@ public class EDVLatGridAxis extends EDVGridAxis {
 
         super(tSourceName, LAT_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
 
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the latitude variable must be a numeric dataType.");
+
         longName = LAT_LONGNAME;
         units = LAT_UNITS;
         combinedAttributes.set("_CoordinateAxisType", "Lat");  //unidata-related

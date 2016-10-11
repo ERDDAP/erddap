@@ -753,8 +753,10 @@ public class EDDGridFromEDDTable extends EDDGrid {
         int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) 
         throws Throwable {
 
-        String2.log("\n*** EDDGridFromEDDTable.generateDatasetsXml\n  eddTableID=" + 
-            eddTableID);
+        String2.log("\n*** EDDGridFromEDDTable.generateDatasetsXml" +
+            "\neddTableID=" + eddTableID + 
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         Table sourceAxisTable = new Table();  
         Table sourceDataTable = new Table();  
         Table addAxisTable = new Table();
@@ -1184,7 +1186,6 @@ directionsForGenerateDatasetsXml() +
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.10184436e+9, 1.10978836e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +

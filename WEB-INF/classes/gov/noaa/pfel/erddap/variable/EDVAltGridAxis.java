@@ -38,6 +38,10 @@ public class EDVAltGridAxis extends EDVGridAxis {
 
         super(tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
 
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the altitude variable must be a numeric dataType.");
+
         longName = ALT_LONGNAME;
         units = ALT_UNITS;
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata

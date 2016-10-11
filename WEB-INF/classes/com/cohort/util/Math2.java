@@ -1561,16 +1561,22 @@ public class Math2 {
      * @param high the high end of the range
      * @return returnLowHigh an array with 2 elements.
      *    The resulting bounds are stored as [0]=low and [1]=high.
-     *    If low or high is not finite, this returns 0,1.
-     *    If low and high are equal, this returns an appropriate wider range.
+     *    If low and high are not finite, this returns 0,1.
+     *    In all other cases, this returns an appropriate wider range.
      */
     public static double[] suggestLowHigh(double low, double high) {
         //String2.log("suggestLowHigh low=" + low + " high=" + high);
         double lowHigh[] = new double[2];
-        if (!isFinite(low) || !isFinite(high)) {
-            lowHigh[0] = 0;
-            lowHigh[1] = 1;
-            return lowHigh;
+        if (!isFinite(low)) {
+            if (!isFinite(high)) {
+                lowHigh[0] = 0;
+                lowHigh[1] = 1;
+                return lowHigh;
+            } else {
+                low = high >= 0? high / 2 : high * 2;
+            }
+        } else if (!isFinite(high)) {
+            high = low >= 0? low * 2 : low / 2;
         }
 
         //low==high?
@@ -1610,6 +1616,8 @@ public class Math2 {
             //special case for low end close to 0
         } else lowExp -= 0.05;
         lowHigh[0] = Math.floor(lowExp) * exp;
+        if (low >= 0)
+            lowHigh[0] = Math.max(0, lowHigh[0]);
         lowHigh[1] = Math.ceil((high / exp) + .05) * exp;
 
         return lowHigh;

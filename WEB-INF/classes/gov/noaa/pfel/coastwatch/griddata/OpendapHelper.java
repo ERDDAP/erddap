@@ -1490,23 +1490,29 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         String url, results, expected;
 
         if (whichTests == -1 || whichTests == 0) {
-            //this tests numeric scalars, and  numeric and String 1D arrays
-            fileName = "pointKachemakBay.nc";
-            url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
-            allDapToNc(url, dir + fileName);
-            results = NcHelper.dds(dir + fileName);
-            String2.log(results);
-            //expected = "zztop";
-            //Test.ensureEqual(results, expected, "");
+            try {
+                //this tests numeric scalars, and  numeric and String 1D arrays
+                fileName = "pointKachemakBay.nc";
+                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
+                allDapToNc(url, dir + fileName);
+                results = NcHelper.dds(dir + fileName);
+                String2.log(results);
+                //expected = "zztop";
+                //Test.ensureEqual(results, expected, "");
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+            }
         }
 
         if (whichTests == -1 || whichTests == 1) {
-            //this tests numeric and String scalars, and  numeric 1D arrays
-            fileName = "timeSeriesBodegaMarineLabBuoy.nc";
-            url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
-            allDapToNc(url, dir + fileName);
-            results = NcHelper.dds(dir + fileName);
-            expected = 
+            try {
+                //this tests numeric and String scalars, and  numeric 1D arrays
+                fileName = "timeSeriesBodegaMarineLabBuoy.nc";
+                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
+                allDapToNc(url, dir + fileName);
+                results = NcHelper.dds(dir + fileName);
+                expected = 
 "netcdf c:/data/nodcTemplates/timeSeriesBodegaMarineLabBuoy.nc {\n" +
 "  dimensions:\n" +
 "    time = 63242;\n" +
@@ -1534,17 +1540,22 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "    int crs;\n" +
 "  // global attributes:\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+                Test.ensureEqual(results, expected, "results=\n" + results);
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+            }
         }
 
         if (whichTests == -1 || whichTests == 2) {
-            //this tests numeric scalars, and    grids
-            fileName = "trajectoryAoml_tsg.nc";
-            url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
-            allDapToNc(url, dir + fileName);
-            results = NcHelper.dds(dir + fileName);
-            String2.log(results);
-            expected = 
+            try {
+                //this tests numeric scalars, and    grids
+                fileName = "trajectoryAoml_tsg.nc";
+                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
+                allDapToNc(url, dir + fileName);
+                results = NcHelper.dds(dir + fileName);
+                String2.log(results);
+                expected = 
 "netcdf c:/data/nodcTemplates/trajectoryAoml_tsg.nc {\n" +
 "  dimensions:\n" +
 "    trajectory = 1;\n" +
@@ -1578,18 +1589,23 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "    byte crs(trajectory=1);\n" +
 "  // global attributes:\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "");
+                Test.ensureEqual(results, expected, "");
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+            }
         }
 
 
         if (whichTests == -1 || whichTests == 3) {
-            //this tests numeric scalars, and   byte/numeric arrays
-            fileName = "trajectoryJason2_satelliteAltimeter.nc";
-            url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
-            allDapToNc(url, dir + fileName);
-            results = NcHelper.dds(dir + fileName);
-            String2.log(results);
-            expected = 
+            try {
+                //this tests numeric scalars, and   byte/numeric arrays
+                fileName = "trajectoryJason2_satelliteAltimeter.nc";
+                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
+                allDapToNc(url, dir + fileName);
+                results = NcHelper.dds(dir + fileName);
+                String2.log(results);
+                expected = 
 "netcdf c:/data/nodcTemplates/trajectoryJason2_satelliteAltimeter.nc {\n" +
 "  dimensions:\n" +
 "    trajectory = 1;\n" +
@@ -1613,7 +1629,11 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "    short ssha(trajectory=1, obs=3);\n" +
 "  // global attributes:\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "");
+                Test.ensureEqual(results, expected, "");
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+            }
         }
 
 /*        if (whichTests == -1 || whichTests == 4) {
@@ -1638,13 +1658,14 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         }
 */
         if (whichTests == -1 || whichTests == 5) {
-            //this tests numeric scalars, and numeric arrays
-            fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
-            url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
-            allDapToNc(url, dir + fileName);
-            results = NcHelper.dds(dir + fileName);
-            String2.log(results);
-            expected = 
+            try {
+                //this tests numeric scalars, and numeric arrays
+                fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
+                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
+                allDapToNc(url, dir + fileName);
+                results = NcHelper.dds(dir + fileName);
+                String2.log(results);
+                expected = 
 "netcdf c:/data/nodcTemplates/timeSeriesProfileUsgs_internal_wave_timeSeries.nc {\n" +
 "  dimensions:\n" +
 "    station = 1;\n" +
@@ -1666,7 +1687,11 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "    int crs;\n" +
 "  // global attributes:\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "");
+                Test.ensureEqual(results, expected, "");
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+            }
         }
 
 //currently no trajectoryProfile example

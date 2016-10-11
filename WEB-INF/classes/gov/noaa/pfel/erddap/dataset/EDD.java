@@ -390,6 +390,7 @@ public abstract class EDD {
             if (type.equals("EDDTableFromAsciiFiles"))  return EDDTableFromAsciiFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromColumnarAsciiFiles"))  return EDDTableFromColumnarAsciiFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromAwsXmlFiles")) return EDDTableFromAwsXmlFiles.fromXml(erddap, xmlReader);
+            //if (type.equals("EDDTableFromHttpGet"))     return EDDTableFromHttpGet.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromHyraxFiles"))  return EDDTableFromHyraxFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromMultidimNcFiles")) return EDDTableFromMultidimNcFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDTableFromNcFiles"))     return EDDTableFromNcFiles.fromXml(erddap, xmlReader);
@@ -577,18 +578,18 @@ public abstract class EDD {
         //make cacheDirectory (cache cleaner in RunLoadDatasets won't remove it, 
         //  but my testing environment (2+ things running) may remove it)
         File2.makeDirectory(cacheDirectory()); 
-        //Don't test Test.ensureSomethingUtf8(sourceGlobalAttributes, errorInMethod + "sourceGlobalAttributes");
-        //Admin can't control source and addAttributes may override offending characters.
-        Test.ensureSomethingUtf8(addGlobalAttributes,     errorInMethod + "addGlobalAttributes");
-        Test.ensureSomethingUtf8(combinedGlobalAttributes,errorInMethod + 
+        //Don't test Test.ensureSomethingUnicode(sourceGlobalAttributes, errorInMethod + "sourceGlobalAttributes");
+        //Admin can't control source and addAttributes may overwrite offending characters.
+        Test.ensureSomethingUnicode(addGlobalAttributes,     errorInMethod + "addGlobalAttributes");
+        Test.ensureSomethingUnicode(combinedGlobalAttributes,errorInMethod + 
             "combinedGlobalAttributes (but probably caused by the source attributes)");
-        Test.ensureSomethingUtf8(title(),                 errorInMethod + "title");
-        Test.ensureSomethingUtf8(summary(),               errorInMethod + "summary");
-        Test.ensureSomethingUtf8(institution(),           errorInMethod + "institution");
-        Test.ensureSomethingUtf8(infoUrl(),               errorInMethod + "infoUrl");
-        Test.ensureSomethingUtf8(publicSourceUrl(),       errorInMethod + "sourceUrl");
-        Test.ensureSomethingUtf8(cdmDataType(),           errorInMethod + "cdm_data_type");
-        Test.ensureSomethingUtf8(className(),             errorInMethod + "className");
+        Test.ensureSomethingUnicode(title(),                 errorInMethod + "title");
+        Test.ensureSomethingUnicode(summary(),               errorInMethod + "summary");
+        Test.ensureSomethingUnicode(institution(),           errorInMethod + "institution");
+        Test.ensureSomethingUnicode(infoUrl(),               errorInMethod + "infoUrl");
+        Test.ensureSomethingUnicode(publicSourceUrl(),       errorInMethod + "sourceUrl");
+        Test.ensureSomethingUnicode(cdmDataType(),           errorInMethod + "cdm_data_type");
+        Test.ensureSomethingUnicode(className(),             errorInMethod + "className");
         if (defaultDataQuery == null || defaultDataQuery.length() == 0) {
             //if not from <defaultDataQuery>tag, try to get from attributes
             defaultDataQuery = combinedGlobalAttributes.getString("defaultDataQuery");
@@ -888,6 +889,18 @@ public abstract class EDD {
 
     }
 
+
+    /**
+     * This returns a list of childDatasetIDs.
+     * Most dataset types don't have any children. A few, like
+     * EDDGridSideBySide do, so they overwrite this method to return the IDs.
+     *
+     * @return a new list of childDatasetIDs. 
+     */
+    public StringArray childDatasetIDs() {
+        return new StringArray();
+    }
+
     /**
      * EDD...FromErddap dataset constructors use this to try to subscribe 
      * to the remote ERDDAP dataset.
@@ -1043,13 +1056,17 @@ public abstract class EDD {
      * No error if it doesn't exist.
      */
     public static void deleteCachedDatasetInfo(String tDatasetID) {
+        if (!String2.isFileNameSafe(tDatasetID)) //e.g., null or "" or malicious name
+            return;
         String dir = datasetDir(tDatasetID);
         if (verbose)
-            String2.log("deleting cached dataset info for datasetID=" + tDatasetID);
-        File2.delete(dir + DIR_TABLE_FILENAME);
-        File2.delete(dir + FILE_TABLE_FILENAME);
-        File2.delete(dir + BADFILE_TABLE_FILENAME);
-        File2.delete(dir + QUICK_RESTART_FILENAME);
+            String2.log("*** deleting cached dataset info for datasetID=" + tDatasetID);
+        File2.deleteAllFiles(dir);  //just files, not subdirs.  Are there ever subdirs?
+        //was
+        //File2.delete(dir + DIR_TABLE_FILENAME);
+        //File2.delete(dir + FILE_TABLE_FILENAME);
+        //File2.delete(dir + BADFILE_TABLE_FILENAME);
+        //File2.delete(dir + QUICK_RESTART_FILENAME);
     }
 
     /** 
@@ -2117,7 +2134,7 @@ public abstract class EDD {
     /** 
      * This returns the axis or data variable which has the specified destination name.
      * This implementation only knows about data variables, so subclasses
-     * like EDDGrid that have axis variables, too, override it.
+     * like EDDGrid that have axis variables, too, overwrite it.
      *
      * @return the specified axis or data variable destinationName
      * @throws Throwable if not found
@@ -2332,7 +2349,7 @@ public abstract class EDD {
         }
         //special case of deprecated datasets
         if (title().indexOf("DEPRECATED") >= 0)
-            rank += 400;
+            rank += 10000;
         return rank;
 
         //standardize to 0..1000
@@ -2648,7 +2665,7 @@ public abstract class EDD {
      * It doesn't add a random number, so will return the same results 
      * if the inputs are the same.
      *
-     * @param loggedInAs is only used for POST datasets (which override EDD.suggestFileName)
+     * @param loggedInAs is only used for POST datasets (which overwrite EDD.suggestFileName)
      *    since loggedInAs is used by POST for row-by-row authorization
      * @param userDapQuery
      * @param fileTypeName
@@ -4694,6 +4711,9 @@ public abstract class EDD {
 
         //use common abbreviations in tInstitution
         tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
+            "Dataset provided by ",
+            "");
+        tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
             "NOAA CoastWatch, West Coast Node",
             "NOAA CoastWatch WCN");
         tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
@@ -4711,6 +4731,21 @@ public abstract class EDD {
         tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
             "National Climatic Data Center",
             "NCDC");
+        tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
+            "US-Department of Commerce",
+            "US DOC");
+        tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
+            "National Oceanic and Atmospheric Administration",
+            "NOAA");
+        tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
+            "Oceanic and Atmospheric Research",
+            "OAR");
+        tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
+            "Pacific Marine Environmental Laboratory",
+            "PMEL");
+        tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
+            "US DOC/NOAA/ OAR/PMEL/ NOAA Center for Tsunami Research",
+            "NOAA OAR PMEL Center for Tsunami Research");
         tInstitution = String2.replaceAllIgnoreCase(tInstitution, 
             "DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center",
             "NOAA NGDC");
@@ -4842,12 +4877,12 @@ public abstract class EDD {
                 if (sTitle.length() >= aTitle.length()) {
                     value = sTitle;
                     if (!String2.looselyContains(sTitle, aTitle) &&
-                        value.length() + aTitle.length() + 3 < 77)
+                        value.length() + aTitle.length() + 3 <= EDStatic.TITLE_DOT_LENGTH)
                         value += " (" + aTitle + ")";
                 } else {
                     value = aTitle;
                     if (!String2.looselyContains(aTitle, sTitle) &&
-                        value.length() + sTitle.length() + 3 < 77)
+                        value.length() + sTitle.length() + 3 <= EDStatic.TITLE_DOT_LENGTH)
                         value += " (" + sTitle + ")";
                 }
             }
@@ -5095,13 +5130,13 @@ public abstract class EDD {
             //String2.log(">> value.length=" + value.length() + " suffix.length=" + suffixForTitle.length());
             if (isSomething(suffixForTitle) && 
                 !String2.looselyContains(value, suffixForTitle) &&
-                value.length() + suffixForTitleP.length() < 77)
+                value.length() + suffixForTitleP.length() <= EDStatic.TITLE_DOT_LENGTH)
                 value += suffixForTitleP;
 
             //append sourceUrlAsTitle
             if (isSomething(sourceUrlAsTitle) &&
                 !String2.looselyContains(value, sourceUrlAsTitle) &&
-                value.length() + sourceUrlAsTitle.length() + 3 < 77)
+                value.length() + sourceUrlAsTitle.length() + 3 <= EDStatic.TITLE_DOT_LENGTH)
                 value = isSomething(value)? value + " (" + sourceUrlAsTitle + ")" : //e.g., 1day
                     sourceUrlAsTitle;
 
@@ -6055,7 +6090,7 @@ public abstract class EDD {
             if (tpa == null)
                 tpa = sourceAtts.get("Data_M" + inax + "imum"); //removed below
             if (tpa != null)
-                addAtts.add("data_m" + inax, tpa);
+                addAtts.add("data_m" + inax, tpa); //save as data_min data_max
         }
 
         //remove some attributes if they have specific values
@@ -6076,7 +6111,7 @@ public abstract class EDD {
             "_chunksize", "_chunksizes", "chunksize", "chunksizes", //plural is from netcdf-java 4.6.4+
             "_coordinateaxes", "coordinates", "coordintates",//sic //coordinate info often wrong or with sourceNames
             "data_bins", "data_center", 
-            "data_maximum", "data_minimum", //see above
+            "data_maximum", "data_minimum", //they were converted to data_max data_min above
             "dataset", "dataset_index",
             "easternmost_longitude", 
             "end", "end_day", "end_millisec", "end_orbit", "end_time", "end_year",
@@ -6924,7 +6959,7 @@ public abstract class EDD {
             else if (lcu.indexOf("|tendency|of|air|pressure|") >= 0 ||
                      lc.indexOf("|ptdy|") >= 0)     tStandardName = "tendency_of_air_pressure"; 
             else if (lc.indexOf("visibility") >= 0 || 
-                     lc.indexOf("|vis|") >= 0)      tStandardName = "visibility_in_air"; 
+                     lc.indexOf("|vis|") >= 0)      {} //not "visibility_in_air" because sometimes used in water 
             else if ((lc.indexOf("east") >= 0 && 
                       lc.indexOf("wind") >= 0) ||
                      lc.indexOf("|u-wind|") >= 0 || 
@@ -7142,7 +7177,7 @@ public abstract class EDD {
                     (lcu.indexOf("quality") >= 0 && lcu.indexOf("science|quality") < 0) || 
                      lcu.indexOf("flag")         >= 0                   )  {tMin = 0;    tMax = 150;}
 
-            else if (tUnitsLC.indexOf("yyyy") >= 0                      )  {tMin = 1950; tMax = 2020;}  //special case ("fraction part of year")
+            //else if (tUnitsLC.indexOf("yyyy") >= 0                    )  {tMin = 1950; tMax = 2020;}  //special case ("fraction part of year")
 
             //special: catch "percent" (but do this after statistics)
             else if (lcu.indexOf("percent") >= 0 ||
@@ -7324,8 +7359,8 @@ public abstract class EDD {
                      tStandardName.equals("sea_floor_depth_below_sea_surface") ||
                      tStandardName.equals("depth_at_nodes") ||
                      tStandardName.equals("depth")) {
-                tMin = 0;    tMax = 8000;
-                addAtts.add("colorBarPalette", "OceanDepth");
+                tMin = -8000;    tMax = 8000;
+                addAtts.add("colorBarPalette", "TopographyDepth"); //safer than OceanDepth (just blue)
                 }                
             else if (tStandardName.equals("sea_ice_thickness"           )) {tMin = 0;   tMax = 2.5;}                    
             else if (tStandardName.equals("eastward_sea_ice_velocity")  ||
@@ -7600,7 +7635,7 @@ public abstract class EDD {
             //assign if known
             if (!Double.isNaN(tMin)) addAtts.add("colorBarMinimum", tMin);
             if (!Double.isNaN(tMax)) addAtts.add("colorBarMaximum", tMax);
-            if (colorBarScale != null)
+            if (colorBarScale != null) 
                 addAtts.add("colorBarScale", colorBarScale);
         }
 
@@ -7612,10 +7647,12 @@ public abstract class EDD {
         if (!Double.isNaN(tMin) &&
             !Double.isNaN(tMax)) {
             if (tMin == tMax) {
-                addAtts.add("colorBarMinimum", Math2.smaller(tMin));
+                tMin = Math2.smaller(tMin);
+                addAtts.add("colorBarMinimum", tMin);
             } else if (tMin > tMax) {
-                addAtts.add("colorBarMinimum", tMax);
-                addAtts.add("colorBarMaximum", tMin);
+                double d = tMin; tMin = tMax; tMax = d;
+                addAtts.add("colorBarMinimum", tMin);
+                addAtts.add("colorBarMaximum", tMax);
             }
 
             //and remove display_min, display_max, display_scale
@@ -7625,6 +7662,14 @@ public abstract class EDD {
                     addAtts.add(rep[ti], "null");
         }
 
+        //and if colorBarMin <= 0, colorBarScale can't be log
+        String tScale = addAtts.getString("colorBarScale");
+        if (!String2.isSomething(tScale))
+            tScale = sourceAtts.getString("colorBarScale");
+        //String2.log(">> " + tSourceName + " min=" + tMin + " scale=" + tScale);
+        if (!Double.isNaN(tMin) && tMin <= 0 && 
+            "Log".equals(tScale))
+            addAtts.set("colorBarScale", "null");
 
         //long_name   (uses standardName)
         //note that this doesn't suggest
@@ -7686,7 +7731,7 @@ public abstract class EDD {
             lcu = String2.replaceAll(lcu, ' ', '|');
             lcu = String2.replaceAll(lcu, ',', '|');
             lcu = String2.replaceAll(lcu, '/', '|');
-            //String2.log(">>ioos_category " + lcSourceName + " unitsLC=" + tUnitsLC);
+            //String2.log(">>ioos_category lcu=" + lcu);
 
             //CATCH Identifier before others
             //see similar CATCH STATISTICS         
@@ -8034,8 +8079,10 @@ public abstract class EDD {
                 lcu.indexOf("spp")          >= 0 ||
                 lcu.indexOf("stock")        >= 0 ||
                 lcu.indexOf("taxa")         >= 0 ||
+                lcu.indexOf("taxon")        >= 0 ||
                 lcu.indexOf("scientific")   >= 0 ||
                 lcu.indexOf("vernacular")   >= 0 ||
+                lcu.indexOf("common|name")  >= 0 ||
                 lcu.indexOf("commonname")   >= 0) { 
                 addAtts.add("ioos_category", "Taxonomy");
 
@@ -8420,7 +8467,7 @@ public abstract class EDD {
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
@@ -8507,8 +8554,11 @@ public abstract class EDD {
             if (tPositive == null) 
                 tPositive = sourceAtts.getString("positive");
             float tScaleFactor = sourceAtts.getFloat("scale_factor");
-            String suggestDestName = suggestDestinationName(tSourceName, 
-                sourceAtts, addAtts, tUnits, 
+            String ttn = addTable.getColumnName(col);
+            if (!isSomething(ttn))
+                ttn = tSourceName;
+            String suggestDestName = suggestDestinationName(
+                ttn, sourceAtts, addAtts, tUnits, 
                 tPositive, tScaleFactor, tryToFindLLAT); 
             String tDestName = null;
             //String2.log(">> col=" + col + " sourceName=" + tSourceName + " units=" + tUnits + " suggestDestName=" + suggestDestName);
@@ -8626,7 +8676,7 @@ public abstract class EDD {
      *   "" or include "%y", this returns "time2". 
      * <br>Thus, this only returns "time" if the units are appropriate.
      * 
-     * @param tSourceName the sourceName.
+     * @param tSourceName the sourceName (or better: a known suggested destName)
      * @param tUnits the addUnits or sourceUnits (may be null)
      * @param tPositive the value of the "positive" attribute (e.g., up or down, may be null)
      * @param tScaleFactor from the "scale_factor" attribute, or NaN.
@@ -8678,7 +8728,7 @@ public abstract class EDD {
         tPositive = tPositive.toLowerCase();
 
         if (tryToFindLLAT) {
-            if ((lcSourceName.indexOf("lon") >= 0 ||
+            if ((lcSourceName.startsWith("lon") ||  //startsWith allows for e.g., "lon (degE)", "long"
                   lcSourceName.equals("x") ||
                   lcSourceName.equals("xax")) &&  //must check, since uCurrent and uWind use degrees_east, too
                  (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, tUnitsLC) >= 0 ||    
@@ -8689,7 +8739,7 @@ public abstract class EDD {
 
                 return "longitude"; 
                  
-            if ((lcSourceName.indexOf("lat") >= 0 ||
+            if ((lcSourceName.startsWith("lat") ||
                   lcSourceName.equals("y") ||
                   lcSourceName.equals("yax")) &&  
                  (String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, tUnitsLC) >= 0 ||
@@ -8698,12 +8748,12 @@ public abstract class EDD {
      
                 return "latitude"; 
 
-            if (lcSourceName.equals("altitude") ||  //stricter than lat and lon
-                (lcSourceName.equals("elevation") && unitsAreMeters) ||
+            if (lcSourceName.startsWith("altitude") ||  //stricter than lat and lon
+                (lcSourceName.startsWith("elevation") && unitsAreMeters) ||
                 (tPositive.equals("up") && lcSourceName.indexOf("_above_ground") < 0 && unitsAreMeters))      
                 return "altitude"; 
 
-            if (lcSourceName.equals("depth") ||     //stricter than lat and lon
+            if (lcSourceName.startsWith("depth") ||     //stricter than lat and lon
                 (tPositive.equals("down") && unitsAreMeters)) 
      
                 return "depth"; 

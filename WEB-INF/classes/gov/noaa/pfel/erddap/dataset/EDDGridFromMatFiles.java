@@ -295,10 +295,14 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      */
     public static String generateDatasetsXml(
         String tFileDir, String tFileNameRegex, String sampleFileName, 
-        int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
+        int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes)
+        throws Throwable {
 
-        String2.log("EDDGridFromMatFiles.generateDatasetsXml" +
-            "\n  sampleFileName=" + sampleFileName);
+        String2.log("\n*** EDDGridFromMatFiles.generateDatasetsXml" +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tfileNameRegex +
+            " sampleFileName=" + sampleFileName +
+            "\nreloadEveryNMinutes=" + tReloadEveryNMinutes + 
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash

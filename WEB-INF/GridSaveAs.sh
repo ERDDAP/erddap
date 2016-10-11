@@ -23,6 +23,6 @@ cp1="classes:lib/netcdfAll-latest.jar:lib/slf4j.jar"
 cp2=":lib/activation.jar:lib/lucene-core.jar:lib/mail.jar"
 cp0="$cp1$cp2"
 
-java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GridSaveAs $1 $2 $3 $4 $5
+java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GridSaveAs "$@"
 
 # finished 

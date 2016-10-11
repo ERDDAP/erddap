@@ -324,7 +324,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     }
     
     /*    
-    // This class overrides the setCompressionQuality() method to workaround
+    // This class overwrites the setCompressionQuality() method to workaround
     // a problem in compressing JPEG images using the javax.imageio package.
     public class MyImageWriteParam extends JPEGImageWriteParam {
         public MyImageWriteParam() {

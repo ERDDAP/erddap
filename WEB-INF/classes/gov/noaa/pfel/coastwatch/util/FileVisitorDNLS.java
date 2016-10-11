@@ -2165,8 +2165,8 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
             String expected = //the lastModified values change periodically
 //these are the files which were downloaded
 "remote,local,lastModified\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1461852360000\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1461852480000\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1475767320000\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1475767380000\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //no changes, do the sync again
@@ -2442,6 +2442,91 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
         debugMode = oDebugMode;
     }
         
+    /**
+     * This tallys the contents of the specified XML findTags in the specified files
+     * and returns the Tally object.
+     */
+    public static Tally tallyXml(String dir, String fileNameRegex, boolean recursive,
+        String findTags[]) throws Exception {
+
+        Table table = oneStep(dir, fileNameRegex, recursive,
+            ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
+        StringArray dirs  = (StringArray)table.getColumn(FileVisitorDNLS.DIRECTORY);
+        StringArray names = (StringArray)table.getColumn(FileVisitorDNLS.NAME);
+        Tally tally = new Tally();
+        int nErrors = 0;
+        int nFindTags = findTags.length;
+        for (int i = 0; i < names.size(); i++) {
+
+            SimpleXMLReader xmlReader = null;
+            try {
+                String2.log("reading #" + i + ": " + dirs.get(i) + names.get(i));
+                xmlReader = new SimpleXMLReader(
+                    new FileInputStream(dirs.get(i) + names.get(i)));
+                while (true) {
+                    xmlReader.nextTag();
+                    String tags = xmlReader.allTags();
+                    if (tags.length() == 0) 
+                        break;
+                    for (int t = 0; t < nFindTags; t++) {
+                        if (tags.equals(findTags[t]))
+                            tally.add(findTags[t], xmlReader.content());
+                    }
+                }
+                xmlReader.close();
+
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+                nErrors++;
+                if (xmlReader != null)
+                    xmlReader.close();
+            }
+        }
+        String2.log("\n*** tallyXml() finished. nErrors=" + nErrors);
+        return tally;
+    }
+
+    /**
+     * This finds the file names where an xml findTags matches a regex.
+     */
+    public static void findMatchingContentInXml(String dir, String fileNameRegex, boolean recursive,
+        String findTag, String matchRegex) throws Exception {
+
+        Table table = oneStep(dir, fileNameRegex, recursive,
+            ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
+        StringArray dirs  = (StringArray)table.getColumn(FileVisitorDNLS.DIRECTORY);
+        StringArray names = (StringArray)table.getColumn(FileVisitorDNLS.NAME);
+        Tally tally = new Tally();
+        int nErrors = 0;
+        for (int i = 0; i < names.size(); i++) {
+
+            SimpleXMLReader xmlReader = null;
+            try {
+                String2.log("reading #" + i + ": " + dirs.get(i) + names.get(i));
+                xmlReader = new SimpleXMLReader(
+                    new FileInputStream(dirs.get(i) + names.get(i)));
+                while (true) {
+                    xmlReader.nextTag();
+                    String tags = xmlReader.allTags();
+                    if (tags.length() == 0) 
+                        break;
+                    if (tags.equals(findTag) &&
+                        xmlReader.content().matches(matchRegex))
+                        String2.log(dirs.get(i) + names.get(i) + " has \"" + xmlReader.content() + "\"");
+                }
+                xmlReader.close();
+
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+                nErrors++;
+                if (xmlReader != null)
+                    xmlReader.close();
+            }
+        }
+        String2.log("\n*** findMatchingContentInXml() finished. nErrors=" + nErrors);
+    }
+
+
 
     /**
      * This tests the methods in this class.

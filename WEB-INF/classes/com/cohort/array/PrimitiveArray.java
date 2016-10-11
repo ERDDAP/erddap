@@ -357,7 +357,7 @@ public abstract class PrimitiveArray {
 
     /**
      * This sets size to 0.
-     * XxxArrays with objects override this to set the no-longer-accessible 
+     * XxxArrays with objects overwrite this to set the no-longer-accessible 
      * elements to null.
      *
      */
@@ -581,7 +581,7 @@ public abstract class PrimitiveArray {
     }
 
     /** This indicates if this class' type (e.g., short.class) can be contained in a long. 
-     * The integer type classes override this.
+     * The integer type classes overwrite this.
      */
     public boolean isIntegerType() {
         return false;
@@ -814,7 +814,7 @@ public abstract class PrimitiveArray {
      * (e.g., ByteArray missingValue=127) AS IS.
      * Floating point values are rounded.
      *
-     * <p>ByteArray, CharArray, ShortArray override this.
+     * <p>ByteArray, CharArray, ShortArray overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as an int. String values are parsed
@@ -900,7 +900,7 @@ public abstract class PrimitiveArray {
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
      *
-     * <p>All integerTypes override this.
+     * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -959,7 +959,7 @@ public abstract class PrimitiveArray {
      * (e.g., ByteArray missingValue=127) AS IS.
      * FloatArray and DoubleArray return "" if the stored value is NaN. 
      *
-     * <p>All integerTypes override this.
+     * <p>All integerTypes overwrite this.
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a double. String values are parsed
@@ -1245,8 +1245,8 @@ public abstract class PrimitiveArray {
      * This writes all the data to a DataOutputStream in the
      * DODS Array format (see www.opendap.org DAP 2.0 standard, section 7.3.2.1).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
-     * ByteArray, ShortArray, StringArray override this.
-     * ???Does CharArray need to override this???
+     * ByteArray, ShortArray, StringArray overwrite this.
+     * ???Does CharArray need to overwrite this???
      *
      * @param dos
      */
@@ -1260,8 +1260,8 @@ public abstract class PrimitiveArray {
      * This writes one element to a DataOutputStream in the
      * DODS Atomic-type format (see www.opendap.org DAP 2.0 standard, section 7.3.2).
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
-     * ByteArray, ShortArray, StringArray override this.
-     * ???Does CharArray need to override this???
+     * ByteArray, ShortArray, StringArray overwrite this.
+     * ???Does CharArray need to overwrite this???
      *
      * @param dos
      * @param i the index of the element to be written
@@ -2448,8 +2448,9 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * Given another PrimitiveArray List sorted (this and other must be sort(), not sortIgnoreCase),
-     * this just keeps the values which are in both PAs (the intersection(union) of the two PAs).
+     * Given another PrimitiveArray List sorted (this and other must be sort(), 
+     * not sortIgnoreCase), this just keeps the values which are in both PAs 
+     * (the intersection(union) of the two PAs).
      * <br>Like Java Collection.retainAll().
      * 
      * @param pa2 the other PrimitiveArray. It may be a different type.
@@ -3187,6 +3188,7 @@ public abstract class PrimitiveArray {
             //String2.log("applyConstraint(String)");
             int nStillGood = 0;
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                // String2.log(">> test " + getString(row) + op + value2 + " -> " + testValueOpValue(getString(row), op, value2));
                 if (testValueOpValue(getString(row), op, value2)) 
                     nStillGood++;
                 else keep.clear(row);

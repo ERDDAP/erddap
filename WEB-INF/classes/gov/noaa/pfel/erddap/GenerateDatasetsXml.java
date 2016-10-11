@@ -161,8 +161,11 @@ public class GenerateDatasetsXml {
             "EDDTableFromColumnarAsciiFiles",
             "EDDTableFromDapSequence",
             "EDDTableFromDatabase",
+            "EDDTableFromEML",
+            "EDDTableFromEMLBatch",
             "EDDTableFromErddap",
             "EDDTableFromFileNames",
+            "EDDTableFromInPort",
             "EDDTableFromIoosSOS",
             "EDDTableFromMultidimNcFiles",
             "EDDTableFromNcFiles",
@@ -307,7 +310,7 @@ public class GenerateDatasetsXml {
                     s10 = get(args, 10, s10, "ExtractRegex");
                     s11 = get(args, 11, s11, "Column name for extract");
                     s12 = get(args, 12, s12, "Sorted column source name");
-                    s13 = get(args, 13, s13, "Sort files by sourceName");
+                    s13 = get(args, 13, s13, "Sort files by sourceNames");
                     s14 = get(args, 14, s14, "infoUrl");
                     s15 = get(args, 15, s15, "institution");
                     s16 = get(args, 16, s16, "summary");
@@ -330,7 +333,7 @@ public class GenerateDatasetsXml {
                     s9  = get(args,  9,  s9, "ExtractRegex");
                     s10 = get(args, 10, s10, "Column name for extract");
                     s11 = get(args, 11, s11, "Sorted column source name");
-                    s12 = get(args, 12, s12, "Sort files by sourceName");
+                    s12 = get(args, 12, s12, "Sort files by sourceNames");
                     s13 = get(args, 13, s13, "infoUrl");
                     s14 = get(args, 14, s14, "institution");
                     s15 = get(args, 15, s15, "summary");
@@ -371,7 +374,7 @@ public class GenerateDatasetsXml {
                     s10 = get(args, 10, s10, "ExtractRegex");
                     s11 = get(args, 11, s11, "Column name for extract");
                     //s12 = get(args, 12, s12, "Sorted column source name");
-                    s12 = get(args, 12, s12, "Sort files by sourceName");
+                    s12 = get(args, 12, s12, "Sort files by sourceNames");
                     s13 = get(args, 13, s13, "infoUrl");
                     s14 = get(args, 14, s14, "institution");
                     s15 = get(args, 15, s15, "summary");
@@ -409,6 +412,30 @@ public class GenerateDatasetsXml {
                         String2.parseInt(s8, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES),
                         s9, s10, s11, s12, null));
 
+                } else if (eddType.equals("EDDTableFromEML")) {
+                    s1  = get(args,  1,  s1, "Directory to store files");
+                    s2  = get(args,  2,  s2, "EML URL or local fileName");
+                    s3  = get(args,  3,  s3, "Use local files if present (true|false)");
+                    s4  = get(args,  4,  s4, "accessibleTo");
+                    s5  = get(args,  5,  s5, "localTimeZone (e.g., US/Pacific)"); 
+                    String2.log("working...");
+                    printToBoth(EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromEML(
+                        true, //pauseForErrors
+                        s1, s2, String2.parseBoolean(s3),
+                        s4, s5));
+
+                } else if (eddType.equals("EDDTableFromEMLBatch")) {
+                    s1  = get(args,  1,  s1, "Directory to store files");
+                    s2  = get(args,  2,  s2, "EML dir (URL or local)");
+                    s3  = get(args,  3,  s3, "Filename regex");
+                    s4  = get(args,  4,  s4, "Use local files if present (true|false)");
+                    s5  = get(args,  5,  s5, "accessibleTo");
+                    s6  = get(args,  6,  s6, "localTimeZone (e.g., US/Pacific)"); 
+                    String2.log("working...");
+                    printToBoth(EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromEMLBatch(
+                        s1, s2, s3, String2.parseBoolean(s4),
+                        s5, s6));
+
                 } else if (eddType.equals("EDDTableFromErddap")) {
                     s1 = get(args, 1, s1, "URL of remote ERDDAP (ending in (\"/erddap\")");
                     s2 = get(args, 2, s2, "Keep original datasetIDs (true|false)");
@@ -433,6 +460,13 @@ public class GenerateDatasetsXml {
 
                 //INACTIVE: "EDDTableFromHyraxFiles"
 
+                } else if (eddType.equals("EDDTableFromInPort")) {
+                    s1  = get(args,  1,  s1, "URL or fullFileName for InPort xml file");
+                    s2  = get(args,  2,  s2, "Data file directory (needn't have the file(s))");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromAsciiFiles.generateDatasetsXmlFromInPort(
+                        s1, ".*", ".*", s2));
+
                 } else if (eddType.equals("EDDTableFromMultidimNcFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
@@ -444,7 +478,7 @@ public class GenerateDatasetsXml {
                     s8  = get(args,  8,  s8, "ExtractRegex");
                     s9  = get(args,  9,  s9, "Column name for extract");
                     s10 = get(args, 10, s10, "Remove missing value rows (true|false)"); //siblings: Sorted column source name");
-                    s11 = get(args, 11, s11, "Sort files by sourceName");
+                    s11 = get(args, 11, s11, "Sort files by sourceNames");
                     s12 = get(args, 12, s12, "infoUrl");
                     s13 = get(args, 13, s13, "institution");
                     s14 = get(args, 14, s14, "summary");
@@ -466,7 +500,7 @@ public class GenerateDatasetsXml {
                     s8  = get(args,  8,  s8, "ExtractRegex");
                     s9  = get(args,  9,  s9, "Column name for extract");
                     s10 = get(args, 10, s10, "Sorted column source name");
-                    s11 = get(args, 11, s11, "Sort files by sourceName");
+                    s11 = get(args, 11, s11, "Sort files by sourceNames");
                     s12 = get(args, 12, s12, "infoUrl");
                     s13 = get(args, 13, s13, "institution");
                     s14 = get(args, 14, s14, "summary");
@@ -486,7 +520,7 @@ public class GenerateDatasetsXml {
                     s6  = get(args,  6,  s6, "PostExtractRegex");
                     s7  = get(args,  7,  s7, "ExtractRegex");
                     s8  = get(args,  8,  s8, "Column name for extract");
-                    s9  = get(args,  9,  s9, "Sort files by sourceName");
+                    s9  = get(args,  9,  s9, "Sort files by sourceNames");
                     s10 = get(args, 10, s10, "infoUrl");
                     s11 = get(args, 11, s11, "institution");
                     s12 = get(args, 12, s12, "summary");
@@ -532,7 +566,7 @@ public class GenerateDatasetsXml {
                     s7  = get(args,  7,  s7, "ExtractRegex");
                     s8  = get(args,  8,  s8, "Column name for extract");
                     s9  = get(args,  9,  s9, "Sorted column source name");
-                    s10 = get(args, 10, s10, "Sort files by sourceName");
+                    s10 = get(args, 10, s10, "Sort files by sourceNames");
                     String2.log("working...");
                     printToBoth(EDDTableFromThreddsFiles.generateDatasetsXml(
                         s1, s2, s3, 

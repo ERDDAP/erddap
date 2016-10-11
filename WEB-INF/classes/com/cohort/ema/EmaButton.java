@@ -57,7 +57,7 @@ public class EmaButton extends EmaAttribute {
     public EmaButton(EmaClass parent, String name) {
         this.parent = parent;
         this.name = name;
-        defaultValue = "Submit"; //override the EmaAttribute default of ""
+        defaultValue = "Submit"; //overwrite the EmaAttribute default of ""
         getStandardProperties();
         ResourceBundle2 classRB2 = parent.getClassResourceBundle2();
         type = classRB2.getString(name + ".type", type); 

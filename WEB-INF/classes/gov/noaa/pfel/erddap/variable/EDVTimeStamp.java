@@ -18,6 +18,7 @@ import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.joda.time.*;
 import org.joda.time.format.*;
@@ -48,6 +49,8 @@ public class EDVTimeStamp extends EDV {
     protected boolean parseISOWithCalendar2; //specifically, Calendar2.parseISODateTimeZulu(); else parse with Joda. 
     protected DateTimeFormatter dateTimeFormatter; //set if !sourceTimeIsNumeric
     protected String time_precision;  //see Calendar2.epochSecondsToLimitedIsoStringT
+    protected String time_zone;  //if not specified, will be Zulu
+    protected TimeZone timeZone = null; //for Java   null=Zulu
  
     /**
      * This class holds information about the time variable,
@@ -70,9 +73,9 @@ public class EDVTimeStamp extends EDV {
      *      See
      *      http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
      *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
-     *      Any format that starts with "yyyy-MM" will be parsed with 
      *    </ul>
-     * This constructor gets/sets actual_range from actual_range, data_min, or data_max metadata.
+     * This constructor gets/sets actual_range from actual_range, actual_min, actual_max,
+     *  data_min, or data_max metadata.
      * If present, they should have the source min and max times in 'units' format.
      *
      * <p> scale_factor an dadd_offset are allowed for numeric time variables.
@@ -138,18 +141,76 @@ public class EDVTimeStamp extends EDV {
             combinedAttributes.set("long_name", longName);
         }
 
-        if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
+        time_zone = combinedAttributes.getString("time_zone");
+        combinedAttributes.remove("time_zone");
+        if (!String2.isSomething(time_zone) || time_zone.equals("UTC"))
+            time_zone = "Zulu";
+
+        if (sourceName != null && sourceName.length() >= 2 &&
+            sourceName.charAt(0) == '=') {
+            //extract fixedValue (must be epochSeconds)
+            //*** I think this has never been used so never tested !!!
+
+            fixedValue = extractFixedValue(sourceName);
             sourceTimeIsNumeric = true;
-            double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
+            sourceTimeBase = 0;
+            sourceTimeFactor = 1;
+
+            stringMissingValue = "";
+            stringFillValue = "";
+            safeStringMissingValue = "";
+            combinedAttributes.remove("missing_value");
+            combinedAttributes.remove("_FillValue");
+
+            if (!"Zulu".equals(time_zone)) //UTC -> Zulu above
+                throw new RuntimeException(
+                    "Currently, ERDDAP doesn't support time_zone's other than Zulu " +
+                    "and UTC for fixedValue numeric timestamp variables.");
+
+        }  else if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
+            //sourceTimeIsNumeric 
+            sourceTimeIsNumeric = true;
+
+            stringMissingValue = "";
+            stringFillValue = "";
+            safeStringMissingValue = "";
+            combinedAttributes.remove("missing_value");
+            combinedAttributes.remove("_FillValue");
+
+            if (!"Zulu".equals(time_zone)) //UTC -> Zulu above
+                throw new RuntimeException(
+                    "Currently, ERDDAP doesn't support time_zone's other than Zulu " +
+                    "and UTC for fixedValue numeric timestamp variables.");
+
+            double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat); //timeZone
             sourceTimeBase = td[0];
             sourceTimeFactor = td[1];
+
         } else {
+            //source time is String
             sourceTimeIsNumeric = false;
 
             //For String source values, ensure scale_factor=1 and add_offset=0
             if (scaleAddOffset)
                 throw new RuntimeException(errorInMethod + 
                     "For String source times, scale_factor and add_offset MUST NOT be used.");
+
+            stringMissingValue = addAttributes.getString("missing_value");
+            if (stringMissingValue == null)
+                stringMissingValue = sourceAttributes.getString("missing_value");
+            stringMissingValue = String2.canonical(
+                stringMissingValue == null? "" : stringMissingValue);
+            combinedAttributes.remove("missing_value");
+
+            stringFillValue = addAttributes.getString("_FillValue");
+            if (stringFillValue == null)
+                stringFillValue = sourceAttributes.getString("_FillValue");
+            stringFillValue = String2.canonical(
+                stringFillValue == null? "" : stringFillValue);
+            combinedAttributes.remove("_FillValue");
+
+            safeStringMissingValue = String2.isSomething(stringFillValue)?
+                stringFillValue : stringMissingValue;
 
             parseISOWithCalendar2 = sourceTimeFormat.startsWith("yyyy-MM");
             if (verbose) String2.log("parseISOWithCalendar2=" + parseISOWithCalendar2);
@@ -160,18 +221,20 @@ public class EDVTimeStamp extends EDV {
                 tSTF.endsWith("Z")) //not 'Z'
                 //force write 'Z' not +0000
                 tSTF = String2.replaceAll(tSTF, "Z", "'Z'"); 
-            dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(DateTimeZone.UTC);
-        }
+            
+            if (time_zone.equals("Zulu")) { //UTC -> Zulu above
+                dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(DateTimeZone.UTC);
+            } else {
+                timeZone = TimeZone.getTimeZone(time_zone);   //VERY BAD: if failure, returns GMT timeZone!!!
+                DateTimeZone dateTimeZone = DateTimeZone.forID(time_zone); //GOOD: may fail with IllegalArgumentException -- good!
+                //verify that timeZone matches dateTimeZone  (to deal with VERY BAD above)
+                Test.ensureEqual(timeZone.getRawOffset(), dateTimeZone.getStandardOffset(0),
+                    errorInMethod + 
+                    "The Java and Joda time_zone objects have different standard offsets, " +
+                    "probably because the time_zone is supported by Joda but not Java.");
+                dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(dateTimeZone);
+            }
 
-        //extract fixedValue (must be epochSeconds)
-        //*** I think this has never been used so never tested !!!
-        if (sourceName != null && sourceName.length() >= 2 &&
-            sourceName.charAt(0) == '=') {
-
-            fixedValue = extractFixedValue(sourceName);
-            sourceTimeIsNumeric = true;
-            sourceTimeBase = 0;
-            sourceTimeFactor = 1;
         }
 
         //then set missing_value  (as double.class)
@@ -192,12 +255,9 @@ public class EDVTimeStamp extends EDV {
             destinationMin = String2.parseDouble(fixedValue);  //epochSeconds
             destinationMax = destinationMin;
         } else {
-            String tMin = combinedAttributes.getString("data_min");
-            String tMax = combinedAttributes.getString("data_max");
-            if (Double.isNaN(destinationMin) && tMin != null && tMin.length() > 0) destinationMin = sourceTimeToEpochSeconds(tMin);
-            if (Double.isNaN(destinationMax) && tMax != null && tMax.length() > 0) destinationMax = sourceTimeToEpochSeconds(tMax);
+            //String2.log(">> combinedAtts=\n" + combinedAttributes.toString());
 
-            //String2.log(">>combinedAtts=\n" + combinedAttributes.toString());
+            //1st priority: actual_range
             PrimitiveArray actualRange = combinedAttributes.get("actual_range");
             if (actualRange != null) {
             //String2.log(">>destMin=" + destinationMin + " max=" + destinationMax + " sourceTimeIsNumeric=" + sourceTimeIsNumeric);
@@ -207,6 +267,20 @@ public class EDVTimeStamp extends EDV {
                     if (Double.isNaN(destinationMax)) destinationMax = sourceTimeToEpochSeconds(actualRange.getString(1));
                 }
             }
+
+            //2nd priority: actual_min actual_max
+            String tMin = combinedAttributes.getString("actual_min");
+            String tMax = combinedAttributes.getString("actual_max");
+            if (Double.isNaN(destinationMin) && tMin != null && tMin.length() > 0) destinationMin = sourceTimeToEpochSeconds(tMin);
+            if (Double.isNaN(destinationMax) && tMax != null && tMax.length() > 0) destinationMax = sourceTimeToEpochSeconds(tMax);
+
+            //3rd priority: data_min data_max
+            tMin = combinedAttributes.getString("data_min");
+            tMax = combinedAttributes.getString("data_max");
+            if (Double.isNaN(destinationMin) && tMin != null && tMin.length() > 0) destinationMin = sourceTimeToEpochSeconds(tMin);
+            if (Double.isNaN(destinationMax) && tMax != null && tMax.length() > 0) destinationMax = sourceTimeToEpochSeconds(tMax);
+
+            //swap if wrong order
             if (!Double.isNaN(destinationMin) && 
                 !Double.isNaN(destinationMax) &&
                 destinationMin > destinationMax) {
@@ -219,6 +293,17 @@ public class EDVTimeStamp extends EDV {
 
         setActualRangeFromDestinationMinMax();
         //if (reallyVerbose) String2.log("\nEDVTimeStamp created, sourceTimeFormat=" + sourceTimeFormat);  
+    }
+
+    /** 
+     * This overwrites the EDV method of the same name in order to deal
+     * with numeric source time other than "seconds since 1970-01-01T00:00:00Z".
+     */
+    public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
+        //this works because scaleAddOffset is always false (guaranteed in constructor)
+        setDestinationMinMax(
+            sourceTimeToEpochSeconds(sourceMin),
+            sourceTimeToEpochSeconds(sourceMax));
     }
 
     /**
@@ -285,7 +370,7 @@ public class EDVTimeStamp extends EDV {
      * This is the destinationMax time value in the dataset (an ISO date/time string, 
      * e.g., "2005-12-31T23:59:59Z").  
      *
-     * @return the destinationMax time (or "" if unknown or time=~now)
+     * @return the destinationMax time (or "" if unknown (and sometimes if ~now))
      */
     public String destinationMaxString() {
         return destinationToString(destinationMax); 
@@ -365,20 +450,43 @@ public class EDVTimeStamp extends EDV {
             return Double.NaN;
         if (scaleAddOffset)
             sourceTime = sourceTime * scaleFactor + addOffset;
-        double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
-        //String2.log("!sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d);
+        double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor,
+            sourceTime);
+        //String2.log(">> sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d +
+            //" = " + Calendar2.safeEpochSecondsToIsoStringT(d, "") + "Z");
         return d;
     }
 
     /**
      * If sourceTimeIsNumeric or not, this converts a source time to 
      * seconds since 1970-01-01T00:00:00Z.
+     * This non-raw version converts a stringMissingValue to NaN epochSeconds.
      *
      * @param sourceTime either a number (as a string) or a string
      * @return the source time converted to seconds since 1970-01-01T00:00:00Z.
      *   This returns NaN if trouble (sourceMissingValue, "", or invalid format).
      */
     public double sourceTimeToEpochSeconds(String sourceTime) {
+        if (!String2.isSomething(sourceTime) ||
+            stringMissingValue.equals(sourceTime) ||
+            stringFillValue.equals(sourceTime))
+            return Double.NaN;
+        //String2.log(">> sourceTime=" + sourceTime + " stringMV=" + stringMissingValue + " stringFV=" + stringFillValue); 
+        return rawSourceTimeToEpochSeconds(sourceTime);
+    }
+
+
+
+    /**
+     * If sourceTimeIsNumeric or not, this converts a source time to 
+     * seconds since 1970-01-01T00:00:00Z.
+     * The raw version converts a stringMissingValue to epochSeconds (not NaN).
+     *
+     * @param sourceTime either a number (as a string) or a string
+     * @return the source time converted to seconds since 1970-01-01T00:00:00Z.
+     *   This returns NaN if trouble (sourceMissingValue, "", or invalid format).
+     */
+    public double rawSourceTimeToEpochSeconds(String sourceTime) {
         //sourceTime is numeric
         if (sourceTimeIsNumeric) 
             return sourceTimeToEpochSeconds(String2.parseDouble(sourceTime));
@@ -387,9 +495,9 @@ public class EDVTimeStamp extends EDV {
         try {
             double d = parseISOWithCalendar2?
                 //parse with Calendar2.parseISODateTime
-                Calendar2.isoStringToEpochSeconds(sourceTime) :
+                Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
                 //parse with Joda
-                dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe
+                dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe, includes dateTimeZone
             //String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
             return d;
         } catch (Throwable t) {
@@ -496,10 +604,11 @@ public class EDVTimeStamp extends EDV {
      */
     public String epochSecondsToSourceTimeString(double epochSeconds) {
         if (Double.isNaN(epochSeconds))
-            return sourceTimeIsNumeric? "" + sourceMissingValue : "";
+            return sourceTimeIsNumeric? "" + sourceMissingValue : 
+                safeStringMissingValue;
         if (sourceTimeIsNumeric)
             return "" + epochSecondsToSourceTimeDouble(epochSeconds);
-        return dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long
+        return dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long, uses dataTimeZone
     }
 
 

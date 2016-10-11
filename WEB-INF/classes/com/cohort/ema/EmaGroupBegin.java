@@ -65,7 +65,7 @@ public class EmaGroupBegin extends EmaAttribute {
     /**
      * This returns the HTML code for the entry in the table
      * for this attribute.
-     * This overrides EmaAttribute.getTableEntry.
+     * This overwrites EmaAttribute.getTableEntry.
      * 
      * @param value is the value of this attribute, as stored in the session
      * @param displayErrorMessage if false (for example, the first time the

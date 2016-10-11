@@ -13,5 +13,3 @@ rem
 
 set thisDir=%~dp0
 java -cp classes;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/activation.jar;lib/lucene-core.jar;lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.ValidateDataSetProperties
-
-

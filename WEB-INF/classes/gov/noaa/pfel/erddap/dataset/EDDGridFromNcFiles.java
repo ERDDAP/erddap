@@ -67,7 +67,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
     }
     
     /** 
-     * Subclasses override this: 
+     * Subclasses overwrite this: 
      * EDDGridFromNcFilesUnpacked applies scale_factor and add_offset and
      * converts times variables to epochSeconds. */
     public boolean unpack() {
@@ -370,11 +370,11 @@ directionsForGenerateDatasetsXml() +
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml2");
         String results = generateDatasetsXml(
-            "/erddapTestBig/geosgrib/", ".*", 
-            "/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2",
+            String2.unitTestBigDataDir + "geosgrib/", ".*", 
+            String2.unitTestBigDataDir + "geosgrib/multi_1.glo_30m.all.grb2",
             DEFAULT_RELOAD_EVERY_N_MINUTES, null);
         String suggDatasetID = suggestDatasetID(
-            "/erddapTestBig/geosgrib/.*");
+            String2.unitTestBigDataDir + "geosgrib/.*");
 
         String expected = //as of 2012-02-20. Will change if John Caron fixes bugs I reported.
 directionsForGenerateDatasetsXml() +
@@ -385,7 +385,7 @@ directionsForGenerateDatasetsXml() +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>/erddapTestBig/geosgrib/</fileDir>\n" +
+"    <fileDir>" + String2.unitTestBigDataDir + "geosgrib/</fileDir>\n" +
 "    <fileNameRegex>.*</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
@@ -574,6 +574,10 @@ directionsForGenerateDatasetsXml() +
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
+        if ("s".equals(String2.getStringFromSystemIn(
+            "This test is very slow. Continue (y) or skip this (s)?")))
+            return;
+
         try {
 
         String dir = "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
@@ -774,7 +778,11 @@ directionsForGenerateDatasetsXml() +
      * @throws Throwable if trouble
      */
     public static void testAwsS3(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
+        String2.log("\n****************** EDDGridFromNcFiles.testAwsS3() *****************\n");
+        if ("s".equals(String2.getStringFromSystemIn(
+            "This test is very slow. Continue (y) or skip this (s)?")))
+            return;
+
         testVerboseOn();
         try {
 
@@ -1567,7 +1575,8 @@ expected =
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
-        String2.log(NcHelper.dumpString("/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2", false));
+        String2.log(NcHelper.dumpString(String2.unitTestBigDataDir + 
+            "geosgrib/multi_1.glo_30m.all.grb2", false));
 
         //generateDatasetsXml
         try {   
@@ -1901,7 +1910,7 @@ expected=
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String location \"/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
+"    String location \"" + String2.unitTestBigDataDir + "geosgrib/multi_1.glo_30m.all.grb2\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_center \"US National Weather Service - NCEP(WMC) (7)\";\n" +
 "    String Product_Status \"Operational products\";\n" +
@@ -2570,7 +2579,7 @@ expected=
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String location \"/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
+"    String location \"" + String2.unitTestBigDataDir + "geosgrib/multi_1.glo_30m.all.grb2\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_generating_Center \"US National Weather Service, National Centres for Environmental Prediction (NCEP)\";\n" +
 "    String Originating_generating_Subcenter \"0\";\n" +
@@ -4934,7 +4943,7 @@ String2.setClipboardString(results);
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
@@ -6445,6 +6454,537 @@ expected =
         SSR.displayInBrowser("file://" + tDir + tName);
     }
 
+    /**
+     * This tests generateDatasetsXml when there are groups.
+     */
+    public static void testGenerateDatasetsXmlGroups() throws Throwable {
+        //A test for Jessica Hausman
+        //the test file is from ftp://podaac.jpl.nasa.gov/allData/aquarius/L2/V4/2011/237/
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "hdf/", 
+            "Q2011237000100.L2_SCI_V4\\.0", "",
+            DEFAULT_RELOAD_EVERY_N_MINUTES, null) + "\n";
+
+        String expected = 
+directionsForGenerateDatasetsXml() +
+"!!! The source for nc_7d6c_1a03_1145 has nGridVariables=154,\n" +
+"but this dataset will only serve 1 because the others use different dimensions.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_7d6c_1a03_1145\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "nc/</fileDir>\n" +
+"    <fileNameRegex>Q2011237000100.L2_SCI_V4\\.0\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"_lastModified\">2015155145346000</att>\n" +
+"        <att name=\"Conventions\">CF-1.6</att>\n" +
+"        <att name=\"Cycle_Number\" type=\"int\">1</att>\n" +
+"        <att name=\"Data_Center\">NASA/GSFC Aquarius Data Processing Center</att>\n" +
+"        <att name=\"Data_Type\">SCI</att>\n" +
+"        <att name=\"Delta_TND_H_coefficient\" type=\"floatList\">3.549088E-4 6.833503E-5 5.9092673E-4</att>\n" +
+"        <att name=\"Delta_TND_V_coefficient\" type=\"floatList\">1.9098911E-4 1.6030413E-4 7.3374447E-4</att>\n" +
+"        <att name=\"End_Day\" type=\"int\">237</att>\n" +
+"        <att name=\"End_Millisec\" type=\"int\">5939338</att>\n" +
+"        <att name=\"End_Time\">2011237013859338</att>\n" +
+"        <att name=\"End_Year\" type=\"int\">2011</att>\n" +
+"        <att name=\"Input_Files\">Q2011237000100.L1A_SCI</att>\n" +
+"        <att name=\"institution\">NASA/GSFC OBPG</att>\n" +
+"        <att name=\"Latitude_Units\">degrees North</att>\n" +
+"        <att name=\"Longitude_Units\">degrees East</att>\n" +
+"        <att name=\"Mean_Solar_1415_MHz_Flux\" type=\"float\">89.5</att>\n" +
+"        <att name=\"Mission\">SAC-D Aquarius</att>\n" +
+"        <att name=\"Mission_Characteristics\">Nominal orbit: inclination=98.0 (Sun-synchronous); node=6PM (ascending); eccentricity=&lt;0.002; altitude=657 km; ground speed=6.825 km/sec</att>\n" +
+"        <att name=\"Node_Crossing_Time\">2011237002530000</att>\n" +
+"        <att name=\"Nominal_Navigation\">TRUE</att>\n" +
+"        <att name=\"Number_of_Beams\" type=\"int\">3</att>\n" +
+"        <att name=\"Number_of_Blocks\" type=\"int\">4083</att>\n" +
+"        <att name=\"Orbit_Node_Longitude\" type=\"float\">-95.19445</att>\n" +
+"        <att name=\"Orbit_Number\" type=\"int\">1110</att>\n" +
+"        <att name=\"Pass_Number\" type=\"int\">1</att>\n" +
+"        <att name=\"Percent_RFI\" type=\"float\">8.80208</att>\n" +
+"        <att name=\"Percent_Water\" type=\"float\">0.624676</att>\n" +
+"        <att name=\"Processing_Control\">ifile=/data1/sdpsoper/vdc/vpu0/workbuf/Q2011237000100.L1A_SCI ofile=/data1/sdpsoper/vdc/vpu0/workbuf/Q2011237000100.L2_SCI_V4.0 yancfile1=y2011082418.h5 yancfile2=y2011082500.h5 yancfile3=y2011082506.h5 c_delta_TND=0.005957319097863 0.012382688000750 0.000688525722399 0.005498736477495 0.009869297059855 0.000587055056684 0.006316487443884 0.013593252195015 0.000713618469860 0.005016272510612 0.010186625543718 0.000650544867204 0.006233499611709 0.009903518037236 0.000529897823645 0.006068613199395 0.010888564961881 0.000618946224004 ta_nominal_files=$OCDATAROOT/aquarius/radiometer/Ta_nom_4Apr2014_v2.lst wind_errortab_file=$OCDATAROOT/aquarius/radiometer/error_tab.h5 emiss_coeff_harm_file=$OCDATAROOT/aquarius/radiometer/deW_harm_coeffs_V9A_MI.h5 scat_coeff_harm_file=$OCDATAROOT/aquarius/radiometer/sigma0_harm_coeffs_V9A_MI.h5 climate_sal_file=$OCDATAROOT/aquarius/radiometer/AQ_SSS_clim_map_testbedV41_2year.h5 dtbw_win_sigma_file=$OCDATAROOT/aquarius/radiometer/dtbw_residual_win_sigma_bin_flag_V9_HHH_A.h5 dtbw_win_wav_file=$OCDATAROOT/aquarius/radiometer/dtbw_residual_win_wav_bin_V9_HHH_A.h5 rad_dta_gal_file=$OCDATAROOT/aquarius/radiometer/dta_gal_symm.h5 sss_algorithm=SIGMA0_HHH l2prod=default:rad_hh_wind_speed,rad_hhh_wind_speed,rad_exp_TaV_hhh,rad_exp_TaH_hhh,rad_exp_Ta3_hhh,anc_swh,rad_galact_Ta_ref_GO_V,rad_galact_Ta_ref_GO_H,rad_galact_dTa_V,rad_galact_dTa_H,rad_dtb_sst_wspd_V,rad_dtb_sst_wspd_H,density,SSS_unc_ran,SSS_unc_sys rad_offset_corr_file=$OCVARROOT/aquarius/rad_offset_corr_V400_Liang.h5 rad_apc_file=$OCDATAROOT/aquarius/radiometer/apc_matrix_may2013_1.h5 coeff_loss_file=$OCDATAROOT/aquarius/radiometer/coeff_loss_V4.txt rfi_mask_file=$OCDATAROOT/aquarius/radiometer/rfi_mask_1.h5 radflaglimitsfile=$OCDATAROOT/aquarius/radiometer/radiometer_flag_limits.txt dtb_emiss_wspd_file=$OCDATAROOT/aquarius/radiometer/dtb_emiss_wspd.h5 dI_U_coeff_file=$OCDATAROOT/aquarius/radiometer/dI_U_fit.h5 l2_uncertainty_maps_file=$OCDATAROOT/aquarius/radiometer/L2_uncertainty_maps_AD_V4.0.h5 rad_gainice_file=$OCDATAROOT/aquarius/radiometer/gain_ice_V3.6.h5 rad_landcorr_file=$OCDATAROOT/aquarius/radiometer/land_corr_tables_V3.6.h5 rad_landtables_file=$OCDATAROOT/aquarius/radiometer/land_tables_V3.6.h5 rad_sun_file=$OCDATAROOT/aquarius/radiometer/sun_tables_V3.6.h5 pversion=V4.0 xrayfile1=/data1/sdpsoper/vdc/vpu0/workbuf/N201123600_XRAY_GOES_24h.h5 xrayfile2=/data1/sdpsoper/vdc/vpu0/workbuf/N201123700_XRAY_GOES_24h.h5 rad_tausq_file=$OCDATAROOT/aquarius/radiometer/tausq.h5 rad_sunbak_file=$OCDATAROOT/aquarius/radiometer/sun_bak_tables.h5 rad_oceanrefl_file=$OCDATAROOT/aquarius/radiometer/ocean_reflectance.h5 rad_galwind_file=$OCDATAROOT/aquarius/radiometer/galaxy_wind_tables_V2.0.h5 coeff_nl_file=$OCDATAROOT/aquarius/radiometer/coeff_nl.txt matchup_lat=-999 matchup_lon=-999 matchup_delta_lat=1.0 matchup_delta_lon=1.0 matchup_min_distance=35.0 browse=false iopt_rfi=true iopt_nosa1=true iopt_l1b=false matchup_limits_file= rpy_adj=-0.51 0.16 0.00 instrument_gain_corr=0.00 0.00 0.00 0.00 0.00 0.00</att>\n" +
+"        <att name=\"Processing_Time\">2015155145346000</att>\n" +
+"        <att name=\"Processing_Version\">V4.0</att>\n" +
+"        <att name=\"Product_Name\">Q2011237000100.L2_SCI_V4.0</att>\n" +
+"        <att name=\"RAD_ANCILLARY_FILE1\">y2011082418.h5:N2011236_SST_OIV2AVAM_24h.nc,N2011237_SST_OIV2AVAM_24h.nc,N201123618_QATM_NCEP_6h.h5,N201123618_QMET_NCEP_6h,N201123618_SWH_NCEP_6h.h5,N201123600_SEAICE_NCEP_24h.hdf,N201123700_SEAICE_NCEP_24h.hdf,N201123600_SALINITY_HYCOM_24h.h5</att>\n" +
+"        <att name=\"RAD_ANCILLARY_FILE2\">y2011082500.h5:N2011236_SST_OIV2AVAM_24h.nc,N2011237_SST_OIV2AVAM_24h.nc,N201123700_QATM_NCEP_6h.h5,N201123700_QMET_NCEP_6h,N201123700_SWH_NCEP_6h.h5,N201123600_SEAICE_NCEP_24h.hdf,N201123700_SEAICE_NCEP_24h.hdf,N201123600_SALINITY_HYCOM_24h.h5</att>\n" +
+"        <att name=\"RAD_ANCILLARY_FILE3\">y2011082506.h5:N2011236_SST_OIV2AVAM_24h.nc,N2011237_SST_OIV2AVAM_24h.nc,N201123706_QATM_NCEP_6h.h5,N201123706_QMET_NCEP_6h,N201123706_SWH_NCEP_6h.h5,N201123600_SEAICE_NCEP_24h.hdf,N201123700_SEAICE_NCEP_24h.hdf,N201123600_SALINITY_HYCOM_24h.h5</att>\n" +
+"        <att name=\"Radiometer_Calibration_Files\">coeff_loss_V4.txt,coeff_nl.txt</att>\n" +
+"        <att name=\"Radiometer_Data_Tables\">land_tables_V3.6.h5,gain_ice_V3.6.h5,tausq.h5,ocean_reflectance.h5,sun_tables_V3.6.h5,sun_bak_tables.h5,galaxy_wind_tables_V2.0.h5,apc_matrix_may2013_1.h5,land_corr_tables_V3.6.h5,error_tab.h5,deW_harm_coeffs_V9A_MI.h5,sigma0_harm_coeffs_V9A_MI.h5,dtbw_residual_win_sigma_bin_flag_V9_HHH_A.h5,dtbw_residual_win_wav_bin_V9_HHH_A.h5,AQ_SSS_clim_map_testbedV41_2year.h5,dta_gal_symm.h5</att>\n" +
+"        <att name=\"Radiometer_Flag_Limits\">RFI: 15 7 Land: 0.001 0.01 Ice: 0.001 0.01 Wind: 15 20 Temp: 1 3 FluxD: 0.02 0.05 FluxR: 0.02 0.05 Glint: 0.02 0.05 Moon: 0.02 0.05 Gal: 0.02 0.05 RPY: 1 1 5 Flare: 5e-05 0.0001 Tb cons: 0.4 Cold Water: 5 0 TF-TA: -1 -0.3 -1 0.3 Refl 1st Stokes (moon): 0.25 0.5 Refl 1st Stokes (galaxy): 5.6 3.6 (wind): 3</att>\n" +
+"        <att name=\"Radiometer_Offset_Correction\" type=\"floatList\">0.122411124 0.04955084 0.14458 0.14635497 0.185108 0.21241409</att>\n" +
+"        <att name=\"Radiometer_Polarizations\" type=\"int\">4</att>\n" +
+"        <att name=\"Radiometer_Signals_per_Subcycle\" type=\"int\">5</att>\n" +
+"        <att name=\"Radiometer_Subcycles\" type=\"int\">12</att>\n" +
+"        <att name=\"Scatterometer_Ancillary_Files\">SEAICEFILE1=N201123600_SEAICE_NCEP_24h.hdf,TECFILE1=N201123600_TEC_IGS_24h.h5,QMETFILE1=N201123618_QMET_NCEP_6h,QMETFILE2=N201123700_QMET_NCEP_6h,QMETFILE3=N201123706_QMET_NCEP_6h,SEAICEFILE2=N201123700_SEAICE_NCEP_24h.hdf,TECFILE2=N201123700_TEC_IGS_24h.h5</att>\n" +
+"        <att name=\"Scatterometer_Coefficient_Files\">atc_prt_convert_v3.txt,ext_temps_constants_convert_v3.txt,scat_temps_convert_v1.txt,radiometer_constants_convert_v2.txt,cmd_gn.dat</att>\n" +
+"        <att name=\"Scatterometer_Polarizations\" type=\"int\">6</att>\n" +
+"        <att name=\"Scatterometer_Processing_Control\">-limits /sdps/sdpsoper/Science/OCSSW/V2015.2/data/aquarius/scatterometer/L1B_limits_flA_05-08-2012.txt -debug -1 -L2_filter_rfi -param_file /sdps/sdpsoper/Science/OCSSW/V2015.2/data/aquarius/scatterometer/params_pointing_fix_10-31-2012.txt -dir_dat /sdps/sdpsoper/Science/OCSSW/V2015.2/data/aquarius/scatterometer -dir_out /data1/sdpsoper/vdc/vpu0/workbuf -dir_scratch /dev/shm/tmp_76616093 -apc_file /sdps/sdpsoper/Science/OCSSW/V2015.2/data/aquarius/scatterometer/L2_APC_matrix_theory_10-04-2011.txt -cal_level 3 -suppress_tlm_warnings -i /data1/sdpsoper/vdc/vpu0/workbuf/Q2011237000100.L1A_SCI </att>\n" +
+"        <att name=\"Scatterometer_Subcycles\" type=\"int\">8</att>\n" +
+"        <att name=\"Sensor\">Aquarius</att>\n" +
+"        <att name=\"Sensor_Characteristics\">Number of beams=3; channels per receiver=4; frequency 1.413 GHz; bits per sample=16; instatntaneous field of view=6.5 degrees; science data block period=1.44 sec.</att>\n" +
+"        <att name=\"Software_ID\">4.00</att>\n" +
+"        <att name=\"Start_Day\" type=\"int\">237</att>\n" +
+"        <att name=\"Start_Millisec\" type=\"int\">61256</att>\n" +
+"        <att name=\"Start_Time\">2011237000101256</att>\n" +
+"        <att name=\"Start_Year\" type=\"int\">2011</att>\n" +
+"        <att name=\"Title\">Aquarius Level 2 Data</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">webadmin@oceancolor.gsfc.nasa.gov</att>\n" +
+"        <att name=\"creator_name\">NASA/GSFC OBPG</att>\n" +
+"        <att name=\"creator_url\">http://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
+"        <att name=\"Data_Center\">null</att>\n" +
+"        <att name=\"End_Day\">null</att>\n" +
+"        <att name=\"End_Millisec\">null</att>\n" +
+"        <att name=\"End_Time\">null</att>\n" +
+"        <att name=\"End_Year\">null</att>\n" +
+"        <att name=\"infoUrl\">http://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
+"        <att name=\"keywords\">aquarius, Aquarius_Flags_rad_rfi_flags, Aquarius_Flags_unnamedDim0, Aquarius_Flags_unnamedDim1, Aquarius_Flags_unnamedDim2, Aquarius_Flags_unnamedDim3, biology, center, color, data, flight, goddard, group, gsfc, level, nasa, obpg, ocean, processing, quality, space</att>\n" +
+"        <att name=\"Latitude_Units\">null</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"Longitude_Units\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"Start_Day\">null</att>\n" +
+"        <att name=\"Start_Millisec\">null</att>\n" +
+"        <att name=\"Start_Time\">null</att>\n" +
+"        <att name=\"Start_Year\">null</att>\n" +
+"        <att name=\"summary\">Aquarius Level 2 Data. NASA/Goddard Space Flight Center (GSFC) Ocean Biology Processing Group (OBPG) data from a local source.</att>\n" +
+"        <att name=\"Title\">null</att>\n" +
+"        <att name=\"title\">Aquarius Level 2 Data</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>Aquarius_Flags/_unnamedDim0</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_unnamedDim0</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags Unnamed Dim0</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>Aquarius_Flags/_unnamedDim1</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_unnamedDim1</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags Unnamed Dim1</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>Aquarius_Flags/_unnamedDim2</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_unnamedDim2</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags Unnamed Dim2</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>Aquarius_Flags/_unnamedDim3</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_unnamedDim3</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags Unnamed Dim3</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Aquarius_Flags/rad_rfi_flags</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_rad_rfi_flags</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_Unsigned\">true</att>\n" +
+"            <att name=\"long_name\">Radiometer RFI flags</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">0</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">150.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+        Test.ensureEqual(results, expected, results.length() + " " + expected.length() + 
+            "\nresults=\n" + results);
+
+    }
+
+    /**
+     * This tests writing Igor Text Files .itx.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testIgor() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testIgor() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String error = "";
+        int po;
+        EDV edv;
+
+        String id = "jplMURSST41";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        
+        //test axes-only request
+        userDapQuery = "time[(2002-06-02T09:00:00Z)],latitude[(-75):500:(75)],longitude[(-179.99):500:(180.0)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            "IgorAxes", ".itx"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.replaceAll(results, '\r', '\n');
+        //String2.log(results);
+        expected = 
+"IGOR\n" +
+"WAVES/D time2\n" + //time2 since time is an Igor reserved word
+"BEGIN\n" +
+"3.1058532E9\n" +
+"END\n" +
+"X SetScale d 3.1058532E9,3.1058532E9, \"dat\", time2\n" +
+"\n" +
+"WAVES/S latitude\n" +
+"BEGIN\n" +
+"-75.0\n" +
+"-70.0\n" +
+"-65.0\n" +
+"-60.0\n" +
+"-55.0\n" +
+"-50.0\n" +
+"-45.0\n" +
+"-40.0\n" +
+"-35.0\n" +
+"-30.0\n" +
+"-25.0\n" +
+"-20.0\n" +
+"-15.0\n" +
+"-10.0\n" +
+"-5.0\n" +
+"0.0\n" +
+"5.0\n" +
+"10.0\n" +
+"15.0\n" +
+"20.0\n" +
+"25.0\n" +
+"30.0\n" +
+"35.0\n" +
+"40.0\n" +
+"45.0\n" +
+"50.0\n" +
+"55.0\n" +
+"60.0\n" +
+"65.0\n" +
+"70.0\n" +
+"75.0\n" +
+"END\n" +
+"X SetScale d -75.0,75.0, \"degrees_north\", latitude\n" +
+"\n" +
+"WAVES/S longitude\n" +
+"BEGIN\n" +
+"-179.99\n" +
+"-174.99\n" +
+"-169.99\n" +
+"-164.99\n" +
+"-159.99\n" +
+"-154.99\n" +
+"-149.99\n" +
+"-144.99\n" +
+"-139.99\n" +
+"-134.99\n" +
+"-129.99\n" +
+"-124.99\n" +
+"-119.99\n" +
+"-114.99\n" +
+"-109.99\n" +
+"-104.99\n" +
+"-99.99\n" +
+"-94.99\n" +
+"-89.99\n" +
+"-84.99\n" +
+"-79.99\n" +
+"-74.99\n" +
+"-69.99\n" +
+"-64.99\n" +
+"-59.99\n" +
+"-54.99\n" +
+"-49.99\n" +
+"-44.99\n" +
+"-39.99\n" +
+"-34.99\n" +
+"-29.99\n" +
+"-24.99\n" +
+"-19.99\n" +
+"-14.99\n" +
+"-9.99\n" +
+"-4.99\n" +
+"0.01\n" +
+"5.01\n" +
+"10.01\n" +
+"15.01\n" +
+"20.01\n" +
+"25.01\n" +
+"30.01\n" +
+"35.01\n" +
+"40.01\n" +
+"45.01\n" +
+"50.01\n" +
+"55.01\n" +
+"60.01\n" +
+"65.01\n" +
+"70.01\n" +
+"75.01\n" +
+"80.01\n" +
+"85.01\n" +
+"90.01\n" +
+"95.01\n" +
+"100.01\n" +
+"105.01\n" +
+"110.01\n" +
+"115.01\n" +
+"120.01\n" +
+"125.01\n" +
+"130.01\n" +
+"135.01\n" +
+"140.01\n" +
+"145.01\n" +
+"150.01\n" +
+"155.01\n" +
+"160.01\n" +
+"165.01\n" +
+"170.01\n" +
+"175.01\n" +
+"END\n" +
+"X SetScale d -179.99,175.01, \"degrees_east\", longitude\n" +
+"\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test grid request
+        //when plotted, should be tiny map of world with mvs for continents:
+        //  /downloads/IgorTestJplMURSST41.png
+        userDapQuery = "analysed_sst[(2002-06-02T09:00:00Z)][(-75):500:(75)][(-179.5):500:(179.5)],mask[(2002-06-02T09:00:00Z)][(-75):500:(75)][(-179.5):500:(179.5)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            "IgorGrid", ".itx"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.replaceAll(results, '\r', '\n');
+        //String2.log(results);
+        expected = 
+"IGOR\n" +
+"WAVES/D time2\n" + //time2 since time is an Igor reserved word
+"BEGIN\n" +
+"3.1058532E9\n" +
+"END\n" +
+"X SetScale d 3.1058532E9,3.1058532E9, \"dat\", time2\n" + 
+"\n" +
+"WAVES/S latitude\n" +
+"BEGIN\n" +
+"-75.0\n" +
+"-70.0\n" +
+"-65.0\n" +
+"-60.0\n" +
+"-55.0\n" +
+"-50.0\n" +
+"-45.0\n" +
+"-40.0\n" +
+"-35.0\n" +
+"-30.0\n" +
+"-25.0\n" +
+"-20.0\n" +
+"-15.0\n" +
+"-10.0\n" +
+"-5.0\n" +
+"0.0\n" +
+"5.0\n" +
+"10.0\n" +
+"15.0\n" +
+"20.0\n" +
+"25.0\n" +
+"30.0\n" +
+"35.0\n" +
+"40.0\n" +
+"45.0\n" +
+"50.0\n" +
+"55.0\n" +
+"60.0\n" +
+"65.0\n" +
+"70.0\n" +
+"75.0\n" +
+"END\n" +
+"X SetScale d -75.0,75.0, \"degrees_north\", latitude\n" +
+"\n" +
+"WAVES/S longitude\n" +
+"BEGIN\n" +
+"-179.5\n" +
+"-174.5\n" +
+"-169.5\n" +
+"-164.5\n" +
+"-159.5\n" +
+"-154.5\n" +
+"-149.5\n" +
+"-144.5\n" +
+"-139.5\n" +
+"-134.5\n" +
+"-129.5\n" +
+"-124.5\n" +
+"-119.5\n" +
+"-114.5\n" +
+"-109.5\n" +
+"-104.5\n" +
+"-99.5\n" +
+"-94.5\n" +
+"-89.5\n" +
+"-84.5\n" +
+"-79.5\n" +
+"-74.5\n" +
+"-69.5\n" +
+"-64.5\n" +
+"-59.5\n" +
+"-54.5\n" +
+"-49.5\n" +
+"-44.5\n" +
+"-39.5\n" +
+"-34.5\n" +
+"-29.5\n" +
+"-24.5\n" +
+"-19.5\n" +
+"-14.5\n" +
+"-9.5\n" +
+"-4.5\n" +
+"0.5\n" +
+"5.5\n" +
+"10.5\n" +
+"15.5\n" +
+"20.5\n" +
+"25.5\n" +
+"30.5\n" +
+"35.5\n" +
+"40.5\n" +
+"45.5\n" +
+"50.5\n" +
+"55.5\n" +
+"60.5\n" +
+"65.5\n" +
+"70.5\n" +
+"75.5\n" +
+"80.5\n" +
+"85.5\n" +
+"90.5\n" +
+"95.5\n" +
+"100.5\n" +
+"105.5\n" +
+"110.5\n" +
+"115.5\n" +
+"120.5\n" +
+"125.5\n" +
+"130.5\n" +
+"135.5\n" +
+"140.5\n" +
+"145.5\n" +
+"150.5\n" +
+"155.5\n" +
+"160.5\n" +
+"165.5\n" +
+"170.5\n" +
+"175.5\n" +
+"END\n" +
+"X SetScale d -179.5,175.5, \"degrees_east\", longitude\n" +
+"\n" +
+"WAVES/D/N=(31,72,1) analysed_sst\n" + //Igor wants nRow,nCol,nLayer[,nChunk]! row and col are switched from logical order!
+"BEGIN\n" +
+"-1.8000000000000007\n" +
+"-1.8000000000000007\n" +
+"-1.8000000000000007\n" +
+"-1.8000000000000007\n" +
+"-1.8000000000000007\n" +
+"-1.8000000000000007\n" +
+"-1.7950000000000017\n" +
+"-1.7959999999999994\n" +
+"NaN\n";
+        Test.ensureEqual(results.substring(0, expected.length()), 
+            expected, "\nresults=\n" + results);
+
+expected = 
+"END\n" +
+"X SetScale d -1.8000000000000007,31.895, \"degree_C\", analysed_sst\n" +
+"X SetScale /I z, 1.0230084E9,1.0230084E9, \"dat\", analysed_sst\n" +
+"X SetScale /P y, -75.0,5.0, \"degrees_north\", analysed_sst\n" +
+"X SetScale /P x, -179.5,5.0, \"degrees_east\", analysed_sst\n" +
+"X Note analysed_sst, \"RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2\"\n" +
+"\n" +
+"WAVES/B/N=(31,72,1) mask\n" +
+"BEGIN\n" +
+"9\n" +
+"9\n" +
+"9\n" +
+"9\n";
+        po = Math.max(0, results.indexOf(expected.substring(0,80)));
+        Test.ensureEqual(results.substring(po, po + expected.length()), 
+            expected, "\nresults=\n" + results + "\npo=" + po);
+
+expected = 
+"2\n" +
+"9\n" +
+"9\n" +
+"9\n" +
+"9\n" +
+"9\n" +
+"END\n" +
+"X SetScale d 1,9, \"\", mask\n" +
+"X SetScale /I z, 1.0230084E9,1.0230084E9, \"dat\", mask\n" +
+"X SetScale /P y, -75.0,5.0, \"degrees_north\", mask\n" +
+"X SetScale /P x, -179.5,5.0, \"degrees_east\", mask\n" +
+"X Note mask, \"RowsDim:longitude;ColumnsDim:latitude;LayersDim:time2\"\n" +
+"\n";
+        Test.ensureEqual(results.substring(results.length() - expected.length()), 
+            expected, "\nresults=\n" + results);
+
+        String2.log("\n*** testIgor finished successfully.\n" +
+            "The grid test file is " + dir + tName);
+
+    }
+
+
+
+    /**
+     * THIS ISN'T FINISHED. 
+     * THE FILE HAS GROUPS BUT THE VARIABLES HAVE NO NAMED DIMENSIONS.
+     * ERDDAP CURRENTLY REQUIRES NAMED DIMENSIONS. 
+     * This reading variables in groups.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGroups() throws Throwable {
+        String2.log("\n************* EDDGridFromNcFiles.testGroups() ************\n");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        //the test file is from ftp://podaac.jpl.nasa.gov/allData/aquarius/L2/V4/2011/237/
+
+        String id = "testGroups";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String testName = "EDDGridFromNcFiles_groups";
+
+    }
+
+
 
     /**
      * This tests this class.
@@ -6484,6 +7024,7 @@ expected =
         testGenerateDatasetsXmlWithRemoteThreddsFiles();
         testRemoteThreddsFiles(false); //deleteCachedInfo 
         testMatchAxisNDigits();
+        testIgor();
 
         testGenerateDatasetsXmlAwsS3();   //VERY SLOW
         testAwsS3(false);  //deleteCachedInfo   //VERY SLOW
@@ -6499,8 +7040,12 @@ expected =
         //testGenerateDatasetsXmlWithRemoteHyraxFiles();  //Test server doesn't support Byte Ranges.
         //testRemoteHyraxFiles(false); //deleteCachedInfo //Test server doesn't support Byte Ranges.
 
+        //NOT FINISHED. test file for groups also has no named dimensions.  
+        //testGenerateDatasetsXmlGroups();
+        //testGroups();
+
         //one time tests
-        //String fiName = "/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2";
+        //String fiName = String2.unitTestBigDataDir + "geosgrib/multi_1.glo_30m.all.grb2";
         //String2.log(NcHelper.dumpString(fiName, false));
         //NetcdfDataset in = NetcdfDataset.openDataset(fiName);
         //in.close();

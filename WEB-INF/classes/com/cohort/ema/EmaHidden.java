@@ -46,7 +46,7 @@ public class EmaHidden extends EmaAttribute {
     /**
      * This returns the HTML code for the entry in the table
      * for this attribute.
-     * This overrides EmaAttribute.getTableEntry.
+     * This overwrites EmaAttribute.getTableEntry.
      *
      * <p>!!! This shouldn't be called because this doesn't result in a
      * row for a table and so shouldn't be in a table. Instead,

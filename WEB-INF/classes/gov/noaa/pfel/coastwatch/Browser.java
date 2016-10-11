@@ -825,7 +825,7 @@ public abstract class Browser extends HttpServlet {
             for (int j = 0; j < names.length; j++) {
                 try {
                     String2.log("doing " + names[j]);
-                    SSR.unzip(tDir + names[j], tDir, true); //true=ignoreZipDirectories
+                    SSR.unzip(tDir + names[j], tDir, true, null); //true=ignoreZipDirectories
                     String ahName = names[j].substring(0, names[j].length() - 4); //remove .zip
                     String atName = "AT" + ahName.substring(2);
                     File2.rename(tDir, ahName, atName);
@@ -845,7 +845,7 @@ public abstract class Browser extends HttpServlet {
             for (int j = 0; j < names.length; j++) {
                 try {
                     String2.log("doing " + names[j]);
-                    SSR.unzip(tDir + names[j], tDir, true); //true=ignoreZipDirectories
+                    SSR.unzip(tDir + names[j], tDir, true, null); //true=ignoreZipDirectories
                     String atName = names[j].substring(0, names[j].length() - 4); //remove .zip
                     String ahName = "AH" + atName.substring(2);
                     File2.rename(tDir, ahName, atName);

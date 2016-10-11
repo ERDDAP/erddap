@@ -790,7 +790,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     public static String generateDatasetsXml(String url, boolean keepOriginalID) 
         throws Throwable {
 
-        String2.log("EDDGridFromErddap.generateDatasetsXml\n  url=" + url);
+        String2.log("\n*** EDDGridFromErddap.generateDatasetsXml" +
+            "\nurl=" + url + " keepOriginalID=" + keepOriginalID);
 
         //make the StringBuilder to hold the results and add documentation
         StringBuilder sb = new StringBuilder();
@@ -1628,10 +1629,15 @@ expected2 =
 
     public static void testDataVarOrder() throws Throwable {
         String2.log("\n*** EDDGridFromErddap.testDataVarOrder()");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDataVarOrder"); 
-        String results = String2.toCSSVString(eddGrid.dataVariableDestinationNames());
-        String expected = "SST, mask, analysis_error";
-        Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+        try {
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDataVarOrder"); 
+            String results = String2.toCSSVString(eddGrid.dataVariableDestinationNames());
+            String expected = "SST, mask, analysis_error";
+            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error"); 
+        }
     }
 
 

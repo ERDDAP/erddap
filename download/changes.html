@@ -42,20 +42,243 @@
 <table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
   cellspacing="0"> 
 
+<!-- ****************************************************************************** -->
+<tr>
+<td>
+<h2><a name="changes1.74">Changes</a> in ERDDAP version 1.74 (released 2016-10-07)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <br>&nbsp;
+  <ul>
+  <li>Now, when a List of Datasets (All, or from a search)
+    is displayed on a web page, long titles are displayed on multiple lines.
+    Previously, the middle of a long title was replaced by " ... ".
+    Thanks to Margaret O'Brien, LTER, and EML.
+    <br>&nbsp;
+  <!--li> FLAWED! Announce after fixed.
+    New data file type: Users can now request gridded and tabular data 
+    in the Igor .itx format.
+    <br>&nbsp; -->
+  </ul>
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <br>&nbsp;
+<ul>
+<li>TO DO: On Linux computers, change the Apache timeout settings
+  so that time-consuming user requests don't timeout 
+  (with what often appears as a "Proxy" or "Bad Gateway" error).
+  As the root user:
+  <ol>
+  <li>Modify the Apache httpd.conf file (usually in /etc/httpd/conf/ ):
+    <br>Change the existing <tt>&lt;Timeout&gt;</tt> setting 
+      (or add one at the end of the file)
+      to 3600 (seconds), instead of the default 60 or 120 seconds.
+    <br>Change the existing <tt>&lt;ProxyTimeout&gt;</tt> setting 
+      (or add one at the end of the file)
+      to 3600 (seconds), instead of the default 60 or 120 seconds.
+  <li>Restart Apache: <tt>/usr/sbin/apachectl -k graceful</tt> 
+    (but sometimes it is in a different directory).
+  </ol>
+  Thanks to Thomas Oliver.
+  <br>&nbsp;
+<li>NEW: [bigParentDirectory/hardFlag directory
+  <br>This works like the flag directory, 
+  but the hardFlag version also deletes of the all cached dataset information.
+  There are no URLs to set a hardFlag. This can only be used by putting a file in that directory.
+  <br>hardFlags are very useful when you do something that causes a 
+  change in how ERDDAP reads and interprets the source data, for example,
+  when you install a new version of ERDDAP or when you have made certain types 
+  of changes to a dataset's definition in datasets.xml.
+  See <a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#hardFlag"
+  >this documentation</a>.
+  Thanks to John Kerfoot and all the Argo groups.
+  <br>&nbsp;
+<li>NEW: GenerateDatasetsXml now has a EDDTableFromEML option
+  <br>which reads a dataset description in an Ecological Metadata Language (EML)
+  file, downloads the related data file, 
+  and generates a chunk of datasets.xml so that the dataset can be added to ERDDAP.
+  There is also an EDDTableFromEMLBatch which does the same thing for all of the 
+  EML files in a directory.
+  This works very well because EML does an excellent job of describing 
+  the dataset and because KNB and LTER make the actual data files available.
+  <br>EML plus ERDDAP could be a great combination, since ERDDAP could 
+  give users more direct access to the wealth of KNB and LTER data 
+  and help those projects meet the US government's 
+  <a rel="help" 
+    href="https://www.whitehouse.gov/blog/2013/02/22/expanding-public-access-results-federally-funded-research"
+    >Public Access to Research Results (PARR) requirements</a>
+  by making the data available via a web service.
+  <br>See 
+  <a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/download/EDDTableFromEML.html"
+  >this documentation</a>.
+  Thanks to Margaret O'Brien, LTER, and EML.
+  <br>&nbsp;
+<li>NEW: GenerateDatasetsXml now has a EDDTableFromInPort option
+  <br>which reads a dataset description in an InPort XML file and tries to generate 
+  a chunk of datasets.xml so that the dataset can be added to ERDDAP.
+  This rarely creates a ready-to-use chunk of XML for datasets.xml, 
+  but it will create a good rough draft that is a good starting point
+  for editing by a human.
+  <br>It would be great if people using InPort to document their datasets 
+  would also use ERDDAP to make the actual data available 
+  via ERDDAP's web services
+  and thereby meet the US government's and NOAA's
+  <a rel="help" 
+    href="https://www.whitehouse.gov/blog/2013/02/22/expanding-public-access-results-federally-funded-research"
+    >Public Access to Research Results (PARR) requirements</a>
+  by making the data available via a web service.
+  This is a solution that could be used right now.
+  (bob.simons at noaa.gov is happy to help.)
+  <br>See 
+  <a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromInPort"
+  >this documentation</a>.
+  Thanks to Evan Howell and Melanie Abecassis.
+  <br>&nbsp;
+<li>CHANGE: ERDDAP now uses netcdf-java 4.6.6.
+  <br>With earlier versions, 
+  netcdf-java read some fill values (perhaps, just in netcdf-4 files) as 0's. 
+  Now it reads some of them as the netcdf
+  standard fill value: -127 for bytes, -32767 for shorts, -2147483647 for ints.
+  Unidata says the new behavior is the proper behavior.
+  If a variable in a dataset starts showing one of these values where they used 
+  to show 0's, you can add, e.g.,
+  <br>&lt;att name="_FillValue" type="short"&gt;-32767&lt;/att&gt;
+  <br>to the variable's addAttributes to tell ERDDAP to treat that
+  value as a missing_value/_FillValue.
+  However, in many cases, that will not yield the desired result: 0's.
+  If so, consider modifying the files with NCO or rewriting the files.
+  Complaints? Please contact Unidata ;-)
+  <br>&nbsp;
+<li>TO DO: New TopographyDepth palette
+  <br>I encourage you to switch all datasets that use the OceanDepth palette
+  to use the new TopographyDepth palette, which is like Topography except
+  with the colors flipped, so that it is suitable for depth values (positive=down),
+  instead of altitude values (positive=up).  The recommended settings 
+  for this palette are:<pre>
+    &lt;att name="colorBarMaximum" type="double"&gt;8000.0&lt;/att&gt;
+    &lt;att name="colorBarMinimum" type="double"&gt;-8000.0&lt;/att&gt;
+    &lt;att name="colorBarPalette"&gt;TopographyDepth&lt;/att&gt; </pre>
+<li>NEW FEATURE: String missing_value and/or _FillValue
+  <br>If a String variable defines a missing_value and/or _FillValue, 
+  ERDDAP will now remove those values from the data and replace them with
+  an empty string, so that missing values appear as empty strings,
+  as with other datasets in ERDDAP.
+  Thanks to Margaret O'Brien, LTER, and EML.
+  <br>&nbsp;
+<li>NEW FEATURE: Support for Local Times
+  <br>timestamp variables with source data from Strings can now
+  specify a time zone via a "time_zone" attribute
+  which leads ERDDAP to convert the local-time-zone source times (some in
+  Standard time, some in Daylight Savings time) into Zulu times.
+  The list of valid time zone names is probably identical to the list 
+  in the TZ column in
+  <a rel="help" 
+  href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones">this table</a>.
+  The default is "Zulu".
+  Common US time zones are:
+  US/Hawaii, US/Alaska, US/Pacific, US/Mountain, US/Arizona, US/Central, US/Eastern.
+  For timestamp variables with numeric source data, you can specify the
+  "time_zone" attribute, but the value must be "Zulu" or "UTC".
+  Thanks to Margaret O'Brien, LTER, and EML.
+  <br>&nbsp;
+<li>NEW FEATURE: EDDTableFromAsciiFiles now supports semicolon-separated files
+  <br>and is smarter about figuring out the separator.
+  Thanks to Margaret O'Brien, LTER, and EML.
+  <br>&nbsp;
+<li>NEW FEATURE: If there is a significant error in loadDatasets (major or minor,
+  e.g., a missing or invalid datasets.xml document),
+  ERDDAP will now indicate it in status.html, right below "n Datasets Failed To Load" as
+  <tt>ERROR: while processing datasets.xml: see log.txt for details.</tt> 
+  <br>&nbsp;
+<li>NEW FEATURE: ERDDAP looks for orphans.
+  <br>When ERDDAP does a major loadDatasets, it now looks for orphan datasets
+  (datasets that are in ERDDAP but not in datasets.xml).
+  If found, they are listed in status.html, right below "n Datasets Failed To Load" as
+  <tt>ERROR: n Orphan Datasets (datasets in ERDDAP but not in datasets.xml) = ...</tt>.
+  <br>If you want to remove (unload) an orphan from ERDDAP, you need to add
+  <br><tt>&lt;dataset type="<i>anyValidType</i>" datasetID="<i>theDatasetID</i>" active="false" /&gt;</tt>
+  <br>to datasets.xml until the dataset is unloaded during the next major loadDatasets.
+  <br>&nbsp;
+<li>BUG FIX: If a dataset had a numeric timestamp variable with 
+  units other than "seconds since 1970-01-01T00:00:00Z"
+  and with the &lt;updateEveryNMillis&gt; system active,
+  the timestamp variable's range was set incorrectly when the dataset was updated.
+  Thanks to John Kerfoot.
+  <br>&nbsp;
+<li>BUG FIX: If &lt;quickRestart&gt; was true in setup.xml and you requested
+  data from an EDDTableFrom...Files dataset that used <updateEveryNMillis>,
+  the first request to the dataset would fail, but subsequent requests would succeed.
+  Now the first request won't fail.
+  Thanks to John Kerfoot.
+  <br>&nbsp;
+<li>BUG FIX: The GenerateDatasetsXml.sh and .bat didn't work with &gt;9 parameters 
+  on the command line. Now they do.
+  Thanks to John Kerfoot.
+  <br>&nbsp;
+<li>BUG FIX: The new EDDTableFromMultidimNcFiles didn't consistently remove
+  trailing spaces from strings. Now it does. Notably, this affected ARGO files.
+  Thanks to Kevin O'Brien and Roland Schweitzer.
+  <br>&nbsp;
+<li>BUG FIX: All access of remote DAP services is now initiated by more
+  modern code. This fixes the "connection closed" error when accessing
+  some EDDTableFromErddap datasets.
+  Thanks to Kevin O'Brien.
+  <br>&nbsp;
+<li>BUG FIX: The handling of orderBy...() and distinct() are now back to the way 
+  they were before the recent changes: a given request may have multiple orderBy...()
+  and/or a distinct() filter; ERDDAP will handle them in the order they are specified.
+  Thanks to David Karuga.
+  <br>&nbsp;
+<li>BUG FIX: If the dataset is EDDTableFromDatabase and a query has
+  <a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanOrderBy"
+    >sourceCanOrderBy</a> and/or
+    <a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#sourceCanDoDistinct"
+    >sourceCanDoDistinct</a>, 
+  then the database may (depending on settings in datasets.xml) 
+  partly or completely handle <b>only the first</b> orderBy..() or distinct().
+  Thanks to David Karuga.
+  <br>&nbsp;
+<li>BUG FIX: The recent extra percent-encoding caused problems with some queries 
+   for .ncCF files, 
+   e.g., 
+  "HTTP Status 500 - Query error: variable=station is listed twice in the results variables list." 
+  Thanks to Kevin O'Brien.
+  <br>&nbsp;
+<li>BUG FIX: EDDTableFromFiles had trouble reloading a dataset 
+  when one of the columns was a true char column.  
+  Thanks to Roland Schweitzer.
+  <br>&nbsp;
+<li>CHANGE: EDDTableFromNcCFFiles can now handle files that have multiple sample_dimension's.
+  A given dataset must only use variables that use one of the sample_dimensions.
+  Thanks to Ajay Krishnan.  
+  <br>&nbsp;
+<li>CHANGE: For EDDTableFrom...Files, &lt;sortFilesBySourceNames&gt; now allows
+  comma-separated (recommended) or space separated lists of variable source names. 
+  In either case, individual variable names may be surrounded by double quotes,
+  e.g., if the name has an internal space.
+</ul>
 
 <!-- ****************************************************************************** -->
 <tr>
 <td>
-<h2><a name="changes1.70">Changes</a> in ERDDAP version 1.72 (released 2016-05-12)</h2>
+<h2><a name="changes1.72">Changes</a> in ERDDAP version 1.72 (released 2016-05-12)</h2>
 <ul>
 <li><b>New Features (for users):</b> None.
   <br>&nbsp;
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
-  <li>NEW EDDTableFromMultidimNc is a new alternative to EDDTableFromNc.
+  <li>NEW EDDTableFromMultidimNc 
+      <a rel="help"
+      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromMultidimNc"
+    >EDDTableFromMultidimNc</a>
+    is a new alternative to EDDTableFromNc.
     It is designed to deal with groups of files with several variables 
     with shared dimensions, e.g., var1[a][b], var2[a], var3[b], scalarVar.
-    Thanks to the Argo Project, Aurélie Briand, and Roland Schweitzer.
+    Thanks to the Argo Project, Aur&eacute;lie Briand, and Roland Schweitzer.
   <li>BUG FIX: ERDDAP (via the FileVisitorDNLS and FileVistorSubdir classes)
     now follows symbolic links on Linux.
     ERDDAP still doesn't follow .lnk's on Windows.
@@ -352,6 +575,8 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     if an index is simple, you need to specify it in datasets.xml by hand.
     If you need support for more complex indexes or other new features,
     please email bob.simons at noaa.gov .
+    <br>!!! If you still use Cassandra 2.x, please continue to use ERDDAP v1.68
+    until you upgrade to using Cassandra 3.x.
   <li>Jars and the Classpath - 
     Almost all of the included third-party .jar files were updated 
     to their latest versions.
@@ -523,7 +748,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset"
     >ArchiveADataset</a> 
     tool simplifies making a .tar.gz archive with a 
-    subset of a dataset in a way that is suitable for archiving (notably, at NOAA's NCEI).
+    subset of a dataset in a format that is suitable for archiving (notably, at NOAA's NCEI).
     This should be useful for many ERDDAP administrators in many situations, 
     but especially for groups within NOAA.
 
@@ -3345,7 +3570,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.72
+<p>ERDDAP, Version 1.74
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

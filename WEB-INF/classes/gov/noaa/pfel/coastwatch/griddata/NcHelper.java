@@ -1119,8 +1119,11 @@ public class NcHelper  {
     /**
      * If the variable is packed with scale_factor and/or add_offset, 
      *  this will unpack the packed attributes of the variable: 
-     *   _FillValue, actual_range, data_max, data_min, missing_value,
+     *   actual_range, actual_min, actual_max, 
+     *   data_max, data_min, 
      *   valid_max, valid_min, valid_range.
+     * missing_value and _FillValue will be converted to PA standard mv 
+     *   for the the unpacked datatype (or current type if not packed).
      *
      * @param sAtts the sourceAtts (which will be modified)
      */
@@ -1136,8 +1139,25 @@ public class NcHelper  {
         boolean unsigned = unsignedPA != null && "true".equals(unsignedPA.toString());         
         PrimitiveArray scalePA = sAtts.remove("scale_factor");
         PrimitiveArray addPA   = sAtts.remove("add_offset");
+
+        //if present, convert _FillValue and missing_value to PA standard mv
+        Class oClass = getElementClass(var.getDataType());
+        Class destClass = 
+            scalePA != null? scalePA.elementClass() :
+            addPA   != null? addPA.elementClass() : 
+            unsigned && oClass == byte.class?  short.class :  //similar code below
+            unsigned && oClass == short.class? int.class :
+            unsigned && oClass == int.class?   double.class : //longs are trouble
+            unsigned && oClass == long.class?  double.class :
+            oClass;  
+        if (sAtts.remove("_FillValue")    != null)
+            sAtts.set(   "_FillValue",    PrimitiveArray.factory(destClass, 1, ""));
+        if (sAtts.remove("missing_value") != null)
+            sAtts.set(   "missing_value", PrimitiveArray.factory(destClass, 1, ""));
+
+        //if var isn't packed, we're done
         if (!unsigned && scalePA == null && addPA == null)
-            return; //var isn't packed
+            return; 
 
         //var is packed, so unpack all packed numeric attributes
         //lookForStringTimes is false because these are all attributes of numeric variables
@@ -1146,21 +1166,21 @@ public class NcHelper  {
                 " unsigned="      + unsigned +
                 " scale_factor="  + scalePA + 
                 " add_offset="    + addPA + 
-                " _FillValue="    + sAtts.get("_FillValue") + 
+                " actual_max="    + sAtts.get("actual_max") + 
+                " actual_min="    + sAtts.get("actual_min") +
                 " actual_range="  + sAtts.get("actual_range") + 
                 " data_max="      + sAtts.get("data_max") + 
                 " data_min="      + sAtts.get("data_min") +
-                " missing_value=" + sAtts.get("missing_value") + 
                 " valid_max="     + sAtts.get("valid_max") + 
                 " valid_min="     + sAtts.get("valid_min") +
                 " valid_range="   + sAtts.get("valid_range"));
 
         //attributes are never unsigned
-        sAtts.set("_FillValue",    unpackPA(var, sAtts.get("_FillValue"),    false, false)); 
+        sAtts.set("actual_max",    unpackPA(var, sAtts.get("actual_max"),    false, false)); 
+        sAtts.set("actual_min",    unpackPA(var, sAtts.get("actual_min"),    false, false)); 
         sAtts.set("actual_range",  unpackPA(var, sAtts.get("actual_range"),  false, false)); 
         sAtts.set("data_max",      unpackPA(var, sAtts.get("data_max"),      false, false)); 
         sAtts.set("data_min",      unpackPA(var, sAtts.get("data_min"),      false, false));
-        sAtts.set("missing_value", unpackPA(var, sAtts.get("missing_value"), false, false)); 
         sAtts.set("valid_max",     unpackPA(var, sAtts.get("valid_max"),     false, false)); 
         sAtts.set("valid_min",     unpackPA(var, sAtts.get("valid_min"),     false, false));
         sAtts.set("valid_range",   unpackPA(var, sAtts.get("valid_range"),   false, false)); 
@@ -1168,11 +1188,11 @@ public class NcHelper  {
         if (debugMode) 
             String2.log(">  after  unpack " + var.getFullName() + 
                 " unsigned="      + unsigned +               
-                " _FillValue="    + sAtts.get("_FillValue") + 
+                " actual_max="    + sAtts.get("actual_max") + 
+                " actual_min="    + sAtts.get("actual_min") +
                 " actual_range="  + sAtts.get("actual_range") + 
                 " data_max="      + sAtts.get("data_max") + 
                 " data_min="      + sAtts.get("data_min") +
-                " missing_value=" + sAtts.get("missing_value") + 
                 " valid_max="     + sAtts.get("valid_max") + 
                 " valid_min="     + sAtts.get("valid_min") +
                 " valid_range="   + sAtts.get("valid_range"));
@@ -1181,12 +1201,15 @@ public class NcHelper  {
     /**
      * If the var has time units, or scale_factor and add_offset, the values in the dataPa
      * will be unpacked (time will be epochSeconds).
+     * If missing_value and/or _FillValue are used, they are converted to PA standard mv.
      *
      * @param var this method gets the info it needs
      *   (_Unsigned, scale_factor, add_offset, units, _FillValue, missingvalue)
      *    from the var (not tAtts).
      * @param lookForUnsigned should be true for the main PA, but false when converting attribute PA's.
-     * @return dataPa or a different PA or null (if dataPa = null)
+     * @return dataPa or a different PA or null (if dataPa = null).
+     *   missing_value and _FillValue will be converted to PA standard mv 
+     *     for the the unpacked datatype (or current type if not packed).
      */
     public static PrimitiveArray unpackPA(Variable var, PrimitiveArray dataPa,
         boolean lookForStringTimes, boolean lookForUnsigned) {
@@ -1203,7 +1226,9 @@ public class NcHelper  {
         String tUnits          = getRawStringVariableAttribute(var, "units");         
         boolean unsigned       = lookForUnsigned && "true".equals(
             getRawStringVariableAttribute(var, "_Unsigned"));         
-        //_FillValue and missing_value should be unsigned if _Unsigned=true, but in practice sometimes aren't
+        //_FillValue and missing_value should be unsigned if _Unsigned=true, 
+        //  but in practice sometimes aren't
+        //and they should be packed if var is packed.
         //see EDDGridFromNcFilesUnpacked.testUInt16File()
         double dFillValue      = unsigned?
             getUnsignedDoubleVariableAttribute(var, "_FillValue") :   //so -1B becomes 255
@@ -1211,7 +1236,7 @@ public class NcHelper  {
         double dMissingValue   = unsigned?
             getUnsignedDoubleVariableAttribute(var, "missing_value") ://so -1B becomes 255
             getRawDoubleVariableAttribute(     var, "missing_value"); //so e.g., 127 stays as 127
-if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
+        if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + dMissingValue);
 
         //scale and add_offset -- done first, before check for numeric time
         if (unsigned || scalePA != null || addPA != null) {
@@ -1235,7 +1260,7 @@ if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + d
             }
             if (tClass == null) //might be
                 tClass = dataPaClass;
-            //or data type needed by '_Unsigned'
+            //or data type needed by '_Unsigned'      //same code above
             if (unsigned && tClass == dataPaClass) {
                 if      (tClass == byte.class)  tClass = short.class;
                 else if (tClass == short.class) tClass = int.class;
@@ -1253,18 +1278,23 @@ if (debugMode) String2.log(">> _FillValue=" + dFillValue + " missing_value=" + d
                          dFillValue    == dataPa.missingValue())?
                         PrimitiveArray.factory(        tClass, dataPa) : //missingValues (e.g., 127) are    changed, e.g., to NaN
                         PrimitiveArray.rawFactory(     tClass, dataPa);  //missingValues (e.g., 127) AREN'T changed
-if (debugMode) String2.log(
-    ">> source="   + dataPaClass + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
-    ">> dataPa2= " + tClass      + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
+            if (debugMode) String2.log(
+                ">> source="   + dataPaClass + ": " + dataPa.subset( 0, 1, Math.min(10, dataPa.size() -1)).toString() + "\n" +
+                ">> dataPa2= " + tClass      + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
 
-
-            //convert other dMissingValue and dFillValue (e.g., -128)
-            if (dataPa.isIntegerType()) {
-                //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
-                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue())
-                    dataPa2.switchFromTo(      "" + dMissingValue, "");
-                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue())
-                    dataPa2.switchFromTo(      "" + dFillValue,    "");
+            //dataPa2 is destination data type and now has (if relevant) unsigned values, 
+            //but not yet scaleAddOffset.
+            //If present, missing_value and _FillValue are packed
+            //so convert other dMissingValue and dFillValue (e.g., -128) to PA standard mv
+            //and apply before scaleAddOffset
+            //String2.log("> dFillValue=" + dFillValue + " dataPa.missingValue=" + dataPa.missingValue());
+            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+                dataPa2.switchFromTo(      "" + dMissingValue, "");
+                dMissingValue = Double.NaN;  //it's done
+            }
+            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+                dataPa2.switchFromTo(      "" + dFillValue,    "");
+                dFillValue = Double.NaN;     //it's done
             }
 
             //apply scaleAddOffset
@@ -1274,6 +1304,7 @@ if (debugMode) String2.log(
                     ">> NcHelper.unpackPA applied scale_factor=" + scale + " add_offset=" + add + "\n" +
                     ">> unpacked=" + tClass + ": " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
             return dataPa2;
+
         }
 
         //numeric times (we know scale_factor and add_offset aren't used)
@@ -1300,11 +1331,14 @@ if (debugMode) String2.log(
                         PrimitiveArray.rawFactory(     double.class, dataPa);  //missingValues (e.g., 127) AREN'T changed
 
             //convert other dMissingValue and dFillValue (e.g., -128)
-            if (dataPa.isIntegerType()) {
-                if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue())
-                    dataPa2.switchFromTo(      "" + dMissingValue, "");
-                if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue())
-                    dataPa2.switchFromTo(      "" + dFillValue,    "");
+            // before scaleAddOffset to epochSeconds
+            if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+                dataPa2.switchFromTo(      "" + dMissingValue, "");
+                dMissingValue = Double.NaN;  //it's done
+            }
+            if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+                dataPa2.switchFromTo(      "" + dFillValue,    "");
+                dFillValue = Double.NaN;     //it's done
             }
 
             //convert numeric time to epochSeconds
@@ -1325,7 +1359,19 @@ if (debugMode) String2.log(
             }
             return dataPa;
         }
-        
+
+        //none of the above situations apply 
+        //  (i.e., not unsigned, and no scale_factor or add_offset, not numeric or string time)
+        //still need to convert missingValue to dataPa missing value
+        if (!Double.isNaN(dMissingValue) && dMissingValue != dataPa.missingValue()) {
+            dataPa.switchFromTo(       "" + dMissingValue, "");
+            dMissingValue = Double.NaN;  //it's done
+        }
+        if (!Double.isNaN(dFillValue)    && dFillValue    != dataPa.missingValue()) {
+            dataPa.switchFromTo(       "" + dFillValue,    "");
+            dFillValue = Double.NaN;     //it's done
+        }
+
         return dataPa;
     }
 

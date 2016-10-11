@@ -117,7 +117,7 @@ they are daylight savings time, but never thought about it.  We retrieved
 the data only once per year in the summer so I never thought to check that.
 
 [Bob interprets this as: all times are Pacific Daylight Savings Time, 
-e.g., 7 hours earlier than GMT,
+e.g., 7 hours earlier than Zulu,
 since he used his computer's clock in the summer to set the logger's clocks.]
 
 5) Is it okay if the courtesy information appears as "Channel Islands
@@ -9008,7 +9008,7 @@ towTypesDescription);
             }
         }
     }
-
+    
     /** Make VH3 mday .ncml files. 
      * coordValue is firstDay of the month. First 3 of 2012 are 15340, 15371, 15400. 
      */
@@ -9055,6 +9055,76 @@ towTypesDescription);
                 }
             }
         }
+    }
+
+    /** Extract sonar initial lat,lon values.
+     * 1) original csv file (from xls)
+     * 2) In local ERDDAP, save all of nceiNmfsSonarAscii as nceiNmfsSonarOriginal.nc
+     * 3) This creates latitude and longitude columns with initial point from shape var.
+     * 4) This saves as nceiNmfsSonar.nc
+     */
+    public static void extractSonarLatLon() throws Throwable {
+        String2.log("\n*** Projects.extractSonarLatLon");
+        String dir = "/u00/data/points/sonar/";
+        String fiName = "nceiNmfsSonarOriginal.nc";
+        String foName = "nceiNmfsSonar.nc";
+
+        Table table = new Table();
+        table.readFlatNc(dir + fiName, null, 0);
+        int nRows = table.nRows();
+        String2.log("original nRows=" + nRows + " colNames=" + table.getColumnNamesCSSVString());
+
+        //get shape. make lat, lon.
+        int shapeCol = table.findColumnNumber("shape");
+        StringArray shape = (StringArray)table.getColumn(shapeCol);
+        DoubleArray lat = new DoubleArray();
+        DoubleArray lon = new DoubleArray();
+        table.addColumn(shapeCol, "latitude", lat, 
+            (new Attributes()).add("units", "degrees_north").add("long_name", "Initial Latitude"));
+        table.addColumn(shapeCol, "longitude", lon, 
+            (new Attributes()).add("units", "degrees_east").add("long_name", "Initial Longitude"));
+
+        //convert fileName "D20130716-T034047.raw" to more precise epochSeconds time
+        //(Original time is just the date.)
+        //??? IS THAT RIGHT??? Won't there be conflicts from different cruises???
+        Pattern fileNamePattern = Pattern.compile("D(\\d{8})-T(\\d{6})\\.raw");
+        PrimitiveArray fileNamePA = table.findColumn("file_name");
+        int dateCol               = table.findColumnNumber("time");
+        table.setColumnName(dateCol, "date");
+        PrimitiveArray datePA     = table.getColumn(dateCol);
+        PrimitiveArray timePA     = (DoubleArray)datePA.clone();
+        table.addColumn(dateCol, "time", timePA, 
+            (new Attributes()).add("units", "seconds since 1970-01-01T00:00:00Z").add("long_name", "Start Time"));
+
+        for (int row = 0; row < nRows; row++) {
+            //generate lon and lat
+            String[] shapeAr = StringArray.arrayFromCSV(shape.get(row));
+            lon.add(shapeAr.length >= 2? 
+                Math2.roundTo(String2.parseDouble(shapeAr[0]), 7) : Double.NaN);
+            lat.add(shapeAr.length >= 2? 
+                Math2.roundTo(String2.parseDouble(shapeAr[1]), 7) : Double.NaN);
+
+            //convert fileName "D20130716-T034047.raw" to a more precise time
+            //  if it matches the regex
+            String tfn = fileNamePA.getString(row);
+            try {
+                Matcher matcher = fileNamePattern.matcher(tfn);
+                if (matcher.matches()) {
+                    timePA.setDouble(row, 
+                        Calendar2.gcToEpochSeconds(Calendar2.parseCompactDateTimeZulu(
+                            matcher.group(1) + matcher.group(2))));
+                } else {
+                    String2.log("unmatched fileName["+row+"]=" + tfn);
+                }
+            } catch (Throwable t) {
+                String2.log("Exception for fileName["+row+"]=" + tfn + "\n" +
+                    t.toString());
+            }
+        }
+        table.saveAsFlatNc(dir + foName, "row");
+        String2.log("new colNames=" + table.getColumnNamesCSSVString());
+        String2.log("\n*** Projects.extractSonarLatLon finished successfully. Created:\n" +
+            dir + foName);
     }
 
 

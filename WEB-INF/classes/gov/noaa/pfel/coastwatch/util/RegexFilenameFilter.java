@@ -76,7 +76,7 @@ public class RegexFilenameFilter implements FilenameFilter {
         String dir = "c:\\programs\\GrdFiles\\";
         String[] zipFiles = RegexFilenameFilter.list(dir, ".*\\.zip");
         for (int i = 0; i < zipFiles.length; i++)
-            SSR.unzip(dir + zipFiles[i], dir, true);
+            SSR.unzip(dir + zipFiles[i], dir, true, null);
        </pre>
      * 
      * <p>Note that this doesn't check if the name 

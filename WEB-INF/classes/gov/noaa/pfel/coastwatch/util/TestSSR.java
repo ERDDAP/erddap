@@ -184,7 +184,7 @@ public class TestSSR {
         //unzip the zip file
         long time2 = System.currentTimeMillis();
         SSR.unzip(zipDir + zipName, zipDir, //note: extract to zipDir, since it doesn't include dir
-            false, 10); //false 'ignoreDirectoryInfo', but there is none
+            false, 10, null); //false 'ignoreDirectoryInfo', but there is none
         time2 = System.currentTimeMillis() - time2;
         //ensure results are as expected
         String[] results = String2.readFromFile(zipDir + fileName);
@@ -207,7 +207,7 @@ public class TestSSR {
         //unzip the zip file
         time2 = System.currentTimeMillis();
         SSR.unzip(zipDir + zipName, classPath, //note: extract to classPath, since includes dir
-            false, 10); //false 'ignoreDirectoryInfo'
+            false, 10, null); //false 'ignoreDirectoryInfo'
         time2 = System.currentTimeMillis() - time2;
         //ensure results are as expected
         results = String2.readFromFile(zipDir + fileName);
@@ -365,7 +365,7 @@ public class TestSSR {
         if (emailPort.length() == 0) emailPort = "587";
 
         emailUser = String2.getStringFromSystemIn( 
-            "gmail email user (e.g., erd.data)? ");
+            "gmail email user (e.g., erd.data@noaa.gov)? ");
         if (emailUser.length() == 0) emailUser = "erd.data@noaa.gov"; 
 
         emailPassword = String2.getPasswordFromSystemIn(

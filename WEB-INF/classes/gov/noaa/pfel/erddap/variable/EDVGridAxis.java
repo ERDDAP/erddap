@@ -140,6 +140,8 @@ public class EDVGridAxis extends EDV {
     public void setActualRangeFromDestinationMinMax() {
 
         //actual_range is useful information for .das and will be replaced by actual_range of data subset.
+        combinedAttributes.remove("actual_min");
+        combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
         if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) {
@@ -229,7 +231,7 @@ public class EDVGridAxis extends EDV {
 
     /**
      * This returns one of this axis' source values as a nice double destination value. 
-     * EDVTimeStampGridAxis subclass overrides this.
+     * EDVTimeStampGridAxis subclass overwrites this.
      */
     public double destinationDouble(int which) {
         if (scaleAddOffset) {
@@ -248,7 +250,7 @@ public class EDVGridAxis extends EDV {
     /**
      * This returns one of this axis' source values as a nice String destination value. 
      * For most EDVGridAxis, this returns destinationValues (which equal
-     * the String destination values). The Time subclass overrides this.
+     * the String destination values). The Time subclass overwrites this.
      */
     public String destinationString(int which) {
         if (scaleAddOffset) {
@@ -269,7 +271,7 @@ public class EDVGridAxis extends EDV {
      * which will return nice Strings if you call pa.getString(i). 
      * Don't change these values.
      * For most EDVGridAxis, this returns destinationValues (which equal
-     * the String destination values). The Time subclass overrides this.
+     * the String destination values). The Time subclass overwrites this.
      * !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
      */
     public PrimitiveArray destinationStringValues() {return destinationValues();}
@@ -386,7 +388,7 @@ public class EDVGridAxis extends EDV {
 
     /**
      * This converts a destination double value to a string
-     * (time variable override this to make an iso string).
+     * (time variable overwrite this to make an iso string).
      * NaN returns "";
      *
      * @param destD
@@ -402,7 +404,7 @@ public class EDVGridAxis extends EDV {
 
     /**
      * This converts a destination String value to a destination double
-     * (time variable overrides this to catch iso 8601 strings).
+     * (time variable overwrites this to catch iso 8601 strings).
      * "" or null returns NaN.
      *
      * @param destS

@@ -125,7 +125,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
     }
 
     /** 
-     * This overrides the superclass to give the on-the-fly subsetVariables table. 
+     * This overwrites the superclass to give the on-the-fly subsetVariables table. 
      *
      * @param loggedInAs This is used, e.g., for POST data (where the distinct subsetVariables table
      *    is different for each loggedInAs!) and for EDDTableFromAllDatasets.
@@ -146,7 +146,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
     }
 
     /** 
-     * This overrides the superclass to give the on-the-fly distinctSubsetVariables table. 
+     * This overwrites the superclass to give the on-the-fly distinctSubsetVariables table. 
      *
      * <p>time columns are epochSeconds.
      *

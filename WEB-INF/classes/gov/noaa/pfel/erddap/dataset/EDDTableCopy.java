@@ -636,13 +636,11 @@ public class EDDTableCopy extends EDDTable{
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
 "    String axis \"T\";\n" +
 "    String cf_role \"profile_id\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
-"    Float64 missing_value NaN;\n" +
 "    String standard_name \"time\";\n" +  
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
