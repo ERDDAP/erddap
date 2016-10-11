@@ -37,6 +37,10 @@ public class EDVLonGridAxis extends EDVGridAxis {
 
         super(tSourceName, LON_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
 
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the longitude variable must be a numeric dataType.");
+
         longName = LON_LONGNAME;
         units = LON_UNITS;
         combinedAttributes.set("_CoordinateAxisType", "Lon");  //unidata-related

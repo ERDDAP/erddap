@@ -125,7 +125,8 @@ public class String2 {
     }
 
     //EDStatic may change this
-    public static String unitTestDataDir = "/erddapTest/";
+    public static String unitTestDataDir    = "/erddapTest/";
+    public static String unitTestBigDataDir = "/erddapTestBig/";
 
     /**
      * This returns the string which sorts higher.
@@ -530,7 +531,7 @@ public class String2 {
      *    1 for first capture group, 2 for second, etc.)
      * @return the value of the specified capture group,
           or null if the s doesn't match the regex
-     * @throws RuntimeException if trouble
+     * @throws RuntimeException if trouble, e.g., invalid regex syntax
      */
     public static String extractCaptureGroup(String s, String regex, int captureGroupNumber) {
         Pattern p = Pattern.compile(regex);
@@ -1360,7 +1361,8 @@ public class String2 {
 
 
     /**
-     * This indicates if s has just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
+     * This indicates if s has length &gt;= 1 and 
+     *   has just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
      * Note, this does not check for filenames that are too long
      * (Windows has a path+fileName max length of 255 chars).
      *
@@ -1504,7 +1506,7 @@ public class String2 {
      * <li>subsequent characters must be (iso8859Letter|_|0-9).
      * </ul>
      * Note that Java allows Unicode characters, but this does not.
-     * See also the safer encodeVariableNameSafe(String s).
+     * See also the safer encodeMatlabNameSafe(String s).
      * Note, this does not check for names that are too long
      * (many system have an 80 or 255 char limit).
      *
@@ -1623,12 +1625,13 @@ public class String2 {
      * @param oldS the string to be searched for
      * @param newS the string to replace oldS
      * @param ignoreCase   If true, when searching sb for oldS, this ignores the case of sb and oldS.
+     * @return the number of replacements made.
      */
-    public static void replaceAll(StringBuilder sb, String oldS, String newS, boolean ignoreCase) {
+    public static int replaceAll(StringBuilder sb, String oldS, String newS, boolean ignoreCase) {
         int sbL = sb.length();
         int oldSL = oldS.length();
         if (oldSL == 0)
-            return;
+            return 0;
         int newSL = newS.length();
         StringBuilder testSB = sb;
         String testOldS = oldS;
@@ -1640,10 +1643,12 @@ public class String2 {
         }
         int po = testSB.indexOf(testOldS);
         //System.out.println("testSB=" + testSB.toString() + " testOldS=" + testOldS + " po=" + po); //not String2.log
-        if (po < 0) return;
+        if (po < 0) return 0;
         StringBuilder sb2 = new StringBuilder(sbL / 5 * 6); //a little bigger
         int base = 0;
+        int n = 0;
         while (po >= 0) {
+            n++;
             sb2.append(sb.substring(base, po));
             sb2.append(newS);
             base = po + oldSL;
@@ -1654,7 +1659,32 @@ public class String2 {
         sb2.append(sb.substring(base));
         sb.setLength(0);
         sb.append(sb2);
+        return n;
     }
+
+    /**
+     * This repeatedly replaces all oldS with newS.
+     * e.g., replace "++" with "+" in "++++" will yield "+".
+     *
+     * @return sb for convenience
+     */
+    public static StringBuilder repeatedlyReplaceAll(StringBuilder sb, String oldS, String newS, boolean ignoreCase) {        
+        while (replaceAll(sb, oldS, newS, ignoreCase) > 0) {}
+        return sb;
+    }
+
+    /**
+     * This repeatedly replaces all oldS with newS.
+     * e.g., replace "++" with "+" in "++++" will yield "+".
+     *
+     */
+    public static String repeatedlyReplaceAll(String s, String oldS, String newS, boolean ignoreCase) {        
+        StringBuilder sb = new StringBuilder(s);
+        while (replaceAll(sb, oldS, newS, ignoreCase) > 0) {}
+        return sb.toString();
+    }
+
+
 
     /**
      * Returns a string where all occurences of <TT>oldS</TT> have
@@ -2966,10 +2996,21 @@ public class String2 {
     }
 
     /**
+     * This variant of lineStartsWith startsAt index=0.
+     *
+     * @param ar the array of objects, e.g., including LATITUDE
+     * @param s the String to be found, e.g., Lat
+     * @return the element number of ar which starts with s (or -1 if not found)
+     */
+    public static int lineStartsWithIgnoreCase(Object[] ar, String s) {
+        return lineStartsWithIgnoreCase(ar, s, 0);
+    }
+
+    /**
      * This is like lineStartsWith, but ignores case.
      *
-     * @param ar the array of objects
-     * @param s the String to be found
+     * @param ar the array of objects, e.g., including LATITUDE
+     * @param s the String to be found, e.g., Lat
      * @param startAt the first element of ar to be checked.
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which starts with s (or -1 if not found)
@@ -4413,7 +4454,7 @@ and zoom and pan with controls in
      * This removes white space characters at the beginning and end of a StringBuilder.
      *
      * @param sb a StringBuilder
-     * @return the same pointer to the StringBuilder
+     * @return the same pointer to the StringBuilder for convenience
      */
     public static StringBuilder trim(StringBuilder sb) {
         int po = 0;
@@ -4722,14 +4763,14 @@ and zoom and pan with controls in
     }
 
     /**
-     * This returns the index of the first non-utf-8 character.
+     * This returns the index of the first non-Unicode character.
      * Currently, valid characters are #32 - #126, #160+.
      *
      * @param s
-     * @param alsoOK a string with characters (e.g., \n, \t) which are also valid
+     * @param alsoOK a string with characters (e.g., \r, \n, \t) which are also valid
      * @return the index of the first non-utf-8 character, or -1 if all valid.
      */
-    public static int findInvalidUtf8(String s, String alsoOK) {
+    public static int findInvalidUnicode(String s, String alsoOK) {
         int n = s.length();
         for (int i = 0; i < n; i++) {
             char ch = s.charAt(i);
@@ -4744,6 +4785,35 @@ and zoom and pan with controls in
             //160+ is valid
         }
         return -1;
+    }
+
+    /**
+     * This makes s valid Unicode by converting invalid characters (e.g., #128)
+     * with brackets, e.g., [#128]. The invalid characters are often Windows charset
+     * characters #127 - 159.
+     *
+     * @param s
+     * @param alsoOK a string with characters (e.g., \r, \n, \t) which are also valid
+     * @return the valid Unicode string.
+     */
+    public static String makeValidUnicode(String s, String alsoOK) {
+        if (s == null)
+            return "";
+        int n = s.length();
+        StringBuilder sb = new StringBuilder(n + 128);
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if (alsoOK.indexOf(ch) >= 0) 
+                sb.append(ch);
+            else if (ch < 32) 
+                sb.append("[#" + (int)ch + "]");
+            else if (ch <= 126) 
+                sb.append(ch);
+            else if (ch <= 159)
+                sb.append("[#" + (int)ch + "]");
+            else sb.append(ch);   //160+ is valid                         
+        }
+        return sb.toString();
     }
 
     /**
@@ -5097,6 +5167,9 @@ and zoom and pan with controls in
      * <li>first character must be A-Z, a-z, _.
      * <li>subsequent characters must be A-Z, a-z, _, 0-9.
      * </ul>
+     * 2016-06-16: DEPRECATED.
+     *   I THINK THAT RESTRICTION CLAIM ISN'T TRUE. BUT LEAVE THIS AS IS.
+     *   RECOMMEND: USE NEW encodeMatlabNameSafe FOR NEW USES.
      * <br>'x' and non-safe characters are CONVERTED to 'x' plus their 
      *   2 lowercase hexadecimalDigit number or "xx" + their 4 hexadecimalDigit number.
      * <br>See posix fully portable file names at https://en.wikipedia.org/wiki/Filename .
@@ -5126,6 +5199,7 @@ and zoom and pan with controls in
             }
             char ch = s.charAt(i);
 
+            //THIS ISN'T RIGHT because isFileNameSafe now allows high ASCII letters! BUT LEAVE IT AS IS.
             if (ch != 'x' && String2.isFileNameSafe(ch) && ch != '-' && ch != '.' &&
                 (i > 0 || ((ch >= 'A' && ch <= 'Z') || (ch >='a' && ch <='z') || (ch == '_')))) {
                 sb.append(ch);
@@ -5135,6 +5209,111 @@ and zoom and pan with controls in
                 sb.append("xx" + String2.zeroPad(Integer.toHexString(ch), 4));
             }
         }
+
+        return sb.toString();
+    }
+
+    /**
+     * This is like encodeFileNameSafe, but further restricts the name to
+     * <ul>
+     * <li>first character must be A-Z, a-z.
+     * <li>subsequent characters must be A-Z, a-z, _, 0-9.
+     * </ul>
+     * <br>'x' and non-safe characters are CONVERTED to 'x' plus their 
+     *   2 lowercase hexadecimalDigit number or "xx" + their 4 hexadecimalDigit number.
+     * <br>See posix fully portable file names at https://en.wikipedia.org/wiki/Filename .
+     * <br>When the encoding is more than 25 characters, this stops encoding and 
+     *   adds "xh" and the hash code for the entire original string,
+     *   so the result will always be less than ~41 characters.
+     * <br>This meets MatLab restrictions:
+     *   http://www.mathworks.com/help/matlab/ref/matlab.lang.makevalidname.html
+     *
+     * <p>THIS WON'T BE CHANGED. FILE NAMES CREATED FOR EDDGridFromFile and EDDTableFromFile 
+     *  DEPEND ON SAME ENCODING OVER TIME.
+     *
+     * @param s  
+     * @return s with all of the non-variableNameSafe characters changed.
+     *    <br>If s is null, this returns "x_1".
+     *    <br>If s is "", this returns "x_0".
+     */
+    public static String encodeMatlabNameSafe(String s) {
+        if (s == null)
+            return "x_1";
+        int n = s.length();
+        if (n == 0)
+            return "x_0";
+        StringBuilder sb = new StringBuilder(4 * Math.min(50, n) / 3);
+        for (int i = 0; i < n; i++) {
+            if (sb.length() >= 25) {
+                sb.append("xh" + md5Hex12(s)); //was Math2.reduceHashCode(s.hashCode()));
+                break;
+            }
+            char ch = s.charAt(i);
+
+            if (ch == 'x') {
+                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+            } else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) { //1st chars
+                sb.append(ch);
+            } else if (i > 0 && ((ch >= '0' && ch <= '9') || ch == '_')) { //subsequent chars
+                sb.append(ch);
+            } else if (ch <= 255) {  //others
+                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+            } else { //others
+                sb.append("xx" + String2.zeroPad(Integer.toHexString(ch), 4));
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * This is like encodeMatlabNameSafe, but simpler and won't always retain all the info.
+     * <ul>
+     * <li>first character must be A-Z, a-z.
+     * <li>subsequent characters must be A-Z, a-z, _, 0-9.
+     * </ul>
+     * <br>non-safe characters are some safe variant.
+     * <br>See posix fully portable file names at https://en.wikipedia.org/wiki/Filename .
+     * <br>When the encoding is more than 25 characters, this stops encoding and 
+     *   adds "xh" and the hash code for the entire original string,
+     *   so the result will always be less than ~41 characters.
+     * <br>This meets MatLab restrictions:
+     *   http://www.mathworks.com/help/matlab/ref/matlab.lang.makevalidname.html
+     *
+     * <p>THIS WON'T BE CHANGED. SOME datasetIDs DEPEND ON SAME ENCODING OVER TIME.
+     *
+     * @param s  
+     * @return s with all of the non-variableNameSafe characters changed.
+     *    <br>If s is null, this returns "null_".
+     *    <br>If s is "", this returns "nothing_".
+     */
+    public static String simpleMatlabNameSafe(String s) {
+        if (s == null)
+            return "null_";
+        int n = s.length();
+        if (n == 0)
+            return "nothing_";
+        s = modifyToBeASCII(s);
+        StringBuilder sb = new StringBuilder(4 * Math.min(50, n) / 3);
+        for (int i = 0; i < n; i++) {
+            if (sb.length() >= 25) {
+                sb.append("_" + md5Hex12(s)); //was Math2.reduceHashCode(s.hashCode()));
+                break;
+            }
+            char ch = s.charAt(i);
+
+            if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) { //1st chars
+                sb.append(ch);
+            } else if (sb.length() > 0 && ch >= '0' && ch <= '9') { //subsequent chars
+                sb.append(ch);
+            //all other chars get converted to '_'
+            //but '_' can't be first char and no two '_' in a row
+            } else if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '_') { 
+                sb.append('_');
+            }
+        }
+        if (sb.length() == 0)
+            sb.append("a_");
 
         return sb.toString();
     }
@@ -5372,6 +5551,42 @@ and zoom and pan with controls in
         return sb.toString();
     }
 
+    /** 
+     * This converts "camelCase99String" to "Camel Case 99 String"
+     * 
+     * @param s the camel case string.
+     * @return the string with spaces before capital letters.
+     *   null returns null.
+     *   "" returns "".
+     */
+    public static String camelCaseToTitleCase(String s) {
+
+        //change 
+        //  but don't space out an acronym, e.g., E T O P O
+        //  and don't split hyphenated words, e.g.,   Real-Time
+        if (s == null)
+            return null;
+        int n = s.length();
+        if (n <= 1)
+            return s;
+        StringBuilder sb = new StringBuilder(n + 10);
+        sb.append(Character.toUpperCase(s.charAt(0)));
+        for (int i = 1; i < n; i++) {
+            char chi1 = s.charAt(i - 1);
+            char chi  = s.charAt(i);
+            if (Character.isLetter(chi)) {
+                if (chi1 == Character.toLowerCase(chi1) && Character.isLetterOrDigit(chi1) &&
+                    chi  != Character.toLowerCase(chi )) 
+                    sb.append(' ');
+            } else if (Character.isDigit(chi)) {
+                if (chi1 == Character.toLowerCase(chi1) && Character.isLetter(chi1)) 
+                    sb.append(' ');
+            }
+            sb.append(chi);
+        }
+        return sb.toString();
+    }
+
     /**
      * This returns true if the string contains only ISO 8859-1 characters (i.e., 0 - 255).
      */
@@ -5412,6 +5627,33 @@ and zoom and pan with controls in
             b;
     }
 
+    /**
+     * This cleverly concatenates the 2 strings (with separator, as appropriate).
+     * 
+     * @param a may be null or "" or something
+     * @param separator will only be used if a and b are something.
+     * @param b may be null or "" or something
+     * @return a.trim(), a.trim()+separator+b.trim(), b.trim(), or ""
+     */
+    public static String ifSomethingConcat(String a, String separator, String b) {
+        if (isSomething(a)) 
+             return isSomething(b)? a.trim() + separator + b.trim() : a.trim();
+        else return isSomething(b)? b.trim() : "";
+    }
+
+    /**
+     * This cleverly concatenates the 2 strings (with separator, as appropriate).
+     * Afterwards, a will have a, a+separator+b.trim(), b.trim(), or ""
+     * 
+     * @param a may be null or "" or something
+     * @param separator will only be used if a and b are something.
+     * @param b may be null or "" or something
+     */
+    public static void ifSomethingConcat(StringBuilder a, String separator, String b) {
+        if (a.length() > 0) 
+             a.append(isSomething(b)? separator + b.trim() : "");
+        else a.append(isSomething(b)? b.trim() : "");
+    }
 
     /** 
      * Given an Amazon AWS S3 URL, this returns the bucketName.
@@ -5457,6 +5699,18 @@ and zoom and pan with controls in
         if (matcher.matches()) 
             return matcher.group(2); //prefix
         return null;
+    }
+
+    /** 
+     * This provides an startsWith() method for StringBuilder, which has none!
+     *
+     * @return true if sb starts with pre (including if pre=""), otherwise returns false (including
+     *    if sb or pre is null).
+     */
+    public static boolean startsWith(StringBuilder sb, String pre) {
+        if (sb == null || pre == null || pre.length() > sb.length())
+            return false;
+        return sb.substring(0, pre.length()).equals(pre);
     }
 
     /** 

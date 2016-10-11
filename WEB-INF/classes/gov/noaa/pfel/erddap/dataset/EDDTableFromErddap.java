@@ -466,7 +466,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     public static String generateDatasetsXml(String tLocalSourceUrl, boolean keepOriginalDatasetIDs) 
         throws Throwable {
 
-        String2.log("EDDTableFromErddap.generateDatasetsXml\n  tLocalSourceUrl=" + tLocalSourceUrl);
+        String2.log("\n*** EDDTableFromErddap.generateDatasetsXml" +
+            "\ntLocalSourceUrl=" + tLocalSourceUrl + 
+            " keepOriginalDatasetIDs=" + keepOriginalDatasetIDs);
 
         //make the StringBuilder to hold the results and add documentation
         StringBuilder sb = new StringBuilder();
@@ -702,13 +704,11 @@ try {
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
 "    String axis \"T\";\n" +
 "    String cf_role \"profile_id\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
-"    Float64 missing_value NaN;\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -1392,13 +1392,11 @@ expected =
 "\n" +
 "    double time(row=100);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
-"      :_FillValue = NaN; // double\n" +
 "      :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
 "      :axis = \"T\";\n" +
 "      :cf_role = \"profile_id\";\n" +
 "      :ioos_category = \"Time\";\n" +
 "      :long_name = \"Time\";\n" +
-"      :missing_value = NaN; // double\n" +
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -1574,14 +1572,19 @@ String tHeader2 =
     /** This tests apostrophe in title appearing in graph legend. */
     public static void testApostrophe() throws Throwable {
         String2.log("\n*** EDDTableFromErddap.testApostrophe");
+        try {
+            EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testWTEY"); 
+            String2.log("title=" + edd.title());
+            String tName = edd.makeNewFileForDapQuery(null, null, 
+                "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
+                "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
+                EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\n2016-09-21 Source dataset gone."); 
+        }
 
-        EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testWTEY"); 
-        String2.log("title=" + edd.title());
-        String tName = edd.makeNewFileForDapQuery(null, null, 
-            "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
-            "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
-            EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
     }
 
     /** This tests dealing with remote not having ioos_category, but local requiring it. */
@@ -1605,7 +1608,143 @@ String tHeader2 =
         Test.ensureEqual(results, expected, "\nresults=\n" + results); 
     }
 
+    /**
+     * This tests dataset from Kevin O'Brien's erddap:
+     *  &lt;dataset type="EDDTableFromErddap" datasetID="ChukchiSea_454a_037a_fcf4" active="true"&gt;
+     * where DConnect in local ERDDAP complained: connection reset, 
+     * but server said everything was fine.
+     * I made changes to DConnect 2016-10-03 to deal with this problem.
+     */
+    public static void testChukchiSea() throws Throwable {
+        testVerboseOn();
+        String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
+        String error = "";
+        int epo, tPo;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10); //just 10 till 1.40 released, then 14
 
+        EDDTable eddTable = (EDDTableFromErddap)oneFromDatasetsXml(null, 
+            "ChukchiSea_454a_037a_fcf4"); //should work
+
+        //*** test getting das for entire dataset
+        String2.log("\n****************** EDDTableFromErddap.test das dds for entire dataset\n");
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_Entire", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = //see OpendapHelper.EOL for comments
+"Attributes {\n" +
+" s {\n" +
+"  prof {\n" +
+"    Float64 actual_range 1.0, 1.0;\n" +
+"    String axis \"E\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Prof\";\n" +
+"    String point_spacing \"even\";\n" +
+"  }\n" +
+"  id {\n" +
+"    String cf_role \"profile_id\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"profile id\";\n" +
+"  }\n" +
+"  cast {\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"cast number\";\n" +
+"  }\n" +
+"  cruise {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Cruise name\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "\nresults=\n" + results);
+
+
+        
+        //*** test getting dds for entire dataset
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_Entire", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 prof;\n" +
+"    String id;\n" +
+"    String cast;\n" +
+"    String cruise;\n" +
+"    Float64 time;\n" +
+"    Float32 longitude;\n" +
+"    Float32 lon360;\n" +
+"    Float32 latitude;\n" +
+"    Float32 depth;\n" +
+"    Float32 ocean_temperature_1;\n" +
+"    Float32 ocean_temperature_2;\n" +
+"    Float32 ocean_dissolved_oxygen_concentration_1_mLperL;\n" +
+"    Float32 ocean_dissolved_oxygen_concentration_2_mLperL;\n" +
+"    Float32 photosynthetically_active_radiation;\n" +
+"    Float32 ocean_chlorophyll_a_concentration_factoryCal;\n" +
+"    Float32 ocean_chlorophyll_fluorescence_raw;\n" +
+"    Float32 ocean_practical_salinity_1;\n" +
+"    Float32 ocean_practical_salinity_2;\n" +
+"    Float32 ocean_sigma_t;\n" +
+"    Float32 sea_water_nutrient_bottle_number;\n" +
+"    Float32 sea_water_phosphate_concentration;\n" +
+"    Float32 sea_water_silicate_concentration;\n" +
+"    Float32 sea_water_nitrate_concentration;\n" +
+"    Float32 sea_water_nitrite_concentration;\n" +
+"    Float32 sea_water_ammonium_concentration;\n" +
+"    Float32 ocean_dissolved_oxygen_concentration_1_mMperkg;\n" +
+"    Float32 ocean_dissolved_oxygen_concentration_2_mMperkg;\n" +
+"    Float32 ocean_oxygen_saturation_1;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //*** test make data files
+        String2.log("\n****************** EDDTableFromErddap.test make DATA FILES\n");       
+
+        //.asc
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&id=\"ae1001c011\"", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_Data", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"prof,id,cast,cruise,time,longitude,lon360,latitude,depth,ocean_temperature_1,ocean_temperature_2,ocean_dissolved_oxygen_concentration_1_mLperL,ocean_dissolved_oxygen_concentration_2_mLperL,photosynthetically_active_radiation,ocean_chlorophyll_a_concentration_factoryCal,ocean_chlorophyll_fluorescence_raw,ocean_practical_salinity_1,ocean_practical_salinity_2,ocean_sigma_t,sea_water_nutrient_bottle_number,sea_water_phosphate_concentration,sea_water_silicate_concentration,sea_water_nitrate_concentration,sea_water_nitrite_concentration,sea_water_ammonium_concentration,ocean_dissolved_oxygen_concentration_1_mMperkg,ocean_dissolved_oxygen_concentration_2_mMperkg,ocean_oxygen_saturation_1\n" +
+",,,,UTC,degrees_east,degrees_east,degrees_north,m,Degree_C,Degree_C,mL/L,mL/L,microEin cm-2 s-1,micrograms/L,volts,PSU,PSU,kg m-3,number,micromoles/kg,micromoles/kg,micromoles/kg,micromoles/kg,micromoles/kg,micromoles/kg,micromoles/kg,percent saturation\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,0.0,9.5301,NaN,NaN,NaN,NaN,NaN,NaN,31.4801,NaN,24.2852,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,1.0,9.5301,NaN,NaN,NaN,NaN,NaN,NaN,31.4801,NaN,24.2852,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,2.0,9.3234,NaN,NaN,NaN,NaN,NaN,NaN,31.2654,NaN,24.15,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,3.0,9.3112,NaN,NaN,NaN,NaN,NaN,NaN,31.2056,NaN,24.1052,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,4.0,9.3096,NaN,NaN,NaN,NaN,NaN,NaN,31.1971,NaN,24.0988,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,5.0,9.3091,NaN,NaN,NaN,NaN,NaN,NaN,31.177,NaN,24.0831,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,6.0,9.3095,NaN,NaN,NaN,NaN,NaN,NaN,31.1736,NaN,24.0804,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,7.0,9.3,NaN,NaN,NaN,NaN,NaN,NaN,31.1547,NaN,24.0671,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,8.0,9.277,NaN,NaN,NaN,NaN,NaN,NaN,31.1131,NaN,24.0382,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,9.0,8.9942,NaN,NaN,NaN,NaN,NaN,NaN,31.1465,NaN,24.1077,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,10.0,8.5791,NaN,NaN,NaN,NaN,NaN,NaN,31.2294,NaN,24.2349,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,11.0,8.446,NaN,NaN,NaN,NaN,NaN,NaN,31.2322,NaN,24.2567,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,12.0,8.3966,NaN,NaN,NaN,NaN,NaN,NaN,31.2179,NaN,24.2527,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,13.0,8.3742,NaN,NaN,NaN,NaN,NaN,NaN,31.2205,NaN,24.258,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,14.0,8.3406,NaN,NaN,NaN,NaN,NaN,NaN,31.2084,NaN,24.2534,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,15.0,8.218,NaN,NaN,NaN,NaN,NaN,NaN,31.2141,NaN,24.2756,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,16.0,8.0487,NaN,NaN,NaN,NaN,NaN,NaN,31.2508,NaN,24.3285,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,17.0,7.889,NaN,NaN,NaN,NaN,NaN,NaN,31.2932,NaN,24.3844,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,18.0,7.789,NaN,NaN,NaN,NaN,NaN,NaN,31.3088,NaN,24.4106,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,19.0,7.716,NaN,NaN,NaN,NaN,NaN,NaN,31.3123,NaN,24.4235,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,20.0,7.6077,NaN,NaN,NaN,NaN,NaN,NaN,31.3387,NaN,24.4592,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,21.0,7.5372,NaN,NaN,NaN,NaN,NaN,NaN,31.3458,NaN,24.4744,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,22.0,7.4847,NaN,NaN,NaN,NaN,NaN,NaN,31.3587,NaN,24.4917,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,23.0,7.4694,NaN,NaN,NaN,NaN,NaN,NaN,31.3592,NaN,24.4942,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,24.0,7.4452,NaN,NaN,NaN,NaN,NaN,NaN,31.3635,NaN,24.5008,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"1.0,ae1001c011,011,Ch2010,2010-09-05T11:22:00Z,-168.452,191.548,65.633,25.0,7.4487,NaN,NaN,NaN,NaN,NaN,NaN,31.3765,NaN,24.5106,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    }
     
     /**
      * This tests the methods in this class.
@@ -1624,6 +1763,7 @@ String tHeader2 =
         testApostrophe();
         testTableNoIoosCat();
         testQuotes();
+        testChukchiSea();
 
         //not usually done
 

@@ -28,9 +28,9 @@ public class EDVDepth extends EDV {
      * convert source altitude/depth values to meters below sea level in the results.
      *
      * @param tSourceMin  is pre-scale_factor and add_offset.
-     *   This takes precedence over actual_range, data_min, or data_max metadata.
+     *   This takes precedence over actual_range, actual_min, or data_min metadata.
      * @param tSourceMax  is pre-scale_factor and add_offset.
-     *   This takes precedence over actual_range, data_min, or data_max metadata.
+     *   This takes precedence over actual_range, actual_max, or data_max metadata.
      * @throws Throwable if trouble
      */
     public EDVDepth(String tSourceName, 
@@ -40,6 +40,10 @@ public class EDVDepth extends EDV {
 
         super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
+
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the depth variable must be a numeric dataType.");
 
         units = DEPTH_UNITS; 
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata

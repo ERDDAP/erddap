@@ -421,6 +421,8 @@ public class EDDGridFromDap extends EDDGrid {
                         OpendapHelper.getPrimitiveArray(dConnect, "?" + tSourceAxisName) :
                         quickRestartAttributes.get(
                             "sourceValues_" + String2.encodeVariableNameSafe(tSourceAxisName));
+                    if (tSourceValues == null)
+                        throw new NoSuchVariableException(tSourceAxisName);
                     if (reallyVerbose) {
                         int nsv = tSourceValues.size();
                         String2.log("    " + tSourceAxisName + 
@@ -907,7 +909,11 @@ public class EDDGridFromDap extends EDDGrid {
         String tLocalSourceUrl, DAS das, DDS dds, String dimensionNames[], 
         int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
 
-        String2.log("\n*** EDDGridFromDap.generateDatasetsXml\n  tLocalSourceUrl=" + tLocalSourceUrl);
+        String2.log("\n*** EDDGridFromDap.generateDatasetsXml" +
+            "\ntLocalSourceUrl=" + tLocalSourceUrl +
+            "\ndimNames=" + String2.toCSVString(dimensionNames) +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         String dimensionNamesCsv = String2.toCSSVString(dimensionNames);
         if (dimensionNames != null) String2.log("  dimensionNames=" + dimensionNamesCsv);
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
@@ -2177,7 +2183,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
 String expected2 = 
 "        <att name=\"infoUrl\">http://coastwatch.pfel.noaa.gov/infog/MH_chla_las.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, data, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
+"        <att name=\"keywords\">1-day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, data, day, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
 "        <att name=\"pass_date\">null</att>\n" +
@@ -2189,7 +2195,8 @@ String expected2 =
 "        <att name=\"rows\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
-"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft. This is Science Quality data. \\(1-day\\)</att>\n" +
+"        <att name=\"summary\">Chlorophyll-a, Aqua MODIS, National Polar-orbiting Partnership \\(NPP\\), 0.05 degrees, Global, Science Quality. NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft. This is Science Quality data. \\(1-day\\)</att>\n" +
+"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality \\(1-day\\)</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -9040,7 +9047,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error.\n"); 
+                "\nSince 2015, date_created keeps bouncing around. I don't know why.\n"); 
         }
 
     }
@@ -9065,141 +9072,63 @@ EDStatic.startBodyHtml(null) + "\n" +
  
         //.das from source
         results = SSR.getUrlResponseString(
-            "http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml.das");
+            //2016-10-04 was "http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml.das");
+            "http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/avhrr/pathfinder_v51/daily/day/aggregate__avhrr_AVHRR_PATHFINDER_L3_BSST_DAILY_DAYTIME_V51.ncml.das");
         expected = 
 "Attributes {\n" +
-"    Number_of_Lines {\n" +
+"    lat {\n" +
+"        String unit \"degrees_north\";\n" +
 "        String long_name \"latitude\";\n" +
 "        String units \"degrees_north\";\n" +
+"        String standard_name \"latitude\";\n" +
+"        String axis \"Y\";\n" +
 "    }\n" +
-"    Number_of_Columns {\n" +
+"    lon {\n" +
+"        String unit \"degrees_east\";\n" +
 "        String long_name \"longitude\";\n" +
 "        String units \"degrees_east\";\n" +
+"        String standard_name \"longitude\";\n" +
+"        String axis \"X\";\n" +
 "    }\n" +
 "    time {\n" +
 "        String standard_name \"time\";\n" +
 "        String axis \"T\";\n" +
-"        String units \"days since 2002-01-01\";\n" +
+"        String units \"days since 1981-01-01\";\n" +
 "    }\n" +
-"    l3m_data {\n" +
+"    bsst {\n" +
 "        String _Unsigned \"true\";\n" +
-"        String long_name \"l3m_data\";\n" +
-"        Float32 scale_factor 7.17185E-4;\n" + //32768-> 23.50071808, so many values are higher
-"        Float32 add_offset -2.0;\n" +
-"        Int16 _FillValue -1;\n" + //technically wrong: cf says it should be actual value: 65535(int)
-//"        Int16 Fill -1;\n" + //appeared 2015-12-28, disappeared 2016-01-19, appeared 2016-02-25, dis 2016-03-04, appeared 2016-04-12, dis 2016-04-29
-"        String Scaling \"linear\";\n" +
-"        String Scaling_Equation \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
-"        Float32 Slope 7.17185E-4;\n" +
-"        Float32 Intercept -2.0;\n" +
-"        String coordinates \"Number_of_Lines Number_of_Columns\";\n" +
-"    }\n" +
-"    l3m_qual {\n" +
-"        String _Unsigned \"true\";\n" +
-"        String long_name \"l3m_qual\";\n" +
-"        Float32 scale_factor 7.17185E-4;\n" +  //I suspect that is incorrect
-"        Float32 add_offset -2.0;\n" +          //I suspect that is incorrect
-"        Int32 valid_range 0, 2;\n" +
-"        String coordinates \"Number_of_Lines Number_of_Columns\";\n" +
-"    }\n" +
-"    lat {\n" +
-"        String standard_name \"latitude\";\n" +
-"        String axis \"Y\";\n" +
-"        String units \"degrees_north\";\n" +
-"    }\n" +
-"    lon {\n" +
-"        String standard_name \"longitude\";\n" +
-"        String axis \"X\";\n" +
-"        String units \"degrees_east\";\n" +
-"    }\n" +
-"    NC_GLOBAL {\n";
-// odd flip flop changes below?
-/*"        String Product_Name \"A20130332013040.L3m_8D_SST_9\";\n" + //changes
-"        String Sensor_Name \"HMODISA\";\n" +
-"        String Sensor \"\";\n" +
-"        String Title \"HMODISA Level-3 Standard Mapped Image\";\n" +
-"        String Data_Center \"\";\n" +
-"        String Station_Name \"\";\n" +
-"        Float32 Station_Latitude 0.0;\n" +
-"        Float32 Station_Longitude 0.0;\n" +
-"        String Mission \"\";\n" +
-"        String Mission_Characteristics \"\";\n" +
-"        String Sensor_Characteristics \"\";\n" +
-"        String Product_Type \"other\";\n" +
-"        String Processing_Version \"Unspecified\";\n" +
-"        String Software_Name \"smigen\";\n" +
-"        String Software_Version \"4.17\";\n" +
-"        String Processing_Time \"2013051002503000\";\n" + //changes
-"        String Input_Files \"A20130332013040.L3b_8D_SST.main\";\n" + //changes
-"        String Processing_Control \"smigen par=A20130332013040.L3m_8D_SST_9.param\";\n" + //changes and line below
-"        String Input_Parameters \"IFILE = /data4/sdpsoper/vdc/vpu3/workbuf/A20130332013040.L3b_8D_SST.main|OFILE = A20130332013040.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|PROCESSING VERSION = 2012.0|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
-"        String L2_Flag_Names \"LAND,HISOLZ\";\n" +
-"        Int16 Period_Start_Year 2009;\n" +
-"        Int16 Period_Start_Day 265;\n" +
-"        Int16 Period_End_Year 2009;\n" +
-"        Int16 Period_End_Day 270;\n" +
-"        String Start_Time \"2009265000008779\";\n" +
-"        String End_Time \"2009271030006395\";\n" +
-"        Int16 Start_Year 2009;\n" +
-"        Int16 Start_Day 265;\n" +
-"        Int32 Start_Millisec 8779;\n" +
-"        Int16 End_Year 2009;\n" +
-"        Int16 End_Day 271;\n" +
-"        Int32 End_Millisec 10806395;\n" +
-"        Int32 Start_Orbit 0;\n" +
-"        Int32 End_Orbit 0;\n" +
-"        Int32 Orbit 0;\n" +
-"        String Map_Projection \"Equidistant Cylindrical\";\n" +
-"        String Latitude_Units \"degrees North\";\n" +
-"        String Longitude_Units \"degrees East\";\n" +
-"        Float32 Northernmost_Latitude 90.0;\n" +
-"        Float32 Southernmost_Latitude -90.0;\n" +
-"        Float32 Westernmost_Longitude -180.0;\n" +
-"        Float32 Easternmost_Longitude 180.0;\n" +
-"        Float32 Latitude_Step 0.083333336;\n" +
-"        Float32 Longitude_Step 0.083333336;\n" +
-"        Float32 SW_Point_Latitude -89.958336;\n" +
-"        Float32 SW_Point_Longitude -179.95833;\n" +
-"        Int32 Data_Bins 14234182;\n" +
-"        Int32 Number_of_Lines 2160;\n" +
-"        Int32 Number_of_Columns 4320;\n" +
-"        String Parameter \"Sea Surface Temperature\";\n" +
-"        String Measure \"Mean\";\n" +
-"        String Units \"deg-C\";\n" +
-"        String Scaling \"linear\";\n" +
-"        String Scaling_Equation \"(Slope*l3m_data) + Intercept = Parameter value\";\n" +
-"        Float32 Slope 7.17185E-4;\n" +
-"        Float32 Intercept -2.0;\n" +
-"        Float32 Scaled_Data_Minimum -2.0;\n" +
-"        Float32 Scaled_Data_Maximum 45.0;\n" +
-"        Float32 Data_Minimum -1.999999;\n" +
-"        Float32 Data_Maximum 36.915;\n" +
-"        String start_date \"2002-07-04 UTC\";\n" +
-"        String start_time \"00:00:00 UTC\";\n" +
-"        String stop_date \"2015-03-06 UTC\";\n" +
-"        String stop_time \"23:59:59 UTC\";\n" +
-"    }\n" +
-"}\n";*/
+"        String long_name \"bsst\";\n" +
+"        Byte dsp_PixelType 1;\n" +
+"        Byte dsp_PixelSize 2;\n" +
+"        Int16 dsp_Flag 0;\n" +
+"        Int16 dsp_nBits 16;\n" +
+"        Int32 dsp_LineSize 0;\n" +
+"        String dsp_cal_name \"Temperature\";\n" +
+"        String units \"Kelvin\";\n" +
+"        Int16 dsp_cal_eqnNumber 2;\n" +
+"        Int16 dsp_cal_CoeffsLength 8;\n" +
+"        Float32 dsp_cal_coeffs 0.075, -3.0;\n" +
+"        Float32 scale_factor 0.075;\n" +
+"        Float32 add_off -3.0;\n" +
+"        String coordinates \"lat lon\";\n" +
+"        String standard_name \"best_sea_surface_temperature\";\n" +
+"    }\n";  //...
         try {
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nFlip flop: line=21 Fill comes and goes."); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
 
 
-//re-pack apparent missing value
-//45.000717 +2=> 47.000717 /7.17185E-4=> 65535
-
-        //.das     das isn't affected by userDapQuery
+        //.das from erddap dataset    das isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
-            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0257408e+9, 1.4256e+9;\n" +
+"    Float64 actual_range 3.674592e+8, 4.758912e+8;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -9209,7 +9138,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 89.95833333, -89.95832613999998;\n" +
+"    Float64 actual_range 89.9780273, -89.97802534;\n" +
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -9218,46 +9147,36 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -179.95833333, 179.95831894;\n" +
+"    Float64 actual_range -179.9780273, 179.978023292;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
 "  }\n" +
-"  sst {\n" +
-"    Float32 _FillValue 45.000717;\n" + //important test of UInt16
+"  bsst {\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Temperature\";\n" +
-"    String long_name \"Sea Surface Temperature\";\n" +
+"    String long_name \"bsst\";\n" +
+"    Float32 missing_value -3.0;\n" +
 "    String standard_name \"sea_surface_temperature\";\n" +
-"    String units \"deg_C\";\n" +
-"  }\n" +
-"  sst_quality {\n" +
-"    Float64 colorBarMaximum 150.0;\n" +
-"    Float64 colorBarMinimum 0.0;\n" +
-"    String ioos_category \"Quality\";\n" +
-"    String long_name \"Sea Surface Temperature Quality\";\n" +
-"    String units \"deg_C\";\n" + //??? did ERDDAP add that?
-"    Float32 valid_range -2.0, -1.9985657;\n" +
+"    String units \"degree_C\";\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
-//"    String _lastModified \"2014202164149000\";\n" + //appeared 2016-05-10, disappeared 5/11
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creator_name \"NASA JPL\";\n" +
 "    String creator_url \"http://www.jpl.nasa.gov/\";\n" +
-"    Float64 Easternmost_Easting 179.95831894;\n" +
-"    Float64 geospatial_lat_max 89.95833333;\n" +
-"    Float64 geospatial_lat_min -89.95832613999998;\n" +
-"    Float64 geospatial_lat_resolution 0.08333333;\n" +
+"    Float64 Easternmost_Easting 179.978023292;\n" +
+"    Float64 geospatial_lat_max 89.9780273;\n" +
+"    Float64 geospatial_lat_min -89.97802534;\n" +
+"    Float64 geospatial_lat_resolution 0.043945312;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 179.95831894;\n" +
-"    Float64 geospatial_lon_min -179.95833333;\n" +
-"    Float64 geospatial_lon_resolution 0.08333333;\n" +
-"    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"";
+"    Float64 geospatial_lon_max 179.978023292;\n" +
+"    Float64 geospatial_lon_min -179.9780273;\n" +
+"    Float64 geospatial_lon_resolution 0.043945312;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         try {
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -9266,124 +9185,55 @@ EDStatic.startBodyHtml(null) + "\n" +
                 MustBe.throwableToString(t));
         }
 
-//odd flip flop changes from source       
-//        T18:46:21Z http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml\n" +
-//"2015-10-28T18:46:21Z http://localhost:8080/cwexperimental/griddap/testUInt16.das\";\n" +
-/*expected = 
-"    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME\";\n" +
-"    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" + //changes and below
-"    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
-"    String institution \"NASA JPL\";\n" +
-"    String keywords \"8day, 9km, aqua, data, day, daytime, image, imaging, jet, jpl, L3, l3m_data, l3m_qual, laboratory, mapped, moderate, modis, modisa, nasa, ocean, oceans,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"propulsion, quality, resolution, sea, sea_surface_temperature, smi, spectroradiometer, sst, standard, surface, temperature, thermal, time\";\n" +
-"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
-"    String L2_Flag_Names \"LAND,HISOLZ\";\n" +
-"    String license \"The data may be used and redistributed for free but is not intended\n" +
-"for legal use, since it may contain inaccuracies. Neither the data\n" +
-"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
-"of their employees or contractors, makes any warranty, express or\n" +
-"implied, including warranties of merchantability and fitness for a\n" +
-"particular purpose, or assumes any legal liability for the accuracy,\n" +
-"completeness, or usefulness, of this information.\";\n" +
-"    String Map_Projection \"Equidistant Cylindrical\";\n" +
-"    String Measure \"Mean\";\n" +
-"    Float64 Northernmost_Northing 89.95833333;\n" +
-"    String Processing_Control \"smigen par=A20092652009272.L3m_8D_SST_9.param\";\n" + //changes
-"    String Processing_Time \"2009282201111000\";\n" + //changes
-"    String Product_Name \"A20092652009272.L3m_8D_SST_9\";\n" + //changes
-"    String Product_Type \"8-day\";\n" +
-"    String Replacement_Flag \"ORIGINAL\";\n" +
-"    Float32 Scaled_Data_Maximum 45.0;\n" +
-"    Float32 Scaled_Data_Minimum -2.0;\n" +
-"    String Sensor_Name \"MODISA\";\n" +
-"    String Software_Name \"smigen\";\n" +
-"    String Software_Version \"4.0\";\n" +
-"    String sourceUrl \"http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml\";\n" +
-"    Float64 Southernmost_Northing -89.95832613999998;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
-"    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) THERMAL 8DAY 9KM DAYTIME)\";\n" +
-"    String time_coverage_end \"2015-03-06T00:00:00Z\";\n" +
-"    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
-"    String title \"MODIS AQUA L3 SST THERMAL 8DAY 9KM DAYTIME\";\n" +
-"    Float64 Westernmost_Easting -179.95833333;\n" +
-"  }\n" +
-"}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
-        Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
-            expected, "results=\n" + results);
-*/
-
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
-            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".dds"); 
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = //difference from testUInt16File: lat lon are double here, not float
 "Dataset {\n" +
-"  Float64 time[time = 579];\n" +
-"  Float64 latitude[latitude = 2160];\n" +
-"  Float64 longitude[longitude = 4320];\n" +
+"  Float64 time[time = 1245];\n" +
+"  Float64 latitude[latitude = 4096];\n" +
+"  Float64 longitude[longitude = 8192];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 579][latitude = 2160][longitude = 4320];\n" +
+"      Float32 bsst[time = 1245][latitude = 4096][longitude = 8192];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 579];\n" +
-"      Float64 latitude[latitude = 2160];\n" +
-"      Float64 longitude[longitude = 4320];\n" +
-"  } sst;\n" +
-"  GRID {\n" +
-"    ARRAY:\n" +
-"      Float32 sst_quality[time = 579][latitude = 2160][longitude = 4320];\n" +
-"    MAPS:\n" +
-"      Float64 time[time = 579];\n" +
-"      Float64 latitude[latitude = 2160];\n" +
-"      Float64 longitude[longitude = 4320];\n" +
-"  } sst_quality;\n" +
+"      Float64 time[time = 1245];\n" +
+"      Float64 latitude[latitude = 4096];\n" +
+"      Float64 longitude[longitude = 8192];\n" +
+"  } bsst;\n" +
 "} testUInt16Dap;\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-        //.csv data values
-        userDapQuery = "sst[0][0:100:2159][(-134.95833513)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
-        String2.log(results);
-        expected = //difference from testUInt16File: lat lon are double here, not float
-"time,latitude,longitude,sst\n" +
-"UTC,degrees_north,degrees_east,deg_C\n" +
-"2002-07-04T00:00:00Z,89.95833333,-134.95833513,-0.84102905\n" +
-"2002-07-04T00:00:00Z,81.62500033,-134.95833513,-1.6371044\n" +
-"2002-07-04T00:00:00Z,73.29166733,-134.95833513,-0.11021753\n" +
-"2002-07-04T00:00:00Z,64.95833433,-134.95833513,NaN\n" +   //_FillValue's correctly caught
-"2002-07-04T00:00:00Z,56.62500133,-134.95833513,NaN\n" +
-"2002-07-04T00:00:00Z,48.29166833,-134.95833513,12.6406145\n" +
-"2002-07-04T00:00:00Z,39.958335330000004,-134.95833513,17.95137\n" +
-"2002-07-04T00:00:00Z,31.62500233,-134.95833513,20.432829\n" +
-"2002-07-04T00:00:00Z,23.291669330000005,-134.95833513,19.664007\n" +
-"2002-07-04T00:00:00Z,14.958336330000009,-134.95833513,24.482773\n" +
-"2002-07-04T00:00:00Z,6.625003329999998,-134.95833513,29.068455\n" +
-"2002-07-04T00:00:00Z,-1.7083296699999977,-134.95833513,27.240349\n" +
-"2002-07-04T00:00:00Z,-10.041662669999994,-134.95833513,27.210228\n" +
-"2002-07-04T00:00:00Z,-18.37499566999999,-134.95833513,26.713936\n" +
-"2002-07-04T00:00:00Z,-26.70832867,-134.95833513,21.580326\n" +
-"2002-07-04T00:00:00Z,-35.041661669999996,-134.95833513,15.789774\n" +
-"2002-07-04T00:00:00Z,-43.37499466999999,-134.95833513,NaN\n" +
-"2002-07-04T00:00:00Z,-51.70832767,-134.95833513,6.1673026\n" +
-"2002-07-04T00:00:00Z,-60.041660669999985,-134.95833513,0.40400413\n" +
-"2002-07-04T00:00:00Z,-68.37499367,-134.95833513,NaN\n" +
-"2002-07-04T00:00:00Z,-76.70832667,-134.95833513,NaN\n" +
-"2002-07-04T00:00:00Z,-85.04165966999999,-134.95833513,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //display the image
         String2.log("\n\n* PNG ");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][][]&.land=under", 
-            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "bsst[0][][]&.land=under", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //.csv data values
+        userDapQuery = "bsst[0][0:100:1000][(-132)]"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".csv"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = //difference from testUInt16File: lat lon are double here, not float
+"time,latitude,longitude,bsst\n" +
+"UTC,degrees_north,degrees_east,degree_C\n" +
+"1981-08-24T00:00:00Z,89.9780273,-131.989746596,NaN\n" +
+"1981-08-24T00:00:00Z,85.58349609999999,-131.989746596,-1.2\n" +
+"1981-08-24T00:00:00Z,81.18896489999999,-131.989746596,-0.825\n" +
+"1981-08-24T00:00:00Z,76.7944337,-131.989746596,-0.6\n" +
+"1981-08-24T00:00:00Z,72.3999025,-131.989746596,1.05\n" +
+"1981-08-24T00:00:00Z,68.0053713,-131.989746596,NaN\n" +         //missing_value's -> NaN
+"1981-08-24T00:00:00Z,63.61084009999999,-131.989746596,NaN\n" +
+"1981-08-24T00:00:00Z,59.216308899999994,-131.989746596,NaN\n" +
+"1981-08-24T00:00:00Z,54.82177769999999,-131.989746596,2.025\n" +
+"1981-08-24T00:00:00Z,50.427246499999995,-131.989746596,15.45\n" +
+"1981-08-24T00:00:00Z,46.03271529999999,-131.989746596,15.9\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t2) {
             String2.pressEnterToContinue("Unexpected error:\n" +

@@ -47,6 +47,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     protected DateTimeFormatter dateTimeFormatter;  //set if !sourceTimeIsNumeric
     protected String time_precision; //see Calendar2.epochSecondsToLimitedIsoStringT
     protected boolean superConstructorIsFinished = false;
+    protected String time_zone; //if not specified, will be Zulu
 
     /**
      * The constructor.
@@ -112,16 +113,29 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         sourceTimeFormat = units();
         Test.ensureNotNothing(sourceTimeFormat, 
             errorInMethod + "'units' wasn't found."); //match name in datasets.xml
+
+        time_zone = combinedAttributes.getString("time_zone");
+        combinedAttributes.remove("time_zone");
+        if (!String2.isSomething(time_zone))
+            time_zone = "Zulu";
+
         if (Calendar2.isNumericTimeUnits(sourceTimeFormat)) {
             sourceTimeIsNumeric = true;
             double td[] = Calendar2.getTimeBaseAndFactor(sourceTimeFormat);
             sourceTimeBase = td[0];
             sourceTimeFactor = td[1];
+            if (!"Zulu".equals(time_zone) && !"UTC".equals(time_zone)) 
+                throw new RuntimeException(
+                    "Currently, ERDDAP doesn't support time_zone's other than Zulu " +
+                    "and UTC for numeric axis timestamp variables.");
+
         } else {
             sourceTimeIsNumeric = false;
             throw new RuntimeException(
-                "Currently, the source units for the time axis must include \" since \".");
+                "Currently, String time axes are not supported. " +
+                "The source units for the time axis must include \" since \".");
             /*  If Strings are ever supported...
+            //deal with time_zone! see EDVTimeStamp
             //ensure scale_factor=1 and add_offset=0
             if (scaleAddOffset)
                 throw new RuntimeException(errorInMethod + 
@@ -182,8 +196,9 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         destinationDataType = "double";
         destinationDataTypeClass = double.class;
         int n = sourceValues.size();
-        destinationMin = sourceTimeToEpochSeconds(sourceValues.getNiceDouble(0)); 
-        destinationMax = sourceTimeToEpochSeconds(sourceValues.getNiceDouble(n - 1));
+        setDestinationMinMaxFromSource(
+            sourceValues.getNiceDouble(0), 
+            sourceValues.getNiceDouble(n - 1));
         if (Double.isNaN(destinationMin))
             throw new RuntimeException("ERROR related to time values and/or time source units: " +
                 "[0]=" + sourceValues.getString(0) + " => NaN epochSeconds.");
@@ -196,6 +211,18 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         if (reallyVerbose) String2.log("\nEDVTimeStampGridAxis created, " + 
             "sourceTimeFormat=" + sourceTimeFormat +
             " destMin=" + destinationMin + " destMax=" + destinationMax + "\n"); 
+    }
+
+    /** 
+     * This overwrites the EDV method of the same name in order to deal
+     * with numeric source time other than "seconds since 1970-01-01T00:00:00Z".
+     */
+    public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
+        //scaleAddOffset is allowed!! and applied by superclass' setDestinationMinMax!
+        //   ??? I that correct order???
+        setDestinationMinMax(
+            sourceTimeToEpochSeconds(sourceMin),
+            sourceTimeToEpochSeconds(sourceMax));
     }
 
     /**
@@ -265,7 +292,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
 
     /**
      * This converts a destination double value to a string
-     * (time variable override this to make an iso string).
+     * (time variable overwrite this to make an iso string).
      * NaN returns "".
      *
      * @param destD  epochSeconds
@@ -277,7 +304,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
 
     /**
      * This converts a destination String value to a destination double
-     * (time variable overrides this to catch iso 8601 strings).
+     * (time variable overwrites this to catch iso 8601 strings).
      * "" or null returns NaN.
      *
      * @param destS
@@ -482,7 +509,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     /**
      * This returns one of this axis' source values as a nice String destination value. 
      * For most EDVGridAxis, this returns destinationValues (which equal
-     * the String destination values). The Time subclass overrides this.
+     * the String destination values). The Time subclass overwrites this.
      */
     public String destinationString(int which) {
         return destinationToString(destinationDouble(which));
@@ -491,7 +518,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     /** This returns a PrimitiveArray with the destination values for this axis. 
      * Don't change these values.
      * If destination=source, this may return the sourceValues PrimitiveArray. 
-     * The alt and time subclasses override this.
+     * The alt and time subclasses overwrite this.
      * The time subclass returns these as ISO 8601 'T' strings 
      * (to facilitate displaying options to users).
      * !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!

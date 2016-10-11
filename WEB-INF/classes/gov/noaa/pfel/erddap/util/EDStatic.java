@@ -141,8 +141,9 @@ public class EDStatic {
      * <br>1.68 released on 2016-02-08
      * <br>1.70 released on 2016-04-15
      * <br>1.72 released on 2016-05-12
+     * <br>1.74 released on 2016-10-07
      */   
-    public static String erddapVersion = "1.72";  
+    public static String erddapVersion = "1.74";  
 
     /** 
      * This is almost always false.  
@@ -165,6 +166,7 @@ public static boolean developmentMode = false;
     public static String contentDirectory;
 
     public final static String INSTITUTION = "institution";
+    public final static int TITLE_DOT_LENGTH = 95; //max nChar before using " ... "
 
     /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
     public static String contextDirectory = SSR.getContextDirectory(); //with / separator and / at the end
@@ -196,7 +198,7 @@ public static boolean developmentMode = false;
     public static int taskThreadSucceededDistributionTotal[] = new int[String2.DistributionSize];
 
     public static String datasetsThatFailedToLoad = "";
-    public static String duplicateDatasetIDsMsg = "";
+    public static String errorsDuringMajorReload = "";
     public static StringBuffer memoryUseLoadDatasetsSB     = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static StringBuffer failureTimesLoadDatasetsSB  = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static StringBuffer responseTimesLoadDatasetsSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
@@ -325,6 +327,7 @@ public static boolean developmentMode = false;
         baseHttpsUrl, //won't be null, may be "(not specified)"
         bigParentDirectory,
         unitTestDataDir,
+        unitTestBigDataDir,
 
         EDDGridIdExample,
         EDDGridDimensionExample,
@@ -447,6 +450,7 @@ public static boolean developmentMode = false;
         fullCopyDirectory,
         fullLuceneDirectory,
         fullResetFlagDirectory,
+        fullHardFlagDirectory,
         fullCptCacheDirectory,         
         fullPlainFileNcCacheDirectory,         
         fullSgtMapTopographyCacheDirectory,
@@ -737,6 +741,8 @@ public static boolean developmentMode = false;
         fileHelp_html,
         fileHelp_htmlTable,
         fileHelp_iso19115,
+        fileHelp_itxGrid,
+        fileHelp_itxTable,
         fileHelp_json,
         fileHelp_mat,
         fileHelpGrid_nc,
@@ -1014,7 +1020,6 @@ public static boolean developmentMode = false;
         queryErrorNotExpectedAt,
         queryErrorNotFoundAfter,
         queryErrorOccursTwice,
-        queryErrorOneOrderBy,
         queryErrorOrderByVariable,
         queryErrorUnknownVariable,
 
@@ -1293,9 +1298,12 @@ public static boolean developmentMode = false;
         bigParentDirectory = File2.addSlash(bigParentDirectory);
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-        unitTestDataDir = setup.getString("unitTestDataDir", "[specify <unitTestDataDir> in setup.xml]"); 
-        unitTestDataDir = File2.addSlash(unitTestDataDir);
-        String2.unitTestDataDir = unitTestDataDir;
+        unitTestDataDir    = setup.getString("unitTestDataDir",    "[specify <unitTestDataDir> in setup.xml]"); 
+        unitTestBigDataDir = setup.getString("unitTestBigDataDir", "[specify <unitTestBigDataDir> in setup.xml]"); 
+        unitTestDataDir    = File2.addSlash(unitTestDataDir);
+        unitTestBigDataDir = File2.addSlash(unitTestBigDataDir);
+        String2.unitTestDataDir    = unitTestDataDir;
+        String2.unitTestBigDataDir = unitTestBigDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = setup.getString("emailSmtpHost",  null);
@@ -1332,6 +1340,7 @@ public static boolean developmentMode = false;
         fullDatasetDirectory     = bigParentDirectory + "dataset/";  
         fullCacheDirectory       = bigParentDirectory + "cache/";
         fullResetFlagDirectory   = bigParentDirectory + "flag/";
+        fullHardFlagDirectory    = bigParentDirectory + "hardFlag/";
         fullLogsDirectory        = bigParentDirectory + "logs/";
         fullCopyDirectory        = bigParentDirectory + "copy/";
         fullLuceneDirectory      = bigParentDirectory + "lucene/";
@@ -1343,6 +1352,7 @@ public static boolean developmentMode = false;
         File2.makeDirectory(fullDatasetDirectory); 
         File2.makeDirectory(fullCacheDirectory);
         File2.makeDirectory(fullResetFlagDirectory);
+        File2.makeDirectory(fullHardFlagDirectory);
         File2.makeDirectory(fullLogsDirectory);
         File2.makeDirectory(fullCopyDirectory);
         File2.makeDirectory(fullLuceneDirectory);
@@ -1949,6 +1959,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fileHelp_html              = messages.getNotNothingString("fileHelp_html",              "");
         fileHelp_htmlTable         = messages.getNotNothingString("fileHelp_htmlTable",         "");
         fileHelp_iso19115          = messages.getNotNothingString("fileHelp_iso19115",          "");
+        fileHelp_itxGrid           = messages.getNotNothingString("fileHelp_itxGrid",           "");
+        fileHelp_itxTable          = messages.getNotNothingString("fileHelp_itxTable",          "");
         fileHelp_json              = messages.getNotNothingString("fileHelp_json",              "");
         fileHelp_mat               = messages.getNotNothingString("fileHelp_mat",               "");
         fileHelpGrid_nc            = messages.getNotNothingString("fileHelpGrid_nc",            "");
@@ -2241,7 +2253,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    "");
         queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    "");
         queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      "");
-        queryErrorOneOrderBy       = messages.getNotNothingString("queryErrorOneOrderBy",       "");
         queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  "");
         queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  "");
 
@@ -2811,11 +2822,11 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             subject = subject.substring(DONT_LOG_THIS_EMAIL.length());
         subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + subject;
 
-        //Always note that email sent in log.
-        String2.log("Emailing \"" + subject + "\" to " + emailAddressesCSSV);
-
         //almost always write to emailLog
         try {
+            //Always note that email sent in regular log.
+            String2.log("Emailing \"" + subject + "\" to " + emailAddressesCSSV);
+
             String date = localTime.substring(0, 10);
             if (!emailLogDate.equals(date) || emailLogFile == null) {
                 //update emailLogDate
@@ -2853,10 +2864,13 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             emailLogFile.flush();
 
         } catch (Throwable t) {
-            String2.log(MustBe.throwable("Error: Writing to emailLog failed.", t));
+            try {
+                String2.log(MustBe.throwable("Error: Writing to emailLog failed.", t));
+            } catch (Throwable t2) {
+            }
             if (emailLogFile != null) {
                 try {emailLogFile.close(); 
-                } catch (Throwable t2) {
+                } catch (Throwable t3) {
                 }
                 emailLogFile = null;
             }
@@ -2890,7 +2904,9 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
                     erddapUrl + " reports:\n" + content); //always non-https url
         } catch (Throwable t) {
             String msg = "Error: Sending email to " + emailAddressesCSSV + " failed";
-            String2.log(MustBe.throwable(msg, t));
+            try {String2.log(MustBe.throwable(msg, t));
+            } catch (Throwable t4) {
+            }
             errors = msg + ": " + t.toString() + "\n";
         }
 
@@ -3039,7 +3055,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         sb.append("nTableDatasets = " + nTableDatasets + "\n");
         sb.append("nTotalDatasets = " + (nGridDatasets + nTableDatasets) + "\n");
         sb.append(datasetsThatFailedToLoad);
-        sb.append(duplicateDatasetIDsMsg);
+        sb.append(errorsDuringMajorReload);
         sb.append("Response Failed    Time (since last major LoadDatasets) ");
         sb.append(String2.getBriefDistributionStatistics(failureTimesDistributionLoadDatasets) + "\n");
         sb.append("Response Failed    Time (since last Daily Report)       ");

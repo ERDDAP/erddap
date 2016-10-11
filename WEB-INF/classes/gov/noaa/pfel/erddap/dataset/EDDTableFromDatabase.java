@@ -650,51 +650,50 @@ public class EDDTableFromDatabase extends EDDTable{
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
         //String2.log(">>resultsVars=" + resultsVariables.toString());
 
-        //distinct?   database handles it if sourceCanDoDistict = PARTIAL or YES
-        //orderBy...? database handles it if sourceCanOrderBy   = PARTIAL or YES
+        //distinct? orderBy...?
+        //  Database handles FIRST distinct or orderBY 
+        //    IF sourceCanDoDistict/OrderBy = PARTIAL or YES
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
         //but orderBy may be slow/hard for database (faster to do it in erddap?)
-        //Checking for >1 orderBy has already been done by getSourceQueryFromDapQuery.
         String[] parts = Table.getDapQueryParts(userDapQuery); //decoded.  
-        //If orderByMin|Max|MinMax and distinct() is requested, distinct isn't necessary
-        //but keep it because it may significantly reduce data transmitted from database to ERDDAP.
         boolean distinct = false; 
-        StringArray distinctOrderBy = null; //used as queryOrderBy if distinct() and no queryOrderBy
         StringArray queryOrderBy = null;  //the query orderBy or distinct source variable names 
+        int nDistinctOrOrderBy = 0;
         for (int pi = 0; pi < parts.length; pi++) {
             String p = parts[pi];
             //String2.log(">>p#" + pi + "=" + p);
-            if (p.equals("distinct()") &&
-                sourceCanDoDistinct >= CONSTRAIN_PARTIAL) {
-                distinct = true;
-                //To databases, DISTINCT doesn't imply a sort order.
-                //To ERDDAP,    DISTINCT does imply a sort order.
-                //So if database is going to handle DISTINCT, also tell it to sort the results.
-                //http://stackoverflow.com/questions/691562/does-select-distinct-imply-a-sort-of-the-results
-                distinctOrderBy = (StringArray)(resultsVariables.clone());
-                //String2.log(">>distinct() -> queryOrderBy=" + queryOrderBy.toString());
+            if (p.equals("distinct()")) {
+                nDistinctOrOrderBy++;
+                if (nDistinctOrOrderBy == 1 && sourceCanDoDistinct >= CONSTRAIN_PARTIAL) {
+                    distinct = true;
+                    //To databases, DISTINCT doesn't imply a sort order.
+                    //To ERDDAP,    DISTINCT does imply a sort order.
+                    //So if database is going to handle DISTINCT, also tell it to sort the results.
+                    //http://stackoverflow.com/questions/691562/does-select-distinct-imply-a-sort-of-the-results
+                    queryOrderBy = (StringArray)(resultsVariables.clone());
+                    //String2.log(">>distinct() -> queryOrderBy=" + queryOrderBy.toString());
+                }
 
             } else if (p.startsWith("orderBy") && //doesn't matter if orderByMax|Min|MinMax|... 
-                p.endsWith("\")") &&
-                sourceCanOrderBy >= CONSTRAIN_PARTIAL) {
-                int tpo = p.indexOf("(\"");
-                if (tpo < 0) 
-                    throw new SimpleException(EDStatic.queryError + "Invalid syntax for \"" + p + "\"."); //should have been caught already
-                queryOrderBy = StringArray.fromCSV(
-                    p.substring(tpo + 2, p.length() - 2));
-                //change from destNames to sourceNames
-                for (int oi = 0; oi < queryOrderBy.size(); oi++) {
-                    int v = String2.indexOf(dataVariableDestinationNames(), queryOrderBy.get(oi));
-                    if (v < 0)
-                        throw new SimpleException(EDStatic.queryError +
-                            MessageFormat.format(EDStatic.queryErrorUnknownVariable, queryOrderBy.get(oi))); 
-                    queryOrderBy.set(oi, dataVariableSourceNames()[v]);
+                p.endsWith("\")")) {
+                nDistinctOrOrderBy++;
+                if (nDistinctOrOrderBy == 1 && sourceCanOrderBy >= CONSTRAIN_PARTIAL) {
+                    int tpo = p.indexOf("(\"");
+                    if (tpo < 0) 
+                        throw new SimpleException(EDStatic.queryError + "Invalid syntax for \"" + p + "\"."); //should have been caught already
+                    queryOrderBy = StringArray.fromCSV(
+                        p.substring(tpo + 2, p.length() - 2));
+                    //change from destNames to sourceNames
+                    for (int oi = 0; oi < queryOrderBy.size(); oi++) {
+                        int v = String2.indexOf(dataVariableDestinationNames(), queryOrderBy.get(oi));
+                        if (v < 0)
+                            throw new SimpleException(EDStatic.queryError +
+                                MessageFormat.format(EDStatic.queryErrorUnknownVariable, queryOrderBy.get(oi))); 
+                        queryOrderBy.set(oi, dataVariableSourceNames()[v]);
+                    }
                 }
             }
         }
-        //if no orderBy, use distinct order (if any)
-        if (queryOrderBy == null)
-            queryOrderBy = distinctOrderBy;
 
         //no need to further prune constraints
 
@@ -1143,10 +1142,18 @@ public class EDDTableFromDatabase extends EDDTable{
         Attributes externalAddGlobalAttributes)
         throws Throwable {
 
-
-        String2.log("EDDTableFromDatabase.generateDatasetsXml" +
-            "\n  driver=" + driverName + 
-            "\n  catalog=" + catalogName + " schema=" + schemaName + " table=" + tableName);         
+        String2.log("\n*** EDDTableFromDatabase.generateDatasetsXml" +
+            "\nurl=" + url +
+            "\ndriver=" + driverName + 
+            "\nconnectionProperties=" + String2.toCSVString(connectionProperties) +
+            "\ncatalog=" + catalogName + " schema=" + schemaName + " table=" + tableName +
+            " orderBy=" + tOrderBy +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         if (catalogName != null && catalogName.equals("null")) catalogName = null;
         if (schemaName  != null && schemaName.equals( "null")) schemaName  = null;
 
@@ -1274,6 +1281,8 @@ public class EDDTableFromDatabase extends EDDTable{
                 externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
         
+        //don't suggestSubsetVariables, since sourceTable not available
+
         //sort the column names?
         //if (sortColumnsByName)
         //    dataAddTable.sortColumnsByName();
@@ -1442,7 +1451,7 @@ expected =
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
 "   altitude, depth, and time variables).\n" +
-" * If you don't like a sourceAttribute, override it by adding an\n" +
+" * If you don't like a sourceAttribute, overwrite it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
 " * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
@@ -1817,7 +1826,8 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 
             //orderBy()  
             eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"category,last\")",
+            tName = tedd.makeNewFileForDapQuery(null, null, 
+                "category,last,first&orderBy(\"category,last\")",
                 dir, tedd.className() + "_orderBy3", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
             expected = tDatasetID.equals("testMyDatabaseNo") ||
@@ -1844,10 +1854,19 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + "
 
             //orderBy() and distinct()
             eTime = System.currentTimeMillis();
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"category,last\")&distinct()",
+            tName = tedd.makeNewFileForDapQuery(null, null, 
+                "category,last,first&orderBy(\"category,last\")&distinct()",
                 dir, tedd.className() + "_orderBy4", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
-            //same expected as above
+            expected = 
+//ERDDAP's distinct() is always done and it sorts "" at top.
+"category,last,first\n" +
+",,\n" + //units
+",Zule,Zele\n" +
+"A,Bucher,Bob\n" +
+"A,Johnson,John\n" +
+"B,Bach,Betty\n" +
+"B,Smith,Stan\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  orderBy + distinct time=" + (System.currentTimeMillis() - eTime)); 
 
@@ -1865,6 +1884,21 @@ expected =
 "B,Smith,Stan\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("  orderByMax + distinct time=" + (System.currentTimeMillis() - eTime)); 
+
+            //orderByMax()  and orderBy()
+            eTime = System.currentTimeMillis();
+            tName = tedd.makeNewFileForDapQuery(null, null, 
+                "category,last,first&orderByMax(\"category,last\")&orderBy(\"first\")",
+                dir, tedd.className() + "_orderBy6", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+expected = 
+"category,last,first\n" +
+",,\n" + //units
+"A,Johnson,John\n" +
+"B,Smith,Stan\n" +
+",Zule,Zele\n";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            String2.log("  orderByMax + orderBy time=" + (System.currentTimeMillis() - eTime)); 
 
             //no matching data (database determined)
             eTime = System.currentTimeMillis();

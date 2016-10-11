@@ -32,9 +32,9 @@ public class EDVAlt extends EDV {
      * are standardized.
      *
      * @param tSourceMin  is pre-scale_factor and add_offset.
-     *   This takes precedence over actual_range, data_min, or data_max metadata.
+     *   This takes precedence over actual_range, actual_min, or data_min metadata.
      * @param tSourceMax  is pre-scale_factor and add_offset.
-     *   This takes precedence over actual_range, data_min, or data_max metadata.
+     *   This takes precedence over actual_range, actual_max, or data_max metadata.
      * @throws Throwable if trouble
      */
     public EDVAlt(String tSourceName, 
@@ -44,6 +44,10 @@ public class EDVAlt extends EDV {
 
         super(tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
+
+        if (destinationDataType().equals("String"))
+            throw new RuntimeException("datasets.xml error: " +
+            "The destination dataType for the altitude variable must be a numeric dataType.");
 
         units = ALT_UNITS; 
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata

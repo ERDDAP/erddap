@@ -756,12 +756,24 @@ public class TestUtil {
         //suggestLowHigh
         String2.log("test suggestLowHigh");
         double lowHigh[];
-        lowHigh = Math2.suggestLowHigh(0, Double.NaN); //one is NaN
+        lowHigh = Math2.suggestLowHigh(432, Double.NaN); //low is NaN
+        Test.ensureEqual(lowHigh[0], 400, "");
+        Test.ensureEqual(lowHigh[1], 900, "");
+        lowHigh = Math2.suggestLowHigh(-432, Double.NaN); //low is NaN
+        Test.ensureEqual(lowHigh[0], -450, "");
+        Test.ensureEqual(lowHigh[1], -200, "");
+        lowHigh = Math2.suggestLowHigh(Double.NaN, 1547); //high is NaN
+        Test.ensureEqual(lowHigh[0], 600, "");
+        Test.ensureEqual(lowHigh[1], 1600, "");
+        lowHigh = Math2.suggestLowHigh(Double.NaN, -1547); //high is NaN
+        Test.ensureEqual(lowHigh[0], -3500, "");
+        Test.ensureEqual(lowHigh[1], -1500, "");
+        lowHigh = Math2.suggestLowHigh(Double.NaN, Double.NaN); //one is NaN
         Test.ensureEqual(lowHigh[0], 0, "");
         Test.ensureEqual(lowHigh[1], 1, "");
-        lowHigh = Math2.suggestLowHigh(0,0);  //positive and ==
+        lowHigh = Math2.suggestLowHigh(0,0);  //both 0
         Test.ensureEqual(lowHigh[0], -1, "");
-        Test.ensureEqual(lowHigh[1],  1, "");
+        Test.ensureEqual(lowHigh[1], 1, "");
         lowHigh = Math2.suggestLowHigh(2,2);  //positive and ==
         Test.ensureEqual(lowHigh[0], 1.9, "");
         Test.ensureEqual(lowHigh[1], 2.1, "");
@@ -771,12 +783,18 @@ public class TestUtil {
         lowHigh = Math2.suggestLowHigh(0, 10); //0 low is special case, high has buffer zone
         Test.ensureEqual( lowHigh[0], 0, "a");
         Test.ensureEqual( lowHigh[1], 15, "b");
-        lowHigh = Math2.suggestLowHigh(5, 10); //0 low is special case, high has buffer zone
+        lowHigh = Math2.suggestLowHigh(0, 1214); //0 low is special case, high has buffer zone
+        Test.ensureEqual( lowHigh[0], 0, "a");
+        Test.ensureEqual( lowHigh[1], 1500, "b");
+        lowHigh = Math2.suggestLowHigh(5, 10); //high has buffer zone
         Test.ensureEqual( lowHigh[0], 4, "a2");
         Test.ensureEqual( lowHigh[1], 11, "b2");
         lowHigh = Math2.suggestLowHigh(0.1, 9.9);
         Test.ensureEqual( lowHigh[0], 0, "c");
         Test.ensureEqual( lowHigh[1], 10, "d");
+        lowHigh = Math2.suggestLowHigh(0, 14234);
+        Test.ensureEqual( lowHigh[0], 0, "c2");
+        Test.ensureEqual( lowHigh[1], 15000, "d2");
         lowHigh = Math2.suggestLowHigh(-9.9, -0.1);
         Test.ensureEqual( lowHigh[0], -10, "e");
         Test.ensureEqual( lowHigh[1], 0, "f");
@@ -1785,6 +1803,14 @@ public class TestUtil {
         Test.ensureEqual(String2.replaceAllIgnoreCase("ABcbcd", "b",  "qt"), "Aqtcqtcd", "");
         Test.ensureEqual(String2.replaceAllIgnoreCase("ABcbcd", "B",  "qt"), "Aqtcqtcd", "");
 
+        //repeatedlyReplaceAll
+        Test.ensureEqual(String2.repeatedlyReplaceAll("AbBbBaBBaB", "bb", "b", true), "AbabaB", "");
+        Test.ensureEqual(String2.repeatedlyReplaceAll("AbBbBaBBaB", "c",  "c", true), "AbBbBaBBaB", "");
+        sb = new StringBuilder("AbBbBaBBaB");
+        Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "bb", "b", true).toString(), "AbabaB", "");
+        sb = new StringBuilder("AbBbBaBBaB");
+        Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "c",  "c", true).toString(), "AbBbBaBBaB", "");
+
         //combine spaces
         String2.log("test combineSpaces");
         Test.ensureEqual(String2.combineSpaces("abcdef"), "abcdef", "a");
@@ -2448,17 +2474,20 @@ public class TestUtil {
             "ThisIsReallyLongThisIsReallyLongThisIsReallyLong"), 
             "ThisIsReallyLongThisIsReaxhdce7_15a4_56ff", "");
 
-        //encodeVariableNameSafe
-        String2.log("test String2.encodeVariableNameSafe");
-        Test.ensureEqual(String2.encodeVariableNameSafe(null), "x_1", "");
-        Test.ensureEqual(String2.encodeVariableNameSafe(""), "x_0", "");
-        Test.ensureEqual(String2.encodeVariableNameSafe("1z"), "x31z", "");
-        Test.ensureEqual(String2.encodeVariableNameSafe(".z"), "x2ez", "");
-        Test.ensureEqual(String2.encodeVariableNameSafe("aBc"), "aBc", "");
-        Test.ensureEqual(String2.encodeVariableNameSafe(
+        //encodeMatlabNameSafe
+        String2.log("test String2.encodeMatlabNameSafe");
+        Test.ensureEqual(String2.encodeMatlabNameSafe(null), "x_1", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe(""), "x_0", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe("1z"), "x31z", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe(".z"), "x2ez", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe("aBc"), "aBc", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe("maxLength"), "max78Length", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe("max_length"), "max78_length", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe("max!length"), "max78x21length", "");
+        Test.ensureEqual(String2.encodeMatlabNameSafe(
             "1-._ xA&°\u1234"), 
             "x31x2dx2e_x20x78Ax26xb0xx1234", "");
-        Test.ensureEqual(String2.encodeVariableNameSafe(
+        Test.ensureEqual(String2.encodeMatlabNameSafe(
             "ThisIsReallyLongThisIsReallyLongThisIsReallyLong"), 
             "ThisIsReallyLongThisIsReaxhdce7_15a4_56ff", "");
 
@@ -2473,6 +2502,10 @@ public class TestUtil {
         Test.ensureEqual(String2.toTitleCase(""), "", "");
         Test.ensureEqual(String2.toTitleCase("a"), "A", "");
         Test.ensureEqual(String2.toTitleCase("a b"), "A B", "");
+
+        //camelCaseToTitleCase
+        String2.log("test String2.camelCaseToTitleCase");
+        Test.ensureEqual(String2.camelCaseToTitleCase("camelCase9.9String"), "Camel Case 9.9 String", "");
 
         //toVariableName
         String2.log("test String2.toVariableName");
@@ -2541,6 +2574,245 @@ public class TestUtil {
         String s, expected;
         double d;
         GregorianCalendar gc;
+        DateTimeFormatter dtf; 
+        String2.log("\n*** TestUtil.testCalendar2\n");
+
+        //convertToJavaDateTimeFormat(String s) -> yyyy-MM-dd'T'HH:mm:ssZ
+        // y-m-d  --> push to Calendar2.parseISODateTime
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("Y-M-D"),               "yyyy-MM-dd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("Y-M-D H:M"),           "yyyy-MM-dd' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("Y-M-DTH:M:SZ"),        "yyyy-MM-dd'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("y-m-d"),               "yyyy-MM-dd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("y-m-d h:m"),           "yyyy-MM-dd' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("y-m-dTh:m:sZ"),        "yyyy-MM-dd'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YY-MM-DD"),            "yyyy-MM-dd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YY-MM-DD HH:MM"),      "yyyy-MM-dd' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YY-MM-DDTHH:MM:SSZ"),  "yyyy-MM-dd'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yy-mm-dd"),            "yyyy-MM-dd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yy-mm-dd hh:mm"),      "yyyy-MM-dd' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yy-mm-ddThh:mm:ssZ"),  "yyyy-MM-dd'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYY-MM-DD"),          "yyyy-MM-dd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYY-MM-DD HH:MM"),    "yyyy-MM-dd' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYY-MM-DDTHH:MM:SSZ"),"yyyy-MM-dd'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyy-mm-dd"),          "yyyy-MM-dd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyy-mm-dd hh:mm"),    "yyyy-MM-dd' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyy-mm-ddThh:mm:ssZ"),"yyyy-MM-dd'T'HH:mm:ssZ", "");
+ 
+        //compact
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMD"),                 "yyMd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMDHM"),               "yyMdHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YMDHMSZ"),             "yyMdHmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymd"),                 "yyMd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymdhm"),               "yyMdHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ymdhmsZ"),             "yyMdHmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYYMMDD"),            "yyyyMMdd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYYMMDDHHMM"),        "yyyyMMddHHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("YYYYMMDDHHMMSSZ"),     "yyyyMMddHHmmssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyymmdd"),            "yyyyMMdd", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyymmddhhmm"),        "yyyyMMddHHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("yyyymmddhhmmssZ"),     "yyyyMMddHHmmssZ", "");
+
+        //m/d/y
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/Y"),               "M/d/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/Y H:M"),           "M/d/yy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("M/D/YTH:M:SZ"),        "M/d/yy'T'H:m:sZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/y"),               "M/d/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/y h:m"),           "M/d/yy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("m/d/yTh:m:sZ"),        "M/d/yy'T'H:m:sZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YY"),            "MM/dd/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YY HH:MM"),      "MM/dd/yy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YYTHH:MM:SSZ"),  "MM/dd/yy'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yy"),            "MM/dd/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yy hh:mm"),      "MM/dd/yy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yyThh:mm:ssZ"),  "MM/dd/yy'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YYYY"),          "MM/dd/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YYYY HH:MM"),    "MM/dd/yyyy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MM/DD/YYYYTHH:MM:SSZ"),"MM/dd/yyyy'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yyyy"),          "MM/dd/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yyyy hh:mm"),    "MM/dd/yyyy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mm/dd/yyyyThh:mm:ssZ"),"MM/dd/yyyy'T'HH:mm:ssZ", "");
+
+        //compact
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDY"),                 "Mdyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDYHM"),               "MdyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MDYHMSZ"),             "MdyyHmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdy"),                 "Mdyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdyhm"),               "MdyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mdyhmsZ"),             "MdyyHmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MMDDYYYY"),            "MMddyyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MMDDYYYYHHMM"),        "MMddyyyyHHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("MMDDYYYYHHMMSSZ"),     "MMddyyyyHHmmssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mmddyyyy"),            "MMddyyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mmddyyyyhhmm"),        "MMddyyyyHHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("mmddyyyyhhmmssZ"),     "MMddyyyyHHmmssZ", "");
+
+        //d/m/y
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/Y"),               "d/M/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/Y H:M"),           "d/M/yy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("D/M/YTH:M:SZ"),        "d/M/yy'T'H:m:sZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/y"),               "d/M/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/y h:m"),           "d/M/yy' 'H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("d/m/yTh:m:sZ"),        "d/M/yy'T'H:m:sZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YY"),            "dd/MM/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YY HH:MM"),      "dd/MM/yy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YYTHH:MM:SSZ"),  "dd/MM/yy'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yy"),            "dd/MM/yy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yy hh:mm"),      "dd/MM/yy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yyThh:mm:ssZ"),  "dd/MM/yy'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YYYY"),          "dd/MM/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YYYY HH:MM"),    "dd/MM/yyyy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DD/MM/YYYYTHH:MM:SSZ"),"dd/MM/yyyy'T'HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yyyy"),          "dd/MM/yyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yyyy hh:mm"),    "dd/MM/yyyy' 'HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dd/mm/yyyyThh:mm:ssZ"),"dd/MM/yyyy'T'HH:mm:ssZ", "");
+
+        //compact
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMY"),                 "dMyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMYHM"),               "dMyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DMYHMSZ"),             "dMyyHmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmy"),                 "dMyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmyhm"),               "dMyyHm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("dmyhmsZ"),             "dMyyHmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DDMMYYYY"),            "ddMMyyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DDMMYYYYHHMM"),        "ddMMyyyyHHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("DDMMYYYYHHMMSSZ"),     "ddMMyyyyHHmmssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ddmmyyyy"),            "ddMMyyyy", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ddmmyyyyhhmm"),        "ddMMyyyyHHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("ddmmyyyyhhmmssZ"),     "ddMMyyyyHHmmssZ", "");
+
+        //just time
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("H:M"),                 "H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("H:M:SZ"),              "H:m:sZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("h:m"),                 "H:m", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("h:m:sZ"),              "H:m:sZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("HH:MM"),               "HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("HH:MM:SSZ"),           "HH:mm:ssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("hh:mm"),               "HH:mm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("hh:mm:ssZ"),           "HH:mm:ssZ", "");
+ 
+        //compact
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("HM"),                  "Hm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("HMSZ"),                "HmsZ", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("hm"),                  "Hm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("hmsZ"),                "HmsZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("HHMM"),                "HHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("HHMMSSZ"),             "HHmmssZ", "");
+
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("hhmm"),                "HHmm", "");
+        Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("hhmmssZ"),             "HHmmssZ", "");
+
+
+
+        //convert local time (Standard or DST) to UTC
+        //IDs are TZ strings from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        //String2.log(String2.toCSSVString(DateTimeZone.getAvailableIDs()));
+        //Most common in the US (with comments in parentheses):
+        //US/Hawaii, Pacific/Honolulu (no DST), 
+        //US/Aleutian, America/Adak, 
+        //US/Alaska, America/Anchorage, 
+        //US/Pacific, America/Los_Angeles, 
+        //US/Mountain, America/Denver (Mountain with DST), 
+        //US/Arizona, America/Phoenix (Mountain without DST),
+        //US/Central, America/Chicago,  (but there are exceptions like US/Michigan, US/Indiana-Starke)
+        //US/Eastern, America/New_York,
+        //Zulu
+
+        //parse iso format
+        String2.log("\nparse iso format");
+        //zulu time zone
+        //In US, DST change has Sunday March 13, 2016
+        TimeZone zuluTZ    = TimeZone.getTimeZone("Zulu"); //java
+        TimeZone pacificTZ = TimeZone.getTimeZone("America/Los_Angeles"); //java
+        s = "2016-03-12T00";
+        s = s + " Zulu => " + Calendar2.formatAsISODateTimeT(
+            Calendar2.parseISODateTime(new GregorianCalendar(zuluTZ), s)) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "2016-03-12T00 Zulu => 2016-03-12T00:00:00Z", "");
+
+        s = "2016-03-14T00";
+        s = s + " Zulu => " + Calendar2.formatAsISODateTimeT(
+            Calendar2.parseISODateTime(new GregorianCalendar(zuluTZ), s)) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "2016-03-14T00 Zulu => 2016-03-14T00:00:00Z", "");
+
+        //pacific time zone
+        s = "2016-03-12T00";
+        gc = Calendar2.parseISODateTime(new GregorianCalendar(pacificTZ), s);
+        gc.setTimeZone(zuluTZ);
+        s = s + " Pacific => " + Calendar2.formatAsISODateTimeT(gc) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "2016-03-12T00 Pacific => 2016-03-12T08:00:00Z", "");
+
+        s = "2016-03-14T00";
+        gc = Calendar2.parseISODateTime(new GregorianCalendar(pacificTZ), s);
+        gc.setTimeZone(zuluTZ);
+        s = s + " Pacific => " + Calendar2.formatAsISODateTimeT(gc) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "2016-03-14T00 Pacific => 2016-03-14T07:00:00Z", "");
+
+
+        //parse Joda format
+        String2.log("\nparse joda format");
+        //zulu time zone
+        //In US, DST change has Sunday March 13, 2016
+        DateTimeZone zuluDTZ    = DateTimeZone.forID("Zulu"); //joda
+        DateTimeZone pacificDTZ = DateTimeZone.forID("America/Los_Angeles"); //joda
+        dtf = DateTimeFormat.forPattern("MM/dd/yyyy").withZone(zuluDTZ);
+        s = "3/12/2016";
+        s = s + " Zulu => " + Calendar2.epochSecondsToIsoStringT(
+            dtf.parseMillis(s) / 1000.0) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "3/12/2016 Zulu => 2016-03-12T00:00:00Z", "");
+
+        s = "3/14/2016";
+        s = s + " Zulu => " + Calendar2.epochSecondsToIsoStringT(
+            dtf.parseMillis(s) / 1000.0) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "3/14/2016 Zulu => 2016-03-14T00:00:00Z", "");
+
+        //pacific time zone
+        dtf = DateTimeFormat.forPattern("MM/dd/yyyy").withZone(pacificDTZ);
+        s = "3/12/2016";
+        s = s + " Pacific => " + Calendar2.epochSecondsToIsoStringT(
+            dtf.parseMillis(s) / 1000.0) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "3/12/2016 Pacific => 2016-03-12T08:00:00Z", "");
+
+        s = "3/14/2016";
+        s = s + " Pacific => " + Calendar2.epochSecondsToIsoStringT(
+            dtf.parseMillis(s) / 1000.0) + "Z";
+        String2.log(s);
+        Test.ensureEqual(s, "3/14/2016 Pacific => 2016-03-14T07:00:00Z", "");
+
+        if (true)
+            return;
 
         //suggestDateTimeFormat
         Test.ensureEqual(Calendar2.suggestDateTimeFormat((String)null),      "", ""); 
@@ -2696,7 +2968,6 @@ public class TestUtil {
         s = "d since2001";      Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
 
         //test that all of thos formats work
-        DateTimeFormatter dtf; 
         dtf = DateTimeFormat.forPattern("yyyy-DDD").withZone(DateTimeZone.UTC);
         Test.ensureEqual(Calendar2.millisToIsoZuluString(dtf.parseMillis(
                                         "2002-027")),

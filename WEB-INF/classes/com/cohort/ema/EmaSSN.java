@@ -51,7 +51,7 @@ public class EmaSSN extends EmaString {
     public EmaSSN(EmaClass parent, String name) {
         super(parent, name);
 
-        label = "Social Security Number:"; //before getStandardProp to override default
+        label = "Social Security Number:"; //before getStandardProp to overwrite default
         title = "Please enter a social security number with the format \"###-##-####\"."; 
         getStandardProperties();  //redo with new defaults
        

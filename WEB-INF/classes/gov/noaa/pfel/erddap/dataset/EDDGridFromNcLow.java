@@ -69,7 +69,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     }
 
     /** 
-     * Subclasses override this: 
+     * Subclasses overwrite this: 
      * EDDGridFromNcFilesUnpacked applies scale_factor and add_offset and
      * converts times variables to epochSeconds at a low level (when it reads each file). 
      * Also the &lt;dataType&gt; is applied. */
@@ -148,8 +148,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     NcHelper.getVariableAttributes(var, tAtts);
 
                     //unpack?
-                    if (unpack()) 
+                    if (unpack()) {
                         NcHelper.unpackAttributes(var, tAtts); //do first
+                        //shouldn't be any mv or fv, and 
+                    }
                 }
             }
 
@@ -375,8 +377,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         String tFileDir, String tFileNameRegex, String sampleFileName, 
         int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
 
-        String2.log(subclassname + ".generateDatasetsXml" +
-            "\n  sampleFileName=" + sampleFileName);
+        String2.log("\n*** " + subclassname + ".generateDatasetsXml" +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
+            " sampleFileName=" + sampleFileName + 
+            "\nreloadEveryNMinutes=" + tReloadEveryNMinutes + 
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         boolean tUnpack = "EDDGridFromNcFilesUnpacked".equals(subclassname);
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
@@ -420,6 +425,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             for (int v = 0; v < allVariables.size(); v++) {
                 Variable var = (Variable)allVariables.get(v);
                 String varName = var.getFullName();
+                int slashPo = varName.lastIndexOf('/');
+                String groupName = slashPo < 0? "" : varName.substring(0, slashPo + 1);
                 List dimensions = var.getDimensions();
                 if (dimensions == null || dimensions.size() <= 1) 
                     continue;
@@ -475,13 +482,13 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     for (int avi = 0; avi < maxDim; avi++) {
                         String axisName = ((Dimension)dimensions.get(avi)).getFullName();
                         String expectedName = axisSourceTable.getColumnName(avi);
-                        if (!axisName.equals(expectedName)) {
+                        if (axisName == null || !axisName.equals(expectedName)) {
                             if (verbose) String2.log("variable=" + varName + 
                                 " has the right nDimensions=" + nDim + 
                                 ", but axis#=" + avi + "=" + axisName + 
                                 " != " + expectedName);
                             ok = false;
-                            continue;
+                            break;
                         }
                     }
                 }

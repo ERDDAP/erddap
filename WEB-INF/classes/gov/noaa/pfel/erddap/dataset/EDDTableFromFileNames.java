@@ -629,8 +629,16 @@ public class EDDTableFromFileNames extends EDDTable{
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalGlobalAttributes) throws Throwable {
 
-        String2.log("EDDTableFromFileNames.generateDatasetsXml" +
-            "\n  tFileDir=" + tFileDir);
+        String2.log("\n*** EDDTableFromFileNames.generateDatasetsXml" +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
+            " recursive=" + tRecursive +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalGlobalAttributes=" + externalGlobalAttributes);
+
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(String2.replaceAll(tFileDir, '\\', '/')); //important for consistency with urls for users
@@ -700,8 +708,8 @@ public class EDDTableFromFileNames extends EDDTable{
 "         regular expression with a capturing group (in parentheses). The\n" +
 "         part of the file name which matches the specified capturing group\n" +
 "         (usually group #1) will be extracted to make the new data variable.\n" +
-"         Below are examples showing how to extract a date and how to extract\n" +
-"         an integer.\n" +
+"         Below are examples showing how to extract a date, how to extract\n" +
+"         an integer, and how to extract the fileType.\n" +
 "    <dataVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
@@ -720,6 +728,16 @@ public class EDDTableFromFileNames extends EDDTable{
 "            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n" +
 "            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>fileType</sourceName>\n" +
+"        <destinationName>fileType</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">.*(\\..+?)</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    -->\n");
@@ -823,8 +841,8 @@ directionsForGenerateDatasetsXml() +
 "         regular expression with a capturing group (in parentheses). The\n" +
 "         part of the file name which matches the specified capturing group\n" +
 "         (usually group #1) will be extracted to make the new data variable.\n" +
-"         Below are examples showing how to extract a date and how to extract\n" +
-"         an integer.\n" +
+"         Below are examples showing how to extract a date, how to extract\n" +
+"         an integer, and how to extract the fileType.\n" +
 "    <dataVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
@@ -843,6 +861,16 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n" +
 "            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>fileType</sourceName>\n" +
+"        <destinationName>fileType</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">.*(\\..+?)</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    -->\n" +
@@ -969,8 +997,8 @@ directionsForGenerateDatasetsXml() +
 "         regular expression with a capturing group (in parentheses). The\n" +
 "         part of the file name which matches the specified capturing group\n" +
 "         (usually group #1) will be extracted to make the new data variable.\n" +
-"         Below are examples showing how to extract a date and how to extract\n" +
-"         an integer.\n" +
+"         Below are examples showing how to extract a date, how to extract\n" +
+"         an integer, and how to extract the fileType.\n" +
 "    <dataVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
@@ -989,6 +1017,16 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"extractRegex\">jplMURSST.{6}(..).{6}\\.png</att>\n" +
 "            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>fileType</sourceName>\n" +
+"        <destinationName>fileType</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"extractRegex\">.*(\\..+?)</att>\n" +
+"            <att name=\"extractGroup\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    -->\n" +

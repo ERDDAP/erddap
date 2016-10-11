@@ -1221,18 +1221,28 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 Attributes tsaAtt = tSourceAxisAttributes[avi];
                 Attributes  saAtt =  sourceAxisAttributes[avi];
                 String emsg2 = " for sourceName=" + sourceAxisNames.get(avi) + " are different.";
-                Test.ensureEqual(tsaAtt.getDouble("add_offset"),
-                                  saAtt.getDouble("add_offset"),
+                double d1, d2;
+                
+                d1 = tsaAtt.getDouble("add_offset");
+                d2 =  saAtt.getDouble("add_offset");
+                Test.ensureEqual(Double.isNaN(d1)? 0: d1,
+                                 Double.isNaN(d2)? 0: d2,
                     emsg1 + "add_offset"    + emsg2);
+                
+                d1 = tsaAtt.getDouble("scale_factor");
+                d2 =  saAtt.getDouble("scale_factor");
+                Test.ensureEqual(Double.isNaN(d1)? 1: d1,
+                                 Double.isNaN(d2)? 1: d2,
+                    emsg1 + "scale_factor"  + emsg2);
+
                 Test.ensureEqual(tsaAtt.getDouble("_FillValue"),
                                   saAtt.getDouble("_FillValue"),
                     emsg1 + "_FillValue"    + emsg2);
+
                 Test.ensureEqual(tsaAtt.getDouble("missing_value"),
                                   saAtt.getDouble("missing_value"),
                     emsg1 + "missing_value" + emsg2);
-                Test.ensureEqual(tsaAtt.getDouble("scale_factor"),
-                                  saAtt.getDouble("scale_factor"),
-                    emsg1 + "scale_factor"  + emsg2);
+                
                 String observedUnits = tsaAtt.getString("units");
                 String expectedUnits =  saAtt.getString("units");
                 if (!EDUnits.udunitsAreEquivalent(observedUnits, expectedUnits))
@@ -1563,6 +1573,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 av0.sourceAttributes(), av0.addAttributes(), 
                 sourceAxisValues0);
             av0 = axisVariables[0]; //the new one
+            //EDDTable tests for LLAT, but here/EDDGrid only time is likely to be outer dimension and change
             if (av0.destinationName().equals(EDV.TIME_NAME)) {
                 combinedGlobalAttributes().set("time_coverage_start", av0.destinationMinString());
                 combinedGlobalAttributes().set("time_coverage_end",   av0.destinationMaxString());
@@ -1599,7 +1610,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * This is the default implementation of getFileInfo, which
      * gets file info from a locally accessible directory.
      * This is called in the middle of the constructor.
-     * Some subclasses override this.
+     * Some subclasses overwrite this.
      *
      * @param recursive true if the file search should also search subdirectories
      * @return a table with columns with DIR, NAME, LASTMOD, and SIZE columns;

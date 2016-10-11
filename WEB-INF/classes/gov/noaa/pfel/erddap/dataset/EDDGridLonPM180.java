@@ -406,6 +406,23 @@ if (lonIndex < nAv - 1)
     }
 
     /**
+     * This returns a list of childDatasetIDs.
+     * Most dataset types don't have any children. A few, like
+     * EDDGridSideBySide do, so they overwrite this method to return the IDs.
+     *
+     * @return a new list of childDatasetIDs. 
+     */
+    public StringArray childDatasetIDs() {
+        StringArray sa = new StringArray();
+        try {
+            sa.add(childDataset == null? localChildDatasetID : childDataset.datasetID());
+        } catch (Exception e) {
+            String2.log("Error caught in edd.childDatasetIDs(): " + MustBe.throwableToString(e));
+        }
+        return sa;
+    }
+
+    /**
      * This makes a sibling dataset, based on the new sourceUrl.
      *
      * @throws Throwable always (since this class doesn't support sibling())
@@ -1438,15 +1455,15 @@ expected =
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 66];\n" + //changes
+"  Float64 time[time = 71];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 66][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 71][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 66];\n" +  //changes
+"      Float64 time[time = 71];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1715,6 +1732,64 @@ expected =
         debugMode = oDebugMode;
     }
 
+
+    /** This tests hardFlag.
+     */
+    public static void testHardFlag() throws Throwable {
+        String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
+            "This test requires hawaii_d90f_20ee_c4cb and hawaii_d90f_20ee_c4cb_LonPM180\n" +
+            "be loaded in the local ERDDAP.");
+
+        //set hardFlag
+        String startTime = Calendar2.getCurrentISODateTimeStringLocal();
+        Math2.sleep(1000);
+        String2.writeToFile(EDStatic.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
+        String2.log("I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n" +
+            "Now I'm waiting 10 seconds.");
+        Math2.sleep(10000);
+        //flush the log file
+        String tIndex = SSR.getUrlResponseString("http://localhost:8080/cwexperimental/status.html");
+        Math2.sleep(2000);
+        //read the log file
+        String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
+        String expected = // ***
+          "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n" +
+"\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+"\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+"\n" +
+"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T........)\n" +
+"\n" +
+"\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
+"LoadDatasets.run EDStatic.developmentMode=true ..........T........\n" +
+"  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
+        
+        int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 77)));
+        int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
+        String tResults = tLog.substring(po, po + expected.length());
+        String2.log("tResults=\"\n" + tResults + "\n\"\n");
+        Test.testLinesMatch(tResults, expected, "");
+        
+        //so far so good, tResults matches expected
+        int po3 = tResults.indexOf("thread at ");
+        String reloadTime = tResults.substring(po3 + 10, po3 + 29);
+        String2.log(" startTime=" + startTime + "\n" +
+                    "reloadTime=" + reloadTime);
+        Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");
+
+        //test that child was successfully constructed after that
+        int po4 = tLog.indexOf(
+            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=",
+            po);
+        Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
+
+        //test that parent was successfully constructed after that
+        int po5 = tLog.indexOf(
+            "*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=",
+            po4);
+        Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
+    }
+
+   
     /**
      * This tests the methods in this class.
      *
@@ -1729,6 +1804,7 @@ expected =
         test1to359(); //this also tests /files/ working for fromNcFiles dataset
         test0to360();
         test120to320(); 
+        testHardFlag();
 
         //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
         //so there is a test for that in the constructor, 

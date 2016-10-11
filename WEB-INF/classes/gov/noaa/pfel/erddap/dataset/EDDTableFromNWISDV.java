@@ -1225,7 +1225,8 @@ public class EDDTableFromNWISDV extends EDDTable{
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXml(boolean includeInstructions, boolean displayResults,
+    public static String generateDatasetsXml(boolean includeInstructions, 
+        boolean displayResults,
         String tLocalWaterMLUrl, String tSiteCode, String tAgency, 
         String tParameterCode, String tCharacteristicName, 
         String tStatisticCode, String tStatisticName,
@@ -1235,10 +1236,20 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tInfoUrl, String tInstitution, String otherSummary,
         String startTitle, String tQualificationCodes) throws Throwable {
 
-        String2.log("\n*** EDDTableFromNWISDV.generateDatasetsXml " +
-            "param=" + tParameterCode + " stat=" + tStatisticCode + 
-            "\n  tCharacteristicName=" + tCharacteristicName +
-            "\n  tLocalWaterMLUrl=" + tLocalWaterMLUrl);
+        String2.log("\n*** EDDTableFromNWISDV.generateDatasetsXml" +
+            "\nlocalWaterMLUrl=" + tLocalWaterMLUrl +
+            " siteCode=" + tSiteCode + " agency=" + tAgency +
+            "\nparamCode=" + tParameterCode + 
+            " characteristicName=" + tCharacteristicName +
+            "\nstatisticCode=" + tStatisticCode + 
+            " statisticName=" + tStatisticName +
+            "\ndataVariables=" + String2.toCSVString(tDataVariables) +
+            " endDate=" + tEndDate +
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + otherSummary +
+            "\nstartTitle=" + startTitle + 
+            " qualificationCodes=" + tQualificationCodes);
 
         String tPublicWaterMLUrl = convertToPublicSourceUrl(tLocalWaterMLUrl);
         String tStationTableColumnNames = String2.toCSSVString(tStationTable.getColumnNames());

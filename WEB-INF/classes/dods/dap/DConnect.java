@@ -16,6 +16,7 @@ import java.net.*;
 import java.io.*;
 import dods.dap.parser.ParseException;
 import java.util.zip.InflaterInputStream;
+import gov.noaa.pfel.coastwatch.util.SSR;
 
 /**
  * This class provides support for common DODS client-side operations such as
@@ -213,7 +214,6 @@ public class DConnect {
   }
 
 //bob simons made variant which may call setReadTimeout:
-
   /**
    * Open a connection to the DODS server.
    * @param url the URL to open.
@@ -224,6 +224,36 @@ public class DConnect {
    * @exception DODSException if the DODS server returned an error.
    */
   private InputStream openConnection(URL url, int readTimeOutMillis) throws IOException, DODSException {
+
+    InputStream is = null;
+    try {
+          //this always asks for and accepts compression
+          //this only tries once
+          Object[] object = SSR.getUrlConnInputStream(url.toString(), readTimeOutMillis);
+          connection = (URLConnection)object[0];
+          is = (InputStream)object[1];
+    } catch (Exception e) {
+        String2.log(MustBe.throwableToString(e));
+        throw new DODSException("Connection cannot be opened");
+    }
+
+    // check headers
+    String type = connection.getHeaderField("content-description");
+    // System.err.println("Content Description: " + type);
+    handleContentDesc(is, type);
+
+    ver = new ServerVersion(connection.getHeaderField("xdods-server"));
+    //System.err.println("Server: " + ver + ": " + ver.getMajor() + "," +
+    //	       ver.getMinor());
+
+    return is; //it already has a decompression filter if needed
+    //String encoding = connection.getContentEncoding();
+    //System.err.println("Content Encoding: " + encoding);
+    //return handleContentEncoding(is, encoding);
+
+
+/* 2016-10-03 I replaced this because of problem with 
+    //System.out.println(">>URL=" + url.toString());
     connection = url.openConnection();   
 
     //Bob Simons added this section
@@ -233,8 +263,8 @@ public class DConnect {
         readTimeOutMillis = 10 * 60 * 1000; //ten minutes, in ms
     connection.setReadTimeout(readTimeOutMillis);
 
-    if (acceptDeflate)
-      connection.setRequestProperty("Accept-Encoding", "deflate");
+//    if (acceptDeflate)
+//      connection.setRequestProperty("Accept-Encoding", "deflate");
     connection.connect();
 
     // theory is that some errors happen "naturally" (under heavy loads i think)
@@ -243,14 +273,15 @@ public class DConnect {
     int retry = 1;
     long backoff = 100L;
     while (true) {
-      try {
+      try {        
         is = connection.getInputStream(); // get the HTTP InputStream
+
         break;
-        /* if (is.available() > 0)
-          break;
-        System.out.println("DConnect available==0; retry open ("+retry+") "+url);
-        try { Thread.currentThread().sleep(backoff); }
-        catch (InterruptedException ie) {} */
+        //if (is.available() > 0)
+        //  break;
+        //System.out.println("DConnect available==0; retry open ("+retry+") "+url);
+        //try { Thread.currentThread().sleep(backoff); }
+        //catch (InterruptedException ie) {} 
 
       } catch (NullPointerException e) {
         String2.log("DConnect NullPointer; retry open ("+retry+") "+url);
@@ -281,6 +312,7 @@ public class DConnect {
     String encoding = connection.getContentEncoding();
     //System.err.println("Content Encoding: " + encoding);
     return handleContentEncoding(is, encoding);
+*/
   }
 
   /**
@@ -321,7 +353,7 @@ public class DConnect {
     InputStream is;
     if (fileStream != null)
       is = parseMime(fileStream);
-    else {
+    else {  //String2.log(">> DConnect.getDAS: " + urlString + ".das" + projString + selString);
       URL url = new URL(urlString + ".das" + projString + selString);
       if (dumpDAS) {
         String2.log("--DConnect.getDAS to "+url);
@@ -336,9 +368,13 @@ public class DConnect {
     try {
       das.parse(is);
     } finally {
-      is.close();  // stream is always closed even if parse() throws exception
-      if (connection instanceof HttpURLConnection)
-        ((HttpURLConnection)connection).disconnect();
+      try { //bob added 2016-10-03 
+        is.close();  // stream is always closed even if parse() throws exception
+        if (connection instanceof HttpURLConnection)
+          ((HttpURLConnection)connection).disconnect();
+      } catch (Throwable t) {
+          String2.log("caught: " + MustBe.throwableToString(t));
+      }
     }
     return das;
   }
@@ -371,7 +407,7 @@ public class DConnect {
    * @return the DDS associated with the referenced dataset.
    * @exception MalformedURLException if the URL given to the constructor
    *    has an error
-   * @exception IOException if an error connecting to the remote server
+  * @exception IOException if an error connecting to the remote server
    * @exception ParseException if the DDS parser returned an error
    * @exception DDSException on an error constructing the DDS
    * @exception DODSException if an error returned by the remote server
@@ -389,9 +425,13 @@ public class DConnect {
     try {
       dds.parse(is);
     } finally {
-      is.close();  // stream is always closed even if parse() throws exception
-      if (connection instanceof HttpURLConnection)
-        ((HttpURLConnection)connection).disconnect();
+      try { //bob added 2016-10-03 
+        is.close();  // stream is always closed even if parse() throws exception
+        if (connection instanceof HttpURLConnection)
+          ((HttpURLConnection)connection).disconnect();
+      } catch (Throwable t) {
+          String2.log("caught: " + MustBe.throwableToString(t));
+      }
     }
     return dds;
   }

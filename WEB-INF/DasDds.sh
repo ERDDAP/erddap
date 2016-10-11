@@ -14,4 +14,4 @@ cp9=":lib/httpmime.jar:lib/jna.jar:lib/jna-platform.jar:lib/jackson-annotations.
 cp10=":lib/jackson-core.jar:lib/jackson-databind.jar"
 cp0="$cp1$cp2$cp3$cp4$cp5$cp6$cp7$cp8$cp9$cp10"
 
-java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.erddap.DasDds $1 $2 $3 $4 $5 $6 $7 $8 $9
+java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.erddap.DasDds "$@"

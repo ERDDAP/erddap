@@ -163,7 +163,15 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
-        String2.log("EDDTableFromWFSFiles.generateDatasetsXml");
+        String2.log("\n*** EDDTableFromWFSFiles.generateDatasetsXml" +
+            "\nsourceUrl=" + tSourceUrl +
+            "\nrowElementXPath=" + tRowElementXPath +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\ninfoUrl=" + tInfoUrl + 
+            "\ninstitution=" + tInstitution +
+            "\nsummary=" + tSummary +
+            "\ntitle=" + tTitle +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         if (!String2.isSomething(tSourceUrl))
             throw new IllegalArgumentException("sourceUrl wasn't specified.");
         if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
@@ -252,6 +260,12 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
                 suggestKeywords(dataSourceTable, dataAddTable)));
         dataAddTable.globalAttributes().set("rowElementXPath", tRowElementXPath);
 
+        //subsetVariables
+        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
+               dataAddTable.globalAttributes().getString("subsetVariables") == null) 
+            dataAddTable.globalAttributes().add("subsetVariables",
+                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+
         //write the information
         StringBuilder sb = new StringBuilder();
         sb.append(
@@ -283,9 +297,9 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", 
+            true, true, false)); //includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(
             "</dataset>\n" +
             "\n");

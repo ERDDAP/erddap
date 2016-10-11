@@ -672,13 +672,13 @@ public class ArchiveADataset {
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
         String expected = 
-"READ_ME.txt                                                      " + today + "T.{8}Z           359\n" +
-"scrippsGliders.das                                               " + today + "T.{8}Z         12554\n" +
-"scrippsGliders.dds                                               " + today + "T.{8}Z           679\n" +
+"READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
+"scrippsGliders.das                                               " + today + "T.{8}Z         124..\n" +
+"scrippsGliders.dds                                               " + today + "T.{8}Z           6..\n" +
 "data/\n" +
-"  sp051-20141112.nc                                              " + today + "T.{8}Z        133832\n" +
+"  sp051-20141112.nc                                              " + today + "T.{8}Z        1337..\n" +
 "  sp051-20141112.nc.sha256                                       " + today + "T.{8}Z            84\n" +
-"  sp052-20140814.nc                                              " + today + "T.{8}Z        451080\n" +
+"  sp052-20140814.nc                                              " + today + "T.{8}Z        4510..\n" +
 "  sp052-20140814.nc.sha256                                       " + today + "T.{8}Z            84\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
         
@@ -750,9 +750,9 @@ public class ArchiveADataset {
     public static void test() throws Throwable {
         String2.log("*** ArchiveADataset.test()");
 
-        /* */
+        /* 
         testNcCF();
-        testTrajectoryProfile();
+*/        testTrajectoryProfile();
         testGridAll();
         testGridSubset(); 
     }

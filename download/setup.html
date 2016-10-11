@@ -388,8 +388,21 @@ or Mac server instead.
 
     <li>Troubles with the Tomcat installation? 
       <ul>
+      <li>On Linux and Mac, if you can't reach Tomcat or ERDDAP (or perhaps
+        you just can't reach them from a computer outside your firewall), 
+        you can test if Tomcat is listening to port 8080, by typing (as root)
+        on a command line of the server: 
+        <br><tt>netstat -tuplen | grep 8080</tt> 
+        <br>That should return one line with something like:
+        <br><tt>tcp 0 0 :::8080 :::* LISTEN ## ##### ####/java</tt>
+        <br>(where '#' is some digit), indicating that 
+        a "java" process (presumably Tomcat) is listening on port "8080" for "tcp" traffic. 
+        If no lines were returned, if the line returned is significantly different,  
+        or if two or more lines were returned, 
+        then there may be a problem with the port settings.
       <li>See the Tomcat log file <i>tomcat</i>/logs/catalina.out.  
-        Tomcat problems are almost always indicated there.
+        Tomcat problems and some ERDDAP startup problems are almost always indicated there.
+        This is common when you are first setting up ERDDAP.
       <li>See the <a rel="help" href="http://tomcat.apache.org/">Tomcat<img 
           src="../images/external.png" align="bottom" alt=" (external link)" 
           title="This link to an external web site does not constitute an endorsement."/></a> 
@@ -417,10 +430,12 @@ or Mac server instead.
 
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
-  <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
+  <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
+    you want/need to put the ERDDAP content directory in some other location, 
+    unzip erddapContent.zip into ~tomcat (or some other directory to which only tomcat has access)
     and set the system property 
     <tt>erddapContentDirectory=~tomcat/content/erddap</tt>
-    in ~tomcat/conf/tomcat8.conf <!-- tomcatVersion --> so ERDDAP can find the directory.
+    in ~tomcat/conf/tomcat8.conf <!-- tomcatVersion --> so ERDDAP can find the content directory.
     
   <p>[Some previous versions are also available:  
     <br><a rel="bookmark"
@@ -539,10 +554,29 @@ or Mac server instead.
     (size=556,163,762 bytes, MD5=3320ADB87E9F3AB31EBF89260C64AF19, dated 2016-04-15)
     ]
 
+<li><a name="ApacheTimeout">On Linux computers,</a> change the Apache timeout settings
+so that time-consuming user requests don't timeout 
+(with what often appears as a "Proxy" or "Bad Gateway" error).
+As the root user:
+  <ol>
+  <li>Modify the Apache httpd.conf file (usually in /etc/httpd/conf/ ):
+    <br>Change the existing <tt>&lt;Timeout&gt;</tt> setting 
+      (or add one at the end of the file)
+      to 3600 (seconds), instead of the default 60 or 120 seconds.
+    <br>Change the existing <tt>&lt;ProxyTimeout&gt;</tt> setting 
+      (or add one at the end of the file)
+      to 3600 (seconds), instead of the default 60 or 120 seconds.
+  <li>Restart Apache: <tt>/usr/sbin/apachectl -k graceful</tt> 
+    (but sometimes it is in a different directory).
+    <br>&nbsp;
+  </ol>
+
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
   <br>On Linux computers, if Tomcat is running in Apache, please modify the
-  <br>/etc/httpd/conf/httpd.conf
-  file to allow HTTP traffic to/from ERDDAP without requiring the port number, e.g., :8080, in the URL:
+  Apache httpd.conf file
+  (usually in /etc/httpd/conf/ )
+  to allow HTTP traffic to/from ERDDAP without requiring the port number, e.g., :8080, in the URL.
+  As the root user:
   <ol>
   <li>Modify the existing &lt;VirtualHost&gt; tag (if there is one),
     or add one at the end of the file:
@@ -555,19 +589,21 @@ or Mac server instead.
    ProxyPassReverse /erddap http://localhost:8080/erddap
 &lt;/VirtualHost&gt;
 </pre>
-  <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
-
+  <li>Then restart Apache: <tt>/usr/sbin/apachectl -k graceful</tt> 
+  (but sometimes it is in a different directory).
     <br>&nbsp;
   </ol>
 
 <li>Start Tomcat.
   <br>(I don't recommend using the Tomcat Web Application Manager. If you don't fully shutdown and startup Tomcat, sooner or later you will have PermGen memory issues.)
   <ul>
-  <li>If Tomcat is already running, use <i>tomcat</i>/bin/shutdown.sh (or \'s and .bat in Windows) 
+  <li>If Tomcat is already running, use <i>tomcat</i>/bin/shutdown.sh 
+    (or \'s and .bat in Windows) 
     to shut down Tomcat.
     <br>On Linux, you may want to use <tt>ps -ef | grep tomcat</tt> to see if/when the
     process has been stopped.  (It may take a minute or two.)
-  <li>Use <i>tomcat</i>/bin/startup.sh (or \'s and .bat in Windows) to start Tomcat.
+  <li>Start Tomcat with <i>tomcat</i>/bin/startup.sh on Linux or Mac OS,
+    <br>or <i>tomcat</i>\bin\startup.bat on Windows.
     <br>&nbsp;
   </ul>
 
@@ -727,43 +763,158 @@ in your web browser to search for text (for example, <tt>flag</tt>) within this 
 <p>Alternatively, at the top of this document, there is a 
 <a rel="help" href="#">list of main topics</a> (a Table of Contents).
 
+<li><b><a name="proxyErrors">Proxy Errors</a></b>
+  <br>Sometime, a request to ERDDAP will return a Proxy Error, 
+  an HTTP 502 Bad Gateway Error, or some similar error.
+  These errors are being thrown by Apache or Tomcat, not ERDDAP itself.
+  <ul>
+  <li>If every request generates these errors, especially when you are first
+    setting up your ERDDAP, then it probably is a proxy or bad gateway error,
+    and the solution is probably to fix  
+    <a rel="help" href="#ProxyPass">ERDDAP's proxy settings</a>.
+    This may also be the problem when an established ERDDAP suddenly starts
+    throwing these errors for every request.
+  <li>Otherwise, "proxy" errors are usually actually time out errors thrown by Apache or Tomcat. 
+    Even when they happen relatively quickly, it is some sort of response from 
+    Apache or Tomcat that occurs when ERDDAP is very busy, memory-limited,
+    or limited by some other resource.
+    In these cases, see the advice below to deal with 
+    <a rel="help" href="#respondingSlowly">ERDDAP responding slowly</a>.
+    <br>&nbsp;
+  </ul>
+
+
 <li><b><a name="respondingSlowly">If ERDDAP Is Responding</a> Slowly</b> 
-    <br>you may be able to figure out if the slowness is reasonable 
+  or if just certain requests are responding slowly,
+  <br>you may be able to figure out if the slowness is reasonable 
     and temporary (e.g., because of lots of requests from scripts or WMS users),
-    or if ERDDAP is having trouble and you need to 
+    or if something is inexplicably wrong and you need to 
     <a rel="help" href="#restart">shut down and restart Tomcat and ERDDAP</a>.
 
-  <p>If ERDDAP is responding slowly, here are some things you can do to determine the cause:
+  <p>If ERDDAP is responding slowly, see the advice below to determine the 
+    cause, which hopefully wil enable you to fix the problem. 
+    <br>You may have a specific starting point (e.g., a specific request URL)
+      or a vague starting point (e.g., ERDDAP is slow).
+    <br>You may know the user involved (e.g., because they emailed you), or not.
+    <br>You may have other clues, or not.
+    <br>Since all of these situations and all of the possible causes of the problems
+      blur together, the advice below tries to deal will all possible 
+      starting points and all possible problems related to slow responses.
+
 
   <ul>
-  <li>Look for clues (e.g., error messages) in 
-    <br><a rel="help" href="#log">ERDDAP's log file</a> (<i>bigParentDirectory</i>/logs/log.txt) and
-    <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out). 
+  <li><b>Look for clues in 
+    <a rel="help" href="#log">ERDDAP's log file</a></b> (<i>bigParentDirectory</i>/logs/log.txt).
+    <br>[On rare occasions, there are clues in 
+      <a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out).]     
+    <br>Look for error messages.
+    <br>Look for a large number of requests coming from one (or a few) users and perhaps
+      hogging a lot of your server's resources (memory, CPU time, disk access, 
+      internet bandwidth).
+    
+    <p>If the trouble is tied to <b>one user</b>, 
+      you can often get a clue about who the user is via web services like
+        <a rel="help"  href="http://whatismyipaddress.com/ip-lookup"
+        >http://whatismyipaddress.com/ip-lookup<img 
+          src="../images/external.png" align="bottom" alt=" (external link)" 
+          title="This is a link to an external web site."/></a>
+        that can give you information related to the user's IP address 
+        (which you can find in ERDDAP's log.txt file).
+      <ul>
+      <li>If the user seems to be a <b>bot</b> bahaving badly
+        (notably, a search engine trying to fill out the ERDDAP forms
+        with every possible permutation of entry values), make sure you have 
+        properly set up your server's 
+        <a rel="help" href="#robots">robots.txt</a> file.
+      <li>If the user seems to be a <b>script(s)</b> that is making multiple simultaneous
+        requests,
+        contact the user, explain that your ERDDAP has limited resources 
+        (e.g., memory, CPU time, disk access, internet bandwidth), 
+        and ask them to be considerate of other users
+        and just make one request at a time.
+        You might also mention that you will blacklist them if they don't back off.
+      <li>If the user seems to be a <b>script</b> 
+        making a large number of time-consuming requests, 
+        ask the user to be considerate of other users by putting
+        a small pause (2 seconds?) in the script between requests.        
+      <li><b>WMS client software</b> can be very demanding. One client will often 
+        ask for 6 custom images at a time. 
+        If the user seems to be a WMS client that is making legitimate requests, 
+        you can:
+        <ul>
+        <li>Ignore it. (recommended, because they'll move on pretty soon)
+        <li>Turn off your server's WMS service via ERDDAP's setup.html file. (not recommended)
+        </ul>
+      <li>If the requests seem <b>stupid, insane, excessive, or malicious,</b>
+        or if you can't resolve the problem any other way, 
+        consider temporarily or permanently adding the user's IP address to the 
+        <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
+      >&lt;requestBlacklist&gt; in your datasets.xml file</a>.      
+
+        <br>&nbsp;
+      </ul>
+
+  <li><b>Try to duplicate the problem yourself, from your computer.</b>
+    <br>Figure out if the problem is with one dataset or all datasets,
+      for one user or all users, for just certain types of requests, etc..
+    <br>If you can duplicate the problem, try to narrow down the problem.
+    <br>If you can't duplicate the problem, then the problem may be tied to the
+      user's computer, the user's internet connection, or your institution's
+      internet connection.
     <br>&nbsp;
 
-  <li>If just one dataset is responding slowly (perhaps only for certain types of requests),
+  <li>If just <b>one dataset</b> is responding slowly 
+    (perhaps only for <b>one type of request</b> from one user),
     the problem may be:
     <ul>
-    <li>ERDDAP's access to the dataset's source data may be temporarily or permanently slow.
+    <li>ERDDAP's access to the dataset's source data 
+      (notably from relational databases, Cassandra, and remote datasets) 
+      may be temporarily or permanently slow.
       Try to check the source's speed independent of ERDDAP. 
       If it is slow, perhaps you can improve it.
+    <li>Is the problem related to the specific request or general type of request?
+      <br>The larger the requested subset of a dataset, the more likely the
+        request will fail. If the user is making huge requests, 
+        ask the user to make smaller requests
+        that are more likely to get a fast and successful response.
+      <p>Almost all data sets are better at handling some types of requests 
+        than others types of requests.
+      For example, when a dataset stores different time chunks in different files,
+      requests for data from a huge number of time points may be very slow.
+      If the current requests are of a difficult type,
+      consider offering a variant of the dataset that is optimized for these requests.
+      Or just explain to the user that that type of request is difficult and
+      time consuming, and ask for their patience.
     <li>The dataset may be not optimally configured. You may be able to make changes to the dataset's
-      datasets.xml chunk to help ERDDAP handle the dataset better.
-      For example, the configuration of the 
+      datasets.xml chunk to help ERDDAP handle the dataset better. For example,
+      <ul>
+      <li>EDDGridFromNcFiles datasets that access data from compressed nc4/hdf5 files are
+        slow when getting data for the entire geographic range (e.g., for a world map)
+        because the entire file must be decompressed. 
+        You could convert the files to uncompressed files, but then the disk space
+        requirement will be much, much larger. It is probably better to just
+        accept that such datasets will be slow in certain circumstances.
+      <li>The configuration of the 
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subsetVariables"><tt>&lt;subsetVariables&gt;</tt></a> tag has a huge influence on how ERDDAP handles EDDTable datasets.
-      Similarly, many factors influence the 
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#databaseSpeed">speed 
-        of an EDDTableFromDatabase</a> dataset.
+      <li>You may be able to increase the 
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#databaseSpeed"
+        >speed of an EDDTableFromDatabase</a> dataset.
+      <li>Many EDDTable datasets can be sped up by 
+        <a rel="help" 
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFiles"
+        >storing a copy of the data in NetCDF Contiguous Ragged Array files</a>,
+        which ERDDAP can read very quickly.        
+      </ul>
       If you want help speeding up a specific dataset, 
       email a description of the problem and the dataset's chunk of datasets.xml to
       <tt>bob dot simons at noaa dot gov</tt>.  
-    <br>Or, you can join the <a rel="help"
+      <br>Or, you can join the <a rel="help"
         href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
         and post your question there.
       <br>&nbsp;
     </ul>
 
-  <li>If everything in ERDDAP is <b>always</b> slow,
+  <li>If <b>everything</b> in ERDDAP is <b>always</b> slow,
     the problem may be:
     <ul>
     <li>The computer that is runnning ERDDAP may not have enough memory or processing power.
@@ -776,14 +927,14 @@ in your web browser to search for text (for example, <tt>flag</tt>) within this 
       <br>&nbsp;
     </ul>
 
-  <li>If everything in ERDDAP is <b>temporarily</b> slow, view your ERDDAP's 
-    <br><a rel="help" href="#statusPage">/erddap/status.html page</a> in your browser.
+  <li>If <b>everything</b> in ERDDAP is <b>temporarily</b> slow, view your ERDDAP's 
+    <a rel="help" href="#statusPage"><b>/erddap/status.html page</b></a> in your browser.
     <ul>
     <li>Does the ERDDAP status page fail to load?
-        <br>Is so, <a rel="help" href="#restart">restart ERDDAP</a>.
+        <br>If so, <a rel="help" href="#restart">restart ERDDAP</a>.
     <li>Did the ERDDAP status page load slowly (e.g., &gt;5 seconds)?
         <br>That is a sign that everything in ERDDAP is running slowly, 
-        but it isn't necessarily trouble.
+        but it isn't necessarily trouble. ERDDAP may just be really busy.
     <li>For "Response Failed Time (since last major LoadDatasets)", is n= a large number?
         <br>That indicates there have been lots of failed requests recently.
         That may be trouble or the start of trouble.
@@ -799,26 +950,42 @@ in your web browser to search for text (for example, <tt>flag</tt>) within this 
         freeze. 
         If this persists for hours, you may want to proactively
         <a rel="help" href="#restart">restart ERDDAP</a>.
-    <li>At the bottom of the "Memory Use Summary" list, is the last "Memory: currently using" value very high?
+    <li>At the bottom of the "Memory Use Summary" list, is the last 
+      "Memory: currently using" value very high?
         <br>That may just indicate high usage, or it may be a sign of trouble.
-        <br>&nbsp;
+    <li>Look at the list of threads and their status. 
+      Are an unusual number of them doing something unusual?     
+      <br>&nbsp;
     </ul>
 
-  <li>Is your internet connection currently slow?
-    <br>Search the internet for "internet speed test" and use one of the free online tests,
-    such as 
-    <a rel="help" href="http://www.speakeasy.net/speedtest/">http://www.speakeasy.net/speedtest//<img 
+  <li>Is <b>your institution's internet connection</b> currently slow?
+      <br>Search the internet for "internet speed test" 
+      and use one of the free online tests, such as 
+      <a rel="help"   href="https://www.speakeasy.net/speedtest/">https://www.speakeasy.net/speedtest/<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
-    If your internet connection is slow, it slows down ERDDAP.
-    Sometimes, you can solve this by stopping unnecessary internet use 
-    (e.g., people watching streaming videos or on video conference calls).
-    <br>&nbsp;
+      If your institution's internet connection is slow, 
+      then connections between ERDDAP and remoted data sources will be slow, 
+      and connections between ERDDAP and the user will be slow.
+      Sometimes, you can solve this by stopping unnecessary internet use 
+      (e.g., people watching streaming videos or on video conference calls).
+      <br>&nbsp;
 
-  <li>Use the "Server Status" link in your Tomcat Manager
-    to check on the status of all of the response threads.  
-    <br>&nbsp;
+  <li>Is <b>the user's internet connection</b> currently slow?
+      <br>Have the user search the internet for "internet speed test" 
+      and use one of the free online tests, such as 
+      <a rel="help"   href="https://www.speakeasy.net/speedtest/">https://www.speakeasy.net/speedtest/<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+      If the user's internet connection is slow, it slows down their access to ERDDAP.
+      Sometimes, they can solve this by stopping unnecessary internet use at 
+      their institution
+      (e.g., people watching streaming videos or on video conference calls).
+      <br>&nbsp;
 
+  <li><b>Stuck?</b>
+      <br>Email all the details to bob.simons at noaa.gov .
+      <br>&nbsp;
   </ul>
 
 <li><b><a name="shutdown">How</a> 
@@ -896,8 +1063,13 @@ in your web browser to search for text (for example, <tt>flag</tt>) within this 
 
   </ul>
 
-<li><b><a name="frequentCrashes">Frequent Crashes</a></b> - 
-  If ERDDAP freezes/stops twice or more in one day, you probably have an troublesome user
+<li><b><a name="frequentCrashes">Frequent Crashes or Freezes</a></b> - 
+  If ERDDAP becomes slow, crashes or freezes, something is wrong. 
+  Look in <a rel="help" href="#log">ERDDAP's log file</a> 
+  to try to figure out the cause. If you can't, 
+  please email the details to <tt>bob dot simons at noaa dot gov</tt> .
+
+  <p>The most common problem is a troublesome user who is 
   running several scripts at once and/or someone making a large number of invalid requests. 
   If this happens, you should probably blacklist that user. 
   When a blacklisted user makes a request, the error message in the response encourages 
@@ -906,30 +1078,27 @@ in your web browser to search for text (for example, <tt>flag</tt>) within this 
   (e.g., requesting data from a remote dataset that can't respond before timing out).
   See <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
       >&lt;requestBlacklist&gt; in your datasets.xml file</a>.
-    <br>&nbsp;
+
+  <p>If ERDDAP becomes slow or freezes and the problem isn't a troublesome user, 
+  you can usually solve the problem by 
+  <a rel="help" href="#restart">restarting ERDDAP</a>. 
+  My experience is that ERDDAP can run for months without needing a restart.
+  <br>&nbsp;
+
 
 <li><b><a name="monitor">Monitor ERDDAP</a></b> - 
-  My experience is that ERDDAP can run for months without needing a 
-  <a rel="help" href="#restart">restart</a>. 
-  But sometimes, if there is heavy use (e.g., scripts or WMS users) and especially if 
-  many of the requests are failing in odd ways, 
-  then ERDDAP freezes (and needs to be restarted) every few days or even every day.
-  I suspect that the problem is related to the program stopping lower 
-  level processing threads that froze or otherwise failed in an odd way.
-  Java only offers one way for a program to stop these threads and 
-  that method is not good (and deprecated) because it is highly likely that it causes 
-  memory and other resource leaks. Those leaks accumulate. 
-  After 1000's of leaks, 
-  <a rel="help" href="#respondingSlowly">ERDDAP becomes very slow</a> 
-  or freezes.  
-  Unfortunately, I haven't found which resource leak is causing the problem. 
-  But if you look at your ERDDAP's <a rel="help" href="#statusPage">/erddap/status.html page</a>,
-  when the number on the line 
-  <br><tt>Number of non-Tomcat-waiting threads in this JVM</tt>
-  <br>increases significantly (e.g., doubles) and permanently (more than an hour or two),
-  that is usually a sign that trouble is here or is coming soon.
+  You can monitor your ERDDAP's status by looking at the <a rel="help" href="#statusPage">/erddap/status.html page</a>,
+  notably the statistics in the top section.
+  If ERDDAP becomes slow or freezes and the problem isn't just extremely heavy usage, 
+  you can usually solve the problem by 
+  <a rel="help" href="#restart">restarting ERDDAP</a>. 
 
-  <p>If you find that you frequently need to restart ERDDAP, you might try using  
+  <p>My experience is that ERDDAP can run for months without needing a restart.
+  If you need to restart ERDDAP frequently, something is wrong. 
+  Look in <a rel="help" href="#log">ERDDAP's log file</a> 
+  to try to figure out the cause. If you can't, 
+  please email the details to <tt>bob dot simons at noaa dot gov</tt> .
+  As a temporary solution, you might try using  
   <a rel="help" href="http://mmonit.com/monit/">Monit<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
@@ -1069,7 +1238,7 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
     old (as specified in datasets.xml).
 <br>&nbsp;
 
-<li><b><a name="flag">A Flag File</a> Tells ERDDAP to Try to <a name="reloadingDatasets">Reload</a> 
+<li><b><a name="flag">A Flag File</a> <a name="hardFlag">Tells</a> ERDDAP to Try to <a name="reloadingDatasets">Reload</a> 
   a Dataset As Soon As Possible</b> 
   <ul>
   <li>ERDDAP won't notice any changes to a dataset's setup in datasets.xml until ERDDAP reloads the dataset.
@@ -1078,13 +1247,49 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
     put a file in <i>bigParentDirectory</i>/flag 
       (<i>bigParentDirectory</i> is specified in <a rel="help" href="#setup.xml">setup.xml</a>) that has the
     same name as the dataset's datasetID. 
-  <li>The contents of the flag file are irrelevant.
-  <li>In between major dataset reloads, ERDDAP looks continuously for flag files. 
-  <li>When ERDDAP finds a flag file, it deletes the file and tries to reload the dataset very soon
-    (usually within seconds).
+    <br>The old version of the dataset will remain available to users until 
+      the new version is available and swapped atomically into place.
+    <br>For EDDGridFromFiles and EDDTableFromFiles, the reload is a will look for 
+      new or changed files, read those, and incorporate them into the dataset.
+      So the time to reload is dependent on the number of new or changed files.
+    
+  <li>There is a variant of the /flag directory: the /hardFlag directory. (Added in ERDDAP v1.74.)
+    If you put a file in <i>bigParentDirectory</i>/hardFlag /a>) that has the
+    same name as the dataset's datasetID,
+    as soon as ERDDAP sees the hardFlag file,
+    ERDDAP will:
+    <ol>
+    <li>Delete the hardFlagFile.
+    <li>Remove the dataset from ERDDAP.
+    <li>Delete all of the information that ERDDAP has stored 
+      about this dataset.
+      <br>For EDDGridFromFiles and EDDTableFromFiles subclasses, 
+      this deletes the internal database of data files and their contents. 
+      <br>For datasets like EDDGridSideBySide that have childDatasets,
+      this also deletes the internal database of data files and their contents
+      for all child datasets.  
+    <li>Reload the dataset.
+      <br>For EDDGridFromFiles and EDDTableFromFiles subclasses, 
+      this causes ERDDAP to reread <b>all</b> of the data files. 
+      Thus, the reload time is dependent on the total number of data files in the dataset.
+      Because the dataset was removed from ERDDAP when the hardFlag was noticed,
+      the dataset will be unavailable until the dataset finishes reloading.
+      Be patient. Look in the log.txt file if you want to see what's going on.
+    </ol>
+    The hardFlag variant deletes the dataset's stored information 
+    even if the dataset isn't currently loaded in ERDDAP.
+
+    <p>HardFlags are very useful when you do something that causes a 
+    change in how ERDDAP reads and interprets the source data, for example,
+    when you install a new version of ERDDAP or when you have made a change to a 
+    dataset's definition in datasets.xml
+
+  <li>The contents of the flag and hardFlag file are irrelevant.
+  <li>In between major dataset reloads, ERDDAP looks continuously for flag and hardFlag files. 
   <li>Note that when a dataset is reloaded, all files in the 
     <i>bigParentDirectory</i>/<a rel="help" href="#cachedResponses">cache</a>/<i>datasetID</i> 
-    directory are deleted.
+    directory are deleted. This includes .nc and image files that are normally cached 
+    for ~15 minutes.
   <li>Note that if the dataset's xml includes     
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#active"><tt>active="false"</tt></a>,
     a flag will cause the dataset to be made inactive 
@@ -1309,14 +1514,17 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
     is when you make changes
     to the dataset's datasets.xml chunk that affect how ERDDAP interprets 
     data in the source data files, for example, changing the time variable's format string.
-  <li>To delete a dataset's stored information files, run 
+  <li>To delete a dataset's stored information files from an ERDDAP that is running 
+    (even if the dataset isn't currently loaded), set a 
+    <a rel="help" href="#hardFlag">hardFlag</a> for that dataset.
+    Remember that if a dataset is an aggregation of a large number of files,
+    reloading the dataset may take considerable time.
+  <li>To delete a dataset's stored information files when ERDDAP isn't running, run 
     <a rel="help"  
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#DasDds"
-    >DasDds</a>
+    >DasDds</a> for that dataset
     (which is easier than figuring in which directory the info is located and 
     deleting the files by hand).
-    Then, if ERDDAP is running, set a <a rel="help" href="#flag">flag</a>
-    so that the dataset will be reloaded ASAP.
     Remember that if a dataset is an aggregation of a large number of files,
     reloading the dataset may take considerable time.
     <br>&nbsp;
@@ -1425,6 +1633,7 @@ Disallow: /*.odvTxt*
 Disallow: /*.tsv*
 Disallow: /*.xhtml*
 Disallow: /*.geotif*
+Disallow: /*.itx*
 Disallow: /*.kml*
 Disallow: /*.pdf*
 Disallow: /*.png*
@@ -1654,7 +1863,7 @@ built-in security system. When the security system is in use:
    ProxyPassReverse /erddap http://localhost:8443/erddap
 &lt;/VirtualHost&gt;
 </pre>
-  <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
+  <li>Then restart Apache: <tt>/usr/sbin/apachectl -k graceful</tt> (but sometimes it is in a different directory).
   </ol>
 
 <li>In <i>tomcat</i>/conf/server.xml, uncomment the port=8443 &lt;Connector&gt; tag:
@@ -2112,15 +2321,15 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dat
 >EDDTableFromDatabase security</a>.
 
 <li>Security Audit - 
-I (Bob) tried repeatedly for 3+ years to get NOAA IT security to do a security 
+I (Bob) tried repeatedly since 2010 to get NOAA IT security to do a security 
 audit of ERDDAP. They have repeatedly refused. At one point, they said they
 only do that for software developed in the DC area.
 Fortunately, in 2012, a group in USGS started to use ERDDAP. 
 In early 2013, they hired the security firm Acunetix to do a security scan of ERDDAP.
 They found some problems.
 I fixed some of them and gave reasons for why the other issues were false alerts. 
-They redid the scan. If you would like to see the report and my reply,
-please email <tt>bob dot simons at noaa dot gov</tt>.
+They redid the scan. If you would like to see the report and my responses 
+(which USGS accepted), please email <tt>bob dot simons at noaa dot gov</tt>.
 
 </ul>
 
@@ -2602,8 +2811,12 @@ Government or the National Oceanic and Atmospheric Administration.</b>
   >Bob's Guidelines for Data Distribution Systems</a>
 </ul>
 
-<p>Previous/Specialized Presentations:
+<p>Other Presentations:
 <ul>
+<li><a rel="help" 
+  href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/TheBigPicture.pptx"
+  >2016 Summer ESIP: The Big Picture: PARR, OPeNDAP, ERDDAP, and Data Distribution</a>
+
 <li><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/OneAndDone.pptx"
   >2016 EDMC: One And Done</a>
@@ -2614,7 +2827,7 @@ Government or the National Oceanic and Atmospheric Administration.</b>
 
 <li><a rel="help"
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/TabularAggregation.pptx"
-  >2015 ESIP: Tabular Aggregation</a>
+  >2015 Summer ESIP: Tabular Aggregation</a>
 
 <li><a rel="help"
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/SimonsDosDontsTabular.pptx"
@@ -2626,7 +2839,7 @@ Government or the National Oceanic and Atmospheric Administration.</b>
 
 <li><a rel="help"
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/TabularData.pptx"
-  >2014 ESIP: Tabular Data</a>
+  >2014 Summer ESIP: Tabular Data</a>
 
 <li><a rel="help"
   href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/DoMoreWithLess.ppt"
@@ -3325,7 +3538,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.72
+<p>ERDDAP, Version 1.74
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;

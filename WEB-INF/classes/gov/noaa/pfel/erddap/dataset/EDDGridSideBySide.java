@@ -403,7 +403,7 @@ public class EDDGridSideBySide extends EDDGrid {
     
     /** 
      * creationTimeMillis indicates when this dataset was created.
-     * This overrides the EDD version in order to check if children need to be
+     * This overwrites the EDD version in order to check if children need to be
      * reloaded.
      * 
      * @return when this dataset was created
@@ -414,6 +414,24 @@ public class EDDGridSideBySide extends EDDGrid {
         for (int c = 0; c < childDatasets.length; c++)
             tCTM = Math.min(tCTM, childDatasets[c].creationTimeMillis());
         return tCTM;
+    }
+
+    /**
+     * This returns a list of childDatasetIDs.
+     * Most dataset types don't have any children. A few, like
+     * EDDGridSideBySide do, so they overwrite this method to return the IDs.
+     *
+     * @return a new list of childDatasetIDs. 
+     */
+    public StringArray childDatasetIDs() {
+        StringArray sa = new StringArray();
+        try {
+            for (int i = 0; i < childDatasets.length; i++)  
+                sa.add(childDatasets[i].datasetID());
+        } catch (Exception e) {
+            String2.log("Error caught in edd.childDatasetIDs(): " + MustBe.throwableToString(e));
+        }
+        return sa;
     }
 
     /**

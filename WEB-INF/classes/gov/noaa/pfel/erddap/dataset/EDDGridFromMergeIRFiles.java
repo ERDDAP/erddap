@@ -484,7 +484,9 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex,
         int tReloadEveryNMinutes) throws Throwable {
         
-        String2.log("EDDGridFromMergeIRFiles.generateDatasetsXml");
+        String2.log("\n*** EDDGridFromMergeIRFiles.generateDatasetsXml" +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes);
         if (!String2.isSomething(tFileDir))
             throw new IllegalArgumentException("fileDir wasn't specified.");
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash

@@ -707,8 +707,12 @@ public class EDDTableFromOBIS extends EDDTable{
         Attributes externalAddGlobalAttributes)
         throws Throwable {
 
-        String2.log("EDDTableFromOBIS.generateDatasetsXml  tSourceCode=" + tSourceCode + 
-            "\n  url=" + tLocalSourceUrl);
+        String2.log("\n*** EDDTableFromOBIS.generateDatasetsXml" +
+            "\nlocalSourceUrl=" + tLocalSourceUrl +
+            " tSourceCode=" + tSourceCode + 
+            " reloadEveryNMinutes=" + tReloadEveryNMinutes +
+            "\ncreatorEmail=" + tCreatorEmail +
+            "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
         //!!! this could try to read sourceAttributes from the source, but it currently doesn't
         //  (partly because it would be slow)
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
@@ -734,6 +738,8 @@ public class EDDTableFromOBIS extends EDDTable{
             "Point",
             tLocalSourceUrl, externalAddGlobalAttributes,
             new HashSet());
+
+        //don't use suggestSubsetVariables since sourceTable not really available
 
         //generate the datasets.xml
         StringBuilder sb = new StringBuilder();

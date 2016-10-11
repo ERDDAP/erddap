@@ -21,6 +21,9 @@ import java.util.ArrayList;
 /** 
  * This facilitates reading a simple XML file.
  * The file can have comments (begin with "&lt;!--" and end with "--&gt;").
+ *
+ * See two related tools in FileVisitorNDLS which use this: tallyXml() and 
+ * findMatchingContentInXml().
  */
 public class SimpleXMLReader {
 
@@ -32,6 +35,7 @@ public class SimpleXMLReader {
     private StringBuilder allTags = new StringBuilder();
     private StringBuilder contentBuffer = new StringBuilder();
     private String content = "";
+    private String endWhiteSpace = "";
     private StringBuilder tagBuffer = new StringBuilder();
     private long lineNumber = 1, tagNumber = 0;
 
@@ -131,7 +135,7 @@ public class SimpleXMLReader {
 
     /**
      * This returns the requested item from the stack of tags.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @param item 
      * @return the requested tag (not including the '&lt;' and '&gt;') or null if 
@@ -145,7 +149,7 @@ public class SimpleXMLReader {
         
     /**
      * This returns the top item on the stack of tags.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @return the requested tag (not including the '&lt;' and '&gt;') or null if 
      *   the stack is empty
@@ -158,7 +162,7 @@ public class SimpleXMLReader {
 
     /**
      * This returns the size of the stack of tags.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @return the size of the stack.
      * It will only be 0 at the end of the file (or possibly if an error occurred in getNextTag).
@@ -176,9 +180,10 @@ public class SimpleXMLReader {
         return allTags.toString();
     }
         
+
     /**
      * This returns the trim'd content which occurred right before that last tag.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      * So this is normally called right after an end tag.
      *
      * @return the content from right before the end tag (or null if end-of-file).
@@ -193,8 +198,20 @@ public class SimpleXMLReader {
     }
 
     /**
+     * This returns the whitespace right before the last tag.
+     * Call this right after nextTag().
+     * This should rarely be needed
+     *
+     * @return the whitespace right before the last tag.
+     *   If none, this will be "" (not null).
+     */
+    public String endWhiteSpace() {
+        return endWhiteSpace;
+    }
+
+    /**
      * Get an array of attributeNames (may be length=0) for the last tag.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @return an array of attributeNames (may be length=0) for the last tag.
      */
@@ -204,7 +221,7 @@ public class SimpleXMLReader {
      
     /**
      * Get the value of a specific attribute of the last tag.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @param attributeName the name of an attribute (e.g., color)
      * @return the value of the specified attributeName (e.g., "0xFFFFFF"),
@@ -219,7 +236,7 @@ public class SimpleXMLReader {
 
     /**
      * Get the attributes in an Attributes object.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      * This is a copy of the attributes information, not the native data structure.
      *
      * @return the attributes in an Attributes object.
@@ -230,7 +247,7 @@ public class SimpleXMLReader {
      
     /**
      * For convenience, this re-uses atts to get the attributes in an Attributes object.
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @return the attributes in the Attributes object.
      */
@@ -243,7 +260,7 @@ public class SimpleXMLReader {
      
     /**
      * Get the attributes as a comma-separated name=value String (for diagnostic purposes).
-     * Call this right after getNextTag().
+     * Call this right after nextTag().
      *
      * @return the attributes as a comma-separated name=value String (for diagnostic purposes).
      */
@@ -388,6 +405,15 @@ public class SimpleXMLReader {
             tagBuffer.setLength(0);
         }
 
+        //deal with 2nd or 3rd ?xml tag at the top
+        //<?xml-stylesheet type="text/xsl" href="../../style/eml/eml-2.0.0.xsl"?>
+        //String2.log("tag #" + tagNumber + " tagBuffer=" + tagBuffer);
+        if (tagNumber == 1 && String2.startsWith(tagBuffer, "?xml")) {
+            tagNumber--;
+            nextTag();
+            return;
+        }
+
         //cleanup
         String2.trim(tagBuffer);
         if (tagBuffer.length() == 0) {
@@ -486,6 +512,10 @@ public class SimpleXMLReader {
         }
         //trim then decode, not the other way around 
         //(decode converts nbsp to ' ', and trim would remove the spaces at beginning or end)
+        int wi = contentBuffer.length();
+        while (wi > 0 && Character.isWhitespace(contentBuffer.charAt(wi - 1)))
+            wi--;
+        endWhiteSpace = contentBuffer.substring(wi);
         content = XML.decodeEntities(String2.trim(contentBuffer).toString());
 
     }
@@ -548,6 +578,123 @@ public class SimpleXMLReader {
     }
 
     /**
+     * This reads EML-like simple DocBook textType info 
+     * and converts it to plain text without tags.
+     * Call this before reading the first textType tag (e.g., para or section).
+     * See example of DocBook at http://docbook.org/docs/howto/howto.xml
+     * This is a helper method for generateDatasetsXmlFromEML.
+     * see https://knb.ecoinformatics.org/#external//emlparser/docs/eml-2.1.1/./eml-text.html#TextType
+     *
+     * <p>For now, this is imperfect. 
+     * It doesn't catch whitespace at the beginning of content properly.
+     * But it is a simple approach that works quite well otherwise.
+     * 
+     * @return the text content as plain text without tags.
+     *  This will return after reading the close tag corresponding to the current allTags.
+     */
+    public String readDocBookAsPlainText() throws Exception {
+        int startStackSize = stackSize();
+        StringBuilder sb = new StringBuilder("\n\n");
+        String ulinkUrl = null;
+        boolean inLiteralLayout = false;
+        while (true) {
+            nextTag();
+            if (startStackSize == stackSize()) {
+                //remove whitespace at beginning and end
+                String2.trim(sb);
+                String2.replaceAll(sb, "] )", "])");
+                String2.replaceAll(sb, "] ,", "],");
+                String2.replaceAll(sb, "] .", "].");
+                return sb.toString();
+            }
+            String tTag = topTag();
+            String tContent = content();
+            //standardize on \n
+            if (tContent.indexOf('\n') >= 0)
+                 tContent = String2.replaceAll(tContent, "\r", "");
+            else tContent = String2.replaceAll(tContent, "\r", "\n");
+            if (!inLiteralLayout) { 
+                //consolidate spaces
+                tContent = String2.combineSpaces(tContent);
+                tContent = String2.replaceAll(tContent, "\n ", "\n");
+                tContent = String2.replaceAll(tContent, " \n", "\n");
+            }
+            String tEndWhiteSpace = //retained before inline tags
+                endWhiteSpace.indexOf('\n') >= 0? "\n" :
+                endWhiteSpace.length() > 0? " " : "";
+           
+            if (tTag.equals( "itemizedlist") ||
+                tTag.equals("/itemizedlist") ||
+                tTag.equals( "listitem") ||
+                tTag.equals("/listitem") ||
+                tTag.equals( "literalLayout") ||
+                tTag.equals("/literalLayout") ||
+                tTag.equals( "orderedlist") ||
+                tTag.equals("/orderedlist") ||
+                tTag.equals( "para") ||
+                tTag.equals("/para") ||
+                tTag.equals( "section") ||
+                tTag.equals("/section") ||
+                tTag.equals( "subtitle") ||
+                tTag.equals("/subtitle") ||
+                tTag.equals( "title") ||
+                tTag.equals("/title")) {
+
+                //append tContent. Not usually any before start tags, but possible.
+                sb.append(tContent);  
+
+                //ensure start of new line
+                int sbl = sb.length();
+                if ((sbl >= 2 && sb.substring(sbl-2).equals("\n\n")) ||
+                    (sbl >= 4 && sb.substring(sbl-4).equals("\n\n* "))) {
+                } else {
+                    sb.append("\n\n");
+                }
+                if (tTag.equals("listitem"))
+                    sb.append("* ");
+
+                if (tTag.equals("literalLayout"))
+                    inLiteralLayout = true;
+                else if (tTag.equals("/literalLayout"))
+                    inLiteralLayout = false;
+
+            } else if (tTag.equals("citetitle")) {
+                //e.g., please read <citeTitle>My Book</citeTitle>
+                sb.append(tContent + tEndWhiteSpace + "\""); 
+
+            } else if (tTag.equals("/citetitle")) {
+                //e.g., please read <citeTitle>My Book</citeTitle>
+                sb.append(tContent + "\" "); //sp since xmlReader will eat it
+
+            } else if (tTag.equals("ulink")) {
+                //grab the url
+                ulinkUrl = attributeValue("url");
+                sb.append(tContent + tEndWhiteSpace);
+
+            } else if (tTag.equals("/ulink")) {
+                //e.g.:  <ulink url="...">My Book<ulink>
+                //write: My Book (url)
+                sb.append(tContent);
+                if (String2.isSomething(ulinkUrl))
+                    sb.append(" (" + ulinkUrl + ") "); //sp since xmlRead will eat them
+                ulinkUrl = null;
+
+            } else if (tTag.startsWith("/")) {
+                //end tags: add tContent and convert tTag to non-xml-tag
+                //e.g., </emphasis> </subscript> </superscript>
+                //! Add space after. Not ideal. Next char is not known now and trim'd later.
+                sb.append(tContent + tEndWhiteSpace + "[" + tTag + "] ");
+
+            } else {
+                //add tContent and convert tTag to non-xml-tag
+                //e.g., <emphasis> <subscript> <superscript>
+                sb.append(tContent + tEndWhiteSpace + "[" + tTag + "]"); 
+
+            }
+        }
+    }
+
+    /**
      * This performs a unit test of this class.
      *
      */
@@ -555,7 +702,7 @@ public class SimpleXMLReader {
 
         SimpleXMLReader xmlReader;
         String2.log("SimpleXMLReader will now intentionally throw and catch several exceptions.");
-        String expected;
+        String results, expected;
         
         //test invalid start of xml
         String error = "";
@@ -648,6 +795,7 @@ expected =
         //test valid xml
         String testXml = 
             "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
+            "<?xml-stylesheet type=\"text/xsl\" href=\"../../style/eml/eml-2.0.0.xsl\"?>\n" +
             "<testr>\n" +
             "  <level1 att1=value1 att2=\"value 2\" > \n level 1 \r&amp; <!-- comment < > -->text  \r\n" +
             "  </level1>\n" +
@@ -736,6 +884,44 @@ expected =
         Test.ensureEqual(xmlReader.attributeValue("attr"), "valr", "b");
         xmlReader.close();
 
+        //readDocBookAsPlainText
+testXml = 
+"<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
+"<DocBook><section>\n" +
+"<title>This Is A Title</title>\n" +
+"<subtitle>This Is A Subtitle</subtitle>\n" +
+"<para>This is some text <citetitle>My Cite Title</citetitle>,\n" +
+"Please read <ulink url=\"http://...\">My Book</ulink> because it's great.\n" +
+"This is a <value>value</value> <emphasis>em</emphasis>\n" +
+"H<subscript>sub</subscript><superscript>sup</superscript>.\n" +
+"</para>\n" +
+"<literalLayout>This is a\n" +
+"literalLayout.</literalLayout>\n" +
+"<orderedlist><listitem> item 1 </listitem><listitem>  item 2</listitem></orderedlist>Some text.\n" +
+"</section></DocBook>";
+        xmlReader = new SimpleXMLReader(new ByteArrayInputStream(
+            String2.toByteArray(testXml)), "DocBook");
+        results = xmlReader.readDocBookAsPlainText();
+        Test.ensureEqual(results, 
+"This Is A Title\n" +
+"\n" +
+"This Is A Subtitle\n" +
+"\n" +
+"This is some text \"My Cite Title\" ,\n" +
+"Please read My Book (http://...) because it's great.\n" +
+"This is a [value]value[/value]  [emphasis]em[/emphasis] H[subscript]sub[/subscript] [superscript]sup[/superscript].\n" +
+"\n" +
+"This is a\n" +
+"literalLayout.\n" +
+"\n" +
+"* item 1\n" +
+"\n" +
+"* item 2\n" +
+"\n" +
+"Some text.", 
+            "results=" + results);
+
+        
         String2.log("SimpleXMLReader.tests's tests finished successfully.\n"); 
     }
 }
