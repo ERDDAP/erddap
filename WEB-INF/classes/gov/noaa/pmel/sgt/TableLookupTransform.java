@@ -78,4 +78,7 @@ public class TableLookupTransform implements Cloneable, Transform {
   public void removePropertyChangeListener(PropertyChangeListener listener) {
     changes_.removePropertyChangeListener(listener);
   }
+  @Override
+  public void releaseResources() throws Exception {
+  }
 }

@@ -181,5 +181,9 @@ public class ExponentialTransformDown implements Transform {
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 
 	}
+
+    @Override
+    public void releaseResources() throws Exception {
+    }
 }
 

@@ -8112,7 +8112,7 @@ towTypesDescription);
      * E.g., &lt;netcdf location="V2013074.L3m_DAY_NPP_CHL_chlor_a_4km" coordValue="15779"/&gt;
      * The string is displayed and put on the clipboard.
      * 
-     * @param fileName  with '*' where YYYYDDD goes.
+     * @param location with '*' where YYYYDDD goes.
      * @param startIso
      * @param stopIso   (inclusive)
      * @param increment e.g., 1, 7, or 3

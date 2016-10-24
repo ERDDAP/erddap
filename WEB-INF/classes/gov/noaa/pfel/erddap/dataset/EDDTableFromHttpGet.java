@@ -115,7 +115,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      *    that should be used for this dataset, or "" (to cause ERDDAP not
      *    to try to generate FGDC metadata for this dataset), or null (to allow
      *    ERDDAP to try to generate FGDC metadata for this dataset).
-     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
+     * @param tIso19115File This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
     public EDDTableFromHttpGet(String tDatasetID, 
         String tAccessibleTo, String tGraphsAccessibleTo,
@@ -209,7 +209,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * This gets source data from one file.
      * See documentation in EDDTableFromFiles.
      *
-     * @throws an exception if too much data.
+     * @throws Throwable if too much data.
      *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
@@ -302,7 +302,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * @param dsSourceName will be filled, with [i] = a var sourceName or "".
      *    sourceNames haven't been tested to see if they are in the dataset.
      * @param dsN          will be filled, with [i] = the number of Calendar items, or -1
-     * @param dsCalendar[] will be filled, with [i] = the e.g., Calendar.MONTH, or -1
+     * @param dsCalendar will be filled, with [i] = the e.g., Calendar.MONTH, or -1
      * @throws RuntimeException if trouble
      */ 
     public static void parseDirectoryStructure(String specification, 
@@ -1073,9 +1073,9 @@ oneAuthorArray.set(0, author);
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
         //subsetVariables
-        if (sourceTable.globalAttributes().getString("subsetVariables") == null &&
-               addTable.globalAttributes().getString("subsetVariables") == null) 
-            addGlobalAtts.add("subsetVariables",
+        if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
+                dataAddTable.globalAttributes().getString("subsetVariables") == null)
+            externalAddGlobalAttributes.add("subsetVariables",
                 suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
 
         //add the columnNameForExtract variable

@@ -15,6 +15,7 @@ package gov.noaa.pmel.sgt.swing;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 
+import gov.noaa.pmel.sgt.JPane;
 import gov.noaa.pmel.sgt.LayerChild;
 import gov.noaa.pmel.sgt.Layer;
 import gov.noaa.pmel.sgt.CartesianGraph;
@@ -73,9 +74,9 @@ public class UserIcon extends ImageIcon implements LayerChild, Draggable {
             layer_ = null;                    
             if (JPane.debug) String2.log("sgt.swing.UserIcon.releaseResources() finished");
         } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t);
+            String2.log(MustBe.throwableToString(t));
             if (JPane.debug) 
-                String2.getStringFromSystemIn(); 
+                String2.getStringFromSystemIn("prompt:");
         }
     }
 

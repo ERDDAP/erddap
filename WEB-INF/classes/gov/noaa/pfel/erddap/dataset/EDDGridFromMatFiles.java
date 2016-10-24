@@ -18,10 +18,12 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -30,6 +32,7 @@ import gov.noaa.pfel.erddap.variable.*;
 import java.text.MessageFormat;
 import java.util.List;
 
+import ucar.nc2.*;
 
 
 /** 
@@ -52,12 +55,12 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, boolean tEnsureAxisValuesAreExactlyEqual, 
-        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex,
+        String tMetadataFrom, int tMatchAxisNDigits,
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles)
         throws Throwable {
 
-        super("EDDGridFromMatFiles", tDatasetID, 
+        super("EDDGridFromMatFiles", tDatasetID,
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
             tOnChange, tFgdcFile, tIso19115File, 
             tDefaultDataQuery, tDefaultGraphQuery, 
@@ -65,8 +68,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
-            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tEnsureAxisValuesAreExactlyEqual, 
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex,
+            tMetadataFrom, tMatchAxisNDigits,
             tFileTableInMemory, tAccessibleViaFiles);
     }
 
@@ -299,7 +302,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         throws Throwable {
 
         String2.log("\n*** EDDGridFromMatFiles.generateDatasetsXml" +
-            "\nfileDir=" + tFileDir + " fileNameRegex=" + tfileNameRegex +
+            "\nfileDir=" + tFileDir + " fileNameRegex=" + tFileNameRegex +
             " sampleFileName=" + sampleFileName +
             "\nreloadEveryNMinutes=" + tReloadEveryNMinutes + 
             "\nexternalAddGlobalAttributes=" + externalAddGlobalAttributes);
@@ -404,7 +407,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                     "Grid",  //another cdm type could be better; this is ok
                     tFileDir, externalAddGlobalAttributes, 
                     EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
-                        suggestKeywords(dataSourceTable, dataAddTable)));
+                        suggestKeywords(dataSourceTable, dataAddTable))));
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);

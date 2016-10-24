@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.griddata;
 
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -117,7 +118,7 @@ public class OpendapDump {
                     String2.log("End enumeration to get variables...");
 
                 } catch (Exception e) {
-                    String2.log(e);
+                    String2.log(MustBe.throwableToString(e));
                     e.printStackTrace();
                     System.exit(1);
                 }

@@ -174,5 +174,9 @@ public class ExponentialTransformUp implements Transform {
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 
 	}
+
+    @Override
+    public void releaseResources() throws Exception {
+    }
 }
 

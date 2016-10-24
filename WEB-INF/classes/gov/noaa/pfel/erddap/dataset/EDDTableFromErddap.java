@@ -167,7 +167,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      *    that should be used for this dataset, or "" (to cause ERDDAP not
      *    to try to generate FGDC metadata for this dataset), or null (to allow
      *    ERDDAP to try to generate FGDC metadata for this dataset).
-     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
+     * @param tIso19115File This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
