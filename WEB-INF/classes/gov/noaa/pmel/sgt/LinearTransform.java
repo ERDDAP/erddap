@@ -223,4 +223,8 @@ public class LinearTransform extends AxisTransform implements Cloneable {
   public String toString() {
     return "LinearTransform: " + a_ + ", " + b_ + "; " + at_ + ", " + bt_;
   }
+
+  @Override
+  public void releaseResources() throws Exception {
+  }
 }
