@@ -1455,10 +1455,8 @@ class JpegInfo {
                     throw new AWTException("Grabber returned false: "
                         + grabber.status());
                 } catch (Exception e) {
-                    String2.log.fine(MustBe.throwableToString(e));
+                    String2.log(MustBe.throwableToString(e));
                 }
-
-                ;
             }
         } catch (InterruptedException e) {
         }

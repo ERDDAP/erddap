@@ -3812,11 +3812,153 @@ handles data from one Cassandra table.
 </ul>
 
 
-<p><a name="EDDTableFromDatabase"><b>EDDTableFromDatabase</b></a> handles data from one
-database table or <a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">view<img 
+<p><a name="EDDTableFromDatabase"><b>EDDTableFromDatabase</b></a> 
+handles data from one relational database table or 
+<a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">view<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
 <ul>
+<li><a name="databaseOneTable">One</a> Table (or <a name="databaseViews">View</a>) 
+  <br>If the data you want to serve is in two or more tables 
+  (and thus needs a JOIN to extract data from both tables at once), 
+  you need to make one 
+      <a rel="help" href="https://en.wikipedia.org/wiki/Denormalization">denormalized<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+    (already joined) table or
+      <a rel="help" href="https://en.wikipedia.org/wiki/View_(SQL)">view<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+    with all of the data that you want to make available as one dataset in ERDDAP.
+
+    <p>For large, complex databases, it may make sense to separate out several chunks
+    as denormalized tables,
+    each with a different type of data, which will become separate datasets in ERDDAP.
+
+    <p>Making a denormalized table for use in ERDDAP may sound like a crazy idea to you.
+    Please trust us. There are several reasons why ERDDAP works with
+    denormalized tables:
+    <ul>
+    <li>It's vastly easier for users.
+      <br>When ERDDAP presents the dataset as one, simple, denormalized, single table,
+      it is very easy for anyone to understand the data. Most users have never
+      heard of normalized tables, and very few understand
+      keys, foreign keys, or table joins,
+      and they almost certainly don't know the details of the different types of joins,
+      or how to specify the SQL to do a join (or multiple joins) correctly. Using a denormalized
+      table avoids all those problems.  This reason alone justifies the use of a
+      denormalized single table for the presentation of a dataset to ERDDAP users.
+      <br>&nbsp;
+    <li>Normalized tables (multiple tables related by key columns) are great for 
+      storing data in a database. 
+      <br>But even in SQL, the result that is returned to the user is a denormalized 
+      (joined) single table. So it seems reasonable to present the dataset to users
+      as a huge, denormalized, single table from which they can then request subsets
+      (e.g., show me rows of the table where temperature&gt;30).
+      <br>&nbsp;
+    <li>You can make changes for ERDDAP without changing your tables.
+      <br>ERDDAP has a few requirements that may be different from how you have set
+      up your database.
+      <br>For example, ERDDAP requires that timestamp data be stored in 'timestamp
+      with timezone' fields.
+      <br>By making a separate table/view for ERDDAP, you can make these changes
+      when you make the denormalized table for ERDDAP.
+      Thus, you don't have to make any changes to your tables.
+      <br>&nbsp;
+    <li>ERDDAP will recreate some of the structure of the normalized tables.
+      <br>You can specify which columns of data come from the 'outer' tables and therefore
+      have a limited number of distinct values.  ERDDAP will collect all of the
+      different combinations of values in these columns
+      and present them to users on a special .subset web page that 
+      helps users quickly select subsets of the dataset.
+      The distinct values for each column are also shown in drop-down lists 
+      on the dataset's other web pages.
+      <br>&nbsp;
+    <li>A denormalized table makes the data hand-off from you to the ERDDAP
+      administrator easy.
+      <br>You're the expert for this dataset,
+      so it makes sense that you make the decisions
+      about which tables and which columns to join and how to join them.
+      So you don't have to hand us (or worse, the end users) 
+      several tables and detailed instructions for how to join them, 
+      you just have to give us access to the denormalized table.
+      <br>&nbsp;
+    <li>A denormalized table allows for efficient access to the data.
+      <br>The denormalized form is usually faster to access than the normalized form.
+      Joins can be slow. Multiple joins can be very slow.
+      <br>&nbsp;
+    </ul>
+    In order to get the data from two or more tables in the database into ERDDAP, 
+    there are three options:
+    <br>&nbsp;
+    <ul>
+    <li>Recommended Option:
+      <br>You can create a comma- or tab-separated-value file with
+      the data from the denormalized table.
+      <br>If the dataset is huge, then it makes sense to create several files,
+      each with a cohesive subset of the denormalized table
+      (for example, data from a smaller time range).
+      <p>The big advantage here is that ERDDAP will be able to handle user requests
+      for data without any further effort by your database.
+      So ERDDAP won't be a burden on your database or a security risk.
+      This is the best option under almost all circumstances because ERDDAP can usually
+      get data from files faster than from a database
+      (if we convert the .csv files to .ncCF files). (Part of the reason is that
+      ERDDAP+files is a read-only system and doesn't have to deal with making changes
+      while providing
+      <a rel="help" href="https://en.wikipedia.org/wiki/ACID">ACID<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      (Atomicity, Consistency, Isolation, Durability).)
+      Also, you probably won't need a separate server since we can store the data
+      on one of our RAIDs and access it with an existing ERDDAP on an existing server.
+
+    <li>Okay Option:
+      <br>You set up a new database on a different computer with just the
+      denormalized table.
+      <br>Since that database can be a free and open source database like PostgreSQL,
+      this option needn't cost a lot.
+      <p>The big advantage here are that ERDDAP will be able to handle user requests
+      for data without any further effort by your current database.
+      So ERDDAP won't be a burden on your current database.
+      This also eliminates a lot of security concerns since ERDDAP will not have
+      access to your current database.
+
+    <li>Discouraged Option:
+      <br>We can connect ERDDAP to your current database.
+      <br>To do this, you need to:
+      <ul>
+      <li>Create a separate table or view with the denormalized table of data.
+      <li>Create an "erddap" user who has read-only access to only the denormalized table(s).
+        <br>&nbsp;
+      </ul>
+      This is an option if the data changes very frequently and you want to give
+      ERDDAP users instant access to those changes; however, even so,
+      it may make sense to use the file option above and periodically
+      (every 30 minutes?) replace the file that has today's data.
+      <br>The huge disadvantages of this approach are that ERDDAP user requests will
+      probably place an unbearably large burden on your database and that
+      the ERDDAP connection is a security risk (although we can minimize/manage the risk).
+    </ul>
+  
+  <p>Making the denormalized table or view for ERDDAP is
+  a good opportunity to make a few changes that ERDDAP needs, 
+  in a way that doesn't affect your original tables:
+  <ul>
+  <li>Change the date and timestamp fields/columns to use the dataType that Postgres calls
+    <a rel="help" href="#databaseDate">timestamp with time zone</a> 
+    (or the equivalent in your database).
+      <br>Timestamps without time zone information don't work correctly in ERDDAP.
+  <li>Make indexes for the columns that users often search. 
+  <li>Be very aware of <a rel="help" href="#databaseQuotes">the case of the field/column names</a>
+    (for example, use all lower case) when you type them.
+  <li>Don't use reserved words for the table and for the field/column names.
+  </ul>
+  <p>If you need help making the denormalized table or view, please 
+    contact your database administrator.
+  <br>If you want to talk about this whole approach or strategize how best to do it, 
+    please email bob.simons at noaa.gov .
+
 <li><a name="databaseDatasetsXml">datasets.xml</a> - 
   It is difficult to create the correct 
   datasets.xml information needed for ERDDAP to establish
@@ -3912,42 +4054,6 @@ database table or <a rel="help" href="https://en.wikipedia.org/wiki/View_(databa
   "password", and "ssl"), and some of the connectionProperty values can be found by searching
   the web for "JDBC connection properties <i>databaseType</i>" 
   (for example, Oracle, MySQL, Amazon RDS, MariaDB, PostgreSQL).
-  <br>&nbsp;
-
-<li><a name="databaseOneTable">One Table</a> - 
-  If the data you want to serve is in two or more tables (and needs a JOIN to extract data), 
-  you need to make one new table (or <a rel="help" href="#databaseViews">view</a>) 
-  with the denormalized/JOINed/flattened information. Making the denormalized table for ERDDAP is
-  a good opportunity to make a few changes that ERDDAP needs, in a way that doesn't affect your original tables:
-  <ul>
-  <li>Change the date and timestamp fields/columns to use 
-    <a rel="help" href="#dataType"><tt>&lt;dataType&gt;</tt></a>=<a rel="help" href="#databaseDate">timestamp with time zone</a>.
-      <br>Timestamps without time zone information don't work correctly in ERDDAP.
-  <li>Make indexes for the columns that users often search. 
-  <li>Be very aware of <a rel="help" href="#databaseQuotes">the case of the field/column names</a>
-    (for example, use all lower case) when you type them.
-  <li>Don't use reserved words for the table and for the field/column names.
-  </ul>
-  Contact your database administrator for help doing this.
-  <br>&nbsp;
-
-<li><a name="databaseViews">Views</a> - 
-  EDDTableFromDatabase is limited to getting data from one table, but that shouldn't be a problem.
-  If a table of interest has foreign keys which link to other tables,
-  you can ask the database administrator to create a 
-      <a rel="help" href="https://en.wikipedia.org/wiki/View_(database)">VIEW<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.
-  Views "can join and simplify multiple tables into a single virtual table" (Wikipedia).
-  Views are good because: 
-  <ul>
-  <li>They simplify queries (since the queries don't have to specify the JOINs, etc.).
-  <li>They are efficient (since the database just has to set it up once).
-  <li>They increase abstraction (since the underlying table can be changed 
-    without having to change how the VIEW appears to the client).
-  </ul>
-  Unfortunately, accessing data from a view is usually much slower than accessing data from a denormalized table.
-  So, we generally recommend making a denormalized table, unless the data changes very frequently.
   <br>&nbsp;
 
 <li><a name="databaseQuotes">Quotes for Field/Column Names; Case Sensitivity</a> -

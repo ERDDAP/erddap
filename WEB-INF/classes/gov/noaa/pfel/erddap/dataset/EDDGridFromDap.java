@@ -679,7 +679,7 @@ public class EDDGridFromDap extends EDDGrid {
         long thisTime = System.currentTimeMillis() - startUpdateMillis;
         cumulativeUpdateTime += thisTime;
         if (reallyVerbose)
-            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocal() +
+            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 " nValuesAdded=" + newValues.size() + 
                 " time=" + thisTime + " updateCount=" + updateCount +
                 " avgTime=" + (cumulativeUpdateTime / updateCount));
@@ -2052,7 +2052,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
             logFileName = resultsFileName + ".log.txt";
             String2.setupLog(false, false, logFileName, false, 1000000000);
             String2.log("*** Starting runGenerateDatasetsXmlFromThreddsCatalog " + 
-                Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                 "logFile=" + String2.logFileName() + "\n" +
                 String2.standardHelpAboutMessage()); 
         }
@@ -6718,7 +6718,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
 "<Document>\n" +
-"  <name>SST, Blended, Global, EXPERIMENTAL (5 Day Composite)</name>\n" +
+"  <name>SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite)</name>\n" +
 "  <description><![CDATA[Time: 2008-11-01T12:00:00Z<br />\n" +
 "Data courtesy of NOAA NMFS SWFSC ERD<br />\n" +
 "<a href=\"" + EDStatic.erddapUrl + //in tests, always non-https url
@@ -7865,7 +7865,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         time1 = System.currentTimeMillis() - time1;
 
         //try to load from quickRestartFile
-        EDStatic.memoryUseLoadDatasetsSB.setLength(0); //so EDStatic.initialLoadDatasets() will be true
+        EDStatic.majorLoadDatasetsTimeSeriesSB.setLength(0); //so EDStatic.initialLoadDatasets() will be true
         Test.ensureTrue(EDStatic.initialLoadDatasets(), "");
         long time2 = System.currentTimeMillis();
         EDD edd2 = oneFromDatasetsXml(null, tDatasetID);
@@ -8074,7 +8074,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "ion by professional marine scientists.\" />\n" +
 "  <attribute name=\"time_coverage_end\" value=\"20.{8}T12:00:00Z\" />\n" +
 "  <attribute name=\"time_coverage_start\" value=\"2002-07-06T12:00:00Z\" />\n" +
-"  <attribute name=\"title\" value=\"SST, Blended, Global, EXPERIMENTAL \\(5 Day Composite\\)\" />\n" +
+"  <attribute name=\"title\" value=\"SST, Blended, Global, 2002-2014, EXPERIMENTAL \\(5 Day Composite\\)\" />\n" +
 "  <attribute name=\"Westernmost_Easting\" type=\"double\" value=\"0.0\" />\n" +
 "  <dimension name=\"time\" length=\"3880\" />\n" +
 "  <dimension name=\"altitude\" length=\"1\" />\n" +
@@ -8270,7 +8270,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
 "  :time_coverage_start = \"20.{8}T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
 "\\}\n";

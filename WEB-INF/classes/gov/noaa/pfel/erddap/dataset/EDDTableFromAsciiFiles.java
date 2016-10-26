@@ -568,7 +568,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>wd</sourceName>\n" +
 "        <destinationName>wd</destinationName>\n" +
-"        <dataType>byte</dataType>\n" +
+"        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -582,7 +582,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>wspd</sourceName>\n" +
 "        <destinationName>wspd</destinationName>\n" +
-"        <dataType>byte</dataType>\n" +
+"        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -596,7 +596,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>atmp</sourceName>\n" +
 "        <destinationName>atmp</destinationName>\n" +
-"        <dataType>byte</dataType>\n" +
+"        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -2881,6 +2881,110 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 
     }
 
+    /** 
+     * This tests actual_range (should not be set) and 
+     * accessible values for non-iso string time values. */
+    public static void testTimeRange() throws Throwable {
+
+        String2.log("\n****************** EDDTableFromAsciiFiles.testTimeRange() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+
+        String id = "knb_lter_sbc_14_t1"; //has MM/dd/yyyy time strings
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        //test getting das for entire dataset
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr", ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    String axis \"T\";\n" +  //no actual_range
+"    String columnNameInSourceFile \"DATE_OF_SURVEY\";\n" +
+"    String comment \"In the source file: The Date of the aerial survey\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  region {\n";
+        results = results.substring(0, expected.length());
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test getting min and max time values
+        tName = eddTable.makeNewFileForDapQuery(null, null, 
+            "time&orderByMinMax(\"time\")", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"time\n" +
+"UTC\n" +
+"1957-08-13T00:00:00Z\n" +
+"2007-04-28T00:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+    }
+
+    /** 
+     * This tests actual_range (should not be set) and 
+     * accessible values for iso string time values. */
+    public static void testTimeRange2() throws Throwable {
+
+        String2.log("\n****************** EDDTableFromAsciiFiles.testTimeRange2() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+
+        String id = "knb_lter_sbc_15_t1"; //has yyyy-MM-dd time strings
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        //test getting das for entire dataset
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr2", ".das"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 9.682848e+8, 1.4694912e+9;\n" +  //has actual_range
+"    String axis \"T\";\n" +
+"    String columnNameInSourceFile \"DATE\";\n" +
+"    String comment \"In the source file: Date of data collection in format: YYYY-MM-DD\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n";
+        results = results.substring(0, expected.length());
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test getting min and max time values
+        tName = eddTable.makeNewFileForDapQuery(null, null, 
+            "time&orderByMinMax(\"time\")", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        expected = 
+"time\n" +
+"UTC\n" +
+"2000-09-07T00:00:00Z\n" +
+"2016-07-26T00:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //do numeric and string min/max time agree?
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(9.682848e+8),  "2000-09-07T00:00:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.4694912e+9), "2016-07-26T00:00:00", "");
+
+        //data file is /u00/data/points/lterSbc/cover_all_years_20160907.csv
+        //The file confirms that is probably the range (there's no data before 2000).
+    }
 
     /**
      * This tests the methods in this class.
@@ -2896,6 +3000,8 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         testTimeZone();
         testTimeZone2();
         testTimeMV();
+        testTimeRange();
+        testTimeRange2();
         testGenerateDatasetsXmlFromInPort();
         testGenerateDatasetsXmlFromInPort2();
         /* */

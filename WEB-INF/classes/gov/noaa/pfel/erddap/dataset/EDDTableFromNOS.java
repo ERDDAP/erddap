@@ -23,6 +23,7 @@ import gov.noaa.pfel.coastwatch.pointdata.TableXmlHandler;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
@@ -183,7 +184,7 @@ public class EDDTableFromNOS extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDTableFromNOS(tDatasetID, tAccessibleTo,
+        return new EDDTableFromNOS(tDatasetID, tAccessibleTo, tGraphsAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
@@ -217,7 +218,7 @@ public class EDDTableFromNOS extends EDDTable{
      *    that should be used for this dataset, or "" (to cause ERDDAP not
      *    to try to generate FGDC metadata for this dataset), or null (to allow
      *    ERDDAP to try to generate FGDC metadata for this dataset).
-     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
+     * @param tIso19115File This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -274,7 +275,7 @@ public class EDDTableFromNOS extends EDDTable{
      * @param tRowElementXPath  e.g., /soapenv:Envelope/soapenv:Body/WindMeasurements/data/item
      * @throws Throwable if trouble
      */
-    public EDDTableFromNOS(String tDatasetID, String tAccessibleTo,
+    public EDDTableFromNOS(String tDatasetID, String tAccessibleTo, String tGraphsAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 

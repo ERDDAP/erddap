@@ -1247,6 +1247,9 @@ public class EDDTableFromSOS extends EDDTable{
         boolean matchingStation = false;
         STATION_LOOP:
         for (int station = 0; station < nStations; station++) {
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDTableFromSOS.getDataForDapQuery" +
+                    EDStatic.caughtInterrupted);
 
             String tStationLonString = "", tStationLatString = "", tStationAltString = "", 
                 tStationID = "";

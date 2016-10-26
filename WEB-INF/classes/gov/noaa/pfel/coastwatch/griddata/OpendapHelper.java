@@ -2162,7 +2162,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
     public static void testDapToNcDArray() throws Throwable {
         String2.log("\n\n*** OpendapHelper.testDapToNcDArray");
         String fileName, expected, results;      
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
         fileName = SSR.getTempDirectory() + "testDapToNcDArray.nc";
         String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";

@@ -129,6 +129,8 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-17 Reyna Jenkyns -->
 <li><a rel="bookmark" href="http://meteo.rtech.fr/erddap/index.html">R.Tech Engineering</a>, France 
   <!-- 2015-03-20 Philippe Makowski -->
+<li><a rel="bookmark" href="http://sfbaynutrients.sfei.org/erddap/index.html">SFEI</a> (San Francisco Estuary Institute) 
+  <!-- 2016-10-26 Rusty Holleman -->
 <li>Spyglass Technologies 
   <!-- 2015-08-24 Paul Janecek -->
 <li>Stanford University, Hopkins Marine Station 
@@ -423,11 +425,10 @@ or Mac server instead.
       Please check back here tomorrow. Sorry for the inconvenience,
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: c:\content\bat\md5.bat erddapContent1.72.zip -->
+     <!-- Use: c:\content\bat\md5.bat erddapContent1.74.zip -->
     <a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.72, size=26,760 bytes, MD5=8EFBD16CEBC249A2E21CFE167423635B, dated 2016-05-12)
-
+    (version 1.74, size=26,708 bytes, MD5=D70DF53AE98785CC35614571E719BC54, dated 2016-10-07)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
@@ -458,6 +459,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.70.zip">1.70</a>
     (size=26,759 bytes, MD5=97084B0ABE38D4DE88408918AD301AD9, dated 2016-04-15)
+    <br><a rel="bookmark"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.72.zip">1.72</a>
+    (size=26,760 bytes, MD5=8EFBD16CEBC249A2E21CFE167423635B, dated 2016-05-12)
     ]
 
   <p>Then,
@@ -523,7 +527,7 @@ or Mac server instead.
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.72, size=527,743,058 bytes, MD5=4C84507540C6868413E6CEE470414665, dated 2016-05-12)
+    (version 1.74, size=552,359,929 bytes, MD5=5976EDF01CC9D3A6046D83DB0CF10EA0, dated 2016-10-07)
 
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
@@ -552,6 +556,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.70.war">1.70</a> 
     (size=556,163,762 bytes, MD5=3320ADB87E9F3AB31EBF89260C64AF19, dated 2016-04-15)
+    <br><a rel="bookmark"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.72.war">1.72</a> 
+    (size=527,743,058 bytes, MD5=4C84507540C6868413E6CEE470414665, dated 2016-05-12)
     ]
 
 <li><a name="ApacheTimeout">On Linux computers,</a> change the Apache timeout settings
@@ -594,20 +601,35 @@ As the root user:
     <br>&nbsp;
   </ol>
 
-<li>Start Tomcat.
-  <br>(I don't recommend using the Tomcat Web Application Manager. If you don't fully shutdown and startup Tomcat, sooner or later you will have PermGen memory issues.)
+<li><a name="startTomcat">Start Tomcat.</a>
   <ul>
-  <li>If Tomcat is already running, use <i>tomcat</i>/bin/shutdown.sh 
-    (or \'s and .bat in Windows) 
-    to shut down Tomcat.
-    <br>On Linux, you may want to use <tt>ps -ef | grep tomcat</tt> to see if/when the
-    process has been stopped.  (It may take a minute or two.)
-  <li>Start Tomcat with <i>tomcat</i>/bin/startup.sh on Linux or Mac OS,
-    <br>or <i>tomcat</i>\bin\startup.bat on Windows.
+  <li>(I don't recommend using the Tomcat Web Application Manager. If you don't 
+   fully shutdown and startup Tomcat, sooner or later you will have PermGen 
+   memory issues.)
+    <br>&nbsp;
+
+  <li>(In Linux or Mac OS, if you have created a special user to run Tomcat, 
+    e.g., tomcat, remember to do the following steps as that user.)
+    <br>&nbsp;
+
+  <li>If Tomcat is already running, shut down Tomcat 
+    with <tt><i>tomcat</i>/bin/shutdown.sh</tt> in Linux or Mac OS,
+    or   <tt><i>tomcat</i>\bin\shutdown.bat</tt> in Windows.
+
+    <p>On Linux, use <tt>ps -ef | grep tomcat</tt> before and after shutdown.sh 
+    to make sure the tomcat process has stopped.  
+    The process should be listed before the shutdown and eventually not listed
+    after the shutdown. It may take a minute or two for ERDDAP to fully shut down. 
+    Be patient.
+    Or if it looks like it won't stop on its own, use: 
+    <br><tt>kill -9 <i>processID</i></tt>
+
+  <li>Start Tomcat with <tt><i>tomcat</i>/bin/startup.sh</tt> in Linux or Mac OS,
+    or <tt><i>tomcat</i>\bin\startup.bat</tt> in Windows.
     <br>&nbsp;
   </ul>
 
-<li>Is ERDDAP running?
+<li><a name="isErddapRunning">Is ERDDAP running?</a>
   <br>Use a browser to try to view http://<i>www.YourServer.org</i>/erddap/ 
   <br>ERDDAP starts up without any datasets loaded. 
   Datasets are loaded in a background thread and so become available one-by-one.
@@ -691,7 +713,7 @@ As the root user:
 <li>Download 
     <a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.72, size=527,743,058 bytes, MD5=4C84507540C6868413E6CEE470414665, dated 2016-05-12)
+    (version 1.74, size=552,359,929 bytes, MD5=5976EDF01CC9D3A6046D83DB0CF10EA0, dated 2016-10-07)
     into a temporary directory.
   <br>&nbsp;
 
@@ -993,40 +1015,67 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
        <a name="frozen">Shut</a> Down and Restart Tomcat and ERDDAP</b> 
 
   <br>You don't need to shut down and restart Tomcat and ERDDAP
-  if ERDDAP is temporarily slow, or slow for some known reason 
-  (like lots of requests from scripts or WMS users).
+  if ERDDAP is temporarily slow, slow for some known reason 
+  (like lots of requests from scripts or WMS users),
+  or to apply changes to datasets.xml file.
 
   <p>You do need to shut down and restart Tomcat and ERDDAP 
   if you need to apply changes to the setup.xml file,
   or if ERDDAP freezes, hangs, or locks up.
+  In extreme circumstances, Java may freeze for a minute or two 
+  while it does a full garbage collection, but then recover. So it is good to 
+  wait a minute or two to see if Java/ERDDAP is really frozen or 
+  if it is just doing a long garbage collection.
+  (If garbage collection is a common problem, 
+  <a rel="help" href="#LinuxMemory">allocate more memory to Tomcat</a>.)
+
+  <p>I don't recommend using the Tomcat Web Application Manager to 
+    start or shutdown Tomcat. 
+    If you don't fully shutdown and startup Tomcat, sooner or later you will 
+    have PermGen memory issues. 
 
   <p>To shutdown and restart Tomcat and ERDDAP:
   &nbsp;
   <ul> 
   <li>If you use Linux or a Mac:
+    <br>(If you have created a special user to run Tomcat, e.g., tomcat, 
+      remember to do the following steps as that user.)
+      <br>&nbsp;
     <ol>
     <li>Use <tt>cd <i>tomcat</i>/bin</tt>
-    <li>Use <tt>ps -u <i>tomcatUser</i> | grep java</tt> to find the java/tomcat processID
+      <br>&nbsp;
+
+    <li>Use <tt>ps -ef | grep tomcat</tt> to find the java/tomcat processID
       (hopefully, just one process will be listed),
       which we'll call <tt><i>javaProcessID</i></tt> below.
+      <br>&nbsp;
+
     <li>If ERDDAP is frozen/hung/locked up, use <tt>kill -3 <i>javaProcessID</i></tt> 
       to tell Java (which is running Tomcat)
-      to do a thread dump to the Tomcat log file 
-      <br><i>tomcat</i>/logs/catalina.out.  
-      After you reboot, you can diagnose the problem by finding the thread dump information 
-      (and any other useful information above it) in <i>tomcat</i>/logs/catalina.out and
-      also by reading relevant parts of the <a rel="help" href="#log">ERDDAP log archive</a>.
-      If you want, you can email that information to <tt>bob dot simons at noaa dot gov</tt> 
+      to do a thread dump to the Tomcat log file: <i>tomcat</i>/logs/catalina.out .  
+      After you reboot, you can diagnose the problem by finding the thread 
+      dump information 
+      (and any other useful information above it) in <i>tomcat</i>/logs/catalina.out 
+      and also by reading relevant parts of the 
+      <a rel="help" href="#log">ERDDAP log archive</a>.
+      If you want, you can email that information to 
+      <tt>bob dot simons at noaa dot gov</tt> 
       so I can see what went wrong.
       <br>Or, you can join the <a rel="help"
         href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
         and post your question there.
-    <li>Use <tt>./shutdown.sh</tt>
-    <li>Use <tt>ps -u <i>tomcatUser</i> | grep java</tt> repeatedly until the java/tomcat process isn't listed.
+      <br>&nbsp;
 
-      <br>Sometimes, the java/tomcat process will take up to two minutes to shut down.  
+    <li>Use <tt>./shutdown.sh</tt>
+      <br>&nbsp;
+
+    <li>Use <tt>ps -ef | grep tomcat</tt> repeatedly until the 
+      java/tomcat process isn't listed.
+
+      <p>Sometimes, the java/tomcat process will take up to two minutes to fully 
+      shut down.  
       The reason is: ERDDAP sends a message to its background threads
-      to tell them to stop, but sometimes it takes these threads up to two minutes
+      to tell them to stop, but sometimes it takes these threads a long time
       to get to a good stopping place.
 
     <li>If you don't want to wait for java/tomcat to stop by itself, 
@@ -1035,8 +1084,10 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       <br>to force the java/tomcat process to stop immediately.
       If possible, use this only as a last resort.
       The -9 switch is powerful, but it may cause various problems.
+      <br>&nbsp;
 
     <li>To restart ERDDAP, use <tt>./startup.sh</tt>
+      <br>&nbsp;
 
     <li>View ERDDAP in your browser to check that the restart succeeded.
       (Sometimes, you need to wait 30 seconds and try to load ERDDAP again 
@@ -1045,16 +1096,21 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
     </ol>
 
   <li>If you use Windows:
+      <br>&nbsp;
     <ol>
     <li>Use <tt>cd <i>tomcat</i>/bin</tt>
-    <li>Use <tt>shutdown</tt>
+      <br>&nbsp;
+    <li>Use <tt>shutdown.bat</tt>
+      <br>&nbsp;
     <li>You may want/need to use the Windows Task Manager (accessible via Ctrl Alt Del) 
       to ensure that the Java/Tomcat/ERDDAP process/application has fully stopped.
       <br>Sometimes, the process/application will take up to two minutes to shut down.  
       The reason is: ERDDAP sends a message to its background threads
-      to tell them to stop, but sometimes it takes these threads up to two minutes
+      to tell them to stop, but sometimes it takes these threads a long time
       to get to a good stopping place.
-    <li>To restart ERDDAP, use <tt>startup</tt>
+      <br>&nbsp;
+    <li>To restart ERDDAP, use <tt>startup.bat</tt>
+      <br>&nbsp;
     <li>View ERDDAP in your browser to check that the restart succeeded.
       (Sometimes, you need to wait 30 seconds and try to load ERDDAP again 
       in your browser for it to succeed.)
@@ -1079,7 +1135,15 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
   See <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
       >&lt;requestBlacklist&gt; in your datasets.xml file</a>.
 
-  <p>If ERDDAP becomes slow or freezes and the problem isn't a troublesome user, 
+  <p>In extreme circumstances, Java may freeze for a minute or two 
+  while it does a full garbage collection, but then recover. So it is good to 
+  wait a minute or two to see if Java/ERDDAP is really frozen or 
+  if it is just doing a long garbage collection.
+  (If garbage collection is a common problem, 
+  <a rel="help" href="#LinuxMemory">allocate more memory to Tomcat</a>.)
+
+  <p>If ERDDAP becomes slow or freezes and the problem isn't a troublesome user
+  or a long garbage collection, 
   you can usually solve the problem by 
   <a rel="help" href="#restart">restarting ERDDAP</a>. 
   My experience is that ERDDAP can run for months without needing a restart.

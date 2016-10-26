@@ -907,6 +907,10 @@ public class EDDTableFromDatabase extends EDDTable{
                 }
 
                 if (paArray[0].size() >= triggerNRows) {
+                    if (Thread.currentThread().isInterrupted())
+                        throw new SimpleException("EDDTableFromDatabase.getDataForDapQuery" + 
+                            EDStatic.caughtInterrupted);
+        
                     //String2.log(table.toString("rows",5));
                     preStandardizeResultsTable(loggedInAs, table); 
                     if (table.nRows() > 0) {
@@ -942,7 +946,8 @@ public class EDDTableFromDatabase extends EDDTable{
             String msg = MustBe.throwableToString(t);
             //String2.log("EDDTableFromDatabase caught:\n" + msg);
 
-            if (msg.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) { 
+            if (msg.indexOf(MustBe.THERE_IS_NO_DATA) >= 0 ||
+                msg.indexOf(EDStatic.caughtInterrupted) >= 0) { 
                 throw t;
             } else {
                 //all other errors probably from database

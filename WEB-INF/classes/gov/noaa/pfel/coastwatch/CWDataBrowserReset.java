@@ -72,7 +72,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
         super("gov.noaa.pfel.coastwatch.CWDataBrowser"); //base name for properties file
         runInfo.append("\n" + String2.makeString('*', 80) +  
             "\nCWDataBrowserReset.constructor " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n");
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n");
       
         //one time things
         verbose = classRB2.getBoolean("verbose", false);
@@ -193,7 +193,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             long startTime = System.currentTimeMillis();
             runInfo.append("\n" + String2.makeString('*', 80) +  
                 "\nCWDataBrowserReset.run " + 
-                Calendar2.getCurrentISODateTimeStringLocal() + "\n");
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n");
 
             //find out what files are available and store in ActiveXxx vectors
             //for each dataset

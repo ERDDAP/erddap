@@ -465,6 +465,10 @@ public class EDDTableFromEDDGrid extends EDDTable{
                     paAr[eddGridNAV + dv].addDouble(gda.getDataValueAsDouble(dv));  
                 if (++cumNRows >= chunkNRows) {
                     if (debugMode) String2.log(tTable.dataToCSVString(5));
+                    if (Thread.currentThread().isInterrupted())
+                        throw new SimpleException("EDDTableFromEDDGrid.getDataForDapQuery" + 
+                            EDStatic.caughtInterrupted);      
+
                     standardizeResultsTable(requestUrl, //applies all constraints
                         userDapQuery, tTable); 
                     tableWriter.writeSome(tTable);
@@ -551,6 +555,10 @@ public class EDDTableFromEDDGrid extends EDDTable{
                     paAr[aav].addDouble(activeEdvga[aav].destinationDouble( 
                         tConstraints.get(aav*3 + 0) + current[aav]));  //baseIndex + offsetIndex
                 if (++cumNRows >= chunkNRows) {
+                    if (Thread.currentThread().isInterrupted())
+                        throw new SimpleException("EDDTableFromDatabase.getDataForDapQuery" + 
+                            EDStatic.caughtInterrupted);
+        
                     standardizeResultsTable(requestUrl, //applies all constraints
                         modifiedUserDapQuery.toString(), tTable); 
                     tableWriter.writeSome(tTable);
@@ -1267,7 +1275,7 @@ expected2 =
     "evaluation by professional marine scientists.\";\n" +
 "    String time_coverage_end \"20.{8}T12:00:00Z\";\n" +    //changes
 "    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
-"    String title \"SST, Blended, Global, EXPERIMENTAL \\(5 Day Composite\\)\";\n" +
+"    String title \"SST, Blended, Global, 2002-2014, EXPERIMENTAL \\(5 Day Composite\\)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  \\}\n" +
 "\\}\n";

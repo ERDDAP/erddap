@@ -806,6 +806,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
             elapsedTime = System.currentTimeMillis();
             while (tFileListPo < tFileNamePA.size()) {
+                if (Thread.currentThread().isInterrupted())
+                    throw new SimpleException("EDDGridFromFiles.init" +
+                        EDStatic.caughtInterrupted);
+
                 int tDirI     = tFileDirIndexPA.get(tFileListPo);
                 String tFileS = tFileNamePA.get(tFileListPo);
                 int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
@@ -1407,6 +1411,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         int nav = sourceAxisAttributes.length;
         int ndv = sourceDataAttributes.length;
         for (int evi = 0; evi < nEvents; evi++) {
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDGridFromFiles.lowUpdate" +
+                        EDStatic.caughtInterrupted);
+
             String fullName = contexts.get(evi);
             String dirName = File2.getDirectory(fullName);
             String fileName = File2.getNameAndExtension(fullName);  //matched to fileNameRegex above
@@ -1598,7 +1606,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         }      
 
         if (verbose)
-            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocal() +
+            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 " nFileEvents=" + nEvents + 
                 " nChangesMade=" + nChanges + 
                 " time=" + (System.currentTimeMillis() - startLowUpdate) + "ms");
@@ -1932,6 +1940,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         int axis0Stop   = tConstraints.get(2);
         int ftRow = 0;
         while (axis0Start <= axis0Stop) {
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDGridFromFiles.getDataForDapQuery" + 
+                    EDStatic.caughtInterrupted);
 
             //find next relevant file
             ftRow = ftStartIndex.binaryFindLastLE(ftRow, nFiles - 1, axis0Start);

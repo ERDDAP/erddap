@@ -80,7 +80,7 @@ public class DasDds {
             logFileName,
             true, String2.logFileDefaultMaxSize);  //append
         String2.log("*** Starting DasDds " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +        
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +        
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());  
         outFile = new FileWriter(outFileName); //default charset

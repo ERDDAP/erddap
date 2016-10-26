@@ -1155,6 +1155,10 @@ public class EDDTableFromCassandra extends EDDTable{
         int stats[] = new int[4]; //all 0's
         for (int pkdRow = 0; pkdRow < pkdTableNRows; pkdRow++) { //chunks will be in sorted order, yea!
 
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDTableFromCassandra.getDataForDapQuery" + 
+                    EDStatic.caughtInterrupted);
+        
             //Make the BoundStatement
             //***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
             //(see https://en.wikipedia.org/wiki/SQL_injection) by using
@@ -2485,8 +2489,8 @@ expected =
 "    String _CoordinateZisPositive \"down\";\n" +
 "    String axis \"Z\";\n" +
 "    Float64 colorBarMaximum 8000.0;\n" +
-"    Float64 colorBarMinimum 0.0;\n" +
-"    String colorBarPalette \"OceanDepth\";\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Depth\";\n" +
 "    String positive \"down\";\n" +
@@ -3128,8 +3132,8 @@ expected =
 "    String _CoordinateZisPositive \"down\";\n" +
 "    String axis \"Z\";\n" +
 "    Float64 colorBarMaximum 8000.0;\n" +
-"    Float64 colorBarMinimum 0.0;\n" +
-"    String colorBarPalette \"OceanDepth\";\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Depth\";\n" +
 "    String positive \"down\";\n" +
@@ -3459,8 +3463,8 @@ expected =
 "    String _CoordinateZisPositive \"down\";\n" +
 "    String axis \"Z\";\n" +
 "    Float64 colorBarMaximum 8000.0;\n" +
-"    Float64 colorBarMinimum 0.0;\n" +
-"    String colorBarPalette \"OceanDepth\";\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Depth\";\n" +
 "    String positive \"down\";\n" +

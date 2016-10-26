@@ -107,7 +107,7 @@ public class Shared extends Thread {
                 oneOf.shortClassName() + ":\n";
             String2.log("\n" + String2.makeString('*', 80) +  
                 "\nShared.run for " + oneOf.shortClassName() + " " + 
-                Calendar2.getCurrentISODateTimeStringLocal());
+                Calendar2.getCurrentISODateTimeStringLocalTZ());
             String2.log(Math2.memoryString());
 
             //update the cached point datasets first, since it takes a long time and since

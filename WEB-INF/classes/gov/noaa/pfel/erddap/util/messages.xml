@@ -207,6 +207,8 @@ Datasets can be categorized in different ways by the values of various metadata 
 <categoryClickHtml>Click on a category (an attribute value) to see a list of relevant datasets.</categoryClickHtml>
 <categoryNotAnOption>When attribute="{0}", value="{1}" is not an option.</categoryNotAnOption>
 
+<caughtInterrupted>caught currentThread().isInterrupted().</caughtInterrupted>
+
 <cfStandardNamesOneWord>
 
 </cfStandardNamesOneWord>
