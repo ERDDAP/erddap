@@ -318,7 +318,7 @@ public abstract class Browser extends HttpServlet {
             resetCount++;
             String2.log("\n" + String2.makeString('*', 80) +  
                 "\n" + methodName + " " + 
-                Calendar2.getCurrentISODateTimeStringLocal());
+                Calendar2.getCurrentISODateTimeStringLocalTZ());
 
             //kludge: for CWBrowserAK, to adjust palette suggested min and max to colder temps for SST data.
             if (oneOf.shortClassName().equals("CWBrowserAK")) {
@@ -384,7 +384,7 @@ public abstract class Browser extends HttpServlet {
             StringBuilder activeDataSets = new StringBuilder();
             activeDataSets.append(
                 "Report from " + oneOf.shortClassName() + " at " + 
-                    Calendar2.getCurrentISODateTimeStringLocal() + " local time\n\n" +
+                    Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n\n" +
                 Math2.memoryString() + "\n" + 
                 nPublicFiles + " files remain in public directory\n  " + 
                   oneOf.fullPublicDirectory() + "\n" +
@@ -439,7 +439,7 @@ public abstract class Browser extends HttpServlet {
             //add active vector datasets
             activeDataSets.append((nextShared.activeVectorOptions().length - 1) + 
                 " Active Vector Datasets in "  + oneOf.shortClassName() + "\n" +
-                "as of " + Calendar2.getCurrentISODateTimeStringLocal() + " local time\n" +
+                "as of " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                 "\n" +
                 "   X        Y     Name\n" +
                 "-------  -------  ---------------------------------------------\n");
@@ -455,7 +455,7 @@ public abstract class Browser extends HttpServlet {
             activeDataSets.append( 
                 (nextShared.activePointDataSetOptions().length - 1) +
                 " Active Point Datasets in " + oneOf.shortClassName() + "\n" +
-                "as of " + Calendar2.getCurrentISODateTimeStringLocal() + " local time\n" +
+                "as of " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                 "\n" +
                 "Dataset\n" +
                 "    Internal First Time           Last Time\n" +
@@ -472,7 +472,7 @@ public abstract class Browser extends HttpServlet {
             //add active point vector datasets
             activeDataSets.append((nextShared.activePointVectorOptions().length - 1) + 
                 " Active Point Vector Datasets in "  + oneOf.shortClassName() + "\n" +
-                "as of " + Calendar2.getCurrentISODateTimeStringLocal() + " local time\n" +
+                "as of " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " \n" +
                 "\n" +
                 "   X        Y     Name\n" +
                 "-------  -------  ---------------------------------------------\n");
@@ -530,7 +530,7 @@ public abstract class Browser extends HttpServlet {
         if (nRequestsInitiated > 0) {
             long time = System.currentTimeMillis() - constructorMillis;
             htmlSB.append("Usage statistics for " + oneOf.shortClassName() + " (" + 
-                    Calendar2.getCurrentISODateTimeStringLocal() + "):\n" +
+                    Calendar2.getCurrentISODateTimeStringLocalTZ() + "):\n" +
                 "  time since instantiation = " + 
                     Calendar2.elapsedTimeString(time) + "\n" +
                 "  number of user sessions created since instantiation = " + nUsers + "\n" +
@@ -744,7 +744,7 @@ public abstract class Browser extends HttpServlet {
         if (oneOf.verbose()) 
             String2.log("\n" + oneOf.shortClassName() + ".getHTMLForm" + 
                 (doTally? "#" + nRequestsInitiated: "") + 
-                "  " + Calendar2.getCurrentISODateTimeStringLocal() + " doTally=" + doTally +
+                "  " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " doTally=" + doTally +
                 " ipAddress=" + ipAddress);
             
         //most of the work (validation, html generation) is done in user.getHTMLForm()

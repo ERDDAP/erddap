@@ -190,7 +190,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *    that should be used for this dataset, or "" (to cause ERDDAP not
      *    to try to generate FGDC metadata for this dataset), or null (to allow
      *    ERDDAP to try to generate FGDC metadata for this dataset).
-     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
+     * @param tIso19115File This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.

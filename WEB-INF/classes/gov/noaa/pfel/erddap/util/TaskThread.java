@@ -100,7 +100,7 @@ public class TaskThread extends Thread {
                 //check isInterrupted
                 if (isInterrupted()) { 
                     String2.log("%%% TaskThread was interrupted at " + 
-                        Calendar2.getCurrentISODateTimeStringLocal());
+                        Calendar2.getCurrentISODateTimeStringLocalTZ());
                     return;
                 }
 
@@ -109,7 +109,7 @@ public class TaskThread extends Thread {
                 lastStartTime = System.currentTimeMillis();  
                 String2.log("\n%%% TaskThread started task #" + EDStatic.nextTask + 
                     " of " + (EDStatic.taskList.size() - 1) +
-                    " at " + Calendar2.getCurrentISODateTimeStringLocal());
+                    " at " + Calendar2.getCurrentISODateTimeStringLocalTZ());
                 EDStatic.nextTask++;
 
                 //get the task settings

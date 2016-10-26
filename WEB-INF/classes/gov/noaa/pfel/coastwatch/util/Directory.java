@@ -2,7 +2,7 @@
  * Directory Copyright 2005, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package gov.noaa.pfel.coastwatch;
+package gov.noaa.pfel.coastwatch.util;
 
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;

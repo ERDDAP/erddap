@@ -235,17 +235,22 @@ public class Erddap extends HttpServlet {
         File2.deleteAllFiles(EDStatic.fullCacheDirectory,  true, false);  //in EDStatic, was true, true, but then subdirs created
         //delete cache subdirs other than starting with "_" (i.e., the dataset dirs, not _test)
         String tFD[] = (new File(EDStatic.fullCacheDirectory)).list();
+        StringBuilder rdErrors = new StringBuilder();
         for (int i = 0; i < tFD.length; i++) {
             String fd = tFD[i];
             if (fd != null && fd.length() > 0 && !fd.startsWith("_") && 
                 File2.isDirectory(EDStatic.fullCacheDirectory + fd)) {
                 try {
-                    RegexFilenameFilter.recursiveDelete(EDStatic.fullCacheDirectory + fd);
+                    rdErrors.append(RegexFilenameFilter.recursiveDelete(EDStatic.fullCacheDirectory + fd));
                 } catch (Throwable t) {
-                    String2.log("WARNING: " + MustBe.throwableToString(t));
+                    rdErrors.append("ERROR in recursiveDelete(" + EDStatic.fullCacheDirectory + fd + "):\n" + 
+                        MustBe.throwableToString(t));
                 }
             }
         }
+        if (rdErrors.length() > 0) 
+            EDStatic.email(EDStatic.emailEverythingToCsv, 
+                "Unable to completely clean " + EDStatic.fullCacheDirectory, rdErrors.toString());
 
         //copy (not rename!) subscriptionsV1.txt to preserve it 
         try {
@@ -457,7 +462,7 @@ public class Erddap extends HttpServlet {
             if (userQuery == null)
                 userQuery = "";
             String2.log("{{{{#" + requestNumber + " " +
-                Calendar2.getCurrentISODateTimeStringLocal() + " " + 
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + " " + 
                 (loggedInAs == null? "(notLoggedIn)" : loggedInAs) + " " +
                 ipAddress + " " +
                 requestUrl + 
@@ -1941,8 +1946,8 @@ writer.write(
             tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
                 "Email Address", "", tEmailAddress, 50, errorMsgSB);
             tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
-                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal(), 
-                tTimestamp, 20, errorMsgSB);
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocalTZ(), 
+                tTimestamp, 26, errorMsgSB);
             if (griddedOption == 0 && tabularOption == 0) 
                 errorMsgSB.append( 
                 "<br>&bull; Error: Please specify (below) how your gridded or tabular data is stored.\n");
@@ -2068,16 +2073,22 @@ widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, "") +
 "table, where there is a column for each type of data and a row for each observation.\n" +
 "This includes:\n" +
 "<ul>\n" +
-"<li>All data that is currently stored in a database.\n" +
-"  <br>(See <a rel=\"help\" href=\"#databases\">Data in Databases</a>\n" +
-"  below for more information.)\n" +
+"<li><a name=\"databases\">Data</a> that is currently stored in a relational database.\n" +
+"  <br>Please read the information about the\n" +
+"  <a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase\">EDDTableFromDatabase</a>\n" +
+"  dataset type in ERDDAP, especially the initial ~2 screens of information which\n" +
+"  talk about the need to create a denormalized table. That may sound crazy. Please\n" +
+"  trust enough to read the rationale for this.\n" +
+"  <br>&nbsp;\n" +
 "<li>All <i>in situ</i> data.\n" +
 "  <br>Examples: a time series from an instrument or several similar instruments,\n" +
 "  profile data from a CTD or a group of CTD's,\n" +
 "  or data collected during a ship's cruise (the similar cuises over several years).\n" +
-"<li>Non-geospatial data that can be represented as a table of data,\n" +
+"  <br>&nbsp;\n" +
+"<li>Non-geospatial data that can be represented as a table of data.\n" +
 "  <br>Examples: data from a laboratory experiment, genetic sequence data,\n" +
 "  <br>or a list of bibliographic references.\n" +
+"  <br>&nbsp;\n" +
 "<li>Collections of other types of files (for example, image or audio files).\n" +
 "  <br>ERDDAP can present the file names in a table and let users\n" +
 "  view or download the files.\n" +
@@ -2106,121 +2117,6 @@ writer.write(
 "Click\n" + 
 widgets.button("submit", "Submit", "", "Submit", "") +
 "to send this information to the ERDDAP administrator and move on to part 2 (of 4).\n" +
-"\n");
-
-//Data in Databases
-writer.write(
-"<br>&nbsp;" +
-"<hr>\n" + 
-"<h2><a name=\"databases\"><font size=\"3\">Additional information about<br></font>Data in Databases</a></h2>\n" +
-"If your data is in a database,\n" +
-"you need to make one,\n" +
-"  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Denormalization\">denormalized<img\n" + 
-"    src=\"images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
-"    title=\"This link to an external web site does not constitute an endorsement.\"/></a>\n" +
-"table or\n" +
-"  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/View_(SQL)\">view<img\n" + 
-"    src=\"images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
-"    title=\"This link to an external web site does not constitute an endorsement.\"/></a>\n" +
-"with all of the data that you want to make available as one dataset in ERDDAP.\n" +
-"For large, complex databases, it may make sense to separate out several chunks\n" +
-"as denormalized tables,\n" +
-"each with a different type of data, which will become separate datasets in ERDDAP.\n" +
-"Talk this over with the administrator of this ERDDAP (<tt>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>).\n" +
-"\n" +
-"<p>Making a denormalized table may sound like a crazy idea to you.\n" +
-"Please trust us. The denormalized table solves several problems:\n" +
-"<ul>\n" +
-"<li>It's vastly easier for users.\n" +
-"  <br>When ERDDAP presents the dataset as one, simple, denormalized table,\n" +
-"  it is very easy for anyone to understand the data. Most users have never\n" +
-"  heard of normalized tables, and very few understand\n" +
-"  keys, foreign keys, or table joins,\n" +
-"  and they almost certainly don't know the details of the different types of joins,\n" +
-"  or how to specify the SQL to do a join (or multiple joins). Using a denormalized\n" +
-"  table avoids all those problems.  This reason alone justifies the use of a\n" +
-"  denormalized table for the presentation of the data to ERDDAP users.\n" +
-"  <br>&nbsp;\n" +
-"<li>You can make changes for ERDDAP without changing your tables.\n" +
-"  <br>ERDDAP has a few requirements that may be different from how you have set\n" +
-"  up your database.\n" +
-"  <br>For example, ERDDAP requires that timestamp data be stored in 'timestamp\n" +
-"  with timezone' fields.\n" +
-"  <br>By making a separate table/view for ERDDAP, you can make these changes\n" +
-"  when you make the denormalized table for ERDDAP.\n" +
-"  Thus, you don't have to make any changes to your tables.\n" +
-"  <br>&nbsp;\n" +
-"<li>ERDDAP will recreate some of the structure of the normalized tables.\n" +
-"  <br>You can specify which columns of data come from the 'outer' tables and therefore\n" +
-"  have a limited number of distinct values.  ERDDAP will collect all of the\n" +
-"  distinct values in each of these columns\n" +
-"  and present them to users in drop-down lists.\n" +
-"  <br>&nbsp;\n" +
-"<li>A denormalized table makes the data hand-off from you to the ERDDAP\n" +
-"  administrator easy.\n" +
-"  <br>You're the expert for this dataset,\n" +
-"  so it makes sense that you make the decisions\n" +
-"  about which tables and which columns to join and how to join them.\n" +
-"  So you don't have to hand us several tables and detailed instructions for\n" +
-"  several joins, you just have to give us access to the denormalized table.\n" +
-"  <br>&nbsp;\n" +
-"<li>A denormalized table allows for efficient access to the data.\n" +
-"  <br>The denormalized form is usually faster to access than the normalized form.\n" +
-"  Joins can be slow. Multiple joins can be very slow.\n" +
-"</ul>\n" +
-"In order to get the data from the database into ERDDAP, there are three options:\n" +
-"<ul>\n" +
-"<li>Recommended Option:\n" +
-"  <br>You can create a comma- or tab-separated-value file with\n" +
-"  the data from the denormalized table.\n" +
-"  <br>If the dataset is huge, then it makes sense to create several files,\n" +
-"  each with a cohesive subset of the denormalized table\n" +
-"  (for example, data from a smaller time range).\n" +
-"  <p>The big advantage here is that ERDDAP will be able to handle user requests\n" +
-"  for data without any further effort by your database.\n" +
-"  So ERDDAP won't be a burden on your database or a security risk.\n" +
-"  This is the best option under almost all circumstances because ERDDAP can usually\n" +
-"  get data from files faster than from a database\n" +
-"  (if we convert the .csv files to .ncCF files). (Part of the reason is that\n" +
-"  ERDDAP+files is a read-only system and doesn't have to deal with making changes\n" +
-"  while providing\n" +
-"  <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/ACID\">ACID<img\n" + 
-"    src=\"images/external.png\" align=\"bottom\" alt=\" (external link)\" \n" +
-"    title=\"This link to an external web site does not constitute an endorsement.\"/></a>\n" +
-"  (Atomicity, Consistency, Isolation, Durability).)\n" +
-"  Also, you probably won't need a separate server since we can store the data\n" +
-"  on one of our RAIDs and access it with an existing ERDDAP on an existing server.\n" +
-"<li>Okay Option:\n" +
-"  <br>You set up a new database on a different computer with just the\n" +
-"  denormalized table.\n" +
-"  <br>Since that database can be a free and open source database like PostgreSQL,\n" +
-"  this option needn't cost a lot.\n" +
-"  <p>The big advantage here are that ERDDAP will be able to handle user requests\n" +
-"  for data without any further effort by your current database.\n" +
-"  So ERDDAP won't be a burden on your current database.\n" +
-"  This also eliminates a lot of security concerns since ERDDAP will not have\n" +
-"  access to your current database.\n" +
-"<li>Discouraged Option:\n" +
-"  <br>We can connect ERDDAP to your current database.\n" +
-"  <br>To do this, you need to:\n" +
-"  <ul>\n" +
-"  <li>Create a separate table or view with the denormalized table of data.\n" +
-"  <li>Create an \"erddap\" user who has read-only access to only the denormalized table(s).\n" +
-"    <br>&nbsp;\n" +
-"  </ul>\n" +
-"  This is an option if the data changes very frequently and you want to give\n" +
-"  ERDDAP users instant access to those changes; however, even so,\n" +
-"  it may make sense to use the file option above and periodically\n" +
-"  (every 30 minutes?) replace the file that has today's data.\n" +
-"  <br>The huge disadvantages of this approach are that ERDDAP user requests will\n" +
-"  probably place an unbearably large burden on your database and that\n" +
-"  the ERDDAP connection is a security risk (although we can minimize/manage the risk).\n" +
-"</ul>\n" +
-"When you talk with the administrator of this ERDDAP (<tt>" +
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</tt>),\n" +
-"you can discuss which of these options\n" +
-"to pursue and how to handle the details.\n" +
 "\n");
 
 //the end of the overall table that constrains the width of the text
@@ -2327,8 +2223,8 @@ writer.write(widgets.endForm());
             tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
                 "Email Address", "?", tEmailAddress, 50, null);
             tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
-                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
-                tTimestamp, 20, null);
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocalTZ() + "?", 
+                tTimestamp, 26, null);
 
             //required
             tTitle          = HtmlWidgets.validateIsSomethingNotTooLong("title",         "", tTitle,             80, errorMsgSB);
@@ -2360,6 +2256,13 @@ writer.write(widgets.endForm());
             boolean isSubmission = "Submit".equals(request.getParameter("Submit"));
             if (isSubmission && errorMsgSB.length() == 0) {
                 //convert the info into psuedo datasets.xml
+                String tcdmType = cdmDataTypes[tCdmDataType]; //Grid, Point, Profile, TimeSeries, TimeSeriesProfile, Trajectory, TrajectoryProfile, Other
+                HashSet<String> keywordHS = new HashSet();
+                EDD.chopUpAndAdd(String2.replaceAll(tInstitution, '/', ' '), keywordHS);
+                EDD.chopUpAndAdd(String2.replaceAll(tTitle,       '/', ' '), keywordHS);
+                EDD.cleanSuggestedKeywords(keywordHS);
+                StringArray tKeywords = new StringArray(keywordHS.iterator()); 
+                tKeywords.sortIgnoreCase();
                 String content = 
 "Data Provider Form - Part 2\n" + //important! Bob's erd.data gmail filter looks for this
 "  from " + fromInfo + "\n" +
@@ -2367,8 +2270,13 @@ writer.write(widgets.endForm());
 "\n" +
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgement\">" + XML.encodeAsXML(tAcknowledgement)           + "</att>\n" +
-"        <att name=\"cdm_data_type\">"   + XML.encodeAsXML(cdmDataTypes[tCdmDataType]) + "</att>\n" +
-"        <att name=\"cdm_timeseries|trajectory|profile_variables\">???</att>\n" +
+"        <att name=\"cdm_data_type\">"   + XML.encodeAsXML(tcdmType) + "</att>\n" +
+(tcdmType.indexOf("TimeSeries") >= 0? 
+"        <att name=\"cdm_timeseries_variables\">???</att>\n" : "") +
+(tcdmType.indexOf("Trajectory") >= 0? 
+"        <att name=\"cdm_trajectory_variables\">???</att>\n" : "") +
+(tcdmType.indexOf("Profile") >= 0? 
+"        <att name=\"cdm_profile_variables\">???</att>\n" : "") +
 "        <att name=\"subsetVariables\">???</att>\n" +
 "        <att name=\"comment\">"         + XML.encodeAsXML(tComment)                   + "</att>\n" +
 "        <att name=\"Conventions\">ACDD-1.3, COARDS, CF-1.6</att>\n" +
@@ -2380,7 +2288,7 @@ writer.write(widgets.endForm());
 "        <att name=\"id\">"              + XML.encodeAsXML(tID)                        + "</att>\n" +
 "        <att name=\"infoUrl\">"         + XML.encodeAsXML(tInfoUrl)                   + "</att>\n" +
 "        <att name=\"institution\">"     + XML.encodeAsXML(tInstitution)               + "</att>\n" +
-"        <!-- att name=\"keywords\"></att -->\n" +
+"        <att name=\"keywords\">"        + XML.encodeAsXML(tKeywords.toString())       + "</att>\n" +
 "        <att name=\"license\">"         + XML.encodeAsXML(tLicense)                   + "</att>\n" +
 "        <att name=\"naming_authority\">"+ XML.encodeAsXML(tNamingAuthority)           + "</att>\n" +
 "        <att name=\"product_version\">" + XML.encodeAsXML(tProductVersion)            + "</att>\n" +
@@ -2789,8 +2697,8 @@ writer.write(widgets.endForm());
             tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
                 "Email Address", "?", tEmailAddress, 50, null);
             tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
-                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
-                tTimestamp, 20, null);
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocalTZ() + "?", 
+                tTimestamp, 26, null);
 
             for (int var = 1; var <= nVars; var++) {     
                 tSourceName[var] = var == 1?
@@ -3130,8 +3038,8 @@ writer.write(widgets.endForm());
             tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
                 "Email Address", "?", tEmailAddress, 50, null);
             tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
-                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
-                tTimestamp, 20, null);
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocalTZ() + "?", 
+                tTimestamp, 26, null);
             tOtherComments = HtmlWidgets.validateNotNullNotTooLong(
                 "Other Comments", "", tOtherComments, 500, errorMsgSB);
             if (errorMsgSB.length() > 0)
@@ -3275,8 +3183,8 @@ writer.write(widgets.endForm());
             tEmailAddress = HtmlWidgets.validateIsSomethingNotTooLong(
                 "Email Address", "?", tEmailAddress, 50, null);
             tTimestamp    = HtmlWidgets.validateIsSomethingNotTooLong(
-                "Timestamp", Calendar2.getCurrentISODateTimeStringLocal() + "?", 
-                tTimestamp, 20, null);
+                "Timestamp", Calendar2.getCurrentISODateTimeStringLocalTZ() + "?", 
+                tTimestamp, 26, null);
 
             //write the HTML
             out = getHtmlOutputStream(request, response);

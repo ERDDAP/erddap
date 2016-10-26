@@ -694,6 +694,20 @@ public class SimpleXMLReader {
         }
     }
 
+    /** NOT FINISHED     
+    public static void testValidity(String fileName, String firstTagName) throws Throwable {
+        String2.log("\nSimpleXMLReader.testValidity...");
+        SimpleXMLReader xmlReader = new SimpleXMLReader(
+            new FileInputStream(fileName), firstTag);
+        while (true) {
+            xmlReader.nextTag();
+            if (xmlReader.stackSize() == 1 && xmlReader.allTags().equals("</" + firstTagName + ">")) {
+                xmlReader.close();
+                return;
+            }
+        }
+    } */
+
     /**
      * This performs a unit test of this class.
      *

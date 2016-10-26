@@ -321,7 +321,7 @@ public class Projects2  {
 
         if (logFileName != null && logFileName.length() > 0)
             String2.setupLog(true, false, logFileName, true, 1000000000);
-        String2.log("*** Projects2.copyHyraxFiles " + Calendar2.getCurrentISODateTimeStringLocal() +
+        String2.log("*** Projects2.copyHyraxFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
             "\nlogFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage() + "\n  " + 
             urlDir + "\n  " + localDir);
@@ -368,7 +368,7 @@ public class Projects2  {
             }
         }
         String2.log("*** Projects2.copyHyraxFiles finished successfully at " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n");
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n");
         if (logFileName != null && logFileName.length() > 0)
             String2.returnLoggingToSystemOut();
     }

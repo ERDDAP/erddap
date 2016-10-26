@@ -181,5 +181,10 @@ public class ExponentialTransformDown implements Transform {
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 
 	}
+
+    public void releaseResources() throws Exception { //Kyle and Bob added
+      mPhysRange = null;
+	  mUserRange = null;
+    }
 }
 

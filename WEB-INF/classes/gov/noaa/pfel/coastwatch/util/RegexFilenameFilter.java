@@ -314,24 +314,40 @@ public class RegexFilenameFilter implements FilenameFilter {
      *
      * @param dir a full file directory (e.g., c:/u00/satellite/temp/)
      *    (trailing slash is optional)
-     * @throws RuntimeException if trouble
+     * @returns all the error messages, or "" if no trouble. 
+     *   If dir is not a directory, this returns "".
      */
-    public static void recursiveDelete(String dir) {
+    public static String recursiveDelete(String dir) {
         if (!File2.isDirectory(dir))
-            return;
+            return "";
+        String msg = String2.ERROR + ": RegexFilenameFilter.recursiveDelete is unable to delete ";
         String names[] = recursiveFullNameList(dir, ".+", true);
         //work backwards, because need to delete files before delete containing directory
+        StringBuilder sb = new StringBuilder();
         for (int i = names.length - 1; i >= 0; i--) {
-            File file = new File(names[i]);
-            String2.log("recursiveDelete " + names[i]);
-            //Math2.sleep(5000);
-            Test.ensureTrue(file.delete(),
-                String2.ERROR + " in RegexFilenameFilter.recursiveDelete: unable to delete " +
-                names[i]);
+            try {
+                File file = new File(names[i]);
+                //Math2.sleep(5000);
+                if (!file.delete()) {
+                    String2.log(msg + names[i]);
+                    sb.append(msg);
+                    sb.append(names[i]);
+                    sb.append('\n');
+                } 
+            } catch (Exception e) {
+                String2.log(msg + names[i]);
+                sb.append(msg);
+                sb.append(names[i]);
+                sb.append('\n');
+            }
         }
-        Test.ensureTrue(File2.delete(dir), 
-            String2.ERROR + " in RegexFilenameFilter.recursiveDelete: unable to delete " + 
-            dir);
+        if (!File2.delete(dir)) {
+            String2.log(msg + dir);
+            sb.append(msg);
+            sb.append(dir);
+            sb.append('\n');
+        } 
+        return sb.toString();
     }
 
 

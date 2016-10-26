@@ -77,7 +77,7 @@ public class DoubleCenterGrids {
             true, String2.logFileDefaultMaxSize);  //append
         String2.log(
             "\n**************************************************************" +
-            "\nDoubleCenterGrids " + Calendar2.getCurrentISODateTimeStringLocal() +
+            "\nDoubleCenterGrids " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
             "\nlogFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());
 

@@ -742,7 +742,7 @@ public abstract class PointDataSet implements Comparable {
         globalAttributes.set("naming_authority", "gov.noaa.pfel.coastwatch");
         globalAttributes.set("cdm_data_type", "Other");
         //skip 'history'
-        String todaysDate = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10) + "Z";
+        String todaysDate = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10) + "Z";
         globalAttributes.set("date_created", todaysDate); 
         globalAttributes.set("creator_name", DataHelper.CW_CREATOR_NAME);
         globalAttributes.set("creator_url", "http://coastwatch.pfeg.noaa.gov");

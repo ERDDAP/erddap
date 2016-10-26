@@ -544,7 +544,7 @@ cdmSuggestion() +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">depth, latitude, longitude, TIDE, ID</att>\n" +
+"        <att name=\"subsetVariables\">depth, latitude, longitude, DPD, PTDY, TIDE, ID</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -3178,7 +3178,7 @@ expected =
         String2.setupLog(true, false, 
             logFile, false, 1000000000);
         String2.log("*** starting bobConsolidateGtsppTgz " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());
         long elapsedTime = System.currentTimeMillis();
@@ -3219,7 +3219,7 @@ expected =
         int month = firstMonth;
         long chunkTime = System.currentTimeMillis();
         while (year <= lastYear) {
-            String2.log("\n*** " + Calendar2.getCurrentISODateTimeStringLocal() +
+            String2.log("\n*** " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 " start processing year=" + year + " month=" + month);
 
             String zMonth  = String2.zeroPad("" + month,       2);
@@ -4013,7 +4013,7 @@ expected =
             //print list of impossible at end of year or end of run
             if (month == 12 || (year == lastYear && month == lastMonth)) {
 
-                String2.log("\n*** " + Calendar2.getCurrentISODateTimeStringLocal() +
+                String2.log("\n*** " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                         " bobConsolidateGtsppTgz finished the chunk ending " + 
                         year + "-" + month + "\n" +
                     "chunkTime=" + 
@@ -5126,7 +5126,7 @@ expected =
         NcHelper.verbose = false;
         String2.setupLog(true, false, logFile, false, 1000000000);
         String2.log("*** starting bobConsolidateWOD(" + type + ", " + previousDownloadDate + ") " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());
 
@@ -14191,7 +14191,7 @@ expected =
             "This test requires testTimeSince19000101 be loaded in the local ERDDAP.");
 
         //set hardFlag
-        String startTime = Calendar2.getCurrentISODateTimeStringLocal();
+        String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
         Math2.sleep(1000);
         String2.writeToFile(EDStatic.fullHardFlagDirectory + "testTimeSince19000101", "test");
         String2.log("I just set a hardFlag for testTimeSince19000101.\n" +
@@ -14206,21 +14206,21 @@ expected =
           "unloading datasetID=testTimeSince19000101\n" +
 "\\*\\*\\* deleting cached dataset info for datasetID=testTimeSince19000101\n" +
 "\n" +
-"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T........)\n" +
+"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n" +
 "\n" +
 "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
-"LoadDatasets.run EDStatic.developmentMode=true ..........T........\n" +
+"LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n" +
 "  datasetsRegex=\\(testTimeSince19000101\\) inputStream=null majorLoad=false";
         
         int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 40)));
         int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
         String tResults = tLog.substring(po, po + expected.length());
         String2.log("tResults=\"\n" + tResults + "\n\"\n");
-        Test.testLinesMatch(tResults, expected, "");
+        Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
         
         //so far so good, tResults matches expected
         int po3 = tResults.indexOf("thread at ");
-        String reloadTime = tResults.substring(po3 + 10, po3 + 29);
+        String reloadTime = tResults.substring(po3 + 10, po3 + 35);
         String2.log(" startTime=" + startTime + "\n" +
                     "reloadTime=" + reloadTime);
         Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");

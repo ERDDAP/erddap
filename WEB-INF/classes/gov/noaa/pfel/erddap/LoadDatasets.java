@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //import org.apache.lucene.analysis.Analyzer;
 //import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -143,7 +145,7 @@ public class LoadDatasets extends Thread {
         try {
             String2.log("\n" + String2.makeString('*', 80) +  
                 "\nLoadDatasets.run EDStatic.developmentMode=" + EDStatic.developmentMode + 
-                " " + Calendar2.getCurrentISODateTimeStringLocal() +
+                " " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 "\n  datasetsRegex=" + datasetsRegex + 
                 " inputStream=" + (inputStream == null? "null" : "something") + 
                 " majorLoad=" + majorLoad);
@@ -211,7 +213,7 @@ public class LoadDatasets extends Thread {
                 //check for interruption 
                 if (isInterrupted()) { 
                     String2.log("*** The LoadDatasets thread was interrupted at " + 
-                        Calendar2.getCurrentISODateTimeStringLocal());
+                        Calendar2.getCurrentISODateTimeStringLocalTZ());
                     xmlReader.close();
                     updateLucene(erddap, changedDatasetIDs);
                     return;
@@ -336,7 +338,7 @@ public class LoadDatasets extends Thread {
                             //check for interruption right before making changes to Erddap
                             if (isInterrupted()) { //this is a likely place to catch interruption
                                 String2.log("*** The LoadDatasets thread was interrupted at " + 
-                                    Calendar2.getCurrentISODateTimeStringLocal());
+                                    Calendar2.getCurrentISODateTimeStringLocalTZ());
                                 xmlReader.close();
                                 updateLucene(erddap, changedDatasetIDs);
                                 lastLuceneUpdate = System.currentTimeMillis();
@@ -397,7 +399,7 @@ public class LoadDatasets extends Thread {
                             //check for interruption right before making changes to Erddap
                             if (isInterrupted()) { //this is a likely place to catch interruption
                                 String tError2 = "*** The LoadDatasets thread was interrupted at " + 
-                                    Calendar2.getCurrentISODateTimeStringLocal();
+                                    Calendar2.getCurrentISODateTimeStringLocalTZ();
                                 String2.log(tError2);
                                 warningsFromLoadDatasets.append(tError2 + "\n\n");
                                 xmlReader.close();
@@ -656,9 +658,9 @@ public class LoadDatasets extends Thread {
 
             //*** print lots of useful information
             long loadDatasetsTime = System.currentTimeMillis() - startTime;
-            String cDateTimeLocal = Calendar2.getCurrentISODateTimeStringLocal();
+            String cDateTimeLocal = Calendar2.getCurrentISODateTimeStringLocalTZ();
             String2.log("\n" + String2.makeString('*', 80) + "\n" + 
-                "LoadDatasets.run finished at " + cDateTimeLocal + "  TOTAL TIME=" + loadDatasetsTime + "\n" +
+                "LoadDatasets.run finished at " + cDateTimeLocal + "  TOTAL TIME=" + loadDatasetsTime + "ms\n" +
                 "  nGridDatasets active=" + EDStatic.nGridDatasets + 
                     " change=" + (EDStatic.nGridDatasets - oldNGrid) + "\n" +
                 "  nTableDatasets active=" + EDStatic.nTableDatasets + 
@@ -682,17 +684,63 @@ public class LoadDatasets extends Thread {
                 System.gc();  Thread.sleep(Math2.gcSleep); //aggressive, before get memoryString()
                 System.gc();  Thread.sleep(Math2.gcSleep); //aggressive, before get memoryString()
                 String memoryString = Math2.memoryString();
+                long using = Math2.getMemoryInUse();
+                long maxUsingMemory = Math.max(Math2.maxUsingMemory, using); 
+
+                int nResponseSucceeded      = String2.getDistributionN(
+                    EDStatic.responseTimesDistributionLoadDatasets);
+                int medianResponseSucceeded = String2.getDistributionMedian(
+                    EDStatic.responseTimesDistributionLoadDatasets, nResponseSucceeded);
+
+                int nResponseFailed      = String2.getDistributionN(
+                    EDStatic.failureTimesDistributionLoadDatasets);
+                int medianResponseFailed = String2.getDistributionMedian(
+                    EDStatic.responseTimesDistributionLoadDatasets, nResponseFailed);
+
+                //get thread info
+                String threadList = MustBe.allStackTraces(true, true);
+                String threadSummary = null;
+                String threadCounts = String2.right("", 22);
+                int po = threadList.indexOf('\n');
+                if (po > 0) {
+                    //e.g., "Number of threads: Tomcat-waiting=9, inotify=1, other=22"
+                    threadSummary = threadList.substring(0, po);
+
+                    Pattern p = Pattern.compile(".*waiting=(\\d+), inotify=(\\d+), other=(\\d+).*");
+                    Matcher m = p.matcher(threadSummary);
+                    if (m.matches()) {
+                        threadCounts = String2.right(m.group(1), 8) +
+                                       String2.right(m.group(2), 8) +
+                                       String2.right(m.group(3), 6);
+                        //System.out.println("**** REGEX MATCHED! " + threadCounts);
+                    } else {
+                        //System.out.println("**** REGEX NOT MATCHED!");
+                    }
+
+                }
+
                 String2.log(
                     "  " + memoryString + " " + Math2.xmxMemoryString() +
                     "\n  change for this run of major Load Datasets (MB) = " + ((Math2.getMemoryInUse() - memoryInUse) / Math2.BytesPerMB) + "\n");
 
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
-                EDStatic.memoryUseLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + memoryString + "\n");
-                EDStatic.failureTimesLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + 
-                    String2.getBriefDistributionStatistics(EDStatic.failureTimesDistributionLoadDatasets) + "\n");
-                EDStatic.responseTimesLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + 
-                    String2.getBriefDistributionStatistics(EDStatic.responseTimesDistributionLoadDatasets) + "\n");
+                EDStatic.majorLoadDatasetsTimeSeriesSB.append(  //header in EDStatic
+//"Major LoadDatasets Time Series: MLD    Datasets Loaded    Requests (medianTime in seconds)     Number of Threads      Memory (MB)\n" +
+//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median)  tomWait inotify other  inUse highWater\n");
+                    "  " + cDateTimeLocal +  
+                    String2.right("" + (loadDatasetsTime/1000 + 1), 7) + "s" + //time
+                    String2.right("" + nTry, 7) + 
+                    String2.right("" + ndf, 6) + 
+                    String2.right("" + (EDStatic.nGridDatasets + EDStatic.nTableDatasets), 7) + //nTotal
+                    String2.right("" + nResponseSucceeded, 10) + " (" +
+                    String2.right("" + medianResponseSucceeded/1000, 6) + ")" +
+                    String2.right("" + nResponseFailed, 8) + " (" +
+                    String2.right("" + medianResponseFailed/1000, 6) + ") " +
+                    threadCounts + 
+                    String2.right("" + using/Math2.BytesPerMB, 7) + //memory using
+                    String2.right("" + maxUsingMemory/Math2.BytesPerMB, 10) + //highWater
+                    "\n");
 
                 //email daily report?
                 GregorianCalendar reportCalendar = Calendar2.newGCalendarLocal();
@@ -701,6 +749,7 @@ public class LoadDatasets extends Thread {
                 //if (true) {  //uncomment to test daily report 
 
                 if (!reportDate.equals(erddap.lastReportDate) && hour >= 7) {
+                    //major reload and daily report!
 
                     erddap.lastReportDate = reportDate;
                     String stars = String2.makeString('*', 70);
@@ -709,10 +758,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.addIntroStatistics(contentSB);
 
                     //append number of active threads
-                    String traces = MustBe.allStackTraces(true, true);
-                    int po = traces.indexOf('\n');
-                    if (po > 0)
-                        contentSB.append(traces.substring(0, po + 1));
+                    if (threadSummary != null)
+                        contentSB.append(threadSummary + "\n");
 
                     contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     contentSB.append(stars + "\nTallied Usage Information\n\n");
@@ -724,7 +771,7 @@ public class LoadDatasets extends Thread {
                     contentSB.append(warningsFromLoadDatasets);
 
                     contentSB.append("\n" + stars + "\n");
-                    contentSB.append(traces);
+                    contentSB.append(threadList);
 
                     //clear all the "since last daily report" tallies
                     EDStatic.tally.remove(".subset (since last daily report)");
@@ -837,18 +884,15 @@ public class LoadDatasets extends Thread {
                     StringBuilder sb = new StringBuilder();
                     EDStatic.addIntroStatistics(sb);
 
-                    //append number of active threads
-                    String traces = MustBe.allStackTraces(true, true);
-                    int po = traces.indexOf('\n');
-                    if (po > 0)
-                        sb.append(traces.substring(0, po + 1));
+                    if (threadSummary != null)
+                        sb.append(threadSummary + "\n");
 
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     EDStatic.addCommonStatistics(sb);
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));
-                    sb.append(traces);
+                    sb.append(threadList);
                     String2.log(sb.toString());
 
                     //email if some threshold is surpassed???
@@ -868,9 +912,7 @@ public class LoadDatasets extends Thread {
                 EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
                 EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.DistributionSize];
                 EDStatic.responseTimesDistributionLoadDatasets = new int[String2.DistributionSize];
-                removeOldLines(EDStatic.memoryUseLoadDatasetsSB,     101, 82);
-                removeOldLines(EDStatic.failureTimesLoadDatasetsSB,  101, 59);
-                removeOldLines(EDStatic.responseTimesLoadDatasetsSB, 101, 59);
+                removeOldLines(EDStatic.majorLoadDatasetsTimeSeriesSB, 101, 132); //nLines, nChar/line
 
                 String2.flushLog(); //useful to have this info ASAP and ensure log is flushed periodically
             }

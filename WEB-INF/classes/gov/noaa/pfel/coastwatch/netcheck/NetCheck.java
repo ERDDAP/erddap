@@ -135,7 +135,7 @@ public class NetCheck  {
         String2.setupLog(true, false, xmlFileName + ".log", 
             true, String2.logFileDefaultMaxSize); //append
         String2.log("*** Starting NetCheck " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage()); 
         HttpTest.verbose = verbose;
@@ -347,7 +347,7 @@ public class NetCheck  {
                 //do a test in a separate thread
                 NetCheckTest netCheckTest = (NetCheckTest)netCheckTests.get(i);
                 if (verbose) String2.log("\n" + netCheckTest.getTitle() + "    "  + 
-                    Calendar2.getCurrentISODateTimeStringLocal());
+                    Calendar2.getCurrentISODateTimeStringLocalTZ());
                 if (netCheckTest instanceof PauseTest) {
                     netCheckTest.test();
                     continue;
@@ -365,7 +365,7 @@ public class NetCheck  {
                 boolean wasStopped = false;
                 if (testThread.isAlive()) {
                     //if (verbose) String2.log("joinMillis=" + joinMillis + " trying to stop thread at " + 
-                    //    Calendar2.getCurrentISODateTimeStringLocal());
+                    //    Calendar2.getCurrentISODateTimeStringLocalTZ());
                     wasStopped = true;
                     testThread.interrupt();
                     testThread.join(5000); //wait 5 seconds more
@@ -460,7 +460,7 @@ public class NetCheck  {
 
             //send the emails
             String footer = "\nEnd of report (" + 
-                Calendar2.getCurrentISODateTimeStringLocal() + 
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + 
                 ").\n";
             String2.log(footer);
             for (int i = 0; i < emailRecipients.size(); i++) {

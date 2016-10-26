@@ -3148,7 +3148,7 @@ public class String2 {
         if (fullFileName.length() == 0) {
             if (oLogFileName != null && oLogFileName.length() > 0)
                 log("*** closed logFile=" + oLogFileName + " at " + 
-                    Calendar2.getCurrentISODateTimeStringLocal());
+                    Calendar2.getCurrentISODateTimeStringLocalTZ());
             return;
         }
 
@@ -3166,7 +3166,7 @@ public class String2 {
             }
         }
 
-log("logFileMaxSize=" + logFileMaxSize);
+        log("logFileMaxSize=" + logFileMaxSize);
     }
 
     /**

@@ -22,6 +22,7 @@ import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
@@ -130,7 +131,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                     try {
                         if (checkSourceData) {
                             //after first time, it's ok if source dataset isn't available
-                            tSourceEdd = (EDDTable)EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
+                            tSourceEdd = (EDDTable)EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
                         } else {
                             String2.log("WARNING!!! checkSourceData is false, so EDDTableCopy datasetID=" + 
                                 tDatasetID + " is not checking the source dataset!");
@@ -193,8 +194,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex,
+        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -207,13 +208,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "", "", //tDefaultDataQuery, tDefaultGraphQuery
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 0, //updateEveryNMillis
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ,
             tFileTableInMemory, 
-            false); //accessibleViaFiles is always false. parent may or may not be.  
+            false, //accessibleViaFiles is always false. parent may or may not be.  
+            tRemoveMVRows);
     }
 
     /**
@@ -815,7 +817,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         longResults.addColumn("error",                           longResultsErrorPa);
 
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(this, dir, "findFastSwimmer");
+            TableWriterAll twa = new TableWriterAll(eddDet, null, dir, "findFastSwimmer");
             if (pt % 100 == 0) String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1027,7 +1029,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         float maxYears = 0;
         StringBuilder results = new StringBuilder();
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(this, dir, "findLongest");
+            TableWriterAll twa = new TableWriterAll(eddDet, null, dir, "findLongest");
             String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1094,7 +1096,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         GridDataAccessor.verbose = false;
         GridDataAccessor.reallyVerbose = false;
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(this, dir, "findUpstream");
+            TableWriterAll twa = new TableWriterAll(eddDet, null, dir, "findUpstream");
             String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1187,7 +1189,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int nBefore = 0;
         int nNaN = 0;
         for (int pt = 0; pt < tags.size(); pt++) { 
-            TableWriterAll twa = new TableWriterAll(this, dir, "findDetBeforeSurg");
+            TableWriterAll twa = new TableWriterAll(eddDet, null, dir, "findDetBeforeSurg");
             String2.log("" + pt);
             try {
                 String tag = tags.get(pt);
@@ -1277,7 +1279,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int nNaN = 0, nG1 = 0;
         for (int pt = 0; pt < tags.size(); pt++) { 
             String2.log("" + pt);
-            TableWriterAll twa = new TableWriterAll(this, dir, "findDetDatePublic");
+            TableWriterAll twa = new TableWriterAll(eddDet, null, dir, "findDetDatePublic");
             try {
                 String tag = tags.get(pt);
                 reallyVerbose = false;
@@ -1342,7 +1344,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int resultsErrorPaI = resultsTable.addColumn("error",                           resultsErrorPa);
 
         //find activation_time is after surgery_time
-        TableWriterAll twa = new TableWriterAll(this, 
+        TableWriterAll twa = new TableWriterAll(tedd, null, 
             "c:/u00/cwatch/erddap2/cache/cPostSurg3/", "findSurgeryBeforeActivation");
         tedd.getDataForDapQuery(loggedInAs, "requestUrl", 
             "unique_tag_id,activation_time,surgery_time,PI", twa);
@@ -1417,7 +1419,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         //need to make the file?
         if (forceCreateNewFile || !File2.isFile(dir + name)) {          
             EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3"); 
-            TableWriterAllWithMetadata twa = new TableWriterAllWithMetadata(this, dir, name);
+            TableWriterAllWithMetadata twa = new TableWriterAllWithMetadata(tedd, null, dir, name);
             tedd.getDataForDapQuery(loggedInAs, "", "unique_tag_id", twa);
             tedd.saveAsFlatNc(dir + name, twa); //internally, it writes to temp file, then rename to cacheFullName
         }
@@ -1956,7 +1958,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     /**
      * This runs the test and other methods in this class.
      *
-     * @param test
+     * @param which
      * @param reallyVerbose
      * @throws Throwable if trouble
      */

@@ -34,7 +34,7 @@ When it is time to resucitate this, merge changes from this into GSHHS.java.
  * bob's c:/programs/gshhs/2009v7/readme.txt).
  * GPL License http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
  */
-public class GSHHS  {
+public class GSHHSNewOnHold  {
 
     /** The characters of the RESOLUTIONS string represent the 5 resolutions
      * in order of decreasing accuracy: "fhilc": 'f'ull, 'h'igh, 'i'ntermediate, 'l'ow, 'c'rude.

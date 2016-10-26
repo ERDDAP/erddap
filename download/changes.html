@@ -42,6 +42,44 @@
 <table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
   cellspacing="0"> 
 
+
+<!-- ****************************************************************************** -->
+<!-- 
+<tr>
+<td>
+<h2><a name="changes1.74">Changes</a> in ERDDAP version 1.74 (released 2016-10-07)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <br>&nbsp;
+  <ul>
+  <li>
+  <li> FLAWED! Announce after fixed.
+    New data file type: Users can now request gridded and tabular data 
+    in the Igor .itx format.
+    <br>&nbsp;
+  </ul>
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <br>&nbsp;
+  <ul>
+  <li>CHANGE: The status.html page and the daily Status Report email now
+    include a "Major LoadDatasets Time Series" section which shows statistics 
+    about ERDDAP as of the end of each major loadDatasets for the last
+    100 major loadDatasets.
+    Thanks to our troublesome RAID.
+  <li>CHANGE: ERDDAP now catches cancelled user requests sooner.
+    And ERDDAP now shuts down faster because the low level threads shut down faster.
+    Thanks to our troublesome RAID.
+  <li>CHANGE: The variables dataTypes suggested by GenerateDatasetsXml 
+    are now be a little better.
+    Thanks to Margaret O'Brien, LTER, and EML.
+  <li>BUG FIX: Time format conversions are now better protected against
+    bad time values.
+    Thanks to NDBC.
+    <br>&nbsp;
+  </ul>
+</ul>
+-->
+
 <!-- ****************************************************************************** -->
 <tr>
 <td>
@@ -251,6 +289,13 @@
 <li>BUG FIX: EDDTableFromFiles had trouble reloading a dataset 
   when one of the columns was a true char column.  
   Thanks to Roland Schweitzer.
+  <br>&nbsp;
+<li>BUG FIX: EDDGridFromNcFilesUnpacked now also converts missing_value and _FillValue
+  to standard values so files with different values can be aggregated.
+  Because of this change, after you install this new version of ERDDAP, please set a 
+  <a rel="help" 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#hardFlag"
+  >hardFlag</a> for each EDDGridFromNcFilesUnpacked dataset in your ERDDAP.
   <br>&nbsp;
 <li>CHANGE: EDDTableFromNcCFFiles can now handle files that have multiple sample_dimension's.
   A given dataset must only use variables that use one of the sample_dimensions.

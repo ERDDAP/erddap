@@ -797,7 +797,7 @@ sb.append(
         String expected =
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMBsstdmday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_LonPM180Child\">\n" +
-"        <!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime (Monthly Composite)\n" +
+"        <!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-now (Monthly Composite)\n" +
 "             minLon=120.0 maxLon=320.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday</sourceUrl>\n" +
 "    </dataset>\n" +
@@ -805,7 +805,7 @@ sb.append(
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMHsstnmday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMHsstnmday_LonPM180Child\">\n" +
-"        <!-- SST, Aqua MODIS, NPP, Nighttime (11 microns), DEPRECATED OLDER VERSION (Monthly Composite)\n" +
+"        <!-- SST, Aqua MODIS, NPP, Nighttime (11 microns), 2003-2013, DEPRECATED OLDER VERSION (Monthly Composite)\n" +
 "             minLon=0.0 maxLon=360.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday</sourceUrl>\n" +
 "    </dataset>\n" +
@@ -813,7 +813,7 @@ sb.append(
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMWchlamday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Child\">\n" +
-"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xc2;&#xb0;, West US, EXPERIMENTAL (Monthly Composite)\n" +
+"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xc2;&#xb0;, West US, EXPERIMENTAL, 2002-now (Monthly Composite)\n" +
 "             minLon=205.0 maxLon=255.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
 "    </dataset>\n" +
@@ -821,7 +821,7 @@ sb.append(
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdPHsstamday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdPHsstamday_LonPM180Child\">\n" +
-"        <!-- SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, Science Quality (Monthly Composite) DEPRECATED\n" +
+"        <!-- SST, Pathfinder Ver 5.0, Day and Night, 4.4 km, Global, 1981-2009, Science Quality (Monthly Composite) DEPRECATED\n" +
 "             minLon=0.02197266 maxLon=359.978 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdPHsstamday</sourceUrl>\n" +
 "    </dataset>\n" +
@@ -1741,7 +1741,7 @@ expected =
             "be loaded in the local ERDDAP.");
 
         //set hardFlag
-        String startTime = Calendar2.getCurrentISODateTimeStringLocal();
+        String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
         Math2.sleep(1000);
         String2.writeToFile(EDStatic.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
         String2.log("I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n" +
@@ -1757,21 +1757,21 @@ expected =
 "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
 "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
 "\n" +
-"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T........)\n" +
+"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n" +
 "\n" +
 "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
-"LoadDatasets.run EDStatic.developmentMode=true ..........T........\n" +
+"LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n" +
 "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
         
         int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 77)));
         int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
         String tResults = tLog.substring(po, po + expected.length());
         String2.log("tResults=\"\n" + tResults + "\n\"\n");
-        Test.testLinesMatch(tResults, expected, "");
+        Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
         
         //so far so good, tResults matches expected
         int po3 = tResults.indexOf("thread at ");
-        String reloadTime = tResults.substring(po3 + 10, po3 + 29);
+        String reloadTime = tResults.substring(po3 + 10, po3 + 35);
         String2.log(" startTime=" + startTime + "\n" +
                     "reloadTime=" + reloadTime);
         Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");

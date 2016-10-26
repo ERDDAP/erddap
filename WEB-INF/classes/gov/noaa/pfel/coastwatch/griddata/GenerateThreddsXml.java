@@ -174,7 +174,7 @@ public class GenerateThreddsXml {
         StringArray allShortTitles = new StringArray();
         StringArray longShortTitles = new StringArray();
         StringArray warnings = new StringArray();
-        String skipTwoName[] = {"G1", "GR", "MW"}; //these are in ERDDAP, but not CWBrowsers
+        String skipTwoName[] = {"G1", "GR", "MW", "VN"}; //these are in ERDDAP, but not CWBrowsers
 
         for (int twoNameI = 0; twoNameI < twoNames.length; twoNameI++) {
             twoName = twoNames[twoNameI];
