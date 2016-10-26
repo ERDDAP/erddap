@@ -277,8 +277,12 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 /* /if 0 files remain (e.g., from significant change), delete empty subdir
                 if (nLocalFiles - nRemoved == 0) {
                     try {
-                        RegexFilenameFilter.recursiveDelete(baseDir);
-                        if (verbose) String2.log(tDatasetID + " copyDirectory is completely empty.");
+                        String err = RegexFilenameFilter.recursiveDelete(baseDir);
+                        if (err.length() == 0) {
+                            if (verbose) String2.log(tDatasetID + " copyDirectory is completely empty.");
+                        } else {
+                            String2.log(err); //or email it to admin?
+                        }
                     } catch (Throwable t) {
                         String2.log(MustBe.throwableToString(t));
                     }

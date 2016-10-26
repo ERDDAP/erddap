@@ -49,5 +49,7 @@ public class PolarGraph extends Graph implements Cloneable {
 
   public void propertyChange(PropertyChangeEvent evt) {
   }
+  public void releaseResources() throws Exception { //Kyle and Bob added
+  }
 }
 

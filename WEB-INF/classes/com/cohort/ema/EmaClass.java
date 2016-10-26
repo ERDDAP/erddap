@@ -787,7 +787,7 @@ public class EmaClass extends HttpServlet {
                   addedHtml +
                   "</form>\n");
         sb.append("<!-- This form generated " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + 
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + 
 //            " by Ema (www.cohort.com)" +
             (startMillis > 0 ? 
                 " in " + tTime + " ms" :
@@ -966,7 +966,7 @@ public class EmaClass extends HttpServlet {
     public String getUsageStatistics() {
         long time = Math.max(1, getTimeSinceInstantiation());
         return "Usage statistics for " + fullClassName + " (" + 
-                Calendar2.getCurrentISODateTimeStringLocal() + "):\n" +
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + "):\n" +
             "  time since instantiation = " + Calendar2.elapsedTimeString(time) + "\n" +
             "  total number of forms created since instantiation = " + totalNFormsCreated + 
                 " (average = " + 

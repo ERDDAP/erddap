@@ -2577,6 +2577,9 @@ public class TestUtil {
         DateTimeFormatter dtf; 
         String2.log("\n*** TestUtil.testCalendar2\n");
 
+        String2.pressEnterToContinue("current time local: " + 
+            Calendar2.getCurrentISODateTimeStringLocalTZ());
+
         //convertToJavaDateTimeFormat(String s) -> yyyy-MM-dd'T'HH:mm:ssZ
         // y-m-d  --> push to Calendar2.parseISODateTime
         Test.ensureEqual(Calendar2.convertToJavaDateTimeFormat("Y-M-D"),               "yyyy-MM-dd", "");
@@ -4463,20 +4466,42 @@ expected =
         Test.ensureEqual(File2.delete(utilDir + "temp.txt"), true, "d");
         Test.ensureEqual(File2.delete(utilDir + "temp3.txt"), true, "e");
 
-        //test int deleteIfOld(String dir, long time) {
-        String2.log("no test for deleteIfOld"); //hard to test without setting up a test directory
- 
         //test getSystemTempDirectory
         //this only works on Bob's computer
         String2.log("File2.getSystemTempDirectory()=" + File2.getSystemTempDirectory());
-        String s = File2.getSystemTempDirectory();
-        if (!s.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
-            !s.equals("C:/Users/Robert/AppData/Local/Temp/")) {
+        String tempDir = File2.getSystemTempDirectory();
+        if (!tempDir.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
+            !tempDir.equals("C:/Users/Robert/AppData/Local/Temp/")) {
             String2.log(
-                "getSystemTempDirectory        =" + s);
+                "getSystemTempDirectory        =" + tempDir);
                 //+ "\n" + String2.Press_CtrlC_or_Enter); 
             Math2.gc(5000); //pause in test to display info
         }
+
+
+        //test int deleteIfOld(String dir, long time) {
+        //make dir in tempDir
+        String tTempDir = File2.addSlash(tempDir) + "comCohortUtilTest/";
+        File2.makeDirectory(tTempDir); //throws Exception
+        //make a file
+        String2.writeToFile(tTempDir + "test1.txt", "test1.txt");
+        Math2.sleep(100);
+        long midTime = System.currentTimeMillis();
+        Math2.sleep(100);
+        //make a file
+        String2.writeToFile(tTempDir + "test2.txt", "test2.txt");
+        Math2.sleep(100);
+        //delete based on midTime
+        Test.ensureEqual(File2.deleteIfOld(tTempDir, midTime, true, true), 1, 
+            "Unexpected nFiles remaining after initial File2.deleteIfOld(" + tTempDir + ")");
+        //delete based on currentTime
+        Test.ensureEqual(File2.deleteIfOld(tTempDir, System.currentTimeMillis(), true, true), 0, 
+            "Unexpected nFiles remaining after initial File2.deleteIfOld(" + tTempDir + ")");
+
+        //delete tTempDir
+        Test.ensureTrue(File2.simpleDelete(tTempDir), "");
+
+        //ensurePrintable
         Test.ensurePrintable("test123\n\t ~¡ÿ", "ensurePrintable");
         try {
             Test.ensurePrintable("test123\n\t ~¡ÿ’", "ensurePrintable");

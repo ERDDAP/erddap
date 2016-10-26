@@ -17224,7 +17224,14 @@ writer.write(
             pa.sort();
             pa.removeDuplicates();  //don't worry about mv's: they reduce to 1 value
             if (pa.size() <= 10 ||
-                pa.size() * nFiles < 200) {
+                pa.size() * nFiles < 10000) {
+
+                //if long strings skip it.
+                if (pa instanceof StringArray) {
+                    if (((StringArray)pa).maxStringLength() > 100)
+                        continue;
+                }
+
                 //tName may not be the final destTable name (e.g., may not be valid) 
                 //This is imperfect (won't catch LLAT), but better than nothing.
                 String tName = destTable.getColumnName(col);

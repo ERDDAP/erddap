@@ -4165,9 +4165,11 @@ public abstract class EDD {
             }
         }
 
-        //convert atts from a podaac dataset from Earth & Space Research
+        //convert non-CF/ACDD att names from a podaac dataset from Earth & Space Research 
+        //  and other common att name mistakes.
         //removed above: GEORANGE, PERIOD, YEAR
         String gfrom[] = {
+            "acknowlegment", //no 'e' after 'g', from various sources
             "COMPANY",       "CONTACT",     "Contact",       
             "Convention",    "convention", 
             "CREATION_DATE", "DATASUBTYPE",
@@ -4175,6 +4177,7 @@ public abstract class EDD {
             "REFERENCE",     "SOURCE",
             "VARIABLE",      "VERSION"};
         String gto[]   = { //if not already specified
+            "acknowlegement", //with 'e' after 'g', as specified by ACDD
             "institution",   "contact",     "contact",       
             "Conventions",   "Conventions",
             "creation_date", "datasubtype",

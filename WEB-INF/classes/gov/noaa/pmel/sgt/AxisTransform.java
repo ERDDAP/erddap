@@ -52,7 +52,7 @@ public abstract class AxisTransform implements Transform {
     public void releaseResources() throws Exception {
         try {  
             changes_ = null;
-            if (JPane.debug) String2.log("sgt.LinearTransform.releaseResources() finished");
+            if (JPane.debug) String2.log("sgt.AxisTransform.releaseResources() finished");
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             if (JPane.debug) 

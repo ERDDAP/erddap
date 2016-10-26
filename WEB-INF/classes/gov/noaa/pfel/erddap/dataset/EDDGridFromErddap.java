@@ -601,7 +601,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         long thisTime = System.currentTimeMillis() - startUpdateMillis;
         cumulativeUpdateTime += thisTime;
         if (reallyVerbose)
-            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocal() +
+            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 " nValuesAdded=" + newValues.size() + 
                 " time=" + thisTime + " updateCount=" + updateCount +
                 " avgTime=" + (cumulativeUpdateTime / updateCount));
@@ -909,7 +909,7 @@ String expected =
 
 expected = 
 "<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_8f86_303c_35ff\" active=\"true\">\n" +
-"    <!-- SST, Blended, Global, EXPERIMENTAL (5 Day Composite) -->\n" +
+"    <!-- SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite) -->\n" +
 "    <sourceUrl>http://localhost:8080/cwexperimental/griddap/erdBAssta5day</sourceUrl>\n" +
 "</dataset>";
 
@@ -932,7 +932,8 @@ expected =
                     "title=" + edd.title() + "\n" +
                     "datasetID=" + edd.datasetID() +
                     "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
-                Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL (Monthly Composite)", "");
+                Test.ensureEqual(edd.title(), 
+                    "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-now (Monthly Composite)", "");
                 Test.ensureEqual(edd.datasetID(), "localhost_bcc8_5919_5e47", "");
                 Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                     "chlorophyll", "");
@@ -1099,7 +1100,7 @@ expected2 =
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "    String time_coverage_end \"20.{8}T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
-"    String title \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"    String title \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
@@ -1347,7 +1348,7 @@ expected2 =
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
         expected2 = 
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 360.0; // double\n" +
 " data:\n" +
 "}\n";
@@ -1593,7 +1594,7 @@ expected2 =
 "  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
 "  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
 "  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
-"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2003-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 224.98437319134158; // double\n" +
 " data:\n" +
 "time =\n" +

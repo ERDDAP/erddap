@@ -1159,6 +1159,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
             elapsedTime = System.currentTimeMillis();
             while (tFileListPo < tFileNamePA.size()) {
+                if (Thread.currentThread().isInterrupted())
+                    throw new SimpleException("EDDTableFromFiles.init" +
+                        EDStatic.caughtInterrupted);
+
                 int tDirI      = tFileDirIndexPA.get(tFileListPo);
                 String tFileS  = tFileNamePA.get(tFileListPo);
                 int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
@@ -1463,19 +1467,23 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 depthIndex = dv;
 
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
-                //EEEK!!! this is weak. It will work for ISO strings, or numeric only.
-                //If other strings, they won't be sorted right.
-                //Need to deal with them above; store minMax as epochSeconds?
-                //String2.log("\nTIME sourceAtt:\n" + tSourceAtt);
-                //String2.log("\nTIME addAtt:\n" + tAddAtt);
-                PrimitiveArray actualRange = PrimitiveArray.factory(
-                    PrimitiveArray.elementStringToClass(sourceDataTypes[dv]), 2, false);
-                actualRange.addString(minMaxTable.getStringData(dv, 0));
-                actualRange.addString(minMaxTable.getStringData(dv, 1));
+                //for ISO strings and numeric source values:
                 if (tAddAtt == null)
                     tAddAtt = new Attributes();
-                tAddAtt.set("actual_range", actualRange);
-                //String2.log(">> actual_range=" + actualRange);
+                String tUnits = tAddAtt.getString("units");
+                if (tUnits == null)
+                    tUnits = tSourceAtt.getString("units");
+                if (tUnits == null)
+                    tUnits = "";
+                if (!tSourceType.equals("String") ||           //numeric times sort correctly                          
+                    tUnits.toLowerCase().startsWith("yyyy-")) {//iso format times sort correctly
+                    PrimitiveArray actualRange = PrimitiveArray.factory(
+                        PrimitiveArray.elementStringToClass(sourceDataTypes[dv]), 2, false);
+                    actualRange.addString(minMaxTable.getStringData(dv, 0));
+                    actualRange.addString(minMaxTable.getStringData(dv, 1));
+                    tAddAtt.set("actual_range", actualRange);
+                    //String2.log(">> actual_range=" + actualRange);
+                }
 
                 if (EDV.TIME_NAME.equals(tDestName)) {
                     //it's the time variable
@@ -2087,6 +2095,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //for each changed file
         int nChanges = 0; //BadFiles or FileTable
         for (int evi = 0; evi < nEvents; evi++) {
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDTableFromFiles.lowUpdate" +
+                        EDStatic.caughtInterrupted);
+
             String fullName = contexts.get(evi);
             String dirName = File2.getDirectory(fullName);
             String fileName = File2.getNameAndExtension(fullName);  //matched to fileNameRegex above
@@ -2309,7 +2321,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }      
 
         if (verbose)
-            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocal() +
+            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 " nFileEvents=" + nEvents + 
                 " nChangesMade=" + nChanges + 
                 " time=" + (System.currentTimeMillis() - startLowUpdate) + "ms");
@@ -3059,6 +3071,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             Table table;
             String tDir = dirList.get(ftDirIndex.get(f));
             String tName = ftFileList.get(f);
+            if (Thread.currentThread().isInterrupted())
+                throw new SimpleException("EDDTableFromFiles.getDataForDapQuery" + 
+                    EDStatic.caughtInterrupted);
+        
             if (reallyVerbose) String2.log("#" + f + " get data from " + tDir + tName);
             try {
                 //file may be unavailable while being updated

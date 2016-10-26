@@ -4907,7 +4907,7 @@ String2.log("Projects.touchUrls is finished.");
         StringArray sa, sa1, sa2;
         Attributes atts;
         int nRows, po;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
         //*** global attributes
         Attributes globatts = new Attributes();
@@ -6209,7 +6209,7 @@ project)
 
         String2.setupLog(true, false, logFile, false, 1000000000);
         String2.log("*** Projects.convertCchdoBottle " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
               " inDir=" + inDir +
             "\noutDir=" + outDir +
             "\nlogFile=" + logFile + "\n" +
@@ -8112,7 +8112,7 @@ towTypesDescription);
      * E.g., &lt;netcdf location="V2013074.L3m_DAY_NPP_CHL_chlor_a_4km" coordValue="15779"/&gt;
      * The string is displayed and put on the clipboard.
      * 
-     * @param fileName  with '*' where YYYYDDD goes.
+     * @param location  with '*' where YYYYDDD goes.
      * @param startIso
      * @param stopIso   (inclusive)
      * @param increment e.g., 1, 7, or 3
@@ -8345,8 +8345,8 @@ towTypesDescription);
             datasetInfo.add(String2.left(datasetIDs.get(i), 21) + " " + result);
             String2.log(datasetInfo.get(i));
         }
-        String2.log("\nLast Times (as of " + Calendar2.getCurrentISODateTimeStringLocal() + 
-            " Pacific time)\n" + datasetInfo.toNewlineString());
+        String2.log("\nLast Times (as of " + Calendar2.getCurrentISODateTimeStringLocalTZ() + 
+            ")\n" + datasetInfo.toNewlineString());
     }
 
     /**

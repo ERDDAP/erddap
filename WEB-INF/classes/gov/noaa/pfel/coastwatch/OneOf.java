@@ -276,7 +276,7 @@ public class OneOf {
                 true, String2.logFileDefaultMaxSize); //append?
             Math2.gcAndWait();  //before get memoryString() in OneOf constructor
             String2.log("*** Constructing OneOf for " + shortClassName + " at " + 
-                Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                 "logFile=" + String2.logFileName() + "\n" +
                 String2.standardHelpAboutMessage());
 
@@ -952,8 +952,9 @@ public class OneOf {
                 }
             }
             if (verbose)
-                String2.log("ensureDataServerIsUp says the data server is UP at " + Calendar2.getCurrentISODateTimeStringLocal() +
-                  "\n  catalogUrl=" + dataServerCatalogUrl);
+                String2.log("ensureDataServerIsUp says the data server is UP at " + 
+                    Calendar2.getCurrentISODateTimeStringLocalTZ() +
+                    "\n  catalogUrl=" + dataServerCatalogUrl);
             
         }
 

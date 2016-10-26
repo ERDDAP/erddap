@@ -120,7 +120,7 @@ public class CWDataBrowser extends EmaClass  {
      */
     public CWDataBrowser() throws Exception {
         super("gov.noaa.pfel.coastwatch.CWDataBrowser"); 
-        constructorDateTime = Calendar2.getCurrentISODateTimeStringLocal();
+        constructorDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
       
         //addAttribute(new EmaLabel(this, "instructions"));
         addAttribute(dataSet      = new EmaSelect(this, "dataSet"));
@@ -332,7 +332,7 @@ public class CWDataBrowser extends EmaClass  {
         //print lots of useful information
         String2.log("\n" + String2.makeString('*', 80) +  
             "\nCWDataBrowser.getDataFromReset " + 
-            Calendar2.getCurrentISODateTimeStringLocal());
+            Calendar2.getCurrentISODateTimeStringLocalTZ());
         String2.log("CWDataBrowser construction was at " + constructorDateTime + ".  Since then...\n");
         String2.log("Data files found which have matching .gif files:");
         String2.log(getUsageStatistics()); 

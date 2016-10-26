@@ -1614,8 +1614,8 @@ directionsForGenerateDatasetsXml() +
     "    Float32 actual_range 0.0, 0.0;\n" +
     "    String axis \"Z\";\n" +
     "    Float64 colorBarMaximum 8000.0;\n" +
-    "    Float64 colorBarMinimum 0.0;\n" +
-    "    String colorBarPalette \"OceanDepth\";\n" +
+    "    Float64 colorBarMinimum -8000.0;\n" +
+    "    String colorBarPalette \"TopographyDepth\";\n" +
     "    String ioos_category \"Location\";\n" +
     "    String long_name \"Depth\";\n" +
     "    String positive \"down\";\n" +

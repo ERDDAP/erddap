@@ -31,6 +31,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -5923,7 +5924,7 @@ expected =
 "    String temporal_range \"month\";\n" +
 "    String time_coverage_end \"1998-02-16T00:00:00Z\";\n" +
 "    String time_coverage_start \"1998-01-16T00:00:00Z\";\n" +
-"    String title \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1°, Global (Monthly Composite)\";\n" +
+"    String title \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1°, Global, 1997-2010 (Monthly Composite)\";\n" +
 "    Float64 Westernmost_Easting -179.9583;\n" +
 "  }\n" +
 "}\n";
@@ -6985,6 +6986,66 @@ expected =
     }
 
 
+    /** 
+     * This looks for resource leaks from repeated attempts to read an 
+     * invalid nc file. 
+     */
+    public static void testBadNcFile(boolean runIncrediblySlowTest) throws Throwable {
+
+        String2.log("\n************* EDDGridFromNcFiles.testBadNcFile() ************\n");
+        testVerboseOff();
+        String fileName = "/git/erddapTest/nc/invalidShortened2.nc";
+        String id = "testBadNcFile";
+
+        //try to read it many times
+        for (int i = 0; i <= 1000000; i++) {
+            if (i % 100000 == 0)
+                String2.log("test #" + i);
+            NetcdfFile ncFile = null; 
+            try {
+                ncFile = NetcdfFile.open(fileName); //this is what fails with 1/10000th file
+                Variable var = ncFile.findVariable("MWcdom");  //size=[1,1,2321,4001]
+                Array array = var.read();          
+                System.out.println("shape=" + Arrays.toString(array.getShape()));
+
+                array = var.read("0,0,0:2000:1000,0:4000:1000");
+                System.out.println("shape=" + Arrays.toString(array.getShape()));
+
+                //System.out.println(array.toString());
+                System.out.println("Shouldn't get here!");
+                String2.pressEnterToContinue("Shouldn't get here!");
+                ncFile.close();
+            } catch (Throwable t) {
+                //expected
+                try {
+                    if (ncFile != null)
+                        ncFile.close();
+                } catch (Throwable t2) {
+                    //don't care
+                }
+                if (i == 0) 
+                    System.out.println("i=0 caught: " + t.toString());
+            }
+        }
+
+        if (runIncrediblySlowTest) {
+            //try to create the dataset many times
+            for (int i = 0; i < 1000000; i++) {
+                try {
+                    EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+                    String2.pressEnterToContinue("Shouldn't get here!");
+                } catch (Throwable t) {
+                    //expected
+                    if (i == 0) 
+                        System.out.println("i=0 caught: " + t.toString());
+                }
+            }
+        }
+
+    }
+
+
+
 
     /**
      * This tests this class.
@@ -7025,6 +7086,7 @@ expected =
         testRemoteThreddsFiles(false); //deleteCachedInfo 
         testMatchAxisNDigits();
         testIgor();
+        testBadNcFile(false);  //runIncrediblySlowTest?
 
         testGenerateDatasetsXmlAwsS3();   //VERY SLOW
         testAwsS3(false);  //deleteCachedInfo   //VERY SLOW

@@ -69,7 +69,7 @@ public class FishBase  {
     public static void convertHtmlToNc(String tableRegex) throws Throwable {
         String htmlDir = "c:/data/FBOther/FBHtml/";
         String ncDir   = "c:/data/FBOther/FBNc/";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
         String2.log("FishBase.convertHtmlToNc " + tableRegex);
         
         //get list of files

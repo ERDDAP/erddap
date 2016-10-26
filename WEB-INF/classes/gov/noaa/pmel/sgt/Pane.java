@@ -505,4 +505,9 @@ public class Pane extends Container implements AbstractPane {
   public void removePropertyChangeListener(PropertyChangeListener l) {
     proxy_.removePropertyChangeListener(l);
   }
+
+  public void releaseResources() throws Exception { //Kyle and Bob added
+    proxy_ = null;
+    bounds = null;
+  }
 }

@@ -2080,26 +2080,44 @@ public abstract class PrimitiveArray {
         int n = size();
         boolean isStringArray = this instanceof StringArray;
         double dar[] = new double[n];
+        boolean hasNaN = false;
+        boolean hasSomething = false;
         for (int i = 0; i < n; i++) {
             double d = getDouble(i);
             dar[i] = d; //set this before s.equals tests
             if (isStringArray) {
                 String s = getString(i);
-                if (s == null || s.equals(".") || s.equals("") || s.equals("NaN"))
+
+                if (s == null || s.equals(".") || s.equals("")) 
+                    //non-specific, skip this row
                     continue;
+
+                if (s.equals("NaN")) {
+                    //non-specific, skip this row
+                    hasNaN = true;
+                    continue;
+                }
+
+                //there's something in this column other than e.g., ""
+                hasSomething = true;
 
                 //if a String is found (not an acceptable "NaN" string above), return original array
                 //look for e.g., serial number (e.g., 0153) with leading 0 that must be kept as string
                 if (s.length() >= 2 && s.charAt(0) == '0' && s.charAt(1) >= '0' && s.charAt(1) <= '9') 
                     return this; 
-                if (Double.isNaN(d))
+
+                if (Double.isNaN(d)) 
                     return this; //it's already a StringArray
 
                 //if string source column with an internal '.', don't let it be an integer type;
                 //always treat as at least a float
-                if (s.indexOf('.') >= 0)
+                if (s.indexOf('.') >= 0) 
                     type = Math.max(type, 4);
+                    //and fall through to code below
+
+                //else fall through to code below
             }
+
             //all types allow NaN
             if (Double.isNaN(d))
                 continue;
@@ -2142,6 +2160,12 @@ public abstract class PrimitiveArray {
                 }
             }
             //otherwise it is a valid double
+        }
+
+        //nothing in a StringArray? 
+        if (isStringArray && !hasSomething) {
+            //hasNaN -> Double  else leave as StringArray
+            return hasNaN? PrimitiveArray.factory(double.class, n, "") : this;
         }
 
         //make array of simplified type

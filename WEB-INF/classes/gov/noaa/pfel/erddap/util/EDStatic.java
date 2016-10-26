@@ -143,7 +143,7 @@ public class EDStatic {
      * <br>1.72 released on 2016-05-12
      * <br>1.74 released on 2016-10-07
      */   
-    public static String erddapVersion = "1.74";  
+    public static String erddapVersion = "1.75";  
 
     /** 
      * This is almost always false.  
@@ -199,13 +199,11 @@ public static boolean developmentMode = false;
 
     public static String datasetsThatFailedToLoad = "";
     public static String errorsDuringMajorReload = "";
-    public static StringBuffer memoryUseLoadDatasetsSB     = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
-    public static StringBuffer failureTimesLoadDatasetsSB  = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
-    public static StringBuffer responseTimesLoadDatasetsSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
+    public static StringBuffer majorLoadDatasetsTimeSeriesSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static HashSet requestBlacklist = null;
     public static volatile int slowDownTroubleMillis = 1000;
     public static long startupMillis = System.currentTimeMillis();
-    public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocal();
+    public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
     public static int nGridDatasets = 0;  
     public static int nTableDatasets = 0;
     public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
@@ -552,6 +550,7 @@ public static boolean developmentMode = false;
         categorySearchDifferentHtml,
         categoryClickHtml,
         categoryNotAnOption,
+        caughtInterrupted,
         clickAccessHtml,
         clickAccess,
         clickBackgroundInfo,
@@ -1211,7 +1210,7 @@ public static boolean developmentMode = false;
 
         String eol = String2.lineSeparator;
         String2.log(eol + "////**** " + erdStartup + eol +
-            "localTime=" + Calendar2.getCurrentISODateTimeStringLocal() + eol +
+            "localTime=" + Calendar2.getCurrentISODateTimeStringLocalTZ() + eol +
             String2.standardHelpAboutMessage());
 
         //**** find contentDirectory
@@ -1766,6 +1765,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         categorySearchDifferentHtml= messages.getNotNothingString("categorySearchDifferentHtml","");
         categoryClickHtml          = messages.getNotNothingString("categoryClickHtml",          "");
         categoryNotAnOption        = messages.getNotNothingString("categoryNotAnOption",        "");
+        caughtInterrupted    = " " + messages.getNotNothingString("caughtInterrupted",          "");
         clickAccessHtml            = messages.getNotNothingString("clickAccessHtml",            "");
         clickAccess                = messages.getNotNothingString("clickAccess",                "");
         clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        "");
@@ -2816,7 +2816,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         //write the email to the log
         String emailAddressesCSSV = String2.toCSSVString(emailAddresses);
-        String localTime = Calendar2.getCurrentISODateTimeStringLocal();
+        String localTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
         boolean logIt = !subject.startsWith(DONT_LOG_THIS_EMAIL);
         if (!logIt) 
             subject = subject.substring(DONT_LOG_THIS_EMAIL.length());
@@ -3043,8 +3043,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      * This adds the common, publicly accessible statistics to the StringBuilder.
      */
     public static void addIntroStatistics(StringBuilder sb) {
-        sb.append("Current time is " + Calendar2.getCurrentISODateTimeStringLocal()  + " local time\n");
-        sb.append("Startup was at  " + startupLocalDateTime + " local time\n");
+        sb.append("Current time is " + Calendar2.getCurrentISODateTimeStringLocalTZ()  + "\n");
+        sb.append("Startup was at  " + startupLocalDateTime + "\n");
         long loadTime = lastMajorLoadDatasetsStopTimeMillis - lastMajorLoadDatasetsStartTimeMillis;
         sb.append("Last major LoadDatasets started " + Calendar2.elapsedTimeString(1000 * 
             Math2.roundToInt((System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis)/1000) ) + 
@@ -3092,9 +3092,11 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      * This adds the common, publicly accessible statistics to the StringBuffer.
      */
     public static void addCommonStatistics(StringBuilder sb) {
-        if (memoryUseLoadDatasetsSB.length() > 0) {
-            sb.append("Memory Use Summary (time series from ends of major LoadDatasets)\n");
-            sb.append(memoryUseLoadDatasetsSB);
+        if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
+            sb.append(
+"Major LoadDatasets Time Series: MLD    Datasets Loaded    Requests (medianTime in seconds)     Number of Threads      Memory (MB)\n" +
+"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median)  tomWait inotify other  inUse highWater\n");
+            sb.append(majorLoadDatasetsTimeSeriesSB);
             sb.append("\n\n");
         }
         
@@ -3110,11 +3112,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         sb.append(String2.getDistributionStatistics(minorLoadDatasetsDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
-        if (failureTimesLoadDatasetsSB.length() > 0) {
-            sb.append("Response Failed Summary (time series from between major LoadDatasets)\n");
-            sb.append(failureTimesLoadDatasetsSB);
-            sb.append('\n');
-        }
         sb.append("Response Failed Time Distribution (since last major LoadDatasets):\n");
         sb.append(String2.getDistributionStatistics(failureTimesDistributionLoadDatasets)); sb.append('\n');
         sb.append("Response Failed Time Distribution (since last Daily Report):\n");
@@ -3123,11 +3120,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         sb.append(String2.getDistributionStatistics(failureTimesDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
-        if (responseTimesLoadDatasetsSB.length() > 0) {
-            sb.append("Response Succeeded Summary (time series from between major LoadDatasets)\n");
-            sb.append(responseTimesLoadDatasetsSB);
-            sb.append('\n');
-        }
         sb.append("Response Succeeded Time Distribution (since last major LoadDatasets):\n");
         sb.append(String2.getDistributionStatistics(responseTimesDistributionLoadDatasets)); sb.append('\n');
         sb.append("Response Succeeded Time Distribution (since last Daily Report):\n");
@@ -3611,7 +3603,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
                     String tError = "\n*** Error: EDStatic is interrupting a stalled taskThread (" +
                         Calendar2.elapsedTimeString(eTime) + " > " + 
                         Calendar2.elapsedTimeString(maxTime) + ") at " + 
-                        Calendar2.getCurrentISODateTimeStringLocal();
+                        Calendar2.getCurrentISODateTimeStringLocalTZ();
                     email(emailEverythingToCsv, "taskThread Stalled", tError);
                     String2.log("\n*** " + tError);
 
@@ -3625,7 +3617,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             } else {
                 //it isn't alive
                 String2.log("\n*** EDStatic noticed that taskThread is finished (" + 
-                    Calendar2.getCurrentISODateTimeStringLocal() + ")\n");
+                    Calendar2.getCurrentISODateTimeStringLocalTZ() + ")\n");
                 lastFinishedTask = nextTask - 1;
                 taskThread = null;
                 return false;
@@ -3653,7 +3645,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
                 taskThread = new TaskThread(nextTask);
                 runningThreads.put(taskThread.getName(), taskThread); 
                 String2.log("\n*** new taskThread started at " + 
-                    Calendar2.getCurrentISODateTimeStringLocal() + " nPendingTasks=" + nPending + "\n");
+                    Calendar2.getCurrentISODateTimeStringLocalTZ() + " nPendingTasks=" + nPending + "\n");
                 taskThread.start();
                 return;            
             } catch (Throwable t) {
@@ -3901,7 +3893,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      * @return true during the initial loadDatasets, else false.
      */
     public static boolean initialLoadDatasets() {
-        return memoryUseLoadDatasetsSB.length() == 0;
+        return majorLoadDatasetsTimeSeriesSB.length() == 0;
     }
 
     /** This is called by the ERDDAP constructor to initialize Lucene. */

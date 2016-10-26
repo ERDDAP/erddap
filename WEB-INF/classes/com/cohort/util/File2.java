@@ -174,9 +174,10 @@ public class File2 {
      * If the dir isn't a directory, nothing happens.
      *
      * @param dir the full name of the directory
+     * @return the return value from the underlying deleteIfOld
      */
-    public static void deleteAllFiles(String dir) {
-        deleteIfOld(dir, Long.MAX_VALUE, false, false);
+    public static int deleteAllFiles(String dir) {
+        return deleteIfOld(dir, Long.MAX_VALUE, false, false);
     }
 
     /**
@@ -187,10 +188,11 @@ public class File2 {
      * @param dir the full name of the directory
      * @param recursive if true, subdirectories are searched, too
      * @param deleteEmptySubdirectories  this is only used if recursive is true
+     * @return the return value from the underlying deleteIfOld
      */
-    public static void deleteAllFiles(String dir, 
+    public static int deleteAllFiles(String dir, 
             boolean recursive, boolean deleteEmptySubdirectories) {
-        deleteIfOld(dir, Long.MAX_VALUE, recursive, deleteEmptySubdirectories);
+        return deleteIfOld(dir, Long.MAX_VALUE, recursive, deleteEmptySubdirectories);
     }
 
     /**
@@ -202,53 +204,74 @@ public class File2 {
      *     Files will a smaller lastModified will be deleted.
      * @param recursive if true, subdirectories are searched, too
      * @param deleteEmptySubdirectories  this is only used if recursive is true
-     * @return number of files that remain (or -1 if trouble)
+     * @return number of files that remain (or -1 if trouble). 
+     *     This won't throw an exception if trouble.
      */
     public static int deleteIfOld(String dir, long time, 
             boolean recursive, boolean deleteEmptySubdirectories) {
         try {
+            String msg = String2.ERROR + ": File2.deleteIfOld is unable to delete ";
             File file = new File(dir);
 
             //make sure it is an existing directory
-            if (!file.isDirectory())
+            if (!file.isDirectory()) {
+                String2.log(String2.ERROR + " in File2.deleteIfOld: dir=" + 
+                    dir + " isn't a directory.");
                 return -1;
+            }
 
             //go through the files and delete old ones
             File files[] = file.listFiles();
             int nRemain = 0;
             int nDir = 0;
             for (int i = 0; i < files.length; i++) {
-                if (files[i].isFile()) {
-                    if (files[i].lastModified() < time) 
-                        files[i].delete();
-                    else if (nRemain != -1)   //once nRemain is -1, it isn't changed
-                        nRemain++;
-                } else if (recursive && files[i].isDirectory()) {
-                    nDir++;
-                    int tnRemain = deleteIfOld(files[i].getAbsolutePath(), time, 
-                        recursive, deleteEmptySubdirectories);
-                    if (tnRemain == -1)
-                        nRemain = -1;
-                    else {
-                        if (nRemain != -1)  //once nRemain is -1, it isn't changed
-                            nRemain += tnRemain;
-                        if (tnRemain == 0 && deleteEmptySubdirectories) {
-                            //String2.log("File2.deleteIfOld is deleting dir=" + files[i].getAbsolutePath() + 
-                            //"\n" + MustBe.stackTrace());
-                            files[i].delete();
+                try {
+                    if (files[i].isFile()) {
+                        if (files[i].lastModified() < time) {
+                            if (!files[i].delete()) {
+                                //unable to delete
+                                String2.log(msg + files[i].getCanonicalPath());
+                                nRemain = -1;                            
+                            }
+                        } else if (nRemain != -1) {   //once nRemain is -1, it isn't changed
+                            nRemain++;
                         }
+                    } else if (recursive && files[i].isDirectory()) {
+                        nDir++;
+                        int tnRemain = deleteIfOld(files[i].getAbsolutePath(), time, 
+                            recursive, deleteEmptySubdirectories);
+                        if (tnRemain == -1)
+                            nRemain = -1;
+                        else {
+                            if (nRemain != -1)  //once nRemain is -1, it isn't changed
+                                nRemain += tnRemain;
+                            if (tnRemain == 0 && deleteEmptySubdirectories) {
+                                //String2.log("File2.deleteIfOld is deleting dir=" + files[i].getAbsolutePath() + 
+                                //"\n" + MustBe.stackTrace());
+                                files[i].delete();
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    try {
+                        nRemain = -1;
+                        String2.log(msg + files[i].getCanonicalPath());
+                    } catch (Exception e2) {
                     }
                 }
             }
-            if (nRemain > 0) String2.log("File2.deleteIfOld(" + dir + 
-                (time == Long.MAX_VALUE? "" : 
-                    ", " + Calendar2.safeEpochSecondsToIsoStringTZ(time / 1000.0, "" + time)) +
-                ") nDir=" + nDir + 
-                " nDeleted=" + (files.length - nDir + nRemain) + 
-                " nRemain=" + nRemain);
+            int nDeleted = files.length - nDir + nRemain;
+            if (nDir != 0 || nDeleted != 0 || nRemain != 0) 
+                String2.log("File2.deleteIfOld(" + dir + 
+                    (time == Long.MAX_VALUE? "" : 
+                        ", " + Calendar2.safeEpochSecondsToIsoStringTZ(time / 1000.0, "" + time)) +
+                    ") nDir=" + nDir + 
+                    " nDeleted=" + nDeleted + 
+                    " nRemain=" + (nRemain < 0? String2.ERROR : nRemain));
             return nRemain;
-        } catch (Exception e) {
-            String2.log(MustBe.throwable("File2.deleteIfOld(" + dir + ", " + time + ")", e));
+        } catch (Exception e3) {
+            String2.log(MustBe.throwable(String2.ERROR + " in File2.deleteIfOld(" + 
+                dir + ", " + time + ")", e3));
             return -1;
         }
     }

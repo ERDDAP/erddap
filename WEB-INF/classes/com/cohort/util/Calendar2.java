@@ -109,6 +109,9 @@ public class Calendar2 {
     /** special Formats for ISO date time without a suffix (assumed to be UTC) */
     public final static String ISO8601T_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss"; 
     public final static String ISO8601T3_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"; 
+    public final static String ISO8601TTZZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZZ"; //ZZ shows offset with a colon
+    public final static DateTimeFormatter ISO8601TTZZ_FORMATTER = 
+         DateTimeFormat.forPattern(ISO8601TTZZ_FORMAT); //.withZone(DateTimeZone.UTC);
 
     /** special case format supports suffix 'Z' or +/-HH:MM */
     public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
@@ -742,9 +745,10 @@ public class Calendar2 {
      * @throws RuntimeException if trouble (e.g., seconds is NaN)
      */
     public static GregorianCalendar epochSecondsToGc(double seconds) {
-        if (!Math2.isFinite(seconds))
-            Test.error(String2.ERROR + " in epochSecondsToGc: seconds value is NaN!");
-        return newGCalendarZulu(Math2.roundToLong(seconds * 1000.0));
+        long millis = Math2.roundToLong(seconds * 1000);
+        if (millis == Long.MAX_VALUE)
+            Test.error(String2.ERROR + " in epochSecondsToGc: millis is NaN!");
+        return newGCalendarZulu(millis);
     }
 
     /**
@@ -778,27 +782,30 @@ public class Calendar2 {
      * @throws RuntimeException if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringT(double seconds) {
-        if (!Math2.isFinite(seconds))
-            Test.error(String2.ERROR + " in epochSecondsToIsoStringT: seconds is NaN!");
-        return millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
+        long millis = Math2.roundToLong(seconds * 1000);
+        if (millis == Long.MAX_VALUE)
+            Test.error(String2.ERROR + " in epochSecondsToIsoStringT: millis is NaN!");
+        return millisToIsoZuluString(millis);
     }
 
     /**
      * This is like epochSecondsToIsoStringT, but includes millis.
      */
     public static String epochSecondsToIsoStringT3(double seconds) {
-        if (!Math2.isFinite(seconds))
-            Test.error(String2.ERROR + " in epochSecondsToIsoStringT3: seconds is NaN!");
-        return millisToIso3ZuluString(Math2.roundToLong(seconds * 1000));
+        long millis = Math2.roundToLong(seconds * 1000);
+        if (millis == Long.MAX_VALUE)
+            Test.error(String2.ERROR + " in epochSecondsToIsoStringT3: millis is NaN!");
+        return millisToIso3ZuluString(millis);
     }
 
     /**
      * This is like epochSecondsToIsoStringT, but returns NaNString if seconds is NaN.
      */
     public static String safeEpochSecondsToIsoStringT(double seconds, String NaNString) {
-        return Math2.isFinite(seconds)? 
-            millisToIsoZuluString(Math2.roundToLong(seconds * 1000)) :
-            NaNString;
+        long millis = Math2.roundToLong(seconds * 1000);
+        return millis == Long.MAX_VALUE?
+            NaNString :
+            millisToIsoZuluString(millis);
     }
 
     /**
@@ -806,18 +813,20 @@ public class Calendar2 {
      * and returns NaNString if seconds is NaN..
      */
     public static String safeEpochSecondsToIsoStringTZ(double seconds, String NaNString) {
-        return Math2.isFinite(seconds)? 
-            millisToIsoZuluString(Math2.roundToLong(seconds * 1000)) + "Z" :
-            NaNString;
+        long millis = Math2.roundToLong(seconds * 1000);
+        return millis == Long.MAX_VALUE?
+            NaNString :
+            millisToIsoZuluString(millis) + "Z";
     }
 
     /**
      * This is like epochSecondsToIsoStringT3, but returns NaNString if seconds is NaN.
      */
     public static String safeEpochSecondsToIsoStringT3(double seconds, String NaNString) {
-        return Math2.isFinite(seconds)? 
-            millisToIso3ZuluString(Math2.roundToLong(seconds * 1000)) :
-            NaNString;
+        long millis = Math2.roundToLong(seconds * 1000);
+        return millis == Long.MAX_VALUE?
+            NaNString : 
+            millisToIso3ZuluString(millis);
     }
 
     /**
@@ -825,9 +834,10 @@ public class Calendar2 {
      * and returns NaNString if seconds is NaN..
      */
     public static String safeEpochSecondsToIsoStringT3Z(double seconds, String NaNString) {
-        return Math2.isFinite(seconds)? 
-            millisToIso3ZuluString(Math2.roundToLong(seconds * 1000)) + "Z" :
-            NaNString;
+        long millis = Math2.roundToLong(seconds * 1000);
+        return millis == Long.MAX_VALUE?
+            NaNString :
+            millisToIso3ZuluString(millis) + "Z";
     }
 
     /**
@@ -842,12 +852,11 @@ public class Calendar2 {
     public static String epochSecondsToLimitedIsoStringT(String time_precision,
         double seconds, String NaNString) {
 
-        if (!Math2.isFinite(seconds)) 
-            return NaNString;
-
         //should be floor(?), but round avoids issues with computer precision
-        return limitedFormatAsISODateTimeT(time_precision, 
-            newGCalendarZulu(Math2.roundToLong(seconds * 1000))); 
+        long millis = Math2.roundToLong(seconds * 1000);
+        return millis == Long.MAX_VALUE?
+            NaNString :
+            limitedFormatAsISODateTimeT(time_precision, newGCalendarZulu(millis)); 
     }
 
     /**
@@ -863,9 +872,11 @@ public class Calendar2 {
      * @throws RuntimeException if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringSpace(double seconds) {
-        if (!Math2.isFinite(seconds))
-            Test.error(String2.ERROR + " in epochSecondsToIsoStringSpace: seconds value is NaN!");
-        String s = millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
+        long millis = Math2.roundToLong(seconds * 1000);
+        if (millis == Long.MAX_VALUE)
+            Test.error(String2.ERROR + " in epochSecondsToIsoStringSpace: millis is NaN!");
+
+        String s = millisToIsoZuluString(millis);
         return String2.replaceAll(s, 'T', ' ');
     }
 
@@ -1161,7 +1172,7 @@ public class Calendar2 {
      * [was calendarToString]
      *
      * @param gc
-     * @return the corresponding dateTime String (without the trailing Z).
+     * @return the corresponding dateTime String (without timezone info).
      * @throws RuntimeException if trouble (e.g., gc is null)
      */
     public static String formatAsISODateTimeT(GregorianCalendar gc) {
@@ -1174,6 +1185,17 @@ public class Calendar2 {
         //synchronized (isoDateTimeFormat) {
         //    return isoDateTimeFormat.format(gc.getTime());
         //}
+    }
+
+    /**
+     * This is like formatAsISODateTimeT, but WITH time zone indicator.
+     *
+     * @param gc
+     * @return the corresponding dateTime String (WITHh timezone info).
+     * @throws RuntimeException if trouble (e.g., gc is null)
+     */
+    public static String formatAsISODateTimeTTZ(GregorianCalendar gc) {
+        return ISO8601TTZZ_FORMATTER.print(gc.getTimeInMillis());
     }
 
     /**
@@ -1999,6 +2021,15 @@ public class Calendar2 {
     /**
      * This returns the current local dateTime in ISO T format.
      *
+     * @return the current local dateTime in ISO T format (WITH timezone id)
+     */
+    public static String getCurrentISODateTimeStringLocalTZ() {
+        return formatAsISODateTimeTTZ(newGCalendarLocal());
+    }
+
+    /**
+     * This returns the current local dateTime in ISO T format.
+     *
      * @return the current local dateTime in ISO T format (with no timezone id)
      */
     public static String getCurrentISODateTimeStringLocal() {
@@ -2524,7 +2555,11 @@ public class Calendar2 {
      */
     public static GregorianCalendar roundToIdealGC(double epochSeconds, 
         int idealN, int idealUnits) {
-        GregorianCalendar gc = newGCalendarZulu(Math2.roundToLong(epochSeconds * 1000));
+        long millis = Math2.roundToLong(epochSeconds * 1000);
+        if (millis == Long.MAX_VALUE)
+            Test.error(String2.ERROR + " in roundToIdealGC: millis is NaN!");
+
+        GregorianCalendar gc = newGCalendarZulu(millis);
         if (idealUnits == 5) { //year
             double td = getYear(gc) + gc.get(MONTH) / 12.0; //month is 0..
             int ti = Math2.roundToInt(td / idealN) * idealN; //round to nearest n units

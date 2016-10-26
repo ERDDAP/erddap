@@ -463,7 +463,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>site-url</sourceName>\n" +
 "        <destinationName>site_url</destinationName>\n" +
-"        <dataType>byte</dataType>\n" +
+"        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +

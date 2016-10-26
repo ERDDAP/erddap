@@ -358,8 +358,8 @@ public class Math2 {
         long using = getMemoryInUse();
         maxUsingMemory = Math.max(maxUsingMemory, using); //before gc
 
-        return "Memory: currently using " + String2.right("" + using/BytesPerMB, 7) + 
-            " MB (high water mark = " + String2.right("" + maxUsingMemory/BytesPerMB, 7) + 
+        return "MemoryInUse=" + String2.right("" + using/BytesPerMB, 6) + 
+            " MB (highWaterMark=" + String2.right("" + maxUsingMemory/BytesPerMB, 6) + 
             " MB)";
     }
 

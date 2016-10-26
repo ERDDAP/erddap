@@ -367,4 +367,14 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
       return new Range2D(start, end);
     }
   }
+  public void releaseResources() throws Exception { //Kyle and Bob added
+      title_ = null;
+      keyTitle_ = null;
+      id_ = null;
+      xArray_ = null;
+      yArray_ = null;
+      tArray_ = null;
+      zArray_ = null;
+      assocArray_ = null;
+  }
 }

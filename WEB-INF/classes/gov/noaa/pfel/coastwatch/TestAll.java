@@ -80,7 +80,7 @@ public class TestAll  {
             false, 1000000000); //append?
         EDD.testVerboseOn();
         String2.log("*** Starting TestAll " + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" + 
+            Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" + 
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage() + "\n" +
             "This must be run from a command line window because the SFTP and email tests ask for passwords.\n");
@@ -145,14 +145,24 @@ public class TestAll  {
 //          null, null, null);
 //      String2.log(table.toCSVString());
 //    }
+//        { //find cwwcNDBCMet dataset with insane min time  (it is 41002 !)
+//            Table table = new Table();
+//            table.readFlatNc("/downloads/fileTable.nc", null, 0); //it logs fileName and nRows=
+//            table.justKeepColumns(new String[]{"fileName","TIME_min_"}, "");
+//            table.tryToApplyConstraintsAndKeep(0, 
+//                StringArray.fromCSV("TIME_min_"), 
+//                StringArray.fromCSV("<"),
+//                StringArray.fromCSV("0"));
+//            String2.log(table.dataToCSVString());
+//        }
 //    Table.testReadGocdNcCF();
 //    Table.testOpendapSequence();
 
 //    Table.debugMode = true; DasDds.main(new String[]{
-//          "knb_lter_sbc_1_t1",
+//          "knb_lter_sbc_14_t1",
+//          "NTL_DEIMS_5672_t1",
 //          "ChukchiSea_454a_037a_fcf4", //for Kevin, SocketException: Connection reset
-//          "testFromErddap",
-//          "noaaSPSE", 
+//          "noaaOSP", 
 //        "-verbose"});
 
 /*    if (false) { //one time fixup of scrippsGliders
@@ -167,7 +177,8 @@ public class TestAll  {
         }
     } /* */
 
-//    String2.log(NcHelper.dumpString("/u00/satellite/MPOC/1day/A2003001.L3m_DAY_POC_poc_4km.nc", false));
+//    String2.log(NcHelper.dumpString("/git/erddapTest/nc/invalidShortened.nc", false));
+//    String2.log(NcHelper.dumpString("/u00/satellite/VN/chla/1day/V2012003_D1_WW00_chlor_a.nc", false));
 //    String2.log(NcHelper.dumpString("/data/kerfoot/ce05/deployment0002_CE05MOAS-GL381-05-CTDGVM000-telemetered-ctdgv_m_glider_instrument_20160506T224259.276030-20160529T234932.889860.nc", "time")); 
 //    String2.log(NcHelper.dumpString("/data/kerfoot/ce05/deployment0002_CE05MOAS-GL381-05-CTDGVM000-telemetered-ctdgv_m_glider_instrument_20160530T010752.621670-20160621T054549.394040.nc", "time")); 
 //    String2.log(NcHelper.dumpString("/u00/data/points/trinidadCTD/CoralSea_CS150513.nc", "maxStationNameLength")); //short data
@@ -317,6 +328,14 @@ public class TestAll  {
 //    String2.log(EDDGridFromErddap.generateDatasetsXml("http://upwell.pfeg.noaa.gov/erddap")); 
 //    String2.log(EDDGridFromErddap.generateDatasetsXml("http://oos.soest.hawaii.edu/erddap", true)); 
 //    String2.log(EDDGridFromErddap.generateDatasetsXml("http://cwcgom.aoml.noaa.gov/erddap", true)); 
+//
+      //create an invalid .nc file
+//    byte tb[] = SSR.getFileBytes("/u00/satellite/MW/cdom/1day/MW2012072_2012072_cdom.nc");
+//    FileOutputStream fos = new FileOutputStream("/git/erddapTest/nc/invalidShortened2.nc");
+//    fos.write(tb, 0, tb.length / 10000);
+//    fos.close();
+//
+//    EDDGridFromNcFiles.testBadNcFile(false); //runIncrediblySlowTest
 //    EDDGridFromNcFiles.testIgor();
 //    EDDGridFromNcFiles.testSpecialAxis0Time();
 //    EDDGridFromNcFiles.testSpecialAxis0FileNameInt();
@@ -622,7 +641,7 @@ public class TestAll  {
 //EDDTableCopyPost.run(-1); //-1=allTests, 0..6
 
 //    String2.log(EDDTableFromAsciiFiles.generateDatasetsXml(
-//        "/u00/data/points/austin/", "systemPlatformSensingElement\\.csv", "",
+//        "/u00/data/points/austin/", "EOS\\.csv", "",
 //        "", 1, 2, -1, //colNamesRow, firstDataRow, reloadEvery
 //        "", "", "", "", "",
 //        "", // tSortFilesBySourceNames, 
@@ -670,6 +689,7 @@ public class TestAll  {
 //         "/u00/data/points/inportXml/NOAA/NMFS/SWFSC/inport/xml/11132.xml", ".*", ".*", "/u00/data/points/inportData/swfsc/"));
 //    EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort();
 //    EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort2();
+//    EDDTableFromAsciiFiles.testTimeRange2();
 //    EDD.generateInPortXmlFilesForCoastwatchErddap();
 
 //    EDDTableFromAsciiFiles.testBasic2();
@@ -725,6 +745,14 @@ public class TestAll  {
 //        "https://lter.limnology.wisc.edu/sites/default/files/ntl/eml/129.xml",
 //        true, "lterNtl", "US/Central"); //useLocalFiles, accessibleTo, localTimeZone
 //    Table.debugMode = true; DasDds.main(new String[]{"NTL_DEIMS_5672_t1", "-verbose"});
+
+//    make flag files for all knb datasets
+//    String tsa[] = String2.readLinesFromFile("/downloads/allKnb.txt", "", 1);
+//    String2.log("allKnb n=" + tsa.length);
+//    for (int tsai = 0; tsai < tsa.length; tsai++)
+//        String2.writeToFile("/flag/" + tsa[tsai], "flag");
+
+
 
 //    EDDTableFromAsciiFiles.testTimeMV();
 
@@ -1028,6 +1056,11 @@ public class TestAll  {
 //        "\nImageIO Writers: " + String2.toCSSVString(ImageIO.getWriterFormatNames()));
 //    LRUCache.test();
 //    MakeErdJavaZip.makeCwhdfToNcZip();
+
+//    test if a string matches a regex
+//        Pattern p = Pattern.compile(".*waiting=(\\d+), inotify=(\\d+), other=(\\d+).*"); //regex
+//        Matcher m = p.matcher("Number of threads: Tomcat-waiting=6, inotify=1, other=23"); //string
+//        String2.log("matches=" + m.matches());
 //
 //    NDBC MONTHLY UPDATES.   NEXT TIME: be stricter and remove 99.9 and 98.7 data values.  
 //      !!!check pxoc1. make historic file if needed.
@@ -1199,6 +1232,7 @@ public class TestAll  {
 //      String2.log(SSR.minimalPercentEncode("sst[(1870-01-01):1:(2011-07-01T00:00:00Z)][(29.5):1:(29.5)][(-179.5):1:(179.5)]"));
 //    SSR.testPost();
 //
+//
 //    String touchThese[] = {
 //    };
 //    for (int i = 0; i < touchThese.length; i++)
@@ -1245,6 +1279,7 @@ public class TestAll  {
 //    TestNCDump.main(new String[]{"c:/temp/CM2006171_230000h_u25h.nc"});
 //    TestSSR.testEmail();
 //    TestSSR.testEmail("bob.simons@noaa.gov", "");  //remove password after testing!!!
+//    TestUtil.testFile2();
 //    TestUtil.testMath2();
 //    TestUtil.testString2canonical();
 //    TestUtil.testString2();
