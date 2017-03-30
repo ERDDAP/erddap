@@ -6505,11 +6505,31 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (not accessible via WMS).");
                 int dvi = String2.indexOf(eddGrid.dataVariableDestinationNames(), destVar);
-                if (dvi < 0)
-                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
-                        " is invalid (variable not found).");
+                boolean drawVectors = false;
+                String xVar = null;
+                String yVar = null;
+                if (dvi < 0){
+                	if (!(destVar.startsWith("vectors[") && destVar.endsWith("]"))) {
+                        throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
+                                " is invalid (variable not found).");
+                	}
+                	String[] parts = destVar.substring("vectors[".length(), destVar.length()-1).split("\\|");
+                	if(parts.length != 2){
+                        throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
+                                " is invalid (variable not found).");                		
+                	}
+                	xVar = destVar = parts[0];
+                	yVar = parts[1];
+                	int xvi = dvi = String2.indexOf(eddGrid.dataVariableDestinationNames(), xVar);
+                	int yvi = String2.indexOf(eddGrid.dataVariableDestinationNames(), yVar);
+                	if (xvi < 0 || yvi < 0) {
+                        throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
+                                " is invalid (variable not found).");                		                		
+                	}
+                	drawVectors = true;
+                }
                 EDV tDataVariable = eddGrid.dataVariables()[dvi];
-                if (!tDataVariable.hasColorBarMinMax())
+                if (drawVectors == false && !tDataVariable.hasColorBarMinMax())
                     throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (variable doesn't have valid colorBarMinimum/Maximum).");
 
@@ -6536,7 +6556,13 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         int last = av.destinationToClosestSourceIndex(maxx);
                         if (first > last) {int ti = first; first = last; last = ti;}
                         int stride = DataHelper.findStride(last - first + 1, width);
-                        tQuery.append("[" + first + ":" + stride + ":" + last + "]");
+                        if (drawVectors){
+                        	double x1 = minx < av.destinationMin() ? av.destinationMin(): minx;
+                        	double x2 = maxx > av.destinationMax() ? av.destinationMax(): maxx;
+                            tQuery.append("[(" + x1 + "):" + stride + ":(" + x2 + ")]");
+                        } else {
+                            tQuery.append("[" + first + ":" + stride + ":" + last + "]");
+                        }
                         continue;
                     }
 
@@ -6551,7 +6577,13 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         int last = av.destinationToClosestSourceIndex(maxy);
                         if (first > last) {int ti = first; first = last; last = ti;}
                         int stride = DataHelper.findStride(last - first + 1, height);
-                        tQuery.append("[" + first + ":" + stride + ":" + last + "]");
+                        if (drawVectors){
+                        	double y1 = miny < av.destinationMin() ? av.destinationMin(): miny;
+                        	double y2 = maxy > av.destinationMax() ? av.destinationMax(): maxy;
+                            tQuery.append("[(" + y1 + "):" + stride + ":(" + y2 + ")]");
+                        } else {
+                            tQuery.append("[" + first + ":" + stride + ":" + last + "]");
+                        }
                         continue;
                     }
 
@@ -6563,10 +6595,15 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         "dim_" + ava[avi].destinationName().toLowerCase(); //make it case-insensitive for queryMap.get
                     String tValueS = queryMap.get(tAvName);
                     if (tValueS == null || 
-                        (avi == eddGrid.timeIndex() && tValueS.toLowerCase().equals("current")))
+                        (avi == eddGrid.timeIndex() && tValueS.toLowerCase().equals("current"))){
                         //default is always the last value
-                        tQuery.append("[" + (ava[avi].sourceValues().size() - 1) + "]");
-                    else {
+                        if (drawVectors){
+                            tQuery.append("[(" + (ava[avi].sourceValues().size() - 1) + ")]");
+                        } else {
+                            tQuery.append("[" + (ava[avi].sourceValues().size() - 1) + "]");
+                        }
+                    	
+                    } else {
                         double tValueD = av.destinationToDouble(tValueS); //needed in particular for iso time -> epoch seconds
                         if (avi == eddGrid.depthIndex())
                             tValueD = -tValueD;
@@ -6578,10 +6615,40 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                 " for " + tAvName);
                             continue LAYER;
                         }
-                        int first = av.destinationToClosestSourceIndex(tValueD);
-                        tQuery.append("[" + first + "]");
+                        if (drawVectors) {
+                            tQuery.append("[(" + tValueS + ")]");
+                        } else {
+                            int first = av.destinationToClosestSourceIndex(tValueD);
+                            tQuery.append("[" + first + "]");
+                        }                        
                     }
                 }
+                if(drawVectors){
+                    String tQuery2 = tQuery.toString().replaceFirst(xVar, yVar);
+                    tQuery.append(',').append(tQuery2);
+                    if(layers.length != 1){
+                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] +
+                            " is invalid (vectors cannot be combined with other layers).");
+                    }
+                    //TODO: send http redirect now.
+                    String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+                    String redirectUrl = tErddapUrl + "/griddap/" + datasetID + ".transparentPng?"+tQuery
+                                    +"&.draw=vectors"
+                                    +"&.vars="
+                                    +ava[eddGrid.lonIndex()].destinationName() + "|"
+                                    +ava[eddGrid.latIndex()].destinationName() + "|"
+                                    +xVar + "|" + yVar
+                                    +"&.color=0x000000&.bgColor=0xffccccff"
+                                    +"&.size="+width+"|"+height
+                                    +"&.xRange="+minx+"|"+maxx
+                                    +"&.yRange="+miny+"|"+maxy;
+                    String2.log(redirectUrl);
+                    sendRedirect(response, redirectUrl);
+                return;
+
+            }
+
+                
 
                 //get the data
                 GridDataAccessor gda = new GridDataAccessor(
