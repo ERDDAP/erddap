@@ -59,7 +59,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -75,7 +76,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
@@ -218,7 +219,9 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             String colName = dataSourceTable.getColumnName(col);
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
             dataAddTable.addColumn(col, colName,
-                (PrimitiveArray)dataSourceTable.getColumn(col).clone(),
+                makeDestPAForGDX(
+                    (PrimitiveArray)dataSourceTable.getColumn(col).clone(),
+                    sourceAtts), 
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     null, //no source global attributes
                     sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
@@ -255,7 +258,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
 
         //write the information
         StringBuilder sb = new StringBuilder();

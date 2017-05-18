@@ -28,14 +28,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -391,7 +386,7 @@ public class CacheOpendapStation {
 
                 String2.log("  post read table nRows=" + table.nRows() + 
                     " nCols=" + table.nColumns());
-                String2.log(table.toString("row", 3));
+                String2.log(table.toString(3));
                 //print column data ranges
                 for (int col = 0; col < table.nColumns(); col++) 
                     String2.log("col=" + col + " " + table.getColumn(col).statsString()); 
@@ -684,7 +679,7 @@ public class CacheOpendapStation {
 
                 String2.log("  post read table nRows=" + table.nRows() + 
                     " nCols=" + table.nColumns());
-                String2.log(table.toString("row", 3));
+                String2.log(table.toString(3));
                 //print column data ranges
                 for (int col = 0; col < table.nColumns(); col++) 
                     String2.log("col=" + col + " " + table.getColumn(col).statsString()); 
@@ -893,7 +888,7 @@ public class CacheOpendapStation {
                 table.saveAs4DNc(fullStationFileName, 0, 1, 2, 3, null, null, null);
                 nNewRows = table.nRows() - oldNRows;
                 if (verbose) {
-                    //String2.log(table.toString("row", 3));
+                    //String2.log(table.toString(3));
                     //print column data ranges
                     //for (int col = 0; col < table.nColumns(); col++) 
                     //    String2.log("col=" + col + " " + table.getColumn(col).statsString()); 
@@ -1123,7 +1118,7 @@ public class CacheOpendapStation {
             //***THE TEST WILL CHANGE IF THEY THROW OUT OLD NRT DATA.
             table.clear();
             table.read4DNc(fileName, null, 1, null, -1);
-            //String2.log(table.toString("row", 10));
+            //String2.log(table.toString(10));
             Test.ensureEqual(table.nColumns(), 6, "");
             Test.ensureEqual(table.getColumnName(0), "longitude", ""); //was adcp_longitude
             Test.ensureEqual(table.getColumnName(1), "latitude", ""); //was adcp_latitude
@@ -1192,7 +1187,7 @@ public class CacheOpendapStation {
         //M1: compare first part of cache file to ascii response
         table.clear();
         table.read4DNc(fileName, null, 1);
-        //String2.log(table.toString("row", 10));
+        //String2.log(table.toString(10));
         Test.ensureEqual(table.nColumns(), 6, "");
         Test.ensureEqual(table.getColumnName(0), "adcp_longitude", "");
         Test.ensureEqual(table.getColumnName(1), "adcp_latitude", "");
@@ -1257,7 +1252,7 @@ public class CacheOpendapStation {
         //M2: compare first part of cache file to ascii response
         table.clear();
         table.read4DNc(fileName, null, 1);
-        //String2.log(table.toString("row", 10));
+        //String2.log(table.toString(10));
         Test.ensureEqual(table.nColumns(), 6, "");
         Test.ensureEqual(table.getColumnName(0), "adcp_longitude", "");
         Test.ensureEqual(table.getColumnName(1), "adcp_latitude", "");

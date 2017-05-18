@@ -127,6 +127,7 @@ public class DInt16 extends BaseType implements ClientIO {
   	// Read this value in as a 32bit int, since the smallest thing
 	// we write to the network is 32bits. Cast it to short (16bit int)!
     val = (short)source.readInt();
+    //System.out.println(">>DInt16=" + val);
     if(statusUI != null)
       statusUI.incrementByteCount(4);
   }

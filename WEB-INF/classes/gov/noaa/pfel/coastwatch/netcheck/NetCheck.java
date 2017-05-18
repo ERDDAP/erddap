@@ -37,18 +37,13 @@ import java.util.HashSet;
  * <p>A log file will be created with the name of the xml file + ".log".
  *
  * <p>For Opendap, this program uses Java DAP 1.1.7.
- * See http://www.opendap.org/download/index.html for more information.
+ * See https://www.opendap.org/download/index.html for more information.
  * The .java and .class files for this are in the classes/dods directory.
  * 
  * <p>For reading/writing .nc files, 
- * get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  *  
  * <p>To send emails, this program uses the JavaMail API 
  * and the JavaBeans Activation Framework extension or JAF (javax.activation).

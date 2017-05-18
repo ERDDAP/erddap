@@ -19,14 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -418,13 +413,13 @@ public class SaveOpendap  {
             /* doesn't work yet
             //test an opendap sequence (see Table.testConvert)
             name = "sequence.nc";
-            asNc("http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"", 
+            asNc("https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"", 
                 dir + name);
             //String outName = testDir + "convert.nc";
             //convert(inName, READ_OPENDAP_SEQUENCE, outName, SAVE_AS_NC, "row", false);
             //Table table = new Table();
             //table.readFlatNc(outName, null, 0); //should be already unpacked
-            //String2.log(table.toString("row", 3));
+            //String2.log(table.toString(3));
             //Test.ensureEqual(table.nColumns(), 2, "");
             //Test.ensureEqual(table.nRows(), 190, "");
             //Test.ensureEqual(table.getColumnName(0), "t0", "");

@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.joda.time.DateTimeZone;
+import java.time.ZoneId;
 
 /** 
  * This class represents a table of data from a collection of ASCII CSV or TSV data files.
@@ -71,7 +71,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex,
         String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -87,7 +87,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
@@ -104,7 +104,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tMetadataFrom,
-        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -120,7 +120,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, 
             tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, 
@@ -150,7 +150,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         Table table = new Table();
         table.allowRaggedRightInReadASCII = true;
         table.readASCII(fileDir + fileName, 
-            charset, columnNamesRow - 1, firstDataRow - 1,
+            charset, columnNamesRow - 1, firstDataRow - 1, columnSeparator, 
             null, null, null, //testColumns, testMin, testMax,
             sourceDataNames.toArray(), //loadColumns, 
             false); //don't simplify; just get the strings
@@ -218,7 +218,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
-        String charset, int columnNamesRow, int firstDataRow, 
+        String charset, int columnNamesRow, int firstDataRow, String columnSeparator,
         int tReloadEveryNMinutes, 
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
@@ -259,8 +259,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         Table dataSourceTable = new Table();
         Table dataAddTable = new Table();
         if (charset == null || charset.length() == 0)
-            charset = "ISO-8859-1";
-        dataSourceTable.readASCII(sampleFileName, charset, columnNamesRow-1, firstDataRow-1,
+            charset = String2.ISO_8859_1;
+        dataSourceTable.readASCII(sampleFileName, charset, 
+            columnNamesRow-1, firstDataRow-1, columnSeparator, 
             null, null, null, null, true);  //simplify
 
         //globalAttributes 
@@ -275,16 +276,15 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
         boolean dateTimeAlreadyFound = false;
-        DoubleArray mv9 = new DoubleArray(new double[]{
-            -99, -999, -9999, -99999, -999999, -9999999,
-             99,  999,  9999,  99999,  999999,  9999999});
+        DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
             PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone(); //clone because going into addTable
 
+            Attributes sourceAtts = dataSourceTable.columnAttributes(col);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
-                dataSourceTable.columnAttributes(col), colName, 
+                sourceAtts, colName, 
                 true, true); //addColorBarMinMax, tryToFindLLAT
 
             //dateTime?
@@ -312,7 +312,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             }
  
             //add to dataAddTable
-            dataAddTable.addColumn(col, colName, pa, addAtts);
+            dataAddTable.addColumn(col, colName, 
+                makeDestPAForGDX(pa, sourceAtts), addAtts);
 
             //files are likely sorted by first date time variable
             //and no harm if files aren't sorted that way
@@ -348,7 +349,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 1)); //nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
 
         //write the information
         StringBuilder sb = new StringBuilder();
@@ -419,7 +420,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             String results = generateDatasetsXml(
                 EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",
                 EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv", 
-                "ISO-8859-1", 1, 3, 1440,
+                String2.ISO_8859_1, 1, 3, "", 1440,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
@@ -430,7 +431,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 "EDDTableFromAsciiFiles",
                 EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",
                 EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv", 
-                "ISO-8859-1", "1", "3", "1440",
+                String2.ISO_8859_1, "1", "3", "", "1440",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
@@ -473,6 +474,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
@@ -975,7 +977,7 @@ expected =
     "    String ioos_category \"Temperature\";\n" +
     "    String long_name \"Sea Water Temperature\";\n" +
     "    String standard_name \"sea_water_temperature\";\n" +
-    "    String units \"degrees_C\";\n" +
+    "    String units \"degree_C\";\n" +
     "  }\n" +
     " }\n" +
     "  NC_GLOBAL {\n" +
@@ -1067,16 +1069,16 @@ expected =
         expected = 
 "fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 ",,,,,,,,,,\n" +
-"csvAscii,5.0,\"b,d\",65,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
-"csvAscii,5.0,needs,49,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
-"csvAscii,5.0,fg,70,1,11,12001,1200000,12000000000,1.21,1.0E200\n" +
-"csvAscii,5.0,h,72,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
-"csvAscii,5.0,i,73,1,13,12003,12000,120000000,1.23,3.0E200\n" +
-"csvAscii,5.0,j,74,0,14,12004,1200,12000000,1.24,4.0E200\n" +
-"csvAscii,5.0,k,75,0,15,12005,120,1200000,1.25,5.0E200\n" +
-"csvAscii,5.0,l,76,0,16,12006,12,120000,1.26,6.0E200\n" +
-"csvAscii,5.0,m,77,0,17,12007,121,12000,1.27,7.0E200\n" +
-"csvAscii,5.0,n,78,1,18,12008,122,1200,1.28,8.0E200\n";
+"csvAscii,5.0,\"b,d\",A,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
+"csvAscii,5.0,needs,1,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"csvAscii,5.0,fg,F,1,11,12001,1200000,12000000000,1.21,1.0E200\n" +
+"csvAscii,5.0,h,H,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
+"csvAscii,5.0,i,I,1,13,12003,12000,120000000,1.23,3.0E200\n" +
+"csvAscii,5.0,j,J,0,14,12004,1200,12000000,1.24,4.0E200\n" +
+"csvAscii,5.0,k,K,0,15,12005,120,1200000,1.25,5.0E200\n" +
+"csvAscii,5.0,l,L,0,16,12006,12,120000,1.26,6.0E200\n" +
+"csvAscii,5.0,m,M,0,17,12007,121,12000,1.27,7.0E200\n" +
+"csvAscii,5.0,n,N,1,18,12008,122,1200,1.28,8.0E200\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -1103,7 +1105,7 @@ expected =
 "    String long_name \"A String\";\n" +
 "  }\n" +
 "  aChar {\n" +
-"    Int16 actual_range 49, 78;\n" +
+"    String actual_range \"1\nN\";\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Char\";\n" +
 "  }\n" +
@@ -1128,7 +1130,7 @@ expected =
 "    String long_name \"An Int\";\n" +
 "  }\n" +
 "  aLong {\n" +
-"    Float64 actual_range 1200, 240000000000;\n" +
+"    Float64 actual_range 1200.0, 2.4e+11;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"A Long\";\n" +
 "  }\n" +
@@ -1189,7 +1191,7 @@ expected =
 "    String fileName;\n" +
 "    Float32 five;\n" +
 "    String aString;\n" +
-"    Int16 aChar;\n" +
+"    String aChar;\n" +
 "    Byte aBoolean;\n" +
 "    Byte aByte;\n" +
 "    Int16 aShort;\n" +
@@ -1331,7 +1333,7 @@ expected =
 
         
         { //display what's in the .xml file
-            String readXml[] = String2.readFromFile(xmlFileName, "UTF-8", 1);
+            String readXml[] = String2.readFromFile(xmlFileName, String2.UTF_8, 1);
             if (readXml[0].length() > 0)
                 throw new RuntimeException(readXml[0]);
             if (whichChild == 0) {
@@ -1436,8 +1438,7 @@ expected =
                 !content.equals("NA") && 
                 !content.toLowerCase().equals("unknown") ;
             tags = tags.substring(startTagLength);
-            if (debugMode) 
-                String2.log(">>  tags=" + tags + (hasContent? "=" + content : ""));
+            if (debugMode) String2.log(">>  tags=" + tags + (hasContent? "=" + content : ""));
             String attTags = 
                 tags.startsWith("<data-attributes><attribute>")? 
                     tags.substring(28) :
@@ -1726,7 +1727,7 @@ expected =
                 } else if (tags.equals("<downloads><download></download-url>") && hasContent) {
                     String2.addNewlineIfNone(downloads).append("URL: " + content + "\n");
                     if (tSourceUrl.equals("???"))
-                        tSourceUrl = content;
+                        tSourceUrl = updateUrls(content);
                 } else if (tags.equals("<downloads></download>")) {
                     String2.addNewlineIfNone(downloads).append("\n");
                 }
@@ -2062,13 +2063,13 @@ expected =
         if (addAtts.get("creator_url") == null &&
             !acronym.equals("???")) {
             String cu = 
-                "AFSC".equals( acronym)? "http://www.afsc.noaa.gov/":
-                "GARFO".equals(acronym)? "http://www.greateratlantic.fisheries.noaa.gov/":
-                "NWFSC".equals(acronym)? "http://www.nwfsc.noaa.gov/":
+                "AFSC".equals( acronym)? "https://www.afsc.noaa.gov/":
+                "GARFO".equals(acronym)? "https://www.greateratlantic.fisheries.noaa.gov/":
+                "NWFSC".equals(acronym)? "https://www.nwfsc.noaa.gov/":
                 "OSF".equals(  acronym)? "http://www.nmfs.noaa.gov/sfa/":
                 "OST".equals(  acronym)? "https://www.st.nmfs.noaa.gov/":
-                "PIFSC".equals(acronym)? "http://www.pifsc.noaa.gov/":
-                "SEFSC".equals(acronym)? "http://www.sefsc.noaa.gov/":
+                "PIFSC".equals(acronym)? "https://www.pifsc.noaa.gov/":
+                "SEFSC".equals(acronym)? "https://www.sefsc.noaa.gov/":
                 "SERO".equals( acronym)? "http://sero.nmfs.noaa.gov/":
                 "SWFSC".equals(acronym)? "https://swfsc.noaa.gov/": 
                 "";
@@ -2145,7 +2146,7 @@ expected =
         if (sourceTable.globalAttributes().getString("subsetVariables") == null &&
                addTable.globalAttributes().getString("subsetVariables") == null) 
             addAtts.add("subsetVariables",
-                suggestSubsetVariables(sourceTable, addTable, 1)); //nFiles
+                suggestSubsetVariables(sourceTable, addTable, false)); 
 
         //use original title, with InPort # added
         addAtts.add("title", title + " (InPort #" + catID + ")"); //catID ensures it is unique
@@ -2177,7 +2178,7 @@ expected =
         results.append(
             "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + 
                 acronym.toLowerCase() + "InPort" + catID + "\" active=\"true\">\n" +
-            "    <sourceUrl>" + tSourceUrl + "</sourceUrl>\n" +
+            "    <sourceUrl>" + XML.encodeAsXML(tSourceUrl) + "</sourceUrl>\n" +
             "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
             "    <fileNameRegex>" + XML.encodeAsXML(tFileName) + "</fileNameRegex>\n" + 
             "    <charset>ISO-8859-1</charset>\n" +
@@ -2221,8 +2222,8 @@ expected =
         String testDir = EDStatic.fullTestCacheDirectory;
 
         //test Calendar2.unitsSinceToEpochSeconds() with timeZone
-        TimeZone     timeZone     = TimeZone.getTimeZone("US/Pacific");
-        DateTimeZone dateTimeZone = DateTimeZone.forID(  "US/Pacific");
+        TimeZone timeZone = TimeZone.getTimeZone("US/Pacific");
+        ZoneId   zoneId   = ZoneId.of(           "US/Pacific");
         double epSec;
 
         //test winter/standard time: 2005-04-03T00:00 Pacific
@@ -2308,7 +2309,7 @@ expected =
         expected = 
 //2016-09-19T20:17:35Z
 "http://localhost:8080/cwexperimental/tabledap/testTimeZone.das\";\n" +
-"    String infoUrl \"http://www.pfeg.noaa.gov\";\n" +
+"    String infoUrl \"https://www.pfeg.noaa.gov\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"many, keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
@@ -2654,7 +2655,7 @@ expected =
 
 String expected = 
 "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort17336_25511\" active=\"true\">\n" +
-"    <sourceUrl>http://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425</sourceUrl>\n" +
+"    <sourceUrl>https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425</sourceUrl>\n" +
 "    <fileDir>/u00/data/points/inportData/afsc/</fileDir>\n" +
 "    <fileNameRegex>Comments</fileNameRegex>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
@@ -2672,11 +2673,12 @@ String expected =
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">phillip.clapham@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Phillip Clapham</att>\n" +
-"        <att name=\"creator_url\">http://www.afsc.noaa.gov/</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
+"        <att name=\"creator_url\">https://www.afsc.noaa.gov/</att>\n" +
 "        <att name=\"data_status\">Complete</att>\n" +
 "        <att name=\"date-created\">2015</att>\n" +
 "        <att name=\"downloads\">Download #1\n" +
-"URL: http://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425</att>\n" +
+"URL: https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425</att>\n" +
 "        <att name=\"geospatial_description\">Chukchi and Beaufort Seas off Barrow, AK.</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"double\">72.0</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"double\">70.0</att>\n" +
@@ -2691,17 +2693,18 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "        <att name=\"InPort_catalog_type\">Data Entity</att>\n" +
 "        <att name=\"InPort_XML_URL\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport/xml/17336.xml</att>\n" +
 "        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
-"        <att name=\"keywords\">aerial, afsc, beaufort, beaufort sea, biota, boem, bowfest, bowhead, bureau, chukchi, chukchi sea, comments, data, date, ecology, energy, feeding, files, fisheries, hole, identification, initia, institution, local, management, marine, national, nmfs, noaa, ocean, oceanographic, oceans, oregon, osu, photo, photo-identification, sea, service, state, study, summer, time, university, was, whale, whoi, woods</att>\n" +
+"        <att name=\"keywords\">aerial, afsc, agreement, beaufort, beaufort sea, between, biota, boem, bowfest, bowhead, bureau, chukchi, chukchi sea, comments, data, date, ecology, energy, feeding, fisheries, hole, identification, initiated, institution, interagency, management, marine, national, nmfs, noaa, ocean, oceanographic, oceans, oregon, osu, photo, photo-identification, sea, service, state, study, summer, through, time, university, whale, whoi, woods</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">Distribution Liability: The user is responsible for the results of any application of this data for other than its intended purpose. NOAA denies liability if the data are misused.\n" +
 "Data access constraints: There are no legal restrictions on access to the data.  They reside in public domain and can be freely distributed.\n" +
-"Data access procedure: Data is available at http://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425\n" +
+"Data access procedure: Data is available at https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425\n" +
 "Data use constraints: User must read and fully comprehend the metadata prior to use.  Applications or inferences derived from the data should be carefully considered for accuracy.  Acknowledgement\n" +
 "of NOAA/NMFS/AFSC, as the source from which these data were obtained in any publications and/or other representations of these, data is suggested.</att>\n" +
 "        <att name=\"metadata_workflow_state\">Published / External</att>\n" +
 "        <att name=\"publication_status\">Public</att>\n" +
 "        <att name=\"publisher_email\">ren.narita@noaa.gov</att>\n" +
 "        <att name=\"publisher_name\">Renold E Narita</att>\n" +
+"        <att name=\"publisher_type\">person</att>\n" +
 "        <att name=\"related_items\">Related Item #1: InPort catalog ID=25511, catalog type=Data Entity, relation=sibling\n" +
 "Title: Comments\n" +
 "\n" +
@@ -2826,6 +2829,7 @@ String expected =
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">rob.andrews@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">William R Andrews</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
 "        <att name=\"creator_url\">https://www.st.nmfs.noaa.gov/</att>\n" +
 "        <att name=\"data_status\">In Work</att>\n" +
 "        <att name=\"downloads\">Download #1\n" +
@@ -2839,7 +2843,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "        <att name=\"InPort_catalog_type\">Data Set</att>\n" +
 "        <att name=\"InPort_XML_URL\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/OST/inport/xml/25048.xml</att>\n" +
 "        <att name=\"institution\">NOAA NMFS OST</att>\n" +
-"        <att name=\"keywords\">cleaned, data, effort, files, fisheries, fishing, local, marine, national, nmfs, noaa, ost, qcd, question, service, survey</att>\n" +
+"        <att name=\"keywords\">activity, asked, cleaned, data, effort, fisheries, fishing, including, marine, national, nmfs, noaa, ost, out, outdoor, qcd, questions, service, survey, trips, used, weather</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">Data access constraints: none.\n" +
 "Data access procedure: download from website</att>\n" +
@@ -2847,6 +2851,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "        <att name=\"publication_status\">Public</att>\n" +
 "        <att name=\"publisher_email\">nathan.wilson@noaa.gov</att>\n" +
 "        <att name=\"publisher_name\">Nathan Wilson</att>\n" +
+"        <att name=\"publisher_type\">person</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Cleaned and QCd data for the Fishing Effort Survey. Questions on fishing and other out are asked on weather and outdoor activity, including fishing trips. Used for estimation of recreational fishing effort for shore and private/rental boats.</att>\n" +
 "        <att name=\"time_coverage_start\">2015</att>\n" +

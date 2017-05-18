@@ -138,6 +138,7 @@ public class ByteArray extends PrimitiveArray {
      *
      * @param pa the values of pa are interpreted as boolean, which are then
      *   converted to bytes.
+     * @return a ByteArray
      */
     public static ByteArray toBooleanToByte(PrimitiveArray pa) {
         int size = pa.size();
@@ -763,7 +764,7 @@ public class ByteArray extends PrimitiveArray {
      *   with String2.parseDouble and so may return Double.NaN.
      */
     public double getUnsignedDouble(int index) {
-        //or see http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
+        //or see https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
         return Byte.toUnsignedInt(get(index));
     }
 
@@ -953,6 +954,18 @@ public class ByteArray extends PrimitiveArray {
     }
 
     /** 
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsvAttString() {
+        StringBuilder sb = new StringBuilder(size * 6);
+        for (int i = 0; i < size; i++) 
+            sb.append((i == 0? "" : ",") + array[i] + "b");
+        return sb.toString();
+    }
+
+    /** 
      * This sorts the elements in ascending order.
      * To get the elements in reverse order, just read from the end of the list
      * to the beginning.
@@ -1059,11 +1072,11 @@ public class ByteArray extends PrimitiveArray {
      * @throws Exception if trouble
      */
     public void externalizeForDODS(DataOutputStream dos) throws Exception {
-        super.externalizeForDODS(dos);
+        super.externalizeForDODS(dos); //writes as bytes
 
         //pad to 4 bytes boundary at end
         int tSize = size;
-        while (tSize++ % 4 != 0)
+        while (tSize++ % 4 != 0)  
             dos.writeByte(0);
     }
 
@@ -1358,7 +1371,8 @@ public class ByteArray extends PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "" + Byte.MIN_VALUE;}
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public String maxValue() {return "" + (Byte.MAX_VALUE - 1);}
 
     /**
@@ -1764,6 +1778,7 @@ public class ByteArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(0), anArray.minValue(), "");
         Test.ensureEqual(anArray.getString(0), "-128", "");
         Test.ensureEqual(anArray.getString(1), anArray.maxValue(), "");
+
     }
 
 }

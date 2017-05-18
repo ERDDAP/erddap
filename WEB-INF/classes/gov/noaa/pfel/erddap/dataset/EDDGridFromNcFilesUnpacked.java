@@ -37,13 +37,9 @@ import java.util.regex.Pattern;
 
 
 /**
- * Get netcdf-X.X.XX.jar from
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -53,7 +49,7 @@ import ucar.ma2.*;
 
 /** 
  * This class represents gridded data aggregated from a collection of 
- * NetCDF .nc (http://www.unidata.ucar.edu/software/netcdf/),
+ * NetCDF .nc (https://www.unidata.ucar.edu/software/netcdf/),
  * GRIB .grb (https://en.wikipedia.org/wiki/GRIB),
  * (and related) netcdfFiles which are unpacked at a low level.
  *
@@ -297,9 +293,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">ghrsst@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">GHRSST</att>\n" +
+"        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/</att>\n" +
 "        <att name=\"easternmost_longitude\">null</att>\n" +
-"        <att name=\"GDS_version_id\">null</att>\n" +
 "        <att name=\"History\">null</att>\n" +
 "        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/</att>\n" +
 "        <att name=\"keywords\">analysed, analysed_sst, daily, data, day, earth, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans,\n" +
@@ -485,6 +481,7 @@ directionsForGenerateDatasetsXml() +
 "    String DSD_entry_id \"JPL-L4UHfnd-GLOB-MUR\";\n" +
 "    Float64 Easternmost_Easting -134.896;\n" +
 "    String file_quality_index \"0\";\n" +
+"    String GDS_version_id \"GDS-v1.0-rev1.6\";\n" +
 "    Float64 geospatial_lat_max 20.0995;\n" +
 "    Float64 geospatial_lat_min 20.0006;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -594,7 +591,7 @@ expected =
 
     /**
      * Test file created from 
-     * http://thredds.jpl.nasa.gov/thredds/ncss/grid/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml/dataset.html
+     * https://thredds.jpl.nasa.gov/thredds/ncss/grid/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml/dataset.html
      * and stored in /erddapTest/unsigned/
      *
      * @throws Throwable if trouble
@@ -935,7 +932,7 @@ expected =
 
 
     /**
-     * Test files from http://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI
+     * Test files from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI
      * and stored in /erddapTest/unsigned/
      *
      * @throws Throwable if trouble
@@ -1341,7 +1338,7 @@ NcHelper.debugMode = true;
 "    String colorBarScale \"Log\";\n" +
 "    String ioos_category \"Ocean Color\";\n" +
 "    String long_name \"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\";\n" +
-"    String reference \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
+"    String references \"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\";\n" +
 "    String standard_name \"mole_concentration_of_particulate_organic_carbon_in_sea_water\";\n" +
 "    String units \"mg m^-3\";\n" +
 "  }\n" +
@@ -1352,7 +1349,8 @@ NcHelper.debugMode = true;
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
-"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String date_created \"2016-08-30T07:47:52.000Z\";\n" +
 "    Float64 Easternmost_Easting 179.9792;\n" +
 "    Float64 geospatial_lat_max 89.97916;\n" +
@@ -1362,7 +1360,7 @@ NcHelper.debugMode = true;
 "    Float64 geospatial_lon_min -179.9792;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String grid_mapping_name \"latitude_longitude\";\n" +
-"    String history \"Datafiles are downloaded ASAP from http://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA NMFS SWFSC ERD.\n" +
+"    String history \"Datafiles are downloaded ASAP from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA NMFS SWFSC ERD.\n" +
 "NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add a time variable and slightly modify the metadata.\n" +
 "Direct read of HDF4 file through CDM library.\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -1373,7 +1371,7 @@ expected =
 //2015-10-30T18:17:10Z http://localhost:8080/cwexperimental/griddap/testUInt16File.das";
 "    String identifier_product_doi \"10.5067/AQUA/MODIS_OC.2014.0\";\n" +
 "    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
-"    String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/MPOC_las.html\";\n" +
+"    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/MPOC_las.html\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
 "    String instrument \"MODIS\";\n" +
 "    String keywords \"443/555, biology, carbon, center, chemistry, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, moderate, modis, mole, mole_concentration_of_particulate_organic_carbon_in_sea_water, nasa, ocean, ocean color, oceans,\n" +
@@ -1381,7 +1379,8 @@ expected =
 "optics, organic, particulate, poc, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, stramski, time, version, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
-"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
@@ -1390,7 +1389,7 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String map_projection \"Equidistant Cylindrical\";\n" +
 "    String measure \"Mean\";\n" +
-"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.97916;\n" +
 "    String platform \"Aqua\";\n" +
 "    String processing_control_input_parameters_apply_pal \"yes\";\n" +
@@ -1426,7 +1425,8 @@ expected =
 "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
 "    String publisher_email \"erd.data@noaa.gov\";\n" +
 "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
+"    String publisher_type \"institution\";\n" +
+"    String publisher_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -89.97918;\n" +
 "    String spatialResolution \"4.64 km\";\n" +
@@ -1435,7 +1435,7 @@ expected =
 "    String temporal_range \"day\";\n" +
 "    String time_coverage_end \"2016-08-29T12:00:00Z\";\n" +
 "    String time_coverage_start \"2003-01-01T12:00:00Z\";\n" +
-"    String title \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon (1 Day Composite)\";\n" +
+"    String title \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting -179.9792;\n" +
 "  }\n" +
 "}\n";

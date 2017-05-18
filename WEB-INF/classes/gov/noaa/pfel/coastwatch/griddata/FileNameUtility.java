@@ -308,7 +308,7 @@ public class FileNameUtility  {
                 //must be 1 month; ensure start date is 1 and rawEnd date is last in same month
                 GregorianCalendar rawEndGC = Calendar2.parseYYYYDDDZulu(daveName.substring(10, 17)); //throws Exception if trouble
                 timePeriodIndex = TimePeriods.exactTimePeriod(TimePeriods.MONTHLY_OPTION);
-                Test.ensureEqual(startGC.get(Calendar2.YEAR),  rawEndGC.get(Calendar2.YEAR), "Monthly file: Begin and end year not the same.");
+                Test.ensureEqual(Calendar2.getYear(startGC),  Calendar2.getYear(rawEndGC),   "Monthly file: Begin and end year not the same.");
                 Test.ensureEqual(startGC.get(Calendar2.MONTH), rawEndGC.get(Calendar2.MONTH),"Monthly file: Begin and end month not the same.");
                 Test.ensureEqual(startGC.get(Calendar2.DATE),  1, "Monthly file: Begin date isn't 1.");
                 Test.ensureEqual(rawEndGC.get(Calendar2.DATE), rawEndGC.getActualMaximum(Calendar2.DATE), "Monthly file: End date isn't last date in month.");

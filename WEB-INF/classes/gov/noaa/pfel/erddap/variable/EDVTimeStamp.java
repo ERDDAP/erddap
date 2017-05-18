@@ -20,8 +20,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import org.joda.time.*;
-import org.joda.time.format.*;
+import java.time.format.DateTimeFormatter;
 
 /** 
  * This class holds information about *a* (not *the*) time variable,
@@ -46,7 +45,7 @@ public class EDVTimeStamp extends EDV {
     protected boolean sourceTimeIsNumeric;
     protected double sourceTimeBase = Double.NaN;  //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
-    protected boolean parseISOWithCalendar2; //specifically, Calendar2.parseISODateTimeZulu(); else parse with Joda. 
+    protected boolean parseISOWithCalendar2; //specifically, Calendar2.parseISODateTimeZulu(); else parse with java.time (was Joda). 
     protected DateTimeFormatter dateTimeFormatter; //set if !sourceTimeIsNumeric
     protected String time_precision;  //see Calendar2.epochSecondsToLimitedIsoStringT
     protected String time_zone;  //if not specified, will be Zulu
@@ -65,13 +64,13 @@ public class EDVTimeStamp extends EDV {
      *      (e.g., "seconds since 1970-01-01T00:00:00")
      *      where the base time is an 
      *      ISO 8601 formatted date time string (YYYY-MM-DDThh:mm:ss).
-     *    <li> a org.joda.time.format.DateTimeFormat string
+     *    <li> a java.time.format.DateTimeFormatter string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times. Any format that starts with "yyyy-MM", e.g., 
      *      Calendar2.ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ",
      *      will be parsed with Calendar2.parseISODateTimeZulu().
      *      See
-     *      http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
      *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    </ul>
      * This constructor gets/sets actual_range from actual_range, actual_min, actual_max,
@@ -223,16 +222,18 @@ public class EDVTimeStamp extends EDV {
                 tSTF = String2.replaceAll(tSTF, "Z", "'Z'"); 
             
             if (time_zone.equals("Zulu")) { //UTC -> Zulu above
-                dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(DateTimeZone.UTC);
+                dateTimeFormatter = Calendar2.makeDateTimeFormatter(tSTF, time_zone);
             } else {
                 timeZone = TimeZone.getTimeZone(time_zone);   //VERY BAD: if failure, returns GMT timeZone!!!
-                DateTimeZone dateTimeZone = DateTimeZone.forID(time_zone); //GOOD: may fail with IllegalArgumentException -- good!
-                //verify that timeZone matches dateTimeZone  (to deal with VERY BAD above)
-                Test.ensureEqual(timeZone.getRawOffset(), dateTimeZone.getStandardOffset(0),
-                    errorInMethod + 
-                    "The Java and Joda time_zone objects have different standard offsets, " +
-                    "probably because the time_zone is supported by Joda but not Java.");
-                dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(dateTimeZone);
+                dateTimeFormatter = Calendar2.makeDateTimeFormatter(tSTF, time_zone);
+
+                //NO EASY TEST IN JAVA VERSION OF java.time (was Joda)
+                //verify that timeZone matches zoneId  (to deal with VERY BAD above)
+                //Test.ensureEqual(
+                //    timeZone.getRawOffset(), zoneId.getStandardOffset(0), 
+                //    errorInMethod + 
+                //    "The Java and Joda time_zone objects have different standard offsets, " +
+                //    "probably because the time_zone is supported by Joda but not Java.");
             }
 
         }
@@ -390,10 +391,10 @@ public class EDVTimeStamp extends EDV {
      *    <li> a udunits string (containing " since ")
      *      describing how to interpret numbers 
      *      (e.g., "seconds since 1970-01-01T00:00:00"),
-     *    <li> a org.joda.time.format.DateTimeFormat string
+     *    <li> a java.time.format.DateTimeFormatter string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *      http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *      https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
      *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *    <li> null if this can be procured from the "units" source metadata.
      *    </ul>
@@ -445,8 +446,8 @@ public class EDVTimeStamp extends EDV {
     public double sourceTimeToEpochSeconds(double sourceTime) {
         //String2.log(">>sourceTimeToEpochSeconds(" + sourceTime + ") sourceTimeBase=" + sourceTimeBase + " sourceTimeFactor=" + sourceTimeFactor);
         if ((Double.isNaN(sourceMissingValue) && Double.isNaN(sourceTime)) ||
-            Math2.almostEqual(5, sourceTime, sourceMissingValue) ||  //5 is good for floats
-            Math2.almostEqual(5, sourceTime, sourceFillValue))
+            Math2.almostEqual(9, sourceTime, sourceMissingValue) ||  
+            Math2.almostEqual(9, sourceTime, sourceFillValue))
             return Double.NaN;
         if (scaleAddOffset)
             sourceTime = sourceTime * scaleFactor + addOffset;
@@ -496,8 +497,8 @@ public class EDVTimeStamp extends EDV {
             double d = parseISOWithCalendar2?
                 //parse with Calendar2.parseISODateTime
                 Calendar2.isoStringToEpochSeconds(sourceTime, timeZone) :
-                //parse with Joda
-                dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe, includes dateTimeZone
+                //parse with java.time (was Joda)
+                Calendar2.toEpochSeconds(sourceTime, dateTimeFormatter); 
             //String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
             return d;
         } catch (Throwable t) {
@@ -608,7 +609,7 @@ public class EDVTimeStamp extends EDV {
                 safeStringMissingValue;
         if (sourceTimeIsNumeric)
             return "" + epochSecondsToSourceTimeDouble(epochSeconds);
-        return dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long, uses dataTimeZone
+        return Calendar2.format(epochSeconds, dateTimeFormatter); 
     }
 
 

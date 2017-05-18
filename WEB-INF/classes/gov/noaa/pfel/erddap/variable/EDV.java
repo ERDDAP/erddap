@@ -48,9 +48,7 @@ public class EDV {
     /** 
      * These are the standardized variable names, long names, CF standard names, 
      * and units for the lon, lat, alt, and time axes in the results. 
-     * These names are suggested by
-     * http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html 
-     * and match the CF standard names
+     * These names match the CF standard names
      * (see http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html).
      */
     public final static String
@@ -363,7 +361,8 @@ public class EDV {
                 pa.getUnsignedDouble(0) : 
                 pa.getNiceDouble(0); 
             destinationMissingValue = sourceMissingValue * scaleFactor + addOffset;
-            if (destinationDataTypeClass == String.class) {
+            if (destinationDataTypeClass == String.class ||
+                destinationDataTypeClass == char.class) {
                 stringMissingValue = String2.canonical(
                     stringMissingValue == null? "" : stringMissingValue);
                 combinedAttributes.remove("missing_value");
@@ -382,7 +381,8 @@ public class EDV {
                 pa.getUnsignedDouble(0) :
                 pa.getNiceDouble(0);
             destinationFillValue = sourceFillValue * scaleFactor + addOffset;
-            if (destinationDataTypeClass == String.class) {
+            if (destinationDataTypeClass == String.class ||
+                destinationDataTypeClass == char.class) {
                 stringFillValue = String2.canonical(
                     stringFillValue == null? "" : stringFillValue);
                 combinedAttributes.remove("_FillValue");
@@ -548,6 +548,7 @@ public class EDV {
                 //if floating type, '_Unsigned'=true is nonsense
                 PrimitiveArray.isIntegerType(sourceDataTypeClass)) 
                 combinedAttributes.set("_Unsigned", un); //re-set it
+            //but destinationDataType(Class) is left as new data type
         }
         if (verbose && scaleAddOffset)
             String2.log("EDV sourceName=" + sourceName + 
@@ -582,7 +583,7 @@ public class EDV {
         //priority to actual_range
         PrimitiveArray ar = combinedAttributes.remove("actual_range"); //always remove
         if (ar != null && ar.size() == 2) {
-            //if (reallyVerbose) String2.log("  actual_range metadata for " + destinationName + ": " + actualRange);
+            if (reallyVerbose) String2.log("  actual_range metadata for " + destinationName + ": " + ar);
             return new double[] {ar.getNiceDouble(0),
                                  ar.getNiceDouble(1)};
         }
@@ -615,6 +616,7 @@ public class EDV {
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
+        if (reallyVerbose) String2.log("  " + destinationName + " destinationMin=" + destinationMin + " max=" + destinationMax);
         if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) {
             combinedAttributes.remove("actual_range");
         } else {
@@ -1079,6 +1081,8 @@ public class EDV {
             destinationDataTypeClass == float.class? "" + (float)destinationMin :
             destinationDataTypeClass == double.class?
                 "" + Math2.niceDouble(destinationMin, 15) :  //was "" + destinationMin
+            destinationDataTypeClass == char.class?
+                String2.toJson("" + Math2.roundToChar(destinationMin), 65536) :
                 "" + Math2.roundToLong(destinationMin);  //ints are nicer without trailing ".0"
     }
 
@@ -1092,6 +1096,8 @@ public class EDV {
             destinationDataTypeClass == float.class? "" + (float)destinationMax :
             destinationDataTypeClass == double.class?
                 "" + Math2.niceDouble(destinationMax, 15) :
+            destinationDataTypeClass == char.class?
+                String2.toJson("" + Math2.roundToChar(destinationMax), 65536) :
                 "" + Math2.roundToLong(destinationMax);  //ints are nicer without trailing ".0"
     }
 
@@ -1164,9 +1170,9 @@ public class EDV {
      * Some subclasses overwrite this.   (Time variables will return a DoubleArray.)
      * 
      * @param source
-     * @return a PrimitiveArray 
+     * @return a PrimitiveArray with destinationDataTypeClass
      *   (the same Primitive array if the data type wasn't changed)
-     * with source values converted to destinationValues.
+     *   with source values converted to destinationValues.
      */
     public PrimitiveArray toDestination(PrimitiveArray source) {
         
@@ -1179,10 +1185,11 @@ public class EDV {
                 source.switchFromTo(stringFillValue, "");
         }
 
+        //change to destType and scaleAddOffset if needed
         return scaleAddOffset?
-            source.scaleAddOffset(sourceIsUnsigned, destinationDataTypeClass, 
+            source.scaleAddOffset(sourceIsUnsigned, destinationDataTypeClass,
                 scaleFactor, addOffset):
-            source;        
+            PrimitiveArray.factory(destinationDataTypeClass, source); 
     }
 
     /**

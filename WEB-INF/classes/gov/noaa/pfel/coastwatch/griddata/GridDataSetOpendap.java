@@ -32,14 +32,9 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -85,7 +80,7 @@ public class GridDataSetOpendap extends GridDataSet {
      * @param internalName  TMOk490
      * @param gridName e.g., Ok490;  may be null or "" to use the first one in the datasource
      * @param title   the title for the dataset (may be null or "" to use the title in the datasource metadata)
-     * @param baseUrl e.g., http://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/satellite/QS/ux10/
+     * @param baseUrl e.g., https://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/satellite/QS/ux10/
      *   The dividing line between baseUrl and timePeriodUrls is up to you.
      *   The time periodUrls are added to baseUrl to make the individual dataset urls.
      * @param timePeriodUrls e.g., 1day, 5day
@@ -779,7 +774,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
      */
     public static void testGetTimeSeries() throws Exception {
         String2.log("\n*** start TestBrowsers.testGetTimeSeries");
-        String url = "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/"; //oceanwatch
+        String url = "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/"; //oceanwatch
 
         DataHelper.verbose = true;
         GridDataSetOpendap.verbose = true;
@@ -949,7 +944,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //*********************************************************************
             internalName = "OQSux10";
             sixName = internalName.substring(1);
-            String url = "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/"; //oceanwatch
+            String url = "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/"; //oceanwatch
             gridDataSet = new GridDataSetOpendap(
                 internalName, "QSux10", null, url, 
                 new String[]{"1day", "3day", "4day", "8day", "14day", "mday"}, 

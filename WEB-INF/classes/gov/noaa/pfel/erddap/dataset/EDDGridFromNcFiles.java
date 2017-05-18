@@ -38,13 +38,9 @@ import java.util.regex.Pattern;
 
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -54,7 +50,7 @@ import ucar.ma2.*;
 
 /** 
  * This class represents gridded data aggregated from a collection of 
- * NetCDF .nc (http://www.unidata.ucar.edu/software/netcdf/),
+ * NetCDF .nc (https://www.unidata.ucar.edu/software/netcdf/),
  * GRIB .grb (https://en.wikipedia.org/wiki/GRIB),
  * (and related) NetcdfFiles.
  *
@@ -211,6 +207,12 @@ directionsForGenerateDatasetsXml() +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"history\">Remote Sensing Systems, Inc\n" +
+"2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+             //still numeric ip because file was generated long ago
+"2009-01-07 http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"2009-01-07 https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.nc?x_wind[(2008-01-01T12:00:00Z):1:(2008-01-03T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],y_wind[(2008-01-01T12:00:00Z):1:(2008-01-03T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],mod[(2008-01-01T12:00:00Z):1:(2008-01-03T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)]</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
 "        <att name=\"keywords\">altitude, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
@@ -409,6 +411,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">NCEP</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.ncep.noaa.gov/</att>\n" + 
 "        <att name=\"infoUrl\">http://www.ncep.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NCEP</att>\n" +
@@ -568,6 +571,479 @@ directionsForGenerateDatasetsXml() +
         String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXml2 passed the test.");
     }
 
+    /** This tests generateDatasetsXml, specifically that dataType reflects
+     * scale_factor and add_offset. 
+     * @throws Throwable if touble
+     */
+    public static void testGenerateDatasetsXml3() throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml3");
+
+        String results = generateDatasetsXml(
+            "/u00/satellite/PH2/sstd/1day/", ".*\\.nc", "", 
+            12000, null) + "\n";
+        String suggDatasetID = suggestDatasetID(
+            "/u00/satellite/PH2/sstd/1day/.*\\.nc");
+
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDGridFromNcFiles", 
+            "/u00/satellite/PH2/sstd/1day/", ".*\\.nc", "",
+            "" + 12000},
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt. " + 
+            gdxResults.length() + " " + results.length());
+
+        String expected = 
+//wind_speed is important additional test where scale_factor=1 and add_offset=0
+directionsForGenerateDatasetsXml() +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>12000</reloadEveryNMinutes>\n" +  
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/u00/satellite/PH2/sstd/1day/</fileDir>\n" +
+"    <fileNameRegex>.*\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"acknowledgment\">Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the US National Oceanographic Data Center. This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.</att>\n" +
+"        <att name=\"cdm_data_type\">grid</att>\n" +
+"        <att name=\"cdr_id\">gov.noaa.ncdc:C00804</att>\n" +
+"        <att name=\"cdr_program\">NOAA Climate Data Record Program for satellites, FY 2011.</att>\n" +
+"        <att name=\"cdr_variable\">sea_surface_temperature</att>\n" +
+"        <att name=\"comment\">SST from AVHRR Pathfinder</att>\n" +
+"        <att name=\"Conventions\">CF-1.5</att>\n" +
+"        <att name=\"creator_email\">Kenneth.Casey@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">Kenneth S. Casey</att>\n" +
+"        <att name=\"creator_url\">http://pathfinder.nodc.noaa.gov</att>\n" +
+"        <att name=\"date_created\">20130426T025604Z</att>\n" +
+"        <att name=\"day_or_night\">day</att>\n" +
+"        <att name=\"easternmost_longitude\" type=\"double\">180.0</att>\n" +
+"        <att name=\"file_quality_level\" type=\"int\">3</att>\n" +
+"        <att name=\"gds_version_id\">2.0</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">90.0</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">-90.0</att>\n" +
+"        <att name=\"geospatial_lat_resolution\">0.0417</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees north</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">180.0</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-180.0</att>\n" +
+"        <att name=\"geospatial_lon_resolution\">0.0417</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees east</att>\n" +
+"        <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"        <att name=\"history\">smigen_both ifile=2012366.b4kd3-pf5ap-n19-sst.hdf ofile=2012366.i4kd3-pf5ap-n19-sst.hdf prod=sst datamin=-3.0 datamax=40.0 precision=I projection=RECT resolution=4km gap_fill=2 ; ./hdf2nc_PFV52_L3C.x -v ./Data_PFV52/PFV52_HDF/2012/2012366.i4kd3-pf5ap-n19-sst.hdf</att>\n" +
+"        <att name=\"id\">AVHRR_Pathfinder-NODC-L3C-v5.2</att>\n" +
+"        <att name=\"institution\">NODC</att>\n" +
+"        <att name=\"keywords\">Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature</att>\n" +
+"        <att name=\"keywords_vocabulary\">NASA Global Change Master Directory (GCMD) Science Keywords</att>\n" +
+"        <att name=\"license\">These data are available for use without restriction.</att>\n" +
+"        <att name=\"Metadata_Conventions\">Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"metadata_link\">http://pathfinder.nodc.noaa.gov/ISO-AVHRR_Pathfinder-NODC-L3C-v5.2.html</att>\n" +
+"        <att name=\"naming_authority\">org.ghrsst</att>\n" +
+"        <att name=\"netcdf_version_id\">4.1.2</att>\n" +
+"        <att name=\"northernmost_latitude\" type=\"double\">90.0</att>\n" +
+"        <att name=\"orbit_node\">ascending</att>\n" +
+"        <att name=\"platform\">NOAA-19</att>\n" +
+"        <att name=\"principal_year_day_for_collated_orbits\">2012366</att>\n" +
+"        <att name=\"processing_level\">L3C</att>\n" +
+"        <att name=\"product_version\">PFV5.2</att>\n" +
+"        <att name=\"project\">Group for High Resolution Sea Surface Temperature</att>\n" +
+"        <att name=\"publisher_email\">ghrsst-po@nceo.ac.uk</att>\n" +
+"        <att name=\"publisher_name\">GHRSST Project Office</att>\n" +
+"        <att name=\"publisher_url\">http://www.ghrsst.org</att>\n" +
+"        <att name=\"references\">http://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.</att>\n" +
+"        <att name=\"sensor\">AVHRR_GAC</att>\n" +
+"        <att name=\"source\">AVHRR_GAC-CLASS-L1B-NOAA_19-v1</att>\n" +
+"        <att name=\"southernmost_latitude\" type=\"double\">-90.0</att>\n" +
+"        <att name=\"spatial_resolution\">0.0417 degree</att>\n" +
+"        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n" +
+"        <att name=\"start_time\">20121231T000731Z</att>\n" +
+"        <att name=\"stop_time\">20130101T064326Z</att>\n" +
+"        <att name=\"summary\">This netCDF-4 file contains sea surface temperature (SST) data produced as part of the AVHRR Pathfinder SST Project. These data were created using Version 5.2 of the Pathfinder algorithm and the file is nearly but not completely compliant with the GHRSST Data Specifications V2.0 (GDS2).  The file does not encode time according to the GDS2 specifications, and the sses_bias and sses_standard_deviation variables are empty.  Full compliance with GDS2 specifications will be achieved in the future Pathfinder Version 6. These data were created as a partnership between the University of Miami and the US NOAA/National Oceanographic Data Center (NODC).</att>\n" +
+"        <att name=\"time_coverage_end\">20130101T064326Z</att>\n" +
+"        <att name=\"time_coverage_start\">20121231T000731Z</att>\n" +
+"        <att name=\"title\">AVHRR Pathfinder Version 5.2 L3-Collated (L3C) sea surface temperature</att>\n" +
+"        <att name=\"uuid\">6D1F3BAB-C00F-40FA-A73E-6D96CE51530F</att>\n" +
+"        <att name=\"westernmost_longitude\" type=\"double\">-180.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the US National Oceanographic Data Center. This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.</att>\n" +
+"        <att name=\"acknowledgment\">null</att>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
+"        <att name=\"creator_url\">https://pathfinder.nodc.noaa.gov</att>\n" +
+"        <att name=\"easternmost_longitude\">null</att>\n" +
+"        <att name=\"file_quality_level\">null</att>\n" +
+"        <att name=\"infoUrl\">https://pathfinder.nodc.noaa.gov/ISO-AVHRR_Pathfinder-NODC-L3C-v5.2.html</att>\n" +
+"        <att name=\"institution\">NOAA NODC</att>\n" +
+"        <att name=\"keywords\">10m, advanced, aerosol, aerosol_dynamic_indicator, analysis, area, atmosphere,\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"atmospheric, avhrr, bias, center, climate, collated, cryosphere,\n" +
+"Cryosphere &gt; Sea Ice &gt; Ice Extent,\n" +
+"data, deviation, difference, distribution, dt_analysis, dynamic, error, estimate, extent, flag, flags, fraction, ghrsst, global, high, high-resolution, ice, ice distribution, indicator, l2p, l2p_flags, l3-collated, l3c, measurement, national, ncei, noaa, nodc, ocean, oceanographic, oceans,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"Oceans &gt; Sea Ice &gt; Ice Extent,\n" +
+"optical, optical properties, pathfinder, pathfinder_quality_level, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"Metadata_Conventions\">null</att>\n" +
+"        <att name=\"northernmost_latitude\">null</att>\n" +
+"        <att name=\"publisher_type\">group</att>\n" +
+"        <att name=\"references\">https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.</att>\n" +
+"        <att name=\"southernmost_latitude\">null</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"start_time\">null</att>\n" +
+"        <att name=\"stop_time\">null</att>\n" +
+"        <att name=\"summary\">Advanced Very High Resolution Radiometer (AVHRR) Pathfinder Version 5.2 L3-Collated (L3C) sea surface temperature. This netCDF-4 file contains sea surface temperature (SST) data produced as part of the AVHRR Pathfinder SST Project. These data were created using Version 5.2 of the Pathfinder algorithm and the file is nearly but not completely compliant with the Global High-Resolution Sea Surface Temperature (GHRSST) Data Specifications V2.0 (GDS2).  The file does not encode time according to the GDS2 specifications, and the sses_bias and sses_standard_deviation variables are empty.  Full compliance with GDS2 specifications will be achieved in the future Pathfinder Version 6. These data were created as a partnership between the University of Miami and the US NOAA/National Oceanographic Data Center (NODC).</att>\n" +
+"        <att name=\"title\">AVHRR Pathfinder Version 5.2 L3-Collated (L3C) SST</att>\n" +
+"        <att name=\"uuid\">null</att>\n" +
+"        <att name=\"westernmost_longitude\">null</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"calendar\">Gregorian</att>\n" +
+"            <att name=\"comment\">This is the reference time of the SST file. Add sst_dtime to this value to get pixel-by-pixel times. Note: in PFV5.2 that sst_dtime is empty. PFV6 will contain the correct sst_dtime values.</att>\n" +
+"            <att name=\"long_name\">reference time of SST file</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">seconds since 1981-01-01 00:00:00</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"reference_datum\">geographical coordinates, WGS84 projection</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"            <att name=\"valid_max\" type=\"double\">90.0</att>\n" +
+"            <att name=\"valid_min\" type=\"double\">-90.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"reference_datum\">geographical coordinates, WGS84 projection</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"            <att name=\"valid_max\" type=\"double\">180.0</att>\n" +
+"            <att name=\"valid_min\" type=\"double\">-180.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sea_surface_temperature</sourceName>\n" +
+"        <destinationName>sea_surface_temperature</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">273.15</att>\n" +
+"            <att name=\"comment\">Skin temperature of the ocean</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">NOAA Climate Data Record of sea surface skin temperature</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"standard_name\">sea_surface_skin_temperature</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"short\">4500</att>\n" +
+"            <att name=\"valid_min\" type=\"short\">-180</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sst_dtime</sourceName>\n" +
+"        <destinationName>sst_dtime</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"int\">-2147483648</att>\n" +
+"            <att name=\"add_offset\" type=\"int\">0</att>\n" +
+"            <att name=\"comment\">time plus sst_dtime gives seconds after 1981-01-01 00:00:00. Note: in PFV5.2 this sst_dtime is empty. PFV6 will contain the correct sst_dtime values.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">time difference from reference time</att>\n" +
+"            <att name=\"scale_factor\" type=\"int\">1</att>\n" +
+"            <att name=\"units\">second</att>\n" +
+"            <att name=\"valid_max\" type=\"int\">2147483647</att>\n" +
+"            <att name=\"valid_min\" type=\"int\">-2147483647</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">10.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sses_bias</sourceName>\n" +
+"        <destinationName>sses_bias</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Bias estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html. Note: in PFV5.2 this sses_bias is empty. PFV6 will contain the correct sses_bias values.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">SSES bias estimate</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.02</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sses_standard_deviation</sourceName>\n" +
+"        <destinationName>sses_standard_deviation</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">2.54</att>\n" +
+"            <att name=\"comment\">Standard deviation estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html. Note: in PFV5.2 this sses_standard_deviation is empty. PFV6 will contain the correct sses_standard_deviation values.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">SSES standard deviation</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.02</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>dt_analysis</sourceName>\n" +
+"        <destinationName>dt_analysis</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">The difference between this SST and the previous day&#39;s SST.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">Deviation from last SST analysis</att>\n" +
+"            <att name=\"reference\">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see http://accession.nodc.noaa.gov/0071180.</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.1</att>\n" +
+"            <att name=\"units\">kelvin</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"reference\">null</att>\n" +
+"            <att name=\"references\">AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wind_speed</sourceName>\n" +
+"        <destinationName>wind_speed</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"height\">10 m</att>\n" +
+"            <att name=\"long_name\">10m wind speed</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">1.0</att>\n" +
+"            <att name=\"source\">NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.2012.nc, v_wind.10m.gauss.2012.nc</att>\n" +
+"            <att name=\"standard_name\">wind_speed</att>\n" +
+"            <att name=\"time_offset\" type=\"double\">6.0</att>\n" +
+"            <att name=\"units\">m s-1</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"add_offset\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"scale_factor\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sea_ice_fraction</sourceName>\n" +
+"        <destinationName>sea_ice_fraction</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (http://accession.nodc.noaa.gov/0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.2 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.2 grid.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">sea ice fraction</att>\n" +
+"            <att name=\"reference\">Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at ftp://eclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"source\">NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 20121231-NCDC-L4LRblend-GLOB-v01-fv02_0-AVHRR_OI.nc.gz</att>\n" +
+"            <att name=\"standard_name\">sea_ice_area_fraction</att>\n" +
+"            <att name=\"time_offset\" type=\"double\">12.0</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"comment\">Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.2 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.2 grid.</att>\n" +
+"            <att name=\"ioos_category\">Ice Distribution</att>\n" +
+"            <att name=\"reference\">null</att>\n" +
+"            <att name=\"references\">Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at ftp://eclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>aerosol_dynamic_indicator</sourceName>\n" +
+"        <destinationName>aerosol_dynamic_indicator</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
+"            <att name=\"add_offset\" type=\"double\">1.1</att>\n" +
+"            <att name=\"comment\">Aerosol optical thickness (100 KM) data are taken from the CLASS AERO100 products, which are created from AVHRR channel 1 optical thickness retrievals from AVHRR global area coverage (GAC) data. The aerosol optical thickness measurements are interpolated from their original 1 degree x 1 degree resolution to the 4km Pathfinder Version 5.2 grid.</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">aerosol dynamic indicator</att>\n" +
+"            <att name=\"reference\">http://www.class.ncdc.noaa.gov/saa/products/search?sub_id=0&amp;datatype_family=AERO100&amp;submit.x=25&amp;submit.y=12</att>\n" +
+"            <att name=\"scale_factor\" type=\"double\">0.01</att>\n" +
+"            <att name=\"source\">CLASS_AERO100_AOT</att>\n" +
+"            <att name=\"time_offset\" type=\"double\">-107.0</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">127</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">-127</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">3.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-1.0</att>\n" +
+"            <att name=\"ioos_category\">Optical Properties</att>\n" +
+"            <att name=\"reference\">null</att>\n" +
+"            <att name=\"references\">https://www.class.ncdc.noaa.gov/saa/products/search?sub_id=0&amp;datatype_family=AERO100&amp;submit.x=25&amp;submit.y=12</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>quality_level</sourceName>\n" +
+"        <destinationName>quality_level</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">0</att>\n" +
+"            <att name=\"comment\">Note, the native Pathfinder processing system returns quality levels ranging from 0 to 7 (7 is best quality; -1 represents missing data) and has been converted to the extent possible into the six levels required by the GDS2 (ranging from 0 to 5, where 5 is best). Below is the conversion table: \n" +
+" GDS2 required quality_level 5  =  native Pathfinder quality level 7 == best_quality \n" +
+" GDS2 required quality_level 4  =  native Pathfinder quality level 4-6 == acceptable_quality \n" +
+" GDS2 required quality_level 3  =  native Pathfinder quality level 2-3 == low_quality \n" +
+" GDS2 required quality_level 2  =  native Pathfinder quality level 1 == worst_quality \n" +
+" GDS2 required quality_level 1  =  native Pathfinder quality level 0 = bad_data \n" +
+" GDS2 required quality_level 0  =  native Pathfinder quality level -1 = missing_data \n" +
+" The original Pathfinder quality level is recorded in the optional variable pathfinder_quality_level.</att>\n" +
+"            <att name=\"flag_meanings\">bad_data worst_quality low_quality acceptable_quality best_quality</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">1 2 3 4 5</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">SST measurement quality</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">5</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">6.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>pathfinder_quality_level</sourceName>\n" +
+"        <destinationName>pathfinder_quality_level</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">-1</att>\n" +
+"            <att name=\"comment\">This variable contains the native Pathfinder processing system quality levels, ranging from 0 to 7, where 0 is worst and 7 is best. And value -1 represents missing data.</att>\n" +
+"            <att name=\"flag_meanings\">bad_data worst_quality low_quality low_quality acceptable_quality acceptable_quality acceptable_quality best_quality</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">0 1 2 3 4 5 6 7</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">Pathfinder SST quality flag</att>\n" +
+"            <att name=\"valid_max\" type=\"byte\">7</att>\n" +
+"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>l2p_flags</sourceName>\n" +
+"        <destinationName>l2p_flags</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"comment\">Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund&#39;s Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by river has bit four (4) set to 1.</att>\n" +
+"            <att name=\"flag_masks\" type=\"shortList\">1 2 4 8 16 32 64 128 256</att>\n" +
+"            <att name=\"flag_meanings\">microwave land ice lake river reserved_for_future_use unused_currently unused_currently unused_currently</att>\n" +
+"            <att name=\"grid_mapping\">Equidistant Cylindrical</att>\n" +
+"            <att name=\"long_name\">L2P flags</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_ChunkSizes\">null</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">300.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+        Test.ensureEqual(results, expected, results.length() + " " + expected.length() + 
+            "\nresults=\n" + results);
+
+
+        String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXml3 passed the test.");
+    }
+
 
     /** This tests generateDatasetsXml with an AWS S3 dataset. 
      * @throws Throwable if touble
@@ -659,7 +1135,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">rama.nemani@nasa.gov</att>\n" +
 "        <att name=\"creator_name\">Rama Nemani</att>\n" +
-"        <att name=\"creator_url\">http://www.nasa.gov/</att>\n" +
+"        <att name=\"creator_url\">https://www.nasa.gov/</att>\n" +
 "        <att name=\"driving_data_tracking_ids\">null</att>\n" +
 "        <att name=\"infoUrl\">http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</att>\n" +
 "        <att name=\"keywords\">800m, air, air_temperature, ames, atmosphere,\n" +
@@ -859,7 +1335,7 @@ directionsForGenerateDatasetsXml() +
 "    String creation_date \"Wed Sep 12 14:44:43 PDT 2012\";\n" +
 "    String creator_email \"rama.nemani@nasa.gov\";\n" +
 "    String creator_name \"Rama Nemani\";\n" +
-"    String creator_url \"http://www.nasa.gov/\";\n" +
+"    String creator_url \"https://www.nasa.gov/\";\n" +
 "    String DOI \"http://dx.doi.org/10.7292/W0WD3XH4\";\n" +
 "    String downscalingModel \"BCSD\";\n" +
 "    String driving_data_tracking_ids \"N/A\";\n" +
@@ -884,7 +1360,7 @@ directionsForGenerateDatasetsXml() +
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = 
@@ -1004,6 +1480,429 @@ expected =
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected error: Have you updated your AWS credentials lately?\n"); 
         }
+
+    }
+
+    /**
+     * This tests writing .nccsvMetadata and .nccsv files with this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testNccsv() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testNccsv() *****************\n");
+
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "testGriddedNcFiles";
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+
+        //*** test getting .nccsvMetadata for entire dataset
+        String2.log("\n*** .nccsvMetadata for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_nccsvMeta", ".nccsvMetadata"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
+"*GLOBAL*,cdm_data_type,Grid\n" +
+"*GLOBAL*,composite,true\n" +
+"*GLOBAL*,contributor_name,\"Remote Sensing Systems, Inc\"\n" +
+"*GLOBAL*,contributor_role,Source of level 2 data.\n" +
+"*GLOBAL*,creator_email,dave.foley@noaa.gov\n" +
+"*GLOBAL*,creator_name,\"NOAA CoastWatch, West Coast Node\"\n" +
+"*GLOBAL*,creator_url,http://coastwatch.pfel.noaa.gov\n" +
+"*GLOBAL*,date_created,2008-08-29Z\n" +
+"*GLOBAL*,date_issued,2008-08-29Z\n" +
+"*GLOBAL*,Easternmost_Easting,359.875d\n" +
+"*GLOBAL*,geospatial_lat_max,89.875d\n" +
+"*GLOBAL*,geospatial_lat_min,-89.875d\n" +
+"*GLOBAL*,geospatial_lat_resolution,0.25d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,359.875d\n" +
+"*GLOBAL*,geospatial_lon_min,0.125d\n" +
+"*GLOBAL*,geospatial_lon_resolution,0.25d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,geospatial_vertical_max,0.0d\n" +
+"*GLOBAL*,geospatial_vertical_min,0.0d\n" +
+"*GLOBAL*,geospatial_vertical_positive,up\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +
+"*GLOBAL*,history,\"Remote Sensing Systems, Inc\\n2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\"\n" +
+"*GLOBAL*,infoUrl,http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\n" +
+"*GLOBAL*,institution,\"NOAA CoastWatch, West Coast Node\"\n" +
+"*GLOBAL*,keywords,EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,license,\"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\"\n" +
+"*GLOBAL*,naming_authority,gov.noaa.pfel.coastwatch\n" +
+"*GLOBAL*,Northernmost_Northing,89.875d\n" +
+"*GLOBAL*,origin,\"Remote Sensing Systems, Inc\"\n" +
+"*GLOBAL*,processing_level,\"3\"\n" +
+"*GLOBAL*,project,CoastWatch (http://coastwatch.noaa.gov/)\n" +
+"*GLOBAL*,projection,geographic\n" +
+"*GLOBAL*,projection_type,mapped\n" +
+"*GLOBAL*,references,RSS Inc. Winds: http://www.remss.com/ .\n" +
+"*GLOBAL*,satellite,QuikSCAT\n" +
+"*GLOBAL*,sensor,SeaWinds\n" +
+"*GLOBAL*,source,\"satellite observation: QuikSCAT, SeaWinds\"\n" +
+"*GLOBAL*,sourceUrl,http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"*GLOBAL*,Southernmost_Northing,-89.875d\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,summary,\"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\"\n" +
+"*GLOBAL*,time_coverage_end,2008-01-10T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,2008-01-01T12:00:00Z\n" +
+"*GLOBAL*,title,\"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\"\n" +
+"*GLOBAL*,Westernmost_Easting,0.125d\n" +
+"time,*DATA_TYPE*,String\n" +
+"time,_CoordinateAxisType,Time\n" +
+"time,actual_range,1.1991888E9d,1.1999664E9d\n" +
+"time,axis,T\n" +
+"time,fraction_digits,0i\n" +
+"time,ioos_category,Time\n" +
+"time,long_name,Centered Time\n" +
+"time,standard_name,time\n" +
+"time,time_origin,01-JAN-1970 00:00:00\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
+"altitude,*DATA_TYPE*,double\n" +
+"altitude,_CoordinateAxisType,Height\n" +
+"altitude,_CoordinateZisPositive,up\n" +
+"altitude,actual_range,0.0d,0.0d\n" +
+"altitude,axis,Z\n" +
+"altitude,fraction_digits,0i\n" +
+"altitude,ioos_category,Location\n" +
+"altitude,long_name,Altitude\n" +
+"altitude,positive,up\n" +
+"altitude,standard_name,altitude\n" +
+"altitude,units,m\n" +
+"latitude,*DATA_TYPE*,double\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,actual_range,-89.875d,89.875d\n" +
+"latitude,axis,Y\n" +
+"latitude,coordsys,geographic\n" +
+"latitude,fraction_digits,2i\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Latitude\n" +
+"latitude,point_spacing,even\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,units,degrees_north\n" +
+"longitude,*DATA_TYPE*,double\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,actual_range,0.125d,359.875d\n" +
+"longitude,axis,X\n" +
+"longitude,coordsys,geographic\n" +
+"longitude,fraction_digits,2i\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Longitude\n" +
+"longitude,point_spacing,even\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,units,degrees_east\n" +
+"x_wind,*DATA_TYPE*,float\n" +
+"x_wind,_FillValue,-9999999.0f\n" +
+"x_wind,colorBarMaximum,15.0d\n" +
+"x_wind,colorBarMinimum,-15.0d\n" +
+"x_wind,coordsys,geographic\n" +
+"x_wind,fraction_digits,1i\n" +
+"x_wind,ioos_category,Wind\n" +
+"x_wind,long_name,Zonal Wind\n" +
+"x_wind,missing_value,-9999999.0f\n" +
+"x_wind,standard_name,x_wind\n" +
+"x_wind,units,m s-1\n" +
+"y_wind,*DATA_TYPE*,float\n" +
+"y_wind,_FillValue,-9999999.0f\n" +
+"y_wind,colorBarMaximum,15.0d\n" +
+"y_wind,colorBarMinimum,-15.0d\n" +
+"y_wind,coordsys,geographic\n" +
+"y_wind,fraction_digits,1i\n" +
+"y_wind,ioos_category,Wind\n" +
+"y_wind,long_name,Meridional Wind\n" +
+"y_wind,missing_value,-9999999.0f\n" +
+"y_wind,standard_name,y_wind\n" +
+"y_wind,units,m s-1\n" +
+"mod,*DATA_TYPE*,float\n" +
+"mod,_FillValue,-9999999.0f\n" +
+"mod,colorBarMaximum,18.0d\n" +
+"mod,colorBarMinimum,0.0d\n" +
+"mod,colorBarPalette,WhiteRedBlack\n" +
+"mod,coordsys,geographic\n" +
+"mod,fraction_digits,1i\n" +
+"mod,ioos_category,Wind\n" +
+"mod,long_name,Modulus of Wind\n" +
+"mod,missing_value,-9999999.0f\n" +
+"mod,units,m s-1\n" +
+"\n" +
+"*END_METADATA*\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        
+        //.nccsv  just axis values
+        String2.log("\n*** .nccsv just axis values\n");       
+        userDapQuery = "latitude[0:100:700],longitude[0:10:100]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_nccsvAxis", ".nccsv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
+"*GLOBAL*,cdm_data_type,Grid\n" +
+"*GLOBAL*,composite,true\n" +
+"*GLOBAL*,contributor_name,\"Remote Sensing Systems, Inc\"\n" +
+"*GLOBAL*,contributor_role,Source of level 2 data.\n" +
+"*GLOBAL*,creator_email,dave.foley@noaa.gov\n" +
+"*GLOBAL*,creator_name,\"NOAA CoastWatch, West Coast Node\"\n" +
+"*GLOBAL*,creator_url,http://coastwatch.pfel.noaa.gov\n" +
+"*GLOBAL*,date_created,2008-08-29Z\n" +
+"*GLOBAL*,date_issued,2008-08-29Z\n" +
+"*GLOBAL*,Easternmost_Easting,359.875d\n" +
+"*GLOBAL*,geospatial_lat_max,89.875d\n" +
+"*GLOBAL*,geospatial_lat_min,-89.875d\n" +
+"*GLOBAL*,geospatial_lat_resolution,0.25d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,359.875d\n" +
+"*GLOBAL*,geospatial_lon_min,0.125d\n" +
+"*GLOBAL*,geospatial_lon_resolution,0.25d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,geospatial_vertical_max,0.0d\n" +
+"*GLOBAL*,geospatial_vertical_min,0.0d\n" +
+"*GLOBAL*,geospatial_vertical_positive,up\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +
+"*GLOBAL*,history,\"Remote Sensing Systems, Inc\\n2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n" + today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+expected = 
+//"T22:48:36Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n2017-04-18T22:48:36Z
+"http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.nccsv?latitude[0:100:700],longitude[0:10:100]\"\n" +
+"*GLOBAL*,infoUrl,http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\n" +
+"*GLOBAL*,institution,\"NOAA CoastWatch, West Coast Node\"\n" +
+"*GLOBAL*,keywords,EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,license,\"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\"\n" +
+"*GLOBAL*,naming_authority,gov.noaa.pfel.coastwatch\n" +
+"*GLOBAL*,Northernmost_Northing,89.875d\n" +
+"*GLOBAL*,origin,\"Remote Sensing Systems, Inc\"\n" +
+"*GLOBAL*,processing_level,\"3\"\n" +
+"*GLOBAL*,project,CoastWatch (http://coastwatch.noaa.gov/)\n" +
+"*GLOBAL*,projection,geographic\n" +
+"*GLOBAL*,projection_type,mapped\n" +
+"*GLOBAL*,references,RSS Inc. Winds: http://www.remss.com/ .\n" +
+"*GLOBAL*,satellite,QuikSCAT\n" +
+"*GLOBAL*,sensor,SeaWinds\n" +
+"*GLOBAL*,source,\"satellite observation: QuikSCAT, SeaWinds\"\n" +
+"*GLOBAL*,sourceUrl,http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"*GLOBAL*,Southernmost_Northing,-89.875d\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,summary,\"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\"\n" +
+"*GLOBAL*,time_coverage_end,2008-01-10T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,2008-01-01T12:00:00Z\n" +
+"*GLOBAL*,title,\"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\"\n" +
+"*GLOBAL*,Westernmost_Easting,0.125d\n" +
+"latitude,*DATA_TYPE*,double\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,actual_range,-89.875d,85.125d\n" +
+"latitude,axis,Y\n" +
+"latitude,coordsys,geographic\n" +
+"latitude,fraction_digits,2i\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Latitude\n" +
+"latitude,point_spacing,even\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,units,degrees_north\n" +
+"longitude,*DATA_TYPE*,double\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,actual_range,0.125d,25.125d\n" +
+"longitude,axis,X\n" +
+"longitude,coordsys,geographic\n" +
+"longitude,fraction_digits,2i\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Longitude\n" +
+"longitude,point_spacing,even\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,units,degrees_east\n" +
+"\n" +
+"*END_METADATA*\n" +
+"latitude,longitude\n" +
+"-89.875,0.125\n" +
+"-64.875,2.625\n" +
+"-39.875,5.125\n" +
+"-14.875,7.625\n" +
+"10.125,10.125\n" +
+"35.125,12.625\n" +
+"60.125,15.125\n" +
+"85.125,17.625\n" +
+",20.125\n" +
+",22.625\n" +
+",25.125\n" +
+"*END_DATA*\n";
+        int tPo = results.indexOf(expected.substring(0, 70));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
+        
+        //.nccsv  data values
+        String2.log("\n*** .nccsv data values\n");       
+        userDapQuery = "x_wind[0][0][0:100:400][0:10:30],y_wind[0][0][0:100:400][0:10:30]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_nccsvData", ".nccsv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
+"*GLOBAL*,cdm_data_type,Grid\n" +
+"*GLOBAL*,composite,true\n" +
+"*GLOBAL*,contributor_name,\"Remote Sensing Systems, Inc\"\n" +
+"*GLOBAL*,contributor_role,Source of level 2 data.\n" +
+"*GLOBAL*,creator_email,dave.foley@noaa.gov\n" +
+"*GLOBAL*,creator_name,\"NOAA CoastWatch, West Coast Node\"\n" +
+"*GLOBAL*,creator_url,http://coastwatch.pfel.noaa.gov\n" +
+"*GLOBAL*,date_created,2008-08-29Z\n" +
+"*GLOBAL*,date_issued,2008-08-29Z\n" +
+"*GLOBAL*,Easternmost_Easting,359.875d\n" +
+"*GLOBAL*,geospatial_lat_max,89.875d\n" +
+"*GLOBAL*,geospatial_lat_min,-89.875d\n" +
+"*GLOBAL*,geospatial_lat_resolution,0.25d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,359.875d\n" +
+"*GLOBAL*,geospatial_lon_min,0.125d\n" +
+"*GLOBAL*,geospatial_lon_resolution,0.25d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,geospatial_vertical_max,0.0d\n" +
+"*GLOBAL*,geospatial_vertical_min,0.0d\n" +
+"*GLOBAL*,geospatial_vertical_positive,up\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +
+"*GLOBAL*,history,\"Remote Sensing Systems, Inc\\n2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n" + today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+expected = 
+//"T23:00:11Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n2017-04-18T23:00:11Z
+"http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.nccsv?x_wind[0][0][0:100:400][0:10:30],y_wind[0][0][0:100:400][0:10:30]\"\n" +
+"*GLOBAL*,infoUrl,http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\n" +
+"*GLOBAL*,institution,\"NOAA CoastWatch, West Coast Node\"\n" +
+"*GLOBAL*,keywords,EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,license,\"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\"\n" +
+"*GLOBAL*,naming_authority,gov.noaa.pfel.coastwatch\n" +
+"*GLOBAL*,Northernmost_Northing,89.875d\n" +
+"*GLOBAL*,origin,\"Remote Sensing Systems, Inc\"\n" +
+"*GLOBAL*,processing_level,\"3\"\n" +
+"*GLOBAL*,project,CoastWatch (http://coastwatch.noaa.gov/)\n" +
+"*GLOBAL*,projection,geographic\n" +
+"*GLOBAL*,projection_type,mapped\n" +
+"*GLOBAL*,references,RSS Inc. Winds: http://www.remss.com/ .\n" +
+"*GLOBAL*,satellite,QuikSCAT\n" +
+"*GLOBAL*,sensor,SeaWinds\n" +
+"*GLOBAL*,source,\"satellite observation: QuikSCAT, SeaWinds\"\n" +
+"*GLOBAL*,sourceUrl,http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"*GLOBAL*,Southernmost_Northing,-89.875d\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,summary,\"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\"\n" +
+"*GLOBAL*,time_coverage_end,2008-01-10T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,2008-01-01T12:00:00Z\n" +
+"*GLOBAL*,title,\"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\"\n" +
+"*GLOBAL*,Westernmost_Easting,0.125d\n" +
+"time,*DATA_TYPE*,String\n" +
+"time,_CoordinateAxisType,Time\n" +
+"time,actual_range,1.1991888E9d,1.1991888E9d\n" +
+"time,axis,T\n" +
+"time,fraction_digits,0i\n" +
+"time,ioos_category,Time\n" +
+"time,long_name,Centered Time\n" +
+"time,standard_name,time\n" +
+"time,time_origin,01-JAN-1970 00:00:00\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
+"altitude,*DATA_TYPE*,double\n" +
+"altitude,_CoordinateAxisType,Height\n" +
+"altitude,_CoordinateZisPositive,up\n" +
+"altitude,actual_range,0.0d,0.0d\n" +
+"altitude,axis,Z\n" +
+"altitude,fraction_digits,0i\n" +
+"altitude,ioos_category,Location\n" +
+"altitude,long_name,Altitude\n" +
+"altitude,positive,up\n" +
+"altitude,standard_name,altitude\n" +
+"altitude,units,m\n" +
+"latitude,*DATA_TYPE*,double\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,actual_range,-89.875d,10.125d\n" +
+"latitude,axis,Y\n" +
+"latitude,coordsys,geographic\n" +
+"latitude,fraction_digits,2i\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Latitude\n" +
+"latitude,point_spacing,even\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,units,degrees_north\n" +
+"longitude,*DATA_TYPE*,double\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,actual_range,0.125d,7.625d\n" +
+"longitude,axis,X\n" +
+"longitude,coordsys,geographic\n" +
+"longitude,fraction_digits,2i\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Longitude\n" +
+"longitude,point_spacing,even\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,units,degrees_east\n" +
+"x_wind,*DATA_TYPE*,float\n" +
+"x_wind,_FillValue,-9999999.0f\n" +
+"x_wind,colorBarMaximum,15.0d\n" +
+"x_wind,colorBarMinimum,-15.0d\n" +
+"x_wind,coordsys,geographic\n" +
+"x_wind,fraction_digits,1i\n" +
+"x_wind,ioos_category,Wind\n" +
+"x_wind,long_name,Zonal Wind\n" +
+"x_wind,missing_value,-9999999.0f\n" +
+"x_wind,standard_name,x_wind\n" +
+"x_wind,units,m s-1\n" +
+"y_wind,*DATA_TYPE*,float\n" +
+"y_wind,_FillValue,-9999999.0f\n" +
+"y_wind,colorBarMaximum,15.0d\n" +
+"y_wind,colorBarMinimum,-15.0d\n" +
+"y_wind,coordsys,geographic\n" +
+"y_wind,fraction_digits,1i\n" +
+"y_wind,ioos_category,Wind\n" +
+"y_wind,long_name,Meridional Wind\n" +
+"y_wind,missing_value,-9999999.0f\n" +
+"y_wind,standard_name,y_wind\n" +
+"y_wind,units,m s-1\n" +
+"\n" +
+"*END_METADATA*\n" +
+"time,altitude,latitude,longitude,x_wind,y_wind\n" +
+"2008-01-01T12:00:00Z,0.0,-89.875,0.125,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-89.875,2.625,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-89.875,5.125,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-89.875,7.625,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-64.875,0.125,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-64.875,2.625,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-64.875,5.125,-3.06147,7.39104\n" +
+"2008-01-01T12:00:00Z,0.0,-64.875,7.625,0.455063,5.78212\n" +
+"2008-01-01T12:00:00Z,0.0,-39.875,0.125,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,-39.875,2.625,1.7765,2.89898\n" +
+"2008-01-01T12:00:00Z,0.0,-39.875,5.125,3.68331,1.497664\n" +
+"2008-01-01T12:00:00Z,0.0,-39.875,7.625,4.44164,3.2698202\n" +
+"2008-01-01T12:00:00Z,0.0,-14.875,0.125,-2.73632,5.548705\n" +
+"2008-01-01T12:00:00Z,0.0,-14.875,2.625,-3.71656,5.574005\n" +
+"2008-01-01T12:00:00Z,0.0,-14.875,5.125,-4.201255,5.3461847\n" +
+"2008-01-01T12:00:00Z,0.0,-14.875,7.625,-2.27968,4.8825197\n" +
+"2008-01-01T12:00:00Z,0.0,10.125,0.125,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,10.125,2.625,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,10.125,5.125,-9999999.0,-9999999.0\n" +
+"2008-01-01T12:00:00Z,0.0,10.125,7.625,-9999999.0,-9999999.0\n" +
+"*END_DATA*\n";
+        tPo = results.indexOf(expected.substring(0, 25));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+
 
     }
 
@@ -1146,7 +2045,7 @@ today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
@@ -2212,7 +3111,7 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String location \"" + EDStatic.unitTestDataDir + "grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    Float64 Northernmost_Northing 88.75001;\n" +
-"    String Originating_or_generating_Center \"UK Meteorological Office ­ Exeter (RSMC)\";\n" + //- is #173!
+"    String Originating_or_generating_Center \"UK Meteorological Office \u00ad Exeter (RSMC)\";\n" + //- is #173! I think this is a test.
 "    String Originating_or_generating_Subcenter \"0\";\n" +
 "    String Product_Type \"Initialized analysis product\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
@@ -2755,7 +3654,7 @@ expected=
 "\n2012-07-12 with change to Java 4.3.8, this doesn't pass because of\n" +
 "spaces and parens in attribute names. John Caron says he will fix.\n" +
 "2013-02-20 better but not all fixed.\n" +
-"http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#idp4775248\n" +
+"http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#idp4775248\n" +
 "says\n" +
 "\"Variable, dimension and attribute names should begin with a letter and be\n" +
 "composed of letters, digits, and underscores.\"\n" +
@@ -2964,8 +3863,9 @@ expected =
             ".asc", ".csv", ".csvp", ".csv0", 
             ".das", ".dds", ".dods", ".esriAscii", 
             ".graph", ".html", ".htmlTable",   //.help not available at this level
-            ".json", ".mat", 
+            ".json", ".jsonlCSV", ".jsonlKVP", ".mat", 
             ".nc", ".ncHeader", 
+            ".nccsv", ".nccsvMetadata",
             ".odvTxt", ".tsv", ".tsvp", ".tsv0", 
             ".xhtml", 
             ".geotif", ".kml", 
@@ -2977,8 +3877,9 @@ expected =
             187, 905, 811, 800,           //734, 6391, 6312, ?            //1250, 9750, 9562, ?                                  
             15, 15, 109, 8112,            //15, 15, 156, 16875            //15, 15, 547, 18859
             63, 47, 561,                  //63, 47, 2032,                 //93, 31, ...,
-            921, 125,                     //6422, 203,                    //9621, 625,  
+            921, 1068, 1265, 125,         //6422, ., ., 203,              //9621, ., ., 625,  
             121, 121,                     //2015-02 faster: 121. 2014-09 slower 163->331: java? netcdf-java? unsure //234, 250,   //500, 500, 
+            1006, 15,
             1248, 811, 811, 811,          //9547, 6297, 6281, ?,          //13278, 8766, 8844, ?,
             1800,  //but really slow if hard drive is busy!   //8625,     //11469, 
             750, 10,                      //2015-02 kml faster: 10, 2014-09 kml slower 110->258. why?  656, 110,         //687, 94,  //Java 1.7 was 390r until change to new netcdf-Java
@@ -2989,8 +3890,9 @@ expected =
             5875592, 23734053, 23734063, 23733974, 
             6006, 303, 2085486, 4701074, 
             60787, 51428, 14770799, 
-            31827797, 2085800, 
+            31827797, 28198736, 54118736, 2085800, 
             2090600, 5285, 
+            25961828, 5244,
             24337084, 23734053, 23734063, 23733974, 
             90604796, 
             523113, 3601, 
@@ -3319,6 +4221,30 @@ expected =
 "    ]\n" +
 "  }\n" +
 "}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.jsonlCSV  
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".jsonlCSV"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"[\"1984-02-01T12:00:59.001Z\", 9.96921E36, \"1994-01-31T12:00:59.000Z\"]\n" +
+"[\"1984-02-01T12:00:59.101Z\", 9.96921E36, \"1994-01-31T12:00:59.100Z\"]\n" +
+"[\"1984-02-01T12:00:59.201Z\", 9.96921E36, \"1994-01-31T12:00:59.200Z\"]\n" +
+"[\"1984-02-01T12:00:59.301Z\", 9.96921E36, \"1994-01-31T12:00:59.300Z\"]\n" +
+"[\"1984-02-01T12:00:59.401Z\", 9.96921E36, \"1994-01-31T12:00:59.400Z\"]\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.jsonlKVP  
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".jsonlKVP"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"{\"time\"=\"1984-02-01T12:00:59.001Z\", \"ECEF_X\"=9.96921E36, \"IB_time\"=\"1994-01-31T12:00:59.000Z\"}\n" +
+"{\"time\"=\"1984-02-01T12:00:59.101Z\", \"ECEF_X\"=9.96921E36, \"IB_time\"=\"1994-01-31T12:00:59.100Z\"}\n" +
+"{\"time\"=\"1984-02-01T12:00:59.201Z\", \"ECEF_X\"=9.96921E36, \"IB_time\"=\"1994-01-31T12:00:59.200Z\"}\n" +
+"{\"time\"=\"1984-02-01T12:00:59.301Z\", \"ECEF_X\"=9.96921E36, \"IB_time\"=\"1994-01-31T12:00:59.300Z\"}\n" +
+"{\"time\"=\"1984-02-01T12:00:59.401Z\", \"ECEF_X\"=9.96921E36, \"IB_time\"=\"1994-01-31T12:00:59.400Z\"}\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.mat  doesn't write strings
@@ -3713,6 +4639,7 @@ expected =
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    char Strings(days=2, Strings_strlen=2);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "  // global attributes:\n" +
@@ -4017,6 +4944,7 @@ expected =
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    char Strings(days=2, Strings_strlen=2);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "  // global attributes:\n" +
@@ -4380,7 +5308,11 @@ directionsForGenerateDatasetsXml() +
      */
     public static void testQuickRestart() throws Throwable {
         String2.log("\n****************** EDDGridFromNcFiles.testQuickRestart() *****************\n");
-        EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
+        //delete any cached info
+        String tDatasetID = "testGriddedNcFiles";
+        deleteCachedDatasetInfo(tDatasetID);
+
+        EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, tDatasetID); 
         String dataDir = eddGrid.fileDir;
         String tDir = EDStatic.fullTestCacheDirectory;
         String axisQuery = "time[]";
@@ -4608,7 +5540,7 @@ directionsForGenerateDatasetsXml() +
             File2.rename(dataDir, "erdQSwind1day_20080101_03.nc", "erdQSwind1day_20080101_03.nc2");
             Math2.sleep(1000);
             EDDGridFromFiles.testQuickRestart = true;
-            eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
+            eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, tDatasetID); 
 
             //some responses are same
             Test.ensureEqual(eddGrid.creationTimeMillis(), oCreationTimeMillis, "");
@@ -4651,17 +5583,23 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } finally {
-            //rename it back to original
+            //rename file back to original
             String2.log("\n*** rename it back to original\n");       
             File2.rename(dataDir, "erdQSwind1day_20080101_03.nc2", "erdQSwind1day_20080101_03.nc");
-            Math2.sleep(1000);
+            //delete badFile file so the 20080101 file is re-considered
+            File2.delete(badFileMapFileName(tDatasetID));
+            while (!File2.isFile(dataDir + "erdQSwind1day_20080101_03.nc")) {
+                String2.log("Waiting for " + dataDir + "erdQSwind1day_20080101_03.nc2 to be named back to .nc"); 
+                Math2.sleep(1000);
+            }
+
             //ensure testQuickRestart is set back to false
             EDDGridFromFiles.testQuickRestart = false;
         }
 
         //*** redo original tests
         String2.log("\n*** redo original tests\n");       
-        eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, "testGriddedNcFiles"); 
+        eddGrid = (EDDGridFromNcFiles)oneFromDatasetsXml(null, tDatasetID); 
 
         //creationTime should have changed
         Test.ensureNotEqual(eddGrid.creationTimeMillis(), oCreationTimeMillis, "");
@@ -4711,7 +5649,7 @@ directionsForGenerateDatasetsXml() +
         testVerboseOn();
         String results, expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-        String dir = "http://podaac-opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/";
+        String dir = "https://opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/";
 
         results = generateDatasetsXml( //dir is a HYRAX catalog.html URL!
             dir + "contents.html", 
@@ -4910,7 +5848,7 @@ expected =
         testVerboseOn();
         String results, expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-        String dir = "http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/"; //catalog.html
+        String dir = "https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/"; //catalog.html
 
       try {
         //dir  is a /thredds/catalog/.../  [implied catalog.html] URL!
@@ -4919,7 +5857,7 @@ expected =
             dir, 
             "sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc", 
             //sample file is a thredds/fileServer/.../...nc URL!
-            "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc", 
+            "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc", 
             -1, null);
         //String2.log(results);
 String2.setClipboardString(results);
@@ -4935,8 +5873,8 @@ String2.setClipboardString(results);
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +
@@ -4958,7 +5896,7 @@ String2.setClipboardString(results);
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"noaa_nodc_0ba9_b245_c4c4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
-"    <fileDir>http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/</fileDir>\n" +
+"    <fileDir>https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/</fileDir>\n" +
 "    <fileNameRegex>sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
@@ -4971,7 +5909,7 @@ String2.setClipboardString(results);
 "        <att name=\"creator_email\">Yongsheng.Zhang@noaa.gov</att>\n" +
 "        <att name=\"creator_institution\">US National Oceanographic Data Center</att>\n" +
 "        <att name=\"creator_name\">Yongsheng Zhang, Ph.D.</att>\n" +
-"        <att name=\"creator_url\">http://www.nodc.noaa.gov/SatelliteData</att>\n" +
+"        <att name=\"creator_url\">https://www.nodc.noaa.gov/SatelliteData</att>\n" +
 "        <att name=\"date_created\">20140716T073150Z</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"double\">90.0</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"double\">-90.0</att>\n" +
@@ -5001,7 +5939,7 @@ String2.setClipboardString(results);
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
-"        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/catalog.html</att>\n" +
+"        <att name=\"infoUrl\">https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/catalog.html</att>\n" +
 "        <att name=\"institution\">JPL, California Institute of Technology</att>\n" +
 "        <att name=\"keywords\">aquarius, calculate, calculated, california, center, data, earth,\n" +
 "Earth Science &gt;Oceans &gt; Surface Salinity,\n" +
@@ -5205,7 +6143,7 @@ String2.setClipboardString(results);
 "    String creator_email \"Yongsheng.Zhang@noaa.gov\";\n" +
 "    String creator_institution \"US National Oceanographic Data Center\";\n" +
 "    String creator_name \"Yongsheng Zhang, Ph.D.\";\n" +
-"    String creator_url \"http://www.nodc.noaa.gov/SatelliteData\";\n" +
+"    String creator_url \"https://www.nodc.noaa.gov/SatelliteData\";\n" +
 "    String date_created \"20150424T093015Z\";\n" +
 "    Float64 Easternmost_Easting 179.5;\n" +
 "    Float64 geospatial_lat_max 89.5;\n" +
@@ -5227,7 +6165,7 @@ today;
     
 expected =
 "Z http://localhost:8080/cwexperimental/griddap/testRemoteThreddsFiles.das\";\n" +
-"    String infoUrl \"http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/catalog.html\";\n" +
+"    String infoUrl \"https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/catalog.html\";\n" +
 "    String institution \"JPL, California Institute of Technology\";\n" +
 "    String keywords \"aquarius, calculate, calculated, california, center, data, earth,\n" +
 "Earth Science >Oceans > Surface Salinity,\n" +
@@ -5404,7 +6342,7 @@ expected =
 
     /**
      * Test file created from 
-     * http://thredds.jpl.nasa.gov/thredds/ncss/grid/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml/dataset.html
+     * https://thredds.jpl.nasa.gov/thredds/ncss/grid/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml/dataset.html
      * and stored in /erddapTest/unsigned/
      *
      * @throws Throwable if trouble
@@ -5806,7 +6744,7 @@ expected =
 "    String colorBarScale \"Log\";\n" +
 "    String ioos_category \"Ocean Color\";\n" +
 "    String long_name \"Chlorophyll Concentration, OCI Algorithm\";\n" +
-"    String reference \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
 "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
 "    String units \"mg m^-3\";\n" +
 "    Float32 valid_max 100.0;\n" +
@@ -5818,7 +6756,8 @@ expected =
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
-"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
 "    Float64 Easternmost_Easting 179.9584;\n" +
 "    Float64 geospatial_lat_max 89.95834;\n" +
@@ -5833,14 +6772,14 @@ today; // (local files)
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = 
 //    "    String id "S19980011998031.L3b_MO_CHL.nc/L3/S19980011998031.L3b_MO_CHL.nc";
 "    String identifier_product_doi \"http://dx.doi.org\";\n" +
 "    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
-"    String infoUrl \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String infoUrl \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
 "    String instrument \"SeaWiFS\";\n" +
 "    String keywords \"algorithm, biology, center, chemistry, chlor_a, chlorophyll, color, concentration, concentration_of_chlorophyll_in_sea_water, data, field, field-of-view, flight, goddard, group, gsfc, image, L3, level, level-3, mapped, nasa, noaa, obpg, ocean, ocean color, oceans,\n" +
@@ -5850,7 +6789,7 @@ expected =
 "oci, optics, orbview, orbview-2, palette, processing, sea, sea-wide, seawater, seawifs, sensor, smi, space, standard, view, water, wide\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
-"    String license \"http://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
 "\n" +
 "Please cite: NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group; (2014): SeaWiFS Ocean Color Data; NASA Goddard Space Flight Center, Ocean Ecology Laboratory, Ocean Biology Processing Group. http://dx.doi.org/10.5067/ORBVIEW-2/SEAWIFS_OC.2014.0\n" +
 "\n" +
@@ -5863,7 +6802,7 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String map_projection \"Equidistant Cylindrical\";\n" +
 "    String measure \"Mean\";\n" +
-"    String naming_authority \"gov.nasa.gsfc.sci.oceandata\";\n" +
+"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.95834;\n" +
 "    String platform \"Orbview-2\";\n" +
 "    String processing_control_input_parameters_datamax \"20.000000\";\n" +
@@ -5897,12 +6836,12 @@ expected =
 "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
 "    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String publisher_name \"NASA/GSFC/OBPG\";\n" +
-"    String publisher_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
-"    String references \"SeaWiFS information: http://oceancolor.gsfc.nasa.gov/SeaWiFS/ . NASA Ocean\n" +
-"Color information: http://oceancolor.gsfc.nasa.gov/\n" +
+"    String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String references \"SeaWiFS information: https://oceancolor.gsfc.nasa.gov/SeaWiFS/ . NASA Ocean\n" +
+"Color information: https://oceancolor.gsfc.nasa.gov/\n" +
 "Processing reference: O'Reilly, J.E., Maritorena, S., Mitchell, B.G., Siegel, D.A., Carder, K.L., Garver, S.A., Kahru, M. and McClain, C. (1998). Ocean color chlorophyll algorithms for SeaWiFS. J. Geophys. Res., 103: 24, 937-24, 953.\n" +
 "Processing reference: O'Reilly, J. E., and 21 others. 2000. Ocean color chlorophyll a algorithms for SeaWiFS, OC2 and OC4: Version 4. SeaWiFS Postlaunch Calibration and Validation Analyses, part 3. NASA SeaWiFS technical report series. pp. 8 226 22.\n" +
-"Processing reference: Fu, G., Baith, K. S., and McClain, C. R. (1998). SeaDAS: The SeaWiFS Data Analysis System. Proceedings of \\\\\"The 4th Pacific Ocean Remote Sensing Conference\\\\\", Qingdao, China, July 28-31, 1998, 73-79.\n" +
+"Processing reference: Fu, G., Baith, K. S., and McClain, C. R. (1998). SeaDAS: The SeaWiFS Data Analysis System. Proceedings of \\\"The 4th Pacific Ocean Remote Sensing Conference\\\", Qingdao, China, July 28-31, 1998, 73-79.\n" +
 "Validation reference: Hooker, S.B., and C.R. McClain (2000). The Calibration and Validation of SeaWiFS Data. Prog. Oceanogr., 45, 427-465.\n" +
 "R2014.0 processing reference: Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
@@ -5924,7 +6863,7 @@ expected =
 "    String temporal_range \"month\";\n" +
 "    String time_coverage_end \"1998-02-16T00:00:00Z\";\n" +
 "    String time_coverage_start \"1998-01-16T00:00:00Z\";\n" +
-"    String title \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1°, Global, 1997-2010 (Monthly Composite)\";\n" +
+"    String title \"Chlorophyll-a, Orbview-2 SeaWiFS, R2014.0, 0.1\u00b0, Global, 1997-2010 (Monthly Composite)\";\n" +
 "    Float64 Westernmost_Easting -179.9583;\n" +
 "  }\n" +
 "}\n";
@@ -6053,7 +6992,7 @@ expected =
 "    String colorBarScale \"Log\";\n" +
 "    String ioos_category \"Ocean Color\";\n" +
 "    String long_name \"Chlorophyll Concentration, OCI Algorithm\";\n" +
-"    String reference \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
 "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
 "    String units \"mg m^-3\";\n" +
 "    Float32 valid_max 100.0;\n" +
@@ -6065,7 +7004,8 @@ expected =
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
-"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
 "    Float64 Easternmost_Easting 179.9584;\n" +
 "    Float64 geospatial_lat_max 89.95834;\n" +
@@ -6080,20 +7020,21 @@ today; // (local files)
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = 
 //    "    String id "S19980011998031.L3b_MO_CHL.nc/L3/S19980011998031.L3b_MO_CHL.nc";
 "    String identifier_product_doi \"http://dx.doi.org\";\n" +
 "    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
-"    String infoUrl \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String infoUrl \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
 "    String instrument \"SeaWiFS\";\n" +
 "    String keywords \"algorithm, biology\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
-"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
@@ -6136,7 +7077,7 @@ expected =
 "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
 "    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String publisher_name \"NASA/GSFC/OBPG\";\n" +
-"    String publisher_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -89.95834;\n" +
 "    String spatialResolution \"9.20 km\";\n" +
@@ -6285,7 +7226,7 @@ expected =
 "    String colorBarScale \"Log\";\n" +
 "    String ioos_category \"Ocean Color\";\n" +
 "    String long_name \"Chlorophyll Concentration, OCI Algorithm\";\n" +
-"    String reference \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
+"    String references \"Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a algorithms for oligotrophic oceans: A novel approach based on three-band reflectance difference, J. Geophys. Res., 117, C01011, doi:10.1029/2011JC007395.\";\n" +
 "    String standard_name \"concentration_of_chlorophyll_in_sea_water\";\n" +
 "    String units \"mg m^-3\";\n" +
 "    Float32 valid_max 100.0;\n" +
@@ -6297,7 +7238,8 @@ expected =
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
-"    String creator_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String date_created \"2015-10-02T00:07:10.000Z\";\n" +
 "    Float64 Easternmost_Easting 179.9584;\n" +
 "    Float64 geospatial_lat_max 89.95834;\n" +
@@ -6312,20 +7254,21 @@ today; // (local files)
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = 
 //    "    String id "S19980011998031.L3b_MO_CHL.nc/L3/S19980011998031.L3b_MO_CHL.nc";
 "    String identifier_product_doi \"http://dx.doi.org\";\n" +
 "    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
-"    String infoUrl \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String infoUrl \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
 "    String instrument \"SeaWiFS\";\n" +
 "    String keywords \"algorithm, biology\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
-"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
+"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
@@ -6368,7 +7311,8 @@ expected =
 "    String project \"Ocean Biology Processing Group (NASA/GSFC/OBPG)\";\n" +
 "    String publisher_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String publisher_name \"NASA/GSFC/OBPG\";\n" +
-"    String publisher_url \"http://oceandata.sci.gsfc.nasa.gov\";\n" +
+"    String publisher_type \"group\";\n" +
+"    String publisher_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -89.95834;\n" +
 "    String spatialResolution \"9.20 km\";\n" +
@@ -6544,13 +7488,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webadmin@oceancolor.gsfc.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA/GSFC OBPG</att>\n" +
-"        <att name=\"creator_url\">http://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
+"        <att name=\"creator_url\">https://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
 "        <att name=\"Data_Center\">null</att>\n" +
 "        <att name=\"End_Day\">null</att>\n" +
 "        <att name=\"End_Millisec\">null</att>\n" +
 "        <att name=\"End_Time\">null</att>\n" +
 "        <att name=\"End_Year\">null</att>\n" +
-"        <att name=\"infoUrl\">http://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
+"        <att name=\"infoUrl\">https://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
 "        <att name=\"keywords\">aquarius, Aquarius_Flags_rad_rfi_flags, Aquarius_Flags_unnamedDim0, Aquarius_Flags_unnamedDim1, Aquarius_Flags_unnamedDim2, Aquarius_Flags_unnamedDim3, biology, center, color, data, flight, goddard, group, gsfc, level, nasa, obpg, ocean, processing, quality, space</att>\n" +
 "        <att name=\"Latitude_Units\">null</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
@@ -6994,7 +7938,7 @@ expected =
 
         String2.log("\n************* EDDGridFromNcFiles.testBadNcFile() ************\n");
         testVerboseOff();
-        String fileName = "/git/erddapTest/nc/invalidShortened2.nc";
+        String fileName = EDStatic.unitTestDataDir + "nc/invalidShortened2.nc";
         String id = "testBadNcFile";
 
         //try to read it many times
@@ -7044,6 +7988,57 @@ expected =
 
     }
 
+    /** 
+     * This ensures that  looks for resource leaks from repeated attempts to read an 
+     * invalid nc file. 
+     * This catches the invalid file if NcHelper has
+     *   ucar.nc2.iosp.netcdf3.N3header.disallowFileTruncation = true;
+     * but fails to catch it if 
+     *   ucar.nc2.iosp.netcdf3.N3header.disallowFileTruncation = false; //the default
+     */
+    public static void testInvalidShortenedNcFile() throws Throwable {
+
+        String2.log("\n************* EDDGridFromNcFiles.testInvalidShortenedNcFile() ************\n");
+        testVerboseOff();
+        String fileName = EDStatic.unitTestDataDir + "nc/invalidShortened.nc"; //header is intact
+        String id = "testBadNcFile";
+
+        NetcdfFile ncFile = null; 
+        try {
+            ncFile = NetcdfFile.open(fileName); //this is what fails with 1/10000th file
+            System.out.println("1) Shouldn't get here!"); //It doesn't get here. Good! Test is done early on.
+
+            Variable var = ncFile.findVariable("MWcdom");  //size=[1,1,2321,4001]
+            System.out.println("2) Shouldn't get here!");
+
+            Array array = var.read();          
+            System.out.println("shape=" + Arrays.toString(array.getShape()));
+            System.out.println("3) Shouldn't get here!");
+
+            array = var.read("0,0,0:2000:1000,0:4000:1000");
+            System.out.println("shape=" + Arrays.toString(array.getShape()));
+
+            //System.out.println(array.toString());
+            //This does happen if disallowFileTruncation = false;
+            System.out.println("4) Shouldn't get here!");
+            String2.pressEnterToContinue(); 
+            ncFile.close();
+        } catch (Throwable t) {
+            //expected
+            try {
+                if (ncFile != null)
+                    ncFile.close();
+            } catch (Throwable t2) {
+                //don't care
+            }
+            String msg = t.toString();
+            String2.log("caught: " + msg);
+            Test.ensureEqual(msg,
+                "java.io.IOException: java.io.IOException: File is truncated calculated size= 37201448 actual = 6200241",
+                "");
+        }
+    }
+
 
 
 
@@ -7058,11 +8053,13 @@ expected =
         testCwHdf(deleteCachedDatasetInfo);
         testHdf();
         testNcml();
+        testNccsv();
         testGrib_43(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3+
         testGrib2_43(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3+
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
-        testSpeed(-1);  //-1=all  19=.xhtml
+        testGenerateDatasetsXml3();
+        testSpeed(18);  //-1=all 
         testAVDVSameSource();
         test2DVSameSource();
         testAVDVSameDestination();
@@ -7079,14 +8076,15 @@ expected =
         testQuickRestart();
 
         //tests of remote sources on-the-fly
-        //NetcdfFile.open(          "http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
-        //NetcdfDataset.openDataset("http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
-        //from command line: curl --head http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
+        //NetcdfFile.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+        //NetcdfDataset.openDataset("https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+        //from command line: curl --head https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
         testGenerateDatasetsXmlWithRemoteThreddsFiles();
         testRemoteThreddsFiles(false); //deleteCachedInfo 
         testMatchAxisNDigits();
         testIgor();
         testBadNcFile(false);  //runIncrediblySlowTest?
+        testInvalidShortenedNcFile();
 
         testGenerateDatasetsXmlAwsS3();   //VERY SLOW
         testAwsS3(false);  //deleteCachedInfo   //VERY SLOW

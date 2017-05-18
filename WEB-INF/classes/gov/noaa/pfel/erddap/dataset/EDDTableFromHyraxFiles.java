@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.*;
-import org.joda.time.format.*;
+import java.time.*;
+import java.time.format.*;
 
 /** 
  * This class downloads data from a Hyrax data server with lots of files 
@@ -84,7 +84,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -100,7 +101,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
             tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
@@ -115,7 +116,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * 
      * @param catalogUrl  should have /catalog/ in the middle and 
      *    / or contents.html at the end
-     *    e.g., http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/contents.html
+     *    e.g., https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/contents.html
      * This won't throw an exception.
      */
     public static void makeDownloadFileTasks(String tDatasetID, 
@@ -140,7 +141,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 return;
 
             //mimic the remote directory structure (there may be 10^6 files in many dirs)
-            //catalogUrl http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/contents.html
+            //catalogUrl https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/contents.html
             if (catalogUrl == null || catalogUrl.length() == 0)
                 throw new RuntimeException("ERROR: <sourceUrl>http://.../contents.html</sourceUrl> " +
                     "must be in the addGlobalAttributes section of the datasets.xml " +
@@ -344,12 +345,12 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      *
      * @param tLocalDirUrl the locally useful starting (parent) directory with a 
      *    Hyrax sub-catalog for searching for files
-     *   e.g., http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/
+     *   e.g., https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/
      * @param tFileNameRegex  the regex that each filename (no directory info) must match 
      *    (e.g., ".*\\.nc")  (usually only 1 backslash; 2 here since it is Java code). 
      *   e.g, "pentad.*\\.nc\\.gz"
      * @param oneFileDapUrl  the locally useful url for one file, without ending .das or .html
-     *   e.g., http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/pentad_19870908_v11l35flk.nc.gz
+     *   e.g., https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/pentad_19870908_v11l35flk.nc.gz
      * @param tReloadEveryNMinutes
      * @param tPreExtractRegex       part of info for extracting e.g., stationName from file name. Set to "" if not needed.
      * @param tPostExtractRegex      part of info for extracting e.g., stationName from file name. Set to "" if not needed.
@@ -422,11 +423,12 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 if (verbose) String2.log("  baseType=" + baseType.toString() + " isn't supported yet.\n");
             }
             if (pv != null) {
+                PrimitiveArray pa = 
+                    PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false);
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, 
-                    PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false),
-                    sourceAtts);
+                    pa, sourceAtts);
                 dataAddTable.addColumn(dataAddTable.nColumns(), varName, 
-                    PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false),
+                    makeDestPAForGDX(pa, sourceAtts), 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         dataSourceTable.globalAttributes(),
                         sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
@@ -467,7 +469,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 1)); //nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false));
 
         //write the information
         StringBuilder sb = new StringBuilder();
@@ -526,9 +528,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
         try {
             String results = generateDatasetsXml(
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/", 
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/", 
 "pentad.*\\.nc\\.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/pentad_19870705_v11l35flk.nc.gz", 
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/pentad_19870705_v11l35flk.nc.gz", 
 2880,
 "", "", "", "", //extract
 "time", "time", new Attributes());
@@ -537,7 +539,7 @@ String expected =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"nasa_jpl_91f4_69e3_32c9\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"nasa_jpl_6965_9def_b894\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>2880</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>\n" +
@@ -569,8 +571,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
+"        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
-"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/.html</att>\n" +
+"        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/.html</att>\n" +
 "        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
 "        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
@@ -578,7 +581,7 @@ directionsForGenerateDatasetsXml() +
 "atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"sourceUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
+"        <att name=\"sourceUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "    </addAttributes>\n" +
@@ -635,7 +638,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>uwnd</sourceName>\n" +
 "        <destinationName>uwnd</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
+"        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">-15.897105 22.495602</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
@@ -655,7 +658,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>vwnd</sourceName>\n" +
 "        <destinationName>vwnd</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
+"        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">-16.493101 25.951406</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
@@ -675,7 +678,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>wspd</sourceName>\n" +
 "        <destinationName>wspd</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
+"        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">0.040334757 29.29576</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">37.5</att>\n" +
@@ -695,7 +698,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>upstr</sourceName>\n" +
 "        <destinationName>upstr</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
+"        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">-284.62888 657.83044</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
@@ -715,7 +718,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>vpstr</sourceName>\n" +
 "        <destinationName>vpstr</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
+"        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">-305.23505 694.61383</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
@@ -735,7 +738,7 @@ directionsForGenerateDatasetsXml() +
 "    <dataVariable>\n" +
 "        <sourceName>nobs</sourceName>\n" +
 "        <destinationName>nobs</destinationName>\n" +
-"        <dataType>short</dataType>\n" +
+"        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">0.0 20.0</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">32766.0</att>\n" +
@@ -782,9 +785,9 @@ directionsForGenerateDatasetsXml() +
 
         try {
             String results = generateDatasetsXml(
-"http://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/contents.html", 
+"https://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/contents.html", 
 "wod_002057.*\\.nc",
-"http://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/wod_002057989O.nc", 
+"https://data.nodc.noaa.gov/opendap/wod/XBT/195209-196711/wod_002057989O.nc", 
 2880,
 "", "", "", "", //extract
 "time", "time", new Attributes());
@@ -859,6 +862,7 @@ directionsForGenerateDatasetsXml() +
         if (deleteCachedInfoAndOneFile) {
             deleteCachedDatasetInfo(id);
             File2.delete(EDStatic.fullCopyDirectory + id + "/" + deletedFile);
+            Math2.sleep(1000);
         }
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
@@ -1003,11 +1007,11 @@ today;
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
         
-//        + " http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n" +
+//        + " https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n" +
 //today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/testEDDTableFromHyraxFiles.das\";\n" +
-"    String infoUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n" +
+"    String infoUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Atmosphere > Atmospheric Winds > Wind Stress,\n" +
@@ -1021,7 +1025,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 78.375;\n" +
-"    String sourceUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/\";\n" +
+"    String sourceUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/\";\n" +
 "    Float64 Southernmost_Northing -78.375;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"Time average of level3.0 products.\";\n" +

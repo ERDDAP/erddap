@@ -32,7 +32,7 @@ public class Touch  {
      * @param urlEnd the end of the url (already percentEncoded as needed)
      */
     private static void tThredds(String urlEnd) throws Exception {
-        String base = "http://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/";
+        String base = "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/";
         String find = "Dataset {";
         String2.log("  touching " + base + urlEnd);
         String response = SSR.getUrlResponseString(base + urlEnd);
@@ -232,7 +232,7 @@ public class Touch  {
      */
     public static void getPiscoUrls() throws Exception {
         //get the main catlog
-        String cat = SSR.getUrlResponseString("http://oceanwatch.pfeg.noaa.gov/thredds/catalog.html");
+        String cat = SSR.getUrlResponseString("https://oceanwatch.pfeg.noaa.gov/thredds/catalog.html");
         //String2.log(cat);
 
         //extract all pisco urls

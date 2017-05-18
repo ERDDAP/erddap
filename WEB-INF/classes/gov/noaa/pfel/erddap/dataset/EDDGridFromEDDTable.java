@@ -188,7 +188,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      * constructor.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -801,7 +801,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
                 sourceDataTable.addColumn(sourceDataTable.nColumns(), destName,
                     PrimitiveArray.factory(tClass, 1, false), sourceAtts);
                 addDataTable.addColumn(addDataTable.nColumns(), destName,
-                    PrimitiveArray.factory(tClass, 1, false), destAtts);
+                    makeDestPAForGDX(PrimitiveArray.factory(tClass, 1, false), sourceAtts), 
+                    destAtts);
             }
         }
 
@@ -888,7 +889,7 @@ directionsForGenerateDatasetsXml() +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.</att>\n" +
 "        <att name=\"Northernmost_Northing\" type=\"double\">39.3</att>\n" +
-"        <att name=\"reference\">Schroeder, Isaac D., Bryan A. Black, William J. Sydeman, Steven J. Bograd, Elliott L. Hazen, Jarrod A. Santora, and Brian K. Wells. &quot;The North Pacific High and wintertime pre-conditioning of California current productivity&quot;, Geophys. Res. Letters, VOL. 40, 541-546, doi:10.1002/grl.50100, 2013</att>\n" +
+"        <att name=\"references\">Schroeder, Isaac D., Bryan A. Black, William J. Sydeman, Steven J. Bograd, Elliott L. Hazen, Jarrod A. Santora, and Brian K. Wells. &quot;The North Pacific High and wintertime pre-conditioning of California current productivity&quot;, Geophys. Res. Letters, VOL. 40, 541-546, doi:10.1002/grl.50100, 2013</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">23.3</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
@@ -1333,10 +1334,10 @@ directionsForGenerateDatasetsXml() +
 "    String history \"Created by the NCDDC PISCO ADCP Profile to converter on 2009/00/11 15:00 CST.\n";
        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
-//"2015-01-30T17:06:49Z http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
+//"2015-01-30T17:06:49Z https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
 //"2015-01-30T17:06:49Z http://localhost:8080/cwexperimental/griddap/testGridFromTable.das\";\n" +
 expected=
-    "String infoUrl \"http://www.ncddc.noaa.gov/activities/wcos\";\n" +
+    "String infoUrl \"https://www.ncddc.noaa.gov/activities/wcos\";\n" +
 "    String institution \"NOAA NMSP\";\n" +
 "    String keywords \"Oceans > Ocean Circulation > Ocean Currents,\n" +
 "adcp, atmosphere, circulation, coast, current, currents, data, depth, eastward, eastward_sea_water_velocity, eastward_sea_water_velocity status_flag, error, flag, height, identifier, intensity, nmsp, noaa, northward, northward_sea_water_velocity, northward_sea_water_velocity status_flag, observing, ocean, oceans, quality, sea, seawater, station, status, system, time, upward, upward_sea_water_velocity, upwards, velocity, water, wcos, west, west coast\";\n" +
@@ -1349,7 +1350,7 @@ expected=
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 34.04017;\n" +
-"    String sourceUrl \"http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
+"    String sourceUrl \"https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 34.04017;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"longitude, latitude\";\n" +

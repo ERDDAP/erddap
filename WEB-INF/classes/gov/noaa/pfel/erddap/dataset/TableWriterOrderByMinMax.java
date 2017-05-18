@@ -20,7 +20,7 @@ import java.util.BitSet;
  * of data with each station's minimum and maximum time value (min on one row 
  * and max on the next).
  *
- * <p>This doesn't do anything to missing values and doesn't asssume they are
+ * <p>This doesn't do anything to missing values and doesn't assume they are
  * stored as NaN or fake missing values.
  *
  * <p>Unlike TableWriterAllWithMetadata, this doesn't keep track of min,max for actual_range

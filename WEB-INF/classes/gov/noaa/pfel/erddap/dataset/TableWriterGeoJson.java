@@ -37,6 +37,7 @@ public class TableWriterGeoJson extends TableWriter {
 
     //set by firstTime
     protected int lonColumn = -1, latColumn = -1, altColumn = -1;
+    protected boolean isChar[];
     protected boolean isString[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
@@ -123,11 +124,12 @@ public class TableWriterGeoJson extends TableWriter {
 
             //write the header
             writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream("UTF-8"), "UTF-8"));
+                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
             if (jsonp != null) 
                 writer.write(jsonp + "(");
 
             //create the containing object
+            isChar   = new boolean[nColumns];
             isString = new boolean[nColumns];
             if (nColumns == 2) {
                 //write as MultiPoint
@@ -144,7 +146,9 @@ public class TableWriterGeoJson extends TableWriter {
                     "  \"propertyNames\": [");
                 boolean somethingWritten = false;
                 for (int col = 0; col < nColumns; col++) {
-                    isString[col] = table.getColumn(col).elementClass() == String.class;
+                    Class cClass = table.getColumn(col).elementClass();
+                    isChar[  col] = cClass == char.class;
+                    isString[col] = cClass == String.class;
                     if (col != lonColumn && col != latColumn) {
                         if (somethingWritten) writer.write(", "); else somethingWritten = true;
                         writer.write(String2.toJson(table.getColumnName(col)));
@@ -250,7 +254,7 @@ public class TableWriterGeoJson extends TableWriter {
                             s = Double.isNaN(d)? "null" : 
                                 "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
                                     time_precision[col], d, "") + "\"";
-                        } else if (isString[col]) {
+                        } else if (isChar[col] || isString[col]) {
                             s = String2.toJson(table.getStringData(col, row));
                         } else { //numeric
                             s = table.getStringData(col, row);

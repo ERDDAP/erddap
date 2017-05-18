@@ -39,14 +39,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -145,9 +140,9 @@ public class GridDataSetThredds extends GridDataSet {
         String baseBaseUrl = baseUrl.substring(0, threddsPo);
 
 /* 
-top level catalog is at http://oceanwatch.pfeg.noaa.gov:8081/thredds/catalog.xml
-excerpt from http://oceanwatch.pfeg.noaa.gov:8081/thredds/Satellite/aggregsatMO/k490/catalog.xml
-to see opendap server e.g., http://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/satellite/MO/k490/1day.html
+top level catalog is at https://oceanwatch.pfeg.noaa.gov/thredds/catalog.xml
+excerpt from https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/catalog.xml
+to see opendap server e.g., https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/1day.html
 oceanwatch numerical ip from coastwatch computer is 192.168.31.13)
 
 Most datasets have 2 levels: <dataset><dataset>
@@ -234,8 +229,8 @@ J1ugeo has just one level: <dataset>   *** So look for <dataset> with urlPath at
                 long tTime = System.currentTimeMillis();
 
                 //need to convert 
-                //  baseUrl "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/" + "catalog.xml", 
-                //  to      "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/" + "satellite/MO/k490/hday",
+                //  baseUrl "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/" + "catalog.xml", 
+                //  to      "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/" + "satellite/MO/k490/hday",
                 //  just add  ".html" to make user-friendly link
                 dataSetUrl = baseBaseUrl + opendapServiceBase + urlPath;  
 
@@ -882,7 +877,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
     public static void testGetTimeSeries() throws Exception {
         String2.log("\n*** start TestBrowsers.testGetTimeSeries");
         String url = 
-            //was "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; //oceanwatch
+            //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; //oceanwatch
             "http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; 
 
         DataHelper.verbose = true;
@@ -1038,14 +1033,14 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         FileNameUtility.verbose = true;
         FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
 
-//       String baseUrl = "http://oceanwatch.pfeg.noaa.gov:8081/thredds/Satellite/aggregsatMO/k490/";
+//       String baseUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/";
 //       String2.log("getUrlString for " + baseUrl + "catalog.xml");
 //       String2.log(SSR.getUrlResponseString(baseUrl + "catalog.xml"));
 
 //       Opendap opendap = new Opendap(
-//           //"http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 
-//           //"http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 
-//           "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/hday.das",
+//           //"https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 
+//           //"https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 
+//           "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/hday.das",
 //           acceptDeflate); //throws Exception if trouble
 
 //    public GridDataSetThredds(FileNameUtility fileNameUtility, String internalName, String baseUrl, 
@@ -1073,7 +1068,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             internalName = "TJ1ugeo";
             sixName = internalName.substring(1);
             gridDataSet = new GridDataSetThredds(fnu, internalName,
-                //was "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatJ1/ugeo/", //was :8081
+                //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatJ1/ugeo/", //was :8081
                 "http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatJ1/ugeo/", 
                 "BlueWhiteRed", "Linear", "-10", "10", -1, "", null, null,
                 "S", 1, 0, "", 1, 1);
@@ -1217,7 +1212,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //These mimic tests in Grid.testReadGrdSubset().
             //Comment out this line with /* to comment out this test. 
             gridDataSet = new GridDataSetThredds(fnu, "TMBchla",
-                //was "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/", //was :8081
+                //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/", //was :8081
                 "http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/",
                 "Rainbow", "Log", ".001", "30", -1, "", null, null, "S", 1, 0, "", 1, 1);
             fileName = "temp";
@@ -1307,7 +1302,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //one time only: get one of these files for testing readGrd
             //actual dataset minX=120.0 maxX=320.0 minY=-45.0 maxY=65.0 xInc=0.025 yInc=0.025
             gridDataSet = new GridDataSetThredds(fnu, "TMBchla",
-                "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/", //was :8081
+                "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/", //was :8081
                 "Rainbow", "Log", ".001", "30", -1, "", null, null);
             fileName = "TestReadGrgTMBchla";
 
@@ -1345,7 +1340,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             "gov/noaa/pfel/coastwatch/griddata/";
         GridDataSetThredds gridDataSet = new GridDataSetThredds(fnu, 
             internalName,
-            //was "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsat" + 
+            //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsat" + 
             "http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsat" +
                 twoName + "/" + fourName + "/", 
             "BlueWhiteRed", "Linear", "-10", "10", -1, "", null, null,

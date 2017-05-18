@@ -74,7 +74,7 @@ public class EDDTableFromNOS extends EDDTable{
     protected final static int stationIDIndex = 3; 
 
     //station table variables
-    public static String stationUrl = "http://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp";
+    public static String stationUrl = "https://opendap.co-ops.nos.noaa.gov/stations/stationsXML.jsp";
     protected final static int STATION_NAME_COL = 0, //String
         STATION_ID_COL = 1, //int
         STATION_LON_COL = 2, STATION_LAT_COL = 3, //double
@@ -195,7 +195,7 @@ public class EDDTableFromNOS extends EDDTable{
     /**
      * The constructor.
      *
-     * <p>This class is specific to data from http://opendap.co-ops.nos.noaa.gov/axis/ ,
+     * <p>This class is specific to data from https://opendap.co-ops.nos.noaa.gov/axis/ ,
      *   which uses soap+xml for requests and responses.
      * <br>This class assumes station info is available as an xml file from stationUrl.  
      * <br>This class assumes that no metadata is available from the data source.
@@ -206,7 +206,7 @@ public class EDDTableFromNOS extends EDDTable{
      * constructor.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -255,10 +255,10 @@ public class EDDTableFromNOS extends EDDTable{
      *        describing how to interpret source time values 
      *        (which should always be numeric since they are a dimension of a grid)
      *        (e.g., "seconds since 1970-01-01T00:00:00").
-     *      <li> a org.joda.time.format.DateTimeFormat string
+     *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      *   The altitude and time variables (if any) should have actual_range metadata.
@@ -672,7 +672,7 @@ public class EDDTableFromNOS extends EDDTable{
                         int oldNRows = table.nRows();
 
                         //NOS recommended approach: almost verbatim from example at 
-                        //http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/samples/client.html 
+                        //https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/samples/client.html 
                         SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
                         SOAPConnection connection = soapConnectionFactory.createConnection();
                         SOAPFactory soapFactory = SOAPFactory.newInstance();
@@ -719,7 +719,7 @@ public class EDDTableFromNOS extends EDDTable{
                         //there must be a better way to connect these two...
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         response.writeTo(baos);
-                        String responseString = baos.toString("UTF-8");
+                        String responseString = baos.toString(String2.UTF_8);
                         baos = null; //allow garbage collection
                         //String2.log("response for stationID=" + tID + "=\n" + responseString);
                         int po1 = responseString.indexOf("<faultstring>");
@@ -744,7 +744,7 @@ public class EDDTableFromNOS extends EDDTable{
                             "    <stationId xmlns=\"\">" + tID + "</stationId> \n");
 
                         //see example and info about date format at
-                        //http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/index.jsp
+                        //https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/index.jsp
                         //Example is odd: beginDate=endDate gets 1 day's data.
                         //   (beginDate has implied time 00:00; endDate has implied time 23:59).
                         //   Fine, but it also allows hh:mm, so then is more precise.
@@ -858,7 +858,7 @@ public class EDDTableFromNOS extends EDDTable{
             SOAPMessage message = factory.createMessage();
             
             SOAPBody body = message.getSOAPBody();
-            Name bodyName = soapFactory.createName("getWind", "wind", "http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/wsdl");
+            Name bodyName = soapFactory.createName("getWind", "wind", "https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/wsdl");
             SOAPBodyElement bodyElement = body.addBodyElement(bodyName);
             
             //Constructing the body for the request
@@ -880,7 +880,7 @@ public class EDDTableFromNOS extends EDDTable{
             message.writeTo(System.out);
             System.out.println("\n\n");
             
-            URL endpoint = new URL ("http://opendap.co-ops.nos.noaa.gov/axis/services/Wind");
+            URL endpoint = new URL ("https://opendap.co-ops.nos.noaa.gov/axis/services/Wind");
             SOAPMessage response = connection.call(message, endpoint);
             connection.close();
             
@@ -890,16 +890,16 @@ public class EDDTableFromNOS extends EDDTable{
 
 /*
 //during development, test getSoapString
-String sourceUrl = "http://opendap.co-ops.nos.noaa.gov/axis/services/Wind";
+String sourceUrl = "https://opendap.co-ops.nos.noaa.gov/axis/services/Wind";
 String request = 
-"<wind:getWind xmlns:wind=\"http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/wsdl\">\n" +
+"<wind:getWind xmlns:wind=\"https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/wsdl\">\n" +
 "  <stationId xmlns=\"\">9759110</stationId>\n" +
 "  <beginDate xmlns=\"\">20000101</beginDate>\n" +
 "  <endDate xmlns=\"\">20010102</endDate>\n" +
 "  <timeZone xmlns=\"\">0</timeZone>\n" +
 "</wind:getWind>\n";
 String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request, 
-    "http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/wsdl/getWind"
+    "https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/wsdl/getWind"
     ) + "\n");
 */
 
@@ -1019,10 +1019,10 @@ String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request,
 "    Float64 geospatial_lon_max 167.7362;[10]\n" +
 "    Float64 geospatial_lon_min -177.36;[10]\n" +
 "    String geospatial_lon_units \"degrees_east\";[10]\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/axis/services/Wind[10]\n" +
+"    String history \"" + today + " https://opendap.co-ops.nos.noaa.gov/axis/services/Wind[10]\n" +
 today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/nosCoopsWind.das\";[10]\n" +
-"    String infoUrl \"http://opendap.co-ops.nos.noaa.gov/axis/\";[10]\n" +
+"    String infoUrl \"https://opendap.co-ops.nos.noaa.gov/axis/\";[10]\n" +
 "    String institution \"NOAA NOS\";[10]\n" +
 "    String license \"The data may be used and redistributed for free but is not intended[10]\n" +
 "for legal use, since it may contain inaccuracies. Neither the data[10]\n" +
@@ -1032,7 +1032,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
 "    Float64 Northernmost_Northing 71.3601;[10]\n" +
-"    String sourceUrl \"http://opendap.co-ops.nos.noaa.gov/axis/services/Wind\";[10]\n" +
+"    String sourceUrl \"https://opendap.co-ops.nos.noaa.gov/axis/services/Wind\";[10]\n" +
 "    Float64 Southernmost_Northing -14.28;[10]\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";[10]\n" +
 "    String summary \"[Normally, the summary describes the dataset. Here, it describes[10]\n" +
@@ -1164,7 +1164,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         }
         
         //wimpy request (used because it works) suggested by 
-        //http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/samples/client.html
+        //https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/samples/client.html
         //for id 8454000    //has data back to 1938!
         String beginDate = "2006-01-01T00:00:00Z";
         String endDate = "2006-01-01T00:18:00Z";
@@ -1489,7 +1489,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //there must be a better way to connect these two...
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         soapResponse.writeTo(baos);
-        String response = baos.toString("UTF-8");
+        String response = baos.toString(String2.UTF_8);
         baos = null; //allow garbage collection
         String2.log("\nresponse=\n" + response);
 /*
@@ -1644,7 +1644,7 @@ webservices/xmldatarequest.cfc?wsdl">
             if (reallyVerbose) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 sendMessage.writeTo(baos);
-                String2.log("\nsendMessage:\n" + baos.toString("UTF-8"));
+                String2.log("\nsendMessage:\n" + baos.toString(String2.UTF_8));
             }
             SOAPMessage receiveMessage = connection.call(sendMessage, new URL(sourceUrl));
             connection.close();
@@ -1652,7 +1652,7 @@ webservices/xmldatarequest.cfc?wsdl">
             //there must be a better way to connect these two...
             ByteArrayOutputStream baos = new ByteArrayOutputStream();  
             receiveMessage.writeTo(baos);
-            //if (reallyVerbose) String2.log("\nresponse=\n" + baos.toString("UTF-8"));
+            //if (reallyVerbose) String2.log("\nresponse=\n" + baos.toString(String2.UTF_8));
             is = new ByteArrayInputStream(baos.toByteArray());
 
             //one time: store stationCodes in a file

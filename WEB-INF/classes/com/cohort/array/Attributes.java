@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 /**
  * This class holds a list of attributes (name=value, where name is a String
@@ -28,7 +29,7 @@ public class Attributes {
     public static boolean verbose = false;
 
     /** The backing data structure.  It is thread-safe. */
-    private ConcurrentHashMap hashmap = new ConcurrentHashMap(16, 0.75f, 4);
+    private ConcurrentHashMap<String,PrimitiveArray> hashmap = new ConcurrentHashMap(16, 0.75f, 4);
 
     /**
      * This constructs a new, empty Attributes object.
@@ -100,7 +101,7 @@ public class Attributes {
      * @return the attribute's value (a PrimitiveArray).
      */
     public PrimitiveArray get(String name) {
-        return (PrimitiveArray)hashmap.get(name);
+        return hashmap.get(name);
     }
 
     /**
@@ -314,7 +315,7 @@ public class Attributes {
      * @return the previous value stored for attributeName, or null if none
      */
     public PrimitiveArray remove(String name) {
-        return (PrimitiveArray)hashmap.remove(name);
+        return hashmap.remove(name);
     }
 
     /**
@@ -330,8 +331,8 @@ public class Attributes {
     public PrimitiveArray set(String name, PrimitiveArray value) {
         if (value == null || value.size() == 0 || 
             (value.size() == 1 && value instanceof StringArray && value.getString(0).trim().length() == 0)) 
-            return (PrimitiveArray)hashmap.remove(name);
-        return (PrimitiveArray)hashmap.put(String2.canonical(name), value);
+            return hashmap.remove(name);
+        return hashmap.put(String2.canonical(name), value);
     }
 
     /** 
@@ -647,21 +648,18 @@ public class Attributes {
         String names[] = getNames();
         for (int index = 0; index < names.length; index++) {
             sb.append(prefix + names[index] + " = ");
-            Object o = hashmap.get(names[index]);
+            PrimitiveArray pa = hashmap.get(names[index]);
             String connect = "";
-            if (o instanceof StringArray) {
-                StringArray sa = (StringArray)o;
-                int n = sa.size();
+            boolean isCharArray = pa instanceof CharArray;
+            if (pa instanceof StringArray || isCharArray) {
+                int n = pa.size();
                 for (int i = 0; i < n; i++) {
                     sb.append(connect);
                     connect = ", ";
-                    //we don't need/want full String2.toJson encoding, just encode \ and ".
-                    String s = String2.replaceAll(sa.get(i), "\\", "\\\\");  //  \ becomes \\
-                    s = String2.replaceAll(s, "\"", "\\\"");                 //  " becomes \"
-                    sb.append("\"" + s + "\"");
+                    sb.append(String2.toJson(pa.getString(i), 65536, isCharArray)); //encodeNewline?
                 }
-            } else if (o instanceof FloatArray) {
-                FloatArray fa = (FloatArray)o;
+            } else if (pa instanceof FloatArray) {
+                FloatArray fa = (FloatArray)pa;
                 int n = fa.size();
                 for (int i = 0; i < n; i++) {
                     sb.append(connect);
@@ -670,7 +668,7 @@ public class Attributes {
                     sb.append("f");
                 }
             } else {
-                sb.append(o.toString());
+                sb.append(pa.toString());
             }
             sb.append(suffix + "\n");
         }
@@ -708,6 +706,8 @@ public class Attributes {
      * This doesn't throw an Exception if a difference is found.
      *
      * @param o an object, presumably an Attributes
+     * @return a string indicating the differents of this Attributes and o,
+     *   or "" if no difference. 
      */
     public String testEquals(Object o) {
         if (o == null)
@@ -807,6 +807,20 @@ public class Attributes {
     }
 
     /**
+     * This uses StringArray.fromNccsv() on all StringArray values
+     * to de-JSON and convert "" to ".
+     */
+    public void fromNccsvStrings() {
+        Iterator it = hashmap.keySet().iterator(); 
+        while (it.hasNext()) {
+            String name = (String)it.next();
+            PrimitiveArray pa = get(name);
+            if (pa.elementClass() == String.class) 
+                ((StringArray)pa).fromNccsv();
+        }
+    }
+
+    /**
      * This makes a set of addAttributes which are needed to change a into b.
      * If an attribute in 'a' needs to be set to null, this sets it to the String 
      *   "null" instead of just nulling it.
@@ -841,6 +855,56 @@ public class Attributes {
         }
 
         return addAtts;
+    }
+
+    /**
+     * This writes the attributes for a variable (or *GLOBAL*) to an NCCSV String.
+     * This doesn't write *SCALAR* or dataType attributes.
+     * This doesn't change any of the attributes.
+     * 
+     * @param varName 
+     * @return a string with all of the attributes for a variable (or *GLOBAL*) 
+     *   formatted for NCCSV.
+     */
+    public String toNccsvString(String varName) {
+        String nccsvVarName = String2.toNccsvDataString(varName);
+        StringBuilder sb = new StringBuilder();
+        String tName;
+
+        //special case: *GLOBAL* Conventions
+        if (varName.equals(String2.NCCSV_GLOBAL)) {
+            tName = "Conventions";
+            String val = getString(tName);
+            if (String2.isSomething(val)) {
+                if (val.indexOf("NCCSV") < 0)
+                    val += ", " + String2.NCCSV_VERSION;
+            } else {
+                val = "COARDS, CF-1.6, ACDD-1.3, " + String2.NCCSV_VERSION;
+            }
+            sb.append(
+                String2.toNccsvDataString(varName) + "," +  
+                String2.toNccsvDataString(tName)   + "," +  
+                String2.toNccsvAttString(val)     + "\n"); 
+        }
+
+        //each of the attributes
+        String names[] = getNames();
+        for (int ni = 0; ni < names.length; ni++) { 
+            tName = names[ni];
+            if (varName.equals(String2.NCCSV_GLOBAL) && tName.equals("Conventions"))
+                continue;
+            if (!String2.isSomething(tName) || 
+                tName.equals("_NCProperties")) 
+                continue;
+            PrimitiveArray tValue = get(tName);
+            if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) 
+                continue; //do nothing
+            sb.append(
+                String2.toNccsvDataString(nccsvVarName) + "," + 
+                String2.toNccsvDataString(tName)        + "," +  
+                tValue.toNccsvAttString()           + "\n"); 
+        }
+        return sb.toString();        
     }
 
     /**
@@ -880,7 +944,7 @@ public class Attributes {
         Test.ensureEqual(atts.remove("zz"), new IntArray(new int[]{2}), "");
         Test.ensureEqual(atts.size(), 9, "");
 
-        ////empty string same as null; attribute removed
+        //empty string same as null; attribute removed
         atts.set("zz", "a"); 
         Test.ensureEqual(atts.size(), 10, "");
         atts.set("zz", ""); 
@@ -926,7 +990,7 @@ public class Attributes {
         //toString
         Test.ensureEqual(atts.toString(), 
             "    byte=1\n" +
-            "    char=97\n" +
+            "    char=a\n" +
             "    double=3.141592653589793\n" +
             "    float=2.5\n" +
             "    int=1000000\n" +
@@ -985,7 +1049,7 @@ public class Attributes {
         atts3.set(atts4);
         Test.ensureEqual(atts3.toString(), 
             "    byte=1\n" +
-            "    char=100\n" +
+            "    char=d\n" +
             "    double=3.141592653589793\n" +
             "    float=2.5\n" +
             "    int=1000000\n" +
@@ -1054,6 +1118,7 @@ public class Attributes {
         a.removeValue("null");
         Test.ensureEqual(a, b, "");
         Test.ensureEqual(a.toString(), b.toString(), "");
+
 
         String2.log("*** test Attributes finished successfully.");
     } 

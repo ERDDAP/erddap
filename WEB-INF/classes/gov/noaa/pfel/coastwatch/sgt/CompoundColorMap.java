@@ -31,7 +31,7 @@ import java.util.Vector;
 
 /**
  * This class mimics the behavior of a GMT Color Palette Table (.cpt) file.
- * http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15
+ * https://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15
  * Note that log ranges can be simulated by a series of ranges
  *  (each of which is actually linearly interpolated).
  */

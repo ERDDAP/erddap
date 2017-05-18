@@ -121,20 +121,8 @@ public class DasDds {
                 return String2.readFromFile(outFileName)[1];
             }
 
-            //delete the datasetInfo files for this datasetID (in case incorrect info)       
             try {
-                String dir = EDD.datasetDir(datasetID);
-                String2.log("dataset dir=" + dir + "\n" +
-                    "dataset n files not deleted = " +
-                    RegexFilenameFilter.regexDelete(dir, ".*", false));
-
-            } catch (Throwable t) {
-                String2.log("\n*** An error occurred while deleting the old info for " + datasetID + ":\n" +
-                    MustBe.throwableToString(t));
-            }
-
-            try {
-                printToBoth(EDD.testDasDds(datasetID, verbose));
+                printToBoth(EDD.testDasDds(true, datasetID, verbose)); //clearCache
             } catch (Throwable t) {
                 String2.log(
                     "\n*** An error occurred while trying to load " + datasetID + ":\n" +

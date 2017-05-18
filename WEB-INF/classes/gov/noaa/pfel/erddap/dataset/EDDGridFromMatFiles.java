@@ -395,7 +395,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 Attributes sourceAtts = new Attributes();
                 NcHelper.getVariableAttributes(var, sourceAtts);
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, sourceAtts);
-                dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, pa, 
+                dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, 
+                    makeDestPAForGDX(sourceAtts, pa), 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         axisSourceTable.globalAttributes(),
                         sourceAtts, varName, true, false)); //addColorBarMinMax, tryToFindLLAT
@@ -521,7 +522,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"geospatial_vertical_units\">m</att>\n" +
 "        <att name=\"history\">Remote Sensing Systems, Inc\n" +
 "2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-"2009-01-07 http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"2009-01-07 https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 "2009-01-07 http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.nc?x_wind[(2008-01-01T12:00:00Z):1:(2008-01-03T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],y_wind[(2008-01-01T12:00:00Z):1:(2008-01-03T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],mod[(2008-01-01T12:00:00Z):1:(2008-01-03T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)]</att>\n" +
 "        <att name=\"infoUrl\">http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
@@ -539,7 +540,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"satellite\">QuikSCAT</att>\n" +
 "        <att name=\"sensor\">SeaWinds</att>\n" +
 "        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" +
-"        <att name=\"sourceUrl\">http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day</att>\n" +
+"        <att name=\"sourceUrl\">https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">-89.875</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
 "        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.</att>\n" +
@@ -841,7 +842,7 @@ today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
-//            + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
@@ -861,7 +862,7 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "    String satellite \"QuikSCAT\";\n" +
 "    String sensor \"SeaWinds\";\n" +
 "    String source \"satellite observation: QuikSCAT, SeaWinds\";\n" +
-"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
+"    String sourceUrl \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
 "    Float64 Southernmost_Northing -89.875;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +

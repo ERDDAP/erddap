@@ -34,8 +34,8 @@ public class OpendapDump {
         boolean verbose = true;
         boolean acceptDeflate = true;
         String urlName = 
-            //"http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/5day/1990/1990001-1990005.s0451pfv50-sst-16b.hdf";
-            //"http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/Monthly/1985/198501.m04m1pfv50-qual.hdf";
+            //"https://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/5day/1990/1990001-1990005.s0451pfv50-sst-16b.hdf";
+            //"https://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/Monthly/1985/198501.m04m1pfv50-qual.hdf";
             "http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/gac/AG1day.nc";
         String expr = 
             //"?qual[0:2:20][0:2:20]";

@@ -79,7 +79,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
      * This returns the OutputStream.
      * If called repeatedly, this returns the same outputStream.
      *
-     * @param characterEncoding e.g., "" (for none specified), "UTF-8", or "" (for DAP).
+     * @param characterEncoding e.g., "" (for none specified), String2.UTF_8, or "" (for DAP).
      *     This parameter only matters the first time this method is called.
      *     This only matters for some subclasses.
      * @param contentLength the number of bytes that will be sent (or -1 if not known).
@@ -227,6 +227,9 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             response.setContentType(fileType.equals(".jsonText")? 
                 "text/plain" :       //ESRI Geoservices REST uses this
                 "application/json"); //http://dret.net/biblio/reference/rfc4627
+
+        } else if (extension.equals(".jsonl")) { 
+            response.setContentType("application/jsonl");  //???
 
         } else if (extension.equals(".kml")) {
             //see https://developers.google.com/kml/documentation/kml_tut
@@ -707,6 +710,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             extension.equals(".itx")  || 
             extension.equals(".js")   || 
              fileType.equals(".json") || //not .jsonText
+            extension.equals(".jsonl") || 
             extension.equals(".kml")  || 
             extension.equals(".mat")  || 
             extension.equals(".nc")   ||

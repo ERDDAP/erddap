@@ -27,7 +27,7 @@ import java.util.HashSet;
  * sort them, then write to some other TableWriter.
  * This functions like SQL's DISTINCT.
  *
- * <p>This doesn't do anything to missing values and doesn't asssume they are
+ * <p>This doesn't do anything to missing values and doesn't assume they are
  * stored as NaN or fake missing values.
  *
  * <p>Unlike TableWriterAll, this doesn't keep track of min,max for actual_range

@@ -5,6 +5,8 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.CharArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -34,7 +36,7 @@ public class TableWriterJson extends TableWriter {
     protected boolean writeUnits;
 
     //set by firstTime
-    protected boolean isString[];
+    protected boolean isCharOrString[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
     protected BufferedWriter writer;
@@ -91,8 +93,12 @@ public class TableWriterJson extends TableWriter {
         boolean firstTime = columnNames == null;
         ensureCompatible(table);
 
-        //do firstTime stuff
         int nColumns = table.nColumns();
+        PrimitiveArray pas[] = new PrimitiveArray[nColumns];
+        for (int col = 0; col < nColumns; col++) 
+            pas[col] = table.getColumn(col);
+
+        //do firstTime stuff
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
@@ -112,18 +118,19 @@ public class TableWriterJson extends TableWriter {
 
             //write the header
             writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream("UTF-8"), "UTF-8"));
+                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
             if (jsonp != null) 
                 writer.write(jsonp + "(");
 
             //write the column names   
-            isString = new boolean[nColumns];
+            isCharOrString = new boolean[nColumns];
             writer.write(
                 "{\n" +
                 "  \"table\": {\n" + //begin main structure
                 "    \"columnNames\": [");
             for (int col = 0; col < nColumns; col++) {
-                isString[col] = table.getColumn(col).elementClass() == String.class;
+                isCharOrString[col] = pas[col].elementClass() == char.class ||
+                                      pas[col].elementClass() == String.class;
                 writer.write(String2.toJson(table.getColumnName(col)));
                 writer.write(col == nColumns - 1? "],\n" : ", ");
             }
@@ -131,7 +138,7 @@ public class TableWriterJson extends TableWriter {
             //write the types   
             writer.write("    \"columnTypes\": [");
             for (int col = 0; col < nColumns; col++) {
-                String s = table.getColumn(col).elementClassString();
+                String s = pas[col].elementClassString();
                 if (isTimeStamp[col])
                     s = "String"; //not "double"
                 writer.write(String2.toJson(s));  //nulls written as: null
@@ -159,7 +166,7 @@ public class TableWriterJson extends TableWriter {
         //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
         totalNRows += nRows;
-        EDStatic.ensureArraySizeOkay(totalNRows, "JSON");
+        EDStatic.ensureArraySizeOkay(totalNRows, "json");
 
         //write the data
         if (rowsWritten) writer.write(",\n"); //end previous row
@@ -168,15 +175,14 @@ public class TableWriterJson extends TableWriter {
             for (int col = 0; col < nColumns; col++) {
                 if (col > 0) writer.write(", "); 
                 if (isTimeStamp[col]) {
-                    double d = table.getDoubleData(col, row);
+                    double d = pas[col].getDouble(row);
                     writer.write(Double.isNaN(d)? "null" : 
                         "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
                         time_precision[col], d, "") + "\"");
-                } else if (isString[col]) {
-                    String s = table.getStringData(col, row);
-                    writer.write(String2.toJson(s));
+                } else if (isCharOrString[col]) {
+                    writer.write(String2.toJson(pas[col].getString(row)));
                 } else {
-                    String s = table.getStringData(col, row);
+                    String s = pas[col].getString(row);
                     //represent NaN as null? yes, that is what json library does
                     writer.write(s.length() == 0? "null" : s); 
                 }

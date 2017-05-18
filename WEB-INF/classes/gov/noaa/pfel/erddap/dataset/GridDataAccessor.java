@@ -76,6 +76,7 @@ public class GridDataAccessor {
     protected EDVGridAxis axisVariables[];
     protected Attributes axisAttributes[];
     protected Attributes dataAttributes[]; //[dv in the query]
+    protected String dataEncodingLC[]; //[dv in the query] from _Encoding.toLowerCase, may be null
     protected PrimitiveArray axisValues[]; //destinationValues for total request
     protected PrimitiveArray partialDataValues[]; //[dv in the query]
     protected long totalNBytes;
@@ -247,13 +248,24 @@ public class GridDataAccessor {
 
         //make the dataAttributes
         dataAttributes = new Attributes[dataVariables.length];
+        dataEncodingLC = new String[dataVariables.length];
         int nDataBytesPerRow = 0;
         for (int dv = 0; dv < dataVariables.length; dv++) {  //dv in the query
 
             //add dataAttributes
             dataAttributes[dv] = new Attributes(dataVariables[dv].combinedAttributes()); //make a copy
-//dataAttributes NEEDS actual_range, and ... , but not available, so remove...
+            //dataAttributes NEEDS actual_range, and ... , but not available, so remove...
             dataAttributes[dv].remove("actual_range");
+
+            dataEncodingLC[dv] = dataAttributes[dv].getString(String2.ENCODING);
+            if (String2.isSomething(dataEncodingLC[dv])) {
+                if (dataEncodingLC[dv].equals(String2.UTF_8_LC) ||
+                    dataEncodingLC[dv].equals(String2.ISO_8859_1_LC)) 
+                    dataAttributes[dv].remove(String2.ENCODING);
+                //else leave _Encoding in place
+            }
+            //leave String2.CHARSET in place
+
             //String2.log("      dataAttributes[" + dv + "]=\n" + dataAttributes[dv]);
             nDataBytesPerRow += dataVariables[dv].destinationBytesPerElement();        
 
@@ -547,6 +559,25 @@ public class GridDataAccessor {
                 String2.log("      calling getSourceData partialConstraints=" + partialConstraints);
             long time = System.currentTimeMillis();
             partialResults = eddGrid.getSourceData(dataVariables, partialConstraints);
+
+            //there is similar code in GridDataAccessor and Table.decodeCharsAndStrings()
+            for (int dv = 0; dv < dataVariables.length; dv++) {
+                if (dataEncodingLC[dv] == null ||
+                    partialResults[dv] == null ||
+                    partialResults[dv].elementClass() != String.class)
+                    continue;
+
+                //decode UTF-8
+                if (dataEncodingLC[dv].equals(String2.UTF_8_LC)) {
+                    ((StringArray)partialResults[dv]).fromUTF8();
+
+                //unchanged ISO-8859-1 becomes the first page of unicode encoded strings
+                //} else if (enc.equals(String2.ISO_8859_1_LC)) {
+                    //nothing to do
+
+                } //other encodings are left in place
+            }
+
             if (reallyVerbose) 
                 String2.log("      getSourceData done. nDV=" + dataVariables.length +
                     " nElements/dv=" + partialResults[partialResults.length - 1].size() +

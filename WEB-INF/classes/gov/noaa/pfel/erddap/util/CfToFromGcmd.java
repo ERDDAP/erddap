@@ -27,8 +27,8 @@ import java.util.HashSet;
  * and 
  * ./gcmdScienceKeywords.txt 
  * (Bob created from GCMD Science Keywords  2008-02-05
- * at  http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html
- * specifically http://gcmd.nasa.gov/Resources/valids/archives/GCMD_Science_Keywords.pdf )
+ * at  https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access
+ * was http://gcmd.nasa.gov/Resources/valids/archives/GCMD_Science_Keywords.pdf )
  */
 public class CfToFromGcmd { 
 
@@ -91,7 +91,7 @@ public class CfToFromGcmd {
         String2.log("CfToFromGcmd static loading " + fileName);
         StringArray lines;
         try {
-            lines = StringArray.fromFile(fileName, "ISO-8859-1"); //actually, 7bit ASCII
+            lines = StringArray.fromFile(fileName, String2.ISO_8859_1); //actually, 7bit ASCII
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
