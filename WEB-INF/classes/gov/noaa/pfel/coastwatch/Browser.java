@@ -5394,8 +5394,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String2.pressEnterToContinue("Is GoogleEarth showing a coverage? \n" +
                 "Close it, then..."); 
         } catch (Exception e) {
-            String2.pressEnterToContinue("Unexpected error:\n" +
-                MustBe.throwableToString(e)); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected error."); 
         }
 
         try {
@@ -5411,8 +5411,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String2.pressEnterToContinue("Is GoogleEarth showing stations? \n" +
                 "Close it, then..."); 
         } catch (Exception e) {
-            String2.pressEnterToContinue("Unexpected error:\n" +
-                MustBe.throwableToString(e)); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected error."); 
         }
 
 

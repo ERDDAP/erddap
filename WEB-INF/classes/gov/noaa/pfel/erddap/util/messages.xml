@@ -307,15 +307,24 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
      >{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20and%20Atmospheric%20Administration</a>
   <br>&nbsp;
 </ul>
-  Percent Encoding - The parameter values in the URL (the parts after ''='' signs) must be properly
-  <br><a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+  <a name="PercentEncoded">Percent Encoded</a> - 
+  The constraints in the URL must be properly
+    <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."/></a>:
-    all characters other than A-Za-z0-9_-!.~''()* must be encoded as %HH,
-  <br>where HH is the 2 digit hexadecimal value of the character, for example, a space becomes
-  <br>%20. Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must
-  <br>be percent encoded (ask a programmer for help).  There are
-  <br><a rel="help" href="http://www.url-encode-decode.com/">web sites that percent encode and decode for you<img 
+    title="This link to an external web site does not constitute an endorsement."/></a>: 
+  <br>all characters other than A-Za-z0-9_-!.~''()* (other than the initial ''&amp;'' and the main ''='', if any)
+  <br>must be encoded as %HH, where HH is the 2 digit hexadecimal value of the character.
+  <br>Usually, you just need to convert a few of the punctuation characters: % into %25, 
+  <br>&amp; into %26, " into %22, &lt; into %3C, = into %3D, &gt; into %3E, + into %2B, 
+  <br>| into %7C, space into %20, and convert all characters above #127 into their UTF-8 
+  <br>form and then percent encode each byte of the UTF-8 form into the %HH format 
+  <br>(ask a programmer for help).
+  <br>For example, <tt>fullName=National Oceanic and Atmospheric Administration</tt>
+  <br>becomes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<tt>fullName=National%20Oceanic%20and%20Atmospheric%20Administration</tt>
+  <br>Note that percent encoding is generally required when you access ERDDAP via
+  <br>software other than a browser. Browsers usually handle percent encoding for you.
+  <br>There are
+    <a rel="help" href="http://www.url-encode-decode.com/">web sites that percent encode and decode for you<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>.
 ]]></convertOceanicAtmosphericAcronymsService>
@@ -504,7 +513,7 @@ This web page lets you convert a
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
 to/from a 
-<a rel="bookmark" href="http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html"
+<a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"
   >GCMD Science Keyword<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>.
@@ -599,7 +608,7 @@ Percent Encoding - The parameter values in the URL (the parts after ''='' signs)
 <convertTimeIntro><![CDATA[
 This web page lets you convert a time value to/from an
 <ul>
-<li><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/"
+<li><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
   >UDUNITS-compatible Number<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
@@ -702,7 +711,7 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
     title="This link to an external web site does not constitute an endorsement."/></a>
     or epoch seconds.  The use of the units string 
   <br>"seconds since 1970-00-00T00:00:00Z" makes Unix time compatible with
-    <a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html"
+    <a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html"
       >UDUNITS-2<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
@@ -781,18 +790,50 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
 
   <br>&nbsp;
 
-<li><a name="BCE">BCE</a> <a name="BC">(BC)</a> Years - As specified in the ISO 8601:2004 standard, ERDDAP just uses the
-  <br>Common Era (CE, AD) for year numbers, not BCE.  The normal Julian sequence of
-  <br>years near the era transition is 2 BCE, 1 BCE, 1 CE, 2 CE.  Because oceanographers
-  <br>and climatologists often use year 0000 for climatologies, and because ISO 8601:2004
-  <br>specifies this, the years near the era transition in ERDDAP are -0001, 0000, 0001,
-  <br>0002, respectively. Thus, for BCE years: ERDDAPYear = 1 - BCEYear (see for yourself:
-  <br><a href="{0}/convert/time.html?n=-1&amp;units=days%20since%200001-01-01">test1</a>, 
+<li><a name="BCE">BCE</a> <a name="BC">(BC)</a> Years and Astronomical Year Numbering - 
+  <br>As specified in the ISO 8601:2004 standard, ERDDAP just uses the Common
+  <br>Era (CE, AD) for year numbers, not BCE. For years before 1 CE, historians
+  <br>use the BCE or BC designation and no year 0, so their sequence of years near
+  <br>the era transition is 2 BCE, 1 BCE, 1 CE, 2 CE.  For years before 1 BCE, the
+  <br>ISO 8601:2004 standard encourages the use of a different system:
+  <br><a rel="help" href="https://en.wikipedia.org/wiki/Astronomical_year_numbering"
+    >Astronomical Year Numbering<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+    in which 1 BC is called year 0000, 2 BC is 
+  <br>called year -0001, etc. Since Astronomical Year Numbering is encouraged by
+  <br>ISO 8601:2004 and used by many scientific fields, and because oceanographers 
+  <br>and climatologists often use year 0000 for climatologies, ERDDAP uses 
+  <br>Astronomical Year Numbering. Thus, the years near the era transition in 
+  <br>ERDDAP are -0001, 0000, 0001, 0002, respectively. Thus, for BCE years:
+  <br>AstronomicalYear = 1 - BCEYear (see for yourself:
+      <a href="{0}/convert/time.html?n=-1&amp;units=days%20since%200001-01-01">test1</a>, 
       <a href="{0}/convert/time.html?n=1985&amp;units=years%20since%200000-01-01">test2</a> and
       <a href="{0}/convert/time.html?n=-2&amp;units=years%20since%200000-01-01">test3</a>).
-    With that in mind, ERDDAP should work for dates far in the
-  <br>past and future.
-  <br>&nbsp;
+  <br>An advantage of Astronomical Year Numbering is that all leap years are 
+  <br>divisible by 4, e.g., ..., -0008, -0004, 0000, 0004, 0008, .... 
+  <br>If you remember to use Astronomical Year Numbers, ERDDAP will work for 
+  <br>dates far in the past and future.
+
+  <p>The <a rel="help" href="http://www.seadatanet.org/"
+    >SeaDataNet<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+    project stores time as "days since -4713-01-01T00:00:00Z",
+  <br>which is a reference to midnight at the start of January 1, 4713 BCE, which
+  <br>is the start time for <a rel="help" href="http://www.hermetic.ch/cal_stud/jdn.htm#chronological"
+    >Chronological Julian Dates (CJD)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
+    So, in the datasets.xml 
+  <br>setup for a SeaDataNet dataset in ERDDAP, in the &lt;addAttributes&gt; section for
+  <br>all time variables, you need to add
+  <br><tt>&lt;att name="units"&gt;days since -4712-01-01T00:00:00Z&lt;/att&gt;</tt>
+  <br>so that 4713 BCE is expressed as the Astronomical Year Number -4712.
+  <br>As a check, note the start of Chronological Julian day number 2,452,952
+  <br>(or, 
+    <a href="{0}/convert/time.html?n=2452952&amp;units=days%20since%20-4712-01-01"
+    >2452952 "days since -4712-01-01"</a>) is 2003-11-08T00:00:00Z.
 
 <li><a name="UTC">UTC</a> - As much as is practical, ERDDAP, like Unix time and UDUNITS-2, uses the 
   <br><a rel="help" href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal 
@@ -966,7 +1007,7 @@ For example, "seconds since 1970-01-01T00:00:00Z".
 <table class="erd commonBGColor" cellspacing="2">
 <tr>
   <th width="8%">Issue</th>
-  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
+  <th width="23%"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a></th>
   <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
@@ -1094,7 +1135,7 @@ For most units, there is a one-to-one correspondence between units in UDUNITS an
 <table class="erd commonBGColor" cellspacing="2">
 <tr>
   <th width="8%">Units</th>
-  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
+  <th width="23%"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a></th>
   <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
@@ -1219,11 +1260,11 @@ you can request that the units
 <convertUnitsIntro><![CDATA[
 Two common standards for writing units of measure are:
 <ul>
-<li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
   - from
-  <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata<img 
+  <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
   which is used in
@@ -1233,7 +1274,7 @@ Two common standards for writing units of measure are:
   <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>, and
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
+  <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a> 
   data files. For example,
@@ -1459,10 +1500,10 @@ But some things you might not have considered are:
 <EDDGridDapLongDescription><![CDATA[
 <b>griddap</b> lets you request a data subset, graph, or map from a gridded dataset (for example, sea surface
 <br>temperature data from a satellite), via a specially formed URL. griddap uses the
-<br><a rel="bookmark" href="http://www.opendap.org">OPeNDAP<img 
+<br><a rel="bookmark" href="https://www.opendap.org">OPeNDAP<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
-    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
+    <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> and its
     <a rel="help"  href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions">projection constraints<img 
@@ -1537,10 +1578,10 @@ But some things you might not have considered are:
 <EDDTableDapLongDescription><![CDATA[
 <b>tabledap</b> lets you request a data subset, a graph, or a map from a tabular dataset (for example, buoy data),
 <br>via a specially formed URL. tabledap uses the 
-  <a rel="bookmark" href="http://www.opendap.org">OPeNDAP<img 
+  <a rel="bookmark" href="https://www.opendap.org">OPeNDAP<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
-  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
+  <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a> and its
   <a rel="help" href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions"
@@ -1644,43 +1685,50 @@ This constraint variable has a limited number of values. They are listed here.
 <externalLink>(external link)</externalLink>
 <externalWebSite>This link to an external web site does not constitute an endorsement.</externalWebSite>
 
-<fileHelp_asc>View OPeNDAP-style comma-separated ASCII text.</fileHelp_asc>
-<fileHelp_csv>Download a comma-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
-<fileHelp_csvp>Download a .csv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_csvp>
-<fileHelp_csv0>Download a .csv file without column names or units. Times are ISO 8601 strings.</fileHelp_csv0>
-<fileHelp_das>View the dataset's metadata via an OPeNDAP Dataset Attribute Structure (DAS).</fileHelp_das>
-<fileHelp_dds>View the dataset's structure via an OPeNDAP Dataset Descriptor Structure (DDS).</fileHelp_dds>
+<fileHelp_asc>View OPeNDAP-style ISO-8859-1 comma-separated text.</fileHelp_asc>
+<fileHelp_csv>Download a ISO-8859-1 comma-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
+<fileHelp_csvp>Download a ISO-8859-1 .csv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_csvp>
+<fileHelp_csv0>Download a ISO-8859-1 .csv file without column names or units. Times are ISO 8601 strings.</fileHelp_csv0>
+<fileHelp_das>View the dataset's metadata via an ISO-8859-1 OPeNDAP Dataset Attribute Structure (DAS).</fileHelp_das>
+<fileHelp_dds>View the dataset's structure via an ISO-8859-1 OPeNDAP Dataset Descriptor Structure (DDS).</fileHelp_dds>
 <fileHelp_dods>OPeNDAP clients use this to download the data in the DODS binary format.</fileHelp_dods>
-<fileHelpGrid_esriAscii>Download an ESRI ASCII file (lat lon data only; lon must be all below or all above 180).</fileHelpGrid_esriAscii>
-<fileHelpTable_esriAscii>Download a .csv file for ESRI's ArcGIS 9.x and below (separate date and time columns).
-</fileHelpTable_esriAscii>
-<fileHelp_fgdc>View the dataset's FGDC .xml metadata.</fileHelp_fgdc>
-<fileHelp_geoJson>Download longitude,latitude,otherColumns data as a GeoJSON .json file.</fileHelp_geoJson>
+<fileHelpGrid_esriAscii>Download an ISO-8859-1 ESRI ASCII file (lat lon data only; lon must be all below or all above 180).</fileHelpGrid_esriAscii>
+<fileHelpTable_esriCsv>Download a ISO_8859_1 .csv file for ESRI's ArcGIS 9.x and below (separate date and time columns).
+</fileHelpTable_esriCsv>
+<fileHelp_fgdc>View the dataset's UTF-8 FGDC .xml metadata.</fileHelp_fgdc>
+<fileHelp_geoJson>Download longitude,latitude,otherColumns data as a UTF-8 GeoJSON .json file.</fileHelp_geoJson>
 <fileHelp_graph>View a Make A Graph web page.</fileHelp_graph>
 <fileHelpGrid_help>View a web page with a description of griddap.</fileHelpGrid_help>
 <fileHelpTable_help>View a web page with a description of tabledap.</fileHelpTable_help>
 <fileHelp_html>View an OPeNDAP-style HTML Data Access Form.</fileHelp_html>
-<fileHelp_htmlTable>View a .html web page with the data in a table. Times are ISO 8601 strings.</fileHelp_htmlTable>
-<fileHelp_iso19115>View the dataset's ISO 19115-2/19139 .xml metadata.</fileHelp_iso19115>
-<fileHelp_itxGrid>Download an Igor Text File. Each axis variable and each data variable becomes a wave.</fileHelp_itxGrid>
-<fileHelp_itxTable>Download an Igor Text File. Each response column becomes a wave.</fileHelp_itxTable>
-<fileHelp_json>View a table-like JSON file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_json>
+<fileHelp_htmlTable>View a UTF-8 .html web page with the data in a table. Times are ISO 8601 strings.</fileHelp_htmlTable>
+<fileHelp_iso19115>View the dataset's ISO 19115-2/19139 UTF-8 .xml metadata.</fileHelp_iso19115>
+<fileHelp_itxGrid>Download an ISO-8859-1 Igor Text File. Each axis variable and each data variable becomes a wave.</fileHelp_itxGrid>
+<fileHelp_itxTable>Download an ISO-8859-1 Igor Text File. Each response column becomes a wave.</fileHelp_itxTable>
+<fileHelp_json>View a table-like UTF-8 JSON file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_json>
+<fileHelp_jsonlCSV>View a UTF-8 JSON Lines CSV file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_jsonlCSV>
+<fileHelp_jsonlKVP>View a UTF-8 JSON Lines file with Key:Value pairs (missing value = 'null'; times are ISO 8601 strings).</fileHelp_jsonlKVP>
 <fileHelp_mat>Download a MATLAB binary file.</fileHelp_mat>
-<fileHelpGrid_nc>Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpGrid_nc>
-<fileHelpTable_nc>Download a flat, table-like, NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpTable_nc>
-<fileHelp_ncHeader>View the header (the metadata) for the .nc file.</fileHelp_ncHeader>
+<fileHelpGrid_nc3>Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpGrid_nc3>
+<fileHelpGrid_nc4>Download a NetCDF-4 binary file with COARDS/CF/ACDD metadata.</fileHelpGrid_nc4>
+<fileHelp_nccsv>Download a NetCDF-3-like 7-bit ASCII NCCSV .csv file with COARDS/CF/ACDD metadata.</fileHelp_nccsv>
+<fileHelpTable_nc3>Download a flat, table-like, NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpTable_nc3>
+<fileHelpTable_nc4>Download a flat, table-like, NetCDF-4 binary file with COARDS/CF/ACDD metadata.</fileHelpTable_nc4>
+<fileHelp_nc3Header>View the UTF-8 header (the metadata) for the NetCDF-3 .nc file.</fileHelp_nc3Header>
+<fileHelp_nc4Header>View the UTF-8 header (the metadata) for the NetCDF-4 .nc file.</fileHelp_nc4Header>
+<fileHelp_nccsvMetadata>View the dataset's metadata as the top half of a 7-bit ASCII NCCSV .csv file.</fileHelp_nccsvMetadata>
 <fileHelp_ncCF>Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).</fileHelp_ncCF>
-<fileHelp_ncCFHeader>View the header (the metadata) for the .ncCF file.</fileHelp_ncCFHeader>
+<fileHelp_ncCFHeader>View the UTF-8 header (the metadata) for the .ncCF file.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).</fileHelp_ncCFMA>
-<fileHelp_ncCFMAHeader>View the header (the metadata) for the .ncCFMA file.</fileHelp_ncCFMAHeader>
-<fileHelp_ncml>View the dataset's structure and metadata as an NCML .xml file.</fileHelp_ncml>
+<fileHelp_ncCFMAHeader>View the UTF-8 header (the metadata) for the .ncCFMA file.</fileHelp_ncCFMAHeader>
+<fileHelp_ncml>View the dataset's structure and metadata as a UTF-8 NCML .xml file.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download time,lat,lon,otherVariables as an ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
-<fileHelpTable_odvTxt>Download longitude,latitude,time,otherColumns as an ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
+<fileHelpTable_odvTxt>Download longitude,latitude,time,otherColumns as an ISO-8859-1 ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
 <fileHelp_subset>View an HTML form which uses faceted search to simplify picking subsets of the data.</fileHelp_subset>
-<fileHelp_tsv>Download a tab-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>
-<fileHelp_tsvp>Download a .tsv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_tsvp>
-<fileHelp_tsv0>Download a .tsv file without column names or units. Times are ISO 8601 strings.</fileHelp_tsv0>
-<fileHelp_xhtml>View an XHTML (XML) file with the data in a table. Times are ISO 8601 strings.</fileHelp_xhtml>
+<fileHelp_tsv>Download a UTF-8 tab-separated text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>
+<fileHelp_tsvp>Download a UTF-8 .tsv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_tsvp>
+<fileHelp_tsv0>Download a UTF-8 .tsv file without column names or units. Times are ISO 8601 strings.</fileHelp_tsv0>
+<fileHelp_xhtml>View a UTF-8 XHTML (XML) file with the data in a table. Times are ISO 8601 strings.</fileHelp_xhtml>
 
 <fileHelp_geotif>View a grayscale GeoTIFF .tif file (for lat lon data; lon must be all below or all above 180).</fileHelp_geotif>
 <fileHelpGrid_kml>View a Google Earth .kml file (for lat, lon data only).</fileHelpGrid_kml>
@@ -1861,20 +1909,29 @@ Checking 'distinct()' tells ERDDAP to sort the results table by all of the
 <br>The orderBy... functions are:
 <ul>
 <li>orderBy lets you specify how the results table will be sorted and keeps all rows.
+<li>orderByClosest lets you specify how the results table will be sorted and an interval (e.g., 2 hours).
+ <br>Within each sort group, only the rows closest to the interval will be kept.  For example,
+ <br>orderByClosest("stationID, time, 2 hours") will sort by stationID and time, but only return 
+ <br>the rows for each stationID where the last orderBy column (time) are closest to 2 hour intervals.
+<li>orderByLimit lets you specify how the results table will be sorted and a limit number (e.g., 100).
+ <br>Within each sort group, only the first 'limit' rows will be kept.
+ <br>For example, orderByMax("stationID, 100") will sort by stationID, but only return the first 
+ <br>100 rows for each stationID.
 <li>orderByMax lets you specify how the results table will be sorted and removes some rows.
- <br>Within each group, only the row with the maximum value for the last orderByMax variable will be kept.
+ <br>Within each sort group, only the row with the maximum value for the last orderByMax variable will be kept.
  <br>For example, orderByMax("stationID, time") will sort by stationID, but only return the row with 
  <br>the maximum time value for each stationID.
 <li>orderByMin is like orderByMax, but only keeps the row with the minimum value for the last orderByMin
  <br>variable.
-<li>orderByMinMax is like orderByMin plus orderByMax.
- <br>Within each group, only the row with the minimum value and the row with the maximum value for the 
- <br>last orderByMinMax variable will be kept.
+<li>orderByMinMax is like orderByMin plus orderByMax. Within each sort group, only the row with the
+ <br>minimum value and the row with the maximum value for the last orderByMinMax variable will be kept.
  <br>For example, orderByMinMax("stationID, time") will return the row with the minimum time value and
  <br>the row with the maximum time value for each stationID.
 </ul>
 ]]></functionOrderByHtml>
 
+<functionOrderByExtra>For orderByClosest, specify the interval (using the format n[timeUnits], e.g., 1 hour) here.
+&lt;br&gt;For orderByLimit, specify the maximum number of rows per group.</functionOrderByExtra>
 <functionOrderBySort>This variable is the {0} important sort variable.</functionOrderBySort>
 <functionOrderBySort1>most</functionOrderBySort1>
 <functionOrderBySort2>second most</functionOrderBySort2>
@@ -2124,7 +2181,7 @@ Wait {1} minutes, then try again.
 
 <loginProblemGoogleAgain><![CDATA[<li>If the Google button says you are "Signed in", 
   but clicking "Log into ERDDAP" doesn't log you into ERDDAP,
-  <br>wait 5 seconds and click "Log into ERDDAP" again. 
+  <br>wait 20 seconds and click "Log into ERDDAP" again. 
   <br>If that doesn't work, repeat the entire login process.
   <br>&nbsp;
 ]]></loginProblemGoogleAgain>
@@ -2640,6 +2697,8 @@ Widths are in ratio 1:2:3.
 <queryErrorNotExpectedAt>"{0}" was not expected at position={1}.</queryErrorNotExpectedAt>
 <queryErrorNotFoundAfter>"{0}" was not found after position={1}.</queryErrorNotFoundAfter>
 <queryErrorOccursTwice>Variable name={0} occurs twice.</queryErrorOccursTwice>
+<queryErrorOrderByClosest>For orderByClosest, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables) plus the interval for the last orderBy variable (e.g., "stationID,time,10 minutes").</queryErrorOrderByClosest>
+<queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables, but 0 names is okay) plus the maximum number of rows for each group (e.g., "stationID,100").</queryErrorOrderByLimit>
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 
@@ -2686,10 +2745,10 @@ Widths are in ratio 1:2:3.
   <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
-  <a rel="help" href="http://www.w3schools.com/xml/xml_soap.asp">SOAP+XML<img 
+  <a rel="help" href="https://www.w3schools.com/xml/xml_soap.asp">SOAP+XML<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
-  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP<img 
+  <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
   <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
@@ -2706,7 +2765,7 @@ Widths are in ratio 1:2:3.
 
 <resultsFormatExamplesHtml><![CDATA[
 (for example,
-  <a rel="help" href="http://www.w3schools.com/html/html_tables.asp">.html table<img 
+  <a rel="help" href="https://www.w3schools.com/html/html_tables.asp">.html table<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
   <a rel="help" href="http://www.geotools.org/ArcInfo+ASCII+Grid+format">ESRI .asc<img 
@@ -2718,7 +2777,7 @@ Widths are in ratio 1:2:3.
   <a rel="help" href="http://www.mathworks.com/">.mat<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">.nc<img 
+  <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">.nc<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
   <a rel="help" href="https://odv.awi.de/en/documentation/">ODV .txt<img 
@@ -2733,7 +2792,7 @@ Widths are in ratio 1:2:3.
   <a rel="help" href="http://www.json.org/">.json<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>,
-  <a rel="help" href="http://www.w3schools.com/xhtml/xhtml_intro.asp">.xhtml<img 
+  <a rel="help" href="https://www.w3schools.com/xhtml/xhtml_intro.asp">.xhtml<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>)
 ]]></resultsFormatExamplesHtml>
@@ -2843,6 +2902,9 @@ standard that "provides an API for managing deployed
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
 ]]></sosLongDescriptionHtml>
+
+<sparqlP01toP02pre>http://vocab.nerc.ac.uk/sparql/sparql?query=prefix+skos%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E+prefix+rdf%3A%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+prefix+owl%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E+prefix+dc%3A%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E+%0D%0A+%0D%0Aselect+distinct+%28%3Fdci+as+%3FIdentifier%29+%28%3Fpl+as+%3FPrefLabel%29+%28%3Fdefx+as+%3FDefinition%29+%28%3Fver+as+%3FVersion%29+%28%3Fsr+as+%3Frelated%29+%3FDate+%28%3Fdt+as+%3FUrl%29+where+%7B%3Chttp%3A%2F%2Fvocab.nerc.ac.uk%2Fcollection%2FP01%2Fcurrent%2F%3E++skos%3Amember+%3Fdt+.%0D%0AFILTER%28regex%28str%28%3Fdt%29%2C%22</sparqlP01toP02pre>
+<sparqlP01toP02post>%22%29%29%0D%0A%3Fdt+dc%3Aidentifier+%3Fdci+.+optional%7B%3Fdt+skos%3Adefinition+%3Fdef+.FILTER%28langMatches%28lang%28%3Fdef%29%2C+%22en%22%29%29%7D+.+%3Fdt+skos%3AprefLabel+%3Fpl+.+FILTER%28langMatches%28lang%28%3Fpl%29%2C+%22en%22%29%29++%3Fdt+owl%3AversionInfo+%3Fver+%3B+dc%3Adate+%3FDate+%3B+owl%3Adeprecated+%3Fdeprecated+.+optional+%7B%3Fdt+skos%3AaltLabel+%3Falt+%7D.%0D%0A%3Fdt+skos%3Abroader+%3Fsr+.%0D%0AFILTER+%28regex%28str%28%3Fsr%29%2C+%22P02%22%2C%22i%22%29%29%0D%0A+%0D%0AFILTER%28%28str%28%3Fdeprecated%29%3D%22false%22%29%29%0D%0A+%0D%0ABIND%28if%28EXISTS%7B%3Fdt+skos%3Adefinition+%3Fdef%7D%2C%3Fdef%2C%22%22%29+as+%3Fdefx%29+%7D+order+by+%3Fpl+&amp;output=csv&amp;stylesheet=</sparqlP01toP02post>
 
 
 <!-- SlideSorter messages -->
@@ -3338,6 +3400,14 @@ This interactive web page helps you select a subset of this dataset
 <subsetNotSetUp>This dataset wasn't set up to support .subset (no &lt;subsetVariables&gt; were specified), probably because there are no suitable variables.</subsetNotSetUp>
 <subsetLongNotShown>[Some really long options aren't shown.]</subsetLongNotShown>
 
+<tabledapVideoIntro><![CDATA[
+For a quick introduction, see this
+<a rel="help" href="https://www.youtube.com/watch?v=_BwMHRh7CS8"><img 
+align="bottom" alt="YouTube" src="{0}/images/youtube.png" /> 
+video introduction to using tabledap<img
+src="{0}/images/external.png" align="bottom" alt=" (external link)"
+title="This link to an external web site does not constitute an endorsement." /></a>.
+]]></tabledapVideoIntro>
 
 <!-- This is the long description of ERDDAP, which is used on the Background Information web page.
 This can refer to &erddapUrl;, &requestFormatExamplesHtml; &ssUse and &resultsFormatExamplesHtml; .
@@ -3503,10 +3573,10 @@ remote (accessed via the web) data sources.</b>
     title="This link to an external web site does not constitute an endorsement."/></a>. -->
   </ul>
   ERDDAP also provides Data Access Forms (web pages) which help humans create the OPeNDAP
-  requests. <a rel="bookmark" href="http://www.opendap.org">OPeNDAP's<img 
+  requests. <a rel="bookmark" href="https://www.opendap.org">OPeNDAP's<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
-    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
+    <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
     is one of the recommended
@@ -3572,7 +3642,7 @@ remote (accessed via the web) data sources.</b>
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a> or epoch seconds,
     which is
-      <a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/"
+      <a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS<img 
     src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>-compatible)
@@ -3606,11 +3676,11 @@ remote (accessed via the web) data sources.</b>
 
   <p>Two common standards for writing units of measure are:
   <ul>
-  <li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
+  <li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
     - from
-    <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata<img 
+    <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>,
     which is used in
@@ -3620,7 +3690,7 @@ remote (accessed via the web) data sources.</b>
     <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>, and
-    <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
+    <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
     data files. For example,
@@ -3946,7 +4016,7 @@ A given ERDDAP can be both a source of data for some datasets and a re-distribut
 for other datasets.
 The resulting network is roughly similar to data distribution networks set up with programs
 like
-   <a rel="bookmark" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM<img 
+   <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM<img 
       src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>,
    but less rigidly structured.

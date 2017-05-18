@@ -820,6 +820,18 @@ public class FloatArray extends PrimitiveArray {
     }
 
     /** 
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsvAttString() {
+        StringBuilder sb = new StringBuilder(size * 11);
+        for (int i = 0; i < size; i++) 
+            sb.append((i == 0? "" : ",") + array[i] + "f");
+        return sb.toString();
+    }
+
+    /** 
      * This sorts the elements in ascending order.
      * To get the elements in reverse order, just read from the end of the list
      * to the beginning.
@@ -1114,6 +1126,7 @@ public class FloatArray extends PrimitiveArray {
             }
         } else {
             for (int i = 0; i < size; i++) {
+                //String2.log(">> float.switchFromTo from=" + from + " to=" + to + " i=" + i + " a[i]=" + array[i] + " eq5=" + Math2.almostEqual(5, array[i], from));
                 if (Math2.almostEqual(5, array[i], from)) {
                     array[i] = to;
                     count++;
@@ -1276,7 +1289,8 @@ public class FloatArray extends PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "" + -Float.MAX_VALUE;}
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public String maxValue() {return "" + Float.MAX_VALUE;}
 
     /**

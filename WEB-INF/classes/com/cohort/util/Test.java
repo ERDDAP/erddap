@@ -5,6 +5,7 @@
 package com.cohort.util;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PrimitiveArray;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -618,6 +619,12 @@ public class Test {
         if (a instanceof StringBuilder && b instanceof StringBuilder) {
             ensureEqual(a.toString(), b.toString(), message);
             return;
+        }
+
+        if (a instanceof PrimitiveArray) {
+            String err = ((PrimitiveArray)a).testEquals(b);
+            if (err.length() > 0)
+                error(err);
         }
 
         //fall through to most general case

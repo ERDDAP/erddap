@@ -4,7 +4,7 @@
 cp1="./classes:../../../lib/servlet-api.jar:lib/activation.jar:lib/axis.jar"
 cp2=":lib/cassandra-driver-core.jar:lib/netty-all.jar:lib/guava.jar:lib/metrics-core.jar:lib/lz4.jar:lib/snappy-java.jar"
 cp3=":lib/commons-compress.jar:lib/commons-discovery.jar:lib/itext-1.3.1.jar"
-cp4=":lib/jaxrpc.jar:lib/joda-time.jar:lib/lucene-core.jar"
+cp4=":lib/jaxrpc.jar:lib/lucene-core.jar"
 cp5=":lib/mail.jar:lib/netcdfAll-latest.jar:lib/slf4j.jar:lib/postgresql.jdbc.jar"
 cp6=":lib/saaj.jar:lib/wsdl4j.jar"
 cp7=":lib/aws-java-sdk.jar:lib/commons-codec.jar:lib/commons-logging.jar"

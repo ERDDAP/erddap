@@ -47,10 +47,10 @@ public class EDUnits {
     //these don't need to be thread-safe because they are read-only after creation
     private static HashMap<String,String> udHashMap = getHashMapStringString(
         EDStatic.contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/UdunitsToUcum.properties", 
-        "ISO-8859-1");
+        String2.ISO_8859_1);
     private static HashMap<String,String> ucHashMap = getHashMapStringString(
         EDStatic.contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/UcumToUdunits.properties", 
-        "ISO-8859-1");
+        String2.ISO_8859_1);
 
     /**
      * Set this to true (by calling reallyReallyVerbose=true in your program, 
@@ -77,8 +77,8 @@ public class EDUnits {
 
     /** 
      * This converts UDUnits to UCUM.
-     * <br>UDUnits: http://www.unidata.ucar.edu/software/udunits/udunits-1/etc/udunits.dat
-     *              http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
+     * <br>UDUnits: https://www.unidata.ucar.edu/software/udunits/udunits-1/etc/udunits.dat
+     *              https://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
      *   I worked with v 2.1.9
      * <br>UCUM: http://unitsofmeasure.org/ucum.html
      *   I worked with Version: 1.8, $Revision: 28894 $
@@ -1045,8 +1045,8 @@ public class EDUnits {
 
     /** 
      * This converts UCUM to UDUnits.
-     * <br>UDUnits: http://www.unidata.ucar.edu/software/udunits/udunits-1/etc/udunits.dat
-     *              http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
+     * <br>UDUnits: https://www.unidata.ucar.edu/software/udunits/udunits-1/etc/udunits.dat
+     *              https://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
      * <br>UCUM: http://unitsofmeasure.org/ucum.html
      *
      * <p>UCUM tends to be short, canonical-only, and strict.

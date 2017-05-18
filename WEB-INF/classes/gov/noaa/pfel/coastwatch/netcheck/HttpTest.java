@@ -228,7 +228,7 @@ public class HttpTest extends NetCheckTest {
         String2.log("\n*** netcheck.HttpTest");
         long time = System.currentTimeMillis();
         HttpTest httpTest = new HttpTest("OceanWatch LAS", 
-            //"http://oceanwatch.pfeg.noaa.gov/");   //old
+            //"https://oceanwatch.pfeg.noaa.gov/");   //old
             "http://las.pfeg.noaa.gov/oceanWatch/oceanwatch_safari.php"); //new (8/16/06)
         httpTest.addResponseMustInclude("AVHRR");
         httpTest.addResponseMustNotInclude("ZZTop");

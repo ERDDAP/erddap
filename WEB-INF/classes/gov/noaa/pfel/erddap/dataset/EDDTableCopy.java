@@ -170,7 +170,7 @@ public class EDDTableCopy extends EDDTable{
      * The constructor.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -439,7 +439,7 @@ public class EDDTableCopy extends EDDTable{
             tReloadEveryNMinutes,
             copyDatasetDir, fileNameRegex, recursive, ".*", //pathRegex is for original source files 
             EDDTableFromFiles.MF_LAST,
-            "", 1, 2, //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
+            "", 1, 2, "", //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
@@ -511,7 +511,8 @@ public class EDDTableCopy extends EDDTable{
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames, 
@@ -525,7 +526,7 @@ public class EDDTableCopy extends EDDTable{
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 0, //updateEveryNMillis
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator, 
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -580,7 +581,7 @@ public class EDDTableCopy extends EDDTable{
         int epo, tPo;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&time>=2002-08-03";
-        userDapQuery = "longitude,NO3,time,ship&latitude>0&time>=2002-08-03";
+        userDapQuery = "longitude,NO3,time,ship&latitude%3E0&time%3E=2002-08-03";
 
         try {
             EDDTable edd = (EDDTableCopy)oneFromDatasetsXml(null, "testTableCopy");
@@ -870,7 +871,7 @@ public class EDDTableCopy extends EDDTable{
 "    String geospatial_lon_units \"degrees_east\";\n";
 //"    String history \"" + today + " 2012-07-29T19:11:09Z (local files; contact erd.data@noaa.gov)\n";  //date is from last created file, so varies sometimes
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das"; //\n" +
-//today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
     expected2 = 
 "    String infoUrl \"http://www.globec.org/\";\n" +
@@ -1063,7 +1064,7 @@ public class EDDTableCopy extends EDDTable{
                     "/tabledap/" + edd.datasetID();
                 //for diagnosing during development:
                 //String2.log(String2.annotatedString(SSR.getUrlResponseString(
-                //    "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
+                //    "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
                 //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseString(tUrl + ".das?" + userDapQuery));
                 //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseString(tUrl + ".dods?" + userDapQuery)));
 

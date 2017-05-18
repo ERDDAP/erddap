@@ -45,9 +45,7 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatter;
 
 /** 
  * This class represents a virtual table of data from by aggregating the existing outer dimension 
@@ -71,6 +69,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public static int suggestUpdateEveryNMillis(String tFileDir) {
         return String2.isRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
     }
+
     /** Don't set this to true here.  Some test methods set this to true temporarily. */
     protected static boolean testQuickRestart = false;
 
@@ -100,7 +99,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     protected int     axis0Type = AXIS0_REGULAR; 
     protected String  axis0GlobalAttName = null; //used if AXIS0_GLOBAL
     protected String  axis0TimeFormat = null;    //used if sourceValue is a time
-    protected DateTimeFormatter axis0JodaFormat = null;
+    protected DateTimeFormatter axis0JavaTimeFormat = null;  //java.time (was Joda)
     protected Class   axis0Class = double.class; //the default
     protected String  axis0Regex = "(.*)";       //the default
     protected Pattern axis0RegexPattern = null;  //from regex
@@ -290,7 +289,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *
      * @param tClassName  e.g., EDDGridFromNcFiles
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -475,7 +474,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                             String tp = parts.get(1);
                             if (tp.startsWith("timeFormat=")) {
                                 axis0TimeFormat = tp.substring(11);
-                                axis0JodaFormat = DateTimeFormat.forPattern(axis0TimeFormat).withZone(DateTimeZone.UTC);
+                                axis0JavaTimeFormat = Calendar2.makeDateTimeFormatter(axis0TimeFormat, "UTC");
                                 tp = "double";
                             } //otherwise it should be a primitive type, e.g., double
                             axis0Class = PrimitiveArray.elementStringToClass(tp);
@@ -538,7 +537,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 dirTable.nRows() + " rows in old dirTable");
             if (reallyVerbose) String2.log(
                 "first 5 rows=\n" + 
-                dirTable.dataToCSVString(5));
+                dirTable.dataToString(5));
         }
 
 
@@ -549,7 +548,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 fileTable.nRows() + " rows in old fileTable");
             if (reallyVerbose) String2.log(
                 "first 5 rows=\n" + 
-                fileTable.dataToCSVString(5));
+                fileTable.dataToString(5));
         }
 
         //ensure fileTable has correct columns and data types
@@ -566,8 +565,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             else if (fileTable.findColumnNumber("startIndex")    != FT_START_INDEX_COL) ok = false;
             else if (!(fileTable.getColumn(FT_DIR_INDEX_COL)   instanceof ShortArray))  ok = false;
             else if (!(fileTable.getColumn(FT_FILE_LIST_COL)   instanceof StringArray)) ok = false;
-            else if (!(fileTable.getColumn(FT_LAST_MOD_COL)    instanceof DoubleArray)) ok = false;
-            else if (!(fileTable.getColumn(FT_SIZE_COL)        instanceof DoubleArray)) ok = false;
+            else if (!(fileTable.getColumn(FT_LAST_MOD_COL)    instanceof LongArray))   ok = false;
+            else if (!(fileTable.getColumn(FT_SIZE_COL)        instanceof LongArray)) ok = false;
             else if (!(fileTable.getColumn(FT_N_VALUES_COL)    instanceof IntArray))    ok = false;
             else if (!(fileTable.getColumn(FT_MIN_COL)         instanceof DoubleArray)) ok = false;
             else if (!(fileTable.getColumn(FT_MAX_COL)         instanceof DoubleArray)) ok = false;
@@ -575,7 +574,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             else if (!(fileTable.getColumn(FT_START_INDEX_COL) instanceof IntArray))    ok = false;
             if (!ok) {
                 String2.log("Old fileTable discarded because of incorrect column arrangement (first 2 rows):\n" +
-                    fileTable.toString("row", 2));
+                    fileTable.toString(2));
                 fileTable = null;
             }
         }
@@ -595,8 +594,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             fileTable = new Table();
             Test.ensureEqual(fileTable.addColumn(FT_DIR_INDEX_COL,   "dirIndex",      new ShortArray()),  FT_DIR_INDEX_COL,   "FT_DIR_INDEX_COL is wrong.");
             Test.ensureEqual(fileTable.addColumn(FT_FILE_LIST_COL,   "fileList",      new StringArray()), FT_FILE_LIST_COL,   "FT_FILE_LIST_COL is wrong.");
-            Test.ensureEqual(fileTable.addColumn(FT_LAST_MOD_COL,    "lastMod",       new DoubleArray()), FT_LAST_MOD_COL,    "FT_LAST_MOD_COL is wrong.");
-            Test.ensureEqual(fileTable.addColumn(FT_SIZE_COL,        "size",          new DoubleArray()), FT_SIZE_COL,        "FT_SIZE is wrong.");
+            Test.ensureEqual(fileTable.addColumn(FT_LAST_MOD_COL,    "lastMod",       new LongArray()),   FT_LAST_MOD_COL,    "FT_LAST_MOD_COL is wrong.");
+            Test.ensureEqual(fileTable.addColumn(FT_SIZE_COL,        "size",          new LongArray()),   FT_SIZE_COL,        "FT_SIZE is wrong.");
             Test.ensureEqual(fileTable.addColumn(FT_N_VALUES_COL,    "nValues",       new IntArray()),    FT_N_VALUES_COL,    "FT_N_VALUES_COL is wrong.");
             Test.ensureEqual(fileTable.addColumn(FT_MIN_COL,         "min",           new DoubleArray()), FT_MIN_COL,         "FT_MIN_COL is wrong.");
             Test.ensureEqual(fileTable.addColumn(FT_MAX_COL,         "max",           new DoubleArray()), FT_MAX_COL,         "FT_MAX_COL is wrong.");
@@ -610,8 +609,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         StringArray dirList      = (StringArray)dirTable.getColumn(0);
         ShortArray  ftDirIndex   = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL);
         StringArray ftFileList   = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL);        
-        DoubleArray ftLastMod    = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL);
-        DoubleArray ftSize       = (DoubleArray)fileTable.getColumn(FT_SIZE_COL);
+        LongArray   ftLastMod    = (LongArray)  fileTable.getColumn(FT_LAST_MOD_COL);
+        LongArray   ftSize       = (LongArray)  fileTable.getColumn(FT_SIZE_COL);
         IntArray    ftNValues    = (IntArray)   fileTable.getColumn(FT_N_VALUES_COL);
         DoubleArray ftMin        = (DoubleArray)fileTable.getColumn(FT_MIN_COL);
         DoubleArray ftMax        = (DoubleArray)fileTable.getColumn(FT_MAX_COL);
@@ -703,29 +702,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             if (verbose) String2.log(msg);
             msg = "";
 
-            //remove "badFiles" if they no longer exist (in tAvailableFiles)
-            {
-                //make hashset with all tAvailableFiles
-                HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
-                for (int i = 0; i < ntft; i++)
-                    tFileSet.add(tFileDirPA.get(i) + tFileNamePA.get(i));
-
-                Object badFileNames[] = badFileMap.keySet().toArray();
-                int nMissing = 0;
-                int nbfn = badFileNames.length;
-                for (int i = 0; i < nbfn; i++) {
-                     Object name = badFileNames[i];
-                     if (!tFileSet.contains(name)) {
-                         if (reallyVerbose) 
-                            String2.log("previously bad file now missing: " + name);
-                         nMissing++;
-                         badFileMap.remove(name);
-                     }
-                }
-                if (verbose) String2.log(
-                    "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
-            } 
-
             //switch to dir indexes
             ShortArray tFileDirIndexPA = new ShortArray(ntft, false);  
             tFileTable.removeColumn(0);  //tFileDirPA col
@@ -749,6 +725,35 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             }
             tFileDirPA = null; //allow gc
             
+            //remove "badFiles" if they no longer exist (in tAvailableFiles)
+            if (badFileMap.size() > 0) {
+                //make hashset with all tAvailableFiles as dirIndex/fileName
+                HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+                for (int i = 0; i < ntft; i++) {
+                    tFileSet.add(tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i)); // dirIndex/fileName
+                    //String2.log("tFileSet add: " +   tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));                    
+                }
+
+                Object badFileNames[] = badFileMap.keySet().toArray();
+                int nMissing = 0;
+                int nbfn = badFileNames.length;
+                for (int i = 0; i < nbfn; i++) {
+                     Object name = badFileNames[i];
+                     if (!tFileSet.contains(name)) {
+                         if (reallyVerbose) 
+                            String2.log("previously bad file now missing: " + name);
+                         nMissing++;
+                         badFileMap.remove(name);
+                     }
+                }
+                if (verbose) String2.log(
+                    "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
+
+            } else {
+                if (verbose) String2.log("old nBadFiles size=0");  
+            }
+
+
             //sort fileTable and tFileTable based on dirIndex and file names
             elapsedTime = System.currentTimeMillis();
             fileTable.leftToRightSort(2);   //lexical sort so can walk through below
@@ -810,18 +815,18 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     throw new SimpleException("EDDGridFromFiles.init" +
                         EDStatic.caughtInterrupted);
 
-                int tDirI     = tFileDirIndexPA.get(tFileListPo);
-                String tFileS = tFileNamePA.get(tFileListPo);
-                int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
+                int    tDirI   = tFileDirIndexPA.get(tFileListPo);
+                String tFileS  = tFileNamePA.get(tFileListPo);
+                int    dirI    = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
                 String fileS   = fileListPo < ftFileList.size()? ftFileList.get(fileListPo) : "\uFFFF";
-                double lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Double.MAX_VALUE;
-                double size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Double.MAX_VALUE;
+                long   lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Long.MAX_VALUE;
+                double size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Long.MAX_VALUE;
                 if (reallyVerbose) String2.log("#" + tFileListPo + 
                     " file=" + dirList.get(tDirI) + tFileS);
 
                 //is tLastMod available for tFile?
                 long tLastMod = tFileLastModPA.get(tFileListPo);
-                if (tLastMod == 0) { //0=trouble
+                if (tLastMod == 0 || tLastMod == Long.MAX_VALUE) { //0=trouble
                     nNoLastMod++;
                     String2.log("#" + tFileListPo + " reject because unable to get lastMod time: " + 
                         dirList.get(tDirI) + tFileS);                
@@ -846,7 +851,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 if (bfi != null) {
                     //tFile is in badFileMap
                     Object bfia[] = (Object[])bfi;
-                    double bfLastMod = ((Double)bfia[0]).doubleValue();
+                    long bfLastMod = ((Long)bfia[0]).longValue();
                     if (bfLastMod == tLastMod) {
                         //file hasn't been changed; it is still bad
                         tFileListPo++;
@@ -1004,7 +1009,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             StringBuilder emailSB = new StringBuilder();
             emailSB.append(badFileMapToString(badFileMap, dirList));
             emailSB.append(msg + "\n\n");
-            EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod, emailSB.toString());
+            EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", 
+                emailSB.toString());
         }
 
         //get source metadataFrom FIRST|LAST file (lastModifiedTime)
@@ -1017,8 +1023,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         int tFileI = metadataFrom.equals(MF_FIRST)? nMinMaxIndex[1] : nMinMaxIndex[2];
         if (verbose) String2.log("getting metadataFrom " + dirList.get(ftDirIndex.get(tFileI)) + ftFileList.get(tFileI) +
             "\n  ftLastMod" + 
-            " first=" + Calendar2.millisToIsoZuluString(Math.round(ftLastMod.get(nMinMaxIndex[1]))) + 
-             " last=" + Calendar2.millisToIsoZuluString(Math.round(ftLastMod.get(nMinMaxIndex[2]))));
+            " first=" + Calendar2.millisToIsoZuluString(ftLastMod.get(nMinMaxIndex[1])) + 
+             " last=" + Calendar2.millisToIsoZuluString(ftLastMod.get(nMinMaxIndex[2])));
         getSourceMetadata(
             dirList.get(ftDirIndex.get(tFileI)),
             ftFileList.get(tFileI),
@@ -1391,15 +1397,15 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         }
         if (debugMode) String2.log(msg + "\n" +
             tDirTable.nRows() + " rows in old dirTable.  first 5 rows=\n" + 
-                tDirTable.dataToCSVString(5) + 
+                tDirTable.dataToString(5) + 
             tFileTable.nRows() + " rows in old fileTable.  first 5 rows=\n" + 
-                tFileTable.dataToCSVString(5));
+                tFileTable.dataToString(5));
 
         StringArray dirList = (StringArray)tDirTable.getColumn(0);
         ShortArray  ftDirIndex   = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);
         StringArray ftFileList   = (StringArray)tFileTable.getColumn(FT_FILE_LIST_COL);        
-        DoubleArray ftLastMod    = (DoubleArray)tFileTable.getColumn(FT_LAST_MOD_COL);
-        DoubleArray ftSize       = (DoubleArray)tFileTable.getColumn(FT_SIZE_COL);
+        LongArray   ftLastMod    = (LongArray)  tFileTable.getColumn(FT_LAST_MOD_COL);
+        LongArray   ftSize       = (LongArray)  tFileTable.getColumn(FT_SIZE_COL);
         IntArray    ftNValues    = (IntArray)   tFileTable.getColumn(FT_N_VALUES_COL); 
         DoubleArray ftMin        = (DoubleArray)tFileTable.getColumn(FT_MIN_COL); //sorted by
         DoubleArray ftMax        = (DoubleArray)tFileTable.getColumn(FT_MAX_COL);
@@ -1638,22 +1644,28 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @return the dirTable fileTable (null if trouble).  (No exception if trouble.)
      */
     protected Table tryToLoadDirFileTable(String fileName) {
-        Table table = null;
         try {
             if (File2.isFile(fileName)) {
-                table = new Table();
-                table.readFlatNc(fileName, null, 0); //it logs fileName and nRows=
+                Table table = new Table();
+                //  table.readFlatNc(fileName, null, 0); //unpack     //was this
+                Test.ensureEqual(table.readEnhancedFlatNc(fileName, null), //it logs fileName and nRows=
+                    Table.ENHANCED_VERSION, "old/unsupported enhancedVersion");
+                Test.ensureEqual(table.globalAttributes().getInt(_dirFileTableVersion_),
+                    DIR_FILE_TABLE_VERSION, "old/unsupported " + _dirFileTableVersion_);
+                return table;
+
             } else {
-                if (verbose) String2.log("table file doesn't exist: " + fileName);  
+                if (verbose) String2.log("dir/file table doesn't exist: " + fileName);  
+                return null;
             }
         } catch (Throwable t) {
-            table = null; 
-            String2.log(String2.ERROR + " reading table " + fileName + "\n" + 
+            File2.delete(datasetDir() + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir() + FILE_TABLE_FILENAME);
+            String2.log(String2.ERROR + " reading dir/file table " + fileName + "\n" + 
                 MustBe.throwableToString(t));  
+            return null;
         }
-        return table;
     }
-
 
     /** 
      * This returns a fileTable (formatted like 
@@ -1681,8 +1693,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
             dnlsTable.setColumn(0, tFileTable.getColumn(FT_DIR_INDEX_COL));
             dnlsTable.setColumn(1, tFileTable.getColumn(FT_FILE_LIST_COL));
-            dnlsTable.setColumn(2, new LongArray(tFileTable.getColumn(FT_LAST_MOD_COL))); //double -> long
-            dnlsTable.setColumn(3, new LongArray(tFileTable.getColumn(FT_SIZE_COL)));     //double -> long
+            dnlsTable.setColumn(2, tFileTable.getColumn(FT_LAST_MOD_COL)); 
+            dnlsTable.setColumn(3, tFileTable.getColumn(FT_SIZE_COL));     
             //convert dir Index to dir names
             tDirTable.addColumn(0, "dirIndex", new IntArray(0, tDirTable.nRows() - 1));
             dnlsTable.join(1, 0, "", tDirTable);
@@ -1816,9 +1828,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             if (!m.matches()) 
                 throw new RuntimeException("sourceString=" + sourceString + " doesn't match axis0Regex=" + axis0Regex);
             String cg = m.group(axis0CaptureGroup);
-            nsav[0].addDouble(axis0JodaFormat == null?
+            nsav[0].addDouble(axis0JavaTimeFormat == null?
                 String2.parseDouble(cg) :
-                axis0JodaFormat.parseMillis(cg) / 1000.0);
+                Calendar2.toEpochSeconds(cg, axis0JavaTimeFormat));
             return nsav;
         }
 
@@ -1911,8 +1923,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         StringArray dirList      = (StringArray)tDirTable.getColumn(0);
         ShortArray  ftDirIndex   = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);
         StringArray ftFileList   = (StringArray)tFileTable.getColumn(FT_FILE_LIST_COL);        
-        DoubleArray ftLastMod    = (DoubleArray)tFileTable.getColumn(FT_LAST_MOD_COL);
-        DoubleArray ftSize       = (DoubleArray)tFileTable.getColumn(FT_SIZE_COL);
+        LongArray   ftLastMod    = (LongArray)  tFileTable.getColumn(FT_LAST_MOD_COL);
+        LongArray   ftSize       = (LongArray)  tFileTable.getColumn(FT_SIZE_COL);
         IntArray    ftNValues    = (IntArray)   tFileTable.getColumn(FT_N_VALUES_COL);
         DoubleArray ftMin        = (DoubleArray)tFileTable.getColumn(FT_MIN_COL);
         DoubleArray ftMax        = (DoubleArray)tFileTable.getColumn(FT_MAX_COL);

@@ -39,14 +39,9 @@ import java.util.List;
 import java.util.GregorianCalendar;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.ma2.*;
 import ucar.nc2.*;
@@ -927,14 +922,10 @@ switch to finally clause
      *
      * <p>.grd (GMT-style NetCDF) files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+     * <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
      *  >NetCDF Java Library</a>
      * renamed as netcdf-latest.jar.
-     * Get slf4j-jdk14.jar from 
-     * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
-     * and copy it to <context>/WEB-INF/lib.
-     * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
-     * Put both of these .jar files in the classpath for the compiler and for Java.
+     * Put it in the classpath for the compiler and for Java.
      *
      * @param fullFileName
      * @param desiredMinLon the minimum desired longitude.
@@ -1919,13 +1910,9 @@ switch to finally clause
      *
      * <p>.nc files are read with code in
      * netcdf-X.X.XX.jar which is part of the
-     * <a href="http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html">NetCDF Java Library</a>
+     * <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html">NetCDF Java Library</a>
      * renamed as netcdf-latest.jar.
-     * Get slf4j-jdk14.jar from 
-     * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
-     * and copy it to <context>/WEB-INF/lib.
-     * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
-     * Put both of these .jar files in the classpath for the compiler and for Java.
+     * Put it in the classpath for the compiler and for Java.
      *
      * <p>This sets globalAttributes, latAttributes, lonAttributes,
      * and dataAttributes.
@@ -3192,6 +3179,7 @@ try {
         //items determined by looking at a .grd file; items written in that order 
         NetcdfFileWriter grd = NetcdfFileWriter.createNew(
             NetcdfFileWriter.Version.netcdf3, directory + randomInt);
+        boolean nc3Mode = true;
         boolean success = false;
         try {
             Group rootGroup = grd.addGroup(null, "");
@@ -4188,6 +4176,8 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //items determined by looking at a .nc file; items written in that order 
         NetcdfFileWriter nc = NetcdfFileWriter.createNew(
             NetcdfFileWriter.Version.netcdf3, directory + randomInt); 
+        boolean nc3Mode = true;
+
         try {
             Group rootGroup = nc.addGroup(null, "");
             nc.setFill(false);
@@ -4292,7 +4282,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                     rootGroup.addAttribute(new Attribute("et_affine", 
                         NcHelper.get1DArray(matrix))); //float64[] {a, b, c, d, e, f}
                 } else {
-                    rootGroup.addAttribute(NcHelper.createAttribute(names[i], globalAttributes.get(names[i])));
+                    rootGroup.addAttribute(NcHelper.createAttribute(nc3Mode, names[i], globalAttributes.get(names[i])));
                 }
             }
 
@@ -4322,15 +4312,15 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             altitudeVar.addAttribute(new Attribute("_CoordinateZisPositive", "up"));
 
             //lat
-            NcHelper.setAttributes(latVar, latAttributes);
+            NcHelper.setAttributes(nc3Mode, latVar, latAttributes);
             latVar.addAttribute(new Attribute("axis", "Y"));
 
             //lon
-            NcHelper.setAttributes(lonVar, lonAttributes);
+            NcHelper.setAttributes(nc3Mode, lonVar, lonAttributes);
             lonVar.addAttribute(new Attribute("axis", "X"));
 
             //data
-            NcHelper.setAttributes(dataVar, dataAttributes);
+            NcHelper.setAttributes(nc3Mode, dataVar, dataAttributes);
 
             //leave "define" mode
             nc.create();

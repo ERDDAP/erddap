@@ -454,7 +454,7 @@ public class DigirHelper  {
             validate, "/response/content/metadata/provider/resource", null,
             true); //simplify
         if (reallyVerbose) String2.log("DigirHelper.getMetadataTable, first 3 rows:\n" + 
-            table.toString("row", 3));
+            table.toString(3));
 
         return table;
 
@@ -477,7 +477,7 @@ public class DigirHelper  {
         if (false) {
             //this used to work and probably still does; but I have stopped testing rutgers because it is often down.
             table = getMetadataTable(RUTGERS_OBIS_URL, OBIS_VERSION);
-            String2.log("metadata table=" + table.toString("row", 10));
+            String2.log("metadata table=" + table.toString(10));
             Test.ensureTrue(table.nRows() >= 142, "nRows=" + table.nRows());
             Test.ensureEqual(table.getColumnName(0), "name", "");
             Test.ensureEqual(table.getColumnName(1), "code", "");
@@ -507,7 +507,7 @@ public class DigirHelper  {
 //      0  IndOBIS, India        indobis Vishwas Chavan      Scientist vs.chavan@ncl. 91 20 2590 248 Asavari Navlak Technical Offi ar.navlakhe@nc 91 20 2590 248 IndOBIS (India Indian Ocean,  Chavan, VIshwa http://digir.n        sciname   41880 2007-06-21T02:              3            100          10000
 //      1  Biological Col  NIOCOLLECTION Achuthankutty, Coordinator, B   achu@nio.org    http://digir.n        sciname     803     2006-11-03              3          10000          10000
             table = getMetadataTable(IND_OBIS_URL, OBIS_VERSION);
-            String2.log("metadata table=" + table.toString("row", 10));
+            String2.log("metadata table=" + table.toString(10));
             Test.ensureTrue(table.nRows() >= 2, "nRows=" + table.nRows());
             Test.ensureEqual(table.getColumnName(0), "name", "");
             Test.ensureEqual(table.getColumnName(1), "code", "");
@@ -527,7 +527,7 @@ public class DigirHelper  {
 //      1  Benthic fauna      pechorasea http://www.mar   Dahle, Salve     Data owner sd@akvaplan.ni +47-(0)77-75 0 Cochrane, Sabi Coordinator Bi sc@akvaplan.ni+47-777-50327 Quantitative s                Release with p http://www.iob http://digir.n     PechoraSea              O           1324 2004-09-02 18:  0           1000          10000 Denisenko, Sta dest@unitel.sp  Benthic fauna
 //      2  N3 data of Kie         n3data http://www.mar   Rumohr, Heye    hrumohr@ifm-ge +49-(0)431-600    Release with p http://www.iob http://digir.n         N3Data              O           8944 2005-11-22 17:  0           1000          10000                               Benthic fauna,
             table = getMetadataTable(FLANDERS_OBIS_URL, OBIS_VERSION);
-            String2.log("metadata table=" + table.toString("row", 10));
+            String2.log("metadata table=" + table.toString(10));
             Test.ensureTrue(table.nRows() >= 37, "nRows=" + table.nRows());
             Test.ensureEqual(table.getColumnName(0), "name", "");
             Test.ensureEqual(table.getColumnName(1), "code", "");
@@ -1876,7 +1876,7 @@ String2.log("inventoryTable:\n" + table.toString());
 //  2            VLIZ          Tisbe         415428 Abietinaria ab           1.95          51.23            NaN
 //  3            VLIZ          Tisbe         562956 Abietinaria ab           1.62          50.77            NaN
 
-                String results = table.dataToCSVString();
+                String results = table.dataToString();
                 String expected =
 "darwin:InstitutionCode,darwin:CollectionCode,darwin:CatalogNumber,darwin:ScientificName,darwin:Longitude,darwin:Latitude,obis:Temperature\n" +
 "VLIZ,Tisbe,405183,Abietinaria abietina,-20.0,46.0,\n" +
@@ -2186,8 +2186,8 @@ String2.log("inventoryTable:\n" + table.toString());
 
             }
         } catch (Exception e) {
-            String2.pressEnterToContinue(
-                "UNEXPECTED ERROR: " + MustBe.throwableToString(e)); 
+            String2.pressEnterToContinue(MustBe.throwableToString(e) + 
+                "\nUnexpected error."); 
         }
     }
 
@@ -2204,7 +2204,7 @@ String2.log("inventoryTable:\n" + table.toString());
             "darwin:ScientificName, obis:Temperature", 
             "");
 
-        String results = table.dataToCSVString();
+        String results = table.dataToString();
         String expected =
 //pre 2010-07-27 was 7 rows
 "LON,LAT,DEPTH,TIME,ID,darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature\n" +

@@ -981,7 +981,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "(View this in a wide window so the lines don't wrap around.)\n\n");
         fastSwimmerResults.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                             new boolean[]{true, true, true});
-        resultsSB.append(fastSwimmerResults.dataToCSVString());
+        resultsSB.append(fastSwimmerResults.dataToString());
         resultsSB.append("\n");
 
         //long   (This was Issue #9 and Issue #10. Now just Of Interest.)
@@ -1006,7 +1006,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "View this in a wide window so the lines don't wrap around.\n\n");
         longResults.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                      new boolean[]{true, true, true});
-        resultsSB.append(longResults.dataToCSVString());
+        resultsSB.append(longResults.dataToString());
         resultsSB.append("\n");
 
         String2.log(resultsSB.toString());
@@ -1259,7 +1259,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "    the surgery_timestamp = " + nBefore + "\n\n");
         resultsTable.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                           new boolean[]{true, true, true});
-        resultsSB.append(resultsTable.dataToCSVString());
+        resultsSB.append(resultsTable.dataToString());
         resultsSB.append("\n\n");
 
         String2.log(resultsSB.toString());
@@ -1397,7 +1397,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "\n\n");
         resultsTable.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                           new boolean[]{true, true, true});
-        resultsSB.append(resultsTable.dataToCSVString());
+        resultsSB.append(resultsTable.dataToString());
         resultsSB.append("\n");
 
         String2.log(resultsSB.toString());
@@ -1443,13 +1443,13 @@ public class EDDTableCopyPost extends EDDTableCopy {
         Table surg3Table = surg3.getTwawmForDapQuery(EDStatic.loggedInAsSuperuser, "", 
             "role&unique_tag_id=%22" + SSR.minimalPercentEncode(unique_tag_id) + 
             "%22&distinct()").cumulativeTable(); 
-        String2.log(surg3Table.dataToCSVString(1000000));
+        String2.log(surg3Table.dataToString(1000000));
 
         EDDTable det3 = (EDDTable)oneFromDatasetsXml(null, "testPostDet3"); 
         Table det3Table = det3.getTwawmForDapQuery(EDStatic.loggedInAsSuperuser, "",
             "role&unique_tag_id=%22" + SSR.minimalPercentEncode(unique_tag_id) + 
             "%22&distinct()").cumulativeTable(); 
-        String2.log(det3Table.dataToCSVString(1000000));
+        String2.log(det3Table.dataToString(1000000));
 
     }
 
@@ -1899,7 +1899,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "Here are the tags that have problems:\n\n");
         resultsTable.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                           new boolean[]{true, true, true});
-        resultsSB.append(resultsTable.dataToCSVString());
+        resultsSB.append(resultsTable.dataToString());
         resultsSB.append("\n");
         //String2.log("\n\nTags where surgery release_time is BEFORE first detection time:\n");
         //String2.log(String2.noLongLinesAtSpace(beforeTags, 75, "").toString());

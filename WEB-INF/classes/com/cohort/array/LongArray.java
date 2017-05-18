@@ -520,10 +520,8 @@ public class LongArray extends PrimitiveArray {
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "LongArray.toDoubleArray");
         double dar[] = new double[size];
-        for (int i = 0; i < size; i++) {
-            long tl = array[i];
-            dar[i] = tl == Long.MAX_VALUE? Double.NaN : tl;
-        }
+        for (int i = 0; i < size; i++) 
+            dar[i] = Math2.longToDoubleNaN(array[i]);
         return dar;
     }
 
@@ -646,8 +644,7 @@ public class LongArray extends PrimitiveArray {
      *   Long.MAX_VALUE is returned as Double.NaN.
      */
     public double getDouble(int index) {
-        long tl = get(index);
-        return tl == Long.MAX_VALUE? Double.NaN : tl;
+        return Math2.longToDoubleNaN(get(index));
     }
 
     /**
@@ -660,7 +657,7 @@ public class LongArray extends PrimitiveArray {
      *   with String2.parseDouble and so may return Double.NaN.
      */
     public double getUnsignedDouble(int index) {
-        //http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
+        //https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
 //  9,223,372,036,854,775,808
 // +9,223,372,036,854,775,808
 //=18 446 744 073 709 551 616
@@ -855,6 +852,18 @@ public class LongArray extends PrimitiveArray {
     }
 
     /** 
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsvAttString() {
+        StringBuilder sb = new StringBuilder(size * 16);
+        for (int i = 0; i < size; i++) 
+            sb.append((i == 0? "" : ",") + array[i] + "L");
+        return sb.toString();
+    }
+
+    /** 
      * This sorts the elements in ascending order.
      * To get the elements in reverse order, just read from the end of the list
      * to the beginning.
@@ -971,8 +980,7 @@ public class LongArray extends PrimitiveArray {
         throws Exception {
  
         raf.seek(start + 8*index);
-        long tl = raf.readLong();
-        return tl == Long.MAX_VALUE? Double.NaN : tl;
+        return Math2.longToDoubleNaN(raf.readLong());
     }
 
     /**
@@ -1020,7 +1028,7 @@ public class LongArray extends PrimitiveArray {
             System.arraycopy(((LongArray)pa).array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
-                array[size + i] = Math2.roundToLong(pa.getDouble(i)); //this converts mv's
+                array[size + i] = pa.getLong(i); //this converts mv's
         }
         size += otherSize; //do last to minimize concurrency problems
     }    
@@ -1040,6 +1048,9 @@ public class LongArray extends PrimitiveArray {
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof LongArray) {
             System.arraycopy(((LongArray)pa).array, 0, array, size, otherSize);
+        } else if (pa instanceof StringArray) {
+            for (int i = 0; i < otherSize; i++)
+                array[size + i] = pa.getLong(i); //just parses the string
         } else {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.roundToLong(pa.getRawDouble(i)); //this DOESN'T convert mv's
@@ -1222,7 +1233,8 @@ public class LongArray extends PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "" + Long.MIN_VALUE;}
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public String maxValue() {return "" + (Long.MAX_VALUE - 1);}
 
     /**
@@ -1245,6 +1257,7 @@ public class LongArray extends PrimitiveArray {
                 if (v >= tmax) {tmaxi = i; tmax = v; }
             }
         }
+        //String2.log(">> LongArray.getNMinMaxIndex size=" + size + " n=" + n + " min=" + tmin + " max=" + tmax);
         return new int[]{n, tmini, tmaxi};
     }
 

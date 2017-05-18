@@ -1412,7 +1412,7 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
             table = new Table();
             table.readFlatNc(dir + tName, null, 1);
             table.removeRows(5, Math.max(5, table.nRows()));
-            results = table.dataToCSVString();
+            results = table.dataToString();
             expected = 
 "unique_tag_id,PI,longitude,latitude,time,activation_time,channel,code_label,comments,common_name,date_public,delay_max,delay_min,delay_start,delay_type,dna_sampled,est_tag_life,frequency,implant_type,project,provenance,role,scientific_name,stock,surgery_id,surgery_location,surgery_longitude,surgery_latitude,surgery_time,tag_id_code,tagger,treatment_type,water_temp\n" +
 "1000_A69-1204_1030201,DAVID WELCH,-121.0529,49.8615,1.1165265E9,1.1152512E9,D,A69-1204,ADIPOSE FIN CLIPPED,COHO,1.222730913E9,90,30,0,RANDOM,0,,,INTERNAL,KINTAMA RESEARCH,HATCHERY,WELCH_DAVID_ONCORHYNCHUS_KISUTCH_SPIUSCREEK,ONCORHYNCHUS KISUTCH,SPIUS CREEK,1148,SPIUS CREEK HATCHERY,-121.0253,50.1415,1.116288E9,1000,MELINDA JACOBS,NOT ENTERED,7.5\n" +
@@ -1432,12 +1432,12 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
                     dir, tedd.className() + "_ps3_tag" + tag, ".nc"); 
                 Table table2 = new Table();
                 table2.readFlatNc(dir + tName, null, 1);
-                results = table.dataToCSVString();
+                results = table.dataToString();
 
                 Table table1 = (Table)table.clone();
                 table1.removeRows(0, tag);
                 table1.removeRows(tag + 1, table1.nRows());
-                expected = table.dataToCSVString();
+                expected = table.dataToString();
 
                 Test.ensureEqual(results, expected, "tag=" + tag + " results=\n" + results);
             }

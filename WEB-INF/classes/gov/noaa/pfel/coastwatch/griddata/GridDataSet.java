@@ -71,7 +71,7 @@ public abstract class GridDataSet {
     public int[]    activeTimePeriodNHours;
 
     /** The active time period opendapUrl (or array of nulls if none available).
-     * E.g., http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/hday
+     * E.g., https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/hday
      * which just needs .html suffix to make link for user to click on.
      */
     public String[] activeTimePeriodOpendapUrls; //set by the constructor

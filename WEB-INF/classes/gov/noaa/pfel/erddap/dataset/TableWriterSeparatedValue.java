@@ -5,11 +5,11 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
-import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -37,7 +37,7 @@ public class TableWriterSeparatedValue extends TableWriter {
     protected String nanString; 
 
     //set by firstTime
-    protected boolean isString[];
+    protected boolean isStringOrChar[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
     protected BufferedWriter writer;
@@ -54,7 +54,6 @@ public class TableWriterSeparatedValue extends TableWriter {
      * @param tQuoted if true, if a String value starts or ends with a space or has a double quote or comma, 
      *    the value will be written in double quotes
      *    and internal double quotes become two double quotes.
-     *    In any case, newline characters are replaced by char #166 (pipe with gap).
      * @param tWriteColumnNames if false, data starts on line 0.
      * @param tWriteUnits  '0'=no, 
      *    '('=on the first line as "variableName (units)" (if present),
@@ -102,8 +101,12 @@ public class TableWriterSeparatedValue extends TableWriter {
         boolean firstTime = columnNames == null;
         ensureCompatible(table);
 
-        //do firstTime stuff
         int nColumns = table.nColumns();
+        PrimitiveArray pas[] = new PrimitiveArray[nColumns];
+        for (int col = 0; col < nColumns; col++) 
+            pas[col] = table.getColumn(col);
+
+        //do firstTime stuff
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
@@ -123,12 +126,14 @@ public class TableWriterSeparatedValue extends TableWriter {
 
             //write the header
             writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream("UTF-8"), "UTF-8"));
+                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1));
 
             //write the column names   
-            isString = new boolean[nColumns];
+            isStringOrChar = new boolean[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                isString[col] = table.getColumn(col).elementClass() == String.class;
+                isStringOrChar[col] = 
+                    pas[col].elementClass() == String.class ||
+                    pas[col].elementClass() == char.class;
                 
                 if (writeColumnNames) {
                     String units = "";
@@ -145,8 +150,10 @@ public class TableWriterSeparatedValue extends TableWriter {
                         }
                     }
 
-                    //quoteIfNeeded converts carriageReturns/newlines to (char)166; //'¦'  (#166)
-                    writer.write(String2.quoteIfNeeded(quoted, table.getColumnName(col) + units));
+                    //convert troublesome chars to \\encoding
+                    String s = table.getColumnName(col) + units;
+                    writer.write(quoted? String2.toNccsvDataString(s) :
+                                         String2.toTsvString(s));
                     writer.write(col == nColumns - 1? "\n" : separator);
                 }
             }
@@ -158,7 +165,8 @@ public class TableWriterSeparatedValue extends TableWriter {
                     if (units == null) units = "";
                     if (isTimeStamp[col])
                         units = "UTC"; //no longer true: "seconds since 1970-01-01..."
-                    writer.write(String2.quoteIfNeeded(quoted, units));
+                    writer.write(quoted? String2.toNccsvDataString(units) :
+                                         String2.toTsvString(units));
                     writer.write(col == nColumns - 1? "\n" : separator);
                 }
             }
@@ -177,11 +185,12 @@ public class TableWriterSeparatedValue extends TableWriter {
             for (int col = 0; col < nColumns; col++) {
                 if (isTimeStamp[col]) {
                     writer.write(Calendar2.epochSecondsToLimitedIsoStringT(
-                        time_precision[col], table.getDoubleData(col, row), ""));
-                } else if (isString[col]) {
-                    writer.write(String2.quoteIfNeeded(quoted, table.getStringData(col, row)));
+                        time_precision[col], pas[col].getDouble(row), ""));
+                } else if (isStringOrChar[col]) {
+                    writer.write(quoted? pas[col].getNccsvDataString(row) :
+                                         pas[col].getTsvString(row));
                 } else {
-                    String s = table.getStringData(col, row);
+                    String s = pas[col].getString(row);
                     writer.write(s.length() == 0? nanString : s); 
                 }
                 writer.write(col == nColumns -1? "\n" : separator);

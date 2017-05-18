@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap;
 
 import com.cohort.array.IntArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -29,13 +30,23 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.GregorianCalendar;
 
+import ucar.nc2.NetcdfFileWriter;
 
 /**
  * This is a command line program to run ArchiveADataset.
- * This is geared toward meeting the recommendations for submitting data to NOAA NCEI.
+ * This is geared toward meeting the IOOS and BagIt recommendations 
+ * for submitting data to NOAA NCEI.
  * https://sites.google.com/a/noaa.gov/ncei-ioos-archive/cookbook
  * https://sites.google.com/a/noaa.gov/ncei-ioos-archive/cookbook/data-integrity
+ * https://en.wikipedia.org/wiki/BagIt
+ * https://tools.ietf.org/html/draft-kunze-bagit-14  If change, change BagIt-Version below.
  *
+ * Bob has Bagger (GUI program from Library of Congress) downloaded from
+ *  https://github.com/LibraryOfCongress/bagger/releases/
+ * To run, double click on /programs/bagger-2.7.4/bagger-2.7.4/bin/bagger.bat
+ * (I specified JAVA_HOME in the .bat file.)
+ * To verify a bag: File : Open existing bag 
+ * 
  * @author Bob Simons (bob.simons@noaa.gov) 2015-12-15
  */
 public class ArchiveADataset {
@@ -73,7 +84,7 @@ public class ArchiveADataset {
      * @return the full name of the tgz file.
      */
     public String doIt(String args[]) throws Throwable {
-        GregorianCalendar gcZ = Calendar2.newGCalendarLocal();
+        GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
         String isoTime     = Calendar2.formatAsISODateTimeT(gcZ) + "Z";
         String compactTime = Calendar2.formatAsCompactDateTime(gcZ) + "Z";
         String aadDir = EDStatic.bigParentDirectory + "ArchiveADataset/";
@@ -95,10 +106,13 @@ public class ArchiveADataset {
         String def;  //default
         String error = "";
         String digestDefault = "SHA-256";
+        String bagitDigestDefault = "SHA-256"; //SHA-1, but NOAA wants SHA-256
         String digestPrompt = 
             "Which type of file digest (checksum) do you want\n" +
-            "(one of " + String2.toCSSVString(String2.FILE_DIGEST_OPTIONS) + ")";
-        String digestType, digestExtension;
+            "(specify one of " + String2.toCSSVString(String2.FILE_DIGEST_OPTIONS) + ")";
+        String bagitDigestPrompt = digestPrompt + "\n" +
+            "(BagIt spec recommends MD5 and SHA-1. NCEI prefers SHA-256.)";
+        String digestType, digestExtension, digestExtension1;
 
         if (args == null) 
             args = new String[0];
@@ -128,6 +142,9 @@ public class ArchiveADataset {
         String newCommandLine = 
             (String2.OSIsWindows? "ArchiveADataset " : "./ArchiveADataset.sh ") + 
             (reallyVerbose? "-verbose " : "");
+        String manifestFullFileName = null;
+        Writer manifestFileWriter = null;
+        String aadSettings = null;
         EDD.verbose = true;
         EDD.reallyVerbose = reallyVerbose;
         NcHelper.verbose = reallyVerbose;
@@ -146,13 +163,13 @@ public class ArchiveADataset {
                 "  Press Enter or enter \"\" (two double quotes) or the word \"nothing\"\n" +
                 "    (without quotes) to specify a 0-length string.\n" +
                 "  Or, you can put all the answers as parameters on the command line.\n" +
-                "* Make a series of requests to the dataset and stage the files in\n" +
+                "* Make a series of requests to the dataset and stage the netcdf-3 files in\n" +
                 "  " + aadDir + "\n" +
                 "  Each of those files must be <2GB.\n" +
-                "* Make a .tar.gz file from all of the staged files.\n" +
+                "* Make related files (e.g., a file with a list of data files).\n" +
+                "* Make a container (e.g., .zip file) from all of the staged files.\n" +
                 "  It may be any size (limited only by disk space).\n" +
-                "* Make a file (e.g., .sha256) with the digest of the .tar.gz file.\n" +
-                "* Make an .listOfFiles.txt file with the list of files in the .tar.gz file.\n" +
+                "* Make a file (e.g., .md5.txt) with the digest of the container.\n" +
                 "* Delete all of the staged files.\n" +
                 "\n" +
                 "Diagnostic information is shown on the screen and put in\n" +
@@ -161,8 +178,25 @@ public class ArchiveADataset {
                 "For detailed information, see\n" +
                 "http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset");
             
-            //get email address
+            //get bagitMode
             int whichArg = 0;
+            String mode = get(args, whichArg++, "BagIt", //default
+                "Which type of container (original or BagIt)\n" +
+                "(NCEI prefers BagIt)");
+            String modeLC = mode.toLowerCase();
+            if (!modeLC.equals("original") && !modeLC.equals("bagit"))
+                throw new RuntimeException("You must specify 'original' or 'BagIt'.");
+            boolean bagitMode = modeLC.equals("bagit");
+            String textFileEncoding = bagitMode? String2.UTF_8 : String2.ISO_8859_1;
+
+            //compression
+            String compression = get(args, whichArg++, "tar.gz", //default
+                "Which type of compression (zip or tar.gz)\n" +
+                "(NCEI prefers tar.gz)").toLowerCase();
+            if (!compression.equals("zip") && !compression.equals("tar.gz"))
+                throw new RuntimeException("You must specify 'zip' or 'tar.gz'.");
+            
+            //get email address
             String contactEmail = get(args, whichArg++, EDStatic.adminEmail, //default
                 "What is a contact email address for this archive\n" +
                 "(it will be written in the READ_ME.txt file in the archive)");
@@ -178,7 +212,7 @@ public class ArchiveADataset {
             EDV dataVars[] = edd.dataVariables();
             int ndv = dataVars.length;
 
-            tgzName           = aadDir + datasetID + "_" + compactTime + ".tar.gz";
+            tgzName           = aadDir + datasetID + "_" + compactTime + "." + compression;
             String archiveDir = aadDir + datasetID + "_" + compactTime + "/";
             String2.log("The files to be archived will be staged in\n  " + 
                 archiveDir);
@@ -246,7 +280,7 @@ public class ArchiveADataset {
                     "].\n" +
                     "You probably won't be able to archive a large gridded dataset all at once.\n" +
                     "It is too likely that something will go wrong,\n" +
-                    "or the resulting .tar.gz file will be too large to transmit.\n" +
+                    "or the resulting ." + compression + " file will be too large to transmit.\n" +
                     "Instead, try archiving a week or month's worth.\n" +
                     "The default shown below gets everything -- change it.\n" +
                     "What subset do you want to archive");
@@ -264,11 +298,14 @@ public class ArchiveADataset {
                 String rightConstraints = constraintsString.substring(po + 1);
 
                 //which type of file digest?
-                digestType = get(args, whichArg++, digestDefault, digestPrompt);
+                digestType = get(args, whichArg++, 
+                    bagitMode? bagitDigestDefault : digestDefault, 
+                    bagitMode? bagitDigestPrompt  : digestPrompt);
                 int whichDigest = String2.indexOf(String2.FILE_DIGEST_OPTIONS, digestType);
                 if (whichDigest < 0)
                     throw new RuntimeException("Invalid file digest type.");
-                digestExtension = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+                digestExtension  = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+                digestExtension1 = digestExtension.substring(1);
 
                 //*** write info about this archiving to archiveDir
                 String2.log(
@@ -276,33 +313,55 @@ public class ArchiveADataset {
                       "    This may take a long time.\n");
                 Math2.sleep(5000);
 
-                error = String2.writeToFile(archiveDir + "READ_ME.txt", 
-                    "This archive was created by the ArchiveADataset script\n" +
-                    "(which is part of ERDDAP) starting at " + isoTime + "\n" +
-                    "based on these settings:\n" +
-                    "Contact email=" + contactEmail + "\n" +
-                    "ERDDAP datasetID=" + datasetID + "\n" +
-                    "Data variables=" + dataVarsCSV + "\n" +
-                    "Constraints=" + constraintsString + "\n" +
-                    "Digest type=" + digestType + "\n",
-                    "ISO-8859-1");
-                if (error.length() > 0)
-                    throw new RuntimeException(error);
+                if (bagitMode) {
+                    manifestFullFileName = archiveDir + "manifest-" + 
+                        digestExtension1 + ".txt"; //md5 or sha256
+                    manifestFileWriter = new OutputStreamWriter(
+                        new FileOutputStream(manifestFullFileName), String2.UTF_8);            
+
+                    aadSettings = 
+                        "ArchiveADataset_container_type: " + mode + "\n" +
+                        "ArchiveADataset_compression: " + compression + "\n" +
+                        "ArchiveADataset_contact_email: " + contactEmail + "\n" +
+                        "ArchiveADataset_ERDDAP_datasetID: " + datasetID + "\n" +
+                        "ArchiveADataset_data_variables: " + dataVarsCSV + "\n" +
+                        "ArchiveADataset_constraints: " + constraintsString + "\n" +
+                        "ArchiveADataset_digest_type: " + digestType + "\n";
+
+                } else {
+                    error = String2.writeToFile(archiveDir + "READ_ME.txt", 
+                        "This archive was created by the ArchiveADataset script\n" +
+                        "(which is part of ERDDAP v" + EDStatic.erddapVersion + 
+                            ") starting at " + isoTime + "\n" +
+                        "based on these settings:\n" +
+                        "Container type=" + mode + "\n" +
+                        "Compression=" + compression + "\n" +
+                        "Contact email=" + contactEmail + "\n" +
+                        "ERDDAP datasetID=" + datasetID + "\n" +
+                        "Data variables=" + dataVarsCSV + "\n" +
+                        "Constraints=" + constraintsString + "\n" +
+                        "Digest type=" + digestType + "\n",
+                        textFileEncoding);
+                    if (error.length() > 0)
+                        throw new RuntimeException(error);
+
+                    //save .das to archiveDir
+                    resultName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+                        archiveDir, datasetID, ".das"); 
+     
+                    //save .dds to archiveDir
+                    resultName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+                        archiveDir, datasetID, ".dds"); 
+                 }
+
                 newCommandLine += 
+                    String2.quoteParameterIfNeeded(mode)              + " " +
                     String2.quoteParameterIfNeeded(contactEmail)      + " " +
                     String2.quoteParameterIfNeeded(datasetID)         + " " +
                     String2.quoteParameterIfNeeded(dataVarsCSV)       + " " +
                     String2.quoteParameterIfNeeded(constraintsString) + " " +
                     String2.quoteParameterIfNeeded(digestType);
 
-                //save .das to archiveDir
-                resultName = eddGrid.makeNewFileForDapQuery(null, null, "", 
-                    archiveDir, datasetID, ".das"); 
- 
-                //save .dds to archiveDir
-                resultName = eddGrid.makeNewFileForDapQuery(null, null, "", 
-                    archiveDir, datasetID, ".dds"); 
- 
                 //write the data files to archiveDataDir
                 int axis0start  = constraints.get(0);
                 int axis0stride = constraints.get(1);
@@ -328,17 +387,23 @@ public class ArchiveADataset {
                     } else {
                         try {
                             String fullName = archiveDataDir + fileName + ".nc";
-                            eddGrid.saveAsNc(baseRequestUrl + ".nc", query.toString(),                        
+                            eddGrid.saveAsNc(NetcdfFileWriter.Version.netcdf3,
+                                baseRequestUrl + ".nc", query.toString(),                        
                                 fullName, true, 0); //keepUnusedAxes, lonAdjust
                             nDataFilesCreated++;
 
-                            //make the file digest
-                            error = String2.writeToFile(fullName + digestExtension, 
-                                String2.fileDigest(digestType, fullName) + 
-                                    "  " + fileName + ".nc\n",
-                                "ISO-8859-1");
-                            if (error.length() > 0)
-                                throw new RuntimeException(error);
+                            //write the file digest info
+                            String digest = String2.fileDigest(digestType, fullName);
+                            if (bagitMode) {
+                                manifestFileWriter.write(
+                                    digest + "  data/" + fileName + ".nc\n");
+                            } else {
+                                error = String2.writeToFile(fullName + digestExtension, 
+                                    digest + "  " + fileName + ".nc\n", 
+                                    textFileEncoding);
+                                if (error.length() > 0)
+                                    throw new RuntimeException(error);
+                            }
 
                         } catch (Exception e) {
                             String2.log("ERROR #" + nErrors++ + "\n" +
@@ -413,12 +478,12 @@ public class ArchiveADataset {
                 fileTypeOptions.add(".nc");
                 fileTypeOptions.add(".csv");
                 fileTypeOptions.add(".json");
-                def = accNcCF && subsetByCSV.length() > 0? ".ncCFMA" : 
-                      accNcCF?                             ".ncCF"   : ".nc";
+                def = accNcCF && subsetByCSV.length() > 0? ".ncCFMA" : ".nc"; //NCEI prefers .ncCFMA
                 String fileType = "";
                 while (fileType.length() == 0) {
                     fileType = get(args, whichArg, def, 
-                        "Create which file type (" + fileTypeOptions.toString() + ")");
+                        "Create which file type (" + fileTypeOptions.toString() + ")\n" +
+                        "(NCEI prefers .ncCFMA if it is an option)");
                     if (fileTypeOptions.indexOf(fileType) < 0) {
                         String msg = "fileType=" + fileType + " is not a valid option.";
                         if (args.length > whichArg) {
@@ -432,11 +497,14 @@ public class ArchiveADataset {
                 whichArg++;
 
                 //which type of file digest?
-                digestType = get(args, whichArg++, digestDefault, digestPrompt);
+                digestType = get(args, whichArg++, 
+                    bagitMode? bagitDigestDefault : digestDefault, 
+                    bagitMode? bagitDigestPrompt  : digestPrompt);
                 int whichDigest = String2.indexOf(String2.FILE_DIGEST_OPTIONS, digestType);
                 if (whichDigest < 0)
                     throw new RuntimeException("Invalid file digest type.");
                 digestExtension = String2.FILE_DIGEST_EXTENSIONS[whichDigest];
+                digestExtension1 = digestExtension.substring(1);
 
                 //*** write info about this archiving to archiveDir
                 String2.log(
@@ -444,21 +512,53 @@ public class ArchiveADataset {
                       "    This may take a long time.\n");
                 Math2.sleep(5000);
 
-                error = String2.writeToFile(archiveDir + "READ_ME.txt", 
-                    "This archive was created by the ArchiveADataset script\n" +
-                    "(which is part of ERDDAP) starting at " + isoTime + "\n" +
-                    "based on these settings:\n" +
-                    "Contact email=" + contactEmail + "\n" +
-                    "ERDDAP datasetID=" + datasetID + "\n" +
-                    "Data variables=" + dataVarsCSV + "\n" +
-                    "Extra constraints=" + extraConstraints + "\n" +
-                    "Subset by=" + subsetByCSV + "\n" +
-                    "Data file type=" + fileType + "\n" +
-                    "Digest type=" + digestType + "\n",
-                    "ISO-8859-1");
-                if (error.length() > 0)
-                    throw new RuntimeException(error);
+                if (bagitMode) {
+                    manifestFullFileName = archiveDir + "manifest-" + 
+                        digestExtension1 + ".txt"; //md5 or sha256
+                    manifestFileWriter = new OutputStreamWriter(
+                        new FileOutputStream(manifestFullFileName), String2.UTF_8);            
+
+                    aadSettings = 
+                        "ArchiveADataset_container_type: " + mode + "\n" +
+                        "ArchiveADataset_compression: " + compression + "\n" +
+                        "ArchiveADataset_contact_email: " + contactEmail + "\n" +
+                        "ArchiveADataset_ERDDAP_datasetID: " + datasetID + "\n" +
+                        "ArchiveADataset_data_variables: " + dataVarsCSV + "\n" +
+                        "ArchiveADataset_extra_constraints: " + extraConstraints + "\n" +
+                        "ArchiveADataset_subset_by: " + subsetByCSV + "\n" +
+                        "ArchiveADataset_data_file_type: " + fileType + "\n" +
+                        "ArchiveADataset_digest_type: " + digestType + "\n";
+
+                } else {
+                    error = String2.writeToFile(archiveDir + "READ_ME.txt", 
+                        "This archive was created by the ArchiveADataset script\n" +
+                        "(which is part of ERDDAP v" + EDStatic.erddapVersion + 
+                            ") starting at " + isoTime + "\n" +
+                        "based on these settings:\n" +
+                        "Container type=" + mode + "\n" +
+                        "Compression=" + compression + "\n" +
+                        "Contact email=" + contactEmail + "\n" +
+                        "ERDDAP datasetID=" + datasetID + "\n" +
+                        "Data variables=" + dataVarsCSV + "\n" +
+                        "Extra constraints=" + extraConstraints + "\n" +
+                        "Subset by=" + subsetByCSV + "\n" +
+                        "Data file type=" + fileType + "\n" +
+                        "Digest type=" + digestType + "\n",
+                        textFileEncoding);
+                    if (error.length() > 0)
+                        throw new RuntimeException(error);
+
+                    //save .das to archiveDir
+                    resultName = eddTable.makeNewFileForDapQuery(null, null, "", 
+                        archiveDir, datasetID, ".das"); 
+     
+                    //save .dds to archiveDir
+                    resultName = eddTable.makeNewFileForDapQuery(null, null, "", 
+                        archiveDir, datasetID, ".dds"); 
+                }
+ 
                 newCommandLine += 
+                    String2.quoteParameterIfNeeded(mode)              + " " +
                     String2.quoteParameterIfNeeded(contactEmail)     + " " +
                     String2.quoteParameterIfNeeded(datasetID)        + " " +
                     String2.quoteParameterIfNeeded(dataVarsCSV)      + " " +
@@ -467,14 +567,6 @@ public class ArchiveADataset {
                     String2.quoteParameterIfNeeded(fileType)         + " " +
                     String2.quoteParameterIfNeeded(digestType);
 
-                //save .das to archiveDir
-                resultName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                    archiveDir, datasetID, ".das"); 
- 
-                //save .dds to archiveDir
-                resultName = eddTable.makeNewFileForDapQuery(null, null, "", 
-                    archiveDir, datasetID, ".dds"); 
- 
                 if (subsetBySA.size() == 0) {
                     //deal with all in one file
                     String fileName = "allData";
@@ -488,15 +580,21 @@ public class ArchiveADataset {
                                 tQuery, archiveDataDir, datasetID, fileType); 
                             nDataFilesCreated++;
 
-                            //make the .md5file
-                            error = String2.writeToFile(
-                                archiveDataDir + resultName + digestExtension, 
-                                String2.fileDigest(digestType, archiveDataDir + resultName) + 
-                                    "  " + resultName + "\n",
-                                "ISO-8859-1");
-                            if (error.length() > 0)
-                                throw new RuntimeException(error);
-
+                            //write the file digest info
+                            String digest = String2.fileDigest(
+                                digestType, archiveDataDir + resultName);
+                            if (bagitMode) {
+                                manifestFileWriter.write(
+                                    digest + "  data/" + resultName + "\n");
+                            } else {
+                                error = String2.writeToFile(
+                                    archiveDataDir + resultName + digestExtension, 
+                                    digest + "  " + resultName + "\n", 
+                                    textFileEncoding);
+                                if (error.length() > 0)
+                                    throw new RuntimeException(error);
+                            }
+                           
                         } catch (Exception e) {
                             String2.log("ERROR #" + nErrors++ + "\n" +
                                 MustBe.throwableToString(e));
@@ -521,7 +619,7 @@ public class ArchiveADataset {
                     //write the data files to archiveDataDir
                     for (int row = 0; row < nComboRows; row++) {
                         //make directory tree from nComboCols-1 
-                        StringBuilder tDir   = new StringBuilder(archiveDataDir);
+                        StringBuilder tDir   = new StringBuilder();
                         StringBuilder tQuery = new StringBuilder(dataVarsCSV + extraConstraints);
                         String fileName = null;
                         for (int col = 0; col < nComboCols; col++) {
@@ -533,27 +631,34 @@ public class ArchiveADataset {
                             tQuery.append("&" + combos.getColumnName(col) + "=" +
                                 (isString[col]? String2.toJson(s) : s));
                         }
+                        String fullDir = archiveDataDir + tDir;
 
                         //write the file and the .md5 file
                         String2.log("writing data file for combo #" + row + "\n" +
-                            "  fileName=" + tDir + fileName + fileType + "\n" +
+                            "  fileName=" + fullDir + fileName + fileType + "\n" +
                             "  tQuery=" + tQuery);
-                        File2.makeDirectory(tDir.toString());
+                        File2.makeDirectory(fullDir);
                         if (!dryRun) {
                             try {
                                 resultName = eddTable.makeNewFileForDapQuery(null, null, 
-                                    tQuery.toString(), tDir.toString(), fileName, fileType); 
+                                    tQuery.toString(), fullDir, fileName, fileType); 
                                 nDataFilesCreated++;
 
-                                //make the .md5file
-                                error = String2.writeToFile(
-                                    tDir.toString() + resultName + digestExtension, 
-                                    String2.fileDigest(digestType, tDir.toString() + resultName) + 
-                                        "  " + resultName + "\n",
-                                    "ISO-8859-1");
-                                if (error.length() > 0)
-                                    throw new RuntimeException(error);
-
+                                //write the file digest info
+                                String digest = String2.fileDigest(
+                                    digestType, fullDir + resultName);
+                                if (bagitMode) {
+                                    manifestFileWriter.write(
+                                        digest + "  data/" + tDir + resultName + "\n");
+                                } else {
+                                    error = String2.writeToFile(
+                                        fullDir + resultName + digestExtension, 
+                                        digest + "  " + resultName + "\n", 
+                                        textFileEncoding);
+                                    if (error.length() > 0)
+                                        throw new RuntimeException(error);
+                                }
+                           
                             } catch (Exception e) {
                                 String2.log("ERROR #" + nErrors++ + "\n" +
                                     MustBe.throwableToString(e));
@@ -563,27 +668,66 @@ public class ArchiveADataset {
                 }
             }
 
-            //make the .tgz file
-            String2.log("\n*** making " + tgzName);
-            FileVisitorDNLS.makeTgz(archiveDir, ".*", true, ".*", 
-                tgzName); 
+            if (bagitMode) {
+                //close manifestFileWriter
+                manifestFileWriter.close(); 
+                manifestFileWriter = null;
 
-            //make the .md5file of the tgzName
-            String2.log("\n*** making " + tgzName + digestExtension);
-            error = String2.writeToFile(  tgzName + digestExtension, 
+                //create required bagit.txt
+                Writer tw = new OutputStreamWriter(
+                    new FileOutputStream(archiveDir + "bagit.txt"), String2.UTF_8);            
+                tw.write(
+                    "BagIt-Version: 0.97\n" +
+                    "Tag-File-Character-Encoding: UTF-8\n");
+                tw.close();
+
+                //create optional bag-info.txt
+                tw = new OutputStreamWriter(
+                    new FileOutputStream(archiveDir + "bag-info.txt"), String2.UTF_8);            
+                tw.write(
+                    "Contact-Email: " + contactEmail + "\n" +
+                    "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+                    aadSettings);
+                tw.close();
+
+                //create optional tagmanifest-md5.txt
+                tw = new OutputStreamWriter(
+                    new FileOutputStream(archiveDir + "tagmanifest-" + digestExtension1 + ".txt"), String2.UTF_8);            
+                tw.write(
+                    String2.fileDigest(digestType, archiveDir + "bag-info.txt")                + 
+                        "  bag-info.txt\n" +
+                    String2.fileDigest(digestType, archiveDir + "bagit.txt")                   + 
+                        "  bagit.txt\n" +
+                    String2.fileDigest(digestType, archiveDir + "manifest-" + digestExtension1 + ".txt") + 
+                        "  manifest-" + digestExtension1 + ".txt\n");
+                tw.close();
+            }
+
+            //make the zip or .tgz file
+            String2.log("\n*** making " + tgzName);
+            Math2.sleep(3000);  //take a deep breath, let file system settle down
+            if (compression.equals("zip"))
+                SSR.zipADirectory(archiveDir, 30 * 60); //timeoutSeconds: 30 minutes
+            else FileVisitorDNLS.makeTgz(archiveDir, ".*", true, ".*", tgzName); 
+
+            //make the .md5.txt file of the tgzName
+            String2.log("\n*** making " + tgzName + digestExtension + ".txt");
+            error = String2.writeToFile(  tgzName + digestExtension + ".txt", 
                 String2.fileDigest(digestType, tgzName) + 
-                    "  " + tgzName + "\n",
-                "ISO-8859-1");
+                    "  " + File2.getNameAndExtension(tgzName) + "\n",
+                textFileEncoding);
             if (error.length() > 0)
                 throw new RuntimeException(error);
 
             //make the .listOfFiles.txt of the tgzName
-            String2.log("\n*** making " + tgzName + ".listOfFiles.txt");
-            error = String2.writeToFile(  tgzName + ".listOfFiles.txt", 
-                FileVisitorDNLS.oneStepToString(archiveDir, ".*", true, ".*"),
-                "ISO-8859-1");
-            if (error.length() > 0)
-                throw new RuntimeException(error);
+            if (!bagitMode) {
+                String2.log("\n*** making " + tgzName + ".listOfFiles.txt");
+                error = String2.writeToFile(  tgzName + ".listOfFiles.txt", 
+                    FileVisitorDNLS.oneStepToString(archiveDir, ".*", true, ".*"),
+                    textFileEncoding);
+                if (error.length() > 0)
+                    throw new RuntimeException(error);
+            }
 
             //delete the staged files
             String2.log("\n*** deleting staged files in " + archiveDir);
@@ -597,21 +741,33 @@ public class ArchiveADataset {
                 "A command line with all of these settings is\n" +
                 newCommandLine + "\n" + 
                 "nDataFilesCreated=" + nDataFilesCreated + " nErrors=" + nErrors +
-                " time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - startTime));
+                " time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - startTime) + "\n");
 
         } catch (Throwable t) {
 
+            if (manifestFileWriter != null) {
+                try {
+                    manifestFileWriter.close(); 
+                    File2.delete(manifestFullFileName);
+                } catch (Throwable mft) {
+                    String2.log(
+                        "ERROR while closing manifestFile=" + manifestFullFileName + ":\n" + 
+                        MustBe.throwableToString(mft));
+                }
+            }
+                    
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf("ControlC") >= 0) {
                 String2.flushLog();
                 return null;
             }
+
             String2.log(msg);
             String2.log("\n\n********** ArchiveADataset failed.\n" +
                 "A command line with all of these settings is\n" +
                 newCommandLine + "\n" + 
                 "nDataFilesCreated=" + nDataFilesCreated + " nErrors=" + nErrors +
-                " time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - startTime));
+                " time=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - startTime) + "\n");
             throw t;
         }
         String2.flushLog();
@@ -619,44 +775,266 @@ public class ArchiveADataset {
         return tgzName;
     }
 
-    public static void testNcCF() throws Throwable {
-        String2.log("*** ArchiveADataset.testNcCF()");
+    public static void testOriginalNcCF() throws Throwable {
+        String2.log("*** ArchiveADataset.testOriginalNcCF()");
 
-        //make the tgz
-        String tgzName = (new ArchiveADataset()).doIt(new String[]{
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
             "-verbose",
+            "original",
+            "tar.gz",
             "bob.simons@noaa.gov",
             "cwwcNDBCMet", 
             "default", //all data vars
             "&station=~\"3.*\"", // &station=~"3.*"
             "nothing", //should be station, but use "nothing" to test save as points
-            "default", //.ncCF
+            "default", //.ncCFMA
             "MD5"});   
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
 
         //display it (in 7zip)
-        if (tgzName != null)
-            SSR.displayInBrowser("file://" + tgzName); 
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
+        String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
+        Test.ensureEqual(ra[0], "", "");
+        String results = ra[1];
         String expected = 
-"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         1462.\n" +
-"cwwcNDBCMet.dds                                                  " + today + "T.{8}Z           394\n" +
-"READ_ME.txt                                                      " + today + "T.{8}Z           300\n" +
+"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         147..\n" +
+"cwwcNDBCMet.dds                                                  " + today + "T.{8}Z           3..\n" +
+"READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
 "data/\n" +
-"  cwwcNDBCMet.nc                                                 " + today + "T.{8}Z      12351220\n" +
+"  cwwcNDBCMet.nc                                                 " + today + "T.{8}Z      14......\n" +
 "  cwwcNDBCMet.nc.md5                                             " + today + "T.{8}Z            49\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
-        
+
+        //look at external ...tar.gz.md5.txt
+        ra = String2.readFromFile(targzName + ".md5.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{32}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+       
+       
         //String2.pressEnterToContinue("\n"); 
     }
 
-    public static void testTrajectoryProfile() throws Throwable {
-        String2.log("*** ArchiveADataset.testTrajectoryProfile()");
+    public static void testBagItNcCF() throws Throwable {
+        String2.log("*** ArchiveADataset.testBagItNcCF()");
 
-        //make the tgz
-        String tgzName = (new ArchiveADataset()).doIt(new String[]{
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
+            "-verbose",
+            "BagIt",
+            "default", //zip
+            "bob.simons@noaa.gov",
+            "cwwcNDBCMet", 
+            "default", //all data vars
+            "&station=~\"3.*\"", // &station=~"3.*"
+            "nothing", //should be station, but use "nothing" as test of ncCFMA
+            ".ncCF", //default is .ncCFMA
+            "MD5"});   
+        Test.ensureTrue(targzName.endsWith(".zip"), "targzName=" + targzName);
+
+        //display it (in 7zip)
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
+
+        //decompress and look at contents 
+        SSR.unzipADirectory(targzName, 60, null); //timeoutSeconds
+        String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
+        int tempDirLen = tempDir.length();
+        Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
+            true, ".*", "");
+        table.removeColumn(FileVisitorDNLS.LASTMODIFIED);
+        table.removeColumn(FileVisitorDNLS.NAME);
+        String results = table.dataToString();
+        String expected = 
+"url,size\n" +
+"bag-info.txt,4..\n" +
+"bagit.txt,55\n" +
+"manifest-md5.txt,54\n" +
+"tagmanifest-md5.txt,142\n" +
+"data/cwwcNDBCMet.nc,12351...\n";  //will change periodically
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at manifest
+        String ra[] = String2.readFromFile(tempDir + "manifest-md5.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{32}  data/cwwcNDBCMet.nc\n";   //2017-03-07 actual md5 verified by hand
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at bagit.txt
+        ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"BagIt-Version: 0.97\n" +
+"Tag-File-Character-Encoding: UTF-8\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional bag-info.txt
+        ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"Contact-Email: bob.simons@noaa.gov\n" +
+"Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+"ArchiveADataset_container_type: BagIt\n" +
+"ArchiveADataset_compression: zip\n" +
+"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_ERDDAP_datasetID: cwwcNDBCMet\n" +
+"ArchiveADataset_data_variables: \n" +
+"ArchiveADataset_extra_constraints: &station=~\"3.*\"\n" +
+"ArchiveADataset_subset_by: \n" +
+"ArchiveADataset_data_file_type: .ncCF\n" +
+"ArchiveADataset_digest_type: MD5\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional tagmanifest-md5.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-md5.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected =       //2017-03-07 actual md5's verified by hand
+"[0-9a-f]{32}  bag-info.txt\n" +  
+"[0-9a-f]{32}  bagit.txt\n" +
+"[0-9a-f]{32}  manifest-md5.txt\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at external cwwcNDBCMet_20170307183959Z.tar.gz.md5.txt
+        ra = String2.readFromFile(targzName + ".md5.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = //2017-03-07 actual md5 verified by hand
+"[0-9a-f]{32}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+
+        //String2.pressEnterToContinue("\n"); 
+    }
+
+    /** A test of NCEI-preferences */
+    public static void testBagItNcCFMA() throws Throwable {
+        String2.log("*** ArchiveADataset.testBagItNcCFMA()");
+
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
+            "-verbose",
+            "BagIt",
+            "tar.gz", 
+            "bob.simons@noaa.gov",
+            "cwwcNDBCMet", 
+            "default", //all data vars
+            "&station=~\"3.*\"", // &station=~"3.*"
+            "station", //should be station, but use "nothing" as test of ncCFMA
+            ".ncCFMA", 
+            "SHA-256"});   
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
+
+        //display it (in 7zip)
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
+
+        //decompress and look at contents 
+        SSR.windowsDecompressTargz(targzName, false, 5); //timeout minutes
+        String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
+        int tempDirLen = tempDir.length();
+        Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
+            true, ".*", "");
+        table.removeColumn(FileVisitorDNLS.LASTMODIFIED);
+        table.removeColumn(FileVisitorDNLS.NAME);
+        String results = table.dataToString();
+        String expected = 
+"url,size\n" +
+"bag-info.txt,4..\n" +
+"bagit.txt,55\n" +
+"manifest-sha256.txt,4..\n" +
+"tagmanifest-sha256.txt,2..\n" +
+"data/31201.nc,21....\n" +
+"data/32012.nc,461....\n" +
+"data/32301.nc,95....\n" +
+"data/32302.nc,548....\n" +
+"data/32487.nc,64....\n" +
+"data/32488.nc,50....\n";  //will change periodically
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at manifest
+        String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  data/31201.nc\n" + 
+"[0-9a-f]{64}  data/32012.nc\n" + 
+"[0-9a-f]{64}  data/32301.nc\n" + 
+"[0-9a-f]{64}  data/32302.nc\n" + 
+"[0-9a-f]{64}  data/32487.nc\n" + 
+"[0-9a-f]{64}  data/32488.nc\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at bagit.txt
+        ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"BagIt-Version: 0.97\n" +
+"Tag-File-Character-Encoding: UTF-8\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional bag-info.txt
+        ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"Contact-Email: bob.simons@noaa.gov\n" +
+"Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+"ArchiveADataset_container_type: BagIt\n" +
+"ArchiveADataset_compression: tar.gz\n" +
+"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_ERDDAP_datasetID: cwwcNDBCMet\n" +
+"ArchiveADataset_data_variables: \n" +
+"ArchiveADataset_extra_constraints: &station=~\"3.*\"\n" +
+"ArchiveADataset_subset_by: station\n" +
+"ArchiveADataset_data_file_type: .ncCFMA\n" +
+"ArchiveADataset_digest_type: SHA-256\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional tagmanifest-sha256.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected =       //2017-03-07 actual sha256's verified by hand
+"[0-9a-f]{64}  bag-info.txt\n" +  
+"[0-9a-f]{64}  bagit.txt\n" +
+"[0-9a-f]{64}  manifest-sha256.txt\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
+        ra = String2.readFromFile(targzName + ".sha256.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+
+        //String2.pressEnterToContinue("\n"); 
+    }
+
+    public static void testOriginalTrajectoryProfile() throws Throwable {
+        String2.log("*** ArchiveADataset.testOriginalTrajectoryProfile()");
+
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
             //"-verbose",  //verbose is really verbose for this test
+            "original", 
+            "tar.gz",
             "bob.simons@noaa.gov",
             "scrippsGliders", 
             "default", //all data vars
@@ -664,84 +1042,507 @@ public class ArchiveADataset {
             "&trajectory=~\"sp05.*\"&time>=2015-01-01&time<=2015-01-05", 
             "default", "default", //trajectory, .ncCFMA
             "default"}); //SHA-256
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
 
         //display it (in 7zip)
-        if (tgzName != null)
-            SSR.displayInBrowser("file://" + tgzName); 
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
+        String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
+        Test.ensureEqual(ra[0], "", "");
+        String results = ra[1];
         String expected = 
-"READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
-"scrippsGliders.das                                               " + today + "T.{8}Z         124..\n" +
-"scrippsGliders.dds                                               " + today + "T.{8}Z           6..\n" +
+"READ_ME.txt                                                      " + today + "T.{8}Z           4..\n" +
+"scrippsGliders.das                                               " + today + "T.{8}Z         14...\n" +
+"scrippsGliders.dds                                               " + today + "T.{8}Z           7..\n" +
 "data/\n" +
-"  sp051-20141112.nc                                              " + today + "T.{8}Z        1337..\n" +
+"  sp051-20141112.nc                                              " + today + "T.{8}Z        1.....\n" +
 "  sp051-20141112.nc.sha256                                       " + today + "T.{8}Z            84\n" +
-"  sp052-20140814.nc                                              " + today + "T.{8}Z        4510..\n" +
+"  sp052-20140814.nc                                              " + today + "T.{8}Z        4.....\n" +
 "  sp052-20140814.nc.sha256                                       " + today + "T.{8}Z            84\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at external ...tar.gz.sha256.txt
+        ra = String2.readFromFile(targzName + ".sha256.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+       
+        //String2.pressEnterToContinue("\n"); 
+    }
+
+    public static void testBagItTrajectoryProfile() throws Throwable {
+        String2.log("*** ArchiveADataset.testBagItTrajectoryProfile()");
+
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
+            //"-verbose",  //verbose is really verbose for this test
+            "bagit", 
+            "zip",
+            "bob.simons@noaa.gov",
+            "scrippsGliders", 
+            "default", //all data vars
+            // &trajectory=~"sp05.*"&time>=2015-01-01&time<=2015-01-05
+            "&trajectory=~\"sp05.*\"&time>=2015-01-01&time<=2015-01-05", 
+            "default", "default", //trajectory, .ncCFMA
+            "default"}); //SHA-256
+        Test.ensureTrue(targzName.endsWith(".zip"), "targzName=" + targzName);
+
+        //display it (in 7zip)
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
+
+        //decompress and look at contents 
+        SSR.unzipADirectory(targzName, 60, null); //timeoutSeconds
+        String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
+        int tempDirLen = tempDir.length();
+        Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
+            true, ".*", "");
+        table.removeColumn(FileVisitorDNLS.LASTMODIFIED);
+        table.removeColumn(FileVisitorDNLS.NAME);
+        String results = table.dataToString();
+        String expected = 
+"url,size\n" +
+"bag-info.txt,4..\n" +
+"bagit.txt,55\n" +
+"manifest-sha1.txt,130\n" +
+"tagmanifest-sha1.txt,167\n" +
+"data/sp051-20141112.nc,148...\n" +
+"data/sp052-20140814.nc,499...\n";  //will change periodically
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at manifest
+        String ra[] = String2.readFromFile(tempDir + "manifest-sha1.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{40}  data/sp051-20141112.nc\n" +
+"[0-9a-f]{40}  data/sp052-20140814.nc\n"; 
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at bagit.txt
+        ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"BagIt-Version: 0.97\n" +
+"Tag-File-Character-Encoding: UTF-8\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional bag-info.txt
+        ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"Contact-Email: bob.simons@noaa.gov\n" +
+"Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+"ArchiveADataset_container_type: bagit\n" +
+"ArchiveADataset_compression: zip\n" +
+"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_ERDDAP_datasetID: scrippsGliders\n" +
+"ArchiveADataset_data_variables: \n" +
+"ArchiveADataset_extra_constraints: &trajectory=~\"sp05.*\"&time>=2015-01-01&time<=2015-01-05\n" +
+"ArchiveADataset_subset_by: trajectory\n" +
+"ArchiveADataset_data_file_type: .ncCFMA\n" +
+"ArchiveADataset_digest_type: SHA-1\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional tagmanifest-sha1.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-sha1.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected =       
+"[0-9a-f]{40}  bag-info.txt\n" +  
+"[0-9a-f]{40}  bagit.txt\n" +
+"[0-9a-f]{40}  manifest-sha1.txt\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha1.txt
+        ra = String2.readFromFile(targzName + ".sha1.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
         
         //String2.pressEnterToContinue("\n"); 
     }
 
-    public static void testGridAll() throws Throwable {
-        String2.log("*** ArchiveADataset.testGridAll()");
+    public static void testOriginalGridAll() throws Throwable {
+        String2.log("*** ArchiveADataset.testOriginalGridAll()");
 
-        //make the tgz
-        String tgzName = (new ArchiveADataset()).doIt(new String[]{
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
             "-verbose",
+            "original", 
+            "tar.gz",
             "bob.simons@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "default",  //constraintsString
             "SHA-256"}); //SHA-256
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
+
         //display it (in 7zip)
-        if (tgzName != null)
-            SSR.displayInBrowser("file://" + tgzName); 
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
+        String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
+        Test.ensureEqual(ra[0], "", "");
+        String results = ra[1];
         String expected = 
-"erdVHNchla8day.das                                               " + today + "T.{8}Z          5954\n" +
+"erdVHNchla8day.das                                               " + today + "T.{8}Z          6...\n" +
 "erdVHNchla8day.dds                                               " + today + "T.{8}Z           438\n" +
-"READ_ME.txt                                                      " + today + "T.{8}Z           307\n" +
+"READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
 "data/\n" +
-"  20150301000000Z.nc                                             " + today + "T.{8}Z     447840428\n" +
+"  20150301000000Z.nc                                             " + today + "T.{8}Z     44784....\n" +
 "  20150301000000Z.nc.sha256                                      " + today + "T.{8}Z            85\n" +
-"  20150302000000Z.nc                                             " + today + "T.{8}Z     447840428\n" +
+"  20150302000000Z.nc                                             " + today + "T.{8}Z     44784....\n" +
 "  20150302000000Z.nc.sha256                                      " + today + "T.{8}Z            85\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at external ...tar.gz.sha256.txt
+        ra = String2.readFromFile(targzName + ".sha256.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+       
+        //String2.pressEnterToContinue("\n"); 
+    }
+
+    public static void testBagItGridAll() throws Throwable {
+        String2.log("*** ArchiveADataset.testBagItGridAll()");
+
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
+            "-verbose",
+            "BagIt", 
+            "ZIP",
+            "bob.simons@noaa.gov",
+            "erdVHNchla8day", //datasetID
+            "default",  //dataVarsCSV
+            "default",  //constraintsString
+            "SHA-256"}); //SHA-256
+        Test.ensureTrue(targzName.endsWith(".zip"), "targzName=" + targzName);
+
+        //display it (in 7zip)
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
+
+        //decompress and look at contents 
+        SSR.unzipADirectory(targzName, 60, null); //timeoutSeconds
+        String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
+        int tempDirLen = tempDir.length();
+        Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
+            true, ".*", "");
+        table.removeColumn(FileVisitorDNLS.LASTMODIFIED);
+        table.removeColumn(FileVisitorDNLS.NAME);
+        String results = table.dataToString();
+        String expected = 
+"url,size\n" +
+"bag-info.txt,40.\n" +
+"bagit.txt,55\n" +
+"manifest-sha256.txt,180\n" +
+"tagmanifest-sha256.txt,241\n" +
+"data/20150301000000Z.nc,447840...\n" +
+"data/20150302000000Z.nc,447840...\n";  //will change periodically
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at manifest
+        String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  data/20150301000000Z.nc\n" +
+"[0-9a-f]{64}  data/20150302000000Z.nc\n";   
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at bagit.txt
+        ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"BagIt-Version: 0.97\n" +
+"Tag-File-Character-Encoding: UTF-8\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional bag-info.txt
+        ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"Contact-Email: bob.simons@noaa.gov\n" +
+"Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+"ArchiveADataset_container_type: BagIt\n" +
+"ArchiveADataset_compression: zip\n" +
+"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_ERDDAP_datasetID: erdVHNchla8day\n" +
+"ArchiveADataset_data_variables: \n" +
+"ArchiveADataset_constraints: \\[\\(2015-03-01T00:00:00Z\\):\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
+"ArchiveADataset_digest_type: SHA-256\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional tagmanifest-sha256.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  bag-info.txt\n" +  
+"[0-9a-f]{64}  bagit.txt\n" +
+"[0-9a-f]{64}  manifest-sha256.txt\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
+        ra = String2.readFromFile(targzName + ".sha256.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
         
         //String2.pressEnterToContinue("\n"); 
     }
 
-    public static void testGridSubset() throws Throwable {
-        String2.log("*** ArchiveADataset.testGridSubset()");
+    public static void testOriginalGridSubset() throws Throwable {
+        String2.log("*** ArchiveADataset.testOriginalGridSubset()");
 
-        //make the tgz
-        String tgzName = (new ArchiveADataset()).doIt(new String[]{
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
             "-verbose",
+            "original", 
+            "tar.gz",
             "bob.simons@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "[(2015-03-02T00:00:00Z)][][][]",  //constraintsString
             "SHA-1"});
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
 
         //display it (in 7zip)
-        if (tgzName != null)
-            SSR.displayInBrowser("file://" + tgzName); 
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-        String results = String2.readFromFile(tgzName + ".listOfFiles.txt")[1];
+        String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
+        Test.ensureEqual(ra[0], "", "");
+        String results = ra[1];
         String expected = 
-"erdVHNchla8day.das                                               " + today + "T.{8}Z          5954\n" +
-"erdVHNchla8day.dds                                               " + today + "T.{8}Z           438\n" +
-"READ_ME.txt                                                      " + today + "T.{8}Z           282\n" +
+"erdVHNchla8day.das                                               " + today + "T.{8}Z          6...\n" +
+"erdVHNchla8day.dds                                               " + today + "T.{8}Z           4..\n" +
+"READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
 "data/\n" +
-"  20150302000000Z.nc                                             " + today + "T.{8}Z     447840428\n" +
+"  20150302000000Z.nc                                             " + today + "T.{8}Z     44784....\n" +
 "  20150302000000Z.nc.sha1                                        " + today + "T.{8}Z            61\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at external ...tar.gz.sha1.txt
+        ra = String2.readFromFile(targzName + ".sha1.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+       
+        //String2.pressEnterToContinue("\n"); 
+    }
+
+    public static void testBagItGridSubset() throws Throwable {
+        String2.log("*** ArchiveADataset.testBagItGridSubset()");
+
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
+            "-verbose",
+            "BagIt", 
+            "zip",
+            "bob.simons@noaa.gov",
+            "erdVHNchla8day", //datasetID
+            "default",  //dataVarsCSV
+            "[(2015-03-02T00:00:00Z)][][][]",  //constraintsString
+            "SHA-1"});
+        Test.ensureTrue(targzName.endsWith(".zip"), "targzName=" + targzName);
+
+        //display it (in 7zip)
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
+
+        //decompress and look at contents 
+        SSR.unzipADirectory(targzName, 60, null); //timeoutSeconds
+        String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
+        int tempDirLen = tempDir.length();
+        Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
+            true, ".*", "");
+        table.removeColumn(FileVisitorDNLS.LASTMODIFIED);
+        table.removeColumn(FileVisitorDNLS.NAME);
+        String results = table.dataToString();
+        String expected = 
+"url,size\n" +
+"bag-info.txt,3..\n" +
+"bagit.txt,55\n" +
+"manifest-sha1.txt,66\n" +
+"tagmanifest-sha1.txt,167\n" +
+"data/20150302000000Z.nc,447840...\n";  //will change periodically
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at manifest
+        String ra[] = String2.readFromFile(tempDir + "manifest-sha1.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{40}  data/20150302000000Z.nc\n";   
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at bagit.txt
+        ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"BagIt-Version: 0.97\n" +
+"Tag-File-Character-Encoding: UTF-8\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional bag-info.txt
+        ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"Contact-Email: bob.simons@noaa.gov\n" +
+"Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+"ArchiveADataset_container_type: BagIt\n" +
+"ArchiveADataset_compression: zip\n" +
+"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_ERDDAP_datasetID: erdVHNchla8day\n" +
+"ArchiveADataset_data_variables: \n" +
+"ArchiveADataset_constraints: \\[\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
+"ArchiveADataset_digest_type: SHA-1\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional tagmanifest-sha1.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-sha1.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected =       
+"[0-9a-f]{40}  bag-info.txt\n" +  
+"[0-9a-f]{40}  bagit.txt\n" +
+"[0-9a-f]{40}  manifest-sha1.txt\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at external ....tar.gz.sha1.txt
+        ra = String2.readFromFile(targzName + ".sha1.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        
+        //String2.pressEnterToContinue("\n"); 
+    }
+
+    public static void testBagItGridSubset2() throws Throwable {
+        String2.log("*** ArchiveADataset.testBagItGridSubset2()");
+
+        //make the targz
+        String targzName = (new ArchiveADataset()).doIt(new String[]{
+            "-verbose",
+            "BagIt", 
+            "tar.gz",
+            "bob.simons@noaa.gov",
+            "erdVHNchla8day", //datasetID
+            "default",  //dataVarsCSV
+            "[(2015-03-01T00:00:00Z):(2015-03-02T00:00:00Z)][][][]",  //constraintsString
+            "SHA-256"});
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
+
+        //display it (in 7zip)
+        Math2.sleep(5000);
+        SSR.displayInBrowser("file://" + targzName); 
+        Math2.sleep(5000);
+
+        //decompress and look at contents 
+        SSR.windowsDecompressTargz(targzName, false, 5); //timeout minutes
+        String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
+        int tempDirLen = tempDir.length();
+        Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
+            true, ".*", "");
+        table.removeColumn(FileVisitorDNLS.LASTMODIFIED);
+        table.removeColumn(FileVisitorDNLS.NAME);
+        String results = table.dataToString();
+        String expected = 
+"url,size\n" +
+"bag-info.txt,4..\n" +
+"bagit.txt,55\n" +
+"manifest-sha256.txt,1..\n" +
+"tagmanifest-sha256.txt,2..\n" +
+"data/20150301000000Z.nc,447......\n" +  //will change periodically
+"data/20150302000000Z.nc,447......\n";   //will change periodically
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at manifest
+        String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  data/20150301000000Z.nc\n" +
+"[0-9a-f]{64}  data/20150302000000Z.nc\n";   
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at bagit.txt
+        ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"BagIt-Version: 0.97\n" +
+"Tag-File-Character-Encoding: UTF-8\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional bag-info.txt
+        ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"Contact-Email: bob.simons@noaa.gov\n" +
+"Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
+"ArchiveADataset_container_type: BagIt\n" +
+"ArchiveADataset_compression: tar.gz\n" +
+"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_ERDDAP_datasetID: erdVHNchla8day\n" +
+"ArchiveADataset_data_variables: \n" +
+"ArchiveADataset_constraints: \\[\\(2015-03-01T00:00:00Z\\):\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
+"ArchiveADataset_digest_type: SHA-256\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
+        //look at optional tagmanifest-sha256.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected =       
+"[0-9a-f]{64}  bag-info.txt\n" +  
+"[0-9a-f]{64}  bagit.txt\n" +
+"[0-9a-f]{64}  manifest-sha256.txt\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+
+        //look at external ....tar.gz.sha256.txt
+        ra = String2.readFromFile(targzName + ".sha256.txt");
+        Test.ensureEqual(ra[0], "", "");
+        results = ra[1];
+        expected = 
+"[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
+        Test.ensureLinesMatch(results, expected, "results=\n" + results);
+        
         
         //String2.pressEnterToContinue("\n"); 
     }
@@ -751,10 +1552,18 @@ public class ArchiveADataset {
         String2.log("*** ArchiveADataset.test()");
 
         /* 
-        testNcCF();
-*/        testTrajectoryProfile();
-        testGridAll();
-        testGridSubset(); 
+        testOriginalNcCF();
+        testOriginalTrajectoryProfile();
+        testOriginalGridAll();
+        testOriginalGridSubset(); 
+
+        testBagItNcCF();
+        testBagItTrajectoryProfile();
+*/        testBagItGridAll();
+        testBagItGridSubset(); 
+        testBagItNcCFMA();  //w NCEI preferences
+        testBagItGridSubset2();  //w NCEI preferences
+        /* */
     }
 
 

@@ -119,8 +119,27 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         
         if (reallyVerbose) String2.log("getSourceMetadata " + fileDir + fileName);
         
-        String getWhat = "globalAttributes";
         try {
+            //globalAtts
+            sourceGlobalAttributes.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
+            sourceGlobalAttributes.add("creator_name", "Bob Joyce");
+            sourceGlobalAttributes.add("creator_email", "robert.joyce@noaa.gov");
+            sourceGlobalAttributes.add("creator_type", "person");
+            sourceGlobalAttributes.add("creator_url", "http://www.cpc.ncep.noaa.gov/");
+            sourceGlobalAttributes.add("infoUrl", "http://www.cpc.ncep.noaa.gov/products/global_precip/html/README");
+            sourceGlobalAttributes.add("institution", "NOAA NWS NCEP CPC");
+            sourceGlobalAttributes.add("keywords", "4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature");
+            sourceGlobalAttributes.add("keywords_vocabulary", "GCMD Science Keywords");
+            sourceGlobalAttributes.add("summary", 
+"The Climate Prediction Center/NCEP/NWS is now making available\n" +
+"globally-merged (60N-60S) pixel-resolution IR brightness\n" +
+"temperature data (equivalent blackbody temps), merged from all\n" +
+"available geostationary satellites (GOES-8/10, METEOSAT-7/5 and\n" +
+"GMS).  The availability of data from METEOSAT-7, which is\n" +
+"located at 57E at the present time, yields a unique opportunity\n" +
+"for total global (60N-60S) coverage.");
+            sourceGlobalAttributes.add("title", "NCEP/CPC 4km Global (60N - 60S) IR Dataset");
+
             //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 if (reallyVerbose) String2.log("axisAttributes for avi=" + avi + " name=" + sourceAxisNames.get(avi));
@@ -176,7 +195,6 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 
         } catch (Throwable t) {            
             throw new RuntimeException("Error in EDDGridFromMergeIRFiles.getSourceMetadata" +
-                "\nwhile getting " + getWhat + 
                 "\nfrom " + fileDir + fileName + 
                 "\nCause: " + MustBe.throwableToShortString(t),
                 t);
@@ -199,14 +217,14 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
     public PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName,
             StringArray sourceAxisNames) throws Throwable {
 
-        String getWhat = "globalAttributes";
+        String getWhat = "";
         
         try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
                 String avName = sourceAxisNames.get(avi);
-                getWhat = "axisAttributes for variable=" + avName;
+                getWhat = "axisValues for variable=" + avName;
 
                 switch (avName) {
                     case "longitude":
@@ -726,6 +744,7 @@ directionsForGenerateDatasetsXml() +
 
         String2.log("\n*** testMergeIRgz\n");
         testVerboseOn();
+        //String2.log(NcHelper.dumpString("/erddapTest/mergeIR/merg_20150101_4km-pixel", false));
         EDDGrid edd   = (EDDGrid)oneFromDatasetsXml(null, "mergeIR");   //from uncompressed files
         EDDGrid eddZ  = (EDDGrid)oneFromDatasetsXml(null, "mergeIRZ");  //from .Z files
         EDDGrid eddgz = (EDDGrid)oneFromDatasetsXml(null, "mergeIRgz"); //from .gz files
@@ -832,8 +851,8 @@ directionsForGenerateDatasetsXml() +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"robert.joyce@noaa.gov\";\n" +
 "    String creator_name \"Bob Joyce\";\n" +
+"    String creator_type \"person\";\n" +
 "    String creator_url \"http://www.cpc.ncep.noaa.gov/\";\n" +
-"    String drawLandMask \"under\";\n" +
 "    Float64 Easternmost_Easting 359.9695;\n" +
 "    Float64 geospatial_lat_max 59.97713;\n" +
 "    Float64 geospatial_lat_min -59.982;\n" +

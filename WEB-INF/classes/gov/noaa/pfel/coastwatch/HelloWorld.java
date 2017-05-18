@@ -8,8 +8,8 @@ public class HelloWorld extends HttpServlet {
         throws ServletException, IOException {
 
         res.setContentType("text/html");
-        res.setEncoding("UTF-8");
-        OutputStreamWriter out = new OutputStreamWriter(res.getOutputStream(), "UTF-8");
+        res.setEncoding(String2.UTF_8);
+        OutputStreamWriter out = new OutputStreamWriter(res.getOutputStream(), String2.UTF_8);
         out.write(
             "<html>\n" +
             "<head><title>Hello World</title></head>\n" +

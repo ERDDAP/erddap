@@ -471,7 +471,7 @@ public class TimePeriods {
      * so use before calling this:
      * <pre>
          //fix old-style 25 and 33 hour end times  so 59:59
-         if (timePeriodNHours > 1 && timePeriodNHours % 24 != 0)
+         if (timePeriodNHours &gt; 1 && timePeriodNHours % 24 != 0)
              cal.add(Calendar2.SECOND, -1);
      * </pre>
      *

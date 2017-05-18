@@ -296,7 +296,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      * [tomcat]/content/erddap/subset/[datasetID].json.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -343,10 +343,10 @@ public class EDDTableFromNWISDV extends EDDTable{
      *        describing how to interpret source time values 
      *        (which should always be numeric since they are a dimension of a grid)
      *        (e.g., "seconds since 1970-01-01T00:00:00").
-     *      <li> a org.joda.time.format.DateTimeFormat string
+     *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -519,7 +519,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 } else if (edv instanceof EDVTimeStamp) {
                     //this assumes beginDate endDate columns have ISO String time values 
                     //(which sort correctly)
-                    String nMinMax[] = ((StringArray)stationPA).getNMinMax();
+                    String nMinMax[] = stationPA.getNMinMax();
                     //tAddAtt.set("data_min", nMinMax[1]);
                     //tAddAtt.set("data_max", nMinMax[2]); 
                     edv.setDestinationMinMax(
@@ -778,7 +778,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 }
             }
 
-            //String2.log("\nstationInfo+valuesColumns table=\n" + table.dataToCSVString());
+            //String2.log("\nstationInfo+valuesColumns table=\n" + table.dataToString());
             if (table.nRows() > 0)
                 standardizeResultsTable(requestUrl, userDapQuery, table);
 
@@ -1140,7 +1140,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         //http://interim.waterservices.usgs.gov/NWISQuery/GetDV1?SiteNum=01010000&ParameterCode=00060&StatisticCode=00003&AgencyCode=&USGSStartDate=2009-01-31&EndDate=2009-02-01&action=Submit
         table = getValuesTable(new FileInputStream(
             "c:/data/waterML/nwisValues.xml"));
-        results = table.toCSVString();
+        results = table.toString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -1178,9 +1178,9 @@ public class EDDTableFromNWISDV extends EDDTable{
 "\t\t:siteName = \"St. John River at Ninemile Bridge, Maine\" ;\n" +
 "\t\t:srs = \"EPSG:4269\" ;\n" +
 "}\n" +
-"row,time,Discharge,DischargeQualifiers\n" +
-"0,2009-01-31T00:00:00,388.0,Ae\n" +
-"1,2009-02-01T00:00:00,393.0,Ae\n";
+"time,Discharge,DischargeQualifiers\n" +
+"2009-01-31T00:00:00,388.0,Ae\n" +
+"2009-02-01T00:00:00,393.0,Ae\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
@@ -1290,7 +1290,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         if (valuesTable == null || valuesTable.nRows() == 0)
             throw new SimpleException("No data was found!");
         if (displayResults && reallyVerbose) 
-            String2.log("valuesTable=\n" + valuesTable.toCSVString());
+            String2.log("valuesTable=\n" + valuesTable.toString());
 
         //do things with/to the variable 
         int nValuesTableVars = valuesTable.nColumns();
@@ -1337,7 +1337,9 @@ public class EDDTableFromNWISDV extends EDDTable{
 
            //add a similar column to dataAddTable
            dataAddTable.addColumn(col, destName,
-               PrimitiveArray.factory(dataSourceTable.getColumn(col).elementClass(), 1, false),
+               makeDestPAForGDX( 
+                   PrimitiveArray.factory(dataSourceTable.getColumn(col).elementClass(), 1, false), 
+                   sourceAtts),
                addAtts); 
 
            //modify the addAtts
@@ -1475,8 +1477,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         //get the parameter codes table
         Table paramCodes = new Table();
         paramCodes.readASCII(paramCodesFileName,
-            15, 17, null, null, null, null, false);  //don't simplify
-        String2.log("paramCodes=\n" + paramCodes.dataToCSVString(3));
+            15, 17, "", null, null, null, null, false);  //don't simplify
+        String2.log("paramCodes=\n" + paramCodes.dataToString(3));
         Test.ensureEqual(String2.toCSSVString(paramCodes.getColumnNames()), 
             "parameter_cd, parameter_group_nm, parameter_nm, casrn, srsname, parameter_units", "");
         StringArray pcParamPA      = (StringArray)paramCodes.getColumn(0);
@@ -2086,7 +2088,7 @@ directionsForGenerateDatasetsXml() +
         //USGS	09426620	00060	00003	1988-10-01	2010-12-15	8111
         Table briarStations = new Table();
         briarStations.readASCII("c:/data/waterML/daily_value_series_catalog.20101216",
-            0, 1, null, null, null, null, false);  //don't simplify
+            0, 1, "", null, null, null, null, false);  //don't simplify
         Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
         StringArray briarAgencyPA = (StringArray)briarStations.getColumn(0);
@@ -2146,7 +2148,7 @@ directionsForGenerateDatasetsXml() +
                 //http://waterdata.usgs.gov/nwis/inventory/?site_no=02289050&agency_cd=FL005&amp;
                 String siteInfoUrl = siteInfoService + "?site_no=" + site + "&agency_cd=" + agency + "&amp;";
                 String2.log("  siteInfoUrl=" + siteInfoUrl);
-                String siteInfo = SSR.getUncompressedUrlResponseString(siteInfoUrl);
+                String siteInfo = SSR.getUncompressedUrlResponseString(siteInfoUrl, String2.ISO_8859_1); //correct charset?
                 int po1, po2;
 
                 //fallback, get city and country from siteName    <h2>...</h2>
@@ -2307,7 +2309,7 @@ directionsForGenerateDatasetsXml() +
 
         }
         if (justAgency == null) {
-            String2.log(briarStations.dataToCSVString(Math.min(100, nBriarStations)));
+            String2.log(briarStations.dataToString(Math.min(100, nBriarStations)));
             briarStations.saveAsJson(outputFile, -1, false);
         } else {
             briarStations.saveAsJson(System.out, -1, false);
@@ -2348,7 +2350,7 @@ directionsForGenerateDatasetsXml() +
         //USGS	09426620	00060	00003	1988-10-01	2010-12-15	8111
         Table briarStations = new Table();
         briarStations.readASCII("c:/data/waterML/daily_value_series_catalog.20101216",
-            0, 1, null, null, null, null, false);  //don't simplify
+            0, 1, "", null, null, null, null, false);  //don't simplify
         Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
         StringArray briarAgencyPA = (StringArray)briarStations.getColumn(0);
@@ -2376,7 +2378,7 @@ directionsForGenerateDatasetsXml() +
                 //http://waterdata.usgs.gov/nwis/inventory/?site_no=02289050&agency_cd=FL005&amp;
                 String siteInfoUrl = siteInfoService + "?site_no=" + site + "&agency_cd=" + agency + "&amp;";
                 //String2.log("  siteInfoUrl=" + siteInfoUrl);
-                String siteInfo = SSR.getUncompressedUrlResponseString(siteInfoUrl);
+                String siteInfo = SSR.getUncompressedUrlResponseString(siteInfoUrl, String2.ISO_8859_1); //correct charset?
                 int po1, po2;
 
                 //<h2>...</h2>
@@ -2417,8 +2419,8 @@ directionsForGenerateDatasetsXml() +
         //get the parameter codes table
         Table paramCodes = new Table();
         paramCodes.readASCII(paramCodesFileName,
-            15, 17, null, null, null, null, false);  //don't simplify
-        String2.log("paramCodes=\n" + paramCodes.dataToCSVString(3));
+            15, 17, "", null, null, null, null, false);  //don't simplify
+        String2.log("paramCodes=\n" + paramCodes.dataToString(3));
         Test.ensureEqual(String2.toCSSVString(paramCodes.getColumnNames()), 
             "parameter_cd, parameter_group_nm, parameter_nm, casrn, srsname, parameter_units", "");
         StringArray pcParamPA      = (StringArray)paramCodes.getColumn(0);
@@ -2448,7 +2450,7 @@ directionsForGenerateDatasetsXml() +
         //USGS	09426620	00060	00003	1988-10-01	2010-12-15	8111
         Table briarStations = new Table();
         briarStations.readASCII("c:/data/waterML/daily_value_series_catalog.20101216",
-            0, 1, null, null, null, null, false);  //don't simplify
+            0, 1, "", null, null, null, null, false);  //don't simplify
         Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
         StringArray briarAgencyPA = (StringArray)briarStations.getColumn(0);
@@ -2711,7 +2713,7 @@ directionsForGenerateDatasetsXml() +
                     datasetStations.sort(
                         new int[]{datasetStations.findColumnNumber("siteCode")}, 
                         new boolean[]{true}); 
-String2.log("\ndatasetStations=\n" + datasetStations.dataToCSVString());
+String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
 
                     //write stations for each variableSeen to separate datasetsStations table
                     int nDSRows = datasetStations.nRows();
@@ -2744,7 +2746,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToCSVString());
                         //save the subset table
                         String2.log("\nwriting chunk for " + param + "_" + stat + " " + lookFor + 
                             " (nRows=" + subset.nRows() + ")\n" +
-                            subset.dataToCSVString(3));
+                            subset.dataToString(3));
                         subset.saveAsJson(
                             dsDir + param + "_" + stat + "_" + vs + ".json",
                             -1, false);

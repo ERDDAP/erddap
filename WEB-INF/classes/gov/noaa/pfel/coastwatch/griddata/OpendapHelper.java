@@ -255,6 +255,7 @@ public class OpendapHelper  {
                 attributes.set(name.trim(), pa);
             }
         }
+        attributes.fromNccsvStrings();
     }
 
     /**
@@ -486,7 +487,7 @@ public class OpendapHelper  {
      * @throws Exception if trouble
      */
     public static PrimitiveArray[] getPrimitiveArrays(BaseType baseType) throws Exception {
-        //String2.log("    baseType=" + baseType.getTypeName());
+        //String2.log(">>    baseType=" + baseType.getTypeName());
         if (baseType instanceof DGrid) {
             ArrayList al = String2.toArrayList( ((DGrid)baseType).getVariables() ); //enumeration -> arraylist
             PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
@@ -517,7 +518,7 @@ public class OpendapHelper  {
             return new PrimitiveArray[]{
                 new ByteArray(  new byte[]  {(byte)(((DBoolean)baseType).getValue()? 1 : 0)})}; 
         } else if (baseType instanceof DString)  {
-String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
+            //String2.log(">>  baseType is DString=" + String2.toJson(((DString)baseType).getValue()));
             return new PrimitiveArray[]{
                 new StringArray(new String[]{((DString)baseType).getValue()})}; 
         } else {
@@ -692,21 +693,21 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      * PrimitiveArray's type.
      *
      * <p>Some Java types don't have exact matches. The closest match is returned,
-     * e.g., short and char become int, long becomes double
+     * e.g., char becomes String, long becomes double
      *
      * @param c the Java type class e.g., float.class
      * @return the corresponding atomic-type String
      * @throws Exception if trouble
      */
     public static String getAtomicType(Class c) throws Exception {
-        if (c == long.class ||   //imperfect; there will be loss of precision
+        if (c == long.class ||   // DAP has no long. This is imperfect; there will be loss of precision
             c == double.class) return "Float64";
         if (c == float.class)  return "Float32";
         if (c == int.class)    return "Int32";
-        if (c == short.class ||
-            c == char.class)   return "Int16";
+        if (c == short.class)  return "Int16";
         if (c == byte.class)   return "Byte";
-        if (c == String.class) return "String";
+        if (c == char.class ||    // DAP has no char, so represent it as a String
+            c == String.class) return "String";
         throw new Exception(String2.ERROR + "in OpendapHelper.getAtomicType: The classType=" + 
             PrimitiveArray.elementClassToString(c) + " is not supported.");
     }
@@ -754,6 +755,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         StringBuilder sb = new StringBuilder();
 
         //see EOL definition for comments about it
+        int firstUEncodedChar = encodeAsHTML? 65536 : 127;
         sb.append("  " + XML.encodeAsHTML(varName, encodeAsHTML) + " {" + EOL); 
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) {
@@ -761,24 +763,28 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             Class et = pa.elementClass();
             sb.append(XML.encodeAsHTML("    " + getAtomicType(et) + " " + names[ni] + " ", encodeAsHTML));
             int paSize = pa.size();
-            if (et == String.class) {
+            if (et == char.class || et == String.class) {
                 //enquote, and replace internal quotes with \"
-                for (int pai = 0; pai < paSize; pai++) {
-                    String ts = pa.getString(pai);
-                    if (encodeAsHTML) {
-                        ts = String2.noLongLinesAtSpace(ts, 78, "");
-                        if (ts.indexOf('\n') >= 0)
-                            sb.append('\n'); //start on new line, so first line isn't super long
-                    }
-                    sb.append(XML.encodeAsHTML(
-                        "\"" + String2.replaceAll(ts, "\"", "\\\"") + "\"", encodeAsHTML));
-                    sb.append(pai < paSize - 1 ? ", " : "");
+                String ts = String2.toSVString(pa.toStringArray(), "\n", false);
+                if (encodeAsHTML) {
+                    ts = String2.noLongLinesAtSpace(ts, 78, "");
+                    if (ts.indexOf('\n') >= 0)
+                        sb.append('\n'); //start on new line, so first line isn't super long
                 }
-            } else if (et == double.class) {
+                //DAP 2.0 appendix A says \ becomes \\ and " becomes \"
+                //2017-05-05 I considered toJson, but DASParser doesn't like e.g., \\uhhhh
+                //ts = String2.toJson(ts, firstUEncodedChar, false),
+                //    encodeAsHTML));
+                ts = String2.replaceAll(ts, "\\", "\\\\");
+                ts = "\"" + String2.replaceAll(ts, "\"", "\\\"") + "\"";
+                //String2.log(">> ts=" + ts);
+                sb.append(XML.encodeAsHTML(ts, encodeAsHTML));
+            } else if (et == double.class ||
+                       et == long.class) {
                 //the spec says must be like Ansi C printf, %g format, precision=6
-                //I couldn't get Jikes to compile String.format.
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = "" + pa.getDouble(pai);
+                    //if (et==long.class) String2.log(">> Opendap long att #" + pai + " = " + pa.getString(pai) + " => " + ts); 
                     ts = String2.replaceAll(ts, "E-", "e-"); //do first
                     ts = String2.replaceAll(ts, "E", "e+");
                     sb.append(ts +
@@ -786,9 +792,13 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                         (pai < paSize - 1 ? ", " : ""));  
                 }
             } else if (et == float.class) {
-                for (int pai = 0; pai < paSize; pai++) 
-                    sb.append(pa.getFloat(pai) + 
-                        (pai < paSize - 1 ? ", " : ""));  
+                for (int pai = 0; pai < paSize; pai++) {
+                    String ts = "" + pa.getFloat(pai);
+                    ts = String2.replaceAll(ts, "E-", "e-"); //do first
+                    ts = String2.replaceAll(ts, "E", "e+");
+                    sb.append(ts + 
+                        (pai < paSize - 1 ? ", " : ""));
+                }
             } else {
                 sb.append(pa.toString());
             }
@@ -1190,7 +1200,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
         //***** test of NODC template dataset
         String2.log("\n*** test of NODC template dataset");
-        url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
+        url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
         dConnect = new DConnect(url, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
@@ -1270,6 +1280,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         NetcdfFileWriter ncOut =
             NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3,
                 fullFileName + randomInt);
+        boolean nc3Mode = true;
 
         try {
             Group rootGroup = ncOut.addGroup(null, "");
@@ -1411,13 +1422,13 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                 }
 
                 //write data variable attributes in ncOut
-                NcHelper.setAttributes(newVars[v], varAtts);
+                NcHelper.setAttributes(nc3Mode, newVars[v], varAtts);
             }
 
             //write global attributes in ncOut
             Attributes gAtts = new Attributes();
             getAttributes(das, "GLOBAL", gAtts);
-            NcHelper.setAttributes(rootGroup, gAtts);
+            NcHelper.setAttributes(nc3Mode, rootGroup, gAtts);
 
             //leave "define" mode in ncOut
             ncOut.create();
@@ -1483,7 +1494,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      * @param whichTests -1 for all, or 0.. for specific ones
      */
     public static void testAllDapToNc(int whichTests) throws Throwable {
-        //tests from nodc template examples http://www.nodc.noaa.gov/data/formats/netcdf/
+        //tests from nodc template examples https://www.nodc.noaa.gov/data/formats/netcdf/
         String2.log("\n*** OpendapHelper.testAllDapToNc(" + whichTests + ")");
         String dir = "c:/data/nodcTemplates/";
         String fileName;
@@ -1493,15 +1504,14 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             try {
                 //this tests numeric scalars, and  numeric and String 1D arrays
                 fileName = "pointKachemakBay.nc";
-                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
+                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
                 allDapToNc(url, dir + fileName);
                 results = NcHelper.dds(dir + fileName);
                 String2.log(results);
                 //expected = "zztop";
                 //Test.ensureEqual(results, expected, "");
             } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
         }
 
@@ -1509,7 +1519,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             try {
                 //this tests numeric and String scalars, and  numeric 1D arrays
                 fileName = "timeSeriesBodegaMarineLabBuoy.nc";
-                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
+                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
                 allDapToNc(url, dir + fileName);
                 results = NcHelper.dds(dir + fileName);
                 expected = 
@@ -1542,8 +1552,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "}\n";
                 Test.ensureEqual(results, expected, "results=\n" + results);
             } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
         }
 
@@ -1551,7 +1560,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             try {
                 //this tests numeric scalars, and    grids
                 fileName = "trajectoryAoml_tsg.nc";
-                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
+                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
                 allDapToNc(url, dir + fileName);
                 results = NcHelper.dds(dir + fileName);
                 String2.log(results);
@@ -1591,8 +1600,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "}\n";
                 Test.ensureEqual(results, expected, "");
             } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
         }
 
@@ -1601,7 +1609,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             try {
                 //this tests numeric scalars, and   byte/numeric arrays
                 fileName = "trajectoryJason2_satelliteAltimeter.nc";
-                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
+                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
                 allDapToNc(url, dir + fileName);
                 results = NcHelper.dds(dir + fileName);
                 String2.log(results);
@@ -1631,14 +1639,13 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "}\n";
                 Test.ensureEqual(results, expected, "");
             } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
         }
 
 /*        if (whichTests == -1 || whichTests == 4) {
 //JDAP fails to read/parse the .dds:
-//Exception in thread "main" com.cohort.util.SimpleException: Error while getting DDS from http://data.nodc.noaa.gov/thredds/dodsC/testdata/ne
+//Exception in thread "main" com.cohort.util.SimpleException: Error while getting DDS from https://data.nodc.noaa.gov/thredds/dodsC/testdata/ne
 //tCDFTemplateExamples/profile/wodObservedLevels.nc.dds .
 //
 //Parse Error on token: String
@@ -1649,7 +1656,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 //        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:741)
             //this tests numeric scalars, and  numeric and string arrays
             fileName = "profileWodObservedLevels.nc";
-            url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/profile/wodObservedLevels.nc";
+            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/profile/wodObservedLevels.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.dumpString(dir + fileName, false);
             String2.log(results);
@@ -1661,7 +1668,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             try {
                 //this tests numeric scalars, and numeric arrays
                 fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
-                url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
+                url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
                 allDapToNc(url, dir + fileName);
                 results = NcHelper.dds(dir + fileName);
                 String2.log(results);
@@ -1689,8 +1696,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "}\n";
                 Test.ensureEqual(results, expected, "");
             } catch (Throwable t) {
-                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                    "\n2016-09-15 This dataset is gone! Fix this!"); 
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
             }
         }
 
@@ -1855,6 +1861,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         File2.makeDirectory(File2.getDirectory(fullFileName));
         NetcdfFileWriter ncOut = NetcdfFileWriter.createNew(
             NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
+        boolean nc3Mode = true;
 
         try {
             Group rootGroup = ncOut.addGroup(null, "");
@@ -1996,7 +2003,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             //write global attributes in ncOut
             Attributes tAtts = new Attributes();
             getAttributes(das, "GLOBAL", tAtts);
-            NcHelper.setAttributes(rootGroup, tAtts);
+            NcHelper.setAttributes(nc3Mode, rootGroup, tAtts);
 
             //write dimension attributes in ncOut
             if (isDGrid) {
@@ -2004,7 +2011,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                     String dimName = dims.get(d).getName();               
                     tAtts.clear();
                     getAttributes(das, dimName, tAtts);
-                    NcHelper.setAttributes(newDimVars[d], tAtts);
+                    NcHelper.setAttributes(nc3Mode, newDimVars[d], tAtts);
                 }
             }
 
@@ -2012,7 +2019,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             for (int v = 0; v < nVars; v++) {
                 if (varNames[v] == null)
                     continue;
-                NcHelper.setAttributes(newVars[v], varAtts[v]);
+                NcHelper.setAttributes(nc3Mode, newVars[v], varAtts[v]);
             }
 
             //leave "define" mode in ncOut
@@ -2555,7 +2562,8 @@ expected =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"2010-07-02Z\";\n" +
 "  :date_issued = \"2010-07-02Z\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
@@ -2574,10 +2582,10 @@ expected =
 "  :geospatial_vertical_units = \"m\";\n" +
 "  :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-07-02T15:36:22Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-today + "T";  // + time " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
+today + "T";  // + time " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 String expected2 = 
-"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"altitude, atmosphere,\n" +
 "Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -2601,7 +2609,8 @@ String expected2 =
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
 "  :satellite = \"QuikSCAT\";\n" +
 "  :sensor = \"SeaWinds\";\n" +
@@ -2772,7 +2781,8 @@ y_wind.y_wind[1][1][7][15]
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"2010-07-02Z\";\n" +
 "  :date_issued = \"2010-07-02Z\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
@@ -2791,10 +2801,10 @@ y_wind.y_wind[1][1][7][15]
 "  :geospatial_vertical_units = \"m\";\n" +
 "  :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-07-02T15:36:22Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-today + "T"; //time http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
+today + "T"; //time https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
 //today + time " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 expected2 = 
-"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"altitude, atmosphere,\n" +
 "Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -2818,7 +2828,8 @@ expected2 =
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
 "  :satellite = \"QuikSCAT\";\n" +
 "  :sensor = \"SeaWinds\";\n" +
@@ -2949,13 +2960,13 @@ expected2 =
     public static void test() throws Throwable{
         String2.log("\n*** OpendapHelper.test...");
 
-/* 
+/* */
         testGetAttributes();
         testParseStartStrideStop();
         testFindVarsWithSharedDimensions();
         testFindAllScalarOrMultiDimVars();
         testDapToNcDArray();
-   */     testDapToNcDGrid();
+        testDapToNcDGrid();
         testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test
 
         String2.log("\n***** OpendapHelper.test finished successfully");

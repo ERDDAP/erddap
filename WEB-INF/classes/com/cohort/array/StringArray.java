@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.Set;
 
 /**
@@ -124,6 +125,75 @@ public class StringArray extends PrimitiveArray {
         }
     }
 
+    /**
+     * A special method which encodes all the Unicode strings in this to ISO_8859_1.
+     *
+     * @return this for convenience
+     */
+    public StringArray toIso88591() {
+        for (int i = 0; i < size; i++)
+            array[i] = String2.canonical(String2.toIso88591String(array[i]));
+        return this;
+    }
+
+
+    /**
+     * A special method which decodes all the UTF-8 strings to Unicode.
+     * See toUTF8().
+     *
+     * @return this for convenience
+     */
+    public StringArray fromUTF8() {
+        for (int i = 0; i < size; i++)
+            array[i] = String2.canonical(String2.fromUTF8String(array[i]));
+        //String2.log(">>after fromUTF8: " + toNccsvAttString());
+        return this;
+    }
+
+    /**
+     * A special method which encodes all the Unicode strings in this to UTF-8.
+     * See fromUTF8().
+     *
+     * @return this for convenience
+     */
+    public StringArray toUTF8() {
+        for (int i = 0; i < size; i++)
+            array[i] = String2.canonical(String2.toUTF8String(array[i]));
+        //String2.log(">>after toUTF8: " + toNccsvAttString());
+        return this;
+    }
+
+    /**
+     * A special method which encodes all the Unicode strings in this toJson(,127) encoding.
+     *
+     * @return this for convenience
+     */
+    public StringArray toJson() {
+        for (int i = 0; i < size; i++)
+            array[i] = String2.canonical(String2.toJson(array[i], 127));
+        return this;
+    }
+
+    /** 
+     * This converts a StringArray with JSON-encoded Strings into 
+     * the actual (canonical) Strings.
+     * This doesn't require that the JSON strings have enclosing double quotes.
+     */
+    public void fromJson() {
+        for (int i = 0; i < size; i++) 
+            array[i] = String2.canonical(String2.fromJson(array[i])); //doesn't require enclosing "'s
+    }
+
+    /** 
+     * This converts a StringArray with NCCSV-encoded Strings into 
+     * the actual (canonical) Strings.
+     * This doesn't require that the NCCSV strings have enclosing double quotes.
+     */
+    public void fromNccsv() {
+        for (int i = 0; i < size; i++) 
+            array[i] = String2.canonical(String2.fromNccsvString(array[i])); //doesn't require enclosing "'s
+    }
+
     /* *  probably works, but not tested
      * This makes a StringArray with the contents of a map.
      * Each entry will be from <key>.toString() = <value>.toString().
@@ -210,7 +280,7 @@ public class StringArray extends PrimitiveArray {
         try {
             //open the file
             if (charset == null || charset.length() == 0)
-                charset = "ISO-8859-1";
+                charset = String2.ISO_8859_1;
             Writer w = new OutputStreamWriter(new FileOutputStream(fileName, append), charset);
             bufferedWriter = new BufferedWriter(w);
                          
@@ -344,6 +414,19 @@ public class StringArray extends PrimitiveArray {
         for (int i = 0; i < size; i++) {
             String s = array[i];
             String st = s.trim();
+            if (st.length() < s.length())
+                array[i] = String2.canonical(st);
+        }
+    }
+
+    /**
+     * This trims the end of each of the strings.
+     *
+     */
+    public void trimEndAll() {
+        for (int i = 0; i < size; i++) {
+            String s = array[i];
+            String st = String2.trimEnd(s);
             if (st.length() < s.length())
                 array[i] = String2.canonical(st);
         }
@@ -584,6 +667,19 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
+     * This removes any/all the 0-length strings at the end.
+     *
+     * @return the new size
+     */
+    public int removeEmptyAtEnd() {
+        int last = size;
+        while (last > 0 && array[last - 1].length() == 0)
+            last--;
+        removeRange(last, size);
+        return size;
+    }
+
+    /**
      * Moves elements 'first' through 'last' (inclusive)
      *   to 'destination'.
      *
@@ -668,7 +764,7 @@ public class StringArray extends PrimitiveArray {
             int newCapacity = (int)Math.min(Integer.MAX_VALUE - 1, array.length + (long)array.length); 
             if (newCapacity < minCapacity) 
                 newCapacity = (int)minCapacity; //safe since checked above
-            Math2.ensureMemoryAvailable(8L * newCapacity, "StringArray"); //8 is feeble minimal estimate
+            Math2.ensureMemoryAvailable(4L * newCapacity, "StringArray"); //4 since just copying pointers
             String[] newArray = new String[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
             array = newArray; //do last to minimize concurrency problems
@@ -683,7 +779,7 @@ public class StringArray extends PrimitiveArray {
     public String[] toArray() {
         if (array.length == size)
             return array;
-        Math2.ensureMemoryAvailable(8L * size, "StringArray.toArray"); //8L is feeble minimal estimate
+        Math2.ensureMemoryAvailable(4L * size, "StringArray.toArray"); //4L since just copying pointers
         String[] tArray = new String[size];
         System.arraycopy(array, 0, tArray, 0, size);
         return tArray;
@@ -706,7 +802,7 @@ public class StringArray extends PrimitiveArray {
      *    Non-finite values are returned as Double.NaN's.
      */
     public double[] toDoubleArray() {
-        Math2.ensureMemoryAvailable(8L * size, "StringArray.toDoubleArray"); //8L is feeble minimal estimate
+        Math2.ensureMemoryAvailable(8L * size, "StringArray.toDoubleArray"); 
         double dar[] = new double[size];
         for (int i = 0; i < size; i++)
             dar[i] = String2.parseDouble(array[i]);
@@ -843,6 +939,34 @@ public class StringArray extends PrimitiveArray {
      */
     public String getString(int index) {
         return get(index);
+    }
+
+    /**
+     * Return a value from the array as a String suitable for the data section 
+     * of an NCCSV file.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getNccsvDataString(int index) {
+        return String2.toNccsvDataString(get(index));
+    }
+
+    /**
+     * Return a value from the array as a String suitable for the data section 
+     * of an tsv file, e.g., z \t \u0000 , \".
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getTsvString(int index) {
+        String s = get(index);
+        if (s == null)
+            return "";
+        s = String2.toJson(s);
+        return s.substring(1, s.length() - 1); //remove enclosing quotes
     }
 
     /**
@@ -1003,57 +1127,14 @@ public class StringArray extends PrimitiveArray {
 
 
     /** 
-     * This converts the elements into a comma-separated (CSV) String.
-     * If a value has an internal comma or double quotes, the value is surrounded by 
-     * double quotes and the internal quotes are replaced by 2 double quotes.
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     * There is no trailing \n.
+     * Strings are handled specially: make a newline-separated string, then encode it.
      *
-     * @return a Comma-Separated-Value (not comma space) String representation 
+     * @return an NCCSV attribute String
      */
-    public String toCSVString() {
-        Math2.ensureMemoryAvailable(8L * size, "StringArray.toCSVString"); //8L is lame estimate of bytes/element
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < size; i++) {
-            if (i > 0)
-                sb.append(',');
-            String s = array[i];
-            if (s == null) {
-            } else if (s.indexOf('"') >= 0) { //check for '"' before check for ','
-                s = String2.replaceAll(s, "\"", "\"\"");
-                sb.append("\"" + s + "\"");
-            } else if (s.indexOf(',') >= 0) {
-                sb.append("\"" + s + "\"");
-            } else {
-                sb.append(s);
-            }
-        }
-        return sb.toString(); 
-    }
-
-    /** 
-     * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
-     * If a value has an internal comma or double quotes, the value is surrounded by 
-     * double quotes and the internal quotes are replaced by 2 double quotes.
-     *
-     * @return a Comma-Space-Separated-Value String representation 
-     */
-    public String toString() {
-        Math2.ensureMemoryAvailable(8L * size, "StringArray.toString"); //8L is lame estimate of bytes/element
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < size; i++) {
-            if (i > 0)
-                sb.append(", ");
-            String s = array[i];
-            if (s == null) {
-            } else if (s.indexOf('"') >= 0) { //check for '"' before check for ','
-                s = String2.replaceAll(s, "\"", "\"\"");
-                sb.append("\"" + s + "\"");
-            } else if (s.indexOf(',') >= 0) {
-                sb.append("\"" + s + "\"");
-            } else {
-                sb.append(s);
-            }
-        }
-        return sb.toString(); 
+    public String toNccsvAttString() {
+        return String2.toNccsvAttString(String2.toSVString(toArray(), "\n", false));  
     }
 
     /**
@@ -1076,6 +1157,7 @@ public class StringArray extends PrimitiveArray {
 
     /** 
      * This converts the elements into a newline-separated String.
+     * There is a trailing newline!
      *
      * @return the newline-separated String representation of o
      */
@@ -1208,6 +1290,7 @@ public class StringArray extends PrimitiveArray {
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
      * Just 8 bits are stored: there is no utf or other unicode support.
      * See DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit.
+     * Ah: dods.dap.DString reader assumes ISO-8859-1, which is first page of unicode.
      *
      * @param dos
      * @param s
@@ -1216,8 +1299,10 @@ public class StringArray extends PrimitiveArray {
     public static void externalizeForDODS(DataOutputStream dos, String s) throws Exception {
         int n = s.length();
         dos.writeInt(n); //for Strings, just write size once
-        for (int i = 0; i < n; i++)
-            dos.writeByte(s.charAt(i)); //eek; just 8 bits stored; no utf or other unicode support
+        for (int i = 0; i < n; i++) { //just low 8 bits written; no utf or other unicode support, 
+            char c = s.charAt(i);  //2016-11-29 I added: char>255 -> '?', it's better than low 8 bits
+            dos.writeByte(c < 256? c : '?'); //dods.dap.DString reader assumes ISO-8859-1, which is first page of unicode
+        }
 
         //pad to 4 bytes boundary at end
         while (n++ % 4 != 0)
@@ -1309,6 +1394,14 @@ public class StringArray extends PrimitiveArray {
         ensureCapacity(size + (long)otherSize);
         if (pa instanceof StringArray) {
             System.arraycopy(((StringArray)pa).array, 0, array, size, otherSize);
+        //2017-04-06 this was contemplated, but better to handle this some other way, 
+        //  e.g., CharArray.getString()
+        //} else if (pa instanceof CharArray) { //for Argo
+        //    CharArray ca = (CharArray)pa;
+        //    for (int i = 0; i < otherSize; i++) {
+        //        char ch = ca.get(i);
+        //        array[size + i] = String2.canonical(ch == Character.MAX_VALUE? "" : ch + ""); 
+        //    }
         } else {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = String2.canonical(pa.getString(i)); //this converts mv's
@@ -1705,6 +1798,65 @@ public class StringArray extends PrimitiveArray {
     } */
 
     /**
+     * This is a purposely <b>simple</b>, 2-double-quotes-aware, backslash-aware, splitter
+     * that makes an ArrayString from the items in an NCCSV-style string.
+     *
+     * <br>This avoids String2.canonical(to), so will be faster if just parsing 
+     *   then discarding or storing in some other data structure.
+     *
+     * <p>Strings should be JSON-like, but \char are left as-is (not converted
+     *   to special char) and 2 double quotes are still 2 double quotes.  
+     * <br>null becomes sa.length() == 0.
+     * <br>"" becomes sa.length() == 1.
+     *
+     * @param csv
+     * @return a StringArray with the items.
+     *   <br>Quoted strings are still in quoted strings. 
+     *   <br>Backslashed characters are not converted to the special character 
+     *     (e.g., double quotes or newline).
+     *   <br>Items are trimmed.
+     */
+    public static StringArray simpleFromNccsv(String csv) {
+        StringArray sa = new StringArray();
+        if (csv == null)
+            return sa;
+        int start = 0; //start of this item
+        int po = 0; //next char to be looked at
+        int n = csv.length();
+        while (po < n) {
+            char ch = csv.charAt(po++);
+
+            if (ch == '"') {
+                while (po < n) {
+                    ch = csv.charAt(po++);
+                    if (ch == '\\' && po < n) {
+                        po++;
+                        continue;
+                    } else if (ch == '"') {
+                        //matching close quote
+                        break;
+                    }
+                }
+
+            } else if (ch == '\\' && po < n) {
+                po++;
+                continue;
+
+            } else if (ch == ',') {
+                //end of item
+                if (sa.size == sa.array.length) //if we're at capacity
+                    sa.ensureCapacity(sa.size + 1L);
+                sa.array[sa.size++] = csv.substring(start, po - 1).trim(); //avoid canonical
+                start = po;
+            }
+        }
+        if (sa.size == sa.array.length) //if we're at capacity
+            sa.ensureCapacity(sa.size + 1L);
+        sa.array[sa.size++] = csv.substring(start, po).trim(); //avoid canonical
+        return sa;
+    }
+
+    /**
      * This tests if the values in the array are sorted in ascending order (tied is ok).
      * The details of this test are geared toward determining if the 
      * values are suitable for binarySearch.
@@ -1822,7 +1974,8 @@ public class StringArray extends PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "\u0000";}
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public String maxValue() {return "\uFFFF";}
 
     /**
@@ -1846,19 +1999,6 @@ public class StringArray extends PrimitiveArray {
             }
         }
         return new int[]{n, tmini, tmaxi};
-    }
-
-    /**
-     * This returns the min and max of the non-null or "" strings (by simple comparison).
-     *
-     * @return String[3], 0=""+n (the number of non-null or "" strings), 
-     *    1=min, 2=max.  min and max are "" if n=0.
-     */
-    public String[] getNMinMax() {
-        int nmm[] = getNMinMaxIndex();
-        if (nmm[0] == 0)
-            return new String[]{"0", "", ""};
-        return new String[]{"" + nmm[0], array[nmm[1]], array[nmm[2]]};
     }
 
     /**
@@ -1922,6 +2062,32 @@ public class StringArray extends PrimitiveArray {
         return this;
     }
 
+
+    /**
+     * This returns the index of the first value that doesn't match the regex.
+     *
+     * @param regex
+     * @return the index of the first value that doesn't match the regex, or -1 if they all match.
+     * @throws RuntimeException if regex won't compile.
+     */
+    public int firstNonMatch(String regex) {
+        return firstNonMatch(Pattern.compile(regex));
+    }
+
+    /**
+     * This returns the index of the first value that doesn't match the regex pattern p.
+     *
+     * @param p
+     * @return the index of the first value that doesn't match the regex pattern p, or -1 if they all match.
+     */
+    public int firstNonMatch(Pattern p) {
+        for (int i = 0; i < size; i++) {
+            String s = get(i);
+            if (s == null || !p.matcher(s).matches())
+                return i;                
+        }
+        return -1;
+    }
 
     /**
      * This tests the methods of this class.
@@ -2468,6 +2634,51 @@ public class StringArray extends PrimitiveArray {
         anArray2 = (new StringArray()).addHashSet(hs);
         anArray2.sort();
         Test.ensureEqual(anArray.toArray(), anArray2.toArray(), "");
+
+        //fromNccsv
+        anArray = simpleFromNccsv("");
+        Test.ensureEqual(anArray.toJsonCsvString(), 
+            "\"\"", "");
+        Test.ensureEqual(anArray.size(), 1, "");
+
+        anArray = simpleFromNccsv("a");
+        Test.ensureEqual(anArray.toJsonCsvString(), 
+            "\"a\"", "");
+        Test.ensureEqual(anArray.size(), 1, "");
+
+        anArray = simpleFromNccsv(" a , b ,");
+        Test.ensureEqual(anArray.toJsonCsvString(), 
+            "\"a\", \"b\", \"\"", "");
+        Test.ensureEqual(anArray.size(), 3, "");
+
+        anArray = simpleFromNccsv(" \" a\t\n\b\'z\"\" \" , 1.23f, a\"");
+        //  \\b is removed
+        Test.ensureEqual(String2.annotatedString(String2.replaceAll(anArray.get(0), "\n", "")),
+            "\" a[9][8]'z\"\" \"[end]", "");
+        Test.ensureEqual(anArray.toJsonCsvString(), 
+            "\"\\\" a\\t\\n'z\\\"\\\" \\\"\", \"1.23f\", \"a\\\"\"", "");
+        Test.ensureEqual(anArray.size(), 3, "");
+
+        anArray = simpleFromNccsv(
+            // \\b is not allowed
+            "'\\f', '\\n', '\\r', '\\t', '\\\\', '\\/', '\\\"', 'a', '~', '\\u00C0', '\\u0000', '\\uffFf'");
+        Test.ensureEqual(anArray.toJsonCsvString(), 
+            "\"'\\\\f'\", \"'\\\\n'\", \"'\\\\r'\", \"'\\\\t'\", \"'\\\\\\\\'\", \"'\\\\/'\", \"'\\\\\\\"'\", \"'a'\", \"'~'\", \"'\\\\u00C0'\", \"'\\\\u0000'\", \"'\\\\uffFf'\"", 
+            anArray.toJsonCsvString());
+        Test.ensureEqual(anArray.size(), 12, "");
+
+        //removeEmptyAtEnd();
+        anArray = new StringArray(new String[] {"hi", "go", "to"});
+        Test.ensureEqual(anArray.size(), 3, "");
+        anArray.removeEmptyAtEnd();
+        Test.ensureEqual(anArray.size(), 3, "");
+        anArray.set(0, "");
+        anArray.set(2, "");
+        anArray.removeEmptyAtEnd();
+        Test.ensureEqual(anArray.size(), 2, "");
+        anArray.set(1, "");
+        anArray.removeEmptyAtEnd();
+        Test.ensureEqual(anArray.size(), 0, "");
 
     }
 

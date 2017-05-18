@@ -98,7 +98,7 @@ public class GenerateDatasetsXml {
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());
         outFile = new OutputStreamWriter(
-            new FileOutputStream(outFileName), "ISO-8859-1"); //charset to match datasets.xml
+            new FileOutputStream(outFileName), String2.ISO_8859_1); //charset to match datasets.xml
 
         //delete the old-system log files (pre 1.48 names)
         File2.delete(EDStatic.fullLogsDirectory + "GenerateDatasetsXmlLog.txt");
@@ -109,7 +109,7 @@ public class GenerateDatasetsXml {
         String eddType = "EDDGridFromDap";
         String s1 = "", s2 = "", s3 = "", s4 = "", s5 = "", s6 = "", s7 = "", 
             s8 = "", s9 = "", s10 = "", s11 = "", s12 = "", s13 = "", s14 = "",
-            s15 = "", s16 = "", s17 = "";
+            s15 = "", s16 = "", s17 = "", s18 = "";
         String reloadEveryNMinutesMessage = "ReloadEveryNMinutes (e.g., " + 
             EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ")";
         String sampleFileNamePrompt = "Full file name of one file (or leave empty to use first matching fileName)";                  
@@ -170,11 +170,13 @@ public class GenerateDatasetsXml {
             "EDDTableFromMultidimNcFiles",
             "EDDTableFromNcFiles",
             "EDDTableFromNcCFFiles",
+            "EDDTableFromNccsvFiles",
             "EDDTableFromOBIS",
             "EDDTableFromSOS",
             "EDDTableFromThreddsFiles",
             "EDDTableFromWFSFiles",
-            "EDDsFromFiles"};
+            "EDDsFromFiles",
+            "ncdump"};
         StringBuilder sb = new StringBuilder();
         int net = eddTypes.length;
         int net2 = Math2.hiDiv(net, 2);
@@ -304,22 +306,23 @@ public class GenerateDatasetsXml {
                     s4  = get(args,  4,  s4, "Charset (e.g., ISO-8859-1 (default) or UTF-8)");                     
                     s5  = get(args,  5,  s5, "Column names row (e.g., 1)");                     
                     s6  = get(args,  6,  s6, "First data row (e.g., 2)");                          
-                    s7  = get(args,  7,  s7, reloadEveryNMinutesMessage);
-                    s8  = get(args,  8,  s8, "PreExtractRegex");
-                    s9  = get(args,  9,  s9, "PostExtractRegex");
-                    s10 = get(args, 10, s10, "ExtractRegex");
-                    s11 = get(args, 11, s11, "Column name for extract");
-                    s12 = get(args, 12, s12, "Sorted column source name");
-                    s13 = get(args, 13, s13, "Sort files by sourceNames");
-                    s14 = get(args, 14, s14, "infoUrl");
-                    s15 = get(args, 15, s15, "institution");
-                    s16 = get(args, 16, s16, "summary");
-                    s17 = get(args, 17, s17, "title");
+                    s7  = get(args,  7,  s7, "Column separator (e.g., ',')");
+                    s8  = get(args,  8,  s8, reloadEveryNMinutesMessage);
+                    s9  = get(args,  9,  s9, "PreExtractRegex");
+                    s10 = get(args, 10, s10, "PostExtractRegex");
+                    s11 = get(args, 11, s11, "ExtractRegex");
+                    s12 = get(args, 12, s12, "Column name for extract");
+                    s13 = get(args, 13, s13, "Sorted column source name");
+                    s14 = get(args, 14, s14, "Sort files by sourceNames");
+                    s15 = get(args, 15, s15, "infoUrl");
+                    s16 = get(args, 16, s16, "institution");
+                    s17 = get(args, 17, s17, "summary");
+                    s18 = get(args, 18, s18, "title");
                     String2.log("working...");
                     printToBoth(EDDTableFromAsciiFiles.generateDatasetsXml(
-                        s1, s2, s3, s4, String2.parseInt(s5, 1), String2.parseInt(s6, 2), 
-                        String2.parseInt(s7, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
-                        s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, null));
+                        s1, s2, s3, s4, String2.parseInt(s5, 1), String2.parseInt(s6, 2), s7,
+                        String2.parseInt(s8, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, null));
 
                 } else if (eddType.equals("EDDTableFromAwsXmlFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
@@ -531,6 +534,26 @@ public class GenerateDatasetsXml {
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s5, s6, s7, s8, s9, s10, s11, s12, s13, null));
 
+                } else if (eddType.equals("EDDTableFromNccsvFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.csv\")");
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
+                    s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
+                    s5  = get(args,  5,  s5, "PreExtractRegex");
+                    s6  = get(args,  6,  s6, "PostExtractRegex");
+                    s7  = get(args,  7,  s7, "ExtractRegex");
+                    s8  = get(args,  8,  s8, "Column name for extract");
+                    s9  = get(args,  9,  s9, "Sort files by sourceNames");
+                    s10 = get(args, 10, s10, "infoUrl");
+                    s11 = get(args, 11, s11, "institution");
+                    s12 = get(args, 12, s12, "summary");
+                    s13 = get(args, 13, s13, "title");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromNccsvFiles.generateDatasetsXml(
+                        s1, s2, s3, 
+                        String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        s5, s6, s7, s8, s9, s10, s11, s12, s13, null));
+
                 } else if (eddType.equals("EDDTableFromOBIS")) {
                     s1  = get(args,  1,  s1, "URL");
                     s2  = get(args,  2,  s2, "Source Code");
@@ -592,6 +615,14 @@ public class GenerateDatasetsXml {
                     s1  = get(args,  1,  s1, "Starting directory");
                     String2.log("working...");
                     printToBoth(EDD.generateDatasetsXmlFromFiles(s1));
+
+                } else if (eddType.equals("ncdump")) {
+                    s1  = get(args,  1,  s1, "File name");
+                    s2  = get(args,  2,  s2, "CSV-list of variables to be displayed (enter \"nothing\" for none)");
+                    String2.log("working...");
+                    printToBoth(String2.isSomething(s2)?
+                        NcHelper.dumpString(s1, s2) :
+                        NcHelper.dumpString(s1, false));
 
                 } else {
                     String2.log("ERROR: eddType=" + eddType + " is not an option.");
@@ -662,9 +693,9 @@ public class GenerateDatasetsXml {
             //copy datasets.xml line-by-line to new file, 
             tempName = datasetsXmlName + localCompactTime;
             inFile = new BufferedReader(new InputStreamReader(
-                new FileInputStream(datasetsXmlName), "ISO-8859-1")); //charset to match datasets.xml
+                new FileInputStream(datasetsXmlName), String2.ISO_8859_1)); //charset to match datasets.xml
             outFile = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(tempName), "ISO-8859-1")); //charset to match datasets.xml
+                new FileOutputStream(tempName), String2.ISO_8859_1)); //charset to match datasets.xml
             
             //look for the beginLine  
             String line = inFile.readLine();

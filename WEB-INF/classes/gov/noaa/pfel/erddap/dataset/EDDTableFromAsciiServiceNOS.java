@@ -103,7 +103,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         //remove duplicate rows  (e.g., perhaps caused by removing datum column)
         stationTable.removeDuplicates();
         //String2.log("\nstationTable=\n" + stationTable.getNCHeader("row") + 
-        //    stationTable.dataToCSVString(5));
+        //    stationTable.dataToString(5));
 
         //Most/all of these datasets are SOS-able
         //Gather information to serve this dataset via ERDDAP's SOS server.
@@ -235,7 +235,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             }
 
             //format the query
-            //http://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelrawsixmin/
+            //https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelrawsixmin/
             //plain/response.jsp?stationId=9414290&beginDate=20101110+05:00&endDate=20101110+06:00
             //&datum=MLLW&unit=0&timeZone=0&metadata=yes&Submit=Submit
             String encodedSourceUrl = localSourceUrl +
@@ -289,7 +289,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 in.close();
 
                 //table.makeColumnsSameSize();
-                //String2.log("\npre table=\n" + table.dataToCSVString());
+                //String2.log("\npre table=\n" + table.dataToString());
 
                 if (datasetID.equals("nosCoopsWLTPHL")) {
 
@@ -319,7 +319,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                         }
                     }
                     //newTable.makeColumnsSameSize();
-                    //String2.log("\nnewTable=\n" + newTable.dataToCSVString());
+                    //String2.log("\nnewTable=\n" + newTable.dataToString());
 
                     //swap newTable into place
                     table = newTable;
@@ -403,7 +403,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                         sa.addN(nRows, datum);
                     }
 
-                    //String2.log("\npost table=\n" + table.dataToCSVString());
+                    //String2.log("\npost table=\n" + table.dataToString());
                     standardizeResultsTable(requestUrl, userDapQuery, table);
 
                     if (table.nRows() > 0) {
@@ -476,11 +476,11 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         String2.log("reloadStationsFile()");
 
         //get WaterLevel and Meteorological station list from SOAP list at
-        //http://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/response.jsp
+        //https://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/response.jsp
         //from Active Water Level Stations Try Me / XML at
-        //http://opendap.co-ops.nos.noaa.gov/axis/
+        //https://opendap.co-ops.nos.noaa.gov/axis/
         SSR.downloadFile(
-            "http://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/response.jsp?v=2&format=xml&Submit=Submit",
+            "https://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/response.jsp?v=2&format=xml&Submit=Submit",
             stationsFileName, true);
 
     }
@@ -524,7 +524,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 //2014-10-29 is (but without newlines) (note that ID now points to the name, and name now has ID!
 //<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope
 ///" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soapenv:
-//Body><ActiveStations xmlns="http://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/wsdl"><stations>
+//Body><ActiveStations xmlns="https://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/wsdl"><stations>
 //<station ID="Nawiliwili" name="1611400">
 //<metadata><location><lat>21.9544</lat><long>-159.3561</long>
 //<state>HI</state></location><date_established>1954-11-24</date_established></metadata>
@@ -599,7 +599,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 stationsXML.substring(deploymentPo + 24, deploymentEnd).trim());
         }
         //String2.log(stationID1.toString());
-        String2.log("n" + lookFor + "=" + table.nRows() + "\n" + table.dataToCSVString());
+        String2.log("n" + lookFor + "=" + table.nRows() + "\n" + table.dataToString());
         return table;
     }
 
@@ -632,7 +632,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         String fileName = "c:/programs/nos/ActiveCurrentsStations.xml";
         if (reloadCurrentsStationsFile) 
             SSR.downloadFile(
-                "http://opendap.co-ops.nos.noaa.gov/axis/webservices/activecurrentstations/response.jsp?format=xml&Submit=Submit",
+                "https://opendap.co-ops.nos.noaa.gov/axis/webservices/activecurrentstations/response.jsp?format=xml&Submit=Submit",
                 fileName, true);
 
         String2.log(String2.readFromFile(fileName)[1].substring(0, 4000));
@@ -695,7 +695,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
         String dir = "c:/programs/_tomcat/content/erddap/subset/";
         table.saveAsJson(dir + "nosCoopsCA.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
-        String2.log(table.dataToCSVString());
+        String2.log(table.dataToString());
 
         String2.pressEnterToContinue( 
             "\n*** EDDTableFromAsciiServiceNOS.makeNosActiveCurrentsSubsetTable done.\n" +
@@ -749,7 +749,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
         //rainfall has no related property
         //so create from entire station file and just keep the 6 stations listed at
-        //http://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/index.jsp
+        //https://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/index.jsp
         table = lookForStations(""); 
         int nRows = table.oneStepApplyConstraint(0,
             "stationID", "=~", "(9752619|9753216|9754228|9757809|9757112|9759394)");
@@ -757,7 +757,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         try {
             Test.ensureEqual(nRows, 6, "Rain Fall");
         } catch (Throwable t) {
-            String2.log(table.dataToCSVString());
+            String2.log(table.dataToString());
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 //"\n2015-02-02 2 of the 6 stations aren't in the stations file:\n" +
                 //"97557809 9757112, but they are still on the web page.\n" +
@@ -800,7 +800,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         // was based on soap response
         //BufferedInputStream bis = new BufferedInputStream(
         //    SSR.getUrlInputStream(
-        //    "http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities"));
+        //    "https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities"));
         //    //new FileInputStream("c:/programs/nos/stations.xml"));  //for testing
         //Table table1 = EDDTableFromSOS.getStationTable(bis, 
         //    "http://mmisw.org/ont/cf/parameter/water_level");
@@ -838,9 +838,9 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         for (int row = 0; row < nStations; row++) {
             try {
                 String tStationID = fromID.get(row);
-//http://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/plain/response.jsp?stationId=8454000&epoch=A&unit=0&metadata=yes&Submit=Submit
+//https://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/plain/response.jsp?stationId=8454000&epoch=A&unit=0&metadata=yes&Submit=Submit
                 String url = 
-                    "http://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/" +
+                    "https://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/" +
                     "plain/response.jsp?" +
                     "epoch=A&unit=0&metadata=yes&Submit=Submit&stationId=" + tStationID;
                 String content[] = SSR.getUrlResponse(url);
@@ -957,12 +957,12 @@ Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level
         toTable.leftToRightSort(5);
 
         //print a little of toTable
-        String2.log(toTable.dataToCSVString(30));
+        String2.log(toTable.dataToString(30));
 
         //print datumDescriptions
         Table datumDesc = new Table();
         datumDesc.readMap(datumsHash, "Datum", "Description");
-        String2.log(datumDesc.dataToCSVString());
+        String2.log(datumDesc.dataToString());
 
         String dir = "c:/programs/_tomcat/content/erddap/subset/";
         toTable.saveAsJson(dir + "nosCoopsWLR6.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
@@ -994,8 +994,8 @@ Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level
 
     /** This tests nosCoops Water Level datasets. 
 These datasets are based on plain text responses from forms listed at
-http://opendap.co-ops.nos.noaa.gov/axis/text.html
-(from "text" link at bottom of http://opendap.co-ops.nos.noaa.gov/axis/ )
+https://opendap.co-ops.nos.noaa.gov/axis/text.html
+(from "text" link at bottom of https://opendap.co-ops.nos.noaa.gov/axis/ )
 These datasets were hard to work with:
 * Different services support different stations (WLVDM is very diffent).
 * Different stations support different datums.
@@ -1118,7 +1118,7 @@ These datasets were hard to work with:
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsWLV6"); 
 
             //2012-11-14 and 2013-11-01 Have to experiment a lot to get actual data. (Gap in Early 2013-10?)
-            //list of stations: http://opendap.co-ops.nos.noaa.gov/stations/index.jsp
+            //list of stations: https://opendap.co-ops.nos.noaa.gov/stations/index.jsp
             //their example=8454000  SF=9414290  Honolulu=1612340
             String daysAgo = daysAgo40;
             query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + daysAgo + "21:00" +
@@ -1154,7 +1154,7 @@ These datasets were hard to work with:
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsWLV60"); 
             //2012-11-14 and 2013-11-01 Have to experiment a lot to get actual data. (Gap in Early 2013-10?)
-            //list of stations: http://opendap.co-ops.nos.noaa.gov/stations/index.jsp
+            //list of stations: https://opendap.co-ops.nos.noaa.gov/stations/index.jsp
             //their example=8454000  SF=9414290  Honolulu=1612340
             //2012-11-14 was stationID=9044020  but that stopped working
             String daysAgo = daysAgo40;
@@ -1164,19 +1164,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2014-12-25T14:00:00Z,MLLW,1.641,0.002,0,0
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8067,2014-12-25T14:00:00Z,MLLW,1.641,0.002,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,waterLevel,sigma,I,L\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m,m,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1192,7 +1192,7 @@ These datasets were hard to work with:
             //no recent data.  always ask for daysAgo72 ... daysAgo70
             //2012-11-14 was stationID=9044020  but that stopped working
             //2012-11-14 and 2013-11-01 Have to experiment a lot to get actual data. (Gap in Early 2013-10?)
-            //list of stations: http://opendap.co-ops.nos.noaa.gov/stations/index.jsp
+            //list of stations: https://opendap.co-ops.nos.noaa.gov/stations/index.jsp
             //their example=8454000  SF=9414290  Honolulu=1612340
             String daysAgo = daysAgo72;
             query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAgo + 
@@ -1207,8 +1207,8 @@ These datasets were hard to work with:
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m,,,\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2014-11-23T00:30:00Z,MLLW,1.374,H,0,0
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),(0|1)\n";
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2014-11-23T00:30:00Z,MLLW,1.374,H,0,0
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},(0|1),(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
@@ -1221,7 +1221,7 @@ These datasets were hard to work with:
         //Tide Predicted High Low 
         //I needed a different way to specify datum (just 0=MLLW or 1=STND)
         //  so always use datum=0; don't let user specify datum
-        //works: http://opendap.co-ops.nos.noaa.gov/axis/webservices/highlowtidepred/plain/response.jsp?
+        //works: https://opendap.co-ops.nos.noaa.gov/axis/webservices/highlowtidepred/plain/response.jsp?
         //unit=0&timeZone=0&metadata=yes&Submit=Submit&stationId=8454000&beginDate=20101123+00:00&endDate=20101125+00:00&datum=0
         //RESULT FORMAT IS VERY DIFFERENT  so this class processes this dataset specially
         if ("nosCoopsWLTPHL".matches(idRegex)) {
@@ -1241,8 +1241,8 @@ These datasets were hard to work with:
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m,\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2015-02-08T08:48:00Z,MLLW,-0.03
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T08:48:00Z,MLLW,-0.03
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
@@ -1257,7 +1257,7 @@ These datasets were hard to work with:
         //I needed a different way to specify datum (just 0=MLLW or 1=STND)
         //  so always use datum=0; don't let user specify datum
         //And always use dataInterval=6 (minutes).
-        //works:http://opendap.co-ops.nos.noaa.gov/axis/webservices/predictions/plain/response.jsp?
+        //works:https://opendap.co-ops.nos.noaa.gov/axis/webservices/predictions/plain/response.jsp?
         //unit=0&timeZone=0&datum=0&dataInterval=6&beginDate=20101122+00:00&endDate=20101122+02:00
         //&metadata=yes&Submit=Submit&stationId=1611400
         if ("nosCoopsWLTP6".matches(idRegex)) {
@@ -1271,20 +1271,20 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2015-02-08T00:00:00Z,MLLW,0.597
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T00:00:00Z,MLLW,0.597
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,predictedWL\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1298,7 +1298,7 @@ These datasets were hard to work with:
         //I needed a different way to specify datum (just 0=MLLW or 1=STND)
         //  so always use datum=0; don't let user specify datum
         //And always use dataInterval=60 (minutes).
-        //works:http://opendap.co-ops.nos.noaa.gov/axis/webservices/predictions/plain/response.jsp?
+        //works:https://opendap.co-ops.nos.noaa.gov/axis/webservices/predictions/plain/response.jsp?
         //unit=0&timeZone=0&datum=0&dataInterval=60&beginDate=20101122+00:00&endDate=20101122+02:00
         //&metadata=yes&Submit=Submit&stationId=1611400
         if ("nosCoopsWLTP60".matches(idRegex)) {
@@ -1312,20 +1312,20 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8072,2015-02-08T00:00:00Z,MLLW,0.597
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T00:00:00Z,MLLW,0.597
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,predictedWL\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,m\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "02:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "03:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "04:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "05:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "06:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "07:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "02:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "03:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "04:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "05:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "06:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "07:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1336,7 +1336,7 @@ These datasets were hard to work with:
 
 
         //Air Temperature
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/airtemperature/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/airtemperature/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=8454000
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMAT".matches(idRegex)) {
@@ -1350,20 +1350,20 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2015-02-02T00:00:00Z,1,AT,-1.0,0,0,0
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,AT,-1.0,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,AT,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:06:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:12:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:18:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:24:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:30:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:36:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:42:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1375,7 +1375,7 @@ These datasets were hard to work with:
 
 
         //Barometric Pressure
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/barometricpressure/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/barometricpressure/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=8454000
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMBP".matches(idRegex)) {
@@ -1389,20 +1389,20 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2015-02-02T00:00:00Z,1,BP,1019.5,0,0,0
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,BP,1019.5,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,BP,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,hPa,,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:06:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:12:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:18:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:24:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:30:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:36:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:42:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1414,7 +1414,7 @@ These datasets were hard to work with:
 
 
         //Conductivity
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/conductivity/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/conductivity/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=8454000
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMC".matches(idRegex)) {
@@ -1422,7 +1422,7 @@ These datasets were hard to work with:
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsMC"); 
 
             String id =     "8452660";
-            String cityLL = ",Newport,RI,1930-09-11T00:00:00Z,NWPR1,\"NWLON,PORTS\",-71.3267,41.505,"; 
+            String cityLL = ",Newport,RI,1930-09-11T00:00:00Z,NWPR1,\"NWLON,PORTS\",-71.3261,41.5044,"; 
             String daysAgo = daysAgo20;
             query = "&stationID=\"" + id + "\"&time>=" + daysAgo + 
                                         "00:00&time<=" + daysAgo + "01:00";             
@@ -1431,6 +1431,7 @@ These datasets were hard to work with:
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 //8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3267,41.505,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
+//8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3261,41.5044,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,CN,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,mS/cm,,,\n" +
 id + cityLL + daysAgo + "00:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n" +
@@ -1455,7 +1456,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 
 
         //Rain Fall
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=9752619
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMRF".matches(idRegex)) {
@@ -1472,16 +1473,16 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 //9752619,"Isabel Segunda, Vieques Island",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153,2015-02-02T00:00:00Z,1,J1,0.0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,mm,,\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4439,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,(0|1)\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.4438,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,(0|1)\n";// +
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1493,7 +1494,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 
 
         //Relative Humidity
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/relativehumidity/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/relativehumidity/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=9063063
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMRH".matches(idRegex)) {
@@ -1531,7 +1532,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 
 
         //Water Temperature
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/watertemperature/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/watertemperature/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=8454000
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMWT".matches(idRegex)) {
@@ -1546,20 +1547,20 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2010-10-24T00:00:00Z,1,WT,14.8,0,0,0
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2010-10-24T00:00:00Z,1,WT,14.8,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,WT,X,N,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:06:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:12:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:18:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:24:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:30:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:36:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:42:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1571,7 +1572,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 
 
         //Wind
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/wind/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=8454000
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMW".matches(idRegex)) {
@@ -1585,20 +1586,20 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072,2015-02-02T00:00:00Z,1,WS,1.86,22.72,3.2,0,0
+//8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,WS,1.86,22.72,3.2,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,WS,WD,WG,X,R\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,,,m s-1,degrees_true,m s-1,,\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:06:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:12:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:18:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:24:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:30:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:36:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:42:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
-"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4011,41.8072," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:06:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:12:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:18:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:24:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:30:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:36:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:42:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1610,7 +1611,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 
 
         //Visibility
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/visibility/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/visibility/plain/response.jsp?
         //timeZone=0&metadata=yes&Submit=Submit&stationId=8737005
         //&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMV".matches(idRegex)) {
@@ -1632,7 +1633,8 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
 //8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.0311,30.6711,2010-10-24T00:00:00Z,5.4
-"8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.0311,30.6711," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
+//8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.031,30.6712,2010-10-24T00:00:00Z,5.4
+"8737005,Pinto Island,AL,2009-12-15T00:00:00Z,PTOA1,PORTS,-88.031,30.6712," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1643,7 +1645,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
 
 
         //Active Currents
-        //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/currents/plain/response.jsp?
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/currents/plain/response.jsp?
         //metadata=yes&Submit=Submit&stationId=db0301&beginDate=20101121+00:00&endDate=20101121+01:00
         if ("nosCoopsCA".matches(idRegex)) {
         try {
@@ -1680,7 +1682,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
   
 /*        
         //Verified Daily Mean   NEVER WORKED,
-        //Their example at http://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelverifieddaily/plain/
+        //Their example at https://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelverifieddaily/plain/
         // with stationID=9044020 works,
         // but using it here returns ERDDAP error message (not NOS service error message)
         //  "Your query produced no matching results. (There are no matching stations.)"
@@ -1705,7 +1707,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
         }
 */
         // There is no plain text service for the Survey Currents Survey dataset at
-        // http://opendap.co-ops.nos.noaa.gov/axis/text.html
+        // https://opendap.co-ops.nos.noaa.gov/axis/text.html
 
         EDD.debugMode=false;
 

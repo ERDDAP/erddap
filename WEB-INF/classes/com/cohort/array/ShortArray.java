@@ -123,6 +123,28 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
+     * A special method which encodes all char values as short values via
+     *   <tt>sa.array[i] = (short)array[i]</tt>.
+     *   Thus negative short values become large positive char values.
+     * Note that the cohort 'missingValue' of a CharArray is different from the
+     *   missingValue of a ShortArray and this method does nothing special
+     *   for those values. This method does nothing special for the missingValues.
+     *   'capacity' and 'size' will equal ca.size.
+     * See CharArray.decodeFromShortArray().
+     *
+     * @param ca CharArray 
+     */
+    public static ShortArray fromCharArrayBytes(CharArray ca) {
+        int size = ca.size();
+        ShortArray sa = new ShortArray(size, true); //active
+        short sarray[] = sa.array;
+        char  carray[] = ca.array;
+        for (int i = 0; i < size; i++)
+            sarray[i] = (short)carray[i];
+        return sa;
+    }
+
+    /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
      * @return the current capacity (number of elements) of the internal data array.
@@ -704,7 +726,7 @@ public class ShortArray extends PrimitiveArray {
      *   with String2.parseDouble and so may return Double.NaN.
      */
     public double getUnsignedDouble(int index) {
-        //or see http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
+        //or see https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
         return Short.toUnsignedInt(get(index));
     }
 
@@ -895,6 +917,18 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /** 
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsvAttString() {
+        StringBuilder sb = new StringBuilder(size * 8);
+        for (int i = 0; i < size; i++) 
+            sb.append((i == 0? "" : ",") + array[i] + "s");
+        return sb.toString();
+    }
+
+    /** 
      * This sorts the elements in ascending order.
      * To get the elements in reverse order, just read from the end of the list
      * to the beginning.
@@ -991,7 +1025,7 @@ public class ShortArray extends PrimitiveArray {
     public void externalizeForDODS(DataOutputStream dos) throws Exception {
         dos.writeInt(size);
         dos.writeInt(size); //yes, a second time
-        //shorts are written as ints (see dods.dap.Int16PrimitiveArray.externalize)
+        //shorts are written as ints (see dods.dap.Int16PrimitiveVector.externalize)
         //since XDR doesn't support shorts
         for (int i = 0; i < size; i++)
             dos.writeInt(array[i]); //yes, as ints
@@ -1287,7 +1321,8 @@ public class ShortArray extends PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "" + Short.MIN_VALUE;}
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public String maxValue() {return "" + (Short.MAX_VALUE - 1);}
 
     /**

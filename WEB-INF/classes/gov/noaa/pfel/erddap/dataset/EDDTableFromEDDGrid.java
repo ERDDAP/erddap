@@ -464,7 +464,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 for (int dv = 0; dv < nQueryDV; dv++) 
                     paAr[eddGridNAV + dv].addDouble(gda.getDataValueAsDouble(dv));  
                 if (++cumNRows >= chunkNRows) {
-                    if (debugMode) String2.log(tTable.dataToCSVString(5));
+                    if (debugMode) String2.log(tTable.dataToString(5));
                     if (Thread.currentThread().isInterrupted())
                         throw new SimpleException("EDDTableFromEDDGrid.getDataForDapQuery" + 
                             EDStatic.caughtInterrupted);      
@@ -520,9 +520,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 modifiedUserDapQuery.append("&" + conVar + conOp + 
                     (conOp.equals(PrimitiveArray.REGEX_OP)? String2.toJson(conVal) : conVal));
             }            
-            if (debugMode) 
-                String2.log(">>resultsAvNames.size() > 1, gridDapQuery=" + gridDapQuery + 
-                    "\n  modifiedUserDapQuery=" + modifiedUserDapQuery);
+            if (debugMode) String2.log(">>resultsAvNames.size() > 1, gridDapQuery=" + gridDapQuery + 
+                "\n  modifiedUserDapQuery=" + modifiedUserDapQuery);
 
             //parse the gridDapQuery
             StringArray tDestinationNames = new StringArray();
@@ -677,7 +676,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"erd.data@noaa.gov\";\n" +
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String creator_url \"http://www.pfeg.noaa.gov\";\n" +
+"    String creator_type \"institution\";\n" +
+"    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String date_created \"20.{8}Z\";\n" + //changes
 "    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
@@ -696,7 +696,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch";
 //2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
-//2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
+//2013-04-04T21:43:14Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
 //2013-04-04T21:43:14Z http://localhost:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
 
         int tPo = results.indexOf("String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch");
@@ -704,7 +704,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         Test.ensureLinesMatch(results.substring(0, tPo + 73), expected, "results=\n" + results);      
 
 expected2 = 
-   "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
+   "String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"5-day,\n" +
 "Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
@@ -726,7 +726,8 @@ expected2 =
 "    String projection_type \"mapped\";\n" +
 "    String publisher_email \"erd.data@noaa.gov\";\n" +
 "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
+"    String publisher_type \"institution\";\n" +
+"    String publisher_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String references \"Blended SST from satellites information: This is an " + 
     "experimental product which blends satellite-derived SST data from multiple " + 
     "platforms using a weighted mean.  Weights are based on the inverse square " + 
@@ -761,7 +762,7 @@ expected2 =
 "    String satellite \"Aqua, GOES, POES\";\n" +
 "    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
-"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
+"    String sourceUrl \"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature " + 
@@ -1173,7 +1174,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"erd.data@noaa.gov\";\n" +
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String creator_url \"http://www.pfeg.noaa.gov\";\n" +
+"    String creator_type \"institution\";\n" +
+"    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String date_created \"20.{8}Z\";\n" + //changes
 "    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
@@ -1192,7 +1194,7 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch";
 //2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
-//2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
+//2013-04-04T21:43:14Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
 //2013-04-04T21:43:14Z http://localhost:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
 
         int tPo = results.indexOf("String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch");
@@ -1200,7 +1202,7 @@ debugMode = false; //normally false.  Set it to true if need help.
         Test.ensureLinesMatch(results.substring(0, tPo + 73), expected, "results=\n" + results);      
 
 expected2 = 
-   "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
+   "String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"5-day,\n" +
 "Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
@@ -1222,7 +1224,8 @@ expected2 =
 "    String projection_type \"mapped\";\n" +
 "    String publisher_email \"erd.data@noaa.gov\";\n" +
 "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String publisher_url \"http://www.pfeg.noaa.gov\";\n" +
+"    String publisher_type \"institution\";\n" +
+"    String publisher_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String references \"Blended SST from satellites information: This is an " +
     "experimental product which blends satellite-derived SST data from multiple " +
     "platforms using a weighted mean.  Weights are based on the inverse square " +

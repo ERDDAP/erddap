@@ -46,6 +46,7 @@ import java.io.Writer;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,8 +77,14 @@ import org.apache.lucene.util.Version;
 //import org.apache.lucene.search.TopDocs;
 //import org.apache.lucene.store.SimpleFSDirectory;
 
-
 //import org.verisign.joid.consumer.OpenIdFilter;
+
+import ucar.ma2.Array;
+import ucar.ma2.DataType;
+import ucar.nc2.Dimension;
+import ucar.nc2.Group;
+import ucar.nc2.NetcdfFileWriter;
+import ucar.nc2.Variable;
 
 /** 
  * This class holds a lot of static information set from the setup.xml and messages.xml
@@ -142,8 +149,9 @@ public class EDStatic {
      * <br>1.70 released on 2016-04-15
      * <br>1.72 released on 2016-05-12
      * <br>1.74 released on 2016-10-07
+     * <br>1.76 released on 2017-05-12
      */   
-    public static String erddapVersion = "1.75";  
+    public static String erddapVersion = "1.76";  
 
     /** 
      * This is almost always false.  
@@ -155,7 +163,7 @@ public static boolean developmentMode = false;
     /** This identifies the dods server/version that this mimics. */
     public static String dapVersion = "DAP/2.0";   //???
     public static String serverVersion = "dods/3.7"; //this is what thredds replies
-      //drds at http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.ver replies "DODS/3.2"
+      //drds at https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.ver replies "DODS/3.2"
       //both reply with server version, neither replies with coreVersion
       //spec says #.#.#, but Gallagher says #.# is fine.
 
@@ -392,6 +400,7 @@ public static boolean developmentMode = false;
         searchEngine,
         warName;
     public static String ampLoginInfo = "&loginInfo;";
+    public static String accessibleViaNC4; //"" if accessible, else message why not
     public static int 
         lowResLogoImageFileWidth,  lowResLogoImageFileHeight,
         highResLogoImageFileWidth, highResLogoImageFileHeight,
@@ -731,7 +740,7 @@ public static boolean developmentMode = false;
         fileHelp_dds,
         fileHelp_dods,
         fileHelpGrid_esriAscii,
-        fileHelpTable_esriAscii,
+        fileHelpTable_esriCsv,
         fileHelp_fgdc,
         fileHelp_geoJson,
         fileHelp_graph,
@@ -743,10 +752,17 @@ public static boolean developmentMode = false;
         fileHelp_itxGrid,
         fileHelp_itxTable,
         fileHelp_json,
+        fileHelp_jsonlCSV,
+        fileHelp_jsonlKVP,
         fileHelp_mat,
-        fileHelpGrid_nc,
-        fileHelpTable_nc,
-        fileHelp_ncHeader,
+        fileHelpGrid_nc3,
+        fileHelpGrid_nc4,
+        fileHelpTable_nc3,
+        fileHelpTable_nc4,
+        fileHelp_nccsv,
+        fileHelp_nc3Header,
+        fileHelp_nc4Header,
+        fileHelp_nccsvMetadata,
         fileHelp_ncCF,
         fileHelp_ncCFHeader,
         fileHelp_ncCFMA,
@@ -777,6 +793,7 @@ public static boolean developmentMode = false;
         functionHtml,
         functionDistinctCheck,
         functionDistinctHtml,
+        functionOrderByExtra,
         functionOrderByHtml,
         functionOrderBySort,
         functionOrderBySort1,
@@ -1066,6 +1083,8 @@ public static boolean developmentMode = false;
         selectPrevious,
         sosDescriptionHtml,
         sosLongDescriptionHtml,
+        sparqlP01toP02pre,
+        sparqlP01toP02post,
         ssUse,
         ssBePatient, 
         ssInstructionsHtml,
@@ -1164,6 +1183,7 @@ public static boolean developmentMode = false;
         subsetNotSetUp,
         subsetLongNotShown,
 
+        tabledapVideoIntro,
         Then,
         unknownDatasetID,
         unknownProtocol,
@@ -1648,6 +1668,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         //    "alt=\"logo\" title=\"logo\">\n";
 
 
+        
         //**** messages.xml *************************************************************
         //read static messages from messages(2).xml in contentDirectory?
         String messagesFileName = contentDirectory + 
@@ -1950,7 +1971,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               "");
         fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              "");
         fileHelpGrid_esriAscii     = messages.getNotNothingString("fileHelpGrid_esriAscii",     "");
-        fileHelpTable_esriAscii    = messages.getNotNothingString("fileHelpTable_esriAscii",    "");
+        fileHelpTable_esriCsv      = messages.getNotNothingString("fileHelpTable_esriCsv",      "");
         fileHelp_fgdc              = messages.getNotNothingString("fileHelp_fgdc",              "");
         fileHelp_geoJson           = messages.getNotNothingString("fileHelp_geoJson",           "");
         fileHelp_graph             = messages.getNotNothingString("fileHelp_graph",             "");
@@ -1962,10 +1983,17 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fileHelp_itxGrid           = messages.getNotNothingString("fileHelp_itxGrid",           "");
         fileHelp_itxTable          = messages.getNotNothingString("fileHelp_itxTable",          "");
         fileHelp_json              = messages.getNotNothingString("fileHelp_json",              "");
+        fileHelp_jsonlCSV          = messages.getNotNothingString("fileHelp_jsonlCSV",          "");
+        fileHelp_jsonlKVP          = messages.getNotNothingString("fileHelp_jsonlKVP",          "");
         fileHelp_mat               = messages.getNotNothingString("fileHelp_mat",               "");
-        fileHelpGrid_nc            = messages.getNotNothingString("fileHelpGrid_nc",            "");
-        fileHelpTable_nc           = messages.getNotNothingString("fileHelpTable_nc",           "");
-        fileHelp_ncHeader          = messages.getNotNothingString("fileHelp_ncHeader",          "");
+        fileHelpGrid_nc3           = messages.getNotNothingString("fileHelpGrid_nc3",           "");
+        fileHelpGrid_nc4           = messages.getNotNothingString("fileHelpGrid_nc4",           "");
+        fileHelpTable_nc3          = messages.getNotNothingString("fileHelpTable_nc3",          "");
+        fileHelpTable_nc4          = messages.getNotNothingString("fileHelpTable_nc4",          "");
+        fileHelp_nccsv             = messages.getNotNothingString("fileHelp_nccsv",             "");
+        fileHelp_nc3Header         = messages.getNotNothingString("fileHelp_nc3Header",         "");
+        fileHelp_nc4Header         = messages.getNotNothingString("fileHelp_nc4Header",         "");
+        fileHelp_nccsvMetadata     = messages.getNotNothingString("fileHelp_nccsvMetadata",       "");
         fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              "");
         fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        "");
         fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            "");
@@ -1996,6 +2024,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         functionHtml               = messages.getNotNothingString("functionHtml",               "");
         functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      "");
         functionDistinctHtml       = messages.getNotNothingString("functionDistinctHtml",       "");
+        functionOrderByExtra       = messages.getNotNothingString("functionOrderByExtra",       "");
         functionOrderByHtml        = messages.getNotNothingString("functionOrderByHtml",        "");
         functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        "");
         functionOrderBySort1       = messages.getNotNothingString("functionOrderBySort1",       "");
@@ -2253,6 +2282,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    "");
         queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    "");
         queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      "");
+        Table.ORDER_BY_CLOSEST_ERROR=messages.getNotNothingString("queryErrorOrderByClosest",   "");
+        Table.ORDER_BY_LIMIT_ERROR = messages.getNotNothingString("queryErrorOrderByLimit",     "");
         queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  "");
         queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  "");
 
@@ -2300,6 +2331,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   "");
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         "");
         sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     ""); 
+        sparqlP01toP02pre          = messages.getNotNothingString("sparqlP01toP02pre",          ""); 
+        sparqlP01toP02post         = messages.getNotNothingString("sparqlP01toP02post",         ""); 
         ssUse                      = messages.getNotNothingString("ssUse",                      "");
         ssBePatient                = messages.getNotNothingString("ssBePatient",                "");
         ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         "");
@@ -2398,6 +2431,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         subsetNotSetUp             = messages.getNotNothingString("subsetNotSetUp",             "");
         subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         "");
 
+        tabledapVideoIntro         = messages.getNotNothingString("tabledapVideoIntro",         "");
         theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     "");
         Then                       = messages.getNotNothingString("Then",                       "");
         unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           "");
@@ -2425,6 +2459,58 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
                 "\"" + palettes[p] + 
                 "\" is listed in <palettes>, but there is no file " + tName);
         }
+
+        //try to create an nc4 file
+accessibleViaNC4 = ".nc4 is not yet supported.";
+/* DISABLED until nc4 is thread safe -- next netcdf-java
+        String testNc4Name = fullTestCacheDirectory + 
+            "testNC4_" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".nc";
+        //String2.log("testNc4Name=" + testNc4Name);
+        try {
+            NetcdfFileWriter nc = NetcdfFileWriter.createNew(
+                NetcdfFileWriter.Version.netcdf4, testNc4Name);
+            try {
+                Group rootGroup = nc.addGroup(null, "");
+                nc.setFill(false);
+            
+                int nRows = 4;
+                Dimension dimension  = nc.addDimension(rootGroup, "row", nRows);
+                Variable var = nc.addVariable(rootGroup, "myLongs", 
+                    DataType.getType(long.class), Arrays.asList(dimension)); 
+
+                //leave "define" mode
+                nc.create();  //error is thrown here if netcdf-c not found
+
+                //write the data
+                Array array = Array.factory(long.class, new int[]{nRows}, new long[]{0,1,2,3});
+                nc.write(var, new int[]{0}, array);
+
+                //if close throws Throwable, it is trouble
+                nc.close(); //it calls flush() and doesn't like flush called separately
+
+                //success!
+                accessibleViaNC4 = "";
+                String2.log(".nc4 files can be created in this ERDDAP installation.");
+
+            } catch (Throwable t2) {
+                //try to close the file
+                try {
+                    nc.close(); //it calls flush() and doesn't like flush called separately
+                } catch (Throwable t3) {
+                    //don't care
+                }
+
+                throw t2;
+            }
+
+        } catch (Throwable t) {
+            accessibleViaNC4 = String2.canonical(
+                MessageFormat.format(noXxxBecause2, ".nc4",
+                    resourceNotFound + " netcdf-c library"));
+            String2.log(t.toString() + "\n" + accessibleViaNC4);
+        }
+//        File2.delete(testNc4Name);
+*/
 
         ampLoginInfoPo = startBodyHtml.indexOf(ampLoginInfo); 
         //String2.log("ampLoginInfoPo=" + ampLoginInfoPo);
@@ -2770,8 +2856,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         String destType = 
             //long and char aren't handled by getAtomicType. I don't think ever used.
-            destinationDataTypeClass == long.class? "Int64" :   
-            destinationDataTypeClass == char.class? "UInt16" :  //???   
+            destinationDataTypeClass == long.class? "long" :   
+            destinationDataTypeClass == char.class? "char" :  //???   
             OpendapHelper.getAtomicType(destinationDataTypeClass);
 
         StringBuilder sb = OpendapHelper.dasToStringBuilder(
@@ -2820,7 +2906,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         boolean logIt = !subject.startsWith(DONT_LOG_THIS_EMAIL);
         if (!logIt) 
             subject = subject.substring(DONT_LOG_THIS_EMAIL.length());
-        subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + subject;
+        subject = (computerName.length() > 0? computerName + " ": "") + "ERDDAP: " + 
+            String2.replaceAll(subject, '\n', ' ');
 
         //almost always write to emailLog
         try {
@@ -3699,7 +3786,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         table.addColumn("fullName", col2);
         String lines[] = String2.readLinesFromFile(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
-            "ISO-8859-1", 1);
+            String2.ISO_8859_1, 1);
         int nLines = lines.length;
         for (int i = 1; i < nLines; i++) { //1 because skip colNames
             String s = lines[i].trim();
@@ -3719,7 +3806,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      * <br>varNames are all lower-case.  long_names are mostly first letter of each word capitalized.
      * <br>The table is basically sorted by varName.
      * <br>Many of these are from
-     * http://www.esrl.noaa.gov/psd/data/gridded/conventions/variable_abbreviations.html
+     * https://www.esrl.noaa.gov/psd/data/gridded/conventions/variable_abbreviations.html
      *
      * @return the oceanic/atmospheric variable names table
      * @throws Exception if trouble (e.g., file not found)
@@ -3732,7 +3819,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         table.addColumn("fullName", col2);
         String lines[] = String2.readLinesFromFile(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
-            "ISO-8859-1", 1);
+            String2.ISO_8859_1, 1);
         int nLines = lines.length;
         for (int i = 1; i < nLines; i++) {
             String s = lines[i].trim();
@@ -3841,7 +3928,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         Table table = new Table();
         table.readASCII(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv", 
-            0, 1, null, null, null, null, false); //false = don't simplify
+            0, 1, "", null, null, null, null, false); //false = don't simplify
         return table;
     }
     
