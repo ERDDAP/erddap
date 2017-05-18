@@ -4,6 +4,8 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.CharArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -33,7 +35,7 @@ public class TableWriterDodsAscii extends TableWriter {
     protected String sequenceName;
 
     //set by firstTime
-    protected boolean isStringCol[];
+    protected boolean isCharOrString[];
     protected OutputStreamWriter writer;
 
     public long totalNRows = 0;
@@ -76,8 +78,12 @@ public class TableWriterDodsAscii extends TableWriter {
         boolean firstTime = columnNames == null;
         ensureCompatible(table);
 
-        //do firstTime stuff
         int nColumns = table.nColumns();
+        PrimitiveArray pas[] = new PrimitiveArray[nColumns];
+        for (int col = 0; col < nColumns; col++) 
+            pas[col] = table.getColumn(col);
+
+        //do firstTime stuff
         int nRows = table.nRows();
         if (firstTime) {
 
@@ -87,14 +93,16 @@ public class TableWriterDodsAscii extends TableWriter {
 
             //see OpendapHelper.EOL for comments
             writer = new OutputStreamWriter(outputStream,
-                "ISO-8859-1"); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+                String2.ISO_8859_1); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             writer.write("---------------------------------------------" + 
                 OpendapHelper.EOL); //this exactly mimics the example
 
             //write the column names
-            isStringCol = new boolean[nColumns];
+            isCharOrString = new boolean[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                isStringCol[col] = table.getColumn(col).elementClass() == String.class;
+                isCharOrString[col] = 
+                    pas[col].elementClass() == char.class ||
+                    pas[col].elementClass() == String.class;
                 writer.write(sequenceName + "." + table.getColumnName(col) +
                     (col == nColumns - 1? OpendapHelper.EOL : ", "));
             }
@@ -111,10 +119,14 @@ public class TableWriterDodsAscii extends TableWriter {
         //write elements of the sequence, in dds order
         for (int row = 0; row < nRows; row++) {
             for (int col = 0; col < nColumns; col++) {
-                String s = table.getColumn(col).getString(row);
-                if (isStringCol[col]) //see DODS Appendix A, quoted-string
+                String s = pas[col].getString(row);
+                if (isCharOrString[col]) {
+                    //see DODS Appendix A, quoted-string, with \\ and \"
+                    s = String2.replaceAll(s, "\\", "\\\\");
                     s = "\"" + String2.replaceAll(s, "\"", "\\\"") + "\"";
-                writer.write(s + (col == nColumns - 1? OpendapHelper.EOL : ", "));
+                }
+                writer.write(s);
+                writer.write(col == nColumns - 1? OpendapHelper.EOL : ", ");
             }
         }
 

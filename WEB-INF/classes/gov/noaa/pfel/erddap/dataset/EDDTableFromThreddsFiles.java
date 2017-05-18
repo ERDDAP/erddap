@@ -94,7 +94,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -109,7 +110,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
             tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
@@ -149,9 +150,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 return;
 
             //mimic the remote directory structure (there may be 10^6 files in many dirs)
-            //catalogUrl = http://data.nodc.noaa.gov/thredds/catalog /nmsp/wcos/ catalog.xml
-            //remoteBase = http://data.nodc.noaa.gov/thredds/dodsC   /nmsp/wcos/ 
-            //e.g., a URL  http://data.nodc.noaa.gov/thredds/dodsC   /nmsp/wcos/ WES001/2008/WES001_030MTBD029R00_20080429.nc
+            //catalogUrl = https://data.nodc.noaa.gov/thredds/catalog /nmsp/wcos/ catalog.xml
+            //remoteBase = https://data.nodc.noaa.gov/thredds/dodsC   /nmsp/wcos/ 
+            //e.g., a URL  https://data.nodc.noaa.gov/thredds/dodsC   /nmsp/wcos/ WES001/2008/WES001_030MTBD029R00_20080429.nc
             if (catalogUrl == null || catalogUrl.length() == 0)
                 throw new RuntimeException("ERROR: <sourceUrl>http://.../catalog.html</sourceUrl> " +
                     "must be in the addGlobalAttributes section of the datasets.xml " +
@@ -382,9 +383,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * as files are found.
      *
      * @param catalogUrl the url of the current Thredds catalog xml, e.g.,
-     *    http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/catalog.xml
+     *    https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/catalog.xml
      *    which leads to unaggregated datasets (each from a file) like
-     *     http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080429.nc(.html)
+     *     https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080429.nc(.html)
      *    catalogUrl SHOULD have /catalog/, but sometimes that can be worked around.
      * @param fileNameRegex  to be accepted, a fileName (without dir) must
      *   match this regex, e.g., ".*\\.nc"
@@ -412,7 +413,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             int catPo = catalogUrl.indexOf( "/catalog/");
             if (catPo < 0) {
                 if (verbose) String2.log("  WARNING: '/catalog/' not found in" +
-                    //e.g., http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/
+                    //e.g., https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/
                     //        ncep.reanalysis.dailyavgs/surface/catalog.xml
                     "\n    catalogUrl=" + catalogUrl);
                 int tPod = catalogUrl.indexOf("/thredds/dodsC/");
@@ -426,7 +427,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 else 
                     catalogUrl = File2.getDirectory(catalogUrl) + 
                         "catalog/" + File2.getNameAndExtension(catalogUrl);
-                //e.g., http://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/
+                //e.g., https://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/
                 //        ncep.reanalysis.dailyavgs/surface/catalog.xml
                 if (verbose) String2.log("    so trying catalogUrl=" + catalogUrl);
                 catPo = catalogUrl.indexOf( "/catalog/");
@@ -442,7 +443,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             int sPo = catalogUrl.indexOf('/', ssPo + 2);
             if (sPo < 0) 
                 throw new SimpleException("'/' not found in catalogUrl=" + catalogUrl);
-            //e.g., threddsBase=http://www.esrl.noaa.gov
+            //e.g., threddsBase=https://www.esrl.noaa.gov
             String threddsBase = catalogUrl.substring(0, sPo);
             if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
 
@@ -673,7 +674,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
             dataAddTable.addColumn(c, colName,
-                dataSourceTable.getColumn(c),
+                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
@@ -720,7 +721,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
 
         //gather the information
         StringBuilder sb = new StringBuilder();
@@ -779,9 +780,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         try {
             String results = generateDatasetsXml(
                 //I could do wcos/catalog.xml but very slow because lots of files
-                "http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
+                "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
                 ".*MTBD.*\\.nc",   // ADCP files have different vars and diff metadata, e.g., _FillValue
-                "http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
+                "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
                 1440, 
                 "", "_.*$", ".*", "stationID",
                 "Time", "stationID Time",
@@ -790,9 +791,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromThreddsFiles",
-                "http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
+                "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
                 ".*MTBD.*\\.nc",  
-                "http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
+                "https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
                 "1440", 
                 "", "_.*$", ".*", "stationID",
                 "Time", "stationID Time"},
@@ -803,10 +804,10 @@ String expected =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_8fcf_be37_cbe4\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_d91a_eb5f_b55f\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>0</updateEveryNMillis>\n" +
-"    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/noaa_nodc_8fcf_be37_cbe4/ -->\n" +
+"    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/noaa_nodc_d91a_eb5f_b55f/ -->\n" +
 "    <fileNameRegex>.*MTBD.*\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
@@ -834,20 +835,23 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">NODC.Webmaster@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NODC</att>\n" +
-"        <att name=\"creator_url\">http://www.nodc.noaa.gov/</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.nodc.noaa.gov/</att>\n" +
 "        <att name=\"History\">null</att>\n" +                            //date below changes
 "        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
-"        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
+"        <att name=\"infoUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
-"        <att name=\"keywords\">altitudes, catalo, center, data, data.nodc.noaa.gov, day, depth, expressed, flag, identifier, latitude, longitude, national, ncei, negative, noaa, nodc, ocean, oceanographic, oceans,\n" +
+"        <att name=\"keywords\">altitudes, center, data, data.nodc.noaa.gov, day, depth, expressed, flag, identifier, latitude, longitude, national, ncei, negative, nmsp, noaa, nodc, ocean, oceanographic, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, stationID, status, temperature, Temperature_flag, thredds, time, water, year, yearday, yearday_flag</att>\n" +
+"quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, stationID, status, temperature, Temperature_flag, thredds, time, water, wcos, wes001, year, yearday, yearday_flag</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"sourceUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
+"        <att name=\"sourceUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">NOAA National Oceanographic Data Center (NODC) data from http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
-"        <att name=\"title\">NOAA NODC data from http://data.nodc.noaa.gov/thredds/catalo ...</att>\n" +
+"        <att name=\"summary\">NOAA National Oceanographic Data Center (NODC) data from https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
+"        <att name=\"title\">NOAA NODC data from https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
+"        <att name=\"Version\">null</att>\n" +
+"        <att name=\"version\">2</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -1131,11 +1135,11 @@ today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
     
-//+ " http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
+//+ " https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "nmspWcosTemp.das\";\n" +
-"    String infoUrl \"http://www.ncddc.noaa.gov/activities/wcos\";\n" +
+"    String infoUrl \"https://www.ncddc.noaa.gov/activities/wcos\";\n" +
 "    String institution \"NOAA NMSP\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Water Temperature\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -1147,7 +1151,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 48.325001;\n" +
-"    String sourceUrl \"http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
+"    String sourceUrl \"https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 33.89511;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"station, longitude, latitude\";\n" +
@@ -1156,7 +1160,7 @@ expected =
 "The stations (and their code names) are Ano Nuevo (ANO001), San Miguel North (BAY), Santa Rosa North (BEA), Big Creek (BIG001), Bodega Head (BOD001), Cape Alava 15M (CA015), Cape Alava 42M (CA042), Cape Alava 65M (CA065), Cape Alava 100M (CA100), Cannery Row (CAN001), Cape Elizabeth 15M (CE015), Cape Elizabeth 42M (CE042), Cape Elizabeth 65M (CE065), Cape Elizabeth 100M (CE100), Cuyler Harbor (CUY), Esalen (ESA001), Point Joe (JOE001), Kalaloch 15M (KL015), Kalaloch 27M (KL027), La Cruz Rock (LAC001), Lopez Rock (LOP001), Makah Bay 15M (MB015), Makah Bay 42M (MB042), Pelican/Prisoners Area (PEL), Pigeon Point (PIG001), Plaskett Rock (PLA001), Southeast Farallon Island (SEF001), San Miguel South (SMS), Santa Rosa South (SRS), Sunset Point (SUN001), Teawhit Head 15M (TH015), Teawhit Head 31M (TH031), Teawhit Head 42M (TH042), Terrace Point 7 (TPT007), Terrace Point 8 (TPT008), Valley Anch (VAL), Weston Beach (WES001).\";\n" +
 "    String time_coverage_end \"2011-02-12T07:32:00Z\";\n" + //changes
 "    String time_coverage_start \"2004-10-07T21:10:00Z\";\n" +
-"    String title \"West Coast Observing System (WCOS) Temperature Data\";\n" +
+"    String title \"West Coast Observing System (WCOS) Temperature Data, 2004-2011\";\n" +
 "    String Version \"2\";\n" +
 "    Float64 Westernmost_Easting -124.932;\n" +
 "  }\n" +
@@ -1463,7 +1467,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  \\}\n" +
 "  conductivity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 5.555556E7;\n" + //2013-03-26 new value is nonsense.  was 4.78
+"    Float32 actual_range 0.0, 5.555556e\\+7;\n" + //2013-03-26 new value is nonsense.  was 4.78
 (with?
     "    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared 2016-09-16 returned
     "    Int16 average_length 60;\n" +           //2014-08-11 they returned, 2016-04-13 they disappeared
@@ -1580,7 +1584,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Int32 data_interval -9999;\n" +
+//"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
@@ -1605,7 +1609,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Int32 data_interval -9999;\n" +
+//"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
@@ -1690,7 +1694,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Int32 data_interval -9999;\n" +
+//"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
@@ -1716,7 +1720,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Int32 data_interval -9999;\n" +
+//"    Int32 data_interval -9999;\n" + //disappeared 2017-02-15
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
@@ -1771,6 +1775,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System \\(SAMOS\\)\";\n" +
+"    String creator_type \"group\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
 "    String Data_modification_date \".{19} E.T\";\n" + //changes
 "    String data_provider \"unknown at this time\";\n" +
@@ -1843,7 +1848,7 @@ expected =
 "The '\\*' says to match the previous character 0 or more times.\n" +
 "\\(Don't include backslashes in your query.\\)\n" +
 "See the tutorial for regular expressions at\n" +
-"http://www.vogella.de/articles/JavaRegularExpressions/article.html\";\n" +
+"http://www.vogella.com/tutorials/JavaRegularExpressions/article.html\";\n" +
 "    String time_coverage_end \"20.{8}T.{8}Z\";\n" +  //changes
 "    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
 "    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
@@ -2017,25 +2022,25 @@ expected =
         }
 
 
-        //*** test http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml
+        //*** test https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml
         if (true) {
         fileDir.clear();
         fileName.clear();
         fileLastMod.clear();        
         getThreddsFileInfo(
-            "http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml", 
+            "https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml", 
             "SMS.*_2004.*\\.nc", true, "", //recursive, pathRegex
             fileDir, fileName, fileLastMod);
 
         results = fileDir.toNewlineString();
         expected = 
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n";
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"https://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = fileName.toNewlineString();

@@ -589,7 +589,7 @@ public class DoubleArray extends PrimitiveArray {
      *   to Double.NaN.
      */
     public void setLong(int index, long i) {
-        set(index, i == Long.MAX_VALUE? Double.NaN : i);
+        set(index, Math2.longToDoubleNaN(i));
     }
 
     /**
@@ -788,6 +788,18 @@ public class DoubleArray extends PrimitiveArray {
      */
     public String toString() {
         return String2.toCSSVString(toArray()); //toArray() gets just 'size' elements
+    }
+
+    /** 
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsvAttString() {
+        StringBuilder sb = new StringBuilder(size * 15);
+        for (int i = 0; i < size; i++) 
+            sb.append((i == 0? "" : ",") + array[i] + "d");
+        return sb.toString();
     }
 
     /** 
@@ -1221,7 +1233,8 @@ public class DoubleArray extends PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "" + -Double.MAX_VALUE;}
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public String maxValue() {return "" + Double.MAX_VALUE;}
 
     /**

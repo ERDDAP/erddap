@@ -254,7 +254,7 @@ public class TestSSR {
         //future: test various compressed url's
         String2.log("test getURLResponse");
         try {
-            sar = SSR.getUrlResponse("http://www.pfeg.noaa.gov/"); //"http://www.cohort.com");
+            sar = SSR.getUrlResponse("https://www.pfeg.noaa.gov/"); //"http://www.cohort.com");
             Test.ensureEqual(
                 String2.lineContaining(sar, "Disclaimer and Privacy Policy") == -1, //"A free RPN scientific calculator applet") == -1,
                 false, "Response=" + String2.toNewlineString(sar));

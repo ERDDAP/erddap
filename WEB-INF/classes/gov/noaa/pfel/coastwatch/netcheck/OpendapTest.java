@@ -307,7 +307,7 @@ public class OpendapTest extends NetCheckTest {
         time = System.currentTimeMillis();
         opendapTest = new OpendapTest(
             "THREDDS OPeNDAP AGssta", //</title>
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day", //</url>
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day", //</url>
             "AGssta", //</variableName>
             "-1.0e32", //</missingValue>
             "1970-01-01", //</offsetDate>
@@ -327,7 +327,7 @@ public class OpendapTest extends NetCheckTest {
         time = System.currentTimeMillis();
         opendapTest = new OpendapTest(
             "THREDDS OPeNDAP CMusfc", //</title>
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/CM/usfc/hday", //</url>
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/CM/usfc/hday", //</url>
             "CMusfc", //</variableName>
             "-1.0e32", //</missingValue>
             "1970-01-01", //</offsetDate>
@@ -347,7 +347,7 @@ public class OpendapTest extends NetCheckTest {
         time = System.currentTimeMillis();
         opendapTest = new OpendapTest(
             "THREDDS OPeNDAP GAssta", //</title>
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday", //</url>
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday", //</url>
             "GAssta", //</variableName>
             "-1.0e32", //</missingValue>
             "1970-01-01", //</offsetDate>
@@ -367,7 +367,7 @@ public class OpendapTest extends NetCheckTest {
         time = System.currentTimeMillis();
         opendapTest = new OpendapTest(
             "THREDDS OPeNDAP MBchla", //</title>
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MB/chla/1day", //</url>
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MB/chla/1day", //</url>
             "MBchla", //</variableName>
             "-1.0e32", //</missingValue>
             "1970-01-01", //</offsetDate>
@@ -388,7 +388,7 @@ public class OpendapTest extends NetCheckTest {
         time = System.currentTimeMillis();
         opendapTest = new OpendapTest(
             "THREDDS OPeNDAP QScurl", //</title>
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/curl/8day", //</url>
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/curl/8day", //</url>
             "QScurl", //</variableName>
             "-1.0e32", //</missingValue>
             "1970-01-01", //</offsetDate>

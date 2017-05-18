@@ -19,8 +19,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import org.joda.time.*;
-import org.joda.time.format.*;
+import java.time.format.DateTimeFormatter;
 
 /** 
  * This class holds information about a timestamp grid axis variable.
@@ -144,16 +143,16 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             if (sourceTimeFormat.equals(ISO8601T_FORMAT) ||
                 sourceTimeFormat.equals(ISO8601TZ_FORMAT)) {
                 if (verbose) String2.log("parseISOWithCalendar2=true");
-                dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC);
+                dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(ZoneId.of("UTC"));
                 parseISOWithCalendar2 = true;
             } else if (sourceTimeFormat.equals(ISO8601T3_FORMAT) ||
                        sourceTimeFormat.equals(ISO8601T3Z_FORMAT)) {
                 if (verbose) String2.log("parseISOWithCalendar2=true");
-                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC);
+                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(ZoneId.of("UTC"));
                 parseISOWithCalendar2 = true;                
             } else {
                 //future: support time zones  
-                dateTimeFormatter = DateTimeFormat.forPattern(sourceTimeFormat).withZone(DateTimeZone.UTC);
+                dateTimeFormatter = DateTimeFormatter.ofPattern(sourceTimeFormat, "UTC");
                 parseISOWithCalendar2 = false;
             }
             */
@@ -393,8 +392,8 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             double d = parseISOWithCalendar2?
                 //parse with Calendar2.parseISODateTime
                 Calendar2.isoStringToEpochSeconds(sourceTime) :
-                //parse with Joda
-                dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe
+                //parse with java.time (was Joda)
+                Calendar2.toEpochSeconds(sourceTime, dateTimeFormatter); //thread safe
             //String2.log("  EDVTimeStampGridAxis sourceTime=" + sourceTime + 
             //    " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
             return d;
@@ -559,7 +558,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
             return sourceTimeIsNumeric? "" + sourceMissingValue : "";
         if (sourceTimeIsNumeric)
             return "" + epochSecondsToSourceTimeDouble(epochSeconds);
-        return dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long
+        return Calendar2.format(epochSeconds, dateTimeFormatter); 
     }
 
     /**

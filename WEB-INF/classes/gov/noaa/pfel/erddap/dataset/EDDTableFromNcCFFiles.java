@@ -29,7 +29,7 @@ import gov.noaa.pfel.erddap.variable.*;
 /** 
  * This class represents a table of data from a collection of FeatureDatasets
  * using CF Discrete Sampling Geometries (was Point Observation Conventions), 
- * http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries
+ * http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#discrete-sampling-geometries
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2011-01-27
  */
@@ -49,7 +49,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      *    ERDDAP to try to generate FGDC metadata for this dataset).
      * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tFileDir the base URL or file directory. 
-     *    See http://www.unidata.ucar.edu/software/netcdf-java/v4.2/javadoc/index.html
+     *    See https://www.unidata.ucar.edu/software/netcdf-java/v4.2/javadoc/index.html
      *    FeatureDatasetFactoryManager open().
      *    This may be a
      *    <ul>
@@ -71,7 +71,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -88,7 +89,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,  //irrelevant
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator, //irrelevant
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, //irrelevant
             tSortFilesBySourceNames,
@@ -194,7 +195,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
             dataAddTable.addColumn(c, colName,
-                dataSourceTable.getColumn(c),
+                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
@@ -223,7 +224,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false));
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -388,6 +389,7 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">CalCOFI</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
 "        <att name=\"keywords\">1984-2004, altitude, animals, aquatic, atmosphere,\n" +
 "Atmosphere &gt; Altitude &gt; Station Height,\n" +
@@ -569,7 +571,7 @@ directionsForGenerateDatasetsXml() +
             //    Attributes externalAddGlobalAttributes) throws Throwable {
 
             //From Ajay Krishnan, NCEI/NODC, from
-            //http://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
+            //https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
             //See low level reading test: Table.testReadNcCF7SampleDims()
             String dir = EDStatic.unitTestDataDir + "nccf/ncei/";
             String regex = "ind199105_ctd\\.nc";
@@ -647,16 +649,21 @@ directionsForGenerateDatasetsXml() +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"history\">World Ocean Database</att>\n" +
-"        <att name=\"infoUrl\">http://www.nodc.noaa.gov</att>\n" +
+"        <att name=\"infoUrl\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"institution\">NGDC(NODC), NOAA</att>\n" +
 "        <att name=\"keywords\">Access_no, accession, bathymetry, below, bottom, Bottom_Depth, cast, Cast_Direction, Cast_Duration, Cast_Tow_number, center, chemistry, chlorophyll, Chlorophyll_Instrument, Chlorophyll_row_size, Chlorophyll_uncalibrated, Chlorophyll_WODprofileflag, color, concentration, concentration_of_chlorophyll_in_sea_water, conductivit, Conductivit_row_size, country, crs, cruise, currents, data, database, dataset, date, dbase_orig, density, depth, direction, dissolved, dissolved o2, duration, file, flag, floor, geophysical, GMT_time, high, High_res_pair, identifier, institute, instrument, latitude, level, longitude, measured, multi, multi-cast, name, national, ncei, ngdc, noaa, nodc, number, O2, observation, observations, ocean, ocean color, oceanographic, oceans,\n" +
 "Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"Orig_Stat_Num, origflagset, origin, original, originators, originators_cruise_identifier, oxygen, Oxygen_Instrument, Oxygen_Original_units, Oxygen_row_size, Oxygen_WODprofileflag, pair, platform, practical, pressure, Pressure_row_size, profile, project, quality, resolution, responsible, salinity, Salinity_Instrument, Salinity_row_size, Salinity_Scale, Salinity_WODprofileflag, scale, sea, sea_floor_depth, sea_water_practical_salinity, seafloor, seawater, sigfig, station, statistics, temperature, Temperature_Instrument, Temperature_row_size, Temperature_Scale, Temperature_WODprofileflag, time, topography, tow, unique, units, upon, values, water, were, which, wod, WOD_cruise_identifier, wod_unique_cast, WODf, WODfd, wodflag, WODfp, wodprofileflag, world, z_sigfig, z_WODflag</att>\n" +
+"Orig_Stat_Num, origflagset, origin, original, originators, originators_cruise_identifier, oxygen, Oxygen_Instrument, Oxygen_Original_units, Oxygen_row_size, Oxygen_WODprofileflag, pair, platform, practical, pressure, Pressure_row_size, profile, project, quality, resolution, responsible, salinity, Salinity_Instrument, Salinity_row_size, Salinity_Scale, Salinity_WODprofileflag, scale, sea, sea_floor_depth, sea_water_practical_salinity, seafloor, seawater, sigfig, station, statistics, temperature, Temperature_Instrument, Temperature_row_size, Temperature_Scale, Temperature_WODprofileflag, time, topography, tow, unique, units, upon, values, water, which, wod, WOD_cruise_identifier, wod_unique_cast, WODf, WODfd, wodflag, WODfp, wodprofileflag, world, z_sigfig, z_WODflag</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"publisher_type\">institution</att>\n" +
+"        <att name=\"publisher_url\">https://www.nodc.noaa.gov</att>\n" +
+"        <att name=\"references\">World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">World Ocean Database - Multi-cast file. Data for multiple casts from the World Ocean Database</att>\n" +
@@ -1450,7 +1457,7 @@ directionsForGenerateDatasetsXml() +
             dir, eddTable.className() + "_testKevin20160519_1", ".ncCF"); 
         table = new Table();
         table.readNcCF(dir + tName, null, null, null, null);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "array,station,wmo_platform_code,longitude,latitude,time,depth,LON_502,QX_5502,LAT_500,QY_5500\n" +
 "TAO/TRITON,0n110w,32323,250.0,0.0,1.4529456E9,0.0,250.06406,2.0,0.03540476,2.0\n";
@@ -1466,7 +1473,7 @@ directionsForGenerateDatasetsXml() +
         table.readNDNc(dir + tName, null, null, 0, 0, true);
         //expected is same except there's an additional 'row' column, remove it
         table.removeColumn(table.findColumnNumber("row"));
-        results = table.dataToCSVString();
+        results = table.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -1479,7 +1486,7 @@ directionsForGenerateDatasetsXml() +
             dir, eddTable.className() + "_testKevin20160519_3", ".ncCF"); 
         table = new Table();
         table.readNcCF(dir + tName, null, null, null, null);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         //expected is same
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -1923,7 +1930,7 @@ directionsForGenerateDatasetsXml() +
         String scalarVars = ",crs,WODf,WODfd";
 
         //From Ajay Krishnan, NCEI/NODC, from
-        //http://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
+        //https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
         //See low level reading test: Table.testReadNcCF7SampleDims()
         String fileName = String2.unitTestDataDir + 
             "nccf/ncei/ind199105_ctd.nc";
@@ -2110,7 +2117,7 @@ directionsForGenerateDatasetsXml() +
 "    String Conventions \"CF-1.6, ACDD-1.3, COARDS\";\n" +
 "    String creator_email \"OCLhelp@noaa.gov\";\n" +
 "    String creator_name \"Ocean Climate Lab/NODC\";\n" +
-"    String creator_url \"http://www.nodc.noaa.gov\";\n" +
+"    String creator_url \"https://www.nodc.noaa.gov\";\n" +
 "    String date_created \"2016-05-02\";\n" +
 "    String date_modified \"2016-05-02\";\n" +
 "    String featureType \"TimeSeries\";\n" +
@@ -2143,8 +2150,8 @@ expected =
 "    String project \"World Ocean Database\";\n" +
 "    String publisher_email \"NODC.Services@noaa.gov\";\n" +
 "    String publisher_name \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
-"    String publisher_url \"http://www.nodc.noaa.gov\";\n" +
-"    String references \"World Ocean Database 2013. URL:http://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n" +
+"    String publisher_url \"https://www.nodc.noaa.gov\";\n" +
+"    String references \"World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n" +
 "    String source \"World Ocean Database\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
@@ -2442,7 +2449,7 @@ expected =
             //read the .ncml via table.readNcCF
             table = new Table();
             table.readNcCF(baseName + ".ncml", null, null, null, null);
-            results = table.toCSVString(5);
+            results = table.toString(5);
             results = String2.replaceAll(results, '\t', ' ');
             expected = 
 "{\n" +
@@ -2528,12 +2535,12 @@ expected =
 "  :subsetVariables = \"ProfDiseno, TiranteDiseno, TiranteEstimado, var_pres, station, latitude, longitude, z\" ;\n" +
 "  :title = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\" ;\n" +
 "}\n" +
-"row,Cond,Pres,Temp,Sal,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres,station,time,latitude,longitude,z\n" +
-"0,3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
-"1,3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
-"2,3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
-"3,3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
-"4,3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
+"Cond,Pres,Temp,Sal,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres,station,time,latitude,longitude,z\n" +
+"3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -2541,7 +2548,7 @@ expected =
             table = new Table();
             table.readNcCF(baseName + ".ncml", 
                 StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), null, null, null);
-            results = table.dataToCSVString();
+            results = table.dataToString();
             results = String2.replaceAll(results, '\t', ' ');
             expected = 
 "station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres\n" +
@@ -2752,7 +2759,7 @@ expected =
 "  // global attributes:\n" +
 "  :institution = \"National Oceanographic Data Center(NODC), NOAA\";\n" +
 "  :source = \"World Ocean Database\";\n" +
-"  :references = \"World Ocean Database 2013. URL:http://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n" +
+"  :references = \"World Ocean Database 2013. URL:https://data.nodc.noaa.gov/woa/WOD/DOC/wod_intro.pdf\";\n" +
 "  :title = \"World Ocean Database - Multi-cast file\";\n" +
 "  :summary = \"Data for multiple casts from the World Ocean Database\";\n" +
 "  :id = \"biology_JP14323.nc\";\n" +
@@ -2771,7 +2778,7 @@ expected =
 "  :geospatial_vertical_units = \"meters\";\n" +
 "  :creator_name = \"Ocean Climate Lab/NODC\";\n" +
 "  :creator_email = \"OCLhelp@noaa.gov\";\n" +
-"  :creator_url = \"http://www.nodc.noaa.gov\";\n" +
+"  :creator_url = \"https://www.nodc.noaa.gov\";\n" +
 "  :project = \"World Ocean Database\";\n" +
 "  :acknowledgements = \"\";\n" +
 "  :processing_level = \"\";\n" +
@@ -2780,7 +2787,7 @@ expected =
 "  :date_created = \"2016-05-20\";\n" +
 "  :date_modified = \"2016-05-20\";\n" +
 "  :publisher_name = \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
-"  :publisher_url = \"http://www.nodc.noaa.gov\";\n" +
+"  :publisher_url = \"https://www.nodc.noaa.gov\";\n" +
 "  :publisher_email = \"NODC.Services@noaa.gov\";\n" +
 "  :history = \"\";\n" +
 "  :license = \"\";\n" +
@@ -2796,7 +2803,7 @@ expected =
             table = new Table();
             table.readNcCF(dir + sampleName, null, null, null, null);
 
-            results = table.dataToCSVString(5);
+            results = table.dataToString(5);
             expected = 
 "zztop\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
@@ -2890,12 +2897,12 @@ expected =
 "  :subsetVariables = \"ProfDiseno, TiranteDiseno, TiranteEstimado, var_pres, station, latitude, longitude, z\" ;\n" +
 "  :title = \"CTZ-T500-MCT-NS5649-Z408-INS12-REC14\" ;\n" +
 "}\n" +
-"row,Cond,Pres,Temp,Sal,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres,station,time,latitude,longitude,z\n" +
-"0,3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
-"1,3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
-"2,3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
-"3,3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
-"4,3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
+"Cond,Pres,Temp,Sal,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres,station,time,latitude,longitude,z\n" +
+"3.88991,409.629,10.3397,35.310065426337346,408.0,500.0,498.0,1.0,0,733358.7847222222,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88691,409.12,10.3353,35.28414747593317,408.0,500.0,498.0,1.0,0,733358.786111111,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88678,408.803,10.3418,35.27667928948258,408.0,500.0,498.0,1.0,0,733358.7875,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88683,408.623,10.3453,35.273879094537904,408.0,500.0,498.0,1.0,0,733358.7888888889,18.843666666666667,-94.81761666666667,406.0\n" +
+"3.88808,408.517,10.3687,35.26394801644307,408.0,500.0,498.0,1.0,0,733358.7902777778,18.843666666666667,-94.81761666666667,406.0\n" +
 "...\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -2903,7 +2910,7 @@ expected =
             table = new Table();
             table.readNcCF(baseName + ".ncml", 
                 StringArray.fromCSV("station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres"), null, null, null);
-            results = table.dataToCSVString();
+            results = table.dataToString();
             results = String2.replaceAll(results, '\t', ' ');
             expected = 
 "station,latitude,longitude,z,ProfDiseno,TiranteDiseno,TiranteEstimado,var_pres\n" +

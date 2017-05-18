@@ -31,14 +31,9 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -152,7 +147,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
      *       but variableFactor may be not 1 or the file may have non-udUnits units.
      *       Also, useful if the units exactly match the udUnits for other similar 
      *       pointDatasets (e.g, NDBC).
-     *       See http://www.unidata.ucar.edu/software/udunits/udunits.txt .
+     *       See https://www.unidata.ucar.edu/software/udunits/udunits.txt .
      *    </ol>
      * @param courtesy  the group to credit for this data (usually 25 char or less)
      * @param minStationX the minimum acceptable station lon  (may be 0 - 360 or -180 - 180).
@@ -1189,7 +1184,7 @@ not very polished.
     public final static String[][] mbariNrtVariableInfo = {
         { //metsys
             //name, palette info and suggested range should match ndbc when possible
-            //units must be from http://www.unidata.ucar.edu/software/udunits/udunits.txt 
+            //units must be from https://www.unidata.ucar.edu/software/udunits/udunits.txt 
             //unofficial system: 4th letter n=near real time   s=science quality 
             //inFileVarName           varName  title                                     palette  paletteScale  factor min max  udUnits   
             "AirPressure`             PMBaprn` Air Pressure, Near Real Time`             Rainbow`      Linear`    1` 960` 1040` hPa",  //metsys files have metadata
@@ -1210,7 +1205,7 @@ not very polished.
        (each group uses different dimensions for the variables).*/
    public final static String[][] mbariSqVariableInfo = {
         {   //name, palette info and suggested range should match ndbc when possible
-            //units must be from http://www.unidata.ucar.edu/software/udunits/udunits.txt 
+            //units must be from https://www.unidata.ucar.edu/software/udunits/udunits.txt 
             //unofficial system: 4th letter n=near real time   s=science quality 
             //inFileVarName           varName  title                                    palette  paletteScale  factor min max   udUnits
             "AIR_PRESS_HR`            PMBaprs` Air Pressure, Science Quality`           Rainbow`      Linear`   1` 960` 1040` hPa",
@@ -1219,7 +1214,7 @@ not very polished.
             "WIND_U_COMPONENT_HR`     PMBwsus` Wind Speed, Science Quality, Zonal`      BlueWhiteRed` Linear`   1` -20`   20` m s^-1",
             "WIND_V_COMPONENT_HR`     PMBwsvs` Wind Speed, Science Quality, Meridional` BlueWhiteRed` Linear`   1` -20`   20` m s^-1"},
         {   //name, palette info and suggested range should match ndbc when possible
-            //units must be from http://www.unidata.ucar.edu/software/udunits/udunits.txt 
+            //units must be from https://www.unidata.ucar.edu/software/udunits/udunits.txt 
             "U_COMPONENT_UNCORR_HR`   PMBcrus` Current, Science Quality, Zonal`         BlueWhiteRed` Linear` .01` -.5`   .5` m s-1",  //.01 = convert cm/s to m/s
             "V_COMPONENT_UNCORR_HR`   PMBcrvs` Current, Science Quality, Meridional`    BlueWhiteRed` Linear` .01` -.5`   .5` m s-1"},  //.01 = convert cm/s to m/s
             //"ECHO_INTENSITY_BEAM1_HR` PMBei1s` Echo Intensity, Science Quality, Beam 1` Rainbow`      Linear`   1`   0`  100` counts", //range?
@@ -1228,7 +1223,7 @@ not very polished.
             //"ECHO_INTENSITY_BEAM4_HR` PMBei4s` Echo Intensity, Science Quality, Beam 4` Rainbow`      Linear`   1`   0`  100` counts"}, //range?
        {    //the lat/lon/depth MET variables
             //name, palette info and suggested range should match ndbc when possible
-            //units must be from http://www.unidata.ucar.edu/software/udunits/udunits.txt 
+            //units must be from https://www.unidata.ucar.edu/software/udunits/udunits.txt 
             "CONDUCTIVITY_HR`         PMBcnds` Conductivity, Science Quality`           Rainbow`      Linear`   1`   0`  100` Siemens m-1", //range?
             "PRESSURE_HR`             PMBsprs` Sea Pressure, Science Quality`           Rainbow`      Linear`   1`   0`  100` db", //range?
             "SALINITY_HR`             PMBsals` Salinity, Science Quality`               Rainbow`      Linear`   1`   0`  100` PSU", //range?
@@ -1735,7 +1730,7 @@ not very polished.
         String2.log("\n*** whole world: all stations, 1 time, lonPM180");
         table = pointDataSet.makeSubset(
             -180, 180, -90, 90, 0, 0, "2004-01-07", "2004-01-07");
-        //String2.log(tTable.toString(Integer.MAX_VALUE));                      
+        //String2.log(tTable.toString());                      
         int tn = table.nRows();
         //this changes, but it is good to keep the test in case the number changes badly (e.g., smaller)
         Test.ensureEqual(table.nRows(), 658, "all sta, 1 time, nRows");
@@ -1782,7 +1777,7 @@ not very polished.
             -180, 180, -90, 90, 0, 0, "2004-01-01", "2004-02-01");
         //String2.log(table.toString(1000));
         table.convertToFakeMissingValues(); //so I see what file will look like
-        String2.log(table.toString("row", 1));
+        String2.log(table.toString(1));
         tn = table.nRows();
         for (int i = 0; i < tn; i++) {
             double tLon = table.getDoubleData(0, i);

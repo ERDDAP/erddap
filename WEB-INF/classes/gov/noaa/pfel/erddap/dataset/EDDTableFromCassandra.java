@@ -28,6 +28,7 @@ RUN CASSANDRA:
   type: cassandra.bat -f
   For Java version changes: change JAVA_HOME in cassandra.bat
 * Shut it down: ^C
+  There is still something running in the background. Restart computer?
 * CQL Shell (3.4.0): same directory, run or double click on cqlsh.bat
 (It requires Python 2, so I installed it 
   and changed "python" in cqlsh.bat to "C:\Python2710\python".)
@@ -262,6 +263,8 @@ public class EDDTableFromCassandra extends EDDTable{
     protected HashSet indexColumnSourceNames;
     protected double maxRequestFraction = 1; //>0..1; 1 until subsetVarTable has been made
     protected String partitionKeyRelatedVariables; //CSSV for error message
+    protected EDV rvToResultsEDV[]; //needed in expandPartitionKeyCSV
+    protected String partitionKeyCSV; //null or csv before expansion
 
     //Double quotes, see 
     //http://www.datastax.com/documentation/cql/3.1/cql/cql_reference/escape_char_r.html
@@ -320,6 +323,7 @@ public class EDDTableFromCassandra extends EDDTable{
         boolean tSourceNeedsExpandedFP_EQ = true;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        String tPartitionKeyCSV = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -363,6 +367,8 @@ public class EDDTableFromCassandra extends EDDTable{
             else if (localTags.equals("</maxRequestFraction>")) tMaxRequestFraction = String2.parseDouble(content); 
             else if (localTags.equals( "<columnNameQuotes>")) {}
             else if (localTags.equals("</columnNameQuotes>")) tColumnNameQuotes = content; 
+            else if (localTags.equals( "<partitionKeyCSV>")) {}
+            else if (localTags.equals("</partitionKeyCSV>")) tPartitionKeyCSV = content; 
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
             else if (localTags.equals( "<onChange>")) {}
@@ -397,6 +403,7 @@ public class EDDTableFromCassandra extends EDDTable{
                 tKeyspace, tTableName, 
                 tPartitionKeySourceNames, tClusterColumnSourceNames, 
                 tIndexColumnSourceNames,
+                tPartitionKeyCSV,
                 tMaxRequestFraction, tColumnNameQuotes,
                 tSourceNeedsExpandedFP_EQ);
     }
@@ -421,6 +428,7 @@ public class EDDTableFromCassandra extends EDDTable{
         String tKeyspace, String tTableName, 
         String tPartitionKeySourceNames, String tClusterColumnSourceNames,
         String tIndexColumnSourceNames,
+        String tPartitionKeyCSV,
         double tMaxRequestFraction, String tColumnNameQuotes,
         boolean tSourceNeedsExpandedFP_EQ
         ) throws Throwable {
@@ -450,6 +458,7 @@ public class EDDTableFromCassandra extends EDDTable{
         localSourceUrl = tLocalSourceUrl;
         publicSourceUrl = "(Cassandra)"; //not tLocalSourceUrl; keep it private
         addGlobalAttributes.set("sourceUrl", publicSourceUrl);  
+        partitionKeyCSV = String2.isSomething(tPartitionKeyCSV)? tPartitionKeyCSV : null;
 
         //connectionProperties may have secret (username and password)!
         //So use then throw away.
@@ -552,6 +561,10 @@ public class EDDTableFromCassandra extends EDDTable{
             if (tSourceType.endsWith("List")) {
                 isListDV[dv] = true;
                 tSourceType = tSourceType.substring(0, tSourceType.length() - 4);
+                if (tSourceType.equals("unsignedShort")) //the xml name
+                    tSourceType = "char"; //the PrimitiveArray name
+                else if (tSourceType.equals("string")) //the xml name
+                    tSourceType = "String"; //the PrimitiveArray name
             }
             Attributes tSourceAtt = new Attributes();
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
@@ -603,10 +616,8 @@ public class EDDTableFromCassandra extends EDDTable{
         StringBuilder dapConstraints = new StringBuilder();
         StringBuilder cassConstraints = new StringBuilder();
         int resultsDVI[] = new int[nPartitionKeys];
-        EDV rvToResultsEDV[] = new EDV[nPartitionKeys];
+        rvToResultsEDV = new EDV[nPartitionKeys]; //make and keep this
         File2.makeDirectory(datasetDir()); 
-        TableWriterAll twa = new TableWriterAll(null, null, //metadata not relevant
-            datasetDir(), "tPKDistinct");
         partitionKeyEDV = new EDV[nPartitionKeys];
         StringArray pkRelated = new StringArray();
         for (int pki = 0; pki < nPartitionKeys; pki++) {
@@ -635,35 +646,49 @@ public class EDDTableFromCassandra extends EDDTable{
                 pkRelated.add(dataVariables[dvi].destinationName());
         }
         partitionKeyRelatedVariables = pkRelated.toString();
-        Table table = makeEmptySourceTable(rvToResultsEDV, 1024); 
         String dapQuery = dapVars.toString() + dapConstraints.toString() + "&distinct()";
         String cassQuery = cassVars.toString() + 
             " FROM " + keyspace + "." + tableName + cassConstraints.toString();
         if (verbose) String2.log(
             "* PrimaryKeys DAP  query=" + dapQuery + "\n" +
             "* PrimaryKeys Cass query=" + cassQuery);
-        SimpleStatement statement = new SimpleStatement(cassQuery);
-        table = getDataForCassandraQuery(
-            EDStatic.loggedInAsSuperuser, "irrelevant", dapQuery, 
-            resultsDVI, rvToResultsEDV, session, statement, 
-            table, twa, new int[4]);
-        if (twa.noMoreDataPlease) 
-            throw new RuntimeException(
-                "Too many primary keys?! TableWriterAll said NoMoreDataPlease.");
-        preStandardizeResultsTable(EDStatic.loggedInAsSuperuser, table); 
-        if (table.nRows() > 0) {
-            standardizeResultsTable("irrelevant", dapQuery, table);
-            twa.writeSome(table);
+        Table cumTable;
+        if (String2.isSomething(partitionKeyCSV)) {
+            //do this here just to ensure expansion doesn't throw exception
+            cumTable = expandPartitionKeyCSV();
+
+        } else {
+            //ask Cassandra
+            TableWriterAll twa = new TableWriterAll(null, null, //metadata not relevant
+                datasetDir(), "tPKDistinct");
+            SimpleStatement statement = new SimpleStatement(cassQuery);
+            Table table = makeEmptySourceTable(rvToResultsEDV, 1024); 
+            table = getDataForCassandraQuery(
+                EDStatic.loggedInAsSuperuser, "irrelevant", dapQuery, 
+                resultsDVI, rvToResultsEDV, session, statement, 
+                table, twa, new int[4]);
+            if (twa.noMoreDataPlease) 
+                throw new RuntimeException(
+                    "Too many primary keys?! TableWriterAll said NoMoreDataPlease.");
+            preStandardizeResultsTable(EDStatic.loggedInAsSuperuser, table); 
+            if (table.nRows() > 0) {
+                standardizeResultsTable("irrelevant", dapQuery, table);
+                twa.writeSome(table);
+            }
+            twa.finish();
+            cumTable = twa.cumulativeTable();
+            twa.releaseResources();        
+            cumTable.leftToRightSortIgnoreCase(nPartitionKeys); //useful: now in sorted order
+
+            //save in flatNc file
+            cumTable.saveAsFlatNc(datasetDir() + PartitionKeysDistinctTableName, 
+                "row", false); //convertToFakeMissingValues
         }
-        twa.finish();
-        Table cumTable = twa.cumulativeTable();
-        cumTable.leftToRightSortIgnoreCase(nPartitionKeys); //useful: now in sorted order
+        //cumTable is sorted and distinct
         String2.log(PartitionKeysDistinctTableName + " nRows=" + cumTable.nRows());
-        //String2.log(cumTable.dataToCSVString());
-        cumTable.saveAsFlatNc(datasetDir() + PartitionKeysDistinctTableName, 
-            "row", false); //convertToFakeMissingValues
+        if (verbose) String2.log("first few rows of partitionKeysTable ('rows' is for info only)\n" + 
+            cumTable.dataToString(10));
         cumTable = null;
-        twa.releaseResources();        
 
         //gather ERDDAP sos information?
         //assume time column is indexed? so C* can return min/max efficiently
@@ -679,6 +704,84 @@ public class EDDTableFromCassandra extends EDDTable{
                 (reallyVerbose? "\n" + toString() : "") +
                 "\n*** EDDTableFromCassandra " + datasetID + " constructor finished. TIME=" + 
                 (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+    }
+
+
+    /** 
+     * Expand partitionKeyCSV.
+     * This uses class variables: partitionKeyCSV and rvToResultsEDV.
+     *
+     * @return the expanded primaryKey table
+     */
+    protected Table expandPartitionKeyCSV() {
+
+        Test.ensureNotNull(partitionKeyCSV, "partitionKeyCSV is null. Shouldn't get here.");
+        Test.ensureNotNull(rvToResultsEDV,   "rvToResultsEDV is null. Shouldn't get here.");
+        
+        //partitionKeyCSV specified in datasets.xml
+        //  deviceid,date
+        //  1001,times(2016-01-05T07:00:00Z,60,now-1minute)
+        //  1007,2014-11-07T00:00:00Z           //1.4153184E9
+        Table table = new Table();
+        table.readASCII("<partitionKeyCSV>", 
+            String2.split(partitionKeyCSV, '\n'),
+            0, 1, ",", null, null, null, null, false); //simplify
+        if (debugMode) { String2.log(">> <partitionKeyCSV> as initially parsed:");
+            String2.log(table.dataToString());
+        }
+
+        //make cumTable
+        Table cumTable = makeEmptySourceTable(rvToResultsEDV, 1024);
+        //ensure correct/expected columns
+        Test.ensureEqual(table.getColumnNamesCSVString(),
+                      cumTable.getColumnNamesCSVString(),
+            "The <partitionKeyCSV> column names must match the required column names."); 
+
+        //transfer data to cumTable, expanding as needed
+        String errMsg = "In <partitionKeyCSV>: Invalid times(startTimeString, strideSeconds, stopTimeString) data: "; 
+        int tnRows = table.nRows();
+        int tnCols = table.nColumns();
+        for (int row = 0; row < tnRows; row++) {
+            for (int col = 0; col < tnCols; col++) {
+                PrimitiveArray pa = cumTable.getColumn(col);
+                String s = table.getStringData(col, row);
+                if (s.startsWith("times(") && s.endsWith(")")) {
+                    String parts[] = String2.split(s.substring(6, s.length() - 1), ',');
+                    if (parts.length != 3)
+                        throw new RuntimeException(errMsg + s);
+                    double epSecStart = Calendar2.safeIsoStringToEpochSeconds(parts[0]); 
+                    double strideSec  = String2.parseDouble(parts[1]);
+                    double epSecStop  = parts[2].startsWith("now")?
+                            Calendar2.safeNowStringToEpochSeconds(parts[2], Double.NaN) :
+                            Calendar2.safeIsoStringToEpochSeconds(parts[2]); 
+                    if (!Math2.isFinite(epSecStart) ||
+                        !Math2.isFinite(epSecStop)  ||
+                        !Math2.isFinite(strideSec)     ||
+                        epSecStart > epSecStop      ||
+                        strideSec <= 0)
+                        throw new RuntimeException(errMsg + s);
+                    for (int ti = 0; ti < 10000000; ti++) {
+                        //do it this way to minimize rounding errors 
+                        double d = epSecStart + ti * strideSec;
+                        if (d > epSecStop)
+                            break;
+                        pa.addDouble(d);
+                    }
+                } else if (s.startsWith("time(") && s.endsWith(")")) {
+                    double d = Calendar2.safeIsoStringToEpochSeconds(
+                        s.substring(5, s.length() - 1)); 
+                    if (!Math2.isFinite(d))
+                        throw new RuntimeException(errMsg + s);
+                    pa.addDouble(d);
+                } else {
+                    pa.addString(s); //converts to correct type
+                }
+            }
+
+            //expand non-expanded columns
+            cumTable.ensureColumnsAreSameSize_LastValue();
+        }
+        return cumTable;
     }
 
     /**
@@ -940,9 +1043,14 @@ public class EDDTableFromCassandra extends EDDTable{
             constraintVariables, constraintOps, constraintValues); 
 
         //apply constraints to PartitionKeysDistinctTable
-        Table pkdTable = new Table();
-        pkdTable.readFlatNc(datasetDir() + PartitionKeysDistinctTableName,
-            partitionKeyNames, 0);
+        Table pkdTable;
+        if (partitionKeyCSV == null) {
+            pkdTable = new Table();
+            pkdTable.readFlatNc(datasetDir() + PartitionKeysDistinctTableName,
+                partitionKeyNames, 0);
+        } else {
+            pkdTable = expandPartitionKeyCSV();
+        }
         int oPkdTableNRows = pkdTable.nRows();
         BitSet pkdKeep = new BitSet(); 
         pkdKeep.set(0, oPkdTableNRows); //all true
@@ -1236,7 +1344,7 @@ public class EDDTableFromCassandra extends EDDTable{
         if (!tableWriter.noMoreDataPlease) {
             preStandardizeResultsTable(loggedInAs, table); 
             if (table.nRows() > 0) {
-                //String2.log("preStandardize=\n" + table.dataToCSVString());
+                //String2.log("preStandardize=\n" + table.dataToString());
                 standardizeResultsTable(requestUrl, userDapQuery, table);
                 stats[3] += table.nRows();
                 tableWriter.writeSome(table); //ok if 0 rows
@@ -1660,7 +1768,8 @@ public class EDDTableFromCassandra extends EDDTable{
 
             dataSourceTable.addColumn(col, sourceName, pa, sourceAtts);
 
-            dataAddTable.addColumn(col, destName, pa, addAtts);
+            dataAddTable.addColumn(col, destName, 
+                makeDestPAForGDX(pa, sourceAtts), addAtts);
         }
 
         //subsetVariables source->dest name
@@ -1887,8 +1996,8 @@ expected =
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +
@@ -2189,8 +2298,8 @@ expected =
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +
@@ -2420,7 +2529,7 @@ expected =
 "    String long_name \"Deviceid\";\n" +
 "  }\n" +
 "  date {\n" +
-"    Float64 actual_range 1.4148e+9, 1.4154912e+9;\n" +
+"    Float64 actual_range 1.4148e+9, 1.4155776e+9;\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Date\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
@@ -3658,7 +3767,7 @@ expected =
         /* */
         testGenerateDatasetsXml();
         testBasic(false); //pauseBetweenTests
-        testMaxRequestFraction(false);
+        testMaxRequestFraction(false);  //pauseBetweenTests
         testCass1Device(false); //pauseBetweenTests
         testStatic(false); //pauseBetweenTests
         /* */

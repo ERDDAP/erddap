@@ -384,7 +384,7 @@ public class PersistentTable {
         byte ar[] = new byte[columnWidths[col]];
         raf.seek(row * nBytesPerRow + columnStartAt[col]);
         raf.readFully(ar);
-        String s = (new String(ar, "UTF-8")).trim();
+        String s = (new String(ar, String2.UTF_8)).trim();
         //if (reallyVerbose) String2.log("low level read col=" + col + 
         //    " row=" + row + " value=" + String2.annotatedString(s));
         return s;

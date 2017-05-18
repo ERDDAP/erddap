@@ -337,7 +337,7 @@ public class TrajectoryScreen extends Screen {
                 "0001-01-01", "3000-01-01", //data from all time
                 new String[]{individualValue},
                 tDataVariables.toArray());
-            //String2.log(table.toString("row", 10));
+            //String2.log(table.toString(10));
 
             //make the colorMap
             Color color = null;
@@ -466,7 +466,7 @@ public class TrajectoryScreen extends Screen {
             if (yColumnNumber < 0)
                 Test.error("yVariableName=" + yVariableName + " not in table:" +
                     String2.toCSSVString(table.getColumnNames()));
-            //String2.log(table.toString("row", 10));
+            //String2.log(table.toString(10));
 
             //make colorMap 
             Color color = defaultLineColor;

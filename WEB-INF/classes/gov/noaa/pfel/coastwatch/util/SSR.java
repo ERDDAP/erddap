@@ -141,8 +141,11 @@ public class SSR {
     public static boolean reallyVerbose = false;
     public static boolean debugMode = false;
 
+    public static String windows7Zip = "c:\\progra~1\\7-Zip\\7z"; //on Bob's computer
+
     private static String contextDirectory; //lazy creation by getContextDirectory
     private static String tempDirectory; //lazy creation by getTempDirectory
+
 
     /**
      * Returns a String which is a substring of the current string.
@@ -460,6 +463,22 @@ public class SSR {
         return exitValue;
     }
 
+    /** 
+     * This zips the contents of a directory (recursively)
+     * and puts the results in a zip file of the same name.
+     * 
+     * @param dir with or without trailing slash. Forward or backslashes are okay.
+     */     
+    public static void zipADirectory(String dir, int timeOutSeconds) throws Exception {
+        //remove trailing slash
+        char slash = dir.indexOf('/') >= 0? '/' : '\\';
+        if (dir.endsWith("/") || dir.endsWith("\\"))
+            dir = dir.substring(0, dir.length() - 1);
+        
+        SSR.zip(dir + ".zip", new String[]{dir}, timeOutSeconds, true,
+            File2.getDirectory(dir));
+    }
+
     /**
      * Put the specified files in a zip file (without directory info).
      * See  http://javaalmanac.com/egs/java.util.zip/CreateZip.html .
@@ -468,6 +487,8 @@ public class SSR {
      * @param zipDirName the full name for the .zip file (path + name + ".zip")
      * @param dirNames the full names of the files to be put in the zip file.
      *    These can use forward or backslashes as directory separators.
+     *    If a dirName is a directory, all the files in the directory (recursively)
+     *    will be included.
      * @param timeOutSeconds (use -1 for no time out)
      * @throws Exception if trouble
      */
@@ -485,6 +506,8 @@ public class SSR {
      * @param zipDirName the full name for the .zip file (path + name + ".zip")
      * @param dirNames the full names of the files to be put in the zip file.
      *    These can use forward or backslashes as directory separators.
+     *    If a dirName is a directory, all the files in the directory (recursively)
+     *    will be included.
      * @param timeOutSeconds (use -1 for no time out)
      * @param removeDirPrefix the prefix to be removed from the start of 
      *    each dir name (ending with a slash)
@@ -497,16 +520,20 @@ public class SSR {
     }
 
     /**
-     * Put the specified files in a zip file (without directory info).
+     * Put the specified files in a zip file.
      * See  http://javaalmanac.com/egs/java.util.zip/CreateZip.html .
      * If a file named zipDirName already exists, it is overwritten.
      * 
      * @param zipDirName the full name for the .zip file (path + name + ".zip")
+     *   Don't include c:.
      * @param dirNames the full names of the files to be put in the zip file.
+     *    Don't include c:.
      *    These can use forward or backslashes as directory separators.
+     *    If a dirName is a directory, all the files in the directory (recursively)
+     *    will be included.
      * @param timeOutSeconds (use -1 for no time out)
      * @param includeDirectoryInfo set this to false if you don't want
-     *   any dir invo stored with the files
+     *   any dir info stored with the files
      * @param removeDirPrefix if includeDirectoryInfo is true, 
      *    this is the prefix to be removed from the start of 
      *    each dir name (ending with a slash).
@@ -556,23 +583,34 @@ public class SSR {
     
         //compress the files
         for (int i = 0; i < dirNames.length; i++) {
-            FileInputStream in = new FileInputStream(dirNames[i]);
-    
-            //add ZIP entry to output stream
-            String tName = includeDirectoryInfo? 
-                dirNames[i].substring(removeDirPrefix.length()): //already validated above
-                File2.getNameAndExtension(dirNames[i]); 
-            out.putNextEntry(new ZipEntry(tName));
-    
-            //transfer bytes from the file to the ZIP file
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
+            //if directory, get all file names
+            ArrayList<String> al = new ArrayList();
+            if (File2.isDirectory(dirNames[i])) {
+                RegexFilenameFilter.recursiveFullNameList(al,
+                    dirNames[i], ".*", false); //directoriesToo
+            } else {
+                al.add(dirNames[i]);
             }
-    
-            //complete the entry
-            out.closeEntry();
-            in.close();
+
+            for (int i2 = 0; i2 < al.size(); i2++) {
+                FileInputStream in = new FileInputStream(al.get(i2));
+        
+                //add ZIP entry to output stream
+                String tName = includeDirectoryInfo? 
+                    al.get(i2).substring(removeDirPrefix.length()): //already validated above
+                    File2.getNameAndExtension(al.get(i2)); 
+                out.putNextEntry(new ZipEntry(tName));
+        
+                //transfer bytes from the file to the ZIP file
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+        
+                //complete the entry
+                out.closeEntry();
+                in.close();
+            }
         }
     
         //close the ZIP file
@@ -700,6 +738,17 @@ public class SSR {
     }
     
     /**
+     * This handles the common case of unzipping a zip file (in place) that
+     * contains a directory with subdirectories and files.
+     */
+    public static void unzipADirectory(String fullZipName, int timeOutSeconds, 
+        StringArray resultingFullFileNames) throws Exception {
+
+        unzip(fullZipName, File2.getDirectory(fullZipName), false, timeOutSeconds,
+            resultingFullFileNames);
+    }
+
+    /**
      * Extract all of the files from a zip file to 
      * the base directory.
      * Any existing files of the same name are overwritten.
@@ -712,7 +761,7 @@ public class SSR {
      *    If false, new directories will be created as needed.
      * @param timeOutSeconds (use -1 for no time out)
      * @param resultingFullFileNames If this isn't null, 
-     *   that full names of unzipped files are added to this.
+     *   the full names of unzipped files are added to this.
      *   This method doesn't initially cleared this StringArray!
      * @throws Exception
      */
@@ -744,9 +793,9 @@ public class SSR {
                 }
             } else {
                 //open an output file
-                //???do I need to make the directory???
                 if (ignoreZipDirectories) 
                     name = File2.getNameAndExtension(name); //remove dir info
+                File2.makeDirectory(File2.getDirectory(baseDir + name)); //name may incude subdir names
                 OutputStream out = new FileOutputStream(baseDir + name);
 
                 //transfer bytes from the .zip file to the output file
@@ -864,6 +913,45 @@ public class SSR {
             (System.currentTimeMillis() - tTime) + "\n");
 
     }
+
+    /** 
+     * This decompresses a .tar.gz file on Bob's Windows computer, in a
+     * directory with the name from the .tar.gz file.
+     * 
+     * @throws Exception if trouble
+     */
+    public static void windowsDecompressTargz(String sourceFullName, 
+        boolean makeBaseDir, 
+        int timeOutMinutes) throws Exception {
+
+        String sourceDir      = File2.getDirectory(sourceFullName);
+        String sourceTarName  = File2.getNameNoExtension(sourceFullName);
+        String sourceJustName = File2.getNameNoExtension(sourceTarName);
+
+        //extract tar from .gzip
+        String cmd = windows7Zip + " -y e " + sourceFullName + " -o" + sourceDir + 
+            " -r"; 
+        long cmdTime = System.currentTimeMillis();
+        dosShell(cmd, timeOutMinutes*60); 
+        String2.log("  cmd time=" + 
+            Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+        //extract from the .tar file   //gtspp4_at199001.tar
+        if (makeBaseDir)
+            File2.makeDirectory(sourceDir + sourceJustName);
+        File2.makeDirectory(sourceDir + sourceJustName + "/");
+        cmd = windows7Zip + " -y x " + sourceDir + sourceTarName + //xtract with full dir names
+            " -o" + sourceDir + (makeBaseDir? sourceJustName + "/": "") + 
+            " -r"; 
+        cmdTime = System.currentTimeMillis();
+        dosShell(cmd, timeOutMinutes*60); 
+        String2.log("  cmd time=" + 
+            Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+        //delete the .tar file
+        File2.delete(sourceDir + sourceTarName); 
+    }
+
 
     /**
      * Unzip oldDir + oldName.zip  (a zip containing one file: oldName) 
@@ -1207,8 +1295,8 @@ public class SSR {
             MimeMessage msg = new MimeMessage(session);
             msg.setFrom(new InternetAddress(fromAddress));
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
-            msg.setSubject(subject, "UTF-8");
-            msg.setText(content, "UTF-8"); 
+            msg.setSubject(subject, String2.UTF_8);
+            msg.setText(content, String2.UTF_8); 
             msg.setHeader("X-Mailer", "msgsend");
             msg.setSentDate(new Date());
             msg.saveChanges();  //do last.  don't forget this
@@ -1344,7 +1432,7 @@ public class SSR {
     public static String percentEncode(String query) throws Exception {
         if (query == null)
             return "";
-        return URLEncoder.encode(query, "UTF-8");
+        return URLEncoder.encode(query, String2.UTF_8);
     }
 
     /**
@@ -1361,7 +1449,7 @@ public class SSR {
         if (query == null)
             return "";
         //query = String2.replaceAll(query, "+", " "); //URLDecoder doesn't do this.  2010-10-27 Yes it does.
-        return URLDecoder.decode(query, "UTF-8");
+        return URLDecoder.decode(query, String2.UTF_8);
 
         /*was StringBuilder sb = new StringBuilder(query);
         String2.replaceAll(sb, "+", " "); //do first
@@ -1436,13 +1524,16 @@ public class SSR {
      * @param urlString The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
+     * @param charset default is ISO-8859-1.
      * @return a String with the response.   Lines will always be separated by \n only.
      * @throws Exception if error occurs
      */
-    public static String getUncompressedUrlResponseString(String urlString) throws Exception {
+    public static String getUncompressedUrlResponseString(String urlString, String charset) throws Exception {
+        if (!String2.isSomething(charset))
+            charset = String2.ISO_8859_1;
         try {
             InputStream is = getUncompressedUrlInputStream(urlString); 
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            BufferedReader in = new BufferedReader(new InputStreamReader(is, charset));
             StringBuilder sb = new StringBuilder();
             String s;
             while ((s = in.readLine()) != null) {
@@ -1599,7 +1690,7 @@ public class SSR {
     public static String[] getUrlResponse(String urlString) throws Exception {
         try {
             if (!String2.isUrl(urlString))
-                return String2.readLinesFromFile(urlString, "ISO-8859-1", 2);
+                return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 2);
 
             InputStream is = getUrlInputStream(urlString); 
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
@@ -2473,7 +2564,7 @@ public class SSR {
      * 
      * @param urlString where the content will be sent
      * @param mimeType e.g., "text/xml"
-     * @param encoding e.g., "UTF-8"
+     * @param encoding e.g., String2.UTF_8
      * @param content the content to be sent
      * @throws Exception if trouble
      */
@@ -2538,7 +2629,7 @@ public class SSR {
             "<resultFormat>text/xml; subtype=tml/1.0</resultFormat> \n" +
             "</GetObservation>\n";
 
-        copy(getPostInputStream(url, "text/xml", "UTF-8", content), System.out);
+        copy(getPostInputStream(url, "text/xml", String2.UTF_8, content), System.out);
     }*/
 
 

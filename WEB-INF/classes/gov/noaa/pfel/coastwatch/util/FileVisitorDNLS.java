@@ -223,9 +223,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;    
     }
 
-    /** table.dataToCSVString(); */
+    /** table.dataToString(); */
     public String resultsToString() {
-        return table.dataToCSVString();
+        return table.dataToString();
     }
 
     /**
@@ -376,6 +376,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             matcher = HYRAX_PATTERN.matcher(tDir); 
             if (matcher.matches()) {
                 try {
+                    if (verbose) 
+                        String2.log("FileVisitorDNLS.oneStep getting info from Hyrax at" + 
+                            "\nURL=" + tDir);
                     Table table = makeEmptyTable();
                     StringArray directoryPA    = (StringArray)table.getColumn(DIRECTORY);
                     StringArray namePA         = (StringArray)table.getColumn(NAME);
@@ -404,6 +407,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             matcher = THREDDS_PATTERN.matcher(tDir); 
             if (matcher.matches()) {
                 try {
+                    if (verbose) 
+                        String2.log("FileVisitorDNLS.oneStep getting info from THREDDS at" + 
+                            "\nURL=" + tDir);
                     Table table = makeEmptyTable();
                     StringArray directoryPA    = (StringArray)table.getColumn(DIRECTORY);
                     StringArray namePA         = (StringArray)table.getColumn(NAME);
@@ -430,6 +436,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
             //default: Apache-style WAF
             try {
+                if (verbose) 
+                    String2.log("FileVisitorDNLS.oneStep getting info from Apache-style WAF at" + 
+                        "\nURL=" + tDir);
                 Table table = makeEmptyTable();
                 StringArray directorySA = (StringArray)table.getColumn(DIRECTORY);
                 StringArray nameSA      = (StringArray)table.getColumn(NAME);
@@ -530,11 +539,35 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     }
 
     /** 
+     * This is like oneStep (a convenience method for using this class)
+     * but returns a url column instead of a directory column. 
+     *
+     * @param tDir The starting directory, with \\ or /, with or without trailing slash,
+     *    which will be removed.
+     * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID() + "/"
+     *    which will be prepended.
+     * @return a table with columns with DIRECTORY (always "/"), NAME,
+     *    LASTMODIFIED (milliSeconds), and SIZE (long) columns.
+     */
+    public static Table oneStepWithUrlsNotDirs(String tDir, 
+        String tFileNameRegex, boolean tRecursive, String tPathRegex, String startOfUrl) 
+        throws IOException {
+
+        tDir = File2.addSlash(String2.replaceAll(tDir, "\\", "/")); //ensure forward/ and trailing/
+        return oneStepDoubleWithUrlsNotDirs(
+            oneStep(tDir, tFileNameRegex, tRecursive, tPathRegex, false), //tDirectoriesToo
+            tDir,
+            startOfUrl);
+    }
+        
+    /** 
      * This is like oneStepDouble (a convenience method for using this class)
      * but returns a url column instead of a directory column. 
      *
-     * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
+     * @param tDir The starting directory, with \\ or /, with or without trailing slash,
+     *    which will be removed.
      * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID() + "/"
+     *    which will be prepended.
      * @return a table with columns with DIRECTORY (always "/"), NAME,
      *    LASTMODIFIED (double epochSeconds), and SIZE (doubles) columns.
      */
@@ -630,6 +663,13 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 //<img src="..." alt="[DIR]" align="absbottom"> <a href="0&#x2f;">0</a>
     public final static Pattern wafDirPattern = Pattern.compile(
         ".* alt=\"\\[DIR\\]\".*>.*<a.*>(.*?)</a>.*");
+//https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/
+//<tr><td valign="top">&nbsp;</td><td><a href="doc/">doc/</a></td>
+//  <td align="right">14-Mar-2017 08:34  </td><td align="right">  - </td><td>&nbsp;</td></tr>
+    public final static Pattern wafDirPattern2 = Pattern.compile(
+        ".*href=\"(.*?/)\">" +
+        ".*>\\d{2}-[a-zA-Z]{3}-\\d{4} \\d{2}:\\d{2}(|:\\d{2})" + //date, note internal ()
+        ".*");
 
 //inport:
 //<tr><td valign="top"><img src="/icons/unknown.gif" alt="[   ]"></td><td>
@@ -643,6 +683,13 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         ".* alt=\"\\[.*?\\]\".*>.*<a.*>(.*?)</a>" + //name
         ".*(\\d{2}-[a-zA-Z]{3}-\\d{4} \\d{2}:\\d{2}(|:\\d{2}))" + //date, note internal ()
         ".*\\W(\\d{1,15}\\.?\\d{0,10}[KMGTP]?).*"); //size
+//https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/
+//<tr><td valign="top">&nbsp;</td><td><a href="gpcp_1dd_v1.2_p1d.199610">gpcp_1dd_v1.2_p1d.199610</a>
+//  </td><td align="right">18-Sep-2012 12:55  </td><td align="right">7.7M</td><td>&nbsp;</td></tr>
+    public final static Pattern wafFilePattern2 = Pattern.compile(
+        ".* href=\"(.*?)\">" + //name
+        ".*>(\\d{2}-[a-zA-Z]{3}-\\d{4} \\d{2}:\\d{2}(|:\\d{2}))" + //date, note internal ()
+        ".*>(\\d{1,15}\\.?\\d{0,10}[KMGTP]?)</td>.*"); //size
 
 
     public static String[] getUrlsFromWAF(String startUrl, String fileNameRegex, 
@@ -709,7 +756,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             //All non-ASCII chars should be entities.
             //But use common Linux to be consistent.
             is = SSR.getUrlInputStream(url); 
-            in = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"));
+            in = new BufferedReader(new InputStreamReader(is, String2.ISO_8859_1));
             String s;
 
             //look for header line
@@ -722,11 +769,16 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             while ((s = in.readLine()) != null) {
 
                 //look for dirs before files (since dirs match filePattern, too)
+                if (s.indexOf("Parent Directory") >= 0)
+                    continue;
                 Matcher matcher = wafDirPattern.matcher(s); 
-                if (matcher.matches()) {
+                boolean matched = matcher.matches();
+                if (!matched) {
+                    matcher = wafDirPattern2.matcher(s);
+                    matched = matcher.matches();
+                }
+                if (matched) {
                     String name = XML.decodeEntities(matcher.group(1));
-                    if ("Parent Directory".equals(name))
-                        continue;
                     String tUrl = File2.addSlash(url + name);
                     if (tUrl.matches(pathRegex)) {
                         if (dirsToo) {
@@ -747,7 +799,12 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
                 //look for files 
                 matcher = wafFilePattern.matcher(s); 
-                if (matcher.matches()) {
+                matched = matcher.matches();
+                if (!matched) {
+                    matcher = wafFilePattern2.matcher(s);
+                    matched = matcher.matches();
+                }
+                if (matched) {
                     String name = XML.decodeEntities(matcher.group(1));
                     if (name.matches(fileNameRegex)) {
 
@@ -777,6 +834,8 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                         names.add(name);
                         lastModified.add(millis);
                         size.add(lSize);
+                    } else if (debugMode) {
+                        if (debugMode) String2.log("name matches=false: " + name);
                     }
                     continue;
                 } else {
@@ -816,7 +875,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         String url = "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/"; 
         String tFileNameRegex = "194\\d\\.nc";
         boolean tRecursive = true;
-        String tPathRegex = ".*/(3|4)/.*";
+        String tPathRegex = ".*/(3|4)/.*";   
         boolean tDirsToo = true;
         Table table = makeEmptyTable();
         StringArray dirs        = (StringArray)table.getColumn(0);
@@ -831,7 +890,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             addToWAFUrlList(url, tFileNameRegex, tRecursive, tPathRegex, tDirsToo, 
                 dirs, names, lastModifieds, sizes),
             "");
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,,,\n" +
@@ -863,7 +922,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //test via oneStep 
         tTable = oneStep(url, tFileNameRegex, tRecursive, tPathRegex, tDirsToo);
-        results = tTable.dataToCSVString();
+        results = tTable.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -873,7 +932,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             addToWAFUrlList(url, tFileNameRegex, tRecursive, tPathRegex, false, 
                 dirs, names, lastModifieds, sizes),
             "");
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,48128\n" +
@@ -900,7 +959,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //test via oneStep 
         tTable = oneStep(url, tFileNameRegex, tRecursive, tPathRegex, false);
-        results = tTable.dataToCSVString();
+        results = tTable.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -911,7 +970,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                 tFileNameRegex, tRecursive, tPathRegex, tDirsToo, 
                 dirs, names, lastModifieds, sizes),
             "");
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,48128\n" +
@@ -928,7 +987,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //test via oneStep 
         tTable = oneStep(url + "3", tFileNameRegex, tRecursive, tPathRegex, tDirsToo);
-        results = tTable.dataToCSVString();
+        results = tTable.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -939,7 +998,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                 "zztop", tRecursive, tPathRegex, tDirsToo, 
                 dirs, names, lastModifieds, sizes),
             "");
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,,,\n" +
@@ -948,7 +1007,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //test via oneStep 
         tTable = oneStep(url, "zztop", tRecursive, tPathRegex, tDirsToo);
-        results = tTable.dataToCSVString();
+        results = tTable.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -959,12 +1018,12 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
                 tFileNameRegex, false, tPathRegex, tDirsToo, 
                 dirs, names, lastModifieds, sizes),
             "");
-        results = table.dataToCSVString();
+        results = table.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test via oneStep 
         tTable = oneStep(url, tFileNameRegex, false, tPathRegex, tDirsToo);
-        results = tTable.dataToCSVString();
+        results = tTable.dataToString();
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //* Test InPort WAF        
@@ -973,22 +1032,48 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             addToWAFUrlList("https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/",
                 "22...\\.xml",   
                 //pre 2016-03-04 I tested NWFSC/inport/xml, but it has been empty for a month!
-                true, ".*/NMFS/(|NEFSC/)(|inport/)(|xml/)", //tricky!
+                true, ".*/NMFS/(|NEFSC/)(|inport/)(|xml/)", //tricky!  //should be slashStar, no space
                 true, //tDirsToo, 
                 dirs, names, lastModifieds, sizes),
             "");
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/,,,\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1455948120000,21504\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1455948120000,21504\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1455948120000,19456\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1455948120000,21504\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1456553280000,23552\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1455948120000,25600\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1489504860000,307200\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1489504860000,307200\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1489504860000,305152\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1489504920000,307200\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1489504920000,309248\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1489504920000,311296\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //* Test ncei WAF        
+        table.removeAllRows();
+        tTable = oneStep(
+            "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/",
+            "gpcp_1dd_v1\\.2_p1d\\.1997[0-9]{2}",   
+            true, ".*", true); //tDirsToo, 
+        results = tTable.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,,,\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199701,1347972900000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199702,1347972900000,7235174\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199703,1347972900000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199704,1347972900000,7759462\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199705,1347972900000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199706,1347972900000,7759462\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199707,1347972900000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199708,1347972720000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199709,1347972720000,7759462\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199710,1347972720000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199711,1347972720000,7759462\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/,gpcp_1dd_v1.2_p1d.199712,1347972720000,8074035\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/doc/,,,\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/src/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
       } catch (Throwable t) {
@@ -1010,7 +1095,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
      *  can be added to see a hyrax catalog) e.g.,
         http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/
         or
-        http://podaac-opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/
+        https://opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/
      * @param fileNameRegex e.g.,
             "pentad.*flk\\.nc\\.gz"
      * @param recursive
@@ -1086,11 +1171,20 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //skip header line and parent directory
         int po = responseLC.indexOf("parent directory");  //Lower Case
-        if (po < 0 ) {
-            if (reallyVerbose) String2.log("ERROR: \"parent directory\" not found in Hyrax response.");
-            return false;
+        if (po >= 0) {
+            po += 18;
+        } else {
+            if (verbose) String2.log("ERROR: \"parent directory\" not found in Hyrax response.");
+            po = responseLC.indexOf("<table");  //Lower Case
+            if (po < 0) {
+                if (verbose) String2.log("ERROR: \"<table\" not found in Hyrax response.\n" +
+                    "No dir info found for " + url);
+                return false;
+            } else {
+                po += 6;
+                if (verbose) String2.log("Using \"<table\" as starting point instead.");
+            }
         }
-        po += 18;
 
         //endPre
         int endPre = responseLC.indexOf("</pre>", po); //Lower Case
@@ -1101,9 +1195,9 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         boolean diagnosticMode = false;
         while (true) {
 
-            //EXAMPLE http://data.nodc.noaa.gov/opendap/wod/monthly/  No longer available
+            //EXAMPLE https://data.nodc.noaa.gov/opendap/wod/monthly/  No longer available
 
-            //EXAMPLE http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M07
+            //EXAMPLE https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M07
             //(reformatted: look for tags, not formatting
             /*   <tr>
                    <td align="left"><b><a href="month_19870701_v11l35flk.nc.gz.html">month_19870701_v11l35flk.nc.gz</a></b></td>
@@ -1236,10 +1330,15 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
      */
     public static void testHyrax() throws Throwable {
         String2.log("\n*** FileVisitorDNLS.testHyrax()\n");
+        //reallyVerbose = true;
+        //debugMode=true;
 
         try {
-        
-        String url = "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"; //contents.html
+        //podaac-opendap causes the  
+        //"javax.net.ssl.SSLProtocolException: handshake alert: unrecognized_name" error
+        //  String url = "https://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"; //contents.html
+        //so use domain name shown on digital certificate: opendap.jpl.nasa.gov
+        String url = "https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/"; //contents.html
         String fileNameRegex = "month_198(8|9).*flk\\.nc\\.gz";
         boolean recursive = true;
         String pathRegex = null;
@@ -1266,59 +1365,59 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         table.addColumn("URL", childUrls);
         table.addColumn("lastModified", lastModified);
         table.addColumn("size", size);
-        String results = table.dataToCSVString();
+        String results = table.dataToString();
         String expected = 
 "URL,lastModified,size\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz,1.336863115E9,4981045\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880201_v11l35flk.nc.gz,1.336723222E9,5024372\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880301_v11l35flk.nc.gz,1.336546575E9,5006043\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880401_v11l35flk.nc.gz,1.336860015E9,4948285\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880501_v11l35flk.nc.gz,1.336835143E9,4914250\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880601_v11l35flk.nc.gz,1.336484405E9,4841084\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880701_v11l35flk.nc.gz,1.336815079E9,4837417\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880801_v11l35flk.nc.gz,1.336799789E9,4834242\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880901_v11l35flk.nc.gz,1.336676042E9,4801865\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881001_v11l35flk.nc.gz,1.336566352E9,4770289\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881101_v11l35flk.nc.gz,1.336568382E9,4769160\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881201_v11l35flk.nc.gz,1.336838712E9,4866335\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890101_v11l35flk.nc.gz,1.336886548E9,5003981\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890201_v11l35flk.nc.gz,1.336268373E9,5054907\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890301_v11l35flk.nc.gz,1.336605483E9,4979393\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890401_v11l35flk.nc.gz,1.336350339E9,4960865\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890501_v11l35flk.nc.gz,1.336551575E9,4868541\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890601_v11l35flk.nc.gz,1.336177278E9,4790364\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890701_v11l35flk.nc.gz,1.336685187E9,4854943\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890801_v11l35flk.nc.gz,1.336534686E9,4859216\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890901_v11l35flk.nc.gz,1.33622953E9,4838390\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891001_v11l35flk.nc.gz,1.336853599E9,4820645\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891101_v11l35flk.nc.gz,1.336882933E9,4748166\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891201_v11l35flk.nc.gz,1.336748115E9,4922858\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1990/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1991/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1992/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1993/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1994/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1995/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1996/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1997/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1998/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1999/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2000/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2001/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2002/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2003/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2004/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2005/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2006/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2007/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2008/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2009/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2010/,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2011/,,\n";
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz,1.336863115E9,4981045\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880201_v11l35flk.nc.gz,1.336723222E9,5024372\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880301_v11l35flk.nc.gz,1.336546575E9,5006043\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880401_v11l35flk.nc.gz,1.336860015E9,4948285\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880501_v11l35flk.nc.gz,1.336835143E9,4914250\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880601_v11l35flk.nc.gz,1.336484405E9,4841084\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880701_v11l35flk.nc.gz,1.336815079E9,4837417\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880801_v11l35flk.nc.gz,1.336799789E9,4834242\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880901_v11l35flk.nc.gz,1.336676042E9,4801865\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881001_v11l35flk.nc.gz,1.336566352E9,4770289\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881101_v11l35flk.nc.gz,1.336568382E9,4769160\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881201_v11l35flk.nc.gz,1.336838712E9,4866335\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890101_v11l35flk.nc.gz,1.336886548E9,5003981\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890201_v11l35flk.nc.gz,1.336268373E9,5054907\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890301_v11l35flk.nc.gz,1.336605483E9,4979393\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890401_v11l35flk.nc.gz,1.336350339E9,4960865\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890501_v11l35flk.nc.gz,1.336551575E9,4868541\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890601_v11l35flk.nc.gz,1.336177278E9,4790364\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890701_v11l35flk.nc.gz,1.336685187E9,4854943\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890801_v11l35flk.nc.gz,1.336534686E9,4859216\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890901_v11l35flk.nc.gz,1.33622953E9,4838390\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891001_v11l35flk.nc.gz,1.336853599E9,4820645\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891101_v11l35flk.nc.gz,1.336882933E9,4748166\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891201_v11l35flk.nc.gz,1.336748115E9,4922858\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1990/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1991/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1992/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1993/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1994/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1995/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1996/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1997/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1998/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1999/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2000/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2001/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2002/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2003/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2004/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2005/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2006/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2007/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2008/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2009/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2010/,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/2011/,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         Test.ensureTrue(allOk, "");
 
@@ -1326,37 +1425,37 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         String resultsAr[] = getUrlsFromHyraxCatalog(url, fileNameRegex, recursive,
             pathRegex);
         String expectedAr[] = new String[]{
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880201_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880301_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880401_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880501_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880601_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880701_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880801_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880901_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881001_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881201_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890201_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890301_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890401_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890501_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890601_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890701_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890801_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890901_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891001_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891201_v11l35flk.nc.gz"}; 
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880201_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880301_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880401_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880501_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880601_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880701_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880801_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880901_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881001_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881101_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881201_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890101_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890201_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890301_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890401_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890501_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890601_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890701_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890801_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19890901_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891001_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891101_v11l35flk.nc.gz",
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1989/month_19891201_v11l35flk.nc.gz"}; 
         Test.ensureEqual(resultsAr, expectedAr, "results=\n" + results);
 
         //different test of addToHyraxUrlList
         childUrls = new StringArray();
         lastModified = new DoubleArray();
         LongArray fSize = new LongArray();
-        url = "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/"; //startUrl, 
+        url = "https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/"; //startUrl, 
         fileNameRegex = "month_[0-9]{8}_v11l35flk\\.nc\\.gz"; //fileNameRegex, 
         recursive = true;
         addToHyraxUrlList(url, fileNameRegex, recursive, pathRegex, dirsToo,
@@ -1364,13 +1463,13 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         results = childUrls.toNewlineString();
         expected = 
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870701_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870801_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870901_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871001_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871101_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871201_v11l35flk.nc.gz\n";
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870701_v11l35flk.nc.gz\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870801_v11l35flk.nc.gz\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870901_v11l35flk.nc.gz\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871001_v11l35flk.nc.gz\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871101_v11l35flk.nc.gz\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871201_v11l35flk.nc.gz\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = lastModified.toString();
@@ -1379,29 +1478,29 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //test via oneStep -- dirs
         table = oneStep(url, fileNameRegex, recursive, pathRegex, true);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,,,\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870701_v11l35flk.nc.gz,1336609915,4807310\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870801_v11l35flk.nc.gz,1336785444,4835774\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870901_v11l35flk.nc.gz,1336673639,4809582\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871001_v11l35flk.nc.gz,1336196561,4803285\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871101_v11l35flk.nc.gz,1336881763,4787239\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871201_v11l35flk.nc.gz,1336705731,4432696\n";
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,,,\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870701_v11l35flk.nc.gz,1336609915,4807310\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870801_v11l35flk.nc.gz,1336785444,4835774\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870901_v11l35flk.nc.gz,1336673639,4809582\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871001_v11l35flk.nc.gz,1336196561,4803285\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871101_v11l35flk.nc.gz,1336881763,4787239\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871201_v11l35flk.nc.gz,1336705731,4432696\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test via oneStep -- no dirs
         table = oneStep(url, fileNameRegex, recursive, pathRegex, false);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870701_v11l35flk.nc.gz,1336609915,4807310\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870801_v11l35flk.nc.gz,1336785444,4835774\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870901_v11l35flk.nc.gz,1336673639,4809582\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871001_v11l35flk.nc.gz,1336196561,4803285\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871101_v11l35flk.nc.gz,1336881763,4787239\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871201_v11l35flk.nc.gz,1336705731,4432696\n";
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870701_v11l35flk.nc.gz,1336609915,4807310\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870801_v11l35flk.nc.gz,1336785444,4835774\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19870901_v11l35flk.nc.gz,1336673639,4809582\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871001_v11l35flk.nc.gz,1336196561,4803285\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871101_v11l35flk.nc.gz,1336881763,4787239\n" +
+"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/,month_19871201_v11l35flk.nc.gz,1336705731,4432696\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
       } catch (Throwable t) {
@@ -1423,7 +1522,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
      * @param url the url of the current Thredds directory 
      *   (which usually includes /thredds/catalog/)
      *   to which catalog.html will be added, e.g.,
-     *    <br>http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5day/FullRes/
+     *    <br>https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5day/FullRes/
      *   (If url has a file name, it must be catalog.html or catalog.xml.)
      * @param fileNameRegex e.g., ".*\\.hdf"
      * @param recursive
@@ -1485,7 +1584,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         while (true) {
 
 /* EXAMPLE from TDS 4.2.10 at
-http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5day/FullRes/1981/catalog.html
+https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5day/FullRes/1981/catalog.html
 ...<table ...
 ...<tr>
 <th align='left'><font size='+1'>Dataset</font></th>
@@ -1622,7 +1721,7 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
         reallyVerbose = true;
 
       try {
-        String url =  "http://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"; //catalog.html
+        String url =  "https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V3.0/monthly/"; //catalog.html
         String fileNameRegex = "sss_binned_L3_MON_SCI_V3.0_\\d{4}\\.nc";
         boolean recursive = true;
         String pathRegex = null;
@@ -1648,12 +1747,12 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
 
         String results = childUrls.toNewlineString();
         String expected = 
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2011.nc\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2012.nc\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2013.nc\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2014.nc\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2015.nc\n";
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2011.nc\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2012.nc\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2013.nc\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2014.nc\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/sss_binned_L3_MON_SCI_V3.0_2015.nc\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = lastModified.toString();
@@ -1669,27 +1768,27 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
 
         //test via oneStep -- dirs
         Table table = oneStep(url, fileNameRegex, recursive, pathRegex, true);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,,,\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2011.nc,1405495932,2723152\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2012.nc,1405492834,6528434\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2013.nc,1405483892,6528434\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2014.nc,1429802008,6528434\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2015.nc,1429867829,1635779\n";
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,,,\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2011.nc,1405495932,2723152\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2012.nc,1405492834,6528434\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2013.nc,1405483892,6528434\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2014.nc,1429802008,6528434\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2015.nc,1429867829,1635779\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test via oneStep -- no dirs
         table = oneStep(url, fileNameRegex, recursive, pathRegex, false);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2011.nc,1405495932,2723152\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2012.nc,1405492834,6528434\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2013.nc,1405483892,6528434\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2014.nc,1429802008,6528434\n" +
-"http://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2015.nc,1429867829,1635779\n";
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2011.nc,1405495932,2723152\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2012.nc,1405492834,6528434\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2013.nc,1405483892,6528434\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2014.nc,1429802008,6528434\n" +
+"https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V3.0/monthly/,sss_binned_L3_MON_SCI_V3.0_2015.nc,1429867829,1635779\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
       } catch (Throwable t) {
@@ -1715,18 +1814,18 @@ http://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5d
 
         //recursive and dirToo             and test \\ separator
         table = oneStep("c:\\erddapTest\\fileNames", ".*\\.png", true, tPathRegex, true); 
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"c:\\erddapTest\\fileNames\\,jplMURSST20150103090000.png,1421276044628,46482\n" +
-"c:\\erddapTest\\fileNames\\,jplMURSST20150104090000.png,1420669338436,46586\n" +
-"c:\\erddapTest\\fileNames\\sub\\,,1420735700318,0\n" +
-"c:\\erddapTest\\fileNames\\sub\\,jplMURSST20150105090000.png,1420669304917,46549\n";
+"c:\\\\erddapTest\\\\fileNames\\\\,jplMURSST20150103090000.png,1421276044628,46482\n" +
+"c:\\\\erddapTest\\\\fileNames\\\\,jplMURSST20150104090000.png,1420669338436,46586\n" +
+"c:\\\\erddapTest\\\\fileNames\\\\sub\\\\,,1420735700318,0\n" +
+"c:\\\\erddapTest\\\\fileNames\\\\sub\\\\,jplMURSST20150105090000.png,1420669304917,46549\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //recursive and !dirToo           and test // separator
         table = oneStep(String2.unitTestDataDir + "fileNames", ".*\\.png", true, tPathRegex, false);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 String2.unitTestDataDir + "fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
@@ -1736,7 +1835,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1420669304
 
         //!recursive and dirToo
         table = oneStep(String2.unitTestDataDir + "fileNames", ".*\\.png", false, tPathRegex, true);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 String2.unitTestDataDir + "fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
@@ -1746,7 +1845,7 @@ String2.unitTestDataDir + "fileNames/sub/,,1420735700318,0\n";
 
         //!recursive and !dirToo
         table = oneStep(String2.unitTestDataDir + "fileNames", ".*\\.png", false, tPathRegex, false);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 String2.unitTestDataDir + "fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
@@ -1757,7 +1856,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
         //***
         //oneStepDouble
         table = oneStepDouble(String2.unitTestDataDir + "fileNames", ".*\\.png", true, tPathRegex, true); 
-        results = table.toCSVString();
+        results = table.toString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -1782,11 +1881,11 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row,directory,name,lastModified,size\n" +
-"0," + String2.unitTestDataDir + "fileNames/,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
-"1," + String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
-"2," + String2.unitTestDataDir + "fileNames/sub/,,1.420735700318E9,0.0\n" +
-"3," + String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
+"directory,name,lastModified,size\n" +
+String2.unitTestDataDir + "fileNames/,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
+String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
+String2.unitTestDataDir + "fileNames/sub/,,1.420735700318E9,0.0\n" +
+String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -1795,7 +1894,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
         table = oneStepDoubleWithUrlsNotDirs(String2.unitTestDataDir + "fileNames", ".*\\.png", 
             true, tPathRegex,
             "http://localhost:8080/cwexperimental/files/testFileNames/");
-        results = table.toCSVString();
+        results = table.toString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -1820,10 +1919,10 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row,url,name,lastModified,size\n" +
-"0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
-"1,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
-"2,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
+"url,name,lastModified,size\n" +
+"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,1.421276044628E9,46482.0\n" +
+"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,1.420669338436E9,46586.0\n" +
+"http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,1.420669304917E9,46549.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -1908,7 +2007,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
 
         //recursive and dirToo
         table = oneStep(parent, ".*\\.nc", true, pathRegex, true); 
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
@@ -1922,7 +2021,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
 
         //recursive and !dirToo
         table = oneStep(parent, ".*\\.nc", true, pathRegex, false);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
@@ -1934,7 +2033,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
 
         //!recursive and dirToo
         table = oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
@@ -1947,7 +2046,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
 
         //!recursive and !dirToo
         table = oneStep(parent + child, ".*\\.nc", false, pathRegex, false);
-        results = table.dataToCSVString();
+        results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
@@ -2010,8 +2109,8 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
             tPathRegex, false); //dir too
         rTable.leftToRightSort(2); //lexical sort, so can walk through below
         lTable.leftToRightSort(2); //lexical sort, so can walk through below
-        //String2.log("\nremote table (max of 5)\n" + rTable.dataToCSVString(5) +
-        //            "\nlocal  table (max of 5)\n" + lTable.dataToCSVString(5));
+        //String2.log("\nremote table (max of 5)\n" + rTable.dataToString(5) +
+        //            "\nlocal  table (max of 5)\n" + lTable.dataToString(5));
 
         StringArray rDir     = (StringArray)rTable.getColumn(DIRECTORY);
         StringArray lDir     = (StringArray)lTable.getColumn(DIRECTORY);
@@ -2161,19 +2260,19 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
             Table table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
             String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
                 "\"found nAlready=3 nToDownload=2 nTooRecent=1 nExtraLocal=1\"\n");
-            String results = table.dataToCSVString();
+            String results = table.dataToString();
             String expected = //the lastModified values change periodically
 //these are the files which were downloaded
 "remote,local,lastModified\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1475767320000\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1475767380000\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1491319260000\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1491319320000\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //no changes, do the sync again
             table = sync(rDir, lDir, fileRegex, recursive, pathRegex, doIt);
             String2.pressEnterToContinue("\nCheck above to ensure these numbers:\n" +
                 "\"found nAlready=5 nToDownload=0 nTooRecent=1 nExtraLocal=1\"\n");
-            results = table.dataToCSVString();
+            results = table.dataToString();
             expected = 
     "remote,local,lastModified\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
@@ -2568,7 +2667,7 @@ String2.unitTestDataDir + "fileNames/,jplMURSST20150104090000.png,1420669338436,
         } else {
             Table table = oneStep(args[0], args[1], 
                 true, ".*", true); //tRecursive, tPathRegex, tDirectoriesToo
-            String2.log(table.dataToCSVString());
+            String2.log(table.dataToString());
         }
         System.exit(0);
     }

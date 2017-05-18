@@ -97,12 +97,12 @@ import java.util.HashSet;
  *   https://www.seegrid.csiro.au/subversion/xmml/OGC/branches/SWE_gml2/sweCommon/current/examples/phenomena.xml
  * <p>Info about a sample server: http://www.csc.noaa.gov/DTL/dtl_proj3_oostethys.html
  *   <br>The csc server uses code from
- *     http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1 .
+ *     http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1 . [GONE]
  *   <br>It seems to be set up to just serve several instances of lon,lat,alt,time,1variable
  *     instead of lon,lat,alt,time,manyVariables.(?)
  *
  * <p>Sample queries for different time periods
- * http://www.oostethys.org/Members/tcook/sos-xml-time-encodings/?searchterm=Time
+ * http://www.oostethys.org/Members/tcook/sos-xml-time-encodings/?searchterm=Time [GONE]
  *
  * <p>In general, if there is an error in processing the getCapabilities xml
  * for one station, only that station is rejected (with a message to the log.txt file).
@@ -321,7 +321,7 @@ public class EDDTableFromSOS extends EDDTable{
      * The constructor.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -1396,7 +1396,7 @@ public class EDDTableFromSOS extends EDDTable{
   
                     //make the xml constraint: basics and offering
                     //important help getting this to work from f:/programs/sos/oie_sos_time_range_obs.cgi
-                    //which is from http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1/sos-client-testing-source-code
+                    //which is from http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1/sos-client-testing-source-code [GONE]
                     StringBuilder getSB = new StringBuilder();
                     getSB.append("?service=SOS" +
                         "&version=" + sosVersion +  
@@ -1409,7 +1409,7 @@ public class EDDTableFromSOS extends EDDTable{
                     //eventTime
                     //older SOS spec has <ogc:During>; v1.0 draft has <ogc:T_During>
                     //new oostethys server ignores <ogc:During>, wants T_During 
-                    //see http://www.oostethys.org/Members/tcook/sos-xml-time-encodings/
+                    //see http://www.oostethys.org/Members/tcook/sos-xml-time-encodings/ [GONE]
                     String tMinTimeS = Calendar2.epochSecondsToIsoStringT(requestedDestinationMin[3]) + "Z";
                     String tMaxTimeS = Calendar2.epochSecondsToIsoStringT(requestedDestinationMax[3]) + "Z";
                     if (requestedDestinationMin[3] == requestedDestinationMax[3]) {
@@ -1425,7 +1425,7 @@ public class EDDTableFromSOS extends EDDTable{
                     //responseFormat=text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22    
                     //was resultFormat until 2010-04-20
                     //getSB.append("&resultFormat=application/com-xml"); //until 2010-04-20
-                    //see http://www.oostethys.org/best-practices/best-practices-get
+                    //see http://www.oostethys.org/best-practices/best-practices-get [GONE]
                     //getSB.append("&text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22"); 
 
                     if (reallyVerbose && !aConstraintShown) {
@@ -1601,7 +1601,7 @@ public class EDDTableFromSOS extends EDDTable{
             Table sosTable = new Table();
             boolean simplify = false;
             sosTable.readASCII(grabFileName, String2.splitNoTrim(sar[1], '\n'), 
-                0, 1, null, null, null, null, simplify); 
+                0, 1, "", null, null, null, null, simplify); 
             sar = null; //encourage garbage collection
 
             //!!! DANGER: if server changes source names or units, 
@@ -1757,7 +1757,7 @@ public class EDDTableFromSOS extends EDDTable{
         }
 
 
-        //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", "UTF-8", constraintSB.toString());
+        //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", String2.UTF_8, constraintSB.toString());
         InputStream in;
         SimpleXMLReader xmlReader;
         //values that need to be parsed from the xml and held
@@ -2042,7 +2042,7 @@ public class EDDTableFromSOS extends EDDTable{
         }
 
 
-        //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", "UTF-8", constraintSB.toString());
+        //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", String2.UTF_8, constraintSB.toString());
         InputStream in;
         SimpleXMLReader xmlReader;
 
@@ -2484,7 +2484,7 @@ public class EDDTableFromSOS extends EDDTable{
         return table;
     }
 
-private static String standardSummary = //from http://www.oostethys.org/ogc-oceans-interoperability-experiment 
+private static String standardSummary = //from http://www.oostethys.org/ogc-oceans-interoperability-experiment  [GONE]
 "The OCEANS IE -- formally approved as an OGC Interoperability\n" +
 "Experiment in December 2006 -- engages data managers and scientists\n" +
 "in the Ocean-Observing community to advance their understanding and\n" +
@@ -2524,7 +2524,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 
 
 // IRIS - This SOS listed at 
-//  http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1
+//  http://www.oostethys.org/ogc-oceans-interoperability-experiment/experiment-1 [GONE]
 //  (it may list others in future)
 // Specifically http://demo.transducerml.org:8080/ogc/
 //But the results are a tml reference. For now, don't get into that.
@@ -2678,7 +2678,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 expected = 
@@ -2928,7 +2928,7 @@ expected =
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -3064,7 +3064,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -3360,11 +3360,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
 /*
-http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities
+https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities
 <sos:ObservationOffering gml:id="network_currentsactive">
 <gml:description>
 All CurrentsActive stations on NOAA.NOS.CO-OPS SOS server
@@ -3423,7 +3423,7 @@ All CurrentsSurvey stations on NOAA.NOS.CO-OPS SOS server
 <sos:responseMode>inline</sos:responseMode>
 </sos:ObservationOffering>
 
-  ERROR while processing response from requestUrl=http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=S
+  ERROR while processing response from requestUrl=https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=S
 OS&version=1.0.0&request=GetObservation&offering=urn:ioos:station:NOAA.NOS.CO-OPS:lc0301&observedProperty=http:
 //mmisw.org/ont/cf/parameter/direction_of_sea_water_velocity&responseFormat=text%2Fcsv&eventTime=2013-09-01T00:
 03:00Z
@@ -3776,7 +3776,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -3902,7 +3902,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 
@@ -4074,7 +4074,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos WTemp test get one station .CSV data\n");
@@ -6835,8 +6835,8 @@ String expected2 =
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +
@@ -6882,6 +6882,7 @@ String expected2 =
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://sdf.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
@@ -7094,7 +7095,7 @@ String expected2 =
             sosPrefix = "sos:"; //oostethys
         } else {
             xmlReader.close();
-            String2.log(String2.readFromFile(safeFileName, "UTF-8")[1]);
+            String2.log(String2.readFromFile(safeFileName, String2.UTF_8)[1]);
             throw new RuntimeException("The first SOS capabilities tag=\"" + 
                 tags + "\" should have been <Capabilities> or <sos:Capabilities>.");
         }
@@ -7453,7 +7454,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
             boolean simplify = true;
             sosTable = new Table();
             sosTable.readASCII(safeFileName, String2.splitNoTrim(sar[1], '\n'), 
-                0, 1, null, null, null, null, simplify); 
+                0, 1, "", null, null, null, null, simplify); 
             timeSourceName = "date_time";
             longitudeSourceName = "longitude (degree)";
             latitudeSourceName  = "latitude (degree)";
@@ -7462,7 +7463,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 
         }
         if (reallyVerbose)
-            String2.log("response table=\n" + sosTable.toCSVString(4) + "...");
+            String2.log("response table=\n" + sosTable.toString(4));
 
 
         //tBaseUrl  http://sdf.ndbc.noaa.gov/sos/server.php
@@ -7550,7 +7551,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 "    <altitudeSourceName>" + XML.encodeAsXML(altitudeSourceName) + "</altitudeSourceName>\n" +
 "    <altitudeMetersPerSourceUnit>" + altitudeMPSU + "</altitudeMetersPerSourceUnit>\n" +
 "    <timeSourceName>" + XML.encodeAsXML(timeSourceName) + "</timeSourceName>\n" +
-"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss" + (isIoos52N? ".sss" : "") + 
+"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss" + (isIoos52N? ".SSS" : "") + 
     "Z</timeSourceFormat>\n");
 
         //make addTable with destinationNames and addAttributes
@@ -8486,12 +8487,12 @@ debugMode = false;
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row,time,station_id,air_pressure\n" +
-"0,2015-02-25T00:05:00.000Z,comps_42013,1013.93\n" +
-"1,2015-02-25T00:05:00.000Z,comps_42022,1013.98\n" +
-"2,2015-02-25T00:05:00.000Z,comps_42023,1014.55\n" +
-"3,2015-02-25T00:06:00.000Z,comps_fhpf1,1016.0\n" +
-"4,2015-02-25T00:06:00.000Z,comps_nfbf1,1016.56\n";
+"time,station_id,air_pressure\n" +
+"2015-02-25T00:05:00.000Z,comps_42013,1013.93\n" +
+"2015-02-25T00:05:00.000Z,comps_42022,1013.98\n" +
+"2015-02-25T00:05:00.000Z,comps_42023,1014.55\n" +
+"2015-02-25T00:06:00.000Z,comps_fhpf1,1016.0\n" +
+"2015-02-25T00:06:00.000Z,comps_nfbf1,1016.56\n";
         Test.ensureEqual(results, expected, "results=" + results);
         Test.ensureEqual(table.nRows(), 5312, "results=" + results);
         Test.ensureEqual(table.getStringData(0, 5311), "2015-02-26T00:00:00.000Z", "data(0, 5311)");
@@ -8752,7 +8753,7 @@ expected =
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
+//+ " https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 expected = 
@@ -8819,9 +8820,9 @@ expected =
 
         //Use when needed:
         if (false) {
-            //http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities
+            //https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS?service=SOS&request=GetCapabilities
             String2.log(generateDatasetsXml(true, //use cached?
-                "http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS", 
+                "https://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS", 
                 "1.0.0", "IOOS_NOS"));
             System.exit(0);
         }

@@ -1049,8 +1049,8 @@ public class EmaClass extends HttpServlet {
 
         //output the response html page 
         response.setContentType("text/html");
-        response.setCharacterEncoding("UTF-8");
-        OutputStreamWriter out = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
+        response.setCharacterEncoding(String2.UTF_8);
+        OutputStreamWriter out = new OutputStreamWriter(response.getOutputStream(), String2.UTF_8);
         out.write(getHTMLPage(request, request.getContentLength() > 0)); //displayErrorMessages
     }
 

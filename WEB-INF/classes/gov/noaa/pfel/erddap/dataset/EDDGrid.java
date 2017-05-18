@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.NDimensionalIndex;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -125,15 +126,20 @@ public abstract class EDDGrid extends EDD {
         ".asc", ".csv", ".csvp", ".csv0", ".das", ".dds", ".dods", 
         ".esriAscii", //".grd", ".hdf", 
         ".fgdc", ".graph", ".help", ".html", ".htmlTable",
-        ".iso19115", ".itx", ".json", 
-        ".mat", ".nc", ".ncHeader", ".ncml",
+        ".iso19115", ".itx", ".json", ".jsonlCSV", ".jsonlKVP", ".mat", 
+        ".nc", ".ncHeader", ".ncml", 
+//        ".nc4", ".nc4Header", 
+        ".nccsv", ".nccsvMetadata",
         ".odvTxt", ".tsv", ".tsvp", ".tsv0", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
         ".asc", ".csv", ".csv", ".csv", ".das", ".dds", ".dods", 
         ".asc", //".grd", ".hdf", 
         ".xml", ".html", ".html", ".html", ".html",
-        ".xml", ".itx", ".json", 
-        ".mat", ".nc", ".txt", ".xml", //.subset currently isn't included
+        ".xml", ".itx", ".json", ".jsonl", ".jsonl", ".mat", 
+        ".nc", ".txt", ".xml", 
+//        ".nc", ".txt",  
+        ".csv", ".csv",
+        //.subset currently isn't included
         ".txt", ".tsv", ".tsv", ".tsv", ".xhtml"};
     public static String[] dataFileTypeDescriptions = {
         EDStatic.fileHelp_asc,
@@ -154,10 +160,16 @@ public abstract class EDDGrid extends EDD {
         EDStatic.fileHelp_iso19115,
         EDStatic.fileHelp_itxGrid,
         EDStatic.fileHelp_json,
+        EDStatic.fileHelp_jsonlCSV,
+        EDStatic.fileHelp_jsonlKVP,
         EDStatic.fileHelp_mat,
-        EDStatic.fileHelpGrid_nc,
-        EDStatic.fileHelp_ncHeader,
+        EDStatic.fileHelpGrid_nc3,
+        EDStatic.fileHelp_nc3Header,
         EDStatic.fileHelp_ncml,
+//        EDStatic.fileHelpGrid_nc4,
+//        EDStatic.fileHelp_nc4Header,
+        EDStatic.fileHelp_nccsv,
+        EDStatic.fileHelp_nccsvMetadata,
         EDStatic.fileHelpGrid_odvTxt,
         EDStatic.fileHelp_tsv,
         EDStatic.fileHelp_tsvp,
@@ -174,25 +186,31 @@ public abstract class EDDGrid extends EDD {
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Dataset_Descriptor_Structure", //dds
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Data_Transmission", //dods
         "https://en.wikipedia.org/wiki/Esri_grid", //esriAscii
-        //"http://gmt.soest.hawaii.edu/gmt/doc/html/GMT_Docs/node60.html", //grd
-        //"http://www.hdfgroup.org/products/hdf4/", //hdf
-        "http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
+        //"https://gmt.soest.hawaii.edu/doc/5.1.0/GMT_Docs.html#grid-file-format", //grd
+        //"https://www.hdfgroup.org/products/hdf4/", //hdf
+        "https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html", //fgdc
         "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands", //GraphicsCommands
-        "http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", //help
+        "https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf", //help
         "http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#WWW_Interface_Service", //html
-        "http://www.w3schools.com/html/html_tables.asp", //htmlTable
+        "https://www.w3schools.com/html/html_tables.asp", //htmlTable
         "https://en.wikipedia.org/wiki/Geospatial_metadata", //iso19115
         "http://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf", //igor
         "http://www.json.org/", //json
-        "http://www.mathworks.com/", //mat
-        "http://www.unidata.ucar.edu/software/netcdf/", //nc
-        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //ncHeader
-        "http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/", //ncml
+        "http://jsonlines.org/", //jsonlCSV
+        "http://jsonlines.org/", //jsonlKVP
+        "https://www.mathworks.com/", //mat
+        "https://www.unidata.ucar.edu/software/netcdf/", //nc3
+        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
+        "https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/", //ncml
+//        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
+//        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
+        "https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html",
+        "https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html",
         "https://odv.awi.de/en/documentation/", //odv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
-        "http://www.w3schools.com/html/html_tables.asp" //xhtml
+        "https://www.w3schools.com/html/html_tables.asp" //xhtml
         //"http://www.tizag.com/htmlT/tables.php" //xhtml
     };
 
@@ -2188,7 +2206,7 @@ public abstract class EDDGrid extends EDD {
         if (fileTypeName.equals(".fgdc")) {
             if (accessibleViaFGDC.length() == 0) {                
                 File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", 
-                    outputStreamSource.outputStream("UTF-8"));
+                    outputStreamSource.outputStream(String2.UTF_8));
             } else {
                 throw new SimpleException(accessibleViaFGDC);
             }
@@ -2204,8 +2222,8 @@ public abstract class EDDGrid extends EDD {
         if (fileTypeName.equals(".html")) {
             //it is important that this use outputStreamSource so stream is compressed (if possible)
             //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
-            OutputStream out = outputStreamSource.outputStream("UTF-8");
-            Writer writer = new OutputStreamWriter(out, "UTF-8"); 
+            OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+            Writer writer = new OutputStreamWriter(out, String2.UTF_8); 
             writer.write(EDStatic.startHeadHtml(tErddapUrl,  
                 title() + " - " + EDStatic.daf));
             writer.write("\n" + rssHeadLink(loggedInAs));
@@ -2256,7 +2274,7 @@ public abstract class EDDGrid extends EDD {
         if (fileTypeName.equals(".iso19115")) {
             if (accessibleViaISO19115.length() == 0) {                
                 File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", 
-                    outputStreamSource.outputStream("UTF-8"));
+                    outputStreamSource.outputStream(String2.UTF_8));
             } else {
                 throw new SimpleException(accessibleViaISO19115);
             }
@@ -2273,6 +2291,16 @@ public abstract class EDDGrid extends EDD {
             return;
         }
 
+        if (fileTypeName.equals(".jsonlCSV")) {
+            saveAsJsonl(requestUrl, userDapQuery, outputStreamSource, false);
+            return;
+        }
+
+        if (fileTypeName.equals(".jsonlKVP")) {
+            saveAsJsonl(requestUrl, userDapQuery, outputStreamSource, true);
+            return;
+        }
+
         if (fileTypeName.equals(".mat")) {
             saveAsMatlab(requestUrl, userDapQuery, outputStreamSource);
             return;
@@ -2280,6 +2308,12 @@ public abstract class EDDGrid extends EDD {
 
         if (fileTypeName.equals(".ncml")) {
             saveAsNCML(loggedInAs, requestUrl, outputStreamSource);
+            return;
+        }
+
+        if (fileTypeName.equals(".nccsv") ||
+            fileTypeName.equals(".nccsvMetadata")) {
+            saveAsNccsv(fileTypeName, requestUrl, userDapQuery, outputStreamSource);
             return;
         }
 
@@ -2299,7 +2333,7 @@ public abstract class EDDGrid extends EDD {
 
             //ok, copy it  (and don't close the outputStream)
             File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType),
-                outputStreamSource.outputStream("UTF-8"));
+                outputStreamSource.outputStream(String2.UTF_8));
             return;
         }
 
@@ -2344,7 +2378,9 @@ public abstract class EDDGrid extends EDD {
 
         //what is the cacheFullName?
         //if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
-        String cacheFullName = fileTypeName.equals(".ncHeader")?  //the only exception there will ever be
+        String cacheFullName = 
+            fileTypeName.equals(".ncHeader") || 
+            fileTypeName.equals(".nc4Header")? //the only exceptions there will ever be
             dir + fileName + ".nc" : fullName;
         int random = Math2.random(Integer.MAX_VALUE);
 
@@ -2356,7 +2392,18 @@ public abstract class EDDGrid extends EDD {
 
             } else if (fileTypeName.equals(".nc") || fileTypeName.equals(".ncHeader")) {
                 //if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
-                saveAsNc(requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
+                saveAsNc(NetcdfFileWriter.Version.netcdf3,
+                    requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
+                File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
+
+            } else if (fileTypeName.equals(".nc4") || fileTypeName.equals(".nc4Header")) {
+
+                if (EDStatic.accessibleViaNC4.length() > 0)  
+                    throw new SimpleException(EDStatic.accessibleViaNC4);
+    
+                //if .nc4Header, make sure the .nc4 file exists (and it is the better file to cache)
+                saveAsNc(NetcdfFileWriter.Version.netcdf4,
+                    requestUrl, userDapQuery, cacheFullName, true, 0); //it saves to temp random file first
                 File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
 
             } else {
@@ -2394,12 +2441,13 @@ public abstract class EDDGrid extends EDD {
         }
 
         //then handle .ncHeader
-        if (fileTypeName.equals(".ncHeader")) {
+        if (fileTypeName.equals(".ncHeader") ||
+            fileTypeName.equals(".nc4Header")) {
             //thread-safe creation of the file 
             //(If there are almost simultaneous requests for the same one, only one thread will make it.)
             synchronized(String2.canonical(fullName)) {
                 String error = String2.writeToFile(fullName + random, 
-                    NcHelper.dumpString(cacheFullName, false)); //!!!this doesn't do anything to internal " in a String attribute value.
+                    NcHelper.dumpString(cacheFullName, false), String2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
                 if (error.length() == 0) {
                     File2.rename(fullName + random, fullName); //make available in an instant
                     File2.isFile(fullName, 5); //for possible waiting thread, wait till file is visible via operating system
@@ -2412,8 +2460,9 @@ public abstract class EDDGrid extends EDD {
         //copy file to outputStream
         //(I delayed getting actual outputStream as long as possible.)
         if (!File2.copy(fullName, outputStreamSource.outputStream(
-            fileTypeName.equals(".ncHeader")? "UTF-8" : 
-            fileTypeName.equals(".kml")? "UTF-8" : 
+            fileTypeName.equals(".ncHeader")? String2.UTF_8 : 
+            fileTypeName.equals(".nc4Header")? String2.UTF_8 : 
+            fileTypeName.equals(".kml")? String2.UTF_8 : 
             ""))) {
             //outputStream contentType already set,
             //so I can't go back to html and display error message
@@ -2458,8 +2507,8 @@ public abstract class EDDGrid extends EDD {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String formName = "f1"; //change JavaScript below if this changes
-        OutputStream out = outputStreamSource.outputStream("UTF-8");
-        Writer writer = new OutputStreamWriter(out, "UTF-8"); 
+        OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+        Writer writer = new OutputStreamWriter(out, String2.UTF_8); 
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs));
 
         //write the header
@@ -3994,7 +4043,7 @@ public abstract class EDDGrid extends EDD {
      * This gets the data for the userDapQuery and writes the grid data to the 
      * outputStream in the DODS ASCII data format, which is not defined in OPeNDAP 2.0,
      * but which is very close to saveAsDODS below.
-     * This mimics http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day.asc?MHchla[1477][0][2080:2:2082][4940] .
+     * This mimics https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day.asc?MHchla[1477][0][2080:2:2082][4940] .
      * 
      * @param requestUrl
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null).
@@ -4021,8 +4070,8 @@ public abstract class EDDGrid extends EDD {
 
             //write the connector  //OPeNDAP 2.0, 7.2.3
             OutputStreamWriter writer = new OutputStreamWriter(
-                outputStreamSource.outputStream("ISO-8859-1"),
-                "ISO-8859-1"); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+                outputStreamSource.outputStream(String2.ISO_8859_1),
+                String2.ISO_8859_1); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             writer.write(
                 "---------------------------------------------" + OpendapHelper.EOL + 
                 "Data:" + OpendapHelper.EOL); //see EOL definition for comments
@@ -4061,8 +4110,8 @@ public abstract class EDDGrid extends EDD {
 
         //write the connector  //OPeNDAP 2.0, 7.2.3
         OutputStreamWriter writer = new OutputStreamWriter(
-            outputStreamSource.outputStream("ISO-8859-1"),
-            "ISO-8859-1"); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            outputStreamSource.outputStream(String2.ISO_8859_1),
+            String2.ISO_8859_1); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
         writer.write("---------------------------------------------" + 
             OpendapHelper.EOL); //see EOL definition for comments 
 
@@ -4146,8 +4195,8 @@ public abstract class EDDGrid extends EDD {
         long time = System.currentTimeMillis();
 
         //get the modified outputStream
-        Writer writer = new OutputStreamWriter(outputStreamSource.outputStream("ISO-8859-1"),
-            "ISO-8859-1"); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = new OutputStreamWriter(outputStreamSource.outputStream(String2.ISO_8859_1),
+            String2.ISO_8859_1); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
 
         //write the DAS
         writeDAS(File2.forceExtension(requestUrl, ".das"), "", writer, false);
@@ -4258,8 +4307,8 @@ Attributes {
             int nRAV = ada.nRequestedAxisVariables();
 
             //then get the modified outputStream
-            Writer writer = new OutputStreamWriter(outputStreamSource.outputStream("ISO-8859-1"),
-                "ISO-8859-1"); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            Writer writer = new OutputStreamWriter(outputStreamSource.outputStream(String2.ISO_8859_1),
+                String2.ISO_8859_1); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
 
             writer.write("Dataset {" + OpendapHelper.EOL); //see EOL definition for comments
             for (int av = 0; av < nRAV; av++) {
@@ -4285,8 +4334,8 @@ Attributes {
         boolean entireDataset = userDapQuery == null || SSR.percentDecode(userDapQuery).trim().length() == 0;
 
         //then get the modified outputStream
-        Writer writer = new OutputStreamWriter(outputStreamSource.outputStream("ISO-8859-1"),
-            "ISO-8859-1"); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = new OutputStreamWriter(outputStreamSource.outputStream(String2.ISO_8859_1),
+            String2.ISO_8859_1); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
 
         int nAxisVariables = axisVariables.length;
         int nDataVariables = gridDataAccessor.dataVariables().length;
@@ -4330,7 +4379,7 @@ Attributes {
     }
 
     /**
-     * This writes attributes to an .ncml file.
+     * This writes attributes to an nc3 .ncml file.
      *
      * @param writer
      * @param atts
@@ -4343,7 +4392,9 @@ Attributes {
             writer.write(indent + "<attribute name=\"" + XML.encodeAsXML(names[i]) + "\" ");
             //title" value="Daily MUR SST, Interim near-real-time (nrt) product" />
             PrimitiveArray pa = atts.get(names[i]);
-            pa = NcHelper.getNcSafePA(pa); 
+            if (pa.elementClass() == long.class)
+                pa = new DoubleArray(pa);
+            //even nc3 files write char and String attributes as UTF-8
 
             //write the attribute
             if (pa instanceof StringArray) {
@@ -4361,10 +4412,10 @@ Attributes {
 
     /**
      * This writes the dataset structure and attributes in .ncml form (mimicking TDS).
-     * http://oceanwatch.pfeg.noaa.gov/thredds/ncml/satellite/MUR/ssta/1day?catalog=http%3A%2F%2Foceanwatch.pfeg.noaa.gov%2Fthredds%2FSatellite%2FaggregsatMUR%2Fssta%2Fcatalog.html&dataset=satellite%2FMUR%2Fssta%2F1day
+     * https://oceanwatch.pfeg.noaa.gov/thredds/ncml/satellite/MUR/ssta/1day?catalog=http%3A%2F%2Foceanwatch.pfeg.noaa.gov%2Fthredds%2FSatellite%2FaggregsatMUR%2Fssta%2Fcatalog.html&dataset=satellite%2FMUR%2Fssta%2F1day
      * stored locally as c:/data/ncml/MUR.xml
      * <br>Annotated Schema for NcML
-     * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
+     * https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/AnnotatedSchema4.html
      * 
      * @param loggedInAs 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
@@ -4379,7 +4430,7 @@ Attributes {
         long time = System.currentTimeMillis();
 
         //get the writer
-        Writer writer = new OutputStreamWriter(outputStreamSource.outputStream("UTF-8"), "UTF-8"); 
+        Writer writer = new OutputStreamWriter(outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8); 
         String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + datasetID;
         writer.write(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -4444,7 +4495,15 @@ Attributes {
             if (!type.equals("String"))
                 writer.write("type=\"" + type + "\"");            
             writer.write(">\n");
-            writeNcmlAttributes(writer, new Attributes(edv.combinedAttributes()), "    "); //make a copy to be safe
+            Attributes tAtts = new Attributes(edv.combinedAttributes()); //use a copy
+
+            if (edv.destinationDataTypeClass() == String.class)
+                tAtts.add(String2.ENCODING, String2.ISO_8859_1);
+// disabled until there is a standard
+//            else if (edv.destinationDataTypeClass() == char.class)
+//                tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+
+            writeNcmlAttributes(writer, tAtts, "    "); 
             writer.write("  </variable>\n");
         }
 
@@ -4699,7 +4758,7 @@ Attributes {
         //then get the writer
         //???!!! ISO-8859-1 is a guess. I found no specification.
         OutputStreamWriter writer = new OutputStreamWriter(
-            outputStreamSource.outputStream("ISO-8859-1"), "ISO-8859-1"); 
+            outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1); 
 
         //ESRI .asc doesn't like NaN
         double dmv = edv.safeDestinationMissingValue();
@@ -4925,7 +4984,7 @@ Attributes {
         //???The GeotiffWriter seems to be detecting lat and lon and reacting accordingly.
         String ncFullName = directory + fileName + "_tiff.nc";  //_tiff is needed because unused axes aren't saved
         if (!File2.isFile(ncFullName))
-            saveAsNc(requestUrl, userDapQuery, ncFullName, 
+            saveAsNc(NetcdfFileWriter.Version.netcdf3, requestUrl, userDapQuery, ncFullName, 
                 false, //keepUnusedAxes=false  this is necessary 
                 lonAdjust);
         //String2.log(NcHelper.dumpString(ncFullName, false));
@@ -5980,7 +6039,7 @@ Attributes {
                 fontScale *= 1.4 * fontScale; //SgtMap.PDF_FONTSCALE=1.5 is too big
                 logoImageFile = EDStatic.highResLogoImageFile;
                 pdfInfo = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, 
-                    imageWidth, imageHeight, outputStreamSource.outputStream("UTF-8"));
+                    imageWidth, imageHeight, outputStreamSource.outputStream(String2.UTF_8));
                 g2 = (Graphics2D)pdfInfo[0];
             } else {
                 fontScale *= imageWidth < 500? 1: 1.25;
@@ -6122,7 +6181,7 @@ Attributes {
                     if (pdf) {
                         if (pdfInfo == null)
                             pdfInfo = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, 
-                                imageWidth, imageHeight, outputStreamSource.outputStream("UTF-8"));
+                                imageWidth, imageHeight, outputStreamSource.outputStream(String2.UTF_8));
                         if (g2 == null)
                             g2 = (Graphics2D)pdfInfo[0];
                     } else { //png
@@ -6178,7 +6237,7 @@ Attributes {
     }
 
     /**
-     * This writes the axis or grid data to the outputStream in JSON 
+     * This writes the requested axis or grid data to the outputStream in JSON 
      * (http://www.json.org/) format.
      * If no exception is thrown, the data was successfully written.
      * 
@@ -6231,6 +6290,142 @@ Attributes {
         //diagnostic
         if (reallyVerbose)
             String2.log("  EDDGrid.saveAsJson done. TIME=" + 
+                (System.currentTimeMillis() - time) + "\n");
+
+    }
+
+    /**
+     * This writes the requested axis or grid data to the outputStream in NCCSV 
+     * (https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html) format.
+     * If no exception is thrown, the data was successfully written.
+     * 
+     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null). 
+     *   e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
+     * @param outputStreamSource the source of an outputStream (usually already 
+     *   buffered) to receive the results.
+     *   At the end of this method the outputStream is flushed, not closed.
+     * @throws Throwable  if trouble. 
+     */
+    public void saveAsNccsv(String fileTypeName, String requestUrl, String userDapQuery, 
+        OutputStreamSource outputStreamSource) throws Throwable {
+
+        if (reallyVerbose) String2.log("  EDDGrid.saveAsNccsv"); 
+        long time = System.currentTimeMillis();
+
+        //.nccsvMetadata?       
+        if (fileTypeName.equals(".nccsvMetadata")) {
+            Writer writer = new OutputStreamWriter(
+                outputStreamSource.outputStream(String2.ISO_8859_1), String2.ISO_8859_1); 
+            Table table = new Table();
+            table.globalAttributes().add(combinedGlobalAttributes());
+            for (int avi = 0; avi < axisVariables.length; avi++) {
+                EDVGridAxis av = axisVariables[avi];
+                Attributes catts = av.combinedAttributes();
+                Class tClass = av.destinationDataTypeClass();
+                if (av instanceof EDVTimeStampGridAxis) {
+                    catts = new Attributes(catts); //make changes to a copy
+                    catts.set("units", Calendar2.timePrecisionToTimeFormat(
+                        catts.getString(EDV.TIME_PRECISION)));
+                    tClass = String.class;
+                }
+                table.addColumn(avi, av.destinationName(), 
+                    PrimitiveArray.factory(tClass, 1, false), catts);
+            }
+            for (int dvi = 0; dvi < dataVariables.length; dvi++) {
+                EDV dv = dataVariables[dvi];
+                Attributes catts = dv.combinedAttributes();
+                Class tClass = dv.destinationDataTypeClass();
+                if (dv instanceof EDVTimeStamp) {
+                    catts = new Attributes(catts); //make changes to a copy
+                    catts.set("units", Calendar2.timePrecisionToTimeFormat(
+                        catts.getString(EDV.TIME_PRECISION)));
+                    tClass = String.class;
+                }
+                table.addColumn(table.nColumns(), dv.destinationName(), 
+                    PrimitiveArray.factory(tClass, 1, false), catts);
+            }        
+            table.toNccsv(false, true, 0, writer); //catchScalars, writeMetadata, writeDataRows
+            return;
+        }
+
+        //get dataAccessor first, in case of error when parsing query
+        boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
+        AxisDataAccessor ada = null;
+        GridDataAccessor gda = null;
+        if (isAxisDapQuery) 
+             ada = new AxisDataAccessor(this, requestUrl, userDapQuery);
+        else gda = new GridDataAccessor(this, requestUrl, userDapQuery, 
+            true, false);   //rowMajor, convertToNaN (would be true, but TableWriterJson will do it)
+
+        //write the data to the tableWriter
+        TableWriter tw = new TableWriterNccsv(this, 
+            getNewHistory(requestUrl, userDapQuery),
+            outputStreamSource);  
+        if (isAxisDapQuery) 
+             saveAsTableWriter(ada, tw);
+        else saveAsTableWriter(gda, tw);
+
+        //diagnostic
+        if (reallyVerbose)
+            String2.log("  EDDGrid.saveAsNccsv done. TIME=" + 
+                (System.currentTimeMillis() - time) + "\n");
+    }
+
+    /**
+     * This writes the axis or grid data to the outputStream in JSON Lines
+     * (http://jsonlines.org/) KVP format.
+     * If no exception is thrown, the data was successfully written.
+     * 
+     * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
+     * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null). 
+     *   e.g., ATssta[45:1:45][0:1:0][120:10:140][130:10:160].
+     *   This method extracts the jsonp text to be prepended to the results (or null if none).
+     *     See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
+     *     and http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
+     *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
+     * @param outputStreamSource the source of an outputStream (usually already 
+     *   buffered) to receive the results.
+     *   At the end of this method the outputStream is flushed, not closed.
+     * @throws Throwable  if trouble. 
+     */
+    public void saveAsJsonl(String requestUrl, String userDapQuery, 
+        OutputStreamSource outputStreamSource, boolean tWriteKVP) throws Throwable {
+
+//currently, this writes a table. 
+//Perhaps better to write nDimensional array?
+        if (reallyVerbose) String2.log("  EDDGrid.saveAsJsonl"); 
+        long time = System.currentTimeMillis();
+
+        //did query include &.jsonp= ?
+        String parts[] = Table.getDapQueryParts(userDapQuery); //decoded
+        String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
+        if (jsonp != null) {
+            jsonp = jsonp.substring(7);
+            if (!String2.isJsonpNameSafe(jsonp))
+                throw new SimpleException(EDStatic.errorJsonpFunctionName);
+        }
+
+        //get dataAccessor first, in case of error when parsing query
+        boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
+        AxisDataAccessor ada = null;
+        GridDataAccessor gda = null;
+        if (isAxisDapQuery) 
+             ada = new AxisDataAccessor(this, requestUrl, userDapQuery);
+        else gda = new GridDataAccessor(this, requestUrl, userDapQuery, 
+            true, false);   //rowMajor, convertToNaN (would be true, but TableWriterJsonl will do it)
+
+        //write the data to the tableWriter
+        TableWriter tw = new TableWriterJsonl(this, 
+            getNewHistory(requestUrl, userDapQuery),
+            outputStreamSource, tWriteKVP, jsonp);  
+        if (isAxisDapQuery) 
+             saveAsTableWriter(ada, tw);
+        else saveAsTableWriter(gda, tw);
+
+        //diagnostic
+        if (reallyVerbose)
+            String2.log("  EDDGrid.saveAsJsonl done. TIME=" + 
                 (System.currentTimeMillis() - time) + "\n");
 
     }
@@ -6425,13 +6620,13 @@ Attributes {
             " txPo=" + txPo + " tyPo=" + tyPo +
             " doMax=" + doMax + " lonLatStride=" + lonLatStride);
 
-        //Based on http://code.google.com/apis/kml/documentation/kml_21tutorial.html#superoverlays
+        //Based on https://code.google.com/apis/kml/documentation/kml_21tutorial.html#superoverlays
         //Was based on quirky example (but lots of useful info):
         //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
         //kml docs: https://developers.google.com/kml/documentation/kmlreference
         //CDATA is necessary for url's with queries
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream("UTF-8"), "UTF-8"));
+            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
         writer.write(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
@@ -6473,7 +6668,7 @@ Attributes {
             //the Region
             writer.write(
                 //min Level Of Detail: minimum size (initially while zooming in) at which this region is made visible
-                //see http://code.google.com/apis/kml/documentation/kmlreference.html#lod
+                //see https://code.google.com/apis/kml/documentation/kmlreference.html#lod
                 "  <Region>\n" +
                 "    <Lod><minLodPixels>" + (drawOrder == 1? 2 : 256) + "</minLodPixels>" +
                          //"<maxLodPixels>" + (drawOrder == 1? -1 : 1024) + "</maxLodPixels>" + //doesn't work as expected
@@ -7034,6 +7229,7 @@ Attributes {
      * This makes an effort not to create a partial file if there is an error.
      * If no exception is thrown, the file was successfully created.
      * 
+     * @param ncVersion either NetcdfFileWriter.Version.netcdf3 or netcdf4. 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded 
      *   (shouldn't be null). 
@@ -7044,11 +7240,17 @@ Attributes {
      * @param lonAdjust the value to be added to all lon values (e.g., 0 or -360).
      * @throws Throwable 
      */
-    public void saveAsNc(String requestUrl, String userDapQuery, 
+    public void saveAsNc(NetcdfFileWriter.Version ncVersion, 
+        String requestUrl, String userDapQuery, 
         String fullFileName, boolean keepUnusedAxes,
         double lonAdjust) throws Throwable {
         if (reallyVerbose) String2.log("  EDDGrid.saveAsNc"); 
         long time = System.currentTimeMillis();
+
+        if (ncVersion != NetcdfFileWriter.Version.netcdf3 &&
+            ncVersion != NetcdfFileWriter.Version.netcdf4)
+            throw new RuntimeException("ERROR: unsupported ncVersion=" + ncVersion);
+        boolean nc3Mode = ncVersion == NetcdfFileWriter.Version.netcdf3;
 
         //delete any existing file
         File2.delete(fullFileName);
@@ -7067,7 +7269,7 @@ Attributes {
             //write the data
             //items determined by looking at a .nc file; items written in that order 
             NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf3, fullFileName + randomInt);
+                ncVersion, fullFileName + randomInt);
             try {
                 Group rootGroup = nc.addGroup(null, "");
                 nc.setFill(false);
@@ -7078,21 +7280,32 @@ Attributes {
                 for (int av = 0; av < nRAV; av++) {
                     String destName = ada.axisVariables(av).destinationName();
                     PrimitiveArray pa = ada.axisValues(av);
+                    if (nc3Mode && pa instanceof LongArray)
+                        pa = new DoubleArray(pa);
                     Dimension dimension = nc.addDimension(rootGroup, destName, pa.size());
                     axisArrays[av] = Array.factory(
                         pa.elementClass(),
                         new int[]{pa.size()},
                         pa.toObjectArray());
+                    if (ncVersion == NetcdfFileWriter.Version.netcdf3)
+                        String2.log("HELP");
                     newAxisVars[av] = nc.addVariable(rootGroup, destName, 
-                        NcHelper.getDataType(pa.elementClass()), 
+                        DataType.getType(pa.elementClass()), //nc3Mode long->double done above. No Strings as axes.
                         Arrays.asList(dimension)); 
 
                     //write axis attributes
-                    NcHelper.setAttributes(newAxisVars[av], ada.axisAttributes(av));
+                    Attributes atts = new Attributes(ada.axisAttributes(av)); //use a copy
+                    if (pa.elementClass() == String.class)  //never
+                        atts.add(String2.ENCODING, String2.ISO_8859_1);
+// disabled until there is a standard
+//                    else if (pa.elementClass() == char.class)  //never
+//                        atts.add(String2.CHARSET, String2.ISO_8859_1);
+
+                    NcHelper.setAttributes(nc3Mode, newAxisVars[av], atts);
                 }
 
                 //write global attributes
-                NcHelper.setAttributes(rootGroup, ada.globalAttributes());
+                NcHelper.setAttributes(nc3Mode, rootGroup, ada.globalAttributes());
 
                 //leave "define" mode
                 nc.create();
@@ -7175,6 +7388,8 @@ Attributes {
                 String avName = axisVariables[av].destinationName();
                 PrimitiveArray pa = gda.axisValues(av);
                 //if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
+                if (nc3Mode && pa instanceof LongArray)
+                    pa = new DoubleArray(pa);
                 stdShape[a] = pa.size();
                 axisDimensionList.add(nc.addDimension(rootGroup, avName, pa.size()));
                 if (av == lonIndex)
@@ -7185,7 +7400,7 @@ Attributes {
                     pa.toObjectArray());
                 //if (reallyVerbose) String2.log(" create var=" + avName);
                 newAxisVars[a] = nc.addVariable(rootGroup, avName, 
-                    NcHelper.getDataType(pa.elementClass()), 
+                    DataType.getType(pa.elementClass()), //nc3Mode long->double done above. No Strings as axes.
                     Arrays.asList(axisDimensionList.get(a)));
             }            
 
@@ -7196,8 +7411,8 @@ Attributes {
                 Class destClass = tDataVariables[dv].destinationDataTypeClass();
                 //if (reallyVerbose) String2.log(" create var=" + destName);
 
-                //String data? need to create a strlen dimension for this variable
-                if (destClass == String.class) {
+                //nc3 String data? need to create a strlen dimension for this variable
+                if (nc3Mode && destClass == String.class) {
                     StringArray tsa = (StringArray)gdaa.getPrimitiveArray(dv);
                     ArrayList<Dimension> tDimList = new ArrayList(axisDimensionList);
                     tDimList.add(nc.addDimension(rootGroup, 
@@ -7208,22 +7423,41 @@ Attributes {
 
                 } else {
                     newVars[dv] = nc.addVariable(rootGroup, destName, 
-                        NcHelper.getDataType(destClass), axisDimensionList);
+                        DataType.getType(
+                            nc3Mode && destClass == long.class? double.class : 
+                            destClass), 
+                        axisDimensionList);
                 }
             }
 
             //write global attributes
-            NcHelper.setAttributes(rootGroup, gda.globalAttributes);
+            NcHelper.setAttributes(nc3Mode, rootGroup, gda.globalAttributes);
 
             //write axis attributes
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
-                NcHelper.setAttributes(newAxisVars[a], gda.axisAttributes[av]);
+                Attributes atts = new Attributes(gda.axisAttributes[av]); //use a copy
+                Class tc = gda.axisValues[av].elementClass();
+                if (tc == String.class)  //never
+                    atts.add(String2.ENCODING, String2.ISO_8859_1);
+// disabled until there is a standard
+//                else if (tc == char.class)  //never
+//                    atts.add(String2.CHARSET, String2.ISO_8859_1);
+
+                NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts);
             }
 
             //write data attributes
             for (int dv = 0; dv < tDataVariables.length; dv++) {
-                NcHelper.setAttributes(newVars[dv], gda.dataAttributes[dv]);
+                Attributes atts = new Attributes(gda.dataAttributes[dv]); //use a copy
+                Class tc = gda.dataVariables[dv].destinationDataTypeClass();
+                if (tc == String.class)  //never
+                    atts.add(String2.ENCODING, String2.ISO_8859_1);
+// disabled until there is a standard
+//                else if (tc == char.class)  //never
+//                    atts.add(String2.CHARSET, String2.ISO_8859_1);
+
+                NcHelper.setAttributes(nc3Mode, newVars[dv], atts);
             }
 
             //leave "define" mode
@@ -7241,11 +7475,16 @@ Attributes {
                 EDV edv = tDataVariables[dv];
                 String destName = edv.destinationName();
                 Class edvClass = edv.destinationDataTypeClass();
+                PrimitiveArray pa = gdaa.getPrimitiveArray(dv);
+                if (nc3Mode && pa instanceof LongArray)
+                    pa = new DoubleArray(pa);
                 Array array = Array.factory(edvClass, 
-                    stdShape, gdaa.getPrimitiveArray(dv).toObjectArray());
-                if (edvClass == String.class)
-                     nc.writeStringData(newVars[dv], array);
-                else nc.write(newVars[dv], array);
+                    stdShape, pa.toObjectArray());
+                if (nc3Mode && edvClass == String.class) {
+                    nc.writeStringData(newVars[dv], array);
+                } else {
+                    nc.write(newVars[dv], array);
+                }
             }
 
             //if close throws Throwable, it is trouble
@@ -8180,7 +8419,7 @@ Attributes {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> (thanks to Jenn Patterson of CenCOOS).\n" +
             "\n" + 
             //matlab
-            "  <p><b><a rel=\"bookmark\" href=\"http://www.mathworks.com/products/matlab/\">MATLAB" +
+            "  <p><b><a rel=\"bookmark\" href=\"https://www.mathworks.com/products/matlab/\">MATLAB" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a rel=\"help\" href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
@@ -8207,17 +8446,40 @@ Attributes {
             "  <br><tt>datastr(cwwcNDBCMet.time(1)/86400 + 719529)</tt>\n" +
             "  <br>86400 converts ERDDAP's \"seconds since\" to Matlab's \"days since\".  719529 converts\n" +
             "  <br>ERDDAP's base time of \"1970-01-01T00:00:00Z\" to Matlab's \"0000-01-00T00:00:00Z\".\n" +
+            "  <p>.mat files have a maximum length for identifier names of 32 characters.\n" +
+            "  <br>If a variable name is longer than that, ERDDAP changes the name of the variable\n" +
+            "  <br>when writing the .mat file: it generates a hash digest of the variable name and\n" +
+            "  <br>appends that after the first 25 characters. Thus, long variable names that only\n" +
+            "  <br>differ at the end will still have unique names in the .mat file.\n" +
+            "  <br>ERDDAP administrators: you can avoid this problem by specifying shorter variable\n" +
+            "  <br>destinationNames.\n" +
             "\n" +
             //nc
-            "  <p><b><a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF" +
+            "  <p><b><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/netcdf/File-Format-Specification.html\">.nc" +
+            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html\">.nc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
             "    - <a name=\"nc\">Requests</a> for .nc files return the requested subset of the dataset in a\n" +
-            "  <br>standard, version 3, 32-bit, .nc file.\n" +
+            "  <br>standard, NetCDF-3, 32-bit, .nc file.\n" +
+            "  <ul>\n" +
+            "  <li>Since NetCDF-3 files don't support variable length strings and only support\n" +
+            "    <br>chars with 1 byte per char, all String variables in ERDDAP (variable length,\n" +
+            "    <br>2 bytes per char) will be stored as char array variables (1 byte per char)\n" +
+            "    <br>in the .nc file, using the ISO-8859-1 character set. The char variables will\n" +
+            "    <br>have an extra dimension indicating the maximum number of characters per string.\n" +
+            "    <br>Characters not in the ISO-8859-1 character set will be converted to '?'.\n" +
+            "  <li>Since chars in NetCDF-3 files are only 1 byte per char, all char variables in\n" +
+            "    <br>ERDDAP (2 bytes per char) will be stored as chars (one byte per char) in the\n" +
+            "    <br>.nc file, using the ISO-8859-1 charset. Characters not in the ISO-8859-1\n" +
+            "    <br>character set will be converted to '?'.\n" +
+            "  <li>Since NetCDF-3 files do not support 64-bit long integers, all long variables\n" +
+            "    <br>in ERDDAP will be stored as double variables in the .nc file. Numbers from\n" +
+            "    <br>-2^53 to 2^53 will be stored exactly. Other numbers will be stored as\n" +
+            "    <br>approximations.\n" +
+            "  </ul>\n" +
             "\n" +
             "  <p><a name=\"netcdfjava\">If</a> you are using\n" +
-            "  <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf-java/\">NetCDF-Java" +
+            "  <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf-java/\">NetCDF-Java" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "  don't try to directly access an ERDDAP dataset or subset\n" +
             "  <br>as a .nc file. (It won't work, mostly because that .nc file isn't a static, persistent file. It is a\n" +
@@ -8287,17 +8549,17 @@ Attributes {
             "\n" +
             //opendapLibraries
             "  <p><b><a name=\"opendapLibraries\">OPeNDAP Libraries</a></b> - Since ERDDAP is an\n" +
-            "    <a rel=\"bookmark\" href=\"http://www.opendap.org/\">OPeNDAP" +
+            "    <a rel=\"bookmark\" href=\"https://www.opendap.org/\">OPeNDAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>-compatible data server,\n" +
             "    you can use\n" +
             "  <br>any OPeNDAP client library, such as\n" +
-            "    <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl" +
+            "    <a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
-            "  <br><a rel=\"bookmark\" href=\"http://www.opendap.org/java-DAP\">Java-DAP2" +
+            "  <br><a rel=\"bookmark\" href=\"https://www.opendap.org/java-DAP\">Java-DAP2" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "  <a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>, or the\n" +
-            "     <a rel=\"bookmark\" href=\"http://pydap.org/client.html\">Pydap Client" +
+            "     <a rel=\"bookmark\" href=\"http://pydap.org/en/latest/client.html\">Pydap Client" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>,\n" +
             "  to get data from an ERDDAP griddap dataset.\n" +
             "  <br>When creating the initial connection to an ERDDAP griddap dataset from any OPeNDAP library:\n" +
@@ -8317,12 +8579,12 @@ Attributes {
             "  <br>variable's data.\n" +
             "\n" +
             //Pydap Client
-            "  <p><b><a rel=\"bookmark\" href=\"http://pydap.org/client.html\">Pydap Client" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://pydap.org/en/latest/client.html\">Pydap Client" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
             "    <a name=\"PydapClient\">users</a>\n" +
             "    can access griddap datasets via ERDDAP's standard OPeNDAP services.\n" +
             "  <br>See the\n" +
-            "    <a rel=\"help\" href=\"http://pydap.org/client.html#accessing-gridded-data/\">Pydap Client instructions for accessing gridded data" +
+            "    <a rel=\"help\" href=\"http://pydap.org/en/latest/client.html#accessing-gridded-data/\">Pydap Client instructions for accessing gridded data" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "  <br>Note that the name of a dataset in ERDDAP will always be a single word,\n" +
             "  <br>(e.g., " + EDStatic.EDDGridIdExample + " in the OPeNDAP dataset URL\n" +
@@ -8343,27 +8605,41 @@ Attributes {
             "response = urllib2.open(\"http://<i>baseurl</i>/erddap/griddap/<i>datasetID.fileType?query</i>\")\n" +
             "theContent = response.read()</pre>\n" +
             "  There are other ways to do this in Python. Search the web for more information.\n"+
-            "  <br>&nbsp;\n" +
-            "  <br>To access a password-protected, private ERDDAP dataset with Python via https, use this\n" +
-            "  <br>two-step process after you install the\n" +
-            "<a rel=\"bookmark\" href=\"http://www.python-requests.org/en/latest/\">requests library" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> (\"HTTP for Humans\"):\n" +
-            "  <ol>\n" +
-            "  <li>Log in (authenticate) and store the certificate in a 'session' object:\n" +
-            "<pre>import requests\n" +
-            "session = requests.session()\n" +
-            "credentials_dct = {'user': '<i>myUserName</i>', 'password': '<i>myPassword</i>'}\n" +
-            "p = session.post(\"https://<i>baseurl</i>:8443/erddap/login.html\", credentials_dct, verify=True)</pre>\n" +
-            "  <li>Repeatedly make data requests using the session: \n" +
-            "<pre>theContent = session.get('https://<i>baseurl</i>:8443/erddap/griddap/<i>datasetID.fileType?query</i>', verify=True)</pre>\n" +
-            "  </ol>\n" +            
-            "  * Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
-            "  <br>* If the server uses a self-signed certificate and you are okay with that, use <tt>verify=False</tt>\n" +
-            "  <br>&nbsp;&nbsp;to tell Python not to check the server's certificate.\n" +
-            "  <br>* That works in Python v2.7. You might need to make slight modifications for other versions.\n" +
-            "  <br>* (Thanks to Emilio Mayorga of NANOOS and Paul Janecek of Spyglass Technologies for\n" +
-            "  <br>&nbsp;&nbsp;figuring this out.)\n" +
-            "  <br>&nbsp;\n" +
+            //"  <br>To access a password-protected, private ERDDAP dataset with Python via https, use this\n" +
+            //"  <br>two-step process after you install the\n" +
+            //"<a rel=\"bookmark\" href=\"http://www.python-requests.org/en/latest/\">requests library" +
+            //        EDStatic.externalLinkHtml(tErddapUrl) + "</a> (\"HTTP for Humans\"):\n" +
+            //"  <ol>\n" +
+            //"  <li>Log in (authenticate) and store the certificate in a 'session' object:\n" +
+            //"<pre>import requests\n" +
+            //"session = requests.session()\n" +
+            //"credentials_dct = {'user': '<i>myUserName</i>', 'password': '<i>myPassword</i>'}\n" +
+            //"p = session.post(\"https://<i>baseurl</i>:8443/erddap/login.html\", credentials_dct, verify=True)</pre>\n" +
+            //"  <li>Repeatedly make data requests using the session: \n" +
+            //"<pre>theContent = session.get('https://<i>baseurl</i>:8443/erddap/griddap/<i>datasetID.fileType?query</i>', verify=True)</pre>\n" +
+            //"  </ol>\n" +            
+            //"  * Some ERDDAP installations won't need the port number (:8443) in the URL.\n" +
+            //"  <br>* If the server uses a self-signed certificate and you are okay with that, use <tt>verify=False</tt>\n" +
+            //"  <br>&nbsp;&nbsp;to tell Python not to check the server's certificate.\n" +
+            //"  <br>* That works in Python v2.7. You might need to make slight modifications for other versions.\n" +
+            //"  <br>* (Thanks to Emilio Mayorga of NANOOS and Paul Janecek of Spyglass Technologies for\n" +
+            //"  <br>&nbsp;&nbsp;figuring this out.)\n" +
+            //
+            //Python/Jupyter Notebook
+            "  <p>\"<a rel=\"bookmark\" href=\"https://jupyter.org/\">Jupyter Notebook" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
+            "      <a name=\"JupyterNotebook\">is</a> an open-source web application that\n" +
+            "      allows you to create and\n" +
+            "    <br>share documents that contain live code, equations, visualizations and explanatory text\"\n" +
+            "    <br>using any of over 40 programming languages, including Python and R.\n" +
+            "    <br>Here are two sample Jupyter Notebooks that access ERDDAP using Python:\n" +
+            "  <br><a rel=\"bookmark\"\n" +
+            "      href=\"https://github.com/rsignell-usgs/notebook/blob/master/ERDDAP/ERDDAP_advanced_search_test.ipynb/\"\n" +
+            "      >ERDDAP Advanced Search Test" + EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
+            "    <a rel=\"bookmark\" \n" +
+            "      href=\"https://github.com/rsignell-usgs/notebook/blob/master/ERDDAP/ERDDAP_timing.ipynb\"\n" +
+            "      >ERDDAP Timing" + EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
+            "    Thanks to Rich Signell.\n" +
             //R
             "  <p><b><a rel=\"bookmark\" href=\"http://www.r-project.org/\">R Statistical Package" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b> -\n" +
@@ -8483,11 +8759,22 @@ Attributes {
             "  <br>&nbsp;&nbsp;<tt>-o <i>fileDir/fileName.ext</i></tt> specifies the name for the file that will be created.\n" +
             "  <br>For example,\n" +
             "<pre>curl -g \"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst[%282010-09-01T12:00:00Z%29][][][]&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=|||||\" -o BAssta5day20100901.png</pre>\n" +
-            "  The erddapUrl must be <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>: all characters in query values (the parts after\n" +
-            "   <br>the '=' signs) other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where HH is the\n" +
-            "   <br>2 digit hexadecimal value of the character, for example, space becomes %20. Characters\n" +
-            "   <br>above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded.\n" +
+            "  <a name=\"PercentEncoded\">The</a> erddapUrl must be " +
+                "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                EDStatic.externalLinkHtml(tErddapUrl) + "</a>.  To do this, you need to convert\n" +
+            "  <br>special characters in all constraints (other than the initial '&amp;' and the main\n" +
+            "  <br>'=') into the form %HH, where HH is the 2 digit hexadecimal value of the character.\n" +
+            "  <br>Usually, you just need to convert a few of the punctuation characters: % into %25,\n" +
+            "  <br>&amp; into %26, \" into %22, &lt; into %3C, = into %3D, &gt; into %3E, + into %2B, | into %7C,\n" +
+            "  <br>space into %20,\n" +
+            "  <br>and convert all characters above #127 into their UTF-8 bytes and then percent encode\n" +
+            "  <br>each byte of the UTF-8 form into the %HH format (ask a programmer for help).\n" +
+            "  <br>For example, <tt>&amp;stationID&gt;=\"41004\"</tt>\n" +
+            "  <br>becomes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<tt>&amp;stationID%3E=%2241004%22</tt>\n" +
+            "  <br>Note that percent encoding is generally required when you access ERDDAP via\n" +
+            "  <br>software other than a browser. Browsers usually handle percent encoding for you.\n" +
+            "  <br>In some situations, you need to percent encode all characters other than\n" +
+            "  <br>A-Za-z0-9_-!.~'()* .\n" +
             "   <br>Programming languages have tools to do this (for example, see Java's\n" +
             "   <br><a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
@@ -8530,9 +8817,9 @@ Attributes {
             "<li><a name=\"query\"><b>query</b></a> is the part of the request after the \"?\". \n" +
             "  <br>It specifies the subset of data that you want to receive.\n" +
             "  <br>In griddap, it is an optional\n" +
-            "    <a rel=\"bookmark\" href=\"http://www.opendap.org\">OPeNDAP" +
+            "    <a rel=\"bookmark\" href=\"https://www.opendap.org\">OPeNDAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n " +
-            "    <a rel=\"help\" href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP" +
+            "    <a rel=\"help\" href=\"https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "    <a rel=\"help\" href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions\">projection constraint" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> query\n" +
@@ -8639,10 +8926,10 @@ Attributes {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "       in parentheses, which griddap then converts to the\n" +
             "     <br>internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n" +
-            "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ss.sssZ</i>,\n" +
+            "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ss.SSSZ</i>,\n" +
             "     <br>where Z is 'Z' or a &plusmn;hh or &plusmn;hh:mm offset from the Zulu/GMT time zone. If you omit Z and the\n" +
-            "     <br>offset, the Zulu/GMT time zone is used. Separately, if you omit .sss, :ss.sss, :mm:ss.sss, or\n" +
-            "     <br>Thh:mm:ss.sss from the ISO date/time that you specify, the missing fields are assumed to be 0.\n" +
+            "     <br>offset, the Zulu/GMT time zone is used. Separately, if you omit .SSS, :ss.SSS, :mm:ss.SSS, or\n" +
+            "     <br>Thh:mm:ss.SSS from the ISO date/time that you specify, the missing fields are assumed to be 0.\n" +
             "     <br>In some places, ERDDAP accepts a comma (ss,sss) as the seconds decimal point, but ERDDAP\n" +
             "     <br>always uses a period when formatting times as ISO 8601 strings.\n" +
             "     <br>The example below is equivalent (at least at the time of writing this) to the examples above:\n" +
@@ -8821,14 +9108,43 @@ Attributes {
             //other info
             "<a name=\"otherInformation\"><b>Other Information</b></a>\n" +
             "<ul>\n" +
-            "<li><a name=\"dataModel\"><b>Data Model</b></a> - Each griddap dataset can be represented as:\n" + 
+            "<li><a name=\"login\"><b>Log in to access private datasets.</b></a>\n" +
+            "<br>Many ERDDAP installations don't have authentication enabled and thus\n" +
+            "<br>don't provide any way for users to login, nor do they have any private datasets.\n" +
+            "<p>Some ERDDAP installations do have authentication enabled.\n" +
+            "<br>Currently, ERDDAP only supports authentication via Google-managed email accounts,\n" +
+            "<br>which includes email accounts at NOAA and many universities.\n" +
+            "<br>If an ERDDAP has authentication enabled, anyone with a Google-managed email account\n" +
+            "<br>can log in, but they will only have access to the private datasets\n" +
+            "<br>that the ERDDAP administrator has explicitly authorized them to access.\n" +
+            "<br>For instructions on logging into ERDDAP from a browser or via a script, see\n" +
+            "<br><a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n" +
+            "<br>&nbsp;\n" +
+            "<li><b><a name=\"longTimeRange\">Requests</a> for a long time range</b> (&gt;30 time points) from a gridded dataset\n" +
+            "<br>are prone to time out failures, which often appear as Proxy Errors, because it\n" +
+            "<br>takes significant time for ERDDAP to open all of the data files one-by-one.\n" +
+            "<br>If ERDDAP is otherwise busy during the request, the problem is more likely to occur.\n" +
+            "<br>If the dataset's files are compressed, the problem is more likely to occur,\n" +
+            "<br>although it's hard for a user to determine if a dataset's files are compressed.\n" +
+            "<br>The solution is to make several requests, each with a smaller time range.\n" +
+            "<br>How small of a time range? Start really small (~30 time points?),\n" +
+            "<br>then (approximately) double the time range until the request fails,\n" +
+            "<br>then go back one doubling.\n" +
+            "<br>Then make all the requests (each for a different chunk of time) needed to get\n" +
+            "<br>all of the data.\n" +
+            "<br>An ERDDAP administrator can lessen this problem by increasing the\n" +
+            "<br><a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ApacheTimeout\">Apache timeout settings</a>.\n" +
+            "<br>&nbsp;\n" +
+            "<li><a name=\"dataModel\"><b>Data Model</b></a>\n" +
+            "  <br>Each griddap dataset can be represented as:\n" + 
             "  <ul>\n" +
             "  <li>An ordered list of one or more 1-dimensional axis variables, each of which has an\n" +
             "      <br>associated dimension with the same name.\n" +
             "      <br>Each axis variable has data of one specific type.\n" +
             "      <br>If the data source has a dimension with a size but no values, ERDDAP uses the values\n" +
             "      <br>0, 1, 2, ...\n" +
-            "      <br>The supported types are int8, uint16, int16, int32, int64, float32, and float64.\n" +
+            "      <br>The supported types are byte (int8), short (int16), char (uint16), int (int32),\n" +
+            "      <br>long (int64), float (float32), double (float64), and String.\n" +
             "      <br>The maximum number of axis variables is 2147483647, but most datasets have 4 or fewer.\n" +
             "      <br>The maximum size of a dimension is 2147483647 values.\n" +
             "      <br>The maximum product of all dimension sizes is, in theory, about ~9e18.\n" +
@@ -10509,7 +10825,7 @@ Attributes {
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddGrid.respondToWcsQuery(wcsQuery2, null, osss);
-        results = baos.toString("UTF-8");
+        results = baos.toString(String2.UTF_8);
         String2.log(results);        
         
         //*** observations   for all stations and with BBOX  (multiple stations)
@@ -10520,7 +10836,7 @@ Attributes {
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddGrid.respondToWcsQuery(wcsQuery3, null, osss);
-        results = baos.toString("UTF-8");
+        results = baos.toString(String2.UTF_8);
         String2.log(results);        
   */      
     }
@@ -10528,7 +10844,7 @@ Attributes {
 
     /** 
      * This writes the dataset's FGDC-STD-001-1998
-     * http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html
+     * https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html
      * and includes the NASA extensions for remotely sensed data FGDC-STD-012-2002
      * "Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata"
      * XML to the writer.
@@ -10541,13 +10857,13 @@ Attributes {
      * at the end of EDDTable/Grid.ensureValid.
      * 
      * <p>See FGDC documentation at
-     * http://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/v2_0698.pdf
+     * https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/v2_0698.pdf
      * Bob has local copy at f:/programs/fgdc/fgdc-std-001-1998-v2_0698.pdf
      * <br>For missing String values, use "Unknown" (pg viii).
      *
      * <p>The <b>most</b> useful descriptive information 
      * (but somewhat cumbersome to navigate; use Back button, don't hunt for their back links):
-     * http://www.fgdc.gov/csdgmgraphical/index.htm
+     * https://www.fgdc.gov/csdgmgraphical/index.htm
      *
      * <p>Useful documentation (in the end, I used it very little): FGDC RSE
      * ("Content Standard for Digital Geospatial Metadata: 
@@ -10558,9 +10874,9 @@ Attributes {
      * This has the additional benefit of producing FGDC suitable for
      * the NOAA Metadata Manager Repository (NMMR). 
      * General NCDC metadata information is at
-     * http://www.ncdc.noaa.gov/oa/metadata/metadataresources.html#ds
+     * https://www.ncdc.noaa.gov/oa/metadata/metadataresources.html#ds
      * The template is at
-     * http://www.ncdc.noaa.gov/oa/metadata/standard-rse-template.xml
+     * https://www.ncdc.noaa.gov/oa/metadata/standard-rse-template.xml
      *
      * <p>FGDC Metadata validator
      * http://geolibportal.usm.maine.edu/geolib/fgdc_metadata_validator.html
@@ -10709,7 +11025,7 @@ String adminCntinfo =
         writer.write(
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   //or ISO-8859-1 ???
 "<metadata xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-"xsi:noNamespaceSchemaLocation=\"http://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" " +
+"xsi:noNamespaceSchemaLocation=\"https://www.ngdc.noaa.gov/metadata/published/xsd/ngdcSchema/schema.xsd\" " +
 //http://lab.usgin.org/groups/etl-debug-blog/fgdc-xml-schema-woes 
 //talks about instead using
 //  http://fgdcxml.sourceforge.net/schema/fgdc-std-012-2002/fgdc-std-012-2002.xsd
@@ -10752,7 +11068,7 @@ String adminCntinfo =
        "</pubdate>\n" +
 "        <title>" + XML.encodeAsXML(title) + "</title>\n" +
 "        <edition>" + unknown + "</edition>\n" +
-         //geoform vocabulary http://www.fgdc.gov/csdgmgraphical/ideninfo/citat/citinfo/type.htm 
+         //geoform vocabulary https://www.fgdc.gov/csdgmgraphical/ideninfo/citat/citinfo/type.htm 
 "        <geoform>raster digital data</geoform>\n" +
 //"        <serinfo>\n" +  ERDDAP doesn't have serial info
 //"          <sername>NOAA Tsunami Inundation DEMs</sername>\n" +
@@ -10964,7 +11280,7 @@ writer.write(
            "</enddate>\n" +
 "        </rngdates>\n" +
 "      </timeinfo>\n" +
-       //http://www.fgdc.gov/csdgmgraphical/ideninfo/timepd/current.htm
+       //https://www.fgdc.gov/csdgmgraphical/ideninfo/timepd/current.htm
 "      <current>ground condition</current>\n" +  //I think it means: that's what I see in the dataset
 "    </timeperd>\n");
 
@@ -11370,7 +11686,7 @@ writer.write(
     /** 
      * This writes the dataset's ISO 19115-2/19139 XML to the writer.
      * <br>The template is initially based on THREDDS ncIso output from
-     * <br>http://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day
+     * <br>https://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day
      * <br>(stored on Bob's computer as c:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml).
      * <br>See also  https://geo-ide.noaa.gov/wiki/index.php?title=NcISO#Questions_and_Answers
      *
@@ -11408,10 +11724,14 @@ writer.write(
         String contributorName = combinedGlobalAttributes.getString("contributor_name");
         String contributorEmail= combinedGlobalAttributes.getString("contributor_email");
         String contributorRole = combinedGlobalAttributes.getString("contributor_role");
-        //creatorName assumed to be person. use institution for related organization
         String creatorName     = combinedGlobalAttributes.getString("creator_name");
         String creatorEmail    = combinedGlobalAttributes.getString("creator_email");
-        //creatorUrl: use infoUrl
+        String creatorType     = combinedGlobalAttributes.getString("creator_type");
+        creatorType = String2.validateAcddContactType(creatorType);
+        if (!isSomething(creatorType) && isSomething(creatorName)) 
+            creatorType = String2.guessAcddContactType(creatorName); 
+        if (creatorType == null)     //creatorType will be something
+            creatorType = "person";  //assume
         String dateCreated     = combinedGlobalAttributes.getString("date_created");
         String dateIssued      = combinedGlobalAttributes.getString("date_issued");
         if (dateCreated != null && dateCreated.length() > 10)
@@ -11816,35 +12136,36 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "") + //other ii
 
 
-//citedResponsibleParty   role=originator:   from creator_email, creator_name, infoUrl, institution
+//citedResponsibleParty   role=originator:   from creator_email, creator_name, creator_url, institution
 "          <gmd:citedResponsibleParty>\n" +
 "            <gmd:CI_ResponsibleParty>\n" +
 
-(creatorName == null?  
-"              <gmd:individualName gco:nilReason=\"missing\"/>\n" :
+(isSomething(creatorName) && creatorType.matches("(person|position)")?  
 "              <gmd:individualName>\n" +
 "                <gco:CharacterString>" + XML.encodeAsXML(creatorName) + "</gco:CharacterString>\n" +
-"              </gmd:individualName>\n") +
+"              </gmd:individualName>\n" :
+"              <gmd:individualName gco:nilReason=\"missing\"/>\n") +
 
-(institution == null?
-"              <gmd:organisationName gco:nilReason=\"missing\"/>\n" :
 "              <gmd:organisationName>\n" +
-"                <gco:CharacterString>" + XML.encodeAsXML(institution) + "</gco:CharacterString>\n" +
-"              </gmd:organisationName>\n") +
+"                <gco:CharacterString>" + 
+XML.encodeAsXML(
+    isSomething(creatorName) && creatorType.matches("(group|institution)")? creatorName : institution) + 
+               "</gco:CharacterString>\n" +
+"              </gmd:organisationName>\n" +
 
 //originator: from creator_..., specify contactInfo   
 "              <gmd:contactInfo>\n" +
 "                <gmd:CI_Contact>\n" +
 
-(creatorEmail == null?
-"                  <gmd:address gco:nilReason=\"missing\"/>\n" :
+(isSomething(creatorEmail)?
 "                  <gmd:address>\n" +
 "                    <gmd:CI_Address>\n" +
 "                      <gmd:electronicMailAddress>\n" +
 "                        <gco:CharacterString>" + XML.encodeAsXML(creatorEmail) + "</gco:CharacterString>\n" +
 "                      </gmd:electronicMailAddress>\n" +
 "                    </gmd:CI_Address>\n" +
-"                  </gmd:address>\n") +
+"                  </gmd:address>\n" :
+"                  <gmd:address gco:nilReason=\"missing\"/>\n") +
 
 "                  <gmd:onlineResource>\n" +
 "                    <gmd:CI_OnlineResource>\n" +
@@ -11942,17 +12263,18 @@ if (ii == iiDataIdentification) {
 "      <gmd:pointOfContact>\n" +
 "        <gmd:CI_ResponsibleParty>\n" +
 
-    (creatorName == null?  
-"          <gmd:individualName gco:nilReason=\"missing\"/>\n" :
+(isSomething(creatorName) && creatorType.matches("(person|position)")?  
 "          <gmd:individualName>\n" +
 "            <gco:CharacterString>" + XML.encodeAsXML(creatorName) + "</gco:CharacterString>\n" +
-"          </gmd:individualName>\n") +
+"          </gmd:individualName>\n" :
+"          <gmd:individualName gco:nilReason=\"missing\"/>\n") +
 
-    (institution == null?
-"          <gmd:organisationName gco:nilReason=\"missing\"/>\n" :
 "          <gmd:organisationName>\n" +
-"            <gco:CharacterString>" + XML.encodeAsXML(institution) + "</gco:CharacterString>\n" +
-"          </gmd:organisationName>\n") +
+"            <gco:CharacterString>" + 
+XML.encodeAsXML(
+    isSomething(creatorName) && creatorType.matches("(group|institution)")? creatorName : institution) + 
+           "</gco:CharacterString>\n" +
+"          </gmd:organisationName>\n" +
 
     //originator: from creator_..., specify contactInfo   
 "          <gmd:contactInfo>\n" +

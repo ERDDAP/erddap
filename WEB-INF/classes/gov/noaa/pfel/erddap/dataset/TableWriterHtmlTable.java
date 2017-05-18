@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.CharArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -56,7 +57,7 @@ public class TableWriterHtmlTable extends TableWriter {
     protected String noWrap;
 
     //set firstTime
-    protected boolean isString[];
+    protected boolean isCharOrString[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
     protected BufferedWriter writer;
@@ -118,7 +119,13 @@ public class TableWriterHtmlTable extends TableWriter {
         //encodingSpaces for HTML ensures spacing info won't be lost when rendered in a browser.
         //encodingSpaces for XML is debatable. 
         //Thankfully, only leading, trailing, and consecutive spaces (all rare) are encoded.
-        return XML.minimalEncodeSpaces(xhtmlMode? XML.encodeAsXML(s) : XML.encodeAsHTML(s));
+        if (xhtmlMode) {
+            s = XML.encodeAsXML(s);
+        } else {
+            s = String2.toJson(s, 65536);
+            s = XML.encodeAsHTML(s.substring(1, s.length() - 1));
+        }
+        return XML.minimalEncodeSpaces(s);    
     }
 
     /**
@@ -160,8 +167,12 @@ public class TableWriterHtmlTable extends TableWriter {
         String emptyCell = xhtmlMode? "" : "&nbsp;"; 
         ensureCompatible(table);
 
-        //do firstTime stuff
         int nColumns = table.nColumns();
+        PrimitiveArray colPA[] = new PrimitiveArray[nColumns];
+        for (int col = 0; col < nColumns; col++) 
+            colPA[col] = table.getColumn(col);
+
+        //do firstTime stuff
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
@@ -183,12 +194,11 @@ public class TableWriterHtmlTable extends TableWriter {
                 if (isTimeStamp[col]) {
                     bytesPerRow += 20 + noWrap.length();
                 } else {
-                    PrimitiveArray pa = table.getColumn(col);
-                    if (pa instanceof StringArray) {
+                    if (colPA[col] instanceof StringArray) {
                         bytesPerRow += noWrap.length() +
-                            Math.max(10, ((StringArray)pa).maxStringLength());
+                            Math.max(10, ((StringArray)colPA[col]).maxStringLength());
                     } else {
-                        bytesPerRow += (3 * pa.elementSize()) / 2 + 14;  //1.5*nBytes->~nChar.  14: align="right"
+                        bytesPerRow += (3 * colPA[col].elementSize()) / 2 + 14;  //1.5*nBytes->~nChar.  14: align="right"
                     }
                 }
             }
@@ -208,7 +218,7 @@ public class TableWriterHtmlTable extends TableWriter {
 
             //write the header
             writer = new BufferedWriter(new OutputStreamWriter(
-                outputStreamSource.outputStream("UTF-8"), "UTF-8")); 
+                outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8)); 
             if (writeHeadAndBodyTags) {
                 if (xhtmlMode)
                     writer.write(
@@ -234,8 +244,8 @@ public class TableWriterHtmlTable extends TableWriter {
                 "<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" : 
                 "<table class=\"erd commonBGColor\" cellspacing=\"0\">\n");
 
-            //write the column names   and gather isString
-            isString = new boolean[nColumns];
+            //write the column names   and gather isCharOrString 
+            isCharOrString = new boolean[nColumns];
             writer.write("<tr>\n");
             for (int col = 0; col < nColumns; col++) {
                 String s = table.getColumnName(col);
@@ -243,7 +253,8 @@ public class TableWriterHtmlTable extends TableWriter {
                     (encode? encode(s) : s) + 
                     (xhtmlMode? "</th>" : "") + //HTML doesn't require it, so save bandwidth
                     "\n");
-                isString[col] = table.getColumn(col) instanceof StringArray;
+                isCharOrString[col] = colPA[col] instanceof CharArray ||
+                                      colPA[col] instanceof StringArray;
             }
             writer.write("</tr>\n");
 
@@ -282,7 +293,7 @@ public class TableWriterHtmlTable extends TableWriter {
             writer.write("<tr>\n");
             for (int col = 0; col < nColumns; col++) {
                 if (isTimeStamp[col]) {
-                    double d = table.getDoubleData(col, row);
+                    double d = colPA[col].getDouble(row);
                     if (Double.isNaN(d))
                          writer.write("<td>" + emptyCell);
                     else  
@@ -290,10 +301,10 @@ public class TableWriterHtmlTable extends TableWriter {
                             Calendar2.epochSecondsToLimitedIsoStringT(
                                 time_precision[col], d, ""));
                 } else {
-                    String s = table.getStringData(col, row);
+                    String s = colPA[col].getString(row);
                     if (s.length() == 0) {
                          writer.write("<td>" + emptyCell); 
-                    } else if (isString[col]) {
+                    } else if (isCharOrString[col]) {
                         if (encode) {
                             if (xhtmlMode) {
                                 s = encode(s);

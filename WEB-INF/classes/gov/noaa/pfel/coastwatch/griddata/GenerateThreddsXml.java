@@ -89,7 +89,7 @@ public class GenerateThreddsXml {
      * </ul>
      * 
      * <p> Very terse catalog.xml documentation is at 
-     *   http://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
+     *   https://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
      * <p> The finished files are in, e.g., on otter
      *   /opt/tomcat1/content/thredds/Satellite/aggregsatAG/ssta/catalog.xml
      * <p> Bob has some of Jerome/Yao's handmade files
@@ -268,9 +268,9 @@ public class GenerateThreddsXml {
                     //it is good if maxShow=MAX_TITLE_LENGTH, but more important that info fit without wrapping
                     int maxShow = Math.min(60, MAX_TITLE_LENGTH); 
                     String2.log(
-                      "    boldTitle =" + (boldTitle  == null || boldTitle.length()  <= maxShow? boldTitle  : boldTitle.substring( 0, maxShow) + " ...") +
-                    "\n    shortTitle=" + (shortTitle == null || shortTitle.length() <= maxShow? shortTitle : shortTitle.substring(0, maxShow) + " ...") +
-                    "\n    summary="    + (summary    == null || summary.length()    <= maxShow? summary    : summary.substring(   0, maxShow) + " ...") +
+                      "    boldTitle =" + boldTitle +
+                    "\n    shortTitle=" + shortTitle +
+                    "\n    summary="    + summary +
                     "\n    units=" + units +
                     "\n    standardName=" + standardName +
                     "\n    category=" + category);
@@ -296,7 +296,7 @@ public class GenerateThreddsXml {
                     "    <service name=\"wcs\" serviceType=\"WCS\" base=\"/thredds/wcs/\" \n" +
                     "      suffix=\"?request=GetCapabilities&amp;version=1.0.0&amp;service=WCS\" />\n" +
                     //"    <!-- <service name=\"HTTPServer\" serviceType=\"HTTPServer\" base=\"/thredds/fileServer/\" />\n" +
-                    //"    <service name=\"rdbmDods\" serviceType=\"OPENDAP\" base=\"http://oceanwatch.pfeg.noaa.gov/dods/\" /> -->\n" +
+                    //"    <service name=\"rdbmDods\" serviceType=\"OPENDAP\" base=\"https://oceanwatch.pfeg.noaa.gov/dods/\" /> -->\n" +
                     "  </service>\n" +
                     "\n" +
                     "  <dataset name=\"" + shortTitle + "\">\n");
@@ -475,13 +475,13 @@ public class GenerateThreddsXml {
                                  "urlPath=\"" + dataSubDir + twoFourTime + "\">\n" +
                         "      <serviceName>all</serviceName>\n" +
                         //2006/10/11 I added netcdf tag:
-                        //documentation: http://oceanwatch.pfeg.noaa.gov/thredds/docs/NcML.htm
+                        //documentation: https://oceanwatch.pfeg.noaa.gov/thredds/docs/NcML.htm
                         "      <netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\"> \n" +
                         "        <aggregation dimName=\"time\" type=\"joinExisting\" recheckEvery=\"" + recheckEvery + " min\"> \n" +
                         "          <variableAgg name=\"" + twoName + fourName + "\" /> \n" +
                         //Eeek! Is dateFormatMark correct?  it catches start date and treats composite end date as HHmmss
                         //Is it even relevant? (I think it is for joinNew, not joinExisting)
-                        //see http://www.unidata.ucar.edu/software/netcdf/ncml/v2.2/Aggregation.html
+                        //see https://www.unidata.ucar.edu/software/netcdf/ncml/v2.2/Aggregation.html
                         //10/11/06 let's try not having it
                         "          <scan " + 
                         //             "dateFormatMark=\"" + twoName + "#yyyyDDD_HHmmss\" " + 
@@ -504,7 +504,7 @@ public class GenerateThreddsXml {
                         "        <documentation xlink:href=\"" +
                                    "http://coastwatch.pfeg.noaa.gov/infog/" + twoName + "_" + fourName + "_las.html\" \n" +  //Yao QNux10 had no info
                         "          xlink:title=\"Dataset Summary\" /> \n" +
-                        "        <documentation xlink:href=\"http://oceanwatch.pfeg.noaa.gov\" \n" +
+                        "        <documentation xlink:href=\"https://oceanwatch.pfeg.noaa.gov\" \n" +
                         "          xlink:title=\"Oceanwatch Live Access Server\" /> \n" +
                         //add link to CWBrowsers?
                         "\n" +
@@ -558,7 +558,7 @@ public class GenerateThreddsXml {
                                      //DataSet.properties) often doesn't have an appropriate standardName!    
                                      //Yao had non-standard name, e.g., Wind Stress.  
                                      //Examples in 
-                                     //http://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
+                                     //https://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
                                      //  are like Yao's -- not strict CF, but closer -- just humanized versions.
                                      //Tests with thredds show that value = "" is fine with Thredds.
                                      "vocabulary_name=\"" + standardName + "\" " + 

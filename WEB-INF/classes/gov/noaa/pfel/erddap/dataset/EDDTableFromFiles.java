@@ -87,6 +87,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
     protected boolean filesAreLocal;
     protected String charset;  //may be null or ""
     protected int columnNamesRow = 1, firstDataRow = 2; 
+    protected String columnSeparator = "";
     //for ColumnarAscii only: the startColumn and stopColumn of each 
     //  dataVariable on each line of the file (0..)
     protected int startColumn[], stopColumn[]; 
@@ -185,6 +186,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         String tSpecialMode = "";
         String tCharset = null;
         int tColumnNamesRow = 1, tFirstDataRow = 2; //relevant for ASCII files only
+        String tColumnSeparator = "";               //relevant for ASCII files only
         boolean tSourceNeedsExpandedFP_EQ = true;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
@@ -248,6 +250,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             else if (localTags.equals("</columnNamesRow>")) tColumnNamesRow = String2.parseInt(content); 
             else if (localTags.equals( "<firstDataRow>")) {}
             else if (localTags.equals("</firstDataRow>")) tFirstDataRow = String2.parseInt(content); 
+            else if (localTags.equals( "<columnSeparator>")) {}
+            else if (localTags.equals("</columnSeparator>")) tColumnSeparator = content; 
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
             else if (localTags.equals( "<specialMode>")) {}
@@ -289,7 +293,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -304,7 +308,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames,
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -319,7 +323,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -334,7 +338,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -349,7 +353,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -364,7 +368,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -379,7 +383,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -394,12 +398,28 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
                 tAccessibleViaFiles, tRemoveMVRows);
         */
+
+        } else if (tType.equals("EDDTableFromNccsvFiles")) { 
+            return new EDDTableFromNccsvFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
+                tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
+                tDefaultDataQuery, tDefaultGraphQuery,  
+                tGlobalAttributes,
+                ttDataVariables,
+                tReloadEveryNMinutes, tUpdateEveryNMillis, 
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+                tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
+                tSortedColumnSourceName, tSortFilesBySourceNames, 
+                tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
+                tAccessibleViaFiles, tRemoveMVRows);
+
         } else if (tType.equals("EDDTableFromHyraxFiles")) {
 
             String qrName = quickRestartFullFileName(tDatasetID);
@@ -437,7 +457,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -483,7 +503,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
                 tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-                tCharset, tColumnNamesRow, tFirstDataRow,
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -526,15 +546,16 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, tUpdateEveryNMillis, 
-                fileDir,    //force fileDir
-                ".*\\.tsv", //force fileNameRegex
-                false,      //force !recursive, 
-                ".*",       //irrelevant pathRegex
+                fileDir,      //force fileDir
+                ".*\\.tsv",   //force fileNameRegex
+                false,        //force !recursive, 
+                ".*",         //irrelevant pathRegex
                 tMetadataFrom, 
-                "UTF-8",    //force charset
-                1,          //force columnNamesRow, 
-                3,          //force firstDataRow,
-                "","","","",//force tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
+                String2.UTF_8,//force charset
+                1,            //force columnNamesRow, 
+                3,            //force firstDataRow,
+                "",           //force tColumnSeparator
+                "","","","",  //force tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, 
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
                 tAccessibleViaFiles, tRemoveMVRows);
@@ -548,7 +569,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //        ttDataVariables,
         //        tReloadEveryNMinutes, tUpdateEveryNMillis, 
         //        tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
-        //        tCharset, tColumnNamesRow, tFirstDataRow,
+        //        tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
         //        tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
         //        tSortedColumnSourceName, tSortFilesBySourceNames,
         //        tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
@@ -564,7 +585,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *
      * @param tClassName e.g., EDDTableFromNcFiles
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -612,10 +633,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *        describing how to interpret source time values 
      *        (which should always be numeric since they are a dimension of a grid)
      *        (e.g., "seconds since 1970-01-01T00:00:00").
-     *      <li> a org.joda.time.format.DateTimeFormat string
+     *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -635,6 +656,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @param tCharset the charset; relevant for ASCII files only
      * @param tColumnNamesRow the number of the row with column names (1..; usually 1, may be 0 (none)); relevant for ASCII files only.
      * @param tDataRow the number of the row with column names (1..; usually 2); relevant for ASCII files only.
+     * @param tColumnSeparator the character that separates the columns. 
+     *   Use "" or null to have this method guess. Otherwise,
+     *   the first character of this string will be used.
      * @param tPreExtractRegex may be "" or null if not needed.
      *    If present, this usually begins with "^" to match the beginning of the file name.
      *    If present, this is used to remove text from the start of the file name.
@@ -678,7 +702,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -726,6 +751,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         charset = tCharset;
         columnNamesRow = tColumnNamesRow;
         firstDataRow = tFirstDataRow;
+        columnSeparator = tColumnSeparator;
         preExtractRegex = tPreExtractRegex;
         postExtractRegex = tPostExtractRegex;
         extractRegex = tExtractRegex;
@@ -882,7 +908,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 dirTable.nRows() + " rows in dirTable");
             if (reallyVerbose) String2.log(
                 "first 5 rows=\n" + 
-                dirTable.dataToCSVString(5));
+                dirTable.dataToString(5));
         }
 
         //load cached fileTable
@@ -892,7 +918,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 fileTable.nRows() + " rows in fileTable");
             if (reallyVerbose) String2.log(
                 "first 5 rows=\n" + 
-                fileTable.dataToCSVString(5));
+                fileTable.dataToString(5));
         }
 
         //ensure fileTable has correct columns and data types
@@ -906,8 +932,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             else if (fileTable.findColumnNumber("sortedSpacing") != FT_SORTED_SPACING_COL) ok = false;
             else if (!(fileTable.getColumn(FT_DIR_INDEX_COL)      instanceof ShortArray))  ok = false;
             else if (!(fileTable.getColumn(FT_FILE_LIST_COL)      instanceof StringArray)) ok = false;
-            else if (!(fileTable.getColumn(FT_LAST_MOD_COL)       instanceof DoubleArray)) ok = false;
-            else if (!(fileTable.getColumn(FT_SIZE_COL)           instanceof DoubleArray)) ok = false;
+            else if (!(fileTable.getColumn(FT_LAST_MOD_COL)       instanceof LongArray))   ok = false;
+            else if (!(fileTable.getColumn(FT_SIZE_COL)           instanceof LongArray))   ok = false;
             else if (!(fileTable.getColumn(FT_SORTED_SPACING_COL) instanceof DoubleArray)) ok = false;
             else for (int dv = 0; dv < ndv; dv++) {
                 String sdt = sourceDataTypes[dv];
@@ -926,7 +952,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             if (!ok) {
                 try { //added 2016-05-20
                     String2.log("Old fileTable discarded because of incorrect column arrangement (first 2 rows):");
-                    String2.log(fileTable.toString("row", 2)); //separate in case of trouble
+                    String2.log(fileTable.toString(2)); //separate in case of trouble
                 } catch (Throwable t2) {
                     String2.log(MustBe.throwableToString(t2));
                 }
@@ -949,8 +975,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             fileTable = new Table();
             fileTable.addColumn("dirIndex",      new ShortArray());  //col 0=FT_DIR_INDEX_COL
             fileTable.addColumn("fileName",      new StringArray()); //col 1=FT_FILE_NAME_COL
-            fileTable.addColumn("lastMod",       new DoubleArray()); //col 2=FT_LAST_MOD_COL
-            fileTable.addColumn("size",          new DoubleArray()); //col 3=FT_SIZE_COL
+            fileTable.addColumn("lastMod",       new LongArray());   //col 2=FT_LAST_MOD_COL
+            fileTable.addColumn("size",          new LongArray());   //col 3=FT_SIZE_COL
             fileTable.addColumn("sortedSpacing", new DoubleArray()); //col 4=FT_SORTED_SPACING_COL
             for (int dv = 0; dv < ndv; dv++) {
                 String sdt = sourceDataTypes[dv]; //booleans handled correctly below
@@ -967,10 +993,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //get the PrimitiveArrays from fileTable
         StringArray dirList         = (StringArray)dirTable.getColumn(0);
-        ShortArray  ftDirIndex      = (ShortArray)fileTable.getColumn( FT_DIR_INDEX_COL); //0
+        ShortArray  ftDirIndex      = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL); //0
         StringArray ftFileList      = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL); //1
-        DoubleArray ftLastMod       = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL); //2
-        DoubleArray ftSize          = (DoubleArray)fileTable.getColumn(FT_SIZE_COL); //3
+        LongArray   ftLastMod       = (LongArray)  fileTable.getColumn(FT_LAST_MOD_COL); //2
+        LongArray   ftSize          = (LongArray)  fileTable.getColumn(FT_SIZE_COL); //3
         DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //4
         String msg = "";
 
@@ -1013,6 +1039,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 badFileMap = newEmptyBadFileMap();
             }
 
+
             //get tFileList of available data files
             long elapsedTime = System.currentTimeMillis();
             //was tFileNames with dir+name
@@ -1033,29 +1060,6 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 throw new RuntimeException(msg);
             if (verbose) String2.log(msg);
             msg = "";
-
-            //remove "badFiles" if they no longer exist (in tFileNames)
-            {
-                //make hashset with all tFileNames
-                HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
-                for (int i = 0; i < ntft; i++)
-                    tFileSet.add(tFileDirPA.get(i) + tFileNamePA.get(i));
-
-                Object badFileNames[] = badFileMap.keySet().toArray();
-                int nMissing = 0;
-                int nbfn = badFileNames.length;
-                for (int i = 0; i < nbfn; i++) {
-                     Object name = badFileNames[i];
-                     if (!tFileSet.contains(name)) {
-                         if (reallyVerbose) 
-                            String2.log("previously bad file now missing: " + name);
-                         nMissing++;
-                         badFileMap.remove(name);
-                     }
-                }
-                if (verbose) String2.log(
-                    "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
-            } 
 
             //switch to dir indexes
             ShortArray tFileDirIndexPA = new ShortArray(ntft, false);  
@@ -1079,6 +1083,33 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tFileDirIndexPA.addInt(po);
             }
             tFileDirPA = null; //allow gc
+
+            //remove "badFiles" if they no longer exist (in tFileNames)
+            if (badFileMap.size() > 0) {
+                //make hashset with all tFileNames
+                HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+                for (int i = 0; i < ntft; i++) {
+                    tFileSet.add(tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));
+                    //String2.log("tFileSet add: " +   tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));                    
+                }
+
+                Object badFileNames[] = badFileMap.keySet().toArray();
+                int nMissing = 0;
+                int nbfn = badFileNames.length;
+                for (int i = 0; i < nbfn; i++) {
+                     Object name = badFileNames[i];
+                     if (!tFileSet.contains(name)) {
+                         if (reallyVerbose) 
+                            String2.log("previously bad file now missing: " + name);
+                         nMissing++;
+                         badFileMap.remove(name);
+                     }
+                }
+                if (verbose) String2.log(
+                    "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
+            } else {
+                if (verbose) String2.log("old nBadFiles size=0");  
+            } 
 
             //sort fileTable and tFileTable by dirIndex and fileName
             elapsedTime = System.currentTimeMillis();
@@ -1163,12 +1194,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     throw new SimpleException("EDDTableFromFiles.init" +
                         EDStatic.caughtInterrupted);
 
-                int tDirI      = tFileDirIndexPA.get(tFileListPo);
+                int    tDirI   = tFileDirIndexPA.get(tFileListPo);
                 String tFileS  = tFileNamePA.get(tFileListPo);
-                int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
+                int    dirI    = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
                 String fileS   = fileListPo < ftFileList.size()? ftFileList.get(fileListPo) : "\uFFFF";
-                double lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Double.MAX_VALUE;
-                double size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Double.MAX_VALUE;
+                long   lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Long.MAX_VALUE;
+                long   size    = fileListPo < ftFileList.size()? ftSize.get(fileListPo)     : Long.MAX_VALUE;
                 boolean logThis = (reallyVerbose && tFileListPo <= 100) || 
                     ((reallyVerbose || verbose) && 
                         ((tFileListPo <= 1000 && tFileListPo % 100 == 0) ||
@@ -1178,7 +1209,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
                 //is tLastMod available for tFile?
                 long tLastMod = tFileLastModPA.get(tFileListPo);
-                if (tLastMod == 0) { //0=trouble
+                if (tLastMod == 0 || tLastMod == Long.MAX_VALUE) { //0=trouble
                     nNoLastMod++;
                     String2.log(tFileListPo + " reject because unable to get lastMod time: " + 
                         dirList.get(tDirI) + tFileS);                
@@ -1203,7 +1234,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (bfi != null) {
                     //tFile is in badFileMap
                     Object bfia[] = (Object[])bfi;
-                    double bfLastMod = ((Double)bfia[0]).doubleValue();
+                    long bfLastMod = ((Long)bfia[0]).longValue();
                     if (bfLastMod == tLastMod) {
                         //file hasn't been changed; it is still bad
                         tFileListPo++;
@@ -1333,7 +1364,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 }
             }
             if (reallyVerbose) String2.log("fileTable.nRows=" + fileTable.nRows() + 
-                ".  The first few rows are:\n" + fileTable.toString("row", debugMode? 100 : 10));
+                ".  The first few rows are:\n" + fileTable.toString(debugMode? 100 : 10));
 
             msg = "\n  tFileNamePA.size()=" + tFileNamePA.size() + 
                 "\n  dirTable.nRows()=" + dirTable.nRows() +
@@ -1380,7 +1411,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             StringBuilder emailSB = new StringBuilder();
             emailSB.append(badFileMapToString(badFileMap, dirList));
             emailSB.append(msg + "\n\n");
-            EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod, emailSB.toString());
+            EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", 
+                emailSB.toString());
         }
 
         //try to open metadataFrom FIRST|LAST file (based on lastModifiedTime) to get source metadata
@@ -1390,8 +1422,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         String mdFromName = ftFileList.get(tFileI);
         if (verbose) String2.log("getting metadata from " + mdFromDir + mdFromName + 
             "\n  ftLastMod" + 
-            " first=" + Calendar2.millisToIsoZuluString(Math.round(ftLastMod.get(nMinMaxIndex[1]))) + 
-             " last=" + Calendar2.millisToIsoZuluString(Math.round(ftLastMod.get(nMinMaxIndex[2]))));
+            " first=" + Calendar2.millisToIsoZuluString(ftLastMod.get(nMinMaxIndex[1])) + 
+             " last=" + Calendar2.millisToIsoZuluString(ftLastMod.get(nMinMaxIndex[2])));
         Table tTable = getSourceDataFromFile(mdFromDir, mdFromName,
             sourceDataNamesNEC, sourceDataTypesNEC, -1, Double.NaN, Double.NaN, 
             null, null, null, true, false);
@@ -1431,17 +1463,21 @@ public abstract class EDDTableFromFiles extends EDDTable{
             String sMax = tSourceType.equals("String")? "" : 
                           isFixedValue? sMin :
                           minMaxTable.getStringData(dv, 1);
-            //String2.log(">>sMin=" + sMin + " sMax=" + sMax + " paMin=" + minMaxTable.getColumn(dv).minValue() +
-            //    " paMax=" + minMaxTable.getColumn(dv).maxValue());
+            //String2.log(">> tSourceName=" + tSourceName + " sMin=" + sMin + " sMax=" + sMax + " paMin=" + minMaxTable.getColumn(dv).minValue() + " paMax=" + minMaxTable.getColumn(dv).maxValue());
             if (sMin.length() > 0 &&
-                minMaxTable.getColumn(dv).minValue().equals(sMin) &&
-                minMaxTable.getColumn(dv).maxValue().equals(sMax)) {
+                minMaxTable.getColumn(dv).minValue().equals(sMin) && //min for the PA type
+                minMaxTable.getColumn(dv).maxValue().equals(sMax)) { //max for the PA type
                 //these are placeholder min and max, so don't use for actual_range
                 sMin = "";
                 sMax = "";
             }
             double dMin = String2.parseDouble(sMin);
             double dMax = String2.parseDouble(sMax);
+            if (tSourceType.equals("char")) {
+                dMin = sMin.length() == 0? Double.NaN : (double)sMin.charAt(0);
+                dMax = sMax.length() == 0? Double.NaN : (double)sMax.charAt(0);
+            }
+
 
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
 
@@ -1475,14 +1511,21 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     tUnits = tSourceAtt.getString("units");
                 if (tUnits == null)
                     tUnits = "";
-                if (!tSourceType.equals("String") ||           //numeric times sort correctly                          
-                    tUnits.toLowerCase().startsWith("yyyy-")) {//iso format times sort correctly
+                //String2.log(">> timestamp minMaxTable min=" + minMaxTable.getStringData(dv, 0));
+                if (tSourceType.equals("String") &&          //iso string times sort correctly                          
+                    tUnits.toLowerCase().startsWith("yyyy")) { //probably sorted correctly
+                    StringArray actualRange = new StringArray();
+                    actualRange.add(minMaxTable.getStringData(dv, 0));
+                    actualRange.add(minMaxTable.getStringData(dv, 1));
+                    tAddAtt.set("actual_range", actualRange);
+                    //String2.log(">> timestamp actual_range=" + actualRange);
+                } else if (!tSourceType.equals("String")) {  //numeric times sort correctly                          
                     PrimitiveArray actualRange = PrimitiveArray.factory(
                         PrimitiveArray.elementStringToClass(sourceDataTypes[dv]), 2, false);
-                    actualRange.addString(minMaxTable.getStringData(dv, 0));
-                    actualRange.addString(minMaxTable.getStringData(dv, 1));
+                    actualRange.addDouble(minMaxTable.getDoubleData(dv, 0));
+                    actualRange.addDouble(minMaxTable.getDoubleData(dv, 1));
                     tAddAtt.set("actual_range", actualRange);
-                    //String2.log(">> actual_range=" + actualRange);
+                    //String2.log(">> timestamp actual_range=" + actualRange);
                 }
 
                 if (EDV.TIME_NAME.equals(tDestName)) {
@@ -1646,7 +1689,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @return true if successful
      */
     private boolean makeExpected(StringArray dirList, ShortArray ftDirIndex, 
-        StringArray ftFileList, DoubleArray ftLastMod, DoubleArray ftSize) {
+        StringArray ftFileList, LongArray ftLastMod, LongArray ftSize) {
         //make arrays to hold expected source add_offset, fillValue, missingValue, scale_factor, units
         expectedAddOffsetNEC    = new double[sourceDataNamesNEC.size()]; 
         expectedFillValueNEC    = new double[sourceDataNamesNEC.size()]; 
@@ -1792,12 +1835,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @throws throwable if trouble
      */
     protected void setFileTableRow(Table fileTable, int fileListPo,
-        int tDirI, String tFileS, double tLastMod, double tSize, Table tTable, int logAsRowNumber) {
+        int tDirI, String tFileS, long tLastMod, long tSize, Table tTable, int logAsRowNumber) {
 
         ShortArray  ftDirIndex      =  (ShortArray)fileTable.getColumn(FT_DIR_INDEX_COL);      //0
         StringArray ftFileList      = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL);      //1
-        DoubleArray ftLastMod       = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL);       //2
-        DoubleArray ftSize          = (DoubleArray)fileTable.getColumn(FT_SIZE_COL);           //3
+        LongArray   ftLastMod       =   (LongArray)fileTable.getColumn(FT_LAST_MOD_COL);       //2
+        LongArray   ftSize          =   (LongArray)fileTable.getColumn(FT_SIZE_COL);           //3
         DoubleArray ftSortedSpacing = (DoubleArray)fileTable.getColumn(FT_SORTED_SPACING_COL); //4
 
         ftDirIndex.setInt(fileListPo, tDirI);
@@ -1848,15 +1891,17 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             //process source min and max for this column's data
             PrimitiveArray pa = tTable.getColumn(c);
-            if (pa instanceof StringArray) {
-                //get [0]=n,[1]=min,[2]=max (of non-null and non-"") Strings
-                String nMinMax[] = ((StringArray)pa).getNMinMax(); 
+            if (pa.elementClass() == String.class ||
+                pa.elementClass() == long.class) {   //so long is set exactly
+                //get [0]=n,[1]=min,[2]=max (of non-null and non-"") as Strings
+                String nMinMax[] = pa.getNMinMax(); 
                 int tn = String2.parseInt(nMinMax[0]);
                 if (tn > 0) {
                     fileTable.setStringData(dv0 + dv*3 + 0, fileListPo, nMinMax[1]);  
                     fileTable.setStringData(dv0 + dv*3 + 1, fileListPo, nMinMax[2]);
                 }
                 fileTable.setIntData(dv0 + dv*3 + 2, fileListPo, tn < pa.size()? 1 : 0); //hasNaN
+
             } else {
                 double stats[] = pa.calculateStats();
                 int tn = Math2.roundToInt(stats[PrimitiveArray.STATS_N]);
@@ -1927,59 +1972,42 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //calculate min of the min values
             PrimitiveArray pa = fileTable.getColumn(dv0 + dv*3 + 0);
             //String2.log(sourceDataNames.get(dv) + " minCol=" + pa.toString());
-            String mm = null;
-            if (sourceDataTypes[dv].equals("String")) {
-                //for non="" strings
-                String nMinMax[] = ((StringArray)pa).getNMinMax(); //[0]=n, [1]=min, [2]=max
-                int tn = String2.parseInt(nMinMax[0]);
-                if (tn > 0) 
-                    minMaxPa.setString(0, mm = nMinMax[1]);
-                //else leave min as "" (mv)
-            } else {
-                double stats[] = pa.calculateStats();
-                if (stats[PrimitiveArray.STATS_N] > 0) {
-                    double tMin = stats[PrimitiveArray.STATS_MIN];
-                    minMaxPa.setDouble(0, tMin);
-                    mm = "" + tMin;
+            boolean isCharOrString = pa.elementClass() == char.class ||
+                                     pa.elementClass() == String.class;
+            String nMinMax[] = pa.getNMinMax(); //[0]=n, [1]=min, [2]=max  as strings
+            int tn = String2.parseInt(nMinMax[0]);
+            if (tn > 0) {
+                minMaxPa.setString(0, nMinMax[1]);
+                if (reallyVerbose) {
+                    int row = pa.indexOf(nMinMax[1]);
+                    String2.log(sourceDataNames.get(dv) + " minMin=" + 
+                        (isCharOrString? String2.toJson(nMinMax[1], 256) : "" + nMinMax[1]) + 
+                        (row < 0? " (fileTable row not found)" : 
+                            " file=" + dirList.get(ftDirIndex.get(row)) + ftFileList.get(row)));
                 }
-            }
-            if (reallyVerbose && mm != null) {
-                int row = pa.indexOf(mm);
-                if (row >= 0) 
-                    String2.log(sourceDataNames.get(dv) + " minMin=" + mm + 
-                        " file=" + dirList.get(ftDirIndex.get(row)) + ftFileList.get(row));
             }
 
             //calculate max of the max values
             pa = fileTable.getColumn(dv0 + dv*3 + 1);
             //String2.log(sourceDataNames.get(dv) + " maxCol=" + pa.toString());
-            mm = null;
-            if (sourceDataTypes[dv].equals("String")) {
-                String nMinMax[] = ((StringArray)pa).getNMinMax();
-                int tn = String2.parseInt(nMinMax[0]);
-                if (tn > 0) 
-                    minMaxPa.setString(1, mm = nMinMax[2]);
-                //else leave max as "" (mv)
-            } else {
-                double stats[] = pa.calculateStats();
-                if (stats[PrimitiveArray.STATS_N] > 0) {
-                    double tMax = stats[PrimitiveArray.STATS_MAX];
-                    minMaxPa.setDouble(1, tMax);
-                    mm = "" + tMax;
+            nMinMax = pa.getNMinMax();
+            tn = String2.parseInt(nMinMax[0]);
+            if (tn > 0) {
+                minMaxPa.setString(1, nMinMax[2]);
+                if (reallyVerbose) {
+                    int row = pa.indexOf(nMinMax[2]);
+                    String2.log(sourceDataNames.get(dv) + " maxMax=" +
+                        (isCharOrString? String2.toJson(nMinMax[2], 256) : "" + nMinMax[2]) + 
+                        (row < 0? " (fileTable row not found)" : 
+                            " file=" + dirList.get(ftDirIndex.get(row)) + ftFileList.get(row)));
                 }
-            }
-            if (reallyVerbose && mm != null) {
-                int row = pa.indexOf(mm);
-                if (row >= 0) 
-                    String2.log(sourceDataNames.get(dv) + " maxMax=" + mm + 
-                        " file=" + dirList.get(ftDirIndex.get(row)) + ftFileList.get(row));
             }
 
             //calculate hasNaN
             pa = fileTable.getColumn(dv0 + dv*3 + 2);
             minMaxPa.setInt(2, pa.indexOf("1") >= 0? 1 : 0); //does any file hasNaN?
         }
-        if (verbose) String2.log("minMaxTable=\n" + minMaxTable.dataToCSVString()); //it's always small
+        if (verbose) String2.log("minMaxTable=\n" + minMaxTable.dataToString()); //it's always small
         return minMaxTable;
     }
 
@@ -2081,15 +2109,15 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }
         if (debugMode) String2.log(msg + "\n" +
             tDirTable.nRows() + " rows in old dirTable.  first 5 rows=\n" + 
-                tDirTable.dataToCSVString(5) + 
+                tDirTable.dataToString(5) + 
             tFileTable.nRows() + " rows in old fileTable.  first 5 rows=\n" + 
-                tFileTable.dataToCSVString(5));
+                tFileTable.dataToString(5));
 
         StringArray dirList = (StringArray)tDirTable.getColumn(0);
-        ShortArray  ftDirIndex      = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);      //0
+        ShortArray  ftDirIndex      =  (ShortArray)tFileTable.getColumn(FT_DIR_INDEX_COL);      //0
         StringArray ftFileList      = (StringArray)tFileTable.getColumn(FT_FILE_LIST_COL);      //1
-        DoubleArray ftLastMod       = (DoubleArray)tFileTable.getColumn(FT_LAST_MOD_COL);       //2
-        DoubleArray ftSize          = (DoubleArray)tFileTable.getColumn(FT_SIZE_COL);           //3
+        LongArray   ftLastMod       =   (LongArray)tFileTable.getColumn(FT_LAST_MOD_COL);       //2
+        LongArray   ftSize          =   (LongArray)tFileTable.getColumn(FT_SIZE_COL);           //3
         DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(FT_SORTED_SPACING_COL); //4
 
         //for each changed file
@@ -2337,20 +2365,27 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @return the dirTable fileTable (null if trouble).  (No exception if trouble.)
      */
     protected Table tryToLoadDirFileTable(String fileName) {
-        Table table = null;
         try {
             if (File2.isFile(fileName)) {
-                table = new Table();
-                table.readFlatNc(fileName, null, 0); //it logs fileName and nRows=
+                Table table = new Table();
+                //table.readFlatNc(fileName, null, 0); //unpack     //was this
+                Test.ensureEqual(table.readEnhancedFlatNc(fileName, null), //it logs fileName and nRows=
+                    Table.ENHANCED_VERSION, "old/unsupported enhancedVersion");
+                Test.ensureEqual(table.globalAttributes().getInt(_dirFileTableVersion_),
+                    DIR_FILE_TABLE_VERSION, "old/unsupported " + _dirFileTableVersion_);
+                return table;
+
             } else {
-                if (verbose) String2.log("table file doesn't exist: " + fileName);  
+                if (verbose) String2.log("dir/file table doesn't exist: " + fileName);  
+                return null;
             }
         } catch (Throwable t) {
-            table = null; 
-            String2.log(String2.ERROR + " reading table " + fileName + "\n" + 
+            File2.delete(datasetDir() + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir() + FILE_TABLE_FILENAME);
+            String2.log(String2.ERROR + " reading dir/file table " + fileName + "\n" + 
                 MustBe.throwableToString(t));  
+            return null;
         }
-        return table;
     }
 
     /** 
@@ -2379,8 +2414,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
             dnlsTable.setColumn(0, tFileTable.getColumn(FT_DIR_INDEX_COL));
             dnlsTable.setColumn(1, tFileTable.getColumn(FT_FILE_LIST_COL));
-            dnlsTable.setColumn(2, new LongArray(tFileTable.getColumn(FT_LAST_MOD_COL))); //double -> long
-            dnlsTable.setColumn(3, new LongArray(tFileTable.getColumn(FT_SIZE_COL)));     //double -> long
+            dnlsTable.setColumn(2, tFileTable.getColumn(FT_LAST_MOD_COL));
+            dnlsTable.setColumn(3, tFileTable.getColumn(FT_SIZE_COL));    
             //convert dir Index to dir names
             tDirTable.addColumn(0, "dirIndex", new IntArray(0, tDirTable.nRows() - 1));
             dnlsTable.join(1, 0, "", tDirTable);
@@ -2676,10 +2711,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
                 "\n(Details: unable to read fileTable.)"); 
         StringArray dirList         = (StringArray)tDirTable.getColumn(0);
-        ShortArray  ftDirIndex      = (ShortArray)tFileTable.getColumn(0);
+        ShortArray  ftDirIndex      =  (ShortArray)tFileTable.getColumn(0);
         StringArray ftFileList      = (StringArray)tFileTable.getColumn(1);        
-        DoubleArray ftLastMod       = (DoubleArray)tFileTable.getColumn(2);
-        DoubleArray ftSize          = (DoubleArray)tFileTable.getColumn(3);
+        LongArray   ftLastMod       =   (LongArray)tFileTable.getColumn(2);
+        LongArray   ftSize          =   (LongArray)tFileTable.getColumn(3);
         DoubleArray ftSortedSpacing = (DoubleArray)tFileTable.getColumn(4);
 
 
@@ -2790,9 +2825,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
                     if (!isOK(dsMin, dsMax, dsHasNaN, tOp, tValue)) {
                         reasonNotOk = "No data matches " +
-                            edv.destinationName() + tOp + conValues.get(con) + 
-                            " because the String variable's source min=\"" + dsMin + "\", max=\"" + dsMax + 
-                            "\", and hasNaN=" + (dsHasNaN != 0) + ".";
+                            edv.destinationName() + tOp + String2.toJson(conValues.get(con), 65536) + 
+                            " because the String variable's source min=" + 
+                            String2.toJson(dsMin, 65536) + 
+                            ", max=" + String2.toJson(dsMax, 65536) + 
+                            ", and hasNaN=" + (dsHasNaN != 0) + ".";
                         if (reallyVerbose) String2.log(reasonNotOk);
                         break;
                     }
@@ -2803,7 +2840,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 double dsMax    = minMaxTable.getDoubleData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
                 double conValD = String2.parseDouble(conValues.get(con)); //if time, conValD is epochSeconds
-                double tValueD = String2.parseDouble(tValue);             //if time, tValueD is a numeric source time
+                double tValueD = edv.sourceDataTypeClass() == char.class?
+                    (tValue.length() == 0? Double.NaN : (double)tValue.charAt(0)) :
+                    String2.parseDouble(tValue);             //if time, tValueD is a numeric source time
                 if (!isOK(dsMin, dsMax, dsHasNaN, tOp, tValueD)) {
                     reasonNotOk = 
                         "No data matches " +
@@ -2901,9 +2940,29 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 int dv = cdvi[con];
                 EDV edv = dataVariables[dv];
                 if (op.equals(PrimitiveArray.REGEX_OP)) {
-                    //never reject a file based on regex_op
+                    //only reject a file based on regex_op if file has just one String value
+                    //(since numbers may be further processed)
+                    if (edv.sourceDataTypeClass() == char.class ||
+                        edv.sourceDataTypeClass() == String.class) {
+                        String tMin = tFileTable.getStringData(dv0 + dv*3 + 0, f);
+                        String tMax = tFileTable.getStringData(dv0 + dv*3 + 1, f);
+                        int    tNaN = tFileTable.getIntData(   dv0 + dv*3 + 2, f); 
+                        if (//tMin.equals(tMax) && //this is tested by isOK for regex
+                            !isOK(tMin, tMax, tNaN, op, conValues.get(con))) {
+                            if (reallyVerbose) 
+                                String2.log("file " + f + 
+                                    " rejected because failed String test " +
+                                    conVars.get(con) + op + String2.toJson(conValues.get(con), 256) + 
+                                    " when file min=" + String2.toJson(tMin, 256) + 
+                                    ", max=" + String2.toJson(tMax, 256) + 
+                                    ", hasNaN=" + (tNaN != 0) + ".");
+                            ok = false;
+                            break;
+                        }
+                    } //else don't reject based on this constraint
 
-                } else if ((edv instanceof EDVTimeStamp)) {
+
+                } else if (edv instanceof EDVTimeStamp) {
                     //conValue is epochSeconds (not source time units), so convert fMin,fMax to epSeconds
                     EDVTimeStamp tdv = (EDVTimeStamp)edv;
                     if (tdv.sourceDataTypeClass() == String.class &&
@@ -2950,7 +3009,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         }                  
                     }
 
-                } else if (edv.sourceDataTypeClass() == String.class) {
+                } else if (edv.sourceDataTypeClass() == char.class ||
+                           edv.sourceDataTypeClass() == String.class) {
                     //String variables
                     String fMin = tFileTable.getStringData(dv0 + dv*3 + 0, f);
                     String fMax = tFileTable.getStringData(dv0 + dv*3 + 1, f);
@@ -2959,9 +3019,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         if (reallyVerbose) 
                             String2.log("file " + f + 
                                 " rejected because failed String test " +
-                                conVars.get(con) + op + conValues.get(con) + 
-                                " when file min=\"" + fMin + "\", max=\"" + fMax + 
-                                "\", hasNaN=" + (fNaN != 0) + ".");
+                                conVars.get(con) + op + String2.toJson(conValues.get(con), 256) + 
+                                " when file min=" + String2.toJson(fMin, 256) + 
+                                ", max=" + String2.toJson(fMax, 256) + 
+                                ", hasNaN=" + (fNaN != 0) + ".");
                         ok = false;
                         break;
                     }
@@ -3030,7 +3091,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                             distinctTable.getColumn(rvi).addString(tVal);
                         }
                     }
-                    //if (newDistinctTable) String2.log("  initial distinctTable=\n" + distinctTable.dataToCSVString());
+                    //if (newDistinctTable) String2.log("  initial distinctTable=\n" + distinctTable.dataToString());
 
                     //add extractColumn
                     if (tExtractIndex >= 0) {

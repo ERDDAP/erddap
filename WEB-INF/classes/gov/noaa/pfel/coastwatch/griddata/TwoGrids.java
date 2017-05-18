@@ -39,14 +39,9 @@ import java.util.List;
 import java.util.GregorianCalendar;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.ma2.*;
 import ucar.nc2.*;
@@ -346,6 +341,7 @@ public class TwoGrids  {
         NetcdfFileWriter nc = NetcdfFileWriter.createNew(
             NetcdfFileWriter.Version.netcdf3, 
             directory + randomInt + ".nc");
+        boolean nc3Mode = true;
         try {
             Group rootGroup = nc.addGroup(null, "");
             nc.setFill(false);
@@ -410,7 +406,7 @@ public class TwoGrids  {
                         NcHelper.get1DArray(matrix))); //float64[] {a, b, c, d, e, f}
                 } else {
                     rootGroup.addAttribute(
-                        NcHelper.createAttribute(names[i], grid1.globalAttributes().get(names[i])));
+                        NcHelper.createAttribute(nc3Mode, names[i], grid1.globalAttributes().get(names[i])));
                 }
             }
 
@@ -435,18 +431,18 @@ public class TwoGrids  {
             altitudeVar.addAttribute(new Attribute("_CoordinateZisPositive", "up"));
 
             //lat
-            NcHelper.setAttributes(latVar, grid1.latAttributes());
+            NcHelper.setAttributes(nc3Mode, latVar, grid1.latAttributes());
             latVar.addAttribute(new Attribute("axis", "Y"));
 
             //lon
-            NcHelper.setAttributes(lonVar, grid1.lonAttributes());
+            NcHelper.setAttributes(nc3Mode, lonVar, grid1.lonAttributes());
             lonVar.addAttribute(new Attribute("axis", "X"));
 
             //data1
-            NcHelper.setAttributes(data1Var, grid1.dataAttributes());
+            NcHelper.setAttributes(nc3Mode, data1Var, grid1.dataAttributes());
 
             //data2
-            NcHelper.setAttributes(data2Var, grid2.dataAttributes());
+            NcHelper.setAttributes(nc3Mode, data2Var, grid2.dataAttributes());
 
             //leave "define" mode
             nc.create();

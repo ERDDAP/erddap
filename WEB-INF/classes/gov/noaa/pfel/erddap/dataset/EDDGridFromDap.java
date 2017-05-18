@@ -54,13 +54,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -72,7 +68,7 @@ import ucar.ma2.*;  //only Array is needed; all other ucar is for testing netcdf
  * This class represents a grid dataset from an opendap DAP source.
  *
  * <p>Note that THREDDS has a default limit of 500MB for opendap responses. See
- * http://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
+ * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
  */
@@ -192,7 +188,7 @@ public class EDDGridFromDap extends EDDGrid {
      * constructor.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -917,6 +913,8 @@ public class EDDGridFromDap extends EDDGrid {
         String dimensionNamesCsv = String2.toCSSVString(dimensionNames);
         if (dimensionNames != null) String2.log("  dimensionNames=" + dimensionNamesCsv);
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
+        if (tLocalSourceUrl.endsWith(".html"))
+            tLocalSourceUrl = tLocalSourceUrl.substring(0, tLocalSourceUrl.length() - 5);
 
         //get DConnect             
         long getDasDdsTime = System.currentTimeMillis();
@@ -1374,7 +1372,7 @@ public class EDDGridFromDap extends EDDGrid {
      * multiple datasets from a THREDDS server.
      * <br>This calls itself recursively, adding into to fileNameInfo as it is found.
      * <br>If there is trouble (e.g., an exception), this catches it and returns.
-     * <br>http://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
+     * <br>https://www.unidata.ucar.edu/software/thredds/current/tds/catalog/InvCatalogSpec.html
      *
      * <p>Unsolved problem: this does nothing for detecting groups of files/URLs 
      * that should be aggregated.
@@ -1426,7 +1424,7 @@ public class EDDGridFromDap extends EDDGrid {
             String2.log(ts);
             return;
         }
-if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
+if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
     (tLocalSourceUrl.indexOf("/ncml_aggregation/Chlorophyll/modis/ARCHIVED") >= 0 ||
      tLocalSourceUrl.indexOf("/ncml_aggregation/Chlorophyll/modis/PENDING") >= 0)) {
     String ts = ">skipping " + tLocalSourceUrl;
@@ -1479,7 +1477,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
             int catPo = tLocalSourceUrl.indexOf( "/catalog/");
             if (catPo < 0) {
                 if (verbose) String2.log("  WARNING: '/catalog/' not found in" +
-                    //e.g., http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/
+                    //e.g., https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/
                     //        ncep.reanalysis.dailyavgs/surface/catalog.xml
                     "\n    tLocalSourceUrl=" + tLocalSourceUrl);
                 int tPod = tLocalSourceUrl.indexOf("/thredds/dodsC/");
@@ -1493,7 +1491,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
                 else 
                     tLocalSourceUrl = File2.getDirectory(tLocalSourceUrl) + 
                         "catalog/" + File2.getNameAndExtension(tLocalSourceUrl);
-                //e.g., http://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/
+                //e.g., https://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/
                 //        ncep.reanalysis.dailyavgs/surface/catalog.xml
                 if (verbose) String2.log("    so trying tLocalSourceUrl=" + tLocalSourceUrl);
                 catPo = tLocalSourceUrl.indexOf( "/catalog/");
@@ -1514,7 +1512,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
             int sPo = tLocalSourceUrl.indexOf('/', ssPo + 2);
             if (sPo < 0) 
                 throw new SimpleException("'/' not found in tLocalSourceUrl=" + tLocalSourceUrl);
-            //e.g., threddsBase=http://www.esrl.noaa.gov
+            //e.g., threddsBase=https://www.esrl.noaa.gov
             String threddsBase = tLocalSourceUrl.substring(0, sPo);
             if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
             String defaultService = null;
@@ -1538,6 +1536,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
                 if (recursive && tags.endsWith("<catalogRef>") &&
                     String2.lineContainingIgnoreCase(name, "do not test", 0) < 0) {
                     String href = xmlReader.attributeValue("xlink:href");
+                    //String2.log(">> tLocalSourceUrl=" + tLocalSourceUrl + "\n>> href=" + href);
                     if (href != null) {
                         if (!href.startsWith("http")) {  //if not a complete url
                             if (href.startsWith("/" + threddsName + "/catalog/"))
@@ -1549,9 +1548,13 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
                             else if (href.startsWith("/geoide/")) {  //Eeek! pathetic patch
                                 int ts2 = tLocalSourceUrl.indexOf("/", 9);                             
                                 href = tLocalSourceUrl.substring(0, ts2) + href; //href starts with /geoide/
+                            } else if (href.startsWith("/uaf/thredds/")) {  //Eeek! pathetic patch
+                                int ts2 = tLocalSourceUrl.indexOf("/", 14);                             
+                                href = tLocalSourceUrl.substring(0, ts2) + href; //href starts with /geoide/
                             } else 
                                 href = catalogBase + href.substring(1); //href starts with /
                         }
+                        //String2.pressEnterToContinue(">> href=" + href);
                         if (href.matches(pathRegex))
                             recursivelyGenerateDatasetsXmlFromThreddsCatalog(href,
                                 datasetNameRegex, recursive, pathRegex,
@@ -1676,7 +1679,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
                             //String2.log("!!!found port=" + port); Math2.sleep(1000);
                             String ttUrlPath = String2.replaceAll(tUrlPath, port, "/");
                             try {
-                                String dds = SSR.getUncompressedUrlResponseString(ttUrlPath + ".dds");
+                                String dds = SSR.getUncompressedUrlResponseString(ttUrlPath + ".dds", String2.ISO_8859_1);
                                 if (dds.startsWith("Dataset {")) {
                                     //it can be removed
                                     //String2.log(">>port=" + port + " was removed"); Math2.sleep(1000);
@@ -1940,26 +1943,27 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
 
         //test for problem with threddsBaseUrl  found 2011-11  
         results = getUrlsFromThreddsCatalog(
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/catalog.xml", 
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/catalog.xml", 
             "air\\.sig995\\.20[0-9]{2}\\.nc", false, "");
         expected = new String[]{
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2000.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2001.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2002.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2003.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2004.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2005.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2006.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2007.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2008.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2009.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2010.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2011.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2012.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2013.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2014.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2015.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2016.nc"};
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2000.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2001.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2002.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2003.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2004.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2005.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2006.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2007.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2008.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2009.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2010.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2011.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2012.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2013.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2014.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2015.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2016.nc",
+            "https://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2017.nc"};
         Test.ensureEqual(results, expected, "results0=" + String2.toNewlineString(results));
 
         //test no regex
@@ -2058,7 +2062,7 @@ if (tLocalSourceUrl.startsWith("http://thredds.jpl.nasa.gov/thredds") &&
         }
         
         Writer results = new BufferedWriter(new OutputStreamWriter(
-            new FileOutputStream(resultsFileName), "ISO-8859-1"));
+            new FileOutputStream(resultsFileName), String2.ISO_8859_1));
         results.write(directionsForGenerateDatasetsXml() + "-->\n\n");
         StringBuilder summary = new StringBuilder();
         int catalogXmlTimes[]     = new int[String2.DistributionSize];
@@ -2191,7 +2195,9 @@ String expected2 =
 "        <att name=\"polygon_longitude\">null</att>\n" +
 "        <att name=\"publisher_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"publisher_name\">NOAA CoastWatch, West Coast Node</att>\n" +
+"        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"publisher_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
+"        <att name=\"references\">Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
@@ -2314,28 +2320,31 @@ String expected2 =
     //(v1.0.1  as of 2010-02-18 and still on 2013-02-01, 
     //2010-04-07 still v1.0.1, but #58-61 added)
     //2012-12-09 big new catalog
-    //0=entire "clean catalog" http://ferret.pmel.noaa.gov/geoide/geoIDECleanCatalog.html 
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalog.xml",
+    //2017-04-15 base url changed
+    // from http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalog.xml"
+    // to   http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.xml
+    //0=entire "clean catalog" http://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html 
+    "http://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.xml",
     //1
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/www.esrl.noaa.gov/psd/thredds/catalog/Datasets/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/ferret.pmel.noaa.gov/thredds/carbontracker.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/data1.gfdl.noaa.gov/thredds3/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/osmc.noaa.gov/thredds/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/www.esrl.noaa.gov/psd/thredds/catalog/Datasets/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/ferret.pmel.noaa.gov/thredds/carbontracker.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/data1.gfdl.noaa.gov/thredds3/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/osmc.noaa.gov/thredds/catalog.xml",
     //6
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog_ncom.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/www.ngdc.noaa.gov/thredds/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/data.nodc.noaa.gov/thredds/dodsC/ghrsst/cfg/aggregation/fullAgg/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/edac-dap3.northerngulfinstitute.org/thredds/catalog/ncom_fukushima_agg/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/colossus.dl.stevens-tech.edu/thredds/bight_dailyrun_fmrc.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog_ncom.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/www.ngdc.noaa.gov/thredds/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/data.nodc.noaa.gov/thredds/dodsC/ghrsst/cfg/aggregation/fullAgg/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/edac-dap3.northerngulfinstitute.org/thredds/catalog/ncom_fukushima_agg/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/colossus.dl.stevens-tech.edu/thredds/bight_dailyrun_fmrc.xml",
     //11
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/colossus.dl.stevens-tech.edu/thredds/apex_dailyrun_fmrc.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/tashtego.marine.rutgers.edu/thredds/roms/espresso/catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/geoport.whoi.edu/thredds/COAWST_catalog.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/ocn_mod.xml",
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/michigan.glin.net/thredds/glcfs_nowcast_catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/colossus.dl.stevens-tech.edu/thredds/apex_dailyrun_fmrc.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/tashtego.marine.rutgers.edu/thredds/roms/espresso/catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/geoport.whoi.edu/thredds/COAWST_catalog.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/ocn_mod.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/michigan.glin.net/thredds/glcfs_nowcast_catalog.xml",
     //16
-    "http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/michigan.glin.net/thredds/featurecollection.xml",
+    "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/michigan.glin.net/thredds/featurecollection.xml",
     //motherlode isn't part of UAF
     "http://motherlode.ucar.edu/thredds/catalog.xml"
     };
@@ -2343,7 +2352,7 @@ String expected2 =
     /** 
      * Bob uses this for testing in individual GEO IDE UAF Thredds catalog.
      * See original catalog http://ferret.pmel.noaa.gov/thredds/geoideCatalog.html
-     * See the clean catalog at http://ferret.pmel.noaa.gov/geoide/geoIDECleanCatalog.html
+     * See the clean catalog at http://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html
      */
     public static void testUAFSubThreddsCatalog(int which) throws Throwable {
 
@@ -2372,7 +2381,7 @@ String expected2 =
         ResourceBundle2 dataSetRB2 = new ResourceBundle2("gov.noaa.pfel.coastwatch.DataSet");
 
         //read the main catalog
-        String baseUrl = "http://oceanwatch.pfeg.noaa.gov/thredds/";
+        String baseUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/";
         String mainCat = SSR.getUrlResponseString(baseUrl + "catalog.html");
         int mainCatPo = 0;
         int mainCount = 0;
@@ -2426,7 +2435,7 @@ String expected2 =
 
                 sb.append(
 "    <dataset type=\"EDDGridFromDap\" datasetID=\"erd" + twoLetter + fourLetter + timePeriod + "\">\n" +
-"        <sourceUrl>http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/" + twoLetter + 
+"        <sourceUrl>https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/" + twoLetter + 
                 "/" + fourLetter + "/" + timePeriod + "</sourceUrl>\n" +
 "        <reloadEveryNMinutes>" + reload + "</reloadEveryNMinutes>\n" +
 "        <addAttributes> \n" +
@@ -3241,10 +3250,11 @@ String expected2 =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n";
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = 
-"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"8-day,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
@@ -3265,7 +3275,8 @@ String expected2 =
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
@@ -3933,10 +3944,11 @@ pre 2012-08-17 was
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n";
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = //note original missing values
-"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
+"  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :keywords = \"8-day,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
@@ -3958,7 +3970,8 @@ pre 2012-08-17 was
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
@@ -4137,9 +4150,6 @@ pre 2012-08-17 was
         oneFromDatasetsXml(null, "erdAGssta1day");
         //oneFromDatasetsXml(null, "erdAGssta8day"); 
         //oneFromDatasetsXml(null, "erdAGsstamday"); 
-        //oneFromDatasetsXml(null, "erdPHssta1day"); 
-        //oneFromDatasetsXml(null, "erdPHssta8day");
-        //oneFromDatasetsXml(null, "erdPHsstamday"); 
         // */
 
     }
@@ -4343,7 +4353,7 @@ boolean testAll = true;
             IntArray constraints = new IntArray();
 
             //get das and dds
-            String threddsUrl = "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day";
+            String threddsUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day";
             String erddapUrl  = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests, always non-https url
             DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
             DConnect erddapConnect  = new DConnect(erddapUrl,  true, 1, 1); //in tests, always non-https url
@@ -4505,7 +4515,8 @@ boolean testAll = true;
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"20.{8}Z\";\n" + //changes
 "  :date_issued = \"20.{8}Z\";\n" + //changes
 "  :Easternmost_Easting = 360.0; // double\n" +
@@ -4671,15 +4682,15 @@ boolean testAll = true;
         testVerboseOn();
         //don't test local dataset because of dns/numericIP problems
         //this dataset is good test because it has several dimension combos
-        String url = "http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231";
+        String url = "http://data1.gfdl.noaa.gov:8380/thredds/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231";
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
 
 String expected1 = 
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_gfdl_ef1f_43bf_0c26\" active=\"true\">\n" +
-"    <sourceUrl>http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_gfdl_70b4_dfa4_41e3\" active=\"true\">\n" +
+"    <sourceUrl>http://data1.gfdl.noaa.gov:8380/thredds/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231</sourceUrl>\n" +
 "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cmor_version\" type=\"float\">1.2</att>\n" +
@@ -4703,8 +4714,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">GFDL.Climate.Model.Info@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA GFDL</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://data1.gfdl.noaa.gov/nomads/forms/deccen/</att>\n" +
-"        <att name=\"infoUrl\">http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231.html</att>\n" +
+"        <att name=\"infoUrl\">http://data1.gfdl.noaa.gov:8380/thredds/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231.html</att>\n" +
 "        <att name=\"institution\">NOAA GFDL</att>\n" +
 "        <att name=\"keywords\">18610101-20001231, 20c3m, 20c3m-0, 20th, ar4, assessment, atmosphere, ccsp, century, change, climate, cm2.0, coefficient, coordinate, data, diagnosis, dynamics, experiment, fluid, fourth, geophysical, gfdl, hybrid, intercomparison, intergovernmental, ipcc, laboratory, layer, lev, model, month, monthly, noaa, output, panel, pcmdi, program, report, run, science, sigma, US</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
@@ -4752,7 +4764,7 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_gfdl_97f1_6b73_42af\" active=\"true\">\n";
+"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_gfdl_d226_9170_c87c\" active=\"true\">\n";
 
         try {
             String results = generateDatasetsXml(true, url, 
@@ -4774,7 +4786,7 @@ directionsForGenerateDatasetsXml() +
 
             //ensure it is ready-to-use by making a dataset from it
             EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
-            Test.ensureEqual(edd.datasetID(), "noaa_gfdl_ef1f_43bf_0c26", "");
+            Test.ensureEqual(edd.datasetID(), "noaa_gfdl_70b4_dfa4_41e3", "");
             Test.ensureEqual(edd.title(), 
                 "IPCC AR4 CM2.0 R1 20C3M-0 monthly atmos 18610101-20001231 [lev]", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -4792,7 +4804,7 @@ directionsForGenerateDatasetsXml() +
      * This test generateDatasetsXml, especially suggestReloadEveryNMinutes. 
      * Another good/better test of suggestReloadEveryNMinutes is
      *  EDDGridFromDap.testUAFSubThreddsCatalog(1);  //test one sub catalog
-     *  http://ferret.pmel.noaa.gov/geoide/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml
+     *  http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml
      *  because it has a good mix of NRT and delayed datasets.
      */
     public static void testGenerateDatasetsXml2() throws Throwable {
@@ -4816,7 +4828,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
-"        <att name=\"creator_url\">http://www.pfeg.noaa.gov</att>\n";
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n";
 /*
 "        <att name=\"date_created\">2013-01-30Z</att>\n" +
 "        <att name=\"date_issued\">2013-01-30Z</att>\n" +
@@ -4835,7 +4848,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"geospatial_vertical_units\">m</att>\n" +
 "        <att name=\"history\">NOAA NESDIS\n" +
 "2013-01-30T16:45:58Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-"2013-01-30T18:11:15Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday\n" +
+"2013-01-30T18:11:15Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday\n" +
 "2013-01-30T18:11:15Z http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday.das</att>\n" +
 "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov/infog/GA_ssta_las.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
@@ -4860,7 +4873,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"satellite\">GOES</att>\n" +
 "        <att name=\"sensor\">Imager</att>\n" +
 "        <att name=\"source\">satellite observation: GOES, Imager</att>\n" +
-"        <att name=\"sourceUrl\">http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday</att>\n" +
+"        <att name=\"sourceUrl\">https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/hday</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">-44.975</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch provides SST data from the NOAA Geostationary Operational Environmental Satellites (GOES).  Measurements are gathered by the GOES Imager, a multi-channel radiometer carried aboard the satellite.  SST is available for hourly Imager measurements, or in composite images of various durations.</att>\n" +
@@ -5029,6 +5042,7 @@ String expected2 =
         //and tests of _FillValue with no missing_value
         testVerboseOn();
         int tPo;
+
         try {
             EDDGrid amsr = (EDDGridFromDap)oneFromDatasetsXml(null, "ncdcOisst2AmsrAgg"); //should work
             String tName = amsr.makeNewFileForDapQuery(null, null, "", 
@@ -5161,7 +5175,7 @@ String expected2 =
             Test.ensureEqual(results, expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "Error accessing ncdc dataset."); 
+                "2017-04-05 Test dataset changed. No longer has scale factor -- find a new dataset."); 
         }
 
     }     
@@ -5751,7 +5765,6 @@ expected =
 "    Float64 colorBarMaximum 8000.0;\n" +
 "    Float64 colorBarMinimum -8000.0;\n" +
 "    String colorBarPalette \"Topography\";\n" +
-"    String drawLandMask \"under\";\n" +
 "    String grid_mapping \"GDAL_Geographics\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Topography\";\n" +
@@ -5790,8 +5803,9 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 23.0;\n" +
-"    String reference \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"    String references \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String sourceUrl \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "    Float64 Southernmost_Northing 18.0;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
@@ -5872,8 +5886,9 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
 "  :Northernmost_Northing = 22.0; // double\n" +
-"  :reference = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"  :references = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :sourceUrl = \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
 "  :Southernmost_Northing = 21.0; // double\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
@@ -6544,9 +6559,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected = "SimpleException: Query error: For variable=temp axis#1=depth Constraint=\"[(500):(5.01)]\": StartIndex=18 is greater than StopIndex=0.";
         for (int i = 0; i < dataFileTypeNames.length; i++) {
             String fileType = dataFileTypeNames[i];
+
+            //skip the fileTypes that don't look at the query (or don't object to errors in it)
             if (String2.indexOf(new String[]{
                 ".das", ".dds", ".fgdc", ".graph", ".help", ".html", ".iso19115",
-                ".ncml"}, fileType) >= 0)
+                ".ncml", ".nccsvMetadata"}, fileType) >= 0)
                 continue;
 
             results = "This shouldn't happen.";
@@ -6561,9 +6578,8 @@ EDStatic.startBodyHtml(null) + "\n" +
                 expected, "fileType=" + fileType + " results=\n" + results);
         }
       } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                "\nUnexpected Error:\n" + MustBe.throwableToString(t)); 
-
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
       }
 
     }
@@ -7181,7 +7197,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected = 
 "</Layer>\n" +
 "      <Layer>\n" +
-"        <Title>SODA - POP 2.2.4 Monthly Means (At Depths), Lon+/-180</Title>\n" +
+"        <Title>SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180</Title>\n" +
 "        <SRS>EPSG:4326</SRS>\n" +
 "        <LatLonBoundingBox minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" />\n" +
 "        <BoundingBox SRS=\"EPSG:4326\" minx=\"-179.75\" miny=\"-75.25\" maxx=\"179.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
@@ -7204,7 +7220,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "        </Attribution>\n" +
 "        <Layer opaque=\"1\" >\n" +
 "          <Name>hawaii_d90f_20ee_c4cb_LonPM180:temp</Name>\n" +
-"          <Title>SODA - POP 2.2.4 Monthly Means (At Depths), Lon+/-180 - temp</Title>\n" +
+"          <Title>SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180 - temp</Title>\n" +
 "        </Layer>";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
@@ -7246,7 +7262,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected =  
 "</Layer>\n" +
 "      <Layer>\n" +
-"        <Title>SODA - POP 2.2.4 Monthly Means (At Depths), Lon+/-180</Title>\n" +
+"        <Title>SODA - POP 2.2.4 Monthly Means, 1871-2010 (At Depths), Lon+/-180</Title>\n" +
 "        <CRS>CRS:84</CRS>\n" +
 "        <CRS>EPSG:4326</CRS>\n" +
 "        <EX_GeographicBoundingBox>\n" +
@@ -7506,8 +7522,8 @@ EDStatic.startBodyHtml(null) + "\n" +
         SSR.displayInBrowser("file://" + tName);
 
         } catch (Throwable t) {
-            String2.pressEnterToContinue("\nUnexpected error:\n" + 
-                MustBe.throwableToString(t)); 
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
     }
     */
@@ -7741,7 +7757,7 @@ EDStatic.startBodyHtml(null) + "\n" +
      * <br>  will be handled with multiple source queries (one per timePoint).
      *
      * <p>Note that THREDDS has a default limit of 500MB for opendap responses.
-     * http://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
+     * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
      * partialRequestMaxBytes=10^8 stays well under that.
      * 
      */
@@ -7902,78 +7918,84 @@ EDStatic.startBodyHtml(null) + "\n" +
         EDDGrid gridDataset; 
         String tName; 
 /* */
-        //descending Lat axis
-        gridDataset = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
-            EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-
-        //NOT FINISHED ADDING FEATURE
-        //descending Lat axis AND &.size=width|height
-        //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "usgsCeCrm10"); 
-        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
-        //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
-        //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-
-        //Mercator Lat axis
-        //2013-10-21 this still fails. Bizarre error is
-        //  Exception in thread "main" java.lang.IllegalArgumentException: Must have 1D x and y axes for heatFlux
-        //  at ucar.nc2.geotiff.GeotiffWriter.writeGrid(GeotiffWriter.java:80)
-        //  at gov.noaa.pfel.erddap.dataset.EDDGrid.saveAsGeotiff(EDDGrid.java:4497)
-        //  at gov.noaa.pfel.erddap.dataset.EDDGrid.respondToDapQuery(EDDGrid.java:2242)
-        //  at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2511)
-        //  at gov.noaa.pfel.erddap.dataset.EDD.makeNewFileForDapQuery(EDD.java:2430)
-        //  at gov.noaa.pfel.erddap.dataset.EDDGridFromDap.testDescendingAxisGeotif(EDDGridFromDap.java:7846)
-        //  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:180)
-
-        //test lon can't be below and above 180
-        String error = "shoudn't happen";
         try {
-            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "jplAmsreSstMon"); 
+
+            //descending Lat axis
+            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
             tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
-                "&.draw=surface&.vars=longitude|latitude|tos", 
-                EDStatic.fullTestCacheDirectory, "LonBelowAbove180", ".geotif"); 
+                "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
+                EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        } catch (Throwable t) {
-            error = t.toString();
-        }
 
-        try {
-            String expected = "com.cohort.util.SimpleException: " +
-                "Query error: For .geotif requests, the longitude values can't be " +
-                "below and above 180.";
-            Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+            //NOT FINISHED ADDING FEATURE
+            //descending Lat axis AND &.size=width|height
+            //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "usgsCeCrm10"); 
+            //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
+            //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
+            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        //test unevenly spaced lat not allowed
-        //(2014-08-07 I verified it is still a requirement by removing check in EDDGrid.saveAsGeotiff,
-        //  although error is odd: java.lang.IllegalArgumentException: Must have 1D x and y axes for tos)
-        error = "shouldn't happen";
-        try {
-            gridDataset = (EDDGrid)oneFromDatasetsXml(null, "gfdlCM2120C3M5OS"); 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
-                "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
-                "&.draw=surface&.vars=longitude|latitude|tos", 
-                EDStatic.fullTestCacheDirectory, "MercatorAxisGeotif", ".geotif"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        } catch (Throwable t) {
-            error = t.toString();
-        }
+            //Mercator Lat axis
+            //2013-10-21 this still fails. Bizarre error is
+            //  Exception in thread "main" java.lang.IllegalArgumentException: Must have 1D x and y axes for heatFlux
+            //  at ucar.nc2.geotiff.GeotiffWriter.writeGrid(GeotiffWriter.java:80)
+            //  at gov.noaa.pfel.erddap.dataset.EDDGrid.saveAsGeotiff(EDDGrid.java:4497)
+            //  at gov.noaa.pfel.erddap.dataset.EDDGrid.respondToDapQuery(EDDGrid.java:2242)
+            //  at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2511)
+            //  at gov.noaa.pfel.erddap.dataset.EDD.makeNewFileForDapQuery(EDD.java:2430)
+            //  at gov.noaa.pfel.erddap.dataset.EDDGridFromDap.testDescendingAxisGeotif(EDDGridFromDap.java:7846)
+            //  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:180)
 
-        try {
-            String expected = "com.cohort.util.SimpleException: " +
-                ".geotif isn't available for this dataset because the dataset's " +
-                "longitude and/or latitude values aren't evenly spaced.";
-            Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t)); 
-        }
+            //test lon can't be below and above 180
+            String error = "shoudn't happen";
+            try {
+                gridDataset = (EDDGrid)oneFromDatasetsXml(null, "jplAmsreSstMon"); 
+                tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                    "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
+                    "&.draw=surface&.vars=longitude|latitude|tos", 
+                    EDStatic.fullTestCacheDirectory, "LonBelowAbove180", ".geotif"); 
+                SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            } catch (Throwable t) {
+                error = t.toString();
+            }
 
+            try {
+                String expected = "com.cohort.util.SimpleException: " +
+                    "Query error: For .geotif requests, the longitude values can't be " +
+                    "below and above 180.";
+                Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+            }
+
+            //test unevenly spaced lat not allowed
+            //(2014-08-07 I verified it is still a requirement by removing check in EDDGrid.saveAsGeotiff,
+            //  although error is odd: java.lang.IllegalArgumentException: Must have 1D x and y axes for tos)
+            error = "shouldn't happen";
+            try {
+                gridDataset = (EDDGrid)oneFromDatasetsXml(null, "gfdlCM2120C3M5OS"); 
+                tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                    "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
+                    "&.draw=surface&.vars=longitude|latitude|tos", 
+                    EDStatic.fullTestCacheDirectory, "MercatorAxisGeotif", ".geotif"); 
+                SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            } catch (Throwable t) {
+                error = t.toString();
+            }
+
+            try {
+                String expected = "com.cohort.util.SimpleException: " +
+                    ".geotif isn't available for this dataset because the dataset's " +
+                    "longitude and/or latitude values aren't evenly spaced.";
+                Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t)); 
+            }
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
 
     }
 
@@ -8000,7 +8022,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  <attribute name=\"Conventions\" value=\"COARDS, CF-1.6, ACDD-1.3\" />\n" +
 "  <attribute name=\"creator_email\" value=\"erd.data@noaa.gov\" />\n" +
 "  <attribute name=\"creator_name\" value=\"NOAA NMFS SWFSC ERD\" />\n" +
-"  <attribute name=\"creator_url\" value=\"http://www.pfeg.noaa.gov\" />\n" +
+"  <attribute name=\"creator_type\" value=\"institution\" />\n" +
+"  <attribute name=\"creator_url\" value=\"https://www.pfeg.noaa.gov\" />\n" +
 "  <attribute name=\"date_created\" value=\"2014-03-08Z\" />\n" +
 "  <attribute name=\"date_issued\" value=\"2014-03-08Z\" />\n" +
 "  <attribute name=\"Easternmost_Easting\" type=\"double\" value=\"360.0\" />\n" +
@@ -8018,7 +8041,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  <attribute name=\"geospatial_vertical_units\" value=\"m\" />\n" +
 "  <attribute name=\"history\" value=\"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\n" +
 "2014-03-08T23:30:04Z NOAA CoastWatch \\(West Coast Node\\) and NOAA SFSC ERD\" />\n" +
-"  <attribute name=\"infoUrl\" value=\"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\" />\n" +
+"  <attribute name=\"infoUrl\" value=\"https://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\" />\n" +
 "  <attribute name=\"institution\" value=\"NOAA NMFS SWFSC ERD\" />\n" +
 "  <attribute name=\"keywords\" value=\"5-day,\n" +
 "Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
@@ -8040,7 +8063,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  <attribute name=\"projection_type\" value=\"mapped\" />\n" +
 "  <attribute name=\"publisher_email\" value=\"erd.data@noaa.gov\" />\n" +
 "  <attribute name=\"publisher_name\" value=\"NOAA NMFS SWFSC ERD\" />\n" +
-"  <attribute name=\"publisher_url\" value=\"http://www.pfeg.noaa.gov\" />\n" +
+"  <attribute name=\"publisher_type\" value=\"institution\" />\n" +
+"  <attribute name=\"publisher_url\" value=\"https://www.pfeg.noaa.gov\" />\n" +
 "  <attribute name=\"references\" value=\"Blended SST from satellites information: This is an experimental product which blends satellite-" +
 "derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of ea" +
 "ch satellite. AMSR_E Processing information: http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing reference: Wentz, " +
@@ -8239,7 +8263,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :date_created = \"20.{8}Z\";\n" +  //changes
 "  :date_issued = \"20.{8}Z\";\n" +   //changes
 "  :Easternmost_Easting = 360.0; // double\n" +
@@ -8485,76 +8510,84 @@ EDStatic.startBodyHtml(null) + "\n" +
     /** This tests creation of surface graphs (e.g., x,y axes, not lon,lat axes). */
     public static void testSurfaceGraph() throws Throwable {
         testVerboseOn();
-        //qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest blue 
-        EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hycom_GLBa008_tyx");
-        String tName, result, dir = EDStatic.fullTestCacheDirectory;
+        try {
 
-        //minimal request
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "qtot[1500][][]", 
-            dir, gridDataset.className() + "_surfaceGraphA0", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest blue 
+            EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hycom_GLBa008_tyx");
+            String tName, result, dir = EDStatic.fullTestCacheDirectory;
 
-        //.draw specified
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "qtot[1500][][]&.draw=surface", 
-            dir, gridDataset.className() + "_surfaceGraphA1", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //minimal request
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "qtot[1500][][]", 
+                dir, gridDataset.className() + "_surfaceGraphA0", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-        //.vars specified
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "qtot[1500][][]&.vars=Y|X|qtot", //intentionally flipped x/y 
-            dir, gridDataset.className() + "_surfaceGraphA2", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //.draw specified
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "qtot[1500][][]&.draw=surface", 
+                dir, gridDataset.className() + "_surfaceGraphA1", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-        //.draw specified
-        tName = gridDataset.makeNewFileForDapQuery(null, null,         //min|max|nDiv
-            "qtot[1500][][]&.draw=surface&.vars=X|Y|qtot&.colorBar=LightRainbow|||||", 
-            dir, gridDataset.className() + "_surfaceGraphA3", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //.vars specified
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "qtot[1500][][]&.vars=Y|X|qtot", //intentionally flipped x/y 
+                dir, gridDataset.className() + "_surfaceGraphA2", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-        //time on x axis
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "qtot[1500:1510][1200][]&.draw=surface&.vars=time|X|qtot", //1200 is through Australia
-            dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //.draw specified
+            tName = gridDataset.makeNewFileForDapQuery(null, null,         //min|max|nDiv
+                "qtot[1500][][]&.draw=surface&.vars=X|Y|qtot&.colorBar=LightRainbow|||||", 
+                dir, gridDataset.className() + "_surfaceGraphA3", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-        //time on y axis
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "qtot[1500:1510][1200][]&.draw=surface&.vars=X|time|qtot", //1200 is through Australia
-            dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //time on x axis
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "qtot[1500:1510][1200][]&.draw=surface&.vars=time|X|qtot", //1200 is through Australia
+                dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-        //2 x&y axis values
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "qtot[1500:1501][1200][313:314]&.draw=surface&.vars=time|X|qtot", 
-            dir, gridDataset.className() + "_surfaceGraph2Values", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //time on y axis
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "qtot[1500:1510][1200][]&.draw=surface&.vars=X|time|qtot", //1200 is through Australia
+                dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-        //1 x&y axis values 
-        //fails in EDDGrid.saveAsImage at test:  if (nAAv < 1 || nAAv > 2)
-        //  because all axes have just 1 value.
-        //This could probably be made to work because .vars is specified (so activeAxis are known)
-        //  and x,y axis range could be made +/- avgSpacing/2.
-        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
-        //    "qtot[1500][1200][313]&.draw=surface&.vars=time|X|qtot", 
-        //    dir, gridDataset.className() + "_surfaceGraph1Value", ".png"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+            //2 x&y axis values
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "qtot[1500:1501][1200][313:314]&.draw=surface&.vars=time|X|qtot", 
+                dir, gridDataset.className() + "_surfaceGraph2Values", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
 
-     
-        //*** 
-        gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");
-        // depth on Y axis
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "temp[(2010-12-15)][][(-30.75)][]&.draw=surface&.vars=longitude|depth|temp", 
-            dir, gridDataset.className() + "_surfaceGraphB0", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            //1 x&y axis values 
+            //fails in EDDGrid.saveAsImage at test:  if (nAAv < 1 || nAAv > 2)
+            //  because all axes have just 1 value.
+            //This could probably be made to work because .vars is specified (so activeAxis are known)
+            //  and x,y axis range could be made +/- avgSpacing/2.
+            //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            //    "qtot[1500][1200][313]&.draw=surface&.vars=time|X|qtot", 
+            //    dir, gridDataset.className() + "_surfaceGraph1Value", ".png"); 
+            //SSR.displayInBrowser("file://" + dir + tName);
 
-        //Hovmoeller Diagram x=time, y=depth    
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "temp[(2009-12-15):(2010-12-15)][][(-30.75)][(225)]&.draw=surface&.vars=time|depth|temp", 
-            dir, gridDataset.className() + "_surfaceGraphB1", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+         
+            //*** 
+            gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");
+            // depth on Y axis
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "temp[(2010-12-15)][][(-30.75)][]&.draw=surface&.vars=longitude|depth|temp", 
+                dir, gridDataset.className() + "_surfaceGraphB0", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
+
+            //Hovmoeller Diagram x=time, y=depth    
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "temp[(2009-12-15):(2010-12-15)][][(-30.75)][(225)]&.draw=surface&.vars=time|depth|temp", 
+                dir, gridDataset.className() + "_surfaceGraphB1", ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
+        }
+
     }
 
     /** Ensure that packed source atts valid_min, valid_max are unpacked when dataset is loaded. */
@@ -8568,7 +8601,6 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected =  
 "  sea_surface_temperature {\n" +
-"    Float64 _FillValue -327.68;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"Skin temperature of the ocean\";\n" +
@@ -8576,9 +8608,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"NOAA Climate Data Record of Sea Surface Skin Temperature\";\n" +
 "    String standard_name \"sea_surface_skin_temperature\";\n" +
-"    String units \"degrees_C\";\n" +
-"    Float64 valid_max 45.0;\n" +
-"    Float64 valid_min -1.8;\n" +
+"    String units \"degree_C\";\n" +
 "  }\n";
         int po = results.indexOf("  sea_surface_temperature {");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -8594,11 +8624,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         String2.log("*** EDDGridFromDap.testKelvinToDegreeC");
         try {
         String results = generateDatasetsXml(false, 
-            "http://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc", 
+            "https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc", 
             null, null, null, 10080, null);
         String expected = 
-"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_dfcd_429a_212c\" active=\"true\">\n" +
-"    <sourceUrl>http://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_aa77_f42f_c5ff\" active=\"true\">\n" +
+"    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/OceanTemperature/AVHRR_SST_METOP_A_GLB-OSISAF-L3C-v1.0.nc</sourceUrl>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgment\">In case SAF data (pre-operational or operational) has been used for the study described in a paper the following sentence would be an appropriate reference to the funding coming from EUMETSAT: The data from the EUMETSAT Satellite Application Facility on Ocean &amp; Sea Ice  used in this study are accessible through the SAF&#39;s homepage http://www.osi-saf.org</att>\n" +
@@ -8607,7 +8637,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "        <att name=\"creator_email\">helpdesk@osi-saf.org</att>\n" +
 "        <att name=\"creator_name\">O&amp;SI SAF</att>\n" +
 "        <att name=\"creator_url\">http://www.osi-saf.org</att>\n" +
-"        <att name=\"date_created\">20151123T194451Z</att>\n" + //this changes, test with regex?
+"        <att name=\"date_created\">20140801T195447Z</att>\n" + //this changes, test with regex?
 "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
 "        <att name=\"file_quality_level\" type=\"int\">3</att>\n" +
 "        <att name=\"gds_version_id\">2.0</att>\n" +
@@ -9065,60 +9095,69 @@ EDStatic.startBodyHtml(null) + "\n" +
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
         try {
 
-        //ensure files are reread
-        File2.deleteAllFiles(datasetDir("testUInt16Dap"));
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16Dap"); 
-        //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
- 
         //.das from source
-        results = SSR.getUrlResponseString(
-            //2016-10-04 was "http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml.das");
-            "http://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/avhrr/pathfinder_v51/daily/day/aggregate__avhrr_AVHRR_PATHFINDER_L3_BSST_DAILY_DAYTIME_V51.ncml.das");
+        String url = 
+            //2016-10-04 was "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/11um/9km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.ncml.das";
+            //2016-12-06 was "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/avhrr/pathfinder_v51/daily/day/aggregate__avhrr_AVHRR_PATHFINDER_L3_BSST_DAILY_DAYTIME_V51.ncml.das";
+            "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/avhrr/pathfinder_v51/daily/day/aggregate__avhrr_AVHRR_PATHFINDER_L3_SST_DAILY_DAYTIME_V51.ncml.das";
+        results = SSR.getUrlResponseString(url);
+String2.log("url=" + url);
+String2.log(String2.annotatedString(results));
         expected = 
 "Attributes {\n" +
+"    history {\n" +
+"        DODS {\n" +
+"            Int32 strlen 4096;\n" +
+"        }\n" +
+"    }\n" +
 "    lat {\n" +
 "        String unit \"degrees_north\";\n" +
 "        String long_name \"latitude\";\n" +
-"        String units \"degrees_north\";\n" +
 "        String standard_name \"latitude\";\n" +
 "        String axis \"Y\";\n" +
+"        String units \"degrees_north\";\n" +
 "    }\n" +
 "    lon {\n" +
 "        String unit \"degrees_east\";\n" +
 "        String long_name \"longitude\";\n" +
-"        String units \"degrees_east\";\n" +
 "        String standard_name \"longitude\";\n" +
 "        String axis \"X\";\n" +
+"        String units \"degrees_east\";\n" +
 "    }\n" +
 "    time {\n" +
 "        String standard_name \"time\";\n" +
 "        String axis \"T\";\n" +
 "        String units \"days since 1981-01-01\";\n" +
 "    }\n" +
-"    bsst {\n" +
+"    sst {\n" +
 "        String _Unsigned \"true\";\n" +
-"        String long_name \"bsst\";\n" +
 "        Byte dsp_PixelType 1;\n" +
 "        Byte dsp_PixelSize 2;\n" +
 "        Int16 dsp_Flag 0;\n" +
 "        Int16 dsp_nBits 16;\n" +
 "        Int32 dsp_LineSize 0;\n" +
 "        String dsp_cal_name \"Temperature\";\n" +
-"        String units \"Kelvin\";\n" +
+"        String units \"degree_C\";\n" +
 "        Int16 dsp_cal_eqnNumber 2;\n" +
 "        Int16 dsp_cal_CoeffsLength 8;\n" +
 "        Float32 dsp_cal_coeffs 0.075, -3.0;\n" +
 "        Float32 scale_factor 0.075;\n" +
 "        Float32 add_off -3.0;\n" +
-"        String coordinates \"lat lon\";\n" +
-"        String standard_name \"best_sea_surface_temperature\";\n" +
+"        String standard_name \"sea_surface_temperature\";\n" +
+"        Int16 missing_value 0;\n" +
 "    }\n";  //...
         try {
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t)); 
         }
 
+
+        //ensure files are reread
+        File2.deleteAllFiles(datasetDir("testUInt16Dap"));
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testUInt16Dap"); 
+        //in uaf erddap, this is nasa_jpl_c688_be2f_cf9d
+ 
 
         //.das from erddap dataset    das isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
@@ -9167,7 +9206,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creator_name \"NASA JPL\";\n" +
-"    String creator_url \"http://www.jpl.nasa.gov/\";\n" +
+"    String creator_url \"https://www.jpl.nasa.gov/\";\n" +
 "    Float64 Easternmost_Easting 179.978023292;\n" +
 "    Float64 geospatial_lat_max 89.9780273;\n" +
 "    Float64 geospatial_lat_min -89.97802534;\n" +
@@ -9181,8 +9220,8 @@ EDStatic.startBodyHtml(null) + "\n" +
         try {
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
-            String2.pressEnterToContinue("Unexpected error:\n" +
-                MustBe.throwableToString(t));
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
         }
 
         //.dds     dds isn't affected by userDapQuery
@@ -9236,13 +9275,241 @@ EDStatic.startBodyHtml(null) + "\n" +
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t2) {
-            String2.pressEnterToContinue("Unexpected error:\n" +
-                MustBe.throwableToString(t2));
+            String2.pressEnterToContinue(MustBe.throwableToString(t2) + 
+                "\n*** Now this is a test of encodings in .das and .dds.\n" +
+                "    This problem occurs for a few JPL datasets.\n" +
+                "    Is this low-byte or UTF-8 encoding being read as ISO-8859-1?"); 
         }
 
     }
 
 
+    /**
+     * This scale_factor=1 add_offset=0 with a different data type.
+     * Thanks to Roy Mendelssohn.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testScale1Offset0() throws Throwable {
+        String2.log("\n*** testScale1Offset0");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery;
+        try {
+
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDAPnodcPH2sstd1day"); 
+
+         //.dds -- error only occurs on .nc
+        userDapQuery = ""; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "scale1offset0", ".dds"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = //source is byte, with double scale_factor=1 and add_offset=0
+"Dataset {\n" +
+"  Float64 time[time = 11236];\n" +
+"  Float32 latitude[latitude = 4320];\n" +
+"  Float32 longitude[longitude = 8640];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 wind_speed[time = 11236][latitude = 4320][longitude = 8640];\n" +  //double!
+"    MAPS:\n" +
+"      Float64 time[time = 11236];\n" +
+"      Float32 latitude[latitude = 4320];\n" +
+"      Float32 longitude[longitude = 8640];\n" +
+"  } wind_speed;\n" +
+"} testDAPnodcPH2sstd1day;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //.nc -- error only occurs on .nc
+        userDapQuery = "wind_speed[(2012-12-31T12:00:00Z)][(89.97918):1000:(-89.97916)][(-179.9792):1000:(179.9792)]"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "scale1offset0", ".nc"); 
+        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        expected = //source is byte, with double scale_factor=1 and add_offset=0
+" data:\n" +
+"time =\n" +
+"  {1.3569552E9}\n" +
+"latitude =\n" +
+"  {89.97918, 48.312508, 6.645836, -35.02083, -76.6875}\n" +
+"longitude =\n" +
+"  {-179.97917, -138.3125, -96.645836, -54.97917, -13.3125, 28.354172, 70.02083, 111.687515, 153.35417}\n" +
+"wind_speed =\n" +
+"  {\n" +
+"    {\n" +
+"      {14.0, 10.0, 6.0, 5.0, 5.0, 7.0, 10.0, 14.0, 15.0},\n" +
+"      {9.0, 14.0, 3.0, 9.0, 10.0, 4.0, 4.0, 7.0, 25.0},\n" +
+"      {10.0, 9.0, 3.0, 5.0, 4.0, 3.0, 5.0, 9.0, 10.0},\n" +
+"      {8.0, 10.0, 4.0, 3.0, 9.0, 6.0, 10.0, 7.0, 12.0},\n" +
+"      {1.0, 3.0, 3.0, 3.0, 5.0, 4.0, 1.0, 10.0, 12.0}\n" +
+"    }\n" +
+"  }\n" +
+"}\n";
+        int po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po), expected, "\nresults=\n" + results);
+
+        } catch (Throwable t2) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t2) + 
+                "\nUnexpected error."); 
+        }
+
+    }
+
+    /** 
+     * The tos.comment attribute is json-like encoded. This makes sure 
+     * opendapHelper.getAttributes uses attributes.fromNccsv().
+     */
+    public static void testFromNccsv() throws Throwable {
+
+        testVerboseOn();
+        //don't test local dataset because of dns/numericIP problems
+        //this dataset is good test because it has several dimension combos
+        String url = "https://opendap.jpl.nasa.gov/opendap/allData/amsre/L3/sst_1deg_1mo/tos_AMSRE_L3_v7_200206-201012.nc";
+        String2.log("\n*** EDDGridFromDap.testFromJson");
+
+String expected = 
+directionsForGenerateDatasetsXml() +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_6f13_e4f4_fe70\" active=\"true\">\n" +
+"    <sourceUrl>https://opendap.jpl.nasa.gov/opendap/allData/amsre/L3/sst_1deg_1mo/tos_AMSRE_L3_v7_200206-201012.nc</sourceUrl>\n" +
+"    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"cmor_version\">2.5.3</att>\n" +
+"        <att name=\"contact\">support@remss.com</att>\n" +
+"        <att name=\"Conventions\">CF-1.4</att>\n" +
+"        <att name=\"creation_date\">2011-10-25T18:51:27Z</att>\n" +
+"        <att name=\"data_structure\">grid</att>\n" +
+"        <att name=\"experiment_id\">obs</att>\n" +
+"        <att name=\"frequency\">mon</att>\n" +
+"        <att name=\"history\">2011-10-25T18:51:27Z CMOR rewrote data to comply with CF standards and obs4MIPs requirements.</att>\n" +
+"        <att name=\"institute_id\">REMSS</att>\n" +
+"        <att name=\"institution\">Remote Sensing Systems</att>\n" +
+"        <att name=\"instrument\">AMSRE</att>\n" +
+"        <att name=\"mip_specs\">CMIP5</att>\n" +
+"        <att name=\"model_id\">Obs-AMSRE</att>\n" +
+"        <att name=\"modeling_realm\">ocean</att>\n" +
+"        <att name=\"obs_project\">AMSRE</att>\n" +
+"        <att name=\"processing_level\">L3</att>\n" +
+"        <att name=\"processing_version\">v7</att>\n" +
+"        <att name=\"product\">observations</att>\n" +
+"        <att name=\"project_id\">obs4MIPs</att>\n" +
+"        <att name=\"realm\">ocean</att>\n" +
+"        <att name=\"source\">Sea Surface Temperature from AMSR-E onboard AQUA.</att>\n" +
+"        <att name=\"source_id\">AMSRE</att>\n" +
+"        <att name=\"source_type\">satellite_retrieval</att>\n" +
+"        <att name=\"table_id\">Table Omon_obs (31 January 2011) 3852a2b3aff8bddd40fa764d07bb2bdb</att>\n" +
+"        <att name=\"title\">Obs-AMSRE model output prepared for obs4MIPs NASA-JPL observation</att>\n" +
+"        <att name=\"tracking_id\">2e41e817-3a79-485a-8336-7993544aee62</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">support@remss.com</att>\n" +
+"        <att name=\"creator_name\">Remote Sensing Systems</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.jpl.nasa.gov/</att>\n" +
+"        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/amsre/L3/sst_1deg_1mo/contents.html</att>\n" +
+"        <att name=\"keywords\">advanced, amsr, amsr-e, amsre, data, eos, intercomparisons, jet, jpl, laboratory, microwave, model, msr, nasa, nasa-jpl, obs, obs-amsre, obs4mips, observation, observations, ocean, oceans,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"output, prepared, propulsion, radiometer, remote, scanning, sea, sea_surface_temperature, sensing, surface, systems, temperature, time, tos</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"summary\">Obs-Advanced Microwave Scanning Radiometer on EOS (AMSRE) model output prepared for Observations for Model Intercomparisons (obs4MIPs) NASA-Jet Propulsion Laboratory (JPL) observation (tos AMSRE L3 v7 200206-201012)</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"bounds\">time_bnds</att>\n" +
+"            <att name=\"calendar\">standard</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">days since 2002-01-01</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"bounds\">lat_bnds</att>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"bounds\">lon_bnds</att>\n" +
+"            <att name=\"long_name\">longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"bounds\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>tos</sourceName>\n" +
+"        <destinationName>tos</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">1.0E20</att>\n" +
+"            <att name=\"associated_files\">baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_ocean_fx_Obs-AMSRE_obs_r0i0p0.nc areacello: areacello_fx_Obs-AMSRE_obs_r0i0p0.nc</att>\n" +
+"            <att name=\"cell_measures\">area: areacello</att>\n" +
+"            <att name=\"cell_methods\">time: mean</att>\n" +
+//original " <att name=\"comment\">&quot;this may differ from &quot;&quot;surface temperature&quot;&quot; in regions of sea ice.&quot;</att>\n" +
+"            <att name=\"comment\">this may differ from &quot;surface temperature&quot; in regions of sea ice.</att>\n" +
+"            <att name=\"history\">2011-10-25T18:51:27Z altered by CMOR: Converted type from &#39;d&#39; to &#39;f&#39;.</att>\n" +
+"            <att name=\"long_name\">Sea Surface Temperature</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">1.0E20</att>\n" +
+"            <att name=\"original_name\">sea_surface_temperature</att>\n" +
+"            <att name=\"standard_name\">sea_surface_temperature</att>\n" +
+"            <att name=\"units\">K</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">305.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">273.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"original_name\">null</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+
+        try {
+            String results = generateDatasetsXml(true, url, 
+                null, null, null, -1, null);
+            
+            Test.ensureEqual(results, expected, 
+                "results=\n" + results);
+
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError using generateDatasetsXml."); 
+        }
+    
+    }
+
+    
     /**
      * This tests the methods in this class.
      *
@@ -9292,7 +9559,9 @@ EDStatic.startBodyHtml(null) + "\n" +
         testTimeErrorMessage();
         testSurfaceGraph();
         testValidMinMax();
-        testUInt16Dap();
+        testUInt16Dap();  //2016-12-06 trouble with syntax
+        testScale1Offset0();
+        testFromNccsv();
         /* */
 
         //not regularly done

@@ -55,13 +55,9 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -106,7 +102,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -121,7 +118,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
@@ -141,7 +138,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -155,7 +153,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
@@ -319,7 +317,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
             dataAddTable.addColumn(c, colName,
-                dataSourceTable.getColumn(c),
+                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
@@ -356,7 +354,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false));
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -519,8 +517,12 @@ directionsForGenerateDatasetsXml() +
 "    </sourceAttributes -->\n" +
 cdmSuggestion() +
 "    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">???</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, Unidata Observation Dataset v1.0</att>\n" +
-"        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
+"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"institution\">NOAA NDBC and Participators in Data Assembly Center.</att>\n" +
 "        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere,\n" +
 "Atmosphere &gt; Air Quality &gt; Visibility,\n" +
@@ -544,7 +546,7 @@ cdmSuggestion() +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">depth, latitude, longitude, DPD, PTDY, TIDE, ID</att>\n" +
+"        <att name=\"subsetVariables\">depth, latitude, longitude, TIDE, ID</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -963,13 +965,14 @@ cdmSuggestion() +
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
-            //ensure it is ready-to-use by making a dataset from it
-            //with one small change to addAttributes:
-            results = String2.replaceAll(results, 
-                "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n",
-                "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-                "        <att name=\"cdm_data_type\">Other</att>\n");
-            String2.log(results);
+            //2 changes to make it a valid dataset:
+            results = String2.replaceAll(results,
+                "<att name=\"cdm_timeseries_variables\">???</att>",
+                "<att name=\"cdm_timeseries_variables\">stationID, depth, latitude, longitude</att>");
+            results = String2.replaceAll(results,
+                "<att name=\"long_name\">Station ID</att>",
+                "<att name=\"long_name\">Station ID</att>\n" +
+    "            <att name=\"cf_role\">timeseries_id</att>");
 
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "ndbcMet_5df7_b363_ad99", "");
@@ -1037,6 +1040,69 @@ cdmSuggestion() +
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nUnexpected error."); 
         }
+
+    }
+
+    /**
+     * testGenerateDatasetsXml ncdump option
+     */
+    public static void testGenerateDatasetsXmlNcdump() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testGenerateDatasetsXmlNcdump() *****************\n");
+        testVerboseOn();
+
+        //just header
+        String results = (new GenerateDatasetsXml()).doIt(new String[]{"ncdump", 
+            "/erddapTest/gocdNcCF/gocd_v3_sadcp.nc",
+            ""}, false);  //loop?
+        String2.log(results);
+        String expected = 
+"netcdf gocd_v3_sadcp.nc {\n" +
+"  dimensions:\n" +
+"    time = 501;\n" +
+"    z = 70;\n" +
+"  variables:\n" +
+"    float sampling_interval;\n" +
+"      :long_name = \"Sampling Interval\";\n" +
+"      :units = \"minutes\";\n" +
+"      :_FillValue = 9999.9f; // float\n" +
+"\n" +
+"    float seafloor_depth(time=501);\n" +
+"      :long_name = \"Seafloor Depth\";\n" +
+"      :units = \"meters\";\n" +
+"      :postive = \"down\";\n" +
+"      :_FillValue = 9999.9f; // float\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "");
+
+        expected = 
+"  :instrument_type = \"Ocean Surveyor OS75\";\n" +
+"  :QC_Manual = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_test_names = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_test_codes = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_test_results = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_indicator = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_Software = \"Contact Principle Investigaror(s)\";\n" +
+" data:\n" +
+"}\n" + 
+"\n";
+        Test.ensureEqual(results.substring(results.length() - expected.length()),
+            expected, "results=\n" + results);
+
+        //csv list of vars
+        results = (new GenerateDatasetsXml()).doIt(new String[]{"ncdump", 
+            "/erddapTest/gocdNcCF/gocd_v3_sadcp.nc",
+            "sampling_interval,crs"}, false);  //loop?
+
+        expected = 
+"  :QC_indicator = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_Software = \"Contact Principle Investigaror(s)\";\n" +
+" data:\n" +
+"sampling_interval =9999.9\n" +
+"crs =0\n" +
+"}\n" + 
+"\n";
+        Test.ensureEqual(results.substring(results.length() - expected.length()),
+            expected, "results=\n" + results);
+
 
     }
 
@@ -1190,7 +1256,7 @@ expected =
 "    String summary \"This dataset has measurements of the size of selected animal species at selected locations in the Channel Islands National Park. Sampling is conducted annually between the months of May-October, so the Time data in this file is July 1 of each year (a nominal value). The size frequency measurements were taken within 10 meters of the transect line at each site.  Depths at the site vary some, but we describe the depth of the site along the transect line where that station's temperature logger is located, a typical depth for the site.\";\n" +
 "    String time_coverage_end \"2007-07-01T00:00:00Z\";\n" +
 "    String time_coverage_start \"1985-07-01T00:00:00Z\";\n" +
-"    String title \"Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat\";\n" +
+"    String title \"Channel Islands, Kelp Forest Monitoring, Size and Frequency, Natural Habitat, 1985-2007\";\n" +
 "    Float64 Westernmost_Easting -120.4;\n" +
 "  }\n" +
 "}\n";
@@ -1828,6 +1894,7 @@ expected =
                     NetcdfFileWriter.Version.netcdf3, dir2 + names[f]);
                 out3 = NetcdfFileWriter.createNew(
                     NetcdfFileWriter.Version.netcdf3, dir3 + names[f]);
+                boolean nc3Mode = true;
                 Group rootGroup2 = out2.addGroup(null, "");
                 Group rootGroup3 = out3.addGroup(null, "");
                 out2.setFill(false);
@@ -1836,8 +1903,8 @@ expected =
                 //write the globalAttributes
                 Attributes atts = new Attributes();
                 NcHelper.getGlobalAttributes(in, atts);
-                NcHelper.setAttributes(rootGroup2, atts);
-                NcHelper.setAttributes(rootGroup3, atts);
+                NcHelper.setAttributes(nc3Mode, rootGroup2, atts);
+                NcHelper.setAttributes(nc3Mode, rootGroup3, atts);
 
                 Variable vars[] = NcHelper.find4DVariables(in, null);
                 Variable timeVar = in.findVariable("TIME");
@@ -1866,17 +1933,17 @@ expected =
                 //write the axis variable attributes
                 atts.clear();
                 NcHelper.getVariableAttributes(timeVar, atts);
-                NcHelper.setAttributes(timeVar2, atts);
-                NcHelper.setAttributes(timeVar3, atts);
+                NcHelper.setAttributes(nc3Mode, timeVar2, atts);
+                NcHelper.setAttributes(nc3Mode, timeVar3, atts);
 
                 atts.clear();
                 NcHelper.getVariableAttributes(latVar, atts);
-                NcHelper.setAttributes(latVar2, atts);
-                NcHelper.setAttributes(latVar3, atts);
+                NcHelper.setAttributes(nc3Mode, latVar2, atts);
+                NcHelper.setAttributes(nc3Mode, latVar3, atts);
 
                 atts.clear();
                 NcHelper.getVariableAttributes(lonVar, atts);
-                NcHelper.setAttributes(lonVar3, atts);
+                NcHelper.setAttributes(nc3Mode, lonVar3, atts);
 
                 //create data variables
                 Variable newVars2[] = new Variable[vars.length];
@@ -1894,8 +1961,8 @@ expected =
                     //write the data variable attributes
                     atts.clear();
                     NcHelper.getVariableAttributes(var, atts);
-                    NcHelper.setAttributes(newVars2[col], atts);
-                    NcHelper.setAttributes(newVars3[col], atts);
+                    NcHelper.setAttributes(nc3Mode, newVars2[col], atts);
+                    NcHelper.setAttributes(nc3Mode, newVars3[col], atts);
                 }
 
                 //leave "define" mode
@@ -2329,6 +2396,7 @@ expected =
 "      :units = \"degrees_north\";\n" +
 "\n" +
 "    char station(row=26, station_strlen=5);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"timeseries_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Station Name\";\n" +
@@ -2342,7 +2410,8 @@ expected =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = 171.395f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_max = 24.321f; // float\n" +
@@ -2395,7 +2464,8 @@ expected =
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -2420,7 +2490,7 @@ expected =
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
 "20.{8}T00:00:00Z on\\).\";\n" +  //changes   
 "  :time_coverage_resolution = \"P1H\";\n" +
-"  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
+"  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -170.493f; // float\n" +
 " data:\n" +
 "longitude =\n" +
@@ -2466,7 +2536,8 @@ expected =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -153.348f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
@@ -2514,7 +2585,8 @@ expected =
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -2538,7 +2610,7 @@ expected =
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
 "20.{8}T00:00:00Z on\\).\";\n" +    //changes
 "  :time_coverage_resolution = \"P1H\";\n" +
-"  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
+"  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -153.913f; // float\n" +
 " data:\n" +
 "longitude =\n" +
@@ -2609,8 +2681,10 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
 
-        String2.pressEnterToContinue(
-            "This test is very memory intensive. Please close unneeded applications.\n");
+        if (String2.getStringFromSystemIn(
+            "This test is very memory intensive. Please close unneeded applications.\n" +
+            "Press Enter to continue or type 'skip' to skip this test: ").equals("skip"))
+            return;
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
@@ -2743,7 +2817,7 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
-        //test orderMyMax(twoVars)
+        //test orderByMax(twoVars)
         //from NdbcMetStation.test31201
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
@@ -2765,7 +2839,7 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderMyMax(oneVar)
+        //test orderByMax(oneVar)
         userDapQuery = "time,station,wtmp,atmp&station=\"51002\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2777,7 +2851,7 @@ expected =
 "2005-04-19T23:00:00Z,51002,25.2,24.8\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderMyMax(twoVars -- different order)
+        //test orderByMax(twoVars -- different order)
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2821,7 +2895,7 @@ expected =
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
-        //test orderMyMin(twoVars)
+        //test orderByMin(twoVars)
         //from NdbcMetStation.test31201
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
@@ -2843,7 +2917,7 @@ expected =
 "2005-04-19T21:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderMyMin(oneVar)
+        //test orderByMin(oneVar)
         userDapQuery = "time,station,wtmp,atmp&station=\"51002\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2855,7 +2929,7 @@ expected =
 "2005-04-19T21:00:00Z,51002,25.1,25.4\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderMyMin(twoVars -- different order)
+        //test orderByMin(twoVars -- different order)
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2898,7 +2972,7 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
-        //test orderMyMinMax(twoVars)
+        //test orderByMinMax(twoVars)
         //from NdbcMetStation.test31201
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
         //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
@@ -2928,7 +3002,7 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderMyMinMax(oneVar)
+        //test orderByMinMax(oneVar)
         userDapQuery = "time,station,wtmp,atmp&station=\"51002\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2941,7 +3015,7 @@ expected =
 "2005-04-19T23:00:00Z,51002,25.2,24.8\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderMyMinMax(twoVars -- different order)
+        //test orderByMinMax(twoVars -- different order)
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2973,6 +3047,236 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
     }
+
+    /**
+     * This tests orderByClosest.
+     * This is also a good test of regex constraint on string variable (that just
+     * has 1 value per file).
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testOrderByClosest() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testOrderByClosest() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        String dir = EDStatic.fullTestCacheDirectory;
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+
+        //test orderByClosest()
+        userDapQuery = "longitude,latitude,time,wtmp,station&station=~%224100.%22" +
+            "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
+            "&orderByClosest(%22station,time,1 day%22)";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obc", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude,latitude,time,wtmp,station\n" +
+"degrees_east,degrees_north,UTC,degree_C,\n" +
+"-72.698,34.675,2006-01-01T00:00:00Z,20.3,41001\n" +
+"-72.698,34.675,2006-01-02T00:00:00Z,19.8,41001\n" +
+"-72.698,34.675,2006-01-03T00:00:00Z,19.8,41001\n" +
+"-75.483,32.309,2006-01-01T00:00:00Z,21.9,41002\n" +
+"-75.483,32.309,2006-01-02T00:00:00Z,22.1,41002\n" +
+"-75.483,32.309,2006-01-03T00:00:00Z,22.1,41002\n" +
+"-79.099,32.501,2006-01-01T00:00:00Z,18.9,41004\n" +
+"-79.099,32.501,2006-01-02T00:00:00Z,18.7,41004\n" +
+"-79.099,32.501,2006-01-03T00:00:00Z,18.7,41004\n" +
+"-80.869,31.402,2006-01-01T00:00:00Z,13.5,41008\n" +
+"-80.869,31.402,2006-01-02T00:00:00Z,13.7,41008\n" +
+"-80.869,31.402,2006-01-03T00:00:00Z,14.1,41008\n" +
+"-80.166,28.519,2006-01-01T00:00:00Z,21.6,41009\n" +
+"-80.166,28.519,2006-01-02T00:00:00Z,21.9,41009\n" +
+"-80.166,28.519,2006-01-03T00:00:00Z,21.1,41009\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //test orderByClosest()
+        userDapQuery = "longitude,latitude,time,wtmp,station&station=%2241004%22" +
+            "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
+            "&orderByClosest(%22time,1 day%22)";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obc", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude,latitude,time,wtmp,station\n" +
+"degrees_east,degrees_north,UTC,degree_C,\n" +
+"-79.099,32.501,2006-01-01T00:00:00Z,18.9,41004\n" +
+"-79.099,32.501,2006-01-02T00:00:00Z,18.7,41004\n" +
+"-79.099,32.501,2006-01-03T00:00:00Z,18.7,41004\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //quick reject -> csv is too short
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByClosest(\"2 days\")",
+                dir, eddTable.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For " +
+                "orderByClosest, you must specify a CSV list of orderBy " +
+                "column names (each of which must be in the list of results " +
+                "variables) plus the interval for the last orderBy variable " +
+                "(e.g., \"stationID,time,10 minutes\"). (CSV.length<2)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> last orderBy var not numeric
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByClosest(\"station,2 days\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "java.lang.IllegalArgumentException: Query error: For " +
+                "orderByClosest, you must specify a CSV list of orderBy column " + 
+                "names (each of which must be in the list of results variables) " + 
+                "plus the interval for the last orderBy variable (e.g., " +
+                "\"stationID,time,10 minutes\"). " +
+                "(The last orderBy column=station isn't numeric.)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByClosest(\"station,time,2 days\")",
+                dir, eddTable.className() + "_qr3", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For orderByClosest, " +
+                "you must specify a CSV list of orderBy column names (each of which " +
+                "must be in the list of results variables) plus the interval for " +
+                "the last orderBy variable (e.g., \"stationID,time,10 minutes\"). " +
+                "(col=time not in results variables)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+    }
+
+    /**
+     * This tests orderByLimit.
+     * This is also a good test of regex constraint on string variable (that just
+     * has 1 value per file).
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testOrderByLimit() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testOrderByLimit() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        String dir = EDStatic.fullTestCacheDirectory;
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+
+        //test orderByLimit()
+        userDapQuery = "longitude,latitude,time,wtmp,station&station=~%224100.%22" +
+            "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
+            "&orderByLimit(%22station,3%22)";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obl1", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude,latitude,time,wtmp,station\n" +
+"degrees_east,degrees_north,UTC,degree_C,\n" +
+"-72.698,34.675,2006-01-01T00:00:00Z,20.3,41001\n" +
+"-72.698,34.675,2006-01-01T01:00:00Z,20.3,41001\n" +
+"-72.698,34.675,2006-01-01T02:00:00Z,20.3,41001\n" +
+"-75.483,32.309,2006-01-01T00:00:00Z,21.9,41002\n" +
+"-75.483,32.309,2006-01-01T01:00:00Z,21.9,41002\n" +
+"-75.483,32.309,2006-01-01T02:00:00Z,22.0,41002\n" +
+"-79.099,32.501,2006-01-01T00:00:00Z,18.9,41004\n" +
+"-79.099,32.501,2006-01-01T01:00:00Z,18.9,41004\n" +
+"-79.099,32.501,2006-01-01T02:00:00Z,18.9,41004\n" +
+"-80.869,31.402,2006-01-01T00:00:00Z,13.5,41008\n" +
+"-80.869,31.402,2006-01-01T01:00:00Z,13.5,41008\n" +
+"-80.869,31.402,2006-01-01T02:00:00Z,13.5,41008\n" +
+"-80.166,28.519,2006-01-01T00:00:00Z,21.6,41009\n" +
+"-80.166,28.519,2006-01-01T01:00:00Z,21.6,41009\n" +
+"-80.166,28.519,2006-01-01T02:00:00Z,21.5,41009\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderByLimit()
+        userDapQuery = "longitude,latitude,time,wtmp,station&station=%2241004%22" +
+            "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
+            "&orderByLimit(%223%22)";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obl2", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude,latitude,time,wtmp,station\n" +
+"degrees_east,degrees_north,UTC,degree_C,\n" +
+"-79.099,32.501,2006-01-01T00:00:00Z,18.9,41004\n" +
+"-79.099,32.501,2006-01-01T01:00:00Z,18.9,41004\n" +
+"-79.099,32.501,2006-01-01T02:00:00Z,18.9,41004\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //quick reject -> csv is too short
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "longitude,latitude,wtmp&orderByLimit(\"\")",
+                dir, eddTable.className() + "_L1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For " +
+                "orderByLimit, you must specify a CSV list of orderBy column " +
+                "names (each of which must be in the list of results variables, " +
+                "but 0 names is okay) plus the maximum number of rows for each " +
+                "group (e.g., \"stationID,100\"). (no CSV)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> orderBy var not in results vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "longitude,latitude,wtmp&orderByLimit(\"station,3\")",
+                dir, eddTable.className() + "_L2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For " +
+                "orderByLimit, you must specify a CSV list of orderBy column " +
+                "names (each of which must be in the list of results variables, " +
+                "but 0 names is okay) plus the maximum number of rows for each " +
+                "group (e.g., \"stationID,100\"). (col=station not in results variables)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> invalid number
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "longitude,latitude,wtmp&orderByLimit(\"station,zztop\")",
+                dir, eddTable.className() + "_L3", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "java.lang.IllegalArgumentException: Query error: " +
+                "For orderByLimit, you must specify a CSV list of orderBy column " +
+                "names (each of which must be in the list of results variables, " +
+                "but 0 names is okay) plus the maximum number of rows for each " +
+                "group (e.g., \"stationID,100\"). " +
+                "(limit=zztop must be a positive integer)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+    }
+
 
     /**
      * This tests station,lon,lat.
@@ -3087,7 +3391,7 @@ expected =
         "", "\\.nc", ".*", //tPreExtractRegex, tPostExtractRegex, tExtractRegex
         "station_id", "depth", //tColumnNameForExtract, tSortedColumnSourceName
         "time, station_id", //tSortFilesBySourceNames
-        "http://www.nodc.noaa.gov/GTSPP/", "NOAA NODC", //tInfoUrl, tInstitution        
+        "https://www.nodc.noaa.gov/GTSPP/", "NOAA NODC", //tInfoUrl, tInstitution        
         "put the summary here", //summary
         "Global Temperature-Salinity Profile Program", //tTitle
         new Attributes())); //externalAddGlobalAttributes) 
@@ -3109,7 +3413,7 @@ expected =
      * are slow since a given file may have a wide range of station_ids.
      *
      * <p>Quality flags
-     * <br>http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf
+     * <br>https://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf
      * <br>http://www.ifremer.fr/gosud/formats/gtspp_qcflags.htm
      * <br>CODE  SIGNIFICATION
      * <br>0     NOT CONTROLLED VALUE
@@ -3150,7 +3454,7 @@ expected =
         String logFile     = "c:\\data\\gtspp\\log" + 
             String2.replaceAll(today, "-", "") + ".txt"; 
         File2.makeDirectory(tempDir);
-        //http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm
+        //https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm
         //1=correct, 2=probably correct, 5=modified (so now correct)
         //pre 2012-04-15 was {1,2,5}
         //pre 2012-05-25 was {1,2}
@@ -3294,17 +3598,23 @@ expected =
                     cmd = sevenZip + " -y e " + sourceZipName + " -o" + tempDir + " -r"; 
                     cmdTime = System.currentTimeMillis();
                     String2.log("\n*** " + cmd);
-                    SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
-                    String2.log("  cmd time=" + 
-                        Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+                    if (File2.isFile(sourceZipName)) {
+                        try {
+                            SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
+                            String2.log("  cmd time=" + 
+                                Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 
-                    //extract from the .tar file   //gtspp4_at199001.tar
-                    cmd = sevenZip + " -y e " + tempDir + sourceBaseName + ".tar -o" + tempDir + " -r"; 
-                    cmdTime = System.currentTimeMillis();
-                    String2.log("\n*** " + cmd);
-                    SSR.dosShell(cmd, 120*60); //120 minutes*60 seconds
-                    String2.log("  cmd time=" + 
-                        Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+                            //extract from the .tar file   //gtspp4_at199001.tar
+                            cmd = sevenZip + " -y e " + tempDir + sourceBaseName + ".tar -o" + tempDir + " -r"; 
+                            cmdTime = System.currentTimeMillis();
+                            String2.log("\n*** " + cmd);
+                            SSR.dosShell(cmd, 120*60); //120 minutes*60 seconds
+                            String2.log("  cmd time=" + 
+                                Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+                        } catch (Exception e) {
+                            String2.log("Caught exception: " + MustBe.throwableToString(e));
+                        }
+                    }
                     
                     //previous method
                     //SSR.unzip(sourceZipName,
@@ -3631,7 +3941,7 @@ expected =
                         //clean the data
                         //(good to do it here so memory usage is low -- table remains as small as possible)
                         //Change "impossible" data to NaN
-                        //(from http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf
+                        //(from https://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf
                         //pg 61 has Table 2.1: Global Impossible Parameter Values).
                         BitSet keep = new BitSet();
                         keep.set(0, nDepth);  //all true 
@@ -3788,7 +4098,7 @@ expected =
                             tTable = new Table();
                             Attributes ga = tTable.globalAttributes();
                             String ack = "These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " + 
-                                today + " from http://www.nodc.noaa.gov/GTSPP/.";
+                                today + " from https://www.nodc.noaa.gov/GTSPP/.";
                             ga.add("acknowledgment", ack);
                             ga.add("license", 
                                 "These data are openly available to the public.  " +
@@ -3797,9 +4107,9 @@ expected =
                                 "[standard]");
                             ga.add("history", 
                                 tHistory + 
-                                ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
+                                ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (https://www.nodc.noaa.gov/GTSPP/)\n" +
                                 today + " Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).");
-                            ga.add("infoUrl",    "http://www.nodc.noaa.gov/GTSPP/");
+                            ga.add("infoUrl",    "https://www.nodc.noaa.gov/GTSPP/");
                             ga.add("institution","NOAA NODC");
                             ga.add("title",      "Global Temperature and Salinity Profile Programme (GTSPP) Data");
 
@@ -4220,7 +4530,7 @@ expected =
 "VL  Far Eastern Regional Hydromet. Res. Inst. of V\n" +
 "WH  Woods Hole\n" +
 "\n" +
-"from http://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\";\n" +
+"from https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Organization\";\n" +
 "  \\}\n" +
@@ -4262,19 +4572,19 @@ expected =
 "XB  XBT\n" +
 "XC  Expendable CTD\n" +
 "\n" +
-"from http://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\";\n" +
+"from https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Data Type\";\n" +
 "  \\}\n" +
 "  platform \\{\n" +
-"    String comment \"See the list of platform codes \\(sorted in various ways\\) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
+"    String comment \"See the list of platform codes \\(sorted in various ways\\) at https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"GTSPP Platform Code\";\n" +
-"    String references \"http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
+"    String references \"https://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
 "  \\}\n" +
 "  cruise \\{\n" +
 "    String comment \"Radio callsign \\+ year for real time data, or NODC reference number for delayed mode data.  See\n" +
-"http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
+"https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
 "'X' indicates a missing value.\n" +
 "Two or more adjacent spaces in the original cruise names have been compacted to 1 space.\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4282,7 +4592,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 27116426;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 28775473;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4327,7 +4637,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.4750658e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.811229e\\+8, 1.4932074e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4389,7 +4699,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2016-10-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2017-05-13 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4397,9 +4707,9 @@ expected =
 "    String Conventions \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"nodc.gtspp@noaa.gov\";\n" +
 "    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
-"    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"    String creator_url \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +                  //2 changes below:
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2016-09-24&time%3C=2016-10-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2017-04-24&time%3C=2017-05-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4416,10 +4726,10 @@ expected =
 "    String gtspp_ConventionVersion \"GTSPP4.0\";\n" +
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
-"    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2016-10-01 csun writeGTSPPnc40.f90 Version 1.7\n" +//date changes
-".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2016-10-08 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"    String gtspp_programVersion \"1.8\";\n" +  
+"    String history \"2017-05-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
+"2017-05-13 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4430,7 +4740,7 @@ expected =
 //today + " http://localhost:8080/cwexperimental/
 expected = 
 "    String id \"erdGtsppBest\";\n" +
-"    String infoUrl \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"    String infoUrl \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String institution \"NOAA NODC\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
@@ -4438,7 +4748,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2016-10-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2017-05-13 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4450,7 +4760,7 @@ expected =
 "    String naming_authority \"gov.noaa.nodc\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String project \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
-"    String references \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"    String references \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
 "    Float64 Southernmost_Northing -78.579;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
@@ -4463,8 +4773,8 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the September 2016 data\\) but is a subset of the " + //month changes
-    "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
+    "up to and including the April 2017 data\\) but is a subset of the " + //month changes
+    "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1\\|2\\|5 were set to NaN.\n" +
@@ -4472,12 +4782,12 @@ expected =
 "\\* Time values were converted from \\\\\"days since 1900-01-01 00:00:00\\\\\" to \\\\\"seconds since 1970-01-01T00:00:00\\\\\".\n" +
 "\n" +
 "See the Quality Flag definitions on page 5 and \\\\\"Table 2.1: Global Impossible Parameter Values\\\\\" on page 61 of\n" +
-"http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
+"https://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
-"http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2016-09-28T12:30:00Z\";\n" + //changes
-"    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
-"    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
+"https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
+"    String time_coverage_end \"2017-04-26T11:50:00Z\";\n" + //changes
+"    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
+"    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
 "  \\}\n" +
 "\\}\n";
@@ -4487,7 +4797,8 @@ expected =
         Test.ensureLinesMatch(tResults, expected, "\nresults=\n" + results);
        
     } catch (Throwable t) {
-        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
     }
     try {
 
@@ -4515,7 +4826,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     } catch (Throwable t) {
-        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
     }
     try {
 
@@ -4540,7 +4852,7 @@ expected =
             "&longitude<-180",   "&longitude>180",     "&longitude=NaN",
             "&latitude<-90",     "&latitude>90",       "&latitude=NaN",
             "&depth<-0.4",       "&depth>10000",       "&depth=NaN",
-            "&time<1990-01-01",  "&time>" + today,     "&time=NaN",
+            "&time<1985-02-01",  "&time>" + today,     "&time=NaN",
             "&temperature<-4",   "&temperature>40",    
             "&salinity<0",       "&salinity>41",       };
         for (int test = 0; test < tests.length; test++) { 
@@ -4561,7 +4873,8 @@ expected =
         }
 
     } catch (Throwable t) {
-        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
     }
     try {
 
@@ -4606,7 +4919,8 @@ expected =
         //String2.pressEnterToContinue();
 
     } catch (Throwable t) {
-        String2.pressEnterToContinue("Unexpected error:\n" + MustBe.throwableToString(t));
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nUnexpected error."); 
     }
 
     }
@@ -4629,7 +4943,7 @@ expected =
             table.readFlatNc(names[i], null, 0);
 
             //table.globalAttributes().set("history",
-            //    "(From .zip files from http://www.nodc.noaa.gov/GTSPP/)\n" +
+            //    "(From .zip files from https://www.nodc.noaa.gov/GTSPP/)\n" +
             //    "2010-06-16 Incremental ingest, clean, and reformat at ERD (bob.simons at noaa.gov).");
 
             //resort
@@ -4674,32 +4988,51 @@ expected =
         String2.log("*** bobCreateGtsppNcCFFiles");
         long time = System.currentTimeMillis();
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "erdGtsppBestNc"); 
+        StringBuilder errors = new StringBuilder();
         for (int year = firstYear; year <= lastYear; year++) {
             int tFirstMonth = year == firstYear? firstMonth : 1;
             int tLastMonth  = year == lastYear? lastMonth : 12;
             for (int month = tFirstMonth; month <= tLastMonth; month++) {
-                String2.log("\n*** year=" + year + " month=" + month);
-                String ym     = year + String2.zeroPad("" + month, 2);
-                String ydm    = year + "-" + String2.zeroPad("" + month, 2);
-                String zp1    = ydm + "-01";
-                String zp16   = ydm + "-16";
-                String zpNext = year + "-" + String2.zeroPad("" + (month + 1), 2) + "-01";
-                //? orderBy not very relevant, because .ncCF forces a storage order?
-                String qa = 
-                    "&time>=" + zp1 +
-                    "&time<"  + zp16 + 
-                    "&orderBy(\"trajectory,station_id,time,depth\")"; 
-                String qb = 
-                    "&time>=" + zp16 +
-                    "&time<"  + zpNext +
-                    "&orderBy(\"trajectory,station_id,time,depth\")";
-                String2.log(qa + "\n" + qb);
-                eddTable.makeNewFileForDapQuery(null, null, qa, 
-                    "/u00/data/points/gtsppNcCF/", ym + "a", ".ncCF"); 
-                eddTable.makeNewFileForDapQuery(null, null, qb, 
-                    "/u00/data/points/gtsppNcCF/", ym + "b", ".ncCF"); 
+                try {
+                    String2.log("\n*** year=" + year + " month=" + month);
+                    String ym     = year + String2.zeroPad("" + month, 2);
+                    String ydm    = year + "-" + String2.zeroPad("" + month, 2);
+                    String zp1    = ydm + "-01";
+                    String zp16   = ydm + "-16";
+                    String zpNext = year + "-" + String2.zeroPad("" + (month + 1), 2) + "-01";
+                    //? orderBy not very relevant, because .ncCF forces a storage order?
+                    String qa = 
+                        "&time>=" + zp1 +
+                        "&time<"  + zp16 + 
+                        "&orderBy(\"trajectory,station_id,time,depth\")"; 
+                    String qb = 
+                        "&time>=" + zp16 +
+                        "&time<"  + zpNext +
+                        "&orderBy(\"trajectory,station_id,time,depth\")";
+                    String2.log(qa + "\n" + qb);
+                    try {
+                        eddTable.makeNewFileForDapQuery(null, null, qa, 
+                            "/u00/data/points/gtsppNcCF/", ym + "a", ".ncCF"); 
+                    } catch (Exception e1) {
+                        String msg = MustBe.throwableToString(e1); 
+                        String2.log(msg);
+                        errors.append(msg);
+                    }
+                    try {
+                        eddTable.makeNewFileForDapQuery(null, null, qb, 
+                            "/u00/data/points/gtsppNcCF/", ym + "b", ".ncCF"); 
+                    } catch (Exception e2) {
+                        String msg = MustBe.throwableToString(e2); 
+                        String2.log(msg);
+                        errors.append(msg);
+                    }
+                } catch (Exception e) {
+                    String2.log(MustBe.throwableToString(e));
+                }
             }
         }
+        if (errors.length() > 0)
+            String2.log("errors:\n" + errors);
         String2.log("bobCreateGtsppNcCFFiles finished successfully in " + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - time));
     }
@@ -4728,7 +5061,7 @@ expected =
         }
         table.justKeep(keep);
         String2.log("nRows=" + table.nRows());
-        String2.log(table.toString("row", Integer.MAX_VALUE));
+        String2.log(table.toString());
     }
 
             
@@ -4932,8 +5265,9 @@ expected =
             ".asc", ".csv", ".csvp", ".csv0", 
             ".das", ".dds", ".dods", 
             ".esriCsv", ".geoJson", ".graph", ".html", 
-            ".htmlTable", ".json", 
+            ".htmlTable", ".json", ".jsonlCSV", ".jsonlKVP",
             ".mat", ".nc", ".ncHeader", 
+            ".nccsv", ".nccsvMetadata",
             ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", 
             ".xhtml", //21?
             ".kml", ".smallPdf", ".pdf", ".largePdf", 
@@ -4944,8 +5278,9 @@ expected =
             619, 672, 515, 515,       //3125, 2625, 2687, ?,           //4469, 4125, 4094, ?, 
             8, 4, 176,                //2014-09 .dods slower 176->508 why? // 16, 31, 687 //16, 32, 1782, 
             763, 1126, 60, 72,        //3531, 5219, 47, 31,            //5156, 6922, 125, 100, 
-            534, 523,                 //1672, 2719,                    //4109, 4921, 
+            534, 523, 559, 951,       //1672, 2719, ., .,              //4109, 4921, ., .,
             469, 535, 665,            //1531, 1922, 1797,              //4921, 4921, 4610, 
+            507, 31,
             896, 65, 485, 482, 480,   //4266, 32, 2562, 2531, ?,       //8359, 31, 3969, 3921, ?, 
             1200,  //but really slow if hard drive is busy!   //4266   //6531,               
             967, 763, 686, 740,       //2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
@@ -4954,8 +5289,9 @@ expected =
             18989646, 13058166, 13058203, 13057934, 
             14544, 394, 11703093, 
             16391423, 55007762, 142273, 178477, 
-            13606792, 17827554, 
+            13606792, 17827554, 16973594, 34527626,
             10485696, 9887104, 14886, 
+            17690818, 13125,
             10698295, 24007, 13058166, 13058203, 13057934, 
             59642150, 
             4790, 82780, 135305, 161613, 
@@ -5032,11 +5368,11 @@ expected =
                     int nRows = table.nRows();
                     String2.log(".nc fileName=" + dir + tName + "\n" +
                         "nRows=" + nRows);
-                    String results = table.dataToCSVString(2);
+                    String results = table.dataToString(2);
                     String expected = 
-"row,time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
-"0,3.912804E8,24.8,41006,-77.4,29.3,297,4.1,5.3,1.0,8.3,4.8,,1014.7,22.0,,,,,3.7,-1.9\n" +
-"1,3.91284E8,24.7,41006,-77.4,29.3,,,,1.1,9.1,4.5,,1014.6,22.2,,,,,,\n" +
+"time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
+"3.912804E8,24.8,41006,-77.4,29.3,297,4.1,5.3,1.0,8.3,4.8,,1014.7,22.0,,,,,3.7,-1.9\n" +
+"3.91284E8,24.7,41006,-77.4,29.3,,,,1.1,9.1,4.5,,1014.6,22.2,,,,,,\n" +
 "...\n";
                     String2.log("results=\n" + results);
                     Test.ensureEqual(results, expected, "");
@@ -5702,7 +6038,7 @@ landings.landings[12][1][1]
         String tName, results;
         String query = 
             "http://localhost:8080/cwexperimental/tabledap/allDatasets.csv?" +
-            "datasetID,minTime,maxTime&datasetID=\"testTimeSince19000101\"";
+            "datasetID,minTime,maxTime&datasetID=%22testTimeSince19000101%22";
         String expected = 
 "datasetID,minTime,maxTime\n" +
 ",UTC,UTC\n" +
@@ -5798,12 +6134,14 @@ landings.landings[12][1][1]
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
 "    char taxa_scientific(row=4, taxa_scientific_strlen=19);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :coordinates = \"time latitude longitude depth\";\n" +
 "      :Description = \"Scientific name of taxa\";\n" +
 "      :ioos_category = \"Taxonomy\";\n" +
 "      :long_name = \"Taxa Scientific\";\n" +
 "\n" +
 "    char institution(row=4, institution_strlen=4);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :coordinates = \"time latitude longitude depth\";\n" +
 "      :Description = \"Institution is either: Northwest Fisheries Science Center (FRAM Division) or Alaska Fisheries Science Center (RACE Division)\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
@@ -5976,6 +6314,7 @@ expected =
 "      :units = \"degrees_north\";\n" +
 "\n" +
 "    char station(timeseries=7, station_strlen=5);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"timeseries_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Station Name\";\n" +
@@ -6031,7 +6370,8 @@ expected =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -122.21f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" + 
 "  :geospatial_lat_max = 37.997f; // float\n" +
@@ -6083,7 +6423,8 @@ String expected2 =
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -6110,7 +6451,7 @@ String expected2 =
 "  :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
-"  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
+"  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -122.975f; // float\n" +
 " data:\n";
 
@@ -6198,6 +6539,7 @@ String expected3 = expected2 +
 "      :units = \"degrees_north\";\n" +
 "\n" +
 "    char station(timeseries=7, station_strlen=5);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"timeseries_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Station Name\";\n" +
@@ -6249,7 +6591,8 @@ String expected3 = expected2 +
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :creator_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :Easternmost_Easting = -122.21f; // float\n" +
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_max = 37.997f; // float\n" +
@@ -6301,7 +6644,8 @@ expected =
 "  :project = \"NOAA NDBC and NOAA CoastWatch \\(West Coast Node\\)\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :publisher_url = \"http://www.pfeg.noaa.gov\";\n" +
+"  :publisher_type = \"institution\";\n" +
+"  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -6328,7 +6672,7 @@ expected =
 "  :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
-"  :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
+"  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -122.975f; // float\n" +
 " data:\n" +
 "longitude =\n" +
@@ -6401,6 +6745,7 @@ expected =
 "    cruise_strlen = 4;\n" +
 "  variables:\n" +
 "    char cruise(trajectory=2, cruise_strlen=4);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"trajectory_id\";\n" +
 "      :comment = \"The first two digits are the last two digits of the year and the last two are the consecutive cruise number for that particular vessel (01, 02, 03, ...).\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
@@ -6455,6 +6800,7 @@ expected =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"Keith.Sakuma@noaa.gov\";\n" +
 "  :creator_name = \"Keith Sakuma\";\n" +
+"  :creator_type = \"person\";\n" +
 "  :Easternmost_Easting = -121.854f; // float\n" +
 "  :featureType = \"Trajectory\";\n" +
 "  :geospatial_lat_max = 38.8782f; // float\n" +
@@ -6464,7 +6810,8 @@ expected =
 "  :geospatial_lon_min = -124.6335f; // float\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
 "  :history = \"2013-04-08 source files from Keith Sakuma (FED) to Lynn Dewitt (ERD) to Bob Simons (ERD)\n" +
-"2013-04-09 Bob Simons (bob.simons@noaa.gov) converted files from .csv to .nc\n" +
+"2013-04-09 Bob Simons (bob.simons@noaa.gov) converted data files for 1987-2011 from .csv to .nc with Projects.convertRockfish().\n" +
+"2017-02-03 Bob Simons (bob.simons@noaa.gov) converted data files for 2012-2015 from xlsx to .nc with Projects.convertRockfish().\n" +
 today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -6521,7 +6868,7 @@ expected =
 "http://www.sanctuarysimon.org/projects/project_info.php?projectID=100118\";\n" +
 "  :time_coverage_end = \"2001-06-08T10:13:00Z\";\n" +
 "  :time_coverage_start = \"2000-05-12T03:57:00Z\";\n" +
-"  :title = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data\";\n" +
+"  :title = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data, 1987-2015\";\n" +
 "  :Westernmost_Easting = -124.6335f; // float\n" +
 " data:\n" +
 "cruise =\"0002\", \"0103\"\n" +
@@ -6750,6 +7097,7 @@ expected =
 "    cruise_strlen = 4;\n" +
 "  variables:\n" +
 "    char cruise(trajectory=2, cruise_strlen=4);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"trajectory_id\";\n" +
 "      :comment = \"The first two digits are the last two digits of the year and the last two are the consecutive cruise number for that particular vessel (01, 02, 03, ...).\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
@@ -6803,6 +7151,7 @@ expected =
 "  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"Keith.Sakuma@noaa.gov\";\n" +
 "  :creator_name = \"Keith Sakuma\";\n" +
+"  :creator_type = \"person\";\n" +
 "  :Easternmost_Easting = -121.854f; // float\n" +
 "  :featureType = \"Trajectory\";\n" +
 "  :geospatial_lat_max = 38.8782f; // float\n" +
@@ -6812,7 +7161,8 @@ expected =
 "  :geospatial_lon_min = -124.6335f; // float\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
 "  :history = \"2013-04-08 source files from Keith Sakuma (FED) to Lynn Dewitt (ERD) to Bob Simons (ERD)\n" +
-"2013-04-09 Bob Simons (bob.simons@noaa.gov) converted files from .csv to .nc\n" +
+"2013-04-09 Bob Simons (bob.simons@noaa.gov) converted data files for 1987-2011 from .csv to .nc with Projects.convertRockfish().\n" +
+"2017-02-03 Bob Simons (bob.simons@noaa.gov) converted data files for 2012-2015 from xlsx to .nc with Projects.convertRockfish().\n" +
 today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -6871,7 +7221,7 @@ expected =
 "http://www.sanctuarysimon.org/projects/project_info.php?projectID=100118\";\n" +
 "  :time_coverage_end = \"2001-06-08T10:13:00Z\";\n" +
 "  :time_coverage_start = \"2000-05-12T03:57:00Z\";\n" +
-"  :title = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data\";\n" +
+"  :title = \"SWFSC FED Mid Water Trawl Juvenile Rockfish Survey, Surface Data, 1987-2015\";\n" +
 "  :Westernmost_Easting = -124.6335f; // float\n" +
 " data:\n" +
 "cruise =\"0002\", \"0103\"\n" +
@@ -7119,11 +7469,13 @@ expected =
 "    ship_strlen = 11;\n" +
 "  variables:\n" +
 "    char cruise_id(trajectory=1, cruise_id_strlen=6);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"trajectory_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Cruise ID\";\n" +
 "\n" +
 "    char ship(trajectory=1, ship_strlen=11);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Ship\";\n" +
 "\n" +
@@ -7221,7 +7573,7 @@ today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
-//+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//+ " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/erdGlobecBottle.ncCF?cruise_id,ship,cast,longitude,latitude,time,bottle_posn,temperature0&time>=2002-08-19T08:00:00Z&time<=2002-08-19T12:00:00Z\";\n" +
@@ -7352,11 +7704,13 @@ expected =
 "    ship_strlen = 11;\n" +
 "  variables:\n" +
 "    char cruise_id(trajectory=1, cruise_id_strlen=6);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"trajectory_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Cruise ID\";\n" +
 "\n" +
 "    char ship(trajectory=1, ship_strlen=11);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Ship\";\n" +
 "\n" +
@@ -7444,7 +7798,7 @@ today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
-//+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//+ " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/erdGlobecBottle.ncCFMA?cruise_id,ship,cast,longitude,latitude,time,bottle_posn,temperature0&time>=2002-08-19T08:00:00Z&time<=2002-08-19T12:00:00Z\";\n" +
@@ -7571,7 +7925,7 @@ expected =
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "platform,cruise,org,type,station_id,longitude,latitude,time,depth," +
-            "temperature,salinity&cruise=~%22%28SHIP%2012|Q990046312%29%22" +
+            "temperature,salinity&cruise=~%22%28VKLD%2012|Q990046312%29%22" +
             "&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z",
             dir, "ncCF2b", ".ncCF"); 
         results = NcHelper.dumpString(dir + tName, true);
@@ -7581,7 +7935,7 @@ expected =
 "  dimensions:\n" +
 "    trajectory = 2;\n" +
 "    profile = 3;\n" +
-"    obs = 53;\n" +
+"    obs = 560;\n" +
 "    trajectory_strlen = 21;\n" +
 "    platform_strlen = 4;\n" +
 "    cruise_strlen = 10;\n" +
@@ -7589,26 +7943,30 @@ expected =
 "    type_strlen = 2;\n" +
 "  variables:\n" +
 "    char trajectory\\(trajectory=2, trajectory_strlen=21\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"trajectory_id\";\n" +
 "      :comment = \"Constructed from org_type_platform_cruise\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Trajectory ID\";\n" +
-"\n" +                                                                   
+"\n" +
 "    char platform\\(trajectory=2, platform_strlen=4\\);\n" +
-"      :comment = \"See the list of platform codes \\(sorted in various ways\\) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
+"      :comment = \"See the list of platform codes \\(sorted in various ways\\) at https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"GTSPP Platform Code\";\n" +
-"      :references = \"http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
-"\n" +                                                                   
+"      :references = \"https://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
+"\n" +
 "    char cruise\\(trajectory=2, cruise_strlen=10\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :comment = \"Radio callsign \\+ year for real time data, or NODC reference number for delayed mode data.  See\n" +
-"http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
+"https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
 "'X' indicates a missing value.\n" +
 "Two or more adjacent spaces in the original cruise names have been compacted to 1 space.\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Cruise_ID\";\n" +
-"\n" +                                                                   
+"\n" +
 "    char org\\(trajectory=2, org_strlen=2\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :comment = \"From the first 2 characters of stream_ident:\n" +
 "Code  Meaning\n" +
 "AD  Australian Oceanographic Data Centre\n" +
@@ -7648,11 +8006,12 @@ expected =
 "VL  Far Eastern Regional Hydromet. Res. Inst. of V\n" +
 "WH  Woods Hole\n" +
 "\n" +
-"from http://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\";\n" +
+"from https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Organization\";\n" +
-"\n" +                                                                   
+"\n" +
 "    char type\\(trajectory=2, type_strlen=2\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :comment = \"From the 3rd and 4th characters of stream_ident:\n" +
 "Code  Meaning\n" +
 "AR  Animal mounted recorder\n" +
@@ -7690,23 +8049,23 @@ expected =
 "XB  XBT\n" +
 "XC  Expendable CTD\n" +
 "\n" +
-"from http://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\";\n" +
+"from https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Data Type\";\n" +
-"\n" +                                                                   
+"\n" +
 "    int station_id\\(profile=3\\);\n" +
 "      :_FillValue = 2147483647; // int\n" +
-"      :actual_range = 13933177, 13968850; // int\n" +
+"      :actual_range = 13968849, 27478599; // int\n" +
 "      :cf_role = \"profile_id\";\n" +
 "      :comment = \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Station ID Number\";\n" +
 "      :missing_value = 2147483647; // int\n" +
-"\n" +                                                                   
+"\n" +
 "    float longitude\\(profile=3\\);\n" +
 "      :_CoordinateAxisType = \"Lon\";\n" +
 "      :_FillValue = NaNf; // float\n" +
-"      :actual_range = 173.54f, 176.64f; // float\n" +
+"      :actual_range = 173.5403f, 176.64f; // float\n" +
 "      :axis = \"X\";\n" +
 "      :C_format = \"%9.4f\";\n" +
 "      :colorBarMaximum = 180.0; // double\n" +
@@ -7720,11 +8079,11 @@ expected =
 "      :units = \"degrees_east\";\n" +
 "      :valid_max = 180.0f; // float\n" +
 "      :valid_min = -180.0f; // float\n" +
-"\n" +                                                                   
+"\n" +
 "    float latitude\\(profile=3\\);\n" +
 "      :_CoordinateAxisType = \"Lat\";\n" +
 "      :_FillValue = NaNf; // float\n" +
-"      :actual_range = -75.45f, -34.58f; // float\n" +
+"      :actual_range = -75.45f, -34.5796f; // float\n" +
 "      :axis = \"Y\";\n" +
 "      :C_format = \"%8.4f\";\n" +
 "      :colorBarMaximum = 90.0; // double\n" +
@@ -7738,7 +8097,7 @@ expected =
 "      :units = \"degrees_north\";\n" +
 "      :valid_max = 90.0f; // float\n" +
 "      :valid_min = -90.0f; // float\n" +
-"\n" +                                                                   
+"\n" +
 "    double time\\(profile=3\\);\n" +
 "      :_CoordinateAxisType = \"Time\";\n" +
 "      :actual_range = 1.33514142E9, 1.335216E9; // double\n" +
@@ -7748,18 +8107,18 @@ expected =
 "      :standard_name = \"time\";\n" +
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"\n" +                                                                   
+"\n" +
 "    int trajectoryIndex\\(profile=3\\);\n" +
 "      :instance_dimension = \"trajectory\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"The trajectory to which this profile is associated.\";\n" +
-"\n" +                                                                   
+"\n" +
 "    int rowSize\\(profile=3\\);\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Number of Observations for this Profile\";\n" +
 "      :sample_dimension = \"obs\";\n" +
-"\n" +                                                                   
-"    float depth\\(obs=53\\);\n" +
+"\n" +
+"    float depth\\(obs=560\\);\n" +
 "      :_CoordinateAxisType = \"Height\";\n" +
 "      :_CoordinateZisPositive = \"down\";\n" +
 "      :_FillValue = NaNf; // float\n" +
@@ -7776,10 +8135,10 @@ expected =
 "      :positive = \"down\";\n" +
 "      :standard_name = \"depth\";\n" +
 "      :units = \"m\";\n" +
-"\n" +                                                                   
-"    float temperature\\(obs=53\\);\n" +
+"\n" +
+"    float temperature\\(obs=560\\);\n" +
 "      :_FillValue = NaNf; // float\n" +
-"      :actual_range = -1.84f, 20.0f; // float\n" +
+"      :actual_range = -1.84f, 19.984f; // float\n" +
 "      :C_format = \"%9.4f\";\n" +
 "      :cell_methods = \"time: point longitude: point latitude: point depth: point\";\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
@@ -7792,8 +8151,8 @@ expected =
 "      :missing_value = NaNf; // float\n" +
 "      :standard_name = \"sea_water_temperature\";\n" +
 "      :units = \"degree_C\";\n" +
-"\n" +                                                                   
-"    float salinity\\(obs=53\\);\n" +
+"\n" +
+"    float salinity\\(obs=560\\);\n" +
 "      :_FillValue = NaNf; // float\n" +
 "      :actual_range = 35.5f, 36.0f; // float\n" +
 "      :C_format = \"%9.4f\";\n" +
@@ -7809,10 +8168,9 @@ expected =
 "      :salinity_scale = \"PSU\";\n" +
 "      :standard_name = \"sea_water_practical_salinity\";\n" +
 "      :units = \"PSU\";\n" +
-"\n" +                                                                   
+"\n" +
 "  // global attributes:\n" +
-"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data " +
-     "Center \\(NODC\\) on 20.{8} from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
+"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from https://www.nodc.noaa.gov/GTSPP/.\";\n" +
 "  :cdm_altitude_proxy = \"depth\";\n" +
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
@@ -7820,17 +8178,17 @@ expected =
 "  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
-"  :creator_url = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
-"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=201.-.{5}&time%3C=201.-..-01&.draw=markers&.marker=1\\|5\";\n" +
+"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=20.{8}&time%3C=20.{8}&.draw=markers&.marker=1\\|5\";\n" +
 "  :Easternmost_Easting = 176.64f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :file_source = \"The GTSPP Continuously Managed Data Base\";\n" +
-"  :geospatial_lat_max = -34.58f; // float\n" +
+"  :geospatial_lat_max = -34.5796f; // float\n" +
 "  :geospatial_lat_min = -75.45f; // float\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_max = 176.64f; // float\n" +
-"  :geospatial_lon_min = 173.54f; // float\n" +
+"  :geospatial_lon_min = 173.5403f; // float\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
 "  :geospatial_vertical_max = 368.0f; // float\n" +
 "  :geospatial_vertical_min = 4.0f; // float\n" +
@@ -7839,108 +8197,146 @@ expected =
 "  :gtspp_ConventionVersion = \"GTSPP4.0\";\n" +
 "  :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 "  :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
-"  :gtspp_programVersion = \"1.7\";\n" +  
-"  :history = \"20.{8} csun writeGTSPPnc40.f90 Version 1.7\n" + //date changes
-".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"20.{8} Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\)."; //date changes
+"  :gtspp_programVersion = \"1.8\";\n" +
+"  :history = \"20.{8} csun writeGTSPPnc40.f90 Version 1.8\n" +
+".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
+"20.{8} Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).";
+
         int tPo = results.indexOf("(bob.simons at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, "\nresults=\n" + results);
 
-//today + " (local files)\n" +  //from upwell, so "today" won't be to the second until 1.40 release
-//today + " http://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
-//today + " (local files)\n" +
-//today + " http://localhost:8080/cwexperimental/tabledap/
-/* 2013-10-28 I never got summary regex working. Not worth the effort. Comment it out
-expected = 
-"erdGtsppBest.ncCF\\?platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity&cruise=~%22%28SHIP%20%20%20%2012\\|Q990046312%29%22&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z\";\n" +
-"  :id = \"ncCF2b\";\n" +
-"  :infoUrl = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
-"  :institution = \"NOAA NODC\";\n" +
-"  :keywords = \"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"cruise, data, density, depth, global, gtspp, identifier, noaa, nodc, observation, ocean, oceans, organization, profile, program, salinity, sea, sea_water_salinity, sea_water_temperature, seawater, station, temperature, temperature-salinity, time, type, water\";\n" +
-"  :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
-"  :LEXICON = \"NODC_GTSPP\";\n" +                                                 //date below changes
-"  :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from http://www.nodc.noaa.gov/GTSPP/.\n" +
-"\n" +
-"The data may be used and redistributed for free but is not intended\n" +
-"for legal use, since it may contain inaccuracies. Neither the data\n" +
-"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
-"of their employees or contractors, makes any warranty, express or\n" +
-"implied, including warranties of merchantability and fitness for a\n" +
-"particular purpose, or assumes any legal liability for the accuracy,\n" +
-"completeness, or usefulness, of this information.\";\n" +
-"  :naming_authority = \"gov.noaa.nodc\";\n" +
-"  :Northernmost_Northing = -34.58f; // float\n" +
-"  :project = \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
-"  :references = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
-"  :sourceUrl = \"\\(local files\\)\";\n" +
-"  :Southernmost_Northing = -75.45f; // float\n" +
-"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
-"  :subsetVariables = \"trajectory, org, type, platform, cruise\";\n" +  
-"  :summary = \"The Global Temperature-Salinity Profile Programme \\(GTSPP\\) develops and " +
-    "maintains a global ocean temperature and salinity resource with data that are both " +
-    "up-to-date and of the highest quality. It is a joint World Meteorological Organization " +
-    "\\(WMO\\) and Intergovernmental Oceanographic Commission \\(IOC\\) program.  It includes data " +
-    "from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about " +
-    "organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  " +
-    "The U.S. National Oceanographic Data Center \\(NODC\\) maintains the GTSPP Continuously " +
-    "Managed Data Base and releases new 'best-copy' data once per month.\\+n\\+nWARNING: " +
-    "This dataset has a \\*lot\\* of data.  To avoid having your request fail because you are " +
-    "requesting too much data at once, you should almost always specify either:\\+n\\* a small " +
-    "time bounding box \\(at most, a few days\\), and/or\\+n\\* a small longitude and latitude " +
-    "bounding box \\(at most, several degrees square\\).\\+nRequesting data for a specific " +
-    "platform, cruise, org, type, and/or station_id may be slow, but it works.\\+n\\+n\\*\\*\\* " +
-    "This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the .{9,16} data\\) but is a subset of the original NODC " + //changes
-    "'best-copy' data.  It only includes data where the quality flags indicate the data " +
-    "is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, " +
-    "any of the history data, or any of the quality flag data of the original dataset. You " +
-    "can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) " +
-    "from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\\+n\\* " +
-    "Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were " +
-    "removed.\\+n\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a " +
-    "z_variable_quality_flag other than 1\\|2\\|5 were removed.\\+n\\* Temperature values less " +
-    "than -4 or greater than 40 or with a temperature_quality_flag other than 1\\|2\\|5 were " +
-    "set to NaN.\\+n\\* Salinity values less than 0 or greater than 41 or with a " +
-    "salinity_quality_flag other than 1|2|5 were set to NaN.\\+n\\* Time values were converted " +
-    "from \\+\\\"days since 1900-01-01 00:00:00\\+\\\" to \\+\\\"seconds since 1970-01-01" +
-    "T00:00:00\\+\\\".\\+n\\+nSee the Quality Flag definitions on page 5 and \\+\\\"Table " +
-    "2.1: Global Impossible Parameter Values\\+\\\" on page 61 of\\+nhttp://www.nodc.noaa.gov" +
-    "/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\\+nThe Quality Flag definitions " +
-    "are also at\\+nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-*/
+//summary was to hard to work with don't test it
 expected = 
 "  :time_coverage_end = \"2012-04-23T21:20:00Z\";\n" +
 "  :time_coverage_start = \"2012-04-23T00:37:00Z\";\n" +
-"  :title = \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
-"  :Westernmost_Easting = 173.54f; // float\n" +
+"  :title = \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
+"  :Westernmost_Easting = 173.5403f; // float\n" +
 " data:\n" +
-"trajectory =\"ME_BA_9999_SHIP 12\", \"ME_TE_33P2_Q990046312\"\n" +
-"platform =\"9999\", \"33P2\"\n" +
-"cruise =\"SHIP 12\", \"Q990046312\"\n" +
-"org =\"ME\", \"ME\"\n" +
-"type =\"BA\", \"TE\"\n" +
+"trajectory =\"AD_XB_09WR_VKLD 12\", \"ME_TE_33P2_Q990046312\"\n" +
+"platform =\"09WR\", \"33P2\"\n" +
+"cruise =\"VKLD 12\", \"Q990046312\"\n" +
+"org =\"AD\", \"ME\"\n" +
+"type =\"XB\", \"TE\"\n" +
 "station_id =\n" +
-"  \\{13933177, 13968849, 13968850\\}\n" +
+"  \\{27478599, 13968849, 13968850\\}\n" +
 "longitude =\n" +
-"  \\{173.54, 176.64, 176.64\\}\n" +
+"  \\{173.5403, 176.64, 176.64\\}\n" +
 "latitude =\n" +
-"  \\{-34.58, -75.45, -75.43\\}\n" +
+"  \\{-34.5796, -75.45, -75.43\\}\n" +
 "time =\n" +
 "  \\{1.33514142E9, 1.3351446E9, 1.335216E9\\}\n" +
 "trajectoryIndex =\n" +
 "  \\{0, 1, 1\\}\n" +
 "rowSize =\n" +
-"  \\{21, 16, 16\\}\n" +
+"  \\{528, 16, 16\\}\n" +
 "depth =\n" +
-"  \\{4.0, 51.0, 69.0, 89.0, 105.0, 136.0, 143.0, 160.0, 163.0, 173.0, 192.0, 201.0, 209.0, 217.0, 227.0, 239.0, 245.0, 275.0, 294.0, 312.0, 329.0, 4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 138.0, 142.0, 146.0, 148.0, 170.0, 198.0, 247.0, 297.0, 356.0, 366.0, 4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 142.0, 144.0, 148.0, 154.0, 198.0, 208.0, 235.0, 297.0, 328.0, 368.0\\}\n" +
+"  \\{4.01, 4.68, 5.35, 6.02, 6.69, 7.36, 8.03, 8.69, 9.36, 10.03, 10.7, 11.37, 12.04, 12.7, 13.37, 14.04, 14.71, " +
+"15.38, 16.05, 16.71, 17.38, 18.05, 18.72, 19.38, 20.05, 20.72, 21.39, 22.06, 22.72, 23.39, 24.06, 24.73, 25.39," +
+" 26.06, 26.73, 27.4, 28.06, 28.73, 29.4, 30.06, 30.73, 31.4, 32.06, 32.73, 33.4, 34.07, 34.73, 35.4, 36.07, 36." +
+"73, 37.4, 38.07, 38.73, 39.4, 40.06, 40.73, 41.4, 42.06, 42.73, 43.4, 44.06, 44.73, 45.39, 46.06, 46.73, 47.39," +
+" 48.06, 48.72, 49.39, 50.06, 50.72, 51.39, 52.05, 52.72, 53.38, 54.05, 54.71, 55.38, 56.05, 56.71, 57.38, 58.04" +
+", 58.71, 59.37, 60.04, 60.7, 61.37, 62.03, 62.7, 63.36, 64.03, 64.69, 65.36, 66.02, 66.68, 67.35, 68.01, 68.68," +
+" 69.34, 70.01, 70.67, 71.34, 72.0, 72.66, 73.33, 73.99, 74.66, 75.32, 75.98, 76.65, 77.31, 77.98, 78.64, 79.3, " +
+"79.97, 80.63, 81.3, 81.96, 82.62, 83.29, 83.95, 84.61, 85.28, 85.94, 86.6, 87.27, 87.93, 88.59, 89.26, 89.92, 9" +
+"0.58, 91.24, 91.91, 92.57, 93.23, 93.9, 94.56, 95.22, 95.88, 96.55, 97.21, 97.87, 98.53, 99.2, 99.86, 100.52, 1" +
+"01.18, 101.85, 102.51, 103.17, 103.83, 104.49, 105.16, 105.82, 106.48, 107.14, 107.8, 108.47, 109.13, 109.79, 1" +
+"10.45, 111.11, 111.77, 112.44, 113.1, 113.76, 114.42, 115.08, 115.74, 116.4, 117.06, 117.73, 118.39, 119.05, 11" +
+"9.71, 120.37, 121.03, 121.69, 122.35, 123.01, 123.67, 124.33, 125.0, 125.66, 126.32, 126.98, 127.64, 128.3, 128" +
+".96, 129.62, 130.28, 130.94, 131.6, 132.26, 132.92, 133.58, 134.24, 134.9, 135.56, 136.22, 136.88, 137.54, 138." +
+"2, 138.86, 139.52, 140.18, 140.84, 141.5, 142.16, 142.82, 143.48, 144.14, 144.79, 145.45, 146.11, 146.77, 147.4" +
+"3, 148.09, 148.75, 149.41, 150.07, 150.73, 151.39, 152.04, 152.7, 153.36, 154.02, 154.68, 155.34, 156.0, 156.65" +
+", 157.31, 157.97, 158.63, 159.29, 159.95, 160.6, 161.26, 161.92, 162.58, 163.24, 163.89, 164.55, 165.21, 165.87" +
+", 166.53, 167.18, 167.84, 168.5, 169.16, 169.82, 170.47, 171.13, 171.79, 172.44, 173.1, 173.76, 174.42, 175.07," +
+" 175.73, 176.39, 177.05, 177.7, 178.36, 179.02, 179.67, 180.33, 180.99, 181.64, 182.3, 182.96, 183.61, 184.27, " +
+"184.93, 185.58, 186.24, 186.9, 187.55, 188.21, 188.87, 189.52, 190.18, 190.83, 191.49, 192.15, 192.8, 193.46, 1" +
+"94.11, 194.77, 195.43, 196.08, 196.74, 197.39, 198.05, 198.7, 199.36, 200.02, 200.67, 201.33, 201.98, 202.64, 2" +
+"03.29, 203.95, 204.6, 205.26, 205.91, 206.57, 207.22, 207.88, 208.53, 209.19, 209.84, 210.5, 211.15, 211.81, 21" +
+"2.46, 213.12, 213.77, 214.43, 215.08, 215.74, 216.39, 217.04, 217.7, 218.35, 219.01, 219.66, 220.32, 220.97, 22" +
+"1.62, 222.28, 222.93, 223.59, 224.24, 224.89, 225.55, 226.2, 226.85, 227.51, 228.16, 228.81, 229.47, 230.12, 23" +
+"0.78, 231.43, 232.08, 232.74, 233.39, 234.04, 234.69, 235.35, 236.0, 236.65, 237.31, 237.96, 238.61, 239.27, 23" +
+"9.92, 240.57, 241.22, 241.88, 242.53, 243.18, 243.83, 244.49, 245.14, 245.79, 246.44, 247.1, 247.75, 248.4, 249" +
+".05, 249.7, 250.36, 251.01, 251.66, 252.31, 252.96, 253.62, 254.27, 254.92, 255.57, 256.22, 256.88, 257.53, 258" +
+".18, 258.83, 259.48, 260.13, 260.78, 261.44, 262.09, 262.74, 263.39, 264.04, 264.69, 265.34, 265.99, 266.64, 26" +
+"7.29, 267.95, 268.6, 269.25, 269.9, 270.55, 271.2, 271.85, 272.5, 273.15, 273.8, 274.45, 275.1, 275.75, 276.4, " +
+"277.05, 277.7, 278.35, 279.0, 279.65, 280.3, 280.95, 281.6, 282.25, 282.9, 283.55, 284.2, 284.85, 285.5, 286.15" +
+", 286.8, 287.45, 288.1, 288.75, 289.4, 290.05, 290.7, 291.35, 292.0, 292.64, 293.29, 293.94, 294.59, 295.24, 29" +
+"5.89, 296.54, 297.19, 297.84, 298.49, 299.13, 299.78, 300.43, 301.08, 301.73, 302.38, 303.02, 303.67, 304.32, 3" +
+"04.97, 305.62, 306.27, 306.91, 307.56, 308.21, 308.86, 309.51, 310.15, 310.8, 311.45, 312.1, 312.75, 313.39, 31" +
+"4.04, 314.69, 315.34, 315.98, 316.63, 317.28, 317.93, 318.57, 319.22, 319.87, 320.52, 321.16, 321.81, 322.46, 3" +
+"23.1, 323.75, 324.4, 325.04, 325.69, 326.34, 326.98, 327.63, 328.28, 328.92, 329.57, 330.22, 330.86, 331.51, 33" +
+"2.16, 332.8, 333.45, 334.1, 334.74, 335.39, 336.03, 336.68, 337.33, 337.97, 338.62, 339.26, 339.91, 340.56, 341" +
+".2, 341.85, 342.49, 343.14, 343.78, 344.43, 345.08, 345.72, 346.37, 347.01, 347.66, 348.3, 348.95, 349.59, 350." +
+"24, 4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 138.0, 142.0, 146.0, 148.0, 170.0, 198.0, 247.0, 297.0, 356.0, 366.0, 4." +
+"0, 10.0, 20.0, 30.0, 49.0, 99.0, 142.0, 144.0, 148.0, 154.0, 198.0, 208.0, 235.0, 297.0, 328.0, 368.0\\}\n" +
 "temperature =\n" +
-"  \\{20.0, 19.8, 17.9, 17.4, 16.8, 16.4, 15.8, 15.5, 15.2, 14.7, 14.6, 14.5, 14.1, 14.0, 13.5, 13.4, 13.1, 12.4, 12.2, 12.1, 11.7, -1.84, -1.84, -1.83, -1.83, -1.83, -1.82, -1.78, -1.6, -1.18, -1.1, -1.25, -1.29, -1.13, -1.25, -1.76, -1.8, -1.84, -1.84, -1.84, -1.83, -1.83, -1.82, -1.77, -1.74, -1.36, -1.12, -1.23, -1.07, -1.04, -1.32, -1.65, -1.74\\}\n" +
+"  \\{19.984, 19.976, 19.973, 19.974, 19.975, 19.976, 19.981, 19.981, 19.98, 19.979, 19.981, 19.975, 19.974, 19.97" +
+"3, 19.976, 19.975, 19.976, 19.973, 19.973, 19.974, 19.975, 19.973, 19.971, 19.966, 19.965, 19.962, 19.962, 19.9" +
+"59, 19.958, 19.956, 19.948, 19.945, 19.945, 19.942, 19.942, 19.94, 19.94, 19.938, 19.936, 19.939, 19.933, 19.93" +
+"8, 19.933, 19.932, 19.931, 19.931, 19.932, 19.93, 19.93, 19.928, 19.928, 19.925, 19.919, 19.919, 19.917, 19.917" +
+", 19.916, 19.915, 19.91, 19.905, 19.89, 19.877, 19.87, 19.861, 19.864, 19.86, 19.858, 19.857, 19.857, 19.853, 1" +
+"9.852, 19.825, 19.799, 19.778, 19.702, 19.604, 19.454, 19.334, 19.279, 19.23, 19.204, 19.151, 19.048, 18.947, 1" +
+"8.867, 18.797, 18.749, 18.685, 18.629, 18.553, 18.489, 18.392, 18.303, 18.195, 18.055, 17.962, 17.909, 17.878, " +
+"17.869, 17.855, 17.834, 17.82, 17.807, 17.787, 17.773, 17.766, 17.764, 17.756, 17.747, 17.746, 17.727, 17.703, " +
+"17.691, 17.66, 17.629, 17.602, 17.578, 17.558, 17.533, 17.502, 17.475, 17.458, 17.454, 17.448, 17.432, 17.418, " +
+"17.403, 17.397, 17.376, 17.343, 17.305, 17.275, 17.255, 17.248, 17.229, 17.208, 17.196, 17.159, 17.143, 17.134," +
+" 17.092, 17.034, 16.99, 16.952, 16.919, 16.887, 16.875, 16.872, 16.867, 16.837, 16.813, 16.801, 16.787, 16.776," +
+" 16.762, 16.756, 16.752, 16.742, 16.733, 16.732, 16.723, 16.72, 16.716, 16.71, 16.714, 16.702, 16.682, 16.669, " +
+"16.663, 16.66, 16.656, 16.648, 16.635, 16.624, 16.611, 16.596, 16.59, 16.578, 16.575, 16.569, 16.556, 16.552, 1" +
+"6.547, 16.535, 16.511, 16.491, 16.473, 16.462, 16.457, 16.457, 16.452, 16.45, 16.45, 16.442, 16.434, 16.426, 16" +
+".417, 16.403, 16.384, 16.356, 16.336, 16.31, 16.293, 16.211, 16.144, 16.047, 15.915, 15.835, 15.798, 15.756, 15" +
+".735, 15.716, 15.712, 15.71, 15.712, 15.712, 15.71, 15.683, 15.661, 15.656, 15.653, 15.647, 15.644, 15.637, 15." +
+"628, 15.628, 15.619, 15.589, 15.572, 15.562, 15.558, 15.55, 15.543, 15.535, 15.52, 15.492, 15.397, 15.302, 15.2" +
+"17, 15.174, 15.147, 15.121, 15.08, 15.054, 15.023, 15.011, 15.003, 14.985, 14.935, 14.914, 14.89, 14.848, 14.81" +
+"2, 14.778, 14.747, 14.715, 14.698, 14.703, 14.71, 14.721, 14.722, 14.71, 14.69, 14.673, 14.654, 14.661, 14.654," +
+" 14.658, 14.659, 14.665, 14.665, 14.659, 14.653, 14.655, 14.658, 14.657, 14.651, 14.647, 14.646, 14.645, 14.646" +
+", 14.646, 14.643, 14.637, 14.64, 14.64, 14.603, 14.588, 14.578, 14.57, 14.568, 14.563, 14.562, 14.556, 14.555, " +
+"14.534, 14.524, 14.525, 14.52, 14.419, 14.303, 14.25, 14.235, 14.22, 14.212, 14.199, 14.154, 14.127, 14.09, 14." +
+"055, 14.031, 14.019, 14.005, 14.002, 14.001, 14.0, 13.995, 13.996, 13.998, 13.995, 13.992, 13.983, 13.968, 13.9" +
+"39, 13.897, 13.872, 13.847, 13.832, 13.807, 13.751, 13.7, 13.687, 13.669, 13.637, 13.602, 13.564, 13.53, 13.508" +
+", 13.498, 13.493, 13.482, 13.466, 13.462, 13.461, 13.459, 13.454, 13.454, 13.451, 13.448, 13.446, 13.443, 13.43" +
+"7, 13.432, 13.429, 13.431, 13.426, 13.403, 13.329, 13.282, 13.257, 13.233, 13.208, 13.191, 13.162, 13.138, 13.1" +
+"26, 13.122, 13.118, 13.106, 13.1, 13.093, 13.062, 13.045, 13.031, 13.019, 13.012, 13.008, 12.998, 12.985, 12.96" +
+"7, 12.934, 12.898, 12.885, 12.854, 12.835, 12.811, 12.792, 12.778, 12.752, 12.74, 12.73, 12.726, 12.715, 12.703" +
+", 12.689, 12.669, 12.661, 12.655, 12.652, 12.649, 12.636, 12.604, 12.575, 12.552, 12.538, 12.533, 12.524, 12.49" +
+"8, 12.461, 12.443, 12.424, 12.41, 12.414, 12.41, 12.403, 12.4, 12.402, 12.394, 12.383, 12.382, 12.379, 12.375, " +
+"12.374, 12.368, 12.361, 12.36, 12.353, 12.341, 12.332, 12.326, 12.321, 12.314, 12.293, 12.282, 12.264, 12.245, " +
+"12.232, 12.223, 12.215, 12.212, 12.206, 12.2, 12.202, 12.198, 12.192, 12.182, 12.177, 12.176, 12.173, 12.168, 1" +
+"2.167, 12.162, 12.158, 12.155, 12.145, 12.133, 12.128, 12.127, 12.125, 12.125, 12.123, 12.121, 12.12, 12.119, 1" +
+"2.117, 12.116, 12.117, 12.113, 12.109, 12.091, 12.063, 12.039, 12.021, 12.013, 12.008, 11.981, 11.953, 11.933, " +
+"11.928, 11.926, 11.923, 11.926, 11.926, 11.918, 11.909, 11.9, 11.892, 11.876, 11.871, 11.844, 11.815, 11.796, 1" +
+"1.781, 11.764, 11.737, 11.724, 11.718, 11.711, 11.691, 11.673, 11.667, 11.657, 11.649, 11.646, 11.643, 11.639, " +
+"11.639, 11.632, 11.621, 11.607, 11.59, 11.581, 11.58, 11.581, 11.582, 11.583, 11.575, 11.576, 11.574, 11.576, 1" +
+"1.569, 11.569, 11.569, 11.572, 11.572, 11.573, 11.574, 11.575, -1.84, -1.84, -1.83, -1.83, -1.83, -1.82, -1.78," +
+" -1.6, -1.18, -1.1, -1.25, -1.29, -1.13, -1.25, -1.76, -1.8, -1.84, -1.84, -1.84, -1.83, -1.83, -1.82, -1.77, -" +
+"1.74, -1.36, -1.12, -1.23, -1.07, -1.04, -1.32, -1.65, -1.74\\}\n" +
 "salinity =\n" +
-"  \\{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 35.64, 35.64, 35.64, 35.64, 35.64, 35.63, 35.59, 35.52, 35.56, 35.77, 35.81, 35.82, 35.88, 35.94, 35.99, 36.0, 35.64, 35.64, 35.64, 35.64, 35.63, 35.63, 35.61, 35.58, 35.5, 35.77, 35.81, 35.86, 35.9, 35.93, 35.96, 35.98\\}\n" +
+"  \\{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 35.64, 35.64, 35.64, " +
+"35.64, 35.64, 35.63, 35.59, 35.52, 35.56, 35.77, 35.81, 35.82, 35.88, 35.94, 35.99, 36.0, 35.64, 35.64, 35.64, " +
+"35.64, 35.63, 35.63, 35.61, 35.58, 35.5, 35.77, 35.81, 35.86, 35.9, 35.93, 35.96, 35.98\\}\n" +
 "\\}\n";
         tPo = results.indexOf(expected.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -7966,7 +8362,7 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String query = 
             "platform,cruise,org,type,station_id,longitude,latitude,time,depth," +
-            "temperature,salinity&cruise=~%22%28SHIP%2012|Q990046312%29%22" +
+            "temperature,salinity&cruise=~%22%28VKLD%2012|Q990046312%29%22" +
             "&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z";
 
         //lon lat time range 
@@ -7979,7 +8375,7 @@ expected =
 "  dimensions:\n" +
 "    trajectory = 2;\n" +
 "    profile = 2;\n" +
-"    obs = 21;\n" +
+"    obs = 528;\n" +
 "    trajectory_strlen = 21;\n" +
 "    platform_strlen = 4;\n" +
 "    cruise_strlen = 10;\n" +
@@ -7987,26 +8383,30 @@ expected =
 "    type_strlen = 2;\n" +
 "  variables:\n" +
 "    char trajectory\\(trajectory=2, trajectory_strlen=21\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"trajectory_id\";\n" +
 "      :comment = \"Constructed from org_type_platform_cruise\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Trajectory ID\";\n" +
 "\n" +
 "    char platform\\(trajectory=2, platform_strlen=4\\);\n" +
-"      :comment = \"See the list of platform codes \\(sorted in various ways\\) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
+"      :comment = \"See the list of platform codes \\(sorted in various ways\\) at https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"GTSPP Platform Code\";\n" +
-"      :references = \"http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
+"      :references = \"https://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
 "\n" +
 "    char cruise\\(trajectory=2, cruise_strlen=10\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :comment = \"Radio callsign \\+ year for real time data, or NODC reference number for delayed mode data.  See\n" +
-"http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
+"https://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
 "'X' indicates a missing value.\n" +
 "Two or more adjacent spaces in the original cruise names have been compacted to 1 space.\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Cruise_ID\";\n" +
 "\n" +
 "    char org\\(trajectory=2, org_strlen=2\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :comment = \"From the first 2 characters of stream_ident:\n" +
 "Code  Meaning\n" +
 "AD  Australian Oceanographic Data Centre\n" +
@@ -8046,11 +8446,12 @@ expected =
 "VL  Far Eastern Regional Hydromet. Res. Inst. of V\n" +
 "WH  Woods Hole\n" +
 "\n" +
-"from http://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\";\n" +
+"from https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref006\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Organization\";\n" +
 "\n" +
 "    char type\\(trajectory=2, type_strlen=2\\);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :comment = \"From the 3rd and 4th characters of stream_ident:\n" +
 "Code  Meaning\n" +
 "AR  Animal mounted recorder\n" +
@@ -8088,13 +8489,13 @@ expected =
 "XB  XBT\n" +
 "XC  Expendable CTD\n" +
 "\n" +
-"from http://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\";\n" +
+"from https://www.nodc.noaa.gov/GTSPP/document/codetbls/gtsppcode.html#ref082\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Data Type\";\n" +
 "\n" +
 "    int station_id\\(trajectory=2, profile=2\\);\n" +
 "      :_FillValue = 2147483647; // int\n" +
-"      :actual_range = 13933177, 13968850; // int\n" +
+"      :actual_range = 13968849, 27478599; // int\n" +
 "      :cf_role = \"profile_id\";\n" +
 "      :comment = \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
@@ -8104,7 +8505,7 @@ expected =
 "    float longitude\\(trajectory=2, profile=2\\);\n" +
 "      :_CoordinateAxisType = \"Lon\";\n" +
 "      :_FillValue = NaNf; // float\n" +
-"      :actual_range = 173.54f, 176.64f; // float\n" +
+"      :actual_range = 173.5403f, 176.64f; // float\n" +
 "      :axis = \"X\";\n" +
 "      :C_format = \"%9.4f\";\n" +
 "      :colorBarMaximum = 180.0; // double\n" +
@@ -8122,7 +8523,7 @@ expected =
 "    float latitude\\(trajectory=2, profile=2\\);\n" +
 "      :_CoordinateAxisType = \"Lat\";\n" +
 "      :_FillValue = NaNf; // float\n" +
-"      :actual_range = -75.45f, -34.58f; // float\n" +
+"      :actual_range = -75.45f, -34.5796f; // float\n" +
 "      :axis = \"Y\";\n" +
 "      :C_format = \"%8.4f\";\n" +
 "      :colorBarMaximum = 90.0; // double\n" +
@@ -8147,7 +8548,7 @@ expected =
 "      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-"    float depth\\(trajectory=2, profile=2, obs=21\\);\n" +
+"    float depth\\(trajectory=2, profile=2, obs=528\\);\n" +
 "      :_CoordinateAxisType = \"Height\";\n" +
 "      :_CoordinateZisPositive = \"down\";\n" +
 "      :_FillValue = NaNf; // float\n" +
@@ -8165,9 +8566,9 @@ expected =
 "      :standard_name = \"depth\";\n" +
 "      :units = \"m\";\n" +
 "\n" +
-"    float temperature\\(trajectory=2, profile=2, obs=21\\);\n" +
+"    float temperature\\(trajectory=2, profile=2, obs=528\\);\n" +
 "      :_FillValue = NaNf; // float\n" +
-"      :actual_range = -1.84f, 20.0f; // float\n" +
+"      :actual_range = -1.84f, 19.984f; // float\n" +
 "      :C_format = \"%9.4f\";\n" +
 "      :cell_methods = \"time: point longitude: point latitude: point depth: point\";\n" +
 "      :colorBarMaximum = 32.0; // double\n" +
@@ -8181,7 +8582,7 @@ expected =
 "      :standard_name = \"sea_water_temperature\";\n" +
 "      :units = \"degree_C\";\n" +
 "\n" +
-"    float salinity\\(trajectory=2, profile=2, obs=21\\);\n" +
+"    float salinity\\(trajectory=2, profile=2, obs=528\\);\n" +
 "      :_FillValue = NaNf; // float\n" +
 "      :actual_range = 35.5f, 36.0f; // float\n" +
 "      :C_format = \"%9.4f\";\n" +
@@ -8199,8 +8600,7 @@ expected =
 "      :units = \"PSU\";\n" +
 "\n" +
 "  // global attributes:\n" +
-"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic " +
-     "Data Center \\(NODC\\) on 20.{8} from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
+"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from https://www.nodc.noaa.gov/GTSPP/.\";\n" +
 "  :cdm_altitude_proxy = \"depth\";\n" +
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
@@ -8208,17 +8608,17 @@ expected =
 "  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
-"  :creator_url = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
-"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=201.-..-..&time%3C=201.-..-01&.draw=markers&.marker=1\\|5\";\n" +
+"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=20.{8}&time%3C=20.{8}&.draw=markers&.marker=1\\|5\";\n" +
 "  :Easternmost_Easting = 176.64f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :file_source = \"The GTSPP Continuously Managed Data Base\";\n" +
-"  :geospatial_lat_max = -34.58f; // float\n" +
+"  :geospatial_lat_max = -34.5796f; // float\n" +
 "  :geospatial_lat_min = -75.45f; // float\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_max = 176.64f; // float\n" +
-"  :geospatial_lon_min = 173.54f; // float\n" +
+"  :geospatial_lon_min = 173.5403f; // float\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
 "  :geospatial_vertical_max = 368.0f; // float\n" +
 "  :geospatial_vertical_min = 4.0f; // float\n" +
@@ -8227,9 +8627,9 @@ expected =
 "  :gtspp_ConventionVersion = \"GTSPP4.0\";\n" +
 "  :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 "  :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
-"  :gtspp_programVersion = \"1.7\";\n" +
-"  :history = \"20.{8} csun writeGTSPPnc40.f90 Version 1.7\n" +
-".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
+"  :gtspp_programVersion = \"1.8\";\n" +
+"  :history = \"20.{8} csun writeGTSPPnc40.f90 Version 1.8\n" +
+".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
 "20.{8} Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).";  //date changes
         int tPo = results.indexOf("(bob.simons at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -8243,7 +8643,7 @@ expected =
 String expected2 = 
 "erdGtsppBest.ncCFMA?platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity&cruise=~%22%28SHIP%20%20%20%2012|Q990046312%29%22&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z\";\n" +
 "  :id = \"ncCFMA2b\";\n" +
-"  :infoUrl = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"  :infoUrl = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :institution = \"NOAA NODC\";\n" +
 "  :keywords = \"Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
@@ -8251,7 +8651,7 @@ String expected2 =
 "  :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "  :LEXICON = \"NODC_GTSPP\";\n" +                                                //date below changes
 "  :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-06-13 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -8263,7 +8663,7 @@ String expected2 =
 "  :naming_authority = \"gov.noaa.nodc\";\n" +
 "  :Northernmost_Northing = -34.58f; // float\n" +
 "  :project = \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
-"  :references = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"  :references = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :sourceUrl = \"(local files)\";\n" +
 "  :Southernmost_Northing = -75.45f; // float\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
@@ -8286,7 +8686,7 @@ String expected2 =
     "flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include " +
     "some of the metadata, any of the history data, or any of the quality flag data of the " +
     "original dataset. You can always get the complete, up-to-date dataset (and additional, " +
-    "near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific " +
+    "near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific " +
     "differences are:\\\\n* Profiles with a position_quality_flag or a time_quality_flag other " +
     "than 1|2|5 were removed.\\\\n* Rows with a depth (z) value less than -0.4 or greater than " +
     "10000 or a z_variable_quality_flag other than 1|2|5 were removed.\\\\n* Temperature values " +
@@ -8296,86 +8696,390 @@ String expected2 =
     "\\\\\\\"days since 1900-01-01 00:00:00\\\\\\\" to \\\\\\\"seconds since 1970-01-01T00:00:00" +
     "\\\\\\\".\\\\n\\\\nSee the Quality Flag definitions on page 5 and \\\\\\\"Table 2.1: Global " +
     "Impossible Parameter Values\\\\\\\" on page 61 of" +
-    "\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf ." +
+    "\\\\nhttps://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf ." +
     "\\\\nThe Quality Flag definitions are also at" +
-    "\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
+    "\\\\nhttps://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 */
 String expected2 = 
 "  :time_coverage_end = \"2012-04-23T21:20:00Z\";\n" +
 "  :time_coverage_start = \"2012-04-23T00:37:00Z\";\n" +
-"  :title = \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
-"  :Westernmost_Easting = 173.54f; // float\n" +
+"  :title = \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
+"  :Westernmost_Easting = 173.5403f; // float\n" +
 " data:\n";
-        tPo = results.indexOf(expected2.substring(0, 17));
-        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.ensureEqual(
-            results.substring(tPo, tPo + expected2.length()),
-                expected2, "results=\n" + results);
 
-String expected3 = expected2 + 
-"trajectory =\"ME_BA_9999_SHIP 12\", \"ME_TE_33P2_Q990046312\"\n" +
-"platform =\"9999\", \"33P2\"\n" +
-"cruise =\"SHIP 12\", \"Q990046312\"\n" +
-"org =\"ME\", \"ME\"\n" +
-"type =\"BA\", \"TE\"\n" +
+String expected3 = expected2 +
+"trajectory =\"AD_XB_09WR_VKLD 12\", \"ME_TE_33P2_Q990046312\"\n" +
+"platform =\"09WR\", \"33P2\"\n" +
+"cruise =\"VKLD 12\", \"Q990046312\"\n" +
+"org =\"AD\", \"ME\"\n" +
+"type =\"XB\", \"TE\"\n" +
 "station_id =\n" +
-"  {\n" +
-"    {13933177, 2147483647},\n" +
-"    {13968849, 13968850}\n" +
-"  }\n" +
+"  \\{\n" +
+"    \\{27478599, 2147483647\\},\n" +
+"    \\{13968849, 13968850\\}\n" +
+"  \\}\n" +
 "longitude =\n" +
-"  {\n" +
-"    {173.54, NaN},\n" +
-"    {176.64, 176.64}\n" +
-"  }\n" +
+"  \\{\n" +
+"    \\{173.5403, NaN\\},\n" +
+"    \\{176.64, 176.64\\}\n" +
+"  \\}\n" +
 "latitude =\n" +
-"  {\n" +
-"    {-34.58, NaN},\n" +
-"    {-75.45, -75.43}\n" +
-"  }\n" +
+"  \\{\n" +
+"    \\{-34.5796, NaN\\},\n" +
+"    \\{-75.45, -75.43\\}\n" +
+"  \\}\n" +
 "time =\n" +
-"  {\n" +
-"    {1.33514142E9, NaN},\n" +
-"    {1.3351446E9, 1.335216E9}\n" +
-"  }\n" +
+"  \\{\n" +
+"    \\{1.33514142E9, NaN\\},\n" +
+"    \\{1.3351446E9, 1.335216E9\\}\n" +
+"  \\}\n" +
 "depth =\n" +
-"  {\n" +
-"    {\n" +
-"      {4.0, 51.0, 69.0, 89.0, 105.0, 136.0, 143.0, 160.0, 163.0, 173.0, 192.0, 201.0, 209.0, 217.0, 227.0, 239.0, 245.0, 275.0, 294.0, 312.0, 329.0},\n" +
-"      {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}\n" +
-"    },\n" +
-"    {\n" +
-"      {4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 138.0, 142.0, 146.0, 148.0, 170.0, 198.0, 247.0, 297.0, 356.0, 366.0, NaN, NaN, NaN, NaN, NaN},\n" +
-"      {4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 142.0, 144.0, 148.0, 154.0, 198.0, 208.0, 235.0, 297.0, 328.0, 368.0, NaN, NaN, NaN, NaN, NaN}\n" +
-"    }\n" +
-"  }\n" +
+"  \\{\n" +
+"    \\{\n" +
+"      \\{4.01, 4.68, 5.35, 6.02, 6.69, 7.36, 8.03, 8.69, 9.36, 10.03, 10.7, 11.37, 12.04, 12.7, 13.37, 14.04, 14." +
+"71, 15.38, 16.05, 16.71, 17.38, 18.05, 18.72, 19.38, 20.05, 20.72, 21.39, 22.06, 22.72, 23.39, 24.06, 24.73, 25" +
+".39, 26.06, 26.73, 27.4, 28.06, 28.73, 29.4, 30.06, 30.73, 31.4, 32.06, 32.73, 33.4, 34.07, 34.73, 35.4, 36.07," +
+" 36.73, 37.4, 38.07, 38.73, 39.4, 40.06, 40.73, 41.4, 42.06, 42.73, 43.4, 44.06, 44.73, 45.39, 46.06, 46.73, 47" +
+".39, 48.06, 48.72, 49.39, 50.06, 50.72, 51.39, 52.05, 52.72, 53.38, 54.05, 54.71, 55.38, 56.05, 56.71, 57.38, 5" +
+"8.04, 58.71, 59.37, 60.04, 60.7, 61.37, 62.03, 62.7, 63.36, 64.03, 64.69, 65.36, 66.02, 66.68, 67.35, 68.01, 68" +
+".68, 69.34, 70.01, 70.67, 71.34, 72.0, 72.66, 73.33, 73.99, 74.66, 75.32, 75.98, 76.65, 77.31, 77.98, 78.64, 79" +
+".3, 79.97, 80.63, 81.3, 81.96, 82.62, 83.29, 83.95, 84.61, 85.28, 85.94, 86.6, 87.27, 87.93, 88.59, 89.26, 89.9" +
+"2, 90.58, 91.24, 91.91, 92.57, 93.23, 93.9, 94.56, 95.22, 95.88, 96.55, 97.21, 97.87, 98.53, 99.2, 99.86, 100.5" +
+"2, 101.18, 101.85, 102.51, 103.17, 103.83, 104.49, 105.16, 105.82, 106.48, 107.14, 107.8, 108.47, 109.13, 109.7" +
+"9, 110.45, 111.11, 111.77, 112.44, 113.1, 113.76, 114.42, 115.08, 115.74, 116.4, 117.06, 117.73, 118.39, 119.05" +
+", 119.71, 120.37, 121.03, 121.69, 122.35, 123.01, 123.67, 124.33, 125.0, 125.66, 126.32, 126.98, 127.64, 128.3," +
+" 128.96, 129.62, 130.28, 130.94, 131.6, 132.26, 132.92, 133.58, 134.24, 134.9, 135.56, 136.22, 136.88, 137.54, " +
+"138.2, 138.86, 139.52, 140.18, 140.84, 141.5, 142.16, 142.82, 143.48, 144.14, 144.79, 145.45, 146.11, 146.77, 1" +
+"47.43, 148.09, 148.75, 149.41, 150.07, 150.73, 151.39, 152.04, 152.7, 153.36, 154.02, 154.68, 155.34, 156.0, 15" +
+"6.65, 157.31, 157.97, 158.63, 159.29, 159.95, 160.6, 161.26, 161.92, 162.58, 163.24, 163.89, 164.55, 165.21, 16" +
+"5.87, 166.53, 167.18, 167.84, 168.5, 169.16, 169.82, 170.47, 171.13, 171.79, 172.44, 173.1, 173.76, 174.42, 175" +
+".07, 175.73, 176.39, 177.05, 177.7, 178.36, 179.02, 179.67, 180.33, 180.99, 181.64, 182.3, 182.96, 183.61, 184." +
+"27, 184.93, 185.58, 186.24, 186.9, 187.55, 188.21, 188.87, 189.52, 190.18, 190.83, 191.49, 192.15, 192.8, 193.4" +
+"6, 194.11, 194.77, 195.43, 196.08, 196.74, 197.39, 198.05, 198.7, 199.36, 200.02, 200.67, 201.33, 201.98, 202.6" +
+"4, 203.29, 203.95, 204.6, 205.26, 205.91, 206.57, 207.22, 207.88, 208.53, 209.19, 209.84, 210.5, 211.15, 211.81" +
+", 212.46, 213.12, 213.77, 214.43, 215.08, 215.74, 216.39, 217.04, 217.7, 218.35, 219.01, 219.66, 220.32, 220.97" +
+", 221.62, 222.28, 222.93, 223.59, 224.24, 224.89, 225.55, 226.2, 226.85, 227.51, 228.16, 228.81, 229.47, 230.12" +
+", 230.78, 231.43, 232.08, 232.74, 233.39, 234.04, 234.69, 235.35, 236.0, 236.65, 237.31, 237.96, 238.61, 239.27" +
+", 239.92, 240.57, 241.22, 241.88, 242.53, 243.18, 243.83, 244.49, 245.14, 245.79, 246.44, 247.1, 247.75, 248.4," +
+" 249.05, 249.7, 250.36, 251.01, 251.66, 252.31, 252.96, 253.62, 254.27, 254.92, 255.57, 256.22, 256.88, 257.53," +
+" 258.18, 258.83, 259.48, 260.13, 260.78, 261.44, 262.09, 262.74, 263.39, 264.04, 264.69, 265.34, 265.99, 266.64" +
+", 267.29, 267.95, 268.6, 269.25, 269.9, 270.55, 271.2, 271.85, 272.5, 273.15, 273.8, 274.45, 275.1, 275.75, 276" +
+".4, 277.05, 277.7, 278.35, 279.0, 279.65, 280.3, 280.95, 281.6, 282.25, 282.9, 283.55, 284.2, 284.85, 285.5, 28" +
+"6.15, 286.8, 287.45, 288.1, 288.75, 289.4, 290.05, 290.7, 291.35, 292.0, 292.64, 293.29, 293.94, 294.59, 295.24" +
+", 295.89, 296.54, 297.19, 297.84, 298.49, 299.13, 299.78, 300.43, 301.08, 301.73, 302.38, 303.02, 303.67, 304.3" +
+"2, 304.97, 305.62, 306.27, 306.91, 307.56, 308.21, 308.86, 309.51, 310.15, 310.8, 311.45, 312.1, 312.75, 313.39" +
+", 314.04, 314.69, 315.34, 315.98, 316.63, 317.28, 317.93, 318.57, 319.22, 319.87, 320.52, 321.16, 321.81, 322.4" +
+"6, 323.1, 323.75, 324.4, 325.04, 325.69, 326.34, 326.98, 327.63, 328.28, 328.92, 329.57, 330.22, 330.86, 331.51" +
+", 332.16, 332.8, 333.45, 334.1, 334.74, 335.39, 336.03, 336.68, 337.33, 337.97, 338.62, 339.26, 339.91, 340.56," +
+" 341.2, 341.85, 342.49, 343.14, 343.78, 344.43, 345.08, 345.72, 346.37, 347.01, 347.66, 348.3, 348.95, 349.59, " +
+"350.24\\},\n" +
+"      \\{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\\}\n" +
+"    \\},\n" +
+"    \\{\n" +
+"      \\{4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 138.0, 142.0, 146.0, 148.0, 170.0, 198.0, 247.0, 297.0, 356.0, 366.0," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN\\},\n" +
+"      \\{4.0, 10.0, 20.0, 30.0, 49.0, 99.0, 142.0, 144.0, 148.0, 154.0, 198.0, 208.0, 235.0, 297.0, 328.0, 368.0," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN\\}\n" +
+"    \\}\n" +
+"  \\}\n" +
 "temperature =\n" +
-"  {\n" +
-"    {\n" +
-"      {20.0, 19.8, 17.9, 17.4, 16.8, 16.4, 15.8, 15.5, 15.2, 14.7, 14.6, 14.5, 14.1, 14.0, 13.5, 13.4, 13.1, 12.4, 12.2, 12.1, 11.7},\n" +
-"      {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}\n" +
-"    },\n" +
-"    {\n" +
-"      {-1.84, -1.84, -1.83, -1.83, -1.83, -1.82, -1.78, -1.6, -1.18, -1.1, -1.25, -1.29, -1.13, -1.25, -1.76, -1.8, NaN, NaN, NaN, NaN, NaN},\n" +
-"      {-1.84, -1.84, -1.84, -1.83, -1.83, -1.82, -1.77, -1.74, -1.36, -1.12, -1.23, -1.07, -1.04, -1.32, -1.65, -1.74, NaN, NaN, NaN, NaN, NaN}\n" +
-"    }\n" +
-"  }\n" +
+"  \\{\n" +
+"    \\{\n" +
+"      \\{19.984, 19.976, 19.973, 19.974, 19.975, 19.976, 19.981, 19.981, 19.98, 19.979, 19.981, 19.975, 19.974, 1" +
+"9.973, 19.976, 19.975, 19.976, 19.973, 19.973, 19.974, 19.975, 19.973, 19.971, 19.966, 19.965, 19.962, 19.962, " +
+"19.959, 19.958, 19.956, 19.948, 19.945, 19.945, 19.942, 19.942, 19.94, 19.94, 19.938, 19.936, 19.939, 19.933, 1" +
+"9.938, 19.933, 19.932, 19.931, 19.931, 19.932, 19.93, 19.93, 19.928, 19.928, 19.925, 19.919, 19.919, 19.917, 19" +
+".917, 19.916, 19.915, 19.91, 19.905, 19.89, 19.877, 19.87, 19.861, 19.864, 19.86, 19.858, 19.857, 19.857, 19.85" +
+"3, 19.852, 19.825, 19.799, 19.778, 19.702, 19.604, 19.454, 19.334, 19.279, 19.23, 19.204, 19.151, 19.048, 18.94" +
+"7, 18.867, 18.797, 18.749, 18.685, 18.629, 18.553, 18.489, 18.392, 18.303, 18.195, 18.055, 17.962, 17.909, 17.8" +
+"78, 17.869, 17.855, 17.834, 17.82, 17.807, 17.787, 17.773, 17.766, 17.764, 17.756, 17.747, 17.746, 17.727, 17.7" +
+"03, 17.691, 17.66, 17.629, 17.602, 17.578, 17.558, 17.533, 17.502, 17.475, 17.458, 17.454, 17.448, 17.432, 17.4" +
+"18, 17.403, 17.397, 17.376, 17.343, 17.305, 17.275, 17.255, 17.248, 17.229, 17.208, 17.196, 17.159, 17.143, 17." +
+"134, 17.092, 17.034, 16.99, 16.952, 16.919, 16.887, 16.875, 16.872, 16.867, 16.837, 16.813, 16.801, 16.787, 16." +
+"776, 16.762, 16.756, 16.752, 16.742, 16.733, 16.732, 16.723, 16.72, 16.716, 16.71, 16.714, 16.702, 16.682, 16.6" +
+"69, 16.663, 16.66, 16.656, 16.648, 16.635, 16.624, 16.611, 16.596, 16.59, 16.578, 16.575, 16.569, 16.556, 16.55" +
+"2, 16.547, 16.535, 16.511, 16.491, 16.473, 16.462, 16.457, 16.457, 16.452, 16.45, 16.45, 16.442, 16.434, 16.426" +
+", 16.417, 16.403, 16.384, 16.356, 16.336, 16.31, 16.293, 16.211, 16.144, 16.047, 15.915, 15.835, 15.798, 15.756" +
+", 15.735, 15.716, 15.712, 15.71, 15.712, 15.712, 15.71, 15.683, 15.661, 15.656, 15.653, 15.647, 15.644, 15.637," +
+" 15.628, 15.628, 15.619, 15.589, 15.572, 15.562, 15.558, 15.55, 15.543, 15.535, 15.52, 15.492, 15.397, 15.302, " +
+"15.217, 15.174, 15.147, 15.121, 15.08, 15.054, 15.023, 15.011, 15.003, 14.985, 14.935, 14.914, 14.89, 14.848, 1" +
+"4.812, 14.778, 14.747, 14.715, 14.698, 14.703, 14.71, 14.721, 14.722, 14.71, 14.69, 14.673, 14.654, 14.661, 14." +
+"654, 14.658, 14.659, 14.665, 14.665, 14.659, 14.653, 14.655, 14.658, 14.657, 14.651, 14.647, 14.646, 14.645, 14" +
+".646, 14.646, 14.643, 14.637, 14.64, 14.64, 14.603, 14.588, 14.578, 14.57, 14.568, 14.563, 14.562, 14.556, 14.5" +
+"55, 14.534, 14.524, 14.525, 14.52, 14.419, 14.303, 14.25, 14.235, 14.22, 14.212, 14.199, 14.154, 14.127, 14.09," +
+" 14.055, 14.031, 14.019, 14.005, 14.002, 14.001, 14.0, 13.995, 13.996, 13.998, 13.995, 13.992, 13.983, 13.968, " +
+"13.939, 13.897, 13.872, 13.847, 13.832, 13.807, 13.751, 13.7, 13.687, 13.669, 13.637, 13.602, 13.564, 13.53, 13" +
+".508, 13.498, 13.493, 13.482, 13.466, 13.462, 13.461, 13.459, 13.454, 13.454, 13.451, 13.448, 13.446, 13.443, 1" +
+"3.437, 13.432, 13.429, 13.431, 13.426, 13.403, 13.329, 13.282, 13.257, 13.233, 13.208, 13.191, 13.162, 13.138, " +
+"13.126, 13.122, 13.118, 13.106, 13.1, 13.093, 13.062, 13.045, 13.031, 13.019, 13.012, 13.008, 12.998, 12.985, 1" +
+"2.967, 12.934, 12.898, 12.885, 12.854, 12.835, 12.811, 12.792, 12.778, 12.752, 12.74, 12.73, 12.726, 12.715, 12" +
+".703, 12.689, 12.669, 12.661, 12.655, 12.652, 12.649, 12.636, 12.604, 12.575, 12.552, 12.538, 12.533, 12.524, 1" +
+"2.498, 12.461, 12.443, 12.424, 12.41, 12.414, 12.41, 12.403, 12.4, 12.402, 12.394, 12.383, 12.382, 12.379, 12.3" +
+"75, 12.374, 12.368, 12.361, 12.36, 12.353, 12.341, 12.332, 12.326, 12.321, 12.314, 12.293, 12.282, 12.264, 12.2" +
+"45, 12.232, 12.223, 12.215, 12.212, 12.206, 12.2, 12.202, 12.198, 12.192, 12.182, 12.177, 12.176, 12.173, 12.16" +
+"8, 12.167, 12.162, 12.158, 12.155, 12.145, 12.133, 12.128, 12.127, 12.125, 12.125, 12.123, 12.121, 12.12, 12.11" +
+"9, 12.117, 12.116, 12.117, 12.113, 12.109, 12.091, 12.063, 12.039, 12.021, 12.013, 12.008, 11.981, 11.953, 11.9" +
+"33, 11.928, 11.926, 11.923, 11.926, 11.926, 11.918, 11.909, 11.9, 11.892, 11.876, 11.871, 11.844, 11.815, 11.79" +
+"6, 11.781, 11.764, 11.737, 11.724, 11.718, 11.711, 11.691, 11.673, 11.667, 11.657, 11.649, 11.646, 11.643, 11.6" +
+"39, 11.639, 11.632, 11.621, 11.607, 11.59, 11.581, 11.58, 11.581, 11.582, 11.583, 11.575, 11.576, 11.574, 11.57" +
+"6, 11.569, 11.569, 11.569, 11.572, 11.572, 11.573, 11.574, 11.575\\},\n" +
+"      \\{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\\}\n" +
+"    \\},\n" +
+"    \\{\n" +
+"      \\{-1.84, -1.84, -1.83, -1.83, -1.83, -1.82, -1.78, -1.6, -1.18, -1.1, -1.25, -1.29, -1.13, -1.25, -1.76, -" +
+"1.8, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN\\},\n" +
+"      \\{-1.84, -1.84, -1.84, -1.83, -1.83, -1.82, -1.77, -1.74, -1.36, -1.12, -1.23, -1.07, -1.04, -1.32, -1.65," +
+" -1.74, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN\\}\n" +
+"    \\}\n" +
+"  \\}\n" +
 "salinity =\n" +
-"  {\n" +
-"    {\n" +
-"      {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},\n" +
-"      {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}\n" +
-"    },\n" +
-"    {\n" +
-"      {35.64, 35.64, 35.64, 35.64, 35.64, 35.63, 35.59, 35.52, 35.56, 35.77, 35.81, 35.82, 35.88, 35.94, 35.99, 36.0, NaN, NaN, NaN, NaN, NaN},\n" +
-"      {35.64, 35.64, 35.64, 35.64, 35.63, 35.63, 35.61, 35.58, 35.5, 35.77, 35.81, 35.86, 35.9, 35.93, 35.96, 35.98, NaN, NaN, NaN, NaN, NaN}\n" +
-"    }\n" +
-"  }\n" +
-"}\n";
+"  \\{\n" +
+"    \\{\n" +
+"      \\{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\\},\n" +
+"      \\{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\\}\n" +
+"    \\},\n" +
+"    \\{\n" +
+"      \\{35.64, 35.64, 35.64, 35.64, 35.64, 35.63, 35.59, 35.52, 35.56, 35.77, 35.81, 35.82, 35.88, 35.94, 35.99," +
+" 36.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN\\},\n" +
+"      \\{35.64, 35.64, 35.64, 35.64, 35.63, 35.63, 35.61, 35.58, 35.5, 35.77, 35.81, 35.86, 35.9, 35.93, 35.96, 3" +
+"5.98, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN" +
+", NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN," +
+" NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, " +
+"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, N" +
+"aN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, Na" +
+"N, NaN, NaN\\}\n" +
+"    \\}\n" +
+"  \\}\n" +
+"\\}\n";
         tPo = results.indexOf(expected3.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.ensureEqual(
-            results.substring(tPo, Math.min(results.length(), tPo + expected3.length())),
+        Test.ensureLinesMatch(
+            results.substring(tPo),
             expected3, "results=\n" + results);
 
         //.ncCFMAHeader
@@ -8384,14 +9088,14 @@ String expected3 = expected2 +
         results = String2.readFromFile(dir + tName)[1];
         tPo = results.indexOf("(bob.simons at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, 
+            "\nresults=\n" + results);
 
         expected3 = expected2 + "}\n";
         tPo = results.indexOf(expected3.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
-        Test.ensureEqual(
-            results.substring(tPo, Math.min(results.length(), tPo + expected3.length())),
-            expected3, "results=\n" + results);
+        Test.ensureLinesMatch(results.substring(tPo), expected3, 
+            "results=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2b finished.");
     }
@@ -8540,8 +9244,8 @@ String expected3 = expected2 +
         expected = 
 "station,longitude,latitude,depth,time,temperature\n" +
 ",degrees_east,degrees_north,m,UTC,degree_C\n" +
-"Santa_Rosa_Johnsons_Lee_North,-120.1,33.883335,11,2007-09-26T22:13:00Z,16.38\n" +
-"Santa_Rosa_Johnsons_Lee_North,-120.1,33.883335,11,2007-09-26T23:13:00Z,16.7\n";
+"Santa_Rosa_Johnsons_Lee_North,-120.1,33.883335,11.0,2007-09-26T22:13:00Z,16.38\n" +
+"Santa_Rosa_Johnsons_Lee_North,-120.1,33.883335,11.0,2007-09-26T23:13:00Z,16.7\n";
 
         // >= 
         tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -8587,7 +9291,7 @@ String expected3 = expected2 +
 
         // =~
         tName = tedd.makeNewFileForDapQuery(null, null, 
-            "&depth=~\"(1000|11)\"&time>=2007-09-26T22",  //what we want to work
+            "&depth=~\"(1000|11\\.0)\"&time>=2007-09-26T22",  //what we want to work
             dir, "depth", ".csv"); 
         results = String2.readFromFile(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
@@ -8695,6 +9399,8 @@ String expected3 = expected2 +
 
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
         userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
+        String encodedUserDapQuery = 
+            "longitude,NO3,time,ship&latitude%3E0&altitude%3E-5&time%3E=2002-08-03";
         String regexDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03" +
             "&longitude" + PrimitiveArray.REGEX_OP + "\".*11.*\"";
 
@@ -9574,7 +10280,7 @@ String expected3 = expected2 +
         //but it fails: 
         //Exception in thread "main" dods.dap.DODSException: "Your Query Produced No Matching Results."
         //and it isn't an encoding problem, opera encodes unencoded request as
-        //http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.dods?lon,NO3,datetime_epoch,ship,lat&lat%3E0&datetime_epoch%3E=1.0286784E9&datetime_epoch%3C=1.0287E9&ship~=%22(zztop|.*Horiz.*)%22
+        //https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.dods?lon,NO3,datetime_epoch,ship,lat&lat%3E0&datetime_epoch%3E=1.0286784E9&datetime_epoch%3C=1.0287E9&ship~=%22(zztop|.*Horiz.*)%22
         //which fails the same way
         //Other simpler regex tests succeed.
         //It seems that the regex syntax is different for drds than erddap/java.
@@ -9654,7 +10360,7 @@ String expected3 = expected2 +
                 "/tabledap/" + globecBottle.datasetID;
             //for diagnosing during development:
             //String2.log(String2.annotatedString(SSR.getUrlResponseString(
-            //    "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
+            //    "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
             //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseString(tUrl + ".das?" + userDapQuery));
             //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseString(tUrl + ".dods?" + userDapQuery)));
 
@@ -9662,7 +10368,7 @@ String expected3 = expected2 +
             //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
             //!!!THIS IS NOT JUST A LOCAL TEST!!!
             Table tTable = new Table();
-            tTable.readOpendapSequence(tUrl + "?" + userDapQuery, false);
+            tTable.readOpendapSequence(tUrl + "?" + encodedUserDapQuery, false); //2016-12-07 non-encoded no longer works: http error 400: malformed request
             Test.ensureEqual(tTable.globalAttributes().getString("title"), "GLOBEC NEP Rosette Bottle Data (2002)", "");
             Test.ensureEqual(tTable.columnAttributes(2).getString("units"), EDV.TIME_UNITS, "");
             Test.ensureEqual(tTable.getColumnNames(), new String[]{"longitude", "NO3", "time", "ship"}, "");
@@ -9897,6 +10603,74 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         Test.ensureEqual(results.substring(results.length() - expected.length()), 
             expected, "\nresults=\n" + results);
  
+        //.jsonlCSV
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            globecBottle.className() + "_Data", ".jsonlCSV"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
+"[-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        expected = 
+"[-125.0, null, \"2002-08-18T13:03:00Z\", \"New_Horizon\"]\n"; //row with missing value  has "null"
+        Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+        expected = 
+"[-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n";
+        Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+        //.jsonlCSV  with jsonp query
+        tName = globecBottle.makeNewFileForDapQuery(null, null, 
+            userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
+            dir, 
+            globecBottle.className() + "_Data", ".jsonlCSV"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = jsonp + "(\n" +
+"[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
+"[-124.4, 35.48, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        expected = 
+"[-124.1, 24.45, \"2002-08-19T20:18:00Z\", \"New_Horizon\"]\n" +
+")";
+        Test.ensureEqual(results.substring(results.length() - expected.length()), 
+            expected, "\nresults=\n" + results);
+ 
+
+        //.jsonlKVP
+        tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            globecBottle.className() + "_Data", ".jsonlKVP"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"{\"longitude\"=-124.4, \"NO3\"=35.7, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n" +
+"{\"longitude\"=-124.4, \"NO3\"=35.48, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        expected = 
+"{\"longitude\"=-125.0, \"NO3\"=null, \"time\"=\"2002-08-18T13:03:00Z\", \"ship\"=\"New_Horizon\"}\n"; //row with missing value  has "null"
+        Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+        expected = 
+"{\"longitude\"=-124.1, \"NO3\"=24.45, \"time\"=\"2002-08-19T20:18:00Z\", \"ship\"=\"New_Horizon\"}\n";
+        Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
+
+        //.jsonlKVP  with jsonp query
+        tName = globecBottle.makeNewFileForDapQuery(null, null, 
+            userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
+            dir, 
+            globecBottle.className() + "_Data", ".jsonlKVP"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = jsonp + "(\n" +
+"{\"longitude\"=-124.4, \"NO3\"=35.7, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n" +
+"{\"longitude\"=-124.4, \"NO3\"=35.48, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        expected = 
+"{\"longitude\"=-124.1, \"NO3\"=24.45, \"time\"=\"2002-08-19T20:18:00Z\", \"ship\"=\"New_Horizon\"}\n" +
+")";
+        Test.ensureEqual(results.substring(results.length() - expected.length()), 
+            expected, "\nresults=\n" + results);
+ 
+
         //.mat     [I can't test that missing value is NaN.]
         //octave> load('c:/temp/tabledap/EDDTableFromNcFiles_Data.mat');
         //octave> testGlobecBottle
@@ -10034,6 +10808,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
 "    char ship(row=100, ship_strlen=11);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
 "      :long_name = \"Ship\";\n" +
 "\n" +
@@ -10054,7 +10829,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         tResults = results.substring(0, tHeader1.length());
         Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
         
-//        + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//        + " https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 String tHeader2 = 
 "/tabledap/testGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-14&time<=2002-08-15\";\n" +
@@ -10182,7 +10957,7 @@ expected =
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
-"Type:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:7\tship:METAVAR:TEXT:12\tcast:SHORT\tLongitude [degrees_east]:METAVAR:FLOAT\tLatitude [degrees_north]:METAVAR:FLOAT\taltitude [m]:PRIMARYVAR:INTEGER\tyyyy-mm-ddThh:mm:ss.sss\tbottle_posn:BYTE\tchl_a_total [ug L-1]:FLOAT\tchl_a_10um [ug L-1]:FLOAT\tphaeo_total [ug L-1]:FLOAT\tphaeo_10um [ug L-1]:FLOAT\tsal00 [PSU]:FLOAT\tsal11 [PSU]:FLOAT\ttemperature0 [degree_C]:FLOAT\ttemperature1 [degree_C]:FLOAT\tfluor_v [volts]:FLOAT\txmiss_v [volts]:FLOAT\tPO4 [micromoles L-1]:FLOAT\tN_N [micromoles L-1]:FLOAT\tNO3 [micromoles L-1]:FLOAT\tSi [micromoles L-1]:FLOAT\tNO2 [micromoles L-1]:FLOAT\tNH4 [micromoles L-1]:FLOAT\toxygen [mL L-1]:FLOAT\tpar [volts]:FLOAT\n" +
+"Type:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:7\tship:METAVAR:TEXT:12\tcast:SHORT\tLongitude [degrees_east]:METAVAR:FLOAT\tLatitude [degrees_north]:METAVAR:FLOAT\taltitude [m]:PRIMARYVAR:INTEGER\tyyyy-mm-ddThh:mm:ss.SSS\tbottle_posn:BYTE\tchl_a_total [ug L-1]:FLOAT\tchl_a_10um [ug L-1]:FLOAT\tphaeo_total [ug L-1]:FLOAT\tphaeo_10um [ug L-1]:FLOAT\tsal00 [PSU]:FLOAT\tsal11 [PSU]:FLOAT\ttemperature0 [degree_C]:FLOAT\ttemperature1 [degree_C]:FLOAT\tfluor_v [volts]:FLOAT\txmiss_v [volts]:FLOAT\tPO4 [micromoles L-1]:FLOAT\tN_N [micromoles L-1]:FLOAT\tNO3 [micromoles L-1]:FLOAT\tSi [micromoles L-1]:FLOAT\tNO2 [micromoles L-1]:FLOAT\tNH4 [micromoles L-1]:FLOAT\toxygen [mL L-1]:FLOAT\tpar [volts]:FLOAT\n" +
 "*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
 "*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
 "*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
@@ -11259,7 +12034,7 @@ expected =
 "    Int32 epic_code 502;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Nominal Longitude\";\n" +
-"    Float32 missing_value 1.0E35;\n" +
+"    Float32 missing_value 1.0e\\+35;\n" +
 "    String standard_name \"longitude\";\n" +
 "    String type \"EVEN\";\n" +
 "    String units \"degrees_east\";\n" +
@@ -11271,7 +12046,7 @@ expected =
 "    Int32 epic_code 500;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Nominal Latitude\";\n" +
-"    Float32 missing_value 1.0E35;\n" +
+"    Float32 missing_value 1.0e\\+35;\n" +
 "    String standard_name \"latitude\";\n" +
 "    String type \"EVEN\";\n" +
 "    String units \"degrees_north\";\n" +
@@ -11295,21 +12070,21 @@ expected =
 "    Int32 epic_code 3;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Depth\";\n" +
-"    Float32 missing_value 1.0E35;\n" +
+"    Float32 missing_value 1.0e\\+35;\n" +
 "    String positive \"down\";\n" +
 "    String standard_name \"depth\";\n" +
 "    String type \"EVEN\";\n" +
 "    String units \"m\";\n" +
 "  \\}\n" +
 "  AT_21 \\{\n" +
-"    Float32 actual_range 14.37, 34.14;\n" + //first value gets smaller sometimes; 2012-03-20 was 2.59, 41.84;\n" + and bigger sometimes 2016-09-16 was 4.28
+"    Float32 actual_range 16.55, 34.14;\n" + //first value changes; 2012-03-20 was 2.59, 41.84;\n" + and bigger sometimes 2016-09-16 was 4.28
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
 "    Int32 epic_code 21;\n" +
 "    String generic_name \"atemp\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Air Temperature\";\n" +
-"    Float32 missing_value 1.0E35;\n" +
+"    Float32 missing_value 1.0e\\+35;\n" +
 "    String name \"AT\";\n" +
 "    String standard_name \"air_temperature\";\n" +
 "    String units \"degree_C\";\n" +
@@ -11324,7 +12099,7 @@ expected =
 "    String generic_name \"qat\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Air Temperature Quality\";\n" +
-"    Float32 missing_value 1.0E35;\n" +
+"    Float32 missing_value 1.0e\\+35;\n" +
 "    String name \"QAT\";\n" +
 "  \\}\n" +
 "  SAT_6021 \\{\n" +
@@ -11345,7 +12120,7 @@ expected =
 "    String generic_name \"sat\";\n" +
 "    String ioos_category \"Other\";\n" +
 "    String long_name \"Air Temperature Source\";\n" +
-"    Float32 missing_value 1.0E35;\n" +
+"    Float32 missing_value 1.0e\\+35;\n" +
 "    String name \"SAT\";\n" +
 "  \\}\n" +
 " \\}\n" +
@@ -11354,10 +12129,10 @@ expected =
 "    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n" +
-"    String creator_name \"TAO Project Office/NOAA/PMEL\";\n" +
-"    String creator_url \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
-"    String Data_info \"Contact Paul Freitag: 206-526-6727\";\n" +
-"    String Data_Source \"TAO Project Office/NOAA/PMEL\";\n" +
+"    String creator_name \"GTMBA Project Office/NOAA/PMEL\";\n" +
+"    String creator_type \"group\";\n" +
+"    String creator_url \"https://www.pmel.noaa.gov/gtmba/mission\";\n" +
+"    String Data_Source \"Global Tropical Moored Buoy Array Project Office/NOAA/PMEL\";\n" +
 "    String defaultGraphQuery \"longitude,latitude,AT_21&time>=now-7days\";\n" +
 "    Float64 Easternmost_Easting 350.0;\n" +
 "    String featureType \"TimeSeries\";\n" +
@@ -11375,7 +12150,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2016-10-03 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2017-05-04 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -11384,13 +12159,13 @@ expected =
 //today + " http://localhost:8080/cwexperimental/
 expected = 
 "tabledap/pmelTaoDyAirt.das\";\n" +
-"    String infoUrl \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
+"    String infoUrl \"https://www.pmel.noaa.gov/gtmba/mission\";\n" +
 "    String institution \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
 "Atmosphere > Atmospheric Temperature > Surface Air Temperature,\n" +
 "air, air_temperature, atmosphere, atmospheric, buoys, centered, daily, depth, identifier, noaa, pirata, pmel, quality, rama, source, station, surface, tao, temperature, time, triton\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
-"    String license \"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the TAO Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: TAO Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\n" +
+"    String license \"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -11402,10 +12177,10 @@ expected =
 "    Float64 Northernmost_Northing 21.0;\n" + 
 "    String project \"TAO/TRITON, RAMA, PIRATA\";\n" +
 "    String Request_for_acknowledgement \"If you use these data in publications " +
-    "or presentations, please acknowledge the TAO Project Office of NOAA/PMEL. " +
+    "or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. " +
     "Also, we would appreciate receiving a preprint and/or reprint of " +
     "publications utilizing the data for inclusion in our bibliography. " +
-    "Relevant publications should be sent to: TAO Project Office, " +
+    "Relevant publications should be sent to: GTMBA Project Office, " +
     "NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, " +
     "Seattle, WA 98115\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
@@ -11413,19 +12188,19 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String summary \"This dataset has daily Air Temperature data from the\n" +
-"TAO/TRITON \\(Pacific Ocean, http://www.pmel.noaa.gov/tao/\\),\n" +
-"RAMA \\(Indian Ocean, http://www.pmel.noaa.gov/tao/rama/\\), and\n" +
-"PIRATA \\(Atlantic Ocean, http://www.pmel.noaa.gov/pirata/\\)\n" +
+"TAO/TRITON \\(Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ \\),\n" +
+"RAMA \\(Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama \\), and\n" +
+"PIRATA \\(Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ \\)\n" +
 "arrays of moored buoys which transmit oceanographic and meteorological data " +
     "to shore in real-time via the Argos satellite system.  These buoys are " +
     "major components of the CLIVAR climate analysis project and the GOOS, " +
     "GCOS, and GEOSS observing systems.  Daily averages are computed starting " +
     "at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more " +
     "information, see\n" +
-"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html .\";\n" +
+"https://www.pmel.noaa.gov/gtmba/mission .\";\n" +
 "    String time_coverage_end \"20.{8}T12:00:00Z\";\n" +  //changes daily
 "    String time_coverage_start \"1977-11-06T12:00:00Z\";\n" + //before 2012-03-20 was 1980-03-07T12:00:00
-"    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Air Temperature\";\n" +
+"    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
@@ -12551,6 +13326,7 @@ So the changes seem good. */
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    char Strings(row=3, Strings_strlen=2);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "  // global attributes:\n" +
@@ -12630,7 +13406,7 @@ expected =
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
-"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.sss\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tints:PRIMARYVAR:INTEGER\tfloats:FLOAT\tdoubles:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
+"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.SSS\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tints:PRIMARYVAR:INTEGER\tfloats:FLOAT\tdoubles:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
 "*\t\t\t1970-01-02T00:00:00Z\t1980-01-01T05:00:00Z\t1990-01-01T00:09:00Z\t2000-01-01T00:00:20Z\t2010-01-01T00:00:00.030Z\t40\t10000\t1000000\t0.0\t1.0E12\t0\n" +
 "*\t\t\t1970-01-03T00:00:00Z\t1980-01-01T06:00:00Z\t1990-01-01T00:10:00Z\t2000-01-01T00:00:21Z\t2010-01-01T00:00:00.031Z\t41\t10001\t1000001\t1.1\t1.0000000000001E12\t10\n" +
 "*\t\t\t1970-01-04T00:00:00Z\t1980-01-01T07:00:00Z\t1990-01-01T00:11:00Z\t2000-01-01T00:00:22Z\t2010-01-01T00:00:00.032Z\t42\t10002\t1000002\t2.2\t1.0000000000002E12\t20\n";
@@ -13040,6 +13816,7 @@ expected =
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "    char Strings(row=2, Strings_strlen=2);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
 "      :ioos_category = \"Unknown\";\n" +
 "\n" +
 "  // global attributes:\n" +
@@ -13109,7 +13886,7 @@ expected =
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
-"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.sss\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tdoubles:PRIMARYVAR:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
+"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.SSS\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tdoubles:PRIMARYVAR:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
 "*\t\t\t1970-01-03T00:00:00Z\t2010-01-01T00:00:00.031Z\t41\t10001\t1.0000000000001E12\t10\n" +
 "*\t\t\t1970-01-04T00:00:00Z\t2010-01-01T00:00:00.032Z\t42\t10002\t1.0000000000002E12\t20\n";
         po = results.indexOf("//<Version>");
@@ -13853,7 +14630,10 @@ expected =
 "41033,-80.41,32.28,-80.41,32.28,7.0,2014-12-01T00:00:00Z,NaN\n";
 
         //*** Do tests of original data
-        eddTable = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "miniNdbc"); 
+        //delete bad files list to ensure all are read
+        String tDatasetID = "miniNdbc";
+        File2.delete(badFileMapFileName(tDatasetID));
+        eddTable = (EDDTableFromNcFiles)oneFromDatasetsXml(null, tDatasetID); 
         String dataDir = eddTable.fileDir;
         timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
         lonEdv  = eddTable.dataVariables()[eddTable.lonIndex];
@@ -13971,12 +14751,17 @@ expected =
 
 
         } finally {
+            //delete badFileMap so bad file will be reconsidered
+            File2.delete(badFileMapFileName(tDatasetID));
             //rename it back to original
             String2.log("\n*** rename it back to original\n");       
             File2.rename(dataDir, "NDBC_41025_met.nc2", "NDBC_41025_met.nc");
             //ensure testQuickRestart is set back to false
             EDDTableFromFiles.testQuickRestart = false;
-            Math2.sleep(1000);
+            while (!File2.isFile(dataDir + "NDBC_41025_met.nc")) {
+                String2.log("waiting for file to be renamed");
+                Math2.sleep(1000);
+            }
         }
 
         //*** back to original
@@ -14199,7 +14984,7 @@ expected =
         Math2.sleep(10000);
         //flush the log file
         String tIndex = SSR.getUrlResponseString("http://localhost:8080/cwexperimental/status.html");
-        Math2.sleep(3000);
+        Math2.sleep(5000);
         //read the log file
         String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
         String expected = // ***
@@ -14214,8 +14999,8 @@ expected =
         
         int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 40)));
         int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
-        String tResults = tLog.substring(po, po + expected.length());
-        String2.log("tResults=\"\n" + tResults + "\n\"\n");
+        String tResults = tLog.substring(po, po2);
+        String2.log("tResults=\n\"\n" + tResults + "\n\"\n");
         Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
         
         //so far so good, tResults matches expected
@@ -14227,8 +15012,8 @@ expected =
 
         //test that the dirTable and fileTable weren't found    after that
         expected = 
-"table file doesn't exist: c:/u00/cwatch/erddap2/dataset/01/testTimeSince19000101/dirTable.nc\n" +
-"table file doesn't exist: c:/u00/cwatch/erddap2/dataset/01/testTimeSince19000101/fileTable.nc\n" +
+"dir/file table doesn't exist: c:/u00/cwatch/erddap2/dataset/01/testTimeSince19000101/dirTable.nc\n" +
+"dir/file table doesn't exist: c:/u00/cwatch/erddap2/dataset/01/testTimeSince19000101/fileTable.nc\n" +
 "creating new dirTable and fileTable (dirTable=null?true fileTable=null?true badFileMap=null?false)";
         int po4 = tLog.indexOf(expected, po);
         Test.ensureTrue(po4 > 0, "\"" + expected + "\" wasn't found after po=" + po + " !");
@@ -14266,18 +15051,21 @@ expected =
         testLatLon();
         testId();
         testDistinct();
-        testOrderBy(); 
+        testOrderBy();   //Needs lots of memory. Close other apps?
         testOrderByMax();
         testOrderByMin();
         testOrderByMinMax();
+        testOrderByClosest();
+        testOrderByLimit();
         testStationLonLat();
         testGlobal();  //tests global: metadata to data conversion
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
+        testGenerateDatasetsXmlNcdump();
         testErdGtsppBest("erdGtsppBestNc");
         testErdGtsppBest("erdGtsppBest");
         testTransparentPng();
-        testSpeed(-1);  //-1=all   15=.odv 21=.xhtml 25=png
+        testSpeed(-1);  //-1=all   =.odv =.xhtml =png
         testManyYears();
         testCAMarCat();
         testNcCFPoint();

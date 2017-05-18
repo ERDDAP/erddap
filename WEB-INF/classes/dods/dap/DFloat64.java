@@ -105,6 +105,8 @@ public class DFloat64 extends BaseType implements ClientIO {
 				       StatusUI statusUI)
        throws IOException, EOFException {
     val = source.readDouble();
+    //System.out.println(">>DFloat64=" + val);
+
     if(statusUI != null)
       statusUI.incrementByteCount(8);
   }

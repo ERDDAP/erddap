@@ -26,13 +26,9 @@ import java.util.Map;
 
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -293,7 +289,7 @@ public class Projects2  {
             Table table = new Table();
             table.readFlat0Nc(inDir + fileName, null, 1, -1); //1=unpack, -1=read all rows
             int nRows = table.nRows();
-            String2.log(table.toCSVString());
+            String2.log(table.toString());
 
             //reject if no data
             double d = table.getColumn("time").getDouble(0);
@@ -312,7 +308,7 @@ public class Projects2  {
      * (assuming Hyrax's HTTP server is enabled),
      * including duplicating the file's date.  
      *
-     * @param urlDir  e.g., http://data.nodc.noaa.gov/opendap/wod/monthly/  
+     * @param urlDir  e.g., https://data.nodc.noaa.gov/opendap/wod/monthly/  
      *    which has contents.html
      * @param localDir  e.g., F:/data/wod/monthly/
      */

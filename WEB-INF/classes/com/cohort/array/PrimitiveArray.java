@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * by designating their MAX_VALUE as the missing value. This is consistent with JGOFS
  * ("the server will set the missing value field to the largest value 
  * possible for specified type.",
- * http://www.opendap.org/server/install-html/install_22.html). 
+ * https://www.opendap.org/server/install-html/install_22.html). 
  * This has the convenient side effect that missing values sort high
  * (as to NaNs for floats and doubles).
  *
@@ -60,6 +60,8 @@ public abstract class PrimitiveArray {
      * But some implementations use ~=, so see sourceRegexOp. 
      * See also Table.REGEX_OP. */
     public final static String REGEX_OP = "=~";
+
+
 
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
@@ -184,7 +186,7 @@ public abstract class PrimitiveArray {
      * or a new pa of a specified type.
      *
      * @param elementClass e.g., float.class
-     * @return a PrimitiveArray
+     * @return a PrimitiveArray 
      */
     public static PrimitiveArray factory(Class elementClass, PrimitiveArray pa) {
         if (pa.elementClass() == elementClass)
@@ -329,20 +331,23 @@ public abstract class PrimitiveArray {
      * This returns a PrimitiveArray of the specified type from the space or comma-separated values.
      *
      * @param elementClass e.g., float.class or String.class
-     * @param ssv For elementClass=String.class, individual values with interior spaces or commas
-     *    must be completely enclosed in double quotes with interior double
-     *    quotes converted to 2 double quotes. For String values without interior spaces or commas,
-     *    you don't have to double quote the whole value.    
+     * @param ssv For elementClass=char.class, encode and special characters (e.g., space, 
+          double quotes, backslash, &lt;#32, or &gt;#127) via their 
+          JSON or NCCSV encodings (e.g., " ", "\"", "\\" or """", "\n", "\u20ac").
      * @return a PrimitiveArray
      */
     public static PrimitiveArray ssvFactory(Class elementClass, String ssv) {
         StringArray sa = StringArray.wordsAndQuotedPhrases(ssv);
-        if (elementClass == String.class) 
-            return sa;
         int n = sa.size();
         PrimitiveArray pa = factory(elementClass, n, false);
-        for (int i = 0; i < n; i++)
-            pa.addString(sa.get(i));
+        if (elementClass == char.class) {
+            CharArray ca = (CharArray)pa;
+            for (int i = 0; i < n; i++)
+                ca.add(String2.fromNccsvChar(sa.get(i)));
+        } else {
+            for (int i = 0; i < n; i++)
+                pa.addString(sa.get(i));
+        }
         return pa;
     }
 
@@ -420,6 +425,26 @@ public abstract class PrimitiveArray {
         if (type.equals("char"))   return char.class;
         if (type.equals("String")) return String.class;
         throw new IllegalArgumentException("PrimitiveArray.elementStringToClass unsupported type: " + type);
+    }
+
+    /**
+     * This converts an element type String (e.g., "float") to an element type (e.g., float.class).
+     *
+     * @param type an element type string (e.g., "float")
+     * @return the corresponding element type (e.g., float.class)
+     */
+    public static Class caseInsensitiveElementStringToClass(String type) {
+        type = type.toLowerCase();
+        if (type.equals("double")) return double.class;
+        if (type.equals("float"))  return float.class;
+        if (type.equals("long"))   return long.class;
+        if (type.equals("int"))    return int.class;
+        if (type.equals("short"))  return short.class;
+        if (type.equals("byte") ||
+            type.equals("boolean"))return byte.class; //erddap stores booleans as bytes
+        if (type.equals("char"))   return char.class;
+        if (type.equals("string")) return String.class;
+        throw new IllegalArgumentException("PrimitiveArray.caseInsensitiveElementStringToClass unsupported type: " + type);
     }
 
     /**
@@ -541,7 +566,7 @@ public abstract class PrimitiveArray {
      * But choices below are fairly safe.
      * I can't find a table to link java.sql.Types constants to Postgres types.
      * See postgresql types at
-     * http://www.postgresql.org/docs/8.2/static/datatype-numeric.html
+     * https://www.postgresql.org/docs/8.2/static/datatype-numeric.html
      *
      * @param sqlType  a java.sql.Types constant
      * @return a PrimitiveArray of the suggested type.
@@ -598,8 +623,7 @@ public abstract class PrimitiveArray {
             type == long.class ||
             type == int.class ||
             type == short.class ||
-            type == byte.class ||
-            type == char.class;
+            type == byte.class;
     }
 
     /** 
@@ -954,6 +978,33 @@ public abstract class PrimitiveArray {
     abstract public String getString(int index);
 
     /**
+     * Return a value from the array as a String suitable for the data section 
+     * of an NCCSV file. This is close to a json string.
+     * StringArray and CharArray overwrite this.
+     * Note that LongArray doesn't append L -- that is done separately
+     * by file writers.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getNccsvDataString(int index) {
+        return getString(index);
+    }
+
+    /**
+     * Return a value from the array as a String suitable for the data section 
+     * of a tsv file. This is close to a json string.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getTsvString(int index) {
+        return getString(index);
+    }
+
+    /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
@@ -1032,15 +1083,14 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(",");
-            sb.append(getString(i));
+            sb.append(getNccsvDataString(i));
         }
         return sb.toString();
     }
 
     /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
-     * Chars acting like unsigned shorts.
-     * StringArray overwrites this to specially encode the strings.
+     * CharArray and StringArray overwrite this to specially encode the strings.
      *
      * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
@@ -1049,10 +1099,17 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(", ");
-            sb.append(getString(i));
+            sb.append(getNccsvDataString(i));
         }
         return sb.toString();
     }
+
+    /** 
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
+     *
+     * @return an NCCSV attribute String
+     */
+    abstract public String toNccsvAttString();
 
     /**
      * This returns a JSON-style comma-separated-value list of the elements.
@@ -2231,6 +2288,7 @@ public abstract class PrimitiveArray {
      * IntArray -1 is interpreted as 4294967295).
      * WARNING: information may be lost from the incoming pa if this
      * primitiveArray is of a simpler type.
+     * Also, MAX_VALUE isn't converted to NaN.
      *
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.narrowToByte.
@@ -2238,7 +2296,7 @@ public abstract class PrimitiveArray {
     public void unsignedAppend(PrimitiveArray pa) {
         //this code is used by all subclasses; it isn't over-ridden
 
-        if (pa.isIntegerType()) {
+        if (pa.isIntegerType() || pa.elementClass() == char.class) {
             int otherSize = pa.size(); 
             ensureCapacity(size + (long)otherSize);
             if (pa.elementClass() == elementClass()) { //both are the same integer type
@@ -2749,7 +2807,7 @@ public abstract class PrimitiveArray {
     public abstract int switchFromTo(String from, String to);
 
     /**
-     * For non-StringArray, 
+     * For non-StringArray and non-CharArray, 
      * if the primitiveArray has fake _FillValue and/or missing_values (e.g., -9999999),
      * those values are converted to PrimitiveArray-style missing values 
      * (NaN, or MAX_VALUE for integer types).
@@ -2759,18 +2817,19 @@ public abstract class PrimitiveArray {
      * @return the number of missing values converted
      */
     public int convertToStandardMissingValues(double fakeFillValue, double fakeMissingValue) {
-        //do nothing to String columns
-        if (elementClass() == String.class)
+        //do nothing to String or char columns
+        if (elementClass() == String.class ||
+            elementClass() == char.class)
             return 0;
 
         //is _FillValue used?    switch data to standard mv
-        //String2.log("Table.convertToStandardMissingValues col=" + column + " fillValue=" + fillValue);
+        //String2.log(">> Table.convertToStandardMissingValues fillValue=" + fakeFillValue + " missingValue=" + fakeMissingValue);
         int nSwitched = 0;
         if (!Double.isNaN(fakeFillValue))
             nSwitched += switchFromTo("" + fakeFillValue, "");
 
         //is missing_value used?    switch data to standard mv
-        //String2.log("Table.convertToStandardMissingValues col=" + column + " missingValue=" + missingValue);
+        //String2.log ...
         if (!Double.isNaN(fakeMissingValue) && fakeMissingValue != fakeFillValue) //if fakeFillValue==NaN   2nd clause always true (good)
             nSwitched += switchFromTo("" + fakeMissingValue, "");
 
@@ -2778,14 +2837,16 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * For any non-StringArray, this changes all standard 
+     * For any non-StringArray and non-CharArray, this changes all standard 
      * missing values (MAX_VALUE or NaN's) to fakeMissingValues.
      *
      * @param fakeMissingValue
      * @return the number of values switched
      */
     public int switchNaNToFakeMissingValue(double fakeMissingValue) {
-        if (Math2.isFinite(fakeMissingValue) && elementClass() != String.class)
+        if (Math2.isFinite(fakeMissingValue) && 
+            elementClass() != String.class ||
+            elementClass() != char.class)
             return switchFromTo("", "" + fakeMissingValue);
         return 0;
     }
@@ -2833,6 +2894,19 @@ public abstract class PrimitiveArray {
      * @return the index of the first tied value (or -1 if none).
      */
     public abstract int firstTie();
+
+    /**
+     * This tests if all of the values are identical.
+     *
+     * @return true if size == 0 or all of the values are identical.
+     */
+    public boolean allSame() {
+        for (int i = 1; i < size; i++) {
+            if (compare(i - 1, i) != 0)
+                return false;
+        }
+        return true;
+    }
 
     /**
      * This compares this PrimitiveArray's values to anothers, string representation by string representation, 
@@ -2960,7 +3034,8 @@ public abstract class PrimitiveArray {
     /** This returns the minimum value that can be held by this class. */
     public abstract String minValue();
 
-    /** This returns the maximum value that can be held by this class. */
+    /** This returns the maximum value that can be held by this class 
+        (not including the cohort missing value). */
     public abstract String maxValue();
 
     /**
@@ -2972,6 +3047,19 @@ public abstract class PrimitiveArray {
      *    [2]=index of max value (if tie, index of last found; -1 if all mv).
      */
     public abstract int[] getNMinMaxIndex();
+
+    /**
+     * This returns the min and max of the non-null or "" strings (by simple comparison).
+     *
+     * @return String[3], 0=""+n (the number of non-null or "" strings), 
+     *    1=min (as a string), 2=max (as a string).  min and max are "" if n=0.
+     */
+    public String[] getNMinMax() {
+        int nmm[] = getNMinMaxIndex();
+        if (nmm[0] == 0)
+            return new String[]{"0", "", ""};
+        return new String[]{"" + nmm[0], getString(nmm[1]), getString(nmm[2])};
+    }
 
     /**
      * Given nHave values and stride, this returns the actual number of points that will be found.
@@ -2991,7 +3079,7 @@ public abstract class PrimitiveArray {
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
      * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
-     * @return a new PrimitiveArray with the desired subset.
+     * @return a new PrimitiveArray of the same type with the desired subset.
      *    It will have a new backing array with a capacity equal to its size.
      *    If stopIndex &lt; startIndex, this returns a PrimitiveArray with size=0;
      */
@@ -3208,7 +3296,8 @@ public abstract class PrimitiveArray {
         }
 
         //string
-        if (elementClass() == String.class) {
+        if (elementClass() == String.class ||
+            elementClass() == char.class) {
             //String2.log("applyConstraint(String)");
             int nStillGood = 0;
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
@@ -3272,6 +3361,407 @@ public abstract class PrimitiveArray {
         return nStillGood;
     }
 
+    /**
+     * This converts a StringArray with NCCSV attribute values into 
+     * a typed PrimitiveArray.
+     *
+     * @param sa Almost always from StringArray.fromNccsv(). E.g., ["7b", "-12b"] 
+     * @return a typed PrimitiveArray e,g, ByteArray with [7, -12].
+     *   If sa is null or sa.length() == 0, this returns this sa.
+     *   If sa is interpreted as a StringArray, sa will be returned with
+     *     canonical (perhaps modified) values.
+     * @throws SimpleException if trouble.
+     */
+    public static PrimitiveArray parseNccsvAttributes(StringArray sa) {
+        if (sa == null || sa.size() == 0)
+            return sa;
+        //String2.log("nccsv(sa)=" + sa.toNccsvAttString());
+
+        //are first and lastChar all the same? e.g., 7b, -12b
+        int saSize = sa.size();
+        boolean firstCharSame = sa.get(0).length() > 0;  //initially just first value
+        boolean lastCharSame  = sa.get(0).length() > 0;  //initially just first value
+        char firstChar = ' '; //junk for now
+        char lastChar  = ' '; //junk for now
+        if (lastCharSame) { 
+            String s = sa.get(0); //it will be length() > 0 (tested above)
+            firstChar = s.charAt(0);  
+            lastChar  = s.charAt(s.length() - 1);
+            for (int i = 1; i < saSize; i++) {
+                s = sa.get(i);
+                if (s.length() == 0 || s.charAt(0) != firstChar) 
+                    firstCharSame = false;
+                if (s.length() == 0 || s.charAt(s.length() - 1) != lastChar) {
+                    lastCharSame = false;
+                    break;
+                }
+            }
+        }
+
+        //what type is it?
+        if (lastCharSame) {
+            if (lastChar == 'b') {
+                if (sa.firstNonMatch(String2.NCCSV_BYTE_ATT_PATTERN) < 0) {
+                    ByteArray ba = new ByteArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        ba.addInt(String2.parseInt(s.substring(0, s.length() - 1)));
+                        if (ba.get(i) == Byte.MAX_VALUE && !"127b".equals(s))
+                            throw new SimpleException("Invalid byte value: " + s);
+                    }
+                    return ba;
+                } //all of these: else fall through to StringArray
+            } else if (lastChar == 's') {
+                if (sa.firstNonMatch(String2.NCCSV_SHORT_ATT_PATTERN) < 0) {
+                    ShortArray ba = new ShortArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        ba.addInt(String2.parseInt(s.substring(0, s.length() - 1)));
+                        if (ba.get(i) == Short.MAX_VALUE && !"32767s".equals(s))
+                            throw new SimpleException("Invalid short value: " + s);
+                    }
+                    return ba;
+                }
+            } else if (lastChar == 'L') {
+                if (sa.firstNonMatch(String2.NCCSV_LONG_ATT_PATTERN) < 0) {
+                    LongArray la = new LongArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        la.add(String2.parseLong(s.substring(0, s.length() - 1)));
+                        if (la.get(i) == Long.MAX_VALUE && !"9223372036854775807L".equals(s))
+                            throw new SimpleException("Invalid long value: " + s);
+                    }
+                    return la;
+                }
+            } else if (lastChar == 'f') {
+                if (sa.firstNonMatch(String2.NCCSV_FLOAT_ATT_PATTERN) < 0) {
+                    FloatArray fa = new FloatArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        float f = String2.parseFloat(s.substring(0, s.length() - 1));
+                        fa.add(Math2.isFinite(f)? f : Float.NaN); //Infinity -> NaN
+                        if (Float.isNaN(fa.get(i)) && !"NaNf".equals(s)) 
+                            throw new SimpleException("Invalid float value: " + s);
+                    }
+                    return fa;
+                }
+            } else if (lastChar == 'd') {
+                if (sa.firstNonMatch(String2.NCCSV_DOUBLE_ATT_PATTERN) < 0) {
+                    //String2.log(">> doubles? " + sa.firstNonMatch(String2.NCCSV_DOUBLE_ATT_PATTERN) + ": " + sa.toString());
+                    DoubleArray da = new DoubleArray(saSize, false);
+                    for (int i = 0; i < saSize; i++) {
+                        String s = sa.get(i);
+                        double d = String2.parseDouble(s);
+                        da.add(Math2.isFinite(d)? d : Double.NaN); //Infinity -> NaN
+                        if (Double.isNaN(da.get(i)) && !"NaNd".equals(s))
+                            throw new SimpleException("Invalid double value: " + s);
+                    }
+                    return da;
+                }
+            }
+        }
+
+        //ints?
+        if (sa.firstNonMatch(String2.NCCSV_INT_ATT_PATTERN) < 0) {
+            IntArray ia = new IntArray(saSize, false);
+            for (int i = 0; i < saSize; i++) {
+                String s = sa.get(i);
+                ia.add(String2.parseInt(s.substring(0, s.length() - 1)));
+                if (ia.get(i) == Integer.MAX_VALUE && !"2147483647i".equals(s))
+                    throw new SimpleException("Invalid int value: " + s);
+            }
+            return ia;
+        }
+
+
+        //char?
+        if (sa.firstNonMatch(String2.NCCSV_CHAR_ATT_PATTERN) < 0) {
+            CharArray ca = new CharArray(saSize, false);
+            for (int i = 0; i < saSize; i++) 
+                ca.add(String2.fromNccsvChar(sa.get(i)));
+            return ca;
+        }
+
+        //if nothing else matched - > StringArray
+        //convert nccsv strings to true strings (and canonical) and return StringArray
+        sa.fromNccsv();
+        return sa;
+    }
+
+    /**
+     * This tests the methods of this class.
+     *
+     * @throws Exception if trouble.
+     */
+    public static void testNccsv() throws Throwable {
+        String2.log("*** PrimitiveArray.testNccsv");
+        String s;
+        StringArray sa;
+        PrimitiveArray pa;
+        String msg;
+
+        //String2.toNccsvChar
+        Test.ensureEqual(String2.toNccsvChar(' '), " ", "");
+        Test.ensureEqual(String2.toNccsvChar('\u20AC'), "\\u20ac", "");
+
+        //String2.toNccsvDataString  won't be quoted
+        Test.ensureEqual(String2.toNccsvDataString(""), "", "");
+        Test.ensureEqual(String2.toNccsvDataString("a"), "a", "");
+        Test.ensureEqual(String2.toNccsvDataString("a ~"), "a ~", "");
+        s = String2.toNccsvDataString("a\n\f\t\r");
+        Test.ensureEqual(s, "a\\n\\f\\t\\r", s);
+        Test.ensureEqual(String2.toNccsvDataString("a"), "a", "");
+        Test.ensureEqual(String2.toNccsvDataString("5"), "5", "");     //number
+        Test.ensureEqual(String2.toNccsvDataString("'c'"), "'c'", ""); //char
+
+        //String2.toNccsvDataString  will be quoted
+        Test.ensureEqual(String2.toNccsvDataString(" "), "\" \"", "");           //start/end  ' '
+        Test.ensureEqual(String2.toNccsvDataString("a "), "\"a \"", "");         //start/end  ' '
+        Test.ensureEqual(String2.toNccsvDataString(" b"), "\" b\"", "");         //start/end  ' '
+        Test.ensureEqual(String2.toNccsvDataString("a,"), "\"a,\"", "");         // ,
+        Test.ensureEqual(String2.toNccsvDataString("b\""), "\"b\"\"\"", "");     // "
+
+
+        //String2.toNccsvAttString  won't be quoted
+        Test.ensureEqual(String2.toNccsvAttString(""), "", "");
+        Test.ensureEqual(String2.toNccsvAttString("a"), "a", "");
+        Test.ensureEqual(String2.toNccsvAttString("a ~"), "a ~", "");
+        s = String2.toNccsvAttString("a\n\f\t\r");
+        Test.ensureEqual(s, "a\\n\\f\\t\\r", s);
+        Test.ensureEqual(String2.toNccsvAttString("a"), "a", "");
+
+
+        //String2.toNccsvAttString  will be quoted
+        Test.ensureEqual(String2.toNccsvAttString(" "), "\" \"", "");           //start/end  ' '
+        Test.ensureEqual(String2.toNccsvAttString("a "), "\"a \"", "");         //start/end  ' '
+        Test.ensureEqual(String2.toNccsvAttString(" b"), "\" b\"", "");         //start/end  ' '
+        Test.ensureEqual(String2.toNccsvAttString("a,"), "\"a,\"", "");         // ,
+        Test.ensureEqual(String2.toNccsvAttString("b\""), "\"b\"\"\"", "");     // "
+        Test.ensureEqual(String2.toNccsvAttString("\'c\'"), "\"'c'\"", ""); //char
+        Test.ensureEqual(String2.toNccsvAttString("5"), "\"5\"", "");       //number
+
+        //ByteArray
+        s = "1b";
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv(s));
+        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        Test.ensureEqual(pa.toString(), "1", "");
+        Test.ensureEqual(pa.toNccsvAttString(), s, "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-128b,-0b,0b,127b"));
+        Test.ensureEqual(pa.elementClassString(), "byte", "");
+        Test.ensureEqual(pa.toString(), "-128, 0, 0, 127", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "-128b,0b,0b,127b", "");
+    
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("128b"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid byte value: 128b", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1b,3")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1b, 3", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1b,1234b")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1b, 1234b", "");
+        
+        //ShortArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1s"));
+        Test.ensureEqual(pa.elementClassString(), "short", "");
+        Test.ensureEqual(pa.toString(), "1", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "1s", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-32768s,-0s,0s,32767s"));
+        Test.ensureEqual(pa.elementClassString(), "short", "");
+        Test.ensureEqual(pa.toString(), "-32768, 0, 0, 32767", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "-32768s,0s,0s,32767s", "");
+        
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("32768s"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid short value: 32768s", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1s,3")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1s, 3", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1s,123456s")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1s, 123456s", "");
+        
+        //IntArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1i"));
+        Test.ensureEqual(pa.elementClassString(), "int", "");
+        Test.ensureEqual(pa.toString(), "1", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "1i", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-2147483648i,-0i,0i,2147483647i"));
+        Test.ensureEqual(pa.elementClassString(), "int", "");
+        Test.ensureEqual(pa.toString(), "-2147483648, 0, 0, 2147483647", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "-2147483648i,0i,0i,2147483647i", "");
+        
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("2147483648i"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid int value: 2147483648i", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1i,123456789091i")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1i, 123456789091i", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1i,3.00i")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1i, 3.00i", "");
+        
+        //LongArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1L"));
+        Test.ensureEqual(pa.elementClassString(), "long", "");
+        Test.ensureEqual(pa.toString(), "1", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "1L", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("-9223372036854775808L,-0L,0L,9223372036854775807L"));
+        Test.ensureEqual(pa.elementClassString(), "long", "");
+        Test.ensureEqual(pa.toString(), "-9223372036854775808, 0, 0, 9223372036854775807", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "-9223372036854775808L,0L,0L,9223372036854775807L", "");
+        
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("9223372036854775808L"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid long value: 9223372036854775808L", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1L,12345678901234567890L")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1L, 12345678901234567890L", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1L,123456")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1L, 123456", "");
+        
+        //FloatArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1f"));
+        Test.ensureEqual(pa.elementClassString(), "float", "");
+        Test.ensureEqual(pa.toString(), "1.0", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "1.0f", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
+            "-3e-38f,-.12e3f,0f,3e0f,3.e4f,.12e+3f,1.2E38f,NaNf"));
+        Test.ensureEqual(pa.elementClassString(), "float", "");
+        Test.ensureEqual(pa.toString(), 
+            "-3.0E-38, -120.0, 0.0, 3.0, 30000.0, 120.0, 1.2E38, NaN", "");
+        Test.ensureEqual(pa.toNccsvAttString(), 
+            "-3.0E-38f,-120.0f,0.0f,3.0f,30000.0f,120.0f,1.2E38f,NaNf", "");
+        
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1.2E39f"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid float value: 1.2E39f", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1f,3..0e23f")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1f, 3..0e23f", "");
+        
+        //DoubleArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1d"));
+        Test.ensureEqual(pa.elementClassString(), "double", "");
+        Test.ensureEqual(pa.toString(), "1.0", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "1.0d", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
+            "-3.0e-300d,-.12e3d,1.d,.1d,3.e4d,.12e3d,1.2E+300d,NaNd"));
+        Test.ensureEqual(pa.elementClassString(), "double", "");
+        Test.ensureEqual(pa.toString(), 
+            "-3.0E-300, -120.0, 1.0, 0.1, 30000.0, 120.0, 1.2E300, NaN", "");
+        Test.ensureEqual(pa.toNccsvAttString(), 
+            "-3.0E-300d,-120.0d,1.0d,0.1d,30000.0d,120.0d,1.2E300d,NaNd", "");
+        
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1.e310d"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid double value: 1.e310d", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("3.0d,3..0d")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "3.0d, 3..0d", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("1.0d,3")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "1.0d, 3", "");
+        
+        //StringArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
+            //in the nccsv file, it's a string with characters like \
+            "\"a~ \\f \\n \\r \\t \\\\ \\/ \\u00C0 \\u0000 \\uffFf\""));
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        //now it's a string with control chars and unicode chars
+        Test.ensureEqual(String2.annotatedString(pa.getString(0)), 
+            "a~ [12] [10]\n" +
+            " [13] [9] \\ / [192] [0] [65535][end]", "");
+        Test.ensureEqual(pa.toNccsvAttString(), 
+            "a~ \\f \\n \\r \\t \\\\ / \\u00c0 \\u0000 \\uffff", "");
+        
+        
+        //CharArray
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("\"'a'\""));
+        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.toString(), "a", "");
+        Test.ensureEqual(pa.toNccsvAttString(), "\"'a'\"", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv( //   \\b is not supported
+            "\"'\\f'\", \"'\\n'\", \"'\\r'\", \"'\\t'\", \"'\\\\'\""));
+        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.toString(), 
+            "\\f, \\n, \\r, \\t, \\\\", "");
+        Test.ensureEqual(pa.toNccsvAttString(), 
+            "\"'\\f'\",\"'\\n'\",\"'\\r'\",\"'\\t'\",\"'\\\\'\"", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
+            "\"'\\/'\", \"'/'\", \"'\"\"'\", \"' '\", \"'''\", \"'a'\""));
+        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.toString(), 
+            "/, /, \"\"\"\", \" \", ', a", "");
+        Test.ensureEqual(pa.toNccsvAttString(), 
+            "\"'/'\",\"'/'\",\"'\"\"'\",\"' '\",\"'''\",\"'a'\"", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv(
+            "\"'~'\", '\\u00C0', \"'\\u0000'\", \"'\\uffFf'\""));
+        Test.ensureEqual(pa.elementClassString(), "char", "");
+        Test.ensureEqual(pa.toString(), 
+            "~, \\u00c0, \\u0000, \\uffff", "");
+        Test.ensureEqual(pa.toNccsvAttString(), 
+            "\"'~'\",\"'\\u00c0'\",\"'\\u0000'\",\"'\\uffff'\"", "");
+        
+        try {
+            pa = parseNccsvAttributes(StringArray.simpleFromNccsv("'\\b'"));
+            msg = "shouldn't get here";
+        } catch (Throwable t) {
+            msg = t.toString();
+        }
+        //Test.ensureEqual(msg, "zztop", "");
+        
+        pa = parseNccsvAttributes(StringArray.simpleFromNccsv("'a', ''")); //doesn't match regex
+        Test.ensureEqual(pa.elementClassString(), "String", "");
+        Test.ensureEqual(pa.toString(), "'a', ''", "");       
+
+    }
+
 
 
     /**
@@ -3308,7 +3798,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.getString(0), "", "");
 
         Test.ensureEqual(factory(byte.class,   1, "10").toString(), "10", "");
-        Test.ensureEqual(factory(char.class,   2, "abc").toString(), "97, 97", "");
+        Test.ensureEqual(factory(char.class,   2, "abc").toString(),"a, a", "");
         Test.ensureEqual(factory(short.class,  3, "30").toString(), "30, 30, 30", "");
         Test.ensureEqual(factory(int.class,    4, "40").toString(), "40, 40, 40, 40", "");
         Test.ensureEqual(factory(long.class,   5, "50").toString(), "50, 50, 50, 50, 50", "");
@@ -3538,7 +4028,7 @@ public abstract class PrimitiveArray {
         StringArray Sar = new StringArray(new String[]{"22","4444","666666","666666","666666","88888888"});
 
         Test.ensureEqual(bar.indexOf("6"), 2, "");
-        Test.ensureEqual(car.indexOf("6"), 2, "");
+        Test.ensureEqual(car.indexOf("\u0006"), 2, "");
         Test.ensureEqual(dar.indexOf("6"), 2, "");
         Test.ensureEqual(far.indexOf("6"), 2, "");
         Test.ensureEqual(Iar.indexOf("6"), 2, "");
@@ -3556,7 +4046,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(Sar.indexOf("a"), -1, "");
 
         Test.ensureEqual(bar.indexOf("6", 3), 3, "");
-        Test.ensureEqual(car.indexOf("6", 3), 3, "");
+        Test.ensureEqual(car.indexOf("\u0006", 3), 3, "");
         Test.ensureEqual(dar.indexOf("6", 3), 3, "");
         Test.ensureEqual(far.indexOf("6", 3), 3, "");
         Test.ensureEqual(Iar.indexOf("6", 3), 3, "");
@@ -3565,7 +4055,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(Sar.indexOf("666666", 3), 3, "");
 
         Test.ensureEqual(bar.lastIndexOf("6"), 4, "");
-        Test.ensureEqual(car.lastIndexOf("6"), 4, "");
+        Test.ensureEqual(car.lastIndexOf("\u0006"), 4, "");
         Test.ensureEqual(dar.lastIndexOf("6"), 4, "");
         Test.ensureEqual(far.lastIndexOf("6"), 4, "");
         Test.ensureEqual(Iar.lastIndexOf("6"), 4, "");
@@ -3583,7 +4073,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(Sar.lastIndexOf("a"), -1, "");
 
         Test.ensureEqual(bar.lastIndexOf("6", 3), 3, "");
-        Test.ensureEqual(car.lastIndexOf("6", 3), 3, "");
+        Test.ensureEqual(car.lastIndexOf("\u0006", 3), 3, "");
         Test.ensureEqual(dar.lastIndexOf("6", 3), 3, "");
         Test.ensureEqual(far.lastIndexOf("6", 3), 3, "");
         Test.ensureEqual(Iar.lastIndexOf("6", 3), 3, "");
@@ -3886,7 +4376,7 @@ public abstract class PrimitiveArray {
         //addFromPA(
         DoubleArray other = (DoubleArray)csvFactory(double.class, "11.1, 22.2, 33.3");
         Test.ensureEqual(csvFactory(byte.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, \\u0016, !", "");
         Test.ensureEqual(csvFactory(double.class, "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
         Test.ensureEqual(csvFactory(float.class,  "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
         Test.ensureEqual(csvFactory(int.class,    "1.1, 2.2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33", "");
@@ -3897,7 +4387,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(ia.addFromPA(other, 2).toString(), "10, 12, 13, 15, 2147483647, 33", "");
 
         Test.ensureEqual(csvFactory(byte.class,   "1.1, 2.2").addFromPA(csvFactory(byte.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
-        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(csvFactory(char.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        Test.ensureEqual(csvFactory(char.class,   "1.1, 2.2").addFromPA(csvFactory(char.class,   "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 2, 3", "");
         Test.ensureEqual(csvFactory(double.class, "1.1, 2.2").addFromPA(csvFactory(double.class, "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
         Test.ensureEqual(csvFactory(float.class,  "1.1, 2.2").addFromPA(csvFactory(float.class,  "11.1, 22.2, 33.3"), 1, 2).toString(), "1.1, 2.2, 22.2, 33.3", "");
         Test.ensureEqual(csvFactory(int.class,    "1.1, 2.2").addFromPA(csvFactory(int.class,    "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
@@ -4229,6 +4719,7 @@ public abstract class PrimitiveArray {
         String2.log("*** PrimitiveArray.test");
         testBasic();
         testTestValueOpValue();
+        testNccsv();
     }
 
 

@@ -660,8 +660,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +
@@ -751,6 +751,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"cwhdf_version\">null</att>\n" +
 "        <att name=\"et_affine\">null</att>\n" +
 "        <att name=\"gctp_datum\">null</att>\n" +
@@ -765,6 +766,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"pass_date\">null</att>\n" +
 "        <att name=\"polygon_latitude\">null</att>\n" +
 "        <att name=\"polygon_longitude\">null</att>\n" +
+"        <att name=\"references\">Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
@@ -884,7 +886,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         //****** test HYRAX
         try {
         results = generateDatasetsXml("hyrax",
-            "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html", 
+            "https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html", 
             "month_[0-9]{8}_v11l35flk\\.nc\\.gz", //note: v one one L
             1440); 
         expected = 
@@ -898,8 +900,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +
@@ -918,10 +920,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 " * You can change the order of the dataVariables or remove any of them.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"nasa_jpl_790b_dd75_9ec2\" active=\"true\">\n" +
+"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"nasa_jpl_2458_4e43_c52a\" active=\"true\">\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_03ee_a693_74ed\" active=\"true\">\n" +
-"    <sourceUrl>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_ef57_7a3b_e14d\" active=\"true\">\n" +
+"    <sourceUrl>https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"base_date\" type=\"shortList\">1988 1 1</att>\n" +
@@ -935,8 +937,9 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
+"        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
-"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</att>\n" +
+"        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</att>\n" +
 "        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
 "        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
@@ -1104,7 +1107,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<sourceUrls serverType=\"hyrax\" regex=\"month_[0-9]{8}_v11l35flk\\.nc\\.gz\" recursive=\"true\" pathRegex=\".*\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</sourceUrls>\n" +
+"<sourceUrls serverType=\"hyrax\" regex=\"month_[0-9]{8}_v11l35flk\\.nc\\.gz\" recursive=\"true\" pathRegex=\".*\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</sourceUrls>\n" +
 "\n" +
 "</dataset>\n" +
 "\n";

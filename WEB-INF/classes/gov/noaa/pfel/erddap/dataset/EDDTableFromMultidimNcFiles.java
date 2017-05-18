@@ -58,7 +58,8 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         Object[][] tDataVariables,
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
-        String tMetadataFrom, String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tMetadataFrom, String tCharset, 
+        int tColumnNamesRow, int tFirstDataRow, String tColumnSeparator,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, 
@@ -74,7 +75,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
-            tCharset, tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles,
@@ -99,7 +100,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         //read the file
         Table table = new Table();
         table.readMultidimNc(fileDir + fileName, sourceDataNames, null,
-            getMetadata, true, removeMVRows, //trimStrings, 
+            getMetadata, removeMVRows, 
             sourceConVars, sourceConOps, sourceConValues);
         return table;
     }
@@ -188,7 +189,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
 
         //read the sample file
         dataSourceTable.readMultidimNc(sampleFileName, null, useDimensions,  
-            true, true, tRemoveMVRows, //getMetadata, trimStrings, removeMVRows
+            true, tRemoveMVRows, //getMetadata, removeMVRows
             null, null, null); //conVars, conOps, conVals
         StringArray varNames = new StringArray(dataSourceTable.getColumnNames());
         Test.ensureTrue(varNames.size() > 0, 
@@ -197,7 +198,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
             dataAddTable.addColumn(c, colName,
-                dataSourceTable.getColumn(c),
+                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
@@ -228,7 +229,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         if (dataSourceTable.globalAttributes().getString("subsetVariables") == null &&
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
-                suggestSubsetVariables(dataSourceTable, dataAddTable, 100)); //guess nFiles
+                suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -338,12 +339,15 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Point</att>\n" +
+"        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" +
+"        <att name=\"cdm_profile_variables\">???</att>\n" +
+"        <att name=\"cdm_trajectory_variables\">???</att>\n" +
 "        <att name=\"Conventions\">Argo-3.1 CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Coriolis GDAC</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.argodatamgt.org/Documentation</att>\n" +
 "        <att name=\"infoUrl\">http://www.argodatamgt.org/Documentation</att>\n" +
-"        <att name=\"keywords\">adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, have, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
+"        <att name=\"keywords\">adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
 "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
@@ -352,7 +356,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, DIRECTION, DATA_CENTRE, DATA_STATE_INDICATOR, DATA_MODE, PLATFORM_TYPE, FLOAT_SERIAL_NO, FIRMWARE_VERSION, WMO_INST_TYPE, JULD_QC, POSITION_QC, POSITIONING_SYSTEM, PROFILE_PRES_QC, PROFILE_TEMP_QC, PROFILE_PSAL_QC, VERTICAL_SAMPLING_SCHEME, CONFIG_MISSION_NUMBER, PRES_QC, PRES_ADJUSTED_QC, PRES_ADJUSTED_ERROR, TEMP_QC, TEMP_ADJUSTED_QC, TEMP_ADJUSTED_ERROR, PSAL_QC, PSAL_ADJUSTED_QC, PSAL_ADJUSTED_ERROR</att>\n" +
+"        <att name=\"subsetVariables\">DATA_TYPE, FORMAT_VERSION, HANDBOOK_VERSION, REFERENCE_DATE_TIME, DATE_CREATION, DATE_UPDATE, PLATFORM_NUMBER, PROJECT_NAME, PI_NAME, DIRECTION, DATA_CENTRE, WMO_INST_TYPE, JULD_QC, POSITION_QC, POSITIONING_SYSTEM, CONFIG_MISSION_NUMBER</att>\n" +
 "        <att name=\"summary\">Argo float vertical profile. Coriolis Global Data Assembly Centres (GDAC) data from a local source.</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -1082,11 +1086,12 @@ directionsForGenerateDatasetsXml() +
             //ensure it is ready-to-use by making a dataset from it
             //with one small change to addAttributes:
             results = String2.replaceAll(results, 
-                "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n",
-                "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-                "        <att name=\"cdm_data_type\">Other</att>\n");
+"        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" +
+"        <att name=\"cdm_profile_variables\">???</att>\n" +
+"        <att name=\"cdm_trajectory_variables\">???</att>\n",
+"        <att name=\"cdm_data_type\">Point</att>\n");
             String2.log(results);
-
+          
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), "nc_65cd_4c8a_93f3", "");
             Test.ensureEqual(edd.title(), "Argo float vertical profile", "");
@@ -1106,7 +1111,7 @@ directionsForGenerateDatasetsXml() +
      *
      * @throws Throwable if trouble
      */
-    public static void testBasic() throws Throwable {
+    public static void testBasic(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testBasic() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -1116,7 +1121,8 @@ directionsForGenerateDatasetsXml() +
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "argoFloats";
-
+        if (deleteCachedInfo)
+            EDD.deleteCachedDatasetInfo(id);
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** test getting das for entire dataset
@@ -1191,7 +1197,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Float cycle number\";\n" +
 "  }\n" +
 "  direction {\n" +
-"    Int16 actual_range 65, 65;\n" +
+"    String actual_range \"A\nA\";\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"A: ascending profiles, D: descending profiles\";\n" +
@@ -1214,7 +1220,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Degree of processing the data have passed through\";\n" +
 "  }\n" +
 "  data_mode {\n" +
-"    Int16 actual_range 65, 68;\n" +
+"    String actual_range \"A\nD\";\n" +
 "    String conventions \"R : real time; D : delayed mode; A : real time with adjustment\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Delayed mode or real time data\";\n" +
@@ -1250,7 +1256,7 @@ directionsForGenerateDatasetsXml() +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  time_qc {\n" +
-"    Int16 actual_range 49, 49;\n" +
+"    String actual_range \"1\n1\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1294,7 +1300,7 @@ directionsForGenerateDatasetsXml() +
 "    Float64 valid_min -180.0;\n" +
 "  }\n" +
 "  position_qc {\n" +
-"    Int16 actual_range 49, 49;\n" +
+"    String actual_range \"1\n1\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1306,7 +1312,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Positioning system\";\n" +
 "  }\n" +
 "  profile_pres_qc {\n" +
-"    Int16 actual_range 65, 70;\n" +
+"    String actual_range \"A\nF\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2a\";\n" +
@@ -1314,7 +1320,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Global quality flag of PRES profile\";\n" +
 "  }\n" +
 "  profile_temp_qc {\n" +
-"    Int16 actual_range 65, 70;\n" +
+"    String actual_range \"A\nF\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2a\";\n" +
@@ -1322,7 +1328,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Global quality flag of TEMP profile\";\n" +
 "  }\n" +
 "  profile_psal_qc {\n" +
-"    Int16 actual_range 65, 70;\n" +
+"    String actual_range \"A\nF\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2a\";\n" +
@@ -1360,7 +1366,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 valid_min 0.0;\n" +
 "  }\n" +
 "  pres_qc {\n" +
-"    Int16 actual_range 49, 52;\n" +
+"    String actual_range \"1\n4\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1383,14 +1389,14 @@ directionsForGenerateDatasetsXml() +
 "    Float32 valid_min 0.0;\n" +
 "  }\n" +
 "  pres_adjusted_qc {\n" +
-"    Int16 actual_range 32, 52;\n" +
+"    String actual_range \" \n4\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"quality flag\";\n" +
 "  }\n" +
-"  pres_aqdjusted_error {\n" +
+"  pres_adjusted_error {\n" +
 "    Float32 _FillValue 99999.0;\n" +
 "    Float32 actual_range 2.4, 5.0;\n" +
 "    String C_format \"%7.1f\";\n" +
@@ -1416,7 +1422,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 valid_min -2.5;\n" +
 "  }\n" +
 "  temp_qc {\n" +
-"    Int16 actual_range 49, 52;\n" +
+"    String actual_range \"1\n4\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1438,7 +1444,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 valid_min -2.5;\n" +
 "  }\n" +
 "  temp_adjusted_qc {\n" +
-"    Int16 actual_range 32, 52;\n" +
+"    String actual_range \" \n4\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1471,7 +1477,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 valid_min 2.0;\n" +
 "  }\n" +
 "  psal_qc {\n" +
-"    Int16 actual_range 49, 52;\n" +
+"    String actual_range \"1\n4\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1493,7 +1499,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 valid_min 2.0;\n" +
 "  }\n" +
 "  psal_adjusted_qc {\n" +
-"    Int16 actual_range 32, 52;\n" +
+"    String actual_range \" \n4\";\n" +
 "    Float64 colorBarMaximum 150.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String conventions \"Argo reference table 2\";\n" +
@@ -1608,41 +1614,41 @@ expected=
 "    String project_name;\n" +
 "    String pi_name;\n" +
 "    Int32 cycle_number;\n" +
-"    Int16 direction;\n" +
+"    String direction;\n" +
 "    String data_center;\n" +
 "    String dc_reference;\n" +
 "    String data_state_indicator;\n" +
-"    Int16 data_mode;\n" +
+"    String data_mode;\n" +
 "    String platform_type;\n" +
 "    String float_serial_no;\n" +
 "    String firmware_version;\n" +
 "    String wmo_inst_type;\n" +
 "    Float64 time;\n" +
-"    Int16 time_qc;\n" +
+"    String time_qc;\n" +
 "    Float64 time_location;\n" +
 "    Float64 latitude;\n" +
 "    Float64 longitude;\n" +
-"    Int16 position_qc;\n" +
+"    String position_qc;\n" +
 "    String positioning_system;\n" +
-"    Int16 profile_pres_qc;\n" +
-"    Int16 profile_temp_qc;\n" +
-"    Int16 profile_psal_qc;\n" +
+"    String profile_pres_qc;\n" +
+"    String profile_temp_qc;\n" +
+"    String profile_psal_qc;\n" +
 "    String vertical_sampling_scheme;\n" +
 "    Int32 config_mission_number;\n" +
 "    Float32 pres;\n" +
-"    Int16 pres_qc;\n" +
+"    String pres_qc;\n" +
 "    Float32 pres_adjusted;\n" +
-"    Int16 pres_adjusted_qc;\n" +
-"    Float32 pres_aqdjusted_error;\n" +
+"    String pres_adjusted_qc;\n" +
+"    Float32 pres_adjusted_error;\n" +
 "    Float32 temp;\n" +
-"    Int16 temp_qc;\n" +
+"    String temp_qc;\n" +
 "    Float32 temp_adjusted;\n" +
-"    Int16 temp_adjusted_qc;\n" +
+"    String temp_adjusted_qc;\n" +
 "    Float32 temp_adjusted_error;\n" +
 "    Float32 psal;\n" +
-"    Int16 psal_qc;\n" +
+"    String psal_qc;\n" +
 "    Float32 psal_adjusted;\n" +
-"    Int16 psal_adjusted_qc;\n" +
+"    String psal_adjusted_qc;\n" +
 "    Float32 psal_adjusted_error;\n" +
 "  } s;\n" +
 "} s;\n";
@@ -1660,16 +1666,16 @@ expected=
         results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
-"fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_aqdjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
+"fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_adjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
 ",,,,UTC,UTC,UTC,,,,,,,,,,,,,,UTC,,UTC,degrees_north,degrees_east,,,,,,,,decibar,,decibar,,decibar,degree_Celsius,,degree_Celsius,,degree_Celsius,PSU,,PSU,,psu\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,4.6,49,4.0,49,NaN,23.123,49,23.123,49,NaN,35.288,49,35.288,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,9.7,49,9.1,49,NaN,23.131,49,23.131,49,NaN,35.289,49,35.289,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,20.5,49,19.9,49,NaN,23.009,49,23.009,49,NaN,35.276,49,35.276,49,NaN\n";
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,4.6,1,4.0,1,NaN,23.123,1,23.123,1,NaN,35.288,1,35.288,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,9.7,1,9.1,1,NaN,23.131,1,23.131,1,NaN,35.289,1,35.289,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,20.5,1,19.9,1,NaN,23.009,1,23.009,1,NaN,35.276,1,35.276,1,NaN\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = //last 3 lines
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1850.0,49,1849.4,49,NaN,2.106,49,2.106,49,NaN,34.604,49,34.604,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1899.9,49,1899.3,49,NaN,2.055,49,2.055,49,NaN,34.612,49,34.612,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1950.0,49,1949.4,49,NaN,2.014,49,2.014,49,NaN,34.617,49,34.617,49,NaN\n";
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,1850.0,1,1849.4,1,NaN,2.106,1,2.106,1,NaN,34.604,1,34.604,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,1899.9,1,1899.3,1,NaN,2.055,1,2.055,1,NaN,34.612,1,34.612,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,1950.0,1,1949.4,1,NaN,2.014,1,2.014,1,NaN,34.617,1,34.617,1,NaN\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1681,16 +1687,16 @@ expected=
         results = new String((new ByteArray(dir + tName)).toArray());
         //String2.log(results);
         expected = 
-"fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_aqdjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
+"fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_adjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
 ",,,,UTC,UTC,UTC,,,,,,,,,,,,,,UTC,,UTC,degrees_north,degrees_east,,,,,,,,decibar,,decibar,,decibar,degree_Celsius,,degree_Celsius,,degree_Celsius,PSU,,PSU,,psu\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,4.6,49,4.0,49,NaN,23.123,49,23.123,49,NaN,35.288,49,35.288,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,9.7,49,9.1,49,NaN,23.131,49,23.131,49,NaN,35.289,49,35.289,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,20.5,49,19.9,49,NaN,23.009,49,23.009,49,NaN,35.276,49,35.276,49,NaN\n";
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,4.6,1,4.0,1,NaN,23.123,1,23.123,1,NaN,35.288,1,35.288,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,9.7,1,9.1,1,NaN,23.131,1,23.131,1,NaN,35.289,1,35.289,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,20.5,1,19.9,1,NaN,23.009,1,23.009,1,NaN,35.276,1,35.276,1,NaN\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = //last 3 lines
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1850.0,49,1849.4,49,NaN,2.106,49,2.106,49,NaN,34.604,49,34.604,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1899.9,49,1899.3,49,NaN,2.055,49,2.055,49,NaN,34.612,49,34.612,49,NaN\n" +
-"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,65,HZ,0066_80617_256,2B,65,APEX,4136,013108,846,2016-04-14T10:43:08Z,49,2016-04-14T10:43:08Z,26.587,154.853,49,ARGOS,65,65,65,Primary sampling: discrete,1,1950.0,49,1949.4,49,NaN,2.014,49,2.014,49,NaN,34.617,49,34.617,49,NaN\n";
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,1850.0,1,1849.4,1,NaN,2.106,1,2.106,1,NaN,34.604,1,34.604,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,1899.9,1,1899.3,1,NaN,2.055,1,2.055,1,NaN,34.612,1,34.612,1,NaN\n" +
+"2901175,Argo profile,3.1,1.2,1950-01-01T00:00:00Z,2009-04-22T12:19:13Z,2016-04-15T20:47:22Z,2901175,CHINA ARGO PROJECT,JIANPING XU,256,A,HZ,0066_80617_256,2B,A,APEX,4136,013108,846,2016-04-14T10:43:08Z,1,2016-04-14T10:43:08Z,26.587,154.853,1,ARGOS,A,A,A,Primary sampling: discrete,1,1950.0,1,1949.4,1,NaN,2.014,1,2.014,1,NaN,34.617,1,34.617,1,NaN\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1724,6 +1730,1025 @@ expected=
 
     }
 
+    /**
+     * testGenerateDatasetsXml with a SeaDataNet file, specifically the 
+	 * generation of sdn_P02_urn from sdn_parameter_urn attributes.
+     */
+    public static void testGenerateDatasetsXmlSeaDataNet() throws Throwable {
+        testVerboseOn();
+        //debugMode = true;
+
+        try {
+            String results = generateDatasetsXml(
+                EDStatic.unitTestDataDir + "sdn/", 
+			    "netCDF_timeseries_tidegauge\\.nc", "", 
+			    "INSTANCE, MAXT", //dimensions
+                1440,
+                "", "", "", "", //just for test purposes; station is already a column in the file
+				true, //removeMVRows
+                "", //sortFilesBy 
+                "", "", "", "", null);
+		    String2.setClipboardString(results);
+
+String expected = 
+directionsForGenerateDatasetsXml() +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"sdn_3be0_2b1d_fd71\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/erddapTest/sdn/</fileDir>\n" +
+"    <fileNameRegex>netCDF_timeseries_tidegauge\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <preExtractRegex></preExtractRegex>\n" +
+"    <postExtractRegex></postExtractRegex>\n" +
+"    <extractRegex></extractRegex>\n" +
+"    <columnNameForExtract></columnNameForExtract>\n" +
+"    <removeMVRows>true</removeMVRows>\n" +
+"    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"Conventions\">SeaDataNet_1.0 CF 1.6</att>\n" +
+"        <att name=\"date_update\">2015-05-13T18:28+0200</att>\n" +
+"        <att name=\"featureType\">timeSeries</att>\n" +
+"        <att name=\"title\">NetCDF TIMESERIES - Generated by NEMO, version 1.6.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">???</att>\n" +
+"        <att name=\"Conventions\">SeaDataNet_1.0, CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"creator_name\">SeaDataNet</att>\n" +
+"        <att name=\"creator_url\">http://www.seadatanet.org/</att>\n" +
+"        <att name=\"infoUrl\">http://www.seadatanet.org/</att>\n" +
+"        <att name=\"institution\">SeaDataNet</att>\n" +
+"        <att name=\"keywords\">above, ASLVZZ01, ASLVZZ01_SEADATANET_QC, bathymetric, bathymetry, below, cdi, chronological, code, common, crs, data, date, depth, DEPTH_SEADATANET_QC, directory, earth, european, flag, floor, format, generated, geodetics, geoid, gravity, height, identifier, julian, latitude, level, list, longitude, marine, measurement, nemo, network, numbers, ocean, oceans,\n" +
+"Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry,\n" +
+"Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
+"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
+"Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" +
+"organisations, POSITION_SEADATANET_QC, PRESPR01, PRESPR01_SEADATANET_QC, pressure, properties, quality, SDN_BOT_DEPTH, SDN_CRUISE, SDN_EDMO_CODE, SDN_LOCAL_CDI_ID, SDN_STATION, sea, sea level, sea_floor_depth_below_sea_surface, sea_surface_height_above_geoid, sea_water_pressure, sea_water_temperature, seadatanet, seafloor, seawater, site, solid,\n" +
+"Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,\n" +
+"station, statistics, supplier, surface, suva, temperature, TEMPPR01, TEMPPR01_SEADATANET_QC, time, TIME_SEADATANET_QC, timeseries, topography, version, water</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">SDN_EDMO_CODE, SDN_CRUISE, SDN_STATION, SDN_LOCAL_CDI_ID, SDN_BOT_DEPTH, longitude, latitude, POSITION_SEADATANET_QC, crs, TIME_SEADATANET_QC, depth, depth, ASLVZZ01_SEADATANET_QC, TEMPPR01_SEADATANET_QC, PRESPR01_SEADATANET_QC</att>\n" +
+"        <att name=\"summary\">Network Common Data Format (NetCDF) TIMESERIES - Generated by NEMO, version 1.6.0</att>\n" +
+"        <att name=\"title\">NetCDF TIMESERIES, Generated by NEMO, version 1.6.0</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SDN_EDMO_CODE</sourceName>\n" +
+"        <destinationName>SDN_EDMO_CODE</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"long_name\">European Directory of Marine Organisations code for the CDI supplier</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SDN_CRUISE</sourceName>\n" +
+"        <destinationName>SDN_CRUISE</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"availability\">publicly</att>\n" +
+"            <att name=\"chiefScientist\">FICHEZ Renaud</att>\n" +
+"            <att name=\"country\">35</att>\n" +
+"            <att name=\"dataCentre\">FI</att>\n" +
+"            <att name=\"endDate\">1998-07-31T00:00:00.000</att>\n" +
+"            <att name=\"laboratories\">ORSTOM NOUMEA, University of the South Pacific (USP)</att>\n" +
+"            <att name=\"long_name\">SUVA 1</att>\n" +
+"            <att name=\"regionName\">Southwest Pacific Ocean (140W)</att>\n" +
+"            <att name=\"shipCode\">35AY</att>\n" +
+"            <att name=\"shipName\">Alis</att>\n" +
+"            <att name=\"startDate\">1998-07-20T00:00:00.000</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SDN_STATION</sourceName>\n" +
+"        <destinationName>SDN_STATION</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"long_name\">List of station numbers</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SDN_LOCAL_CDI_ID</sourceName>\n" +
+"        <destinationName>SDN_LOCAL_CDI_ID</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"cf_role\">timeseries_id</att>\n" +
+"            <att name=\"long_name\">SeaDataNet CDI identifier</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SDN_BOT_DEPTH</sourceName>\n" +
+"        <destinationName>SDN_BOT_DEPTH</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-999.0</att>\n" +
+"            <att name=\"long_name\">Bathymetric depth at  measurement site</att>\n" +
+"            <att name=\"sdn_parameter_name\">Sea-floor depth (below instantaneous sea level) {bathymetric depth} in the water body</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::MBANZZZZ</att>\n" +
+"            <att name=\"sdn_uom_name\">Metres</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::ULAA</att>\n" +
+"            <att name=\"standard_name\">sea_floor_depth_below_sea_surface</att>\n" +
+"            <att name=\"units\">meters</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
+"            <att name=\"ioos_category\">Bathymetry</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::MBAN</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>LONGITUDE</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">POSITION_SEADATANET_QC</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"grid_mapping\">crs</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"sdn_parameter_name\">Longitude east</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::ALONZZ01</att>\n" +
+"            <att name=\"sdn_uom_name\">Degrees east</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::DEGE</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::ALAT</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>LATITUDE</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">POSITION_SEADATANET_QC</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"grid_mapping\">crs</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"sdn_parameter_name\">Latitude north</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::ALATZZ01</att>\n" +
+"            <att name=\"sdn_uom_name\">Degrees north</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::DEGN</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::ALAT</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>POSITION_SEADATANET_QC</sourceName>\n" +
+"        <destinationName>POSITION_SEADATANET_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">57</att>\n" +
+"            <att name=\"Conventions\">SeaDataNet measurand qualifier flags</att>\n" +
+"            <att name=\"flag_meanings\">no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">48 49 50 51 52 53 54 55 56 57 65</att>\n" +
+"            <att name=\"long_name\">SeaDataNet quality flag</att>\n" +
+"            <att name=\"sdn_conventions_urn\">SDN:L20::</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">80.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>crs</sourceName>\n" +
+"        <destinationName>crs</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"epsg_code\">EPSG:4326</att>\n" +
+"            <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
+"            <att name=\"inverse_flattening\" type=\"double\">298.257223563</att>\n" +
+"            <att name=\"semi_major_axis\" type=\"double\">6378137.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">CRS</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TIME</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">TIME_SEADATANET_QC</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"calendar\">julian</att>\n" +
+"            <att name=\"long_name\">Chronological Julian Date</att>\n" +
+"            <att name=\"sdn_parameter_name\">Julian Date (chronological)</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::CJDY1101</att>\n" +
+"            <att name=\"sdn_uom_name\">Days</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::UTAA</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">days since -4713-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::AYMD</att>\n" +
+"            <att name=\"units\">days since -4712-01-01T00:00:00Z</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TIME_SEADATANET_QC</sourceName>\n" +
+"        <destinationName>TIME_SEADATANET_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">57</att>\n" +
+"            <att name=\"Conventions\">SeaDataNet measurand qualifier flags</att>\n" +
+"            <att name=\"flag_meanings\">no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">48 49 50 51 52 53 54 55 56 57 65</att>\n" +
+"            <att name=\"long_name\">SeaDataNet quality flag</att>\n" +
+"            <att name=\"sdn_conventions_urn\">SDN:L20::</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">80.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>DEPTH</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">DEPTH_SEADATANET_QC</att>\n" +
+"            <att name=\"axis\">Z</att>\n" +
+"            <att name=\"long_name\">Depth</att>\n" +
+"            <att name=\"positive\">down</att>\n" +
+"            <att name=\"sdn_parameter_name\">Depth below surface of the water body</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::ADEPZZ01</att>\n" +
+"            <att name=\"sdn_uom_name\">Metres</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::ULAA</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">meters</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::AHGT</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>DEPTH_SEADATANET_QC</sourceName>\n" +
+"        <destinationName>DEPTH_SEADATANET_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">57</att>\n" +
+"            <att name=\"Conventions\">SeaDataNet measurand qualifier flags</att>\n" +
+"            <att name=\"flag_meanings\">no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">48 49 50 51 52 53 54 55 56 57 65</att>\n" +
+"            <att name=\"long_name\">SeaDataNet quality flag</att>\n" +
+"            <att name=\"sdn_conventions_urn\">SDN:L20::</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">80.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ASLVZZ01</sourceName>\n" +
+"        <destinationName>ASLVZZ01</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">ASLVZZ01_SEADATANET_QC</att>\n" +
+"            <att name=\"coordinates\">LONGITUDE LATITUDE TIME DEPTH</att>\n" +
+"            <att name=\"long_name\">Sea level</att>\n" +
+"            <att name=\"sdn_parameter_name\">Surface elevation (unspecified datum) of the water body</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::ASLVZZ01</att>\n" +
+"            <att name=\"sdn_uom_name\">meter</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::ULAA</att>\n" +
+"            <att name=\"standard_name\">sea_surface_height_above_geoid</att>\n" +
+"            <att name=\"units\">meter</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">2.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-2.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Sea Level</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::ASLV</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ASLVZZ01_SEADATANET_QC</sourceName>\n" +
+"        <destinationName>ASLVZZ01_SEADATANET_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">57</att>\n" +
+"            <att name=\"Conventions\">SeaDataNet measurand qualifier flags</att>\n" +
+"            <att name=\"flag_meanings\">no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">48 49 50 51 52 53 54 55 56 57 65</att>\n" +
+"            <att name=\"long_name\">SeaDataNet quality flag</att>\n" +
+"            <att name=\"sdn_conventions_urn\">SDN:L20::</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">80.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TEMPPR01</sourceName>\n" +
+"        <destinationName>TEMPPR01</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">TEMPPR01_SEADATANET_QC</att>\n" +
+"            <att name=\"coordinates\">LONGITUDE LATITUDE TIME DEPTH</att>\n" +
+"            <att name=\"long_name\">Temperature</att>\n" +
+"            <att name=\"sdn_parameter_name\">Temperature of the water body</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::TEMPPR01</att>\n" +
+"            <att name=\"sdn_uom_name\">Celsius degree</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::UPAA</att>\n" +
+"            <att name=\"standard_name\">sea_water_temperature</att>\n" +
+"            <att name=\"units\">celsius degree</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::TEMP</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>TEMPPR01_SEADATANET_QC</sourceName>\n" +
+"        <destinationName>TEMPPR01_SEADATANET_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">57</att>\n" +
+"            <att name=\"Conventions\">SeaDataNet measurand qualifier flags</att>\n" +
+"            <att name=\"flag_meanings\">no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">48 49 50 51 52 53 54 55 56 57 65</att>\n" +
+"            <att name=\"long_name\">SeaDataNet quality flag</att>\n" +
+"            <att name=\"sdn_conventions_urn\">SDN:L20::</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">80.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>PRESPR01</sourceName>\n" +
+"        <destinationName>PRESPR01</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">-99999.0</att>\n" +
+"            <att name=\"ancillary_variables\">PRESPR01_SEADATANET_QC</att>\n" +
+"            <att name=\"coordinates\">LONGITUDE LATITUDE TIME DEPTH</att>\n" +
+"            <att name=\"long_name\">Pressure</att>\n" +
+"            <att name=\"sdn_parameter_name\">Pressure (spatial co-ordinate) exerted by the water body by profiling pressure sensor and corrected to read zero at sea level</att>\n" +
+"            <att name=\"sdn_parameter_urn\">SDN:P01::PRESPR01</att>\n" +
+"            <att name=\"sdn_uom_name\">decibar=10000 pascals</att>\n" +
+"            <att name=\"sdn_uom_urn\">SDN:P06::UPDB</att>\n" +
+"            <att name=\"standard_name\">sea_water_pressure</att>\n" +
+"            <att name=\"units\">decibar=10000 pascals</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">5000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"coordinates\">null</att>\n" +
+"            <att name=\"ioos_category\">Pressure</att>\n" +
+"            <att name=\"sdn_P02_urn\">SDN:P02::AHGT</att>\n" +
+"            <att name=\"units\">decibar</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>PRESPR01_SEADATANET_QC</sourceName>\n" +
+"        <destinationName>PRESPR01_SEADATANET_QC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">57</att>\n" +
+"            <att name=\"Conventions\">SeaDataNet measurand qualifier flags</att>\n" +
+"            <att name=\"flag_meanings\">no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain</att>\n" +
+"            <att name=\"flag_values\" type=\"byteList\">48 49 50 51 52 53 54 55 56 57 65</att>\n" +
+"            <att name=\"long_name\">SeaDataNet quality flag</att>\n" +
+"            <att name=\"sdn_conventions_urn\">SDN:L20::</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">80.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+            //    expected, "");
+
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nError in testGenerateDatasetsXmlSeaDataNet."); 
+        }
+
+    }
+
+
+    /**
+     * This tests long variables in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testLongAndNetcdf4() throws Throwable {
+        String2.log("\n****************** EDDTableFromMultidimNcFiles.testLongAndNetcdf4() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        String id = "testLong";
+
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+        /* 
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_LongEntire", ".das"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected =   //long flag masks appear a float64
+"Attributes {\n" +
+" s {\n" +
+"  feature_type_instance {\n" +
+"    String cf_role \"timeseries_id\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Identifier for each feature type instance\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 44.63893, 44.63893;\n" +
+"    String axis \"Y\";\n" +
+"    Float64 colorBarMaximum 90.0;\n" +
+"    Float64 colorBarMinimum -90.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"sensor latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"    Float64 valid_max 44.63893;\n" +
+"    Float64 valid_min 44.63893;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -124.30379, -124.30379;\n" +
+"    String axis \"X\";\n" +
+"    Float64 colorBarMaximum 180.0;\n" +
+"    Float64 colorBarMinimum -180.0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"sensor longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"    Float64 valid_max -124.30379;\n" +
+"    Float64 valid_min -124.30379;\n" +
+"  }\n" +
+"  crs {\n" +
+"    Int32 actual_range -2147483647, -2147483647;\n" +
+"    String epsg_code \"EPSG:4326\";\n" +
+"    String grid_mapping_name \"latitude_longitude\";\n" +
+"    Float64 inverse_flattening 298.257223563;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"http://www.opengis.net/def/crs/EPSG/0/4326\";\n" +
+"    Float64 semi_major_axis 6378137.0;\n" +
+"  }\n" +
+"  platform {\n" +
+"    Int32 actual_range -2147483647, -2147483647;\n" +
+"    String definition \"http://mmisw.org/ont/ioos/definition/stationID\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String ioos_code \"ce02shsm\";\n" +
+"    String long_name \"Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.\";\n" +
+"    String short_name \"Mooring Power System Controller (PSC) Status Data\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.475020819849e+9, 1.475107159296e+9;\n" +
+"    String axis \"T\";\n" +
+"    String calendar \"gregorian\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"time of measurement\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01T00:00:00.000Z\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  depth {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"down\";\n" +
+"    Float64 _FillValue -9999.9;\n" +
+"    Float64 actual_range 0.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Float64 colorBarMaximum 8000.0;\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"TopographyDepth\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"z of the sensor relative to the water surface\";\n" +
+"    String positive \"down\";\n" +
+"    String standard_name \"depth\";\n" +
+"    String units \"m\";\n" +
+"    Float64 valid_max 0.0;\n" +
+"    Float64 valid_min 0.0;\n" +
+"  }\n" +
+"  battery_bank1_current {\n" +
+"    Float64 _FillValue -9.99999999e+8;\n" +
+"    Float64 actual_range -2093.0, 996.0;\n" +
+"    String ancillary_variables \"platform\";\n" +
+"    String coverage_content_type \"physicalMeasurement\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Battery Bank 1 Current\";\n" +
+"    Float64 missing_value -9.99999999e+8;\n" +
+"    String platform \"platform\";\n" +
+"    String standard_name \"battery_bank_1_current\";\n" +
+"    String units \"mA\";\n" +
+"  }\n" +
+"  battery_bank1_temperature {\n" +
+"    Float64 _FillValue -9.99999999e+8;\n" +
+"    Float64 actual_range 13.47, 14.94;\n" +
+"    String ancillary_variables \"platform\";\n" +
+"    String coverage_content_type \"physicalMeasurement\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Battery Bank 1 Temperature\";\n" +
+"    Float64 missing_value -9.99999999e+8;\n" +
+"    String platform \"platform\";\n" +
+"    String standard_name \"battery_bank_1_temperature\";\n" +
+"    String units \"degree_Celsius\";\n" +
+"  }\n" +
+"  dcl_date_time_string {\n" +
+"    String ancillary_variables \"platform\";\n" +
+"    String coverage_content_type \"physicalMeasurement\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"DCL Date and Time Stamp\";\n" +
+"    String platform \"platform\";\n" +
+"    String standard_name \"dcl_date_time_string\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01T00:00:00.000Z\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  error_flag1 {\n" +
+"    Float64 actual_range 0, 0;\n" +
+"    Float64 colorBarMaximum 2.5e+9;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float64 flag_masks 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648;\n" +
+"    String flag_meanings \"no_error battery1_of_string1_overtemp battery2_of_string1_overtemp battery1_of_string2_overtemp battery2_of_string2_overtemp battery1_of_string3_overtemp battery2_of_string3_overtemp battery1_of_string4_overtemp battery2_of_string4_overtemp battery_string_1_fuse_blown battery_string_2_fuse_blown battery_string_3_fuse_blown battery_string_4_fuse_blown battery_string_1_charging_sensor_fault battery_string_1_discharging_sensor_fault battery_string_2_charging_sensor_fault battery_string_2_discharging_sensor_fault battery_string_3_charging_sensor_fault battery_string_3_discharging_sensor_fault battery_string_4_charging_sensor_fault battery_string_4_discharging_sensor_fault pv1_sensor_fault pv2_sensor_fault pv3_sensor_fault pv4_sensor_fault wt1_sensor_fault wt2_sensor_fault eeprom_access_fault rtclk_access_fault external_power_sensor_fault psc_hotel_power_sensor_fault psc_internal_overtemp_fault 24v_300v_dc_dc_converter_fuse_blown\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Error Flag 1\";\n" +
+"    String standard_name \"error_flag_1\";\n" +
+"    String units \"1\";\n" +
+"  }\n" +
+"  error_flag2 {\n" +
+"    Float64 actual_range 4202496, 12591104;\n" +
+"    Float64 colorBarMaximum 5000000.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float64 flag_masks 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304;\n" +
+"    String flag_meanings \"no_error 24v_buoy_power_sensor_fault 24v_buoy_power_over_voltage_fault 24v_buoy_power_under_voltage_fault 5v_fuse_blown_non_critical wt1_control_relay_fault wt2_control_relay_fault pv1_control_relay_fault pv2_control_relay_fault pv3_control_relay_fault pv4_control_relay_fault fc1_control_relay_fault fc2_control_relay_fault cvt_swg_fault cvt_general_fault psc_hard_reset_flag psc_power_on_reset_flag wt1_fuse_blown wt2_fuse_blown pv1_fuse_blown pv2_fuse_blown pv3_fuse_blown pv4_fuse_blown cvt_shut_down_due_to_low_input_voltage\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Error Flag 2\";\n" +
+"    String standard_name \"error_flag_2\";\n" +
+"    String units \"1\";\n" +
+"  }\n" +
+"  error_flag3 {\n" +
+"    Float64 actual_range 253755392, 253755392;\n" +
+"    Float64 colorBarMaximum 2.5e+9;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float64 flag_masks 0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648;\n" +
+"    String flag_meanings \"no_error cvt_board_temp_over_100C interlock_output_supply_fuse_blown interlock_status_1_supply_fuse_blown interlock_status_2_supply_fuse_blown input_1_fuse_blown input_2_fuse_blown input_3_fuse_blown input_4_fuse_blown 5v_over_voltage 5v_under_voltage output_sensor_circuit_power_over_voltage output_sensor_circuit_power_under_voltage p_swgf_sensor_circuit_power_over_voltage p_swgf_sensor_circuit_power_under_voltage n_swgf_sensor_circuit_power_over_voltage n_swgf_sensor_circuit_power_under_voltage raw_24v_input_power_sensor_fault cvt_24v_hotel_power_sensor_fault interlock_supply_output_sensor_fault interlock_status_1_sensor_fault interlock_status_2_sensor_fault interlock_input_sensor_fault p_swgf_occured n_swgf_occured input_1_sensor_fault input_2_sensor_fault input_3_sensor_fault input_4_sensor_fault high_voltage_output_current_sensor_fault high_voltage_output_voltage_sensor_fault p_swgf_sensor_fault n_swgf_sensor_fault\";\n" +
+"    String ioos_category \"Statistics\";\n" +
+"    String long_name \"Error Flag 3\";\n" +
+"    String standard_name \"error_flag_3\";\n" +
+"    String units \"1\";\n" +
+"  }\n" +
+"  deploy_id {\n" +
+"    String ancillary_variables \"platform\";\n" +
+"    String coverage_content_type \"physicalMeasurement\";\n" +
+"    String grid_mapping \"crs\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Deployment ID\";\n" +
+"    String platform \"platform\";\n" +
+"    String standard_name \"deployment_id\";\n" +
+"    String units \"1\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String _NCProperties \"version=1|netcdflibversion=4.4.1.1|hdf5libversion=1.8.17\";\n" +
+"    String acknowledgement \"National Science Foundation\";\n" +
+"    String cdm_data_type \"TimeSeries\";\n" +
+"    String cdm_timeseries_variables \"feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id\";\n" +
+"    String comment \"Mooring ID: CE02SHSM-00004\";\n" +
+"    String Conventions \"CF-1.6,ACDD-1.3, COARDS\";\n" +
+"    String creator_email \"cwingard@coas.oregonstate.edu\";\n" +
+"    String creator_name \"Christopher Wingard\";\n" +
+"    String creator_type \"person\";\n" +
+"    String creator_url \"http://oceanobservatories.org\";\n" +
+"    String date_created \"2017-03-08T19:21:00Z\";\n" +
+"    String date_issued \"2017-03-08T19:21:00Z\";\n" +
+"    String date_metadata_modified \"2017-03-08T19:21:00Z\";\n" +
+"    String date_modified \"2017-03-08T19:21:00Z\";\n" +
+"    Float64 Easternmost_Easting -124.30379;\n" +
+"    String featureType \"TimeSeries\";\n" +
+"    String geospatial_bounds \"POINT(-124.30379 44.63893)\";\n" +
+"    String geospatial_bounds_crs \"4326\";\n" +
+"    Float64 geospatial_lat_max 44.63893;\n" +
+"    Float64 geospatial_lat_min 44.63893;\n" +
+"    Float64 geospatial_lat_resolution 0;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -124.30379;\n" +
+"    Float64 geospatial_lon_min -124.30379;\n" +
+"    Float64 geospatial_lon_resolution 0;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
+"    String geospatial_vertical_resolution \"0\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"";
+    tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+expected=
+"    String infoUrl \"http://oceanobservatories.org\";\n" +
+"    String institution \"CGSN\";\n" +
+"    String keywords \"bank, batteries, battery\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String ncei_template_version \"NCEI_NetCDF_TimeSeries_Orthogonal_Template_v2.0\";\n" +
+"    Float64 Northernmost_Northing 44.63893;\n" +
+"    String project \"Ocean Observatories Initiative\";\n" +
+"    String references \"http://oceanobservatories.org\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing 44.63893;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
+"    String subsetVariables \"feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id\";\n" +
+"    String summary \"Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.\";\n" +
+"    String time_coverage_duration \"PT86339S\";\n" +
+"    String time_coverage_end \"2016-09-28T23:59:19.296Z\";\n" +
+"    String time_coverage_resolution \"PT60S\";\n" +
+"    String time_coverage_start \"2016-09-28T00:00:19.849Z\";\n" +
+"    String title \"Mooring Power System Controller (PSC) Status Data\";\n" +
+"    Float64 Westernmost_Easting -124.30379;\n" +
+"  }\n" +
+"}\n"; 
+        int tPo = results.indexOf(expected.substring(0, 40));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_LongEntire", ".dds"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String feature_type_instance;\n" +
+"    Float64 latitude;\n" +
+"    Float64 longitude;\n" +
+"    Int32 crs;\n" +
+"    Int32 platform;\n" +
+"    Float64 time;\n" +
+"    Float64 depth;\n" +
+"    Float64 battery_bank1_current;\n" +
+"    Float64 battery_bank1_temperature;\n" +
+"    Float64 dcl_date_time_string;\n" +
+"    Float64 error_flag1;\n" +   //long flags appear as float64
+"    Float64 error_flag2;\n" +
+"    Float64 error_flag3;\n" +
+"    String deploy_id;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //*** test make data files
+
+        //.csv    
+        userDapQuery = "&time<=2016-09-28T00:03";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_Long1", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"feature_type_instance,latitude,longitude,crs,platform,time,depth,battery_bank1_current,battery_bank1_temperature,dcl_date_time_string,error_flag1,error_flag2,error_flag3,deploy_id\n" +
+",degrees_north,degrees_east,,,UTC,m,mA,degree_Celsius,UTC,1,1,1,1\n" +
+"ce02shsm,44.63893,-124.30379,-2147483647,-2147483647,2016-09-28T00:00:19.849Z,0.0,-1479.0,14.94,2016-09-28T00:00:19.849Z,0,4202496,253755392,D00004\n" +
+"ce02shsm,44.63893,-124.30379,-2147483647,-2147483647,2016-09-28T00:01:19.849Z,0.0,-1464.0,14.94,2016-09-28T00:01:19.849Z,0,4202496,253755392,D00004\n" +
+"ce02shsm,44.63893,-124.30379,-2147483647,-2147483647,2016-09-28T00:02:19.852Z,0.0,-1356.0,14.94,2016-09-28T00:02:19.852Z,0,4202496,253755392,D00004\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv    constrain long
+        userDapQuery = "&error_flag2!=4202496";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_Long2", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"feature_type_instance,latitude,longitude,crs,platform,time,depth,battery_bank1_current,battery_bank1_temperature,dcl_date_time_string,error_flag1,error_flag2,error_flag3,deploy_id\n" +
+",degrees_north,degrees_east,,,UTC,m,mA,degree_Celsius,UTC,1,1,1,1\n" +
+"ce02shsm,44.63893,-124.30379,-2147483647,-2147483647,2016-09-28T00:20:19.819Z,0.0,450.0,14.94,2016-09-28T00:20:19.819Z,0,12591104,253755392,D00004\n" +
+"ce02shsm,44.63893,-124.30379,-2147483647,-2147483647,2016-09-28T00:21:19.825Z,0.0,519.0,14.94,2016-09-28T00:21:19.825Z,0,12591104,253755392,D00004\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //.csv for test requesting distinct        
+        userDapQuery = "error_flag2&distinct()";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_Long1distinct", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"error_flag2\n" +
+"1\n" +
+"4202496\n" +
+"12591104\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //make nc3 
+        userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_Longnc3", ".nc"); 
+        results = NcHelper.dumpString(dir + tName, true);
+        //String2.log(results);
+        expected = 
+"netcdf EDDTableFromMultidimNcFiles_Longnc3.nc {\n" +
+"  dimensions:\n" +
+"    row = 3;\n" +
+"    feature_type_instance_strlen = 8;\n" +
+"  variables:\n" +
+"    char feature_type_instance(row=3, feature_type_instance_strlen=8);\n" +
+"      :cf_role = \"timeseries_id\";\n" +
+"      :ioos_category = \"Identifier\";\n" +
+"      :long_name = \"Identifier for each feature type instance\";\n" +
+"\n" +
+"    double latitude(row=3);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = 44.63893, 44.63893; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :colorBarMaximum = 90.0; // double\n" +
+"      :colorBarMinimum = -90.0; // double\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"sensor latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"      :valid_max = 44.63893; // double\n" +
+"      :valid_min = 44.63893; // double\n" +
+"\n" +
+"    double longitude(row=3);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = -124.30379, -124.30379; // double\n" +
+"      :axis = \"X\";\n" +
+"      :colorBarMaximum = 180.0; // double\n" +
+"      :colorBarMinimum = -180.0; // double\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"sensor longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"      :valid_max = -124.30379; // double\n" +
+"      :valid_min = -124.30379; // double\n" +
+"\n" +
+"    double error_flag3(row=3);\n" +
+"      :actual_range = \"253755392253755392\";\n" +
+"      :colorBarMaximum = 2.5E9; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
+"      :flag_masks = \"012481632641282565121024204840968192163843276865536131072262144524288104857620971524194304838860816777216335544326710886413421772826843545653687091210737418242147483648\";\n" +
+"      :flag_meanings = \"no_error cvt_board_temp_over_100C interlock_output_supply_fuse_blown interlock_status_1_supply_fuse_blown interlock_status_2_supply_fuse_blown input_1_fuse_blown input_2_fuse_blown input_3_fuse_blown input_4_fuse_blown 5v_over_voltage 5v_under_voltage output_sensor_circuit_power_over_voltage output_sensor_circuit_power_under_voltage p_swgf_sensor_circuit_power_over_voltage p_swgf_sensor_circuit_power_under_voltage n_swgf_sensor_circuit_power_over_voltage n_swgf_sensor_circuit_power_under_voltage raw_24v_input_power_sensor_fault cvt_24v_hotel_power_sensor_fault interlock_supply_output_sensor_fault interlock_status_1_sensor_fault interlock_status_2_sensor_fault interlock_input_sensor_fault p_swgf_occured n_swgf_occured input_1_sensor_fault input_2_sensor_fault input_3_sensor_fault input_4_sensor_fault high_voltage_output_current_sensor_fault high_voltage_output_voltage_sensor_fault p_swgf_sensor_fault n_swgf_sensor_fault\";\n" +
+"      :ioos_category = \"Statistics\";\n" +
+"      :long_name = \"Error Flag 3\";\n" +
+"      :standard_name = \"error_flag_3\";\n" +
+"      :units = \"1\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :_NCProperties = \"version=1|netcdflibversion=4.4.1.1|hdf5libversion=1.8.17\";\n" +
+"  :acknowledgement = \"National Science Foundation\";\n" +
+"  :cdm_data_type = \"TimeSeries\";\n" +
+"  :cdm_timeseries_variables = \"feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id\";\n" +
+"  :comment = \"Mooring ID: CE02SHSM-00004\";\n" +
+"  :Conventions = \"CF-1.6,ACDD-1.3, COARDS\";\n" +
+"  :creator_email = \"cwingard@coas.oregonstate.edu\";\n" +
+"  :creator_name = \"Christopher Wingard\";\n" +
+"  :creator_type = \"person\";\n" +
+"  :creator_url = \"http://oceanobservatories.org\";\n" +
+"  :date_created = \"2017-03-08T19:21:00Z\";\n" +
+"  :date_issued = \"2017-03-08T19:21:00Z\";\n" +
+"  :date_metadata_modified = \"2017-03-08T19:21:00Z\";\n" +
+"  :date_modified = \"2017-03-08T19:21:00Z\";\n" +
+"  :Easternmost_Easting = -124.30379; // double\n" +
+"  :featureType = \"TimeSeries\";\n" +
+"  :geospatial_bounds = \"POINT(-124.30379 44.63893)\";\n" +
+"  :geospatial_bounds_crs = \"4326\";\n" +
+"  :geospatial_lat_max = 44.63893; // double\n" +
+"  :geospatial_lat_min = 44.63893; // double\n" +
+"  :geospatial_lat_resolution = \"0\";\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = -124.30379; // double\n" +
+"  :geospatial_lon_min = -124.30379; // double\n" +
+"  :geospatial_lon_resolution = \"0\";\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :geospatial_vertical_positive = \"down\";\n" +
+"  :geospatial_vertical_resolution = \"0\";\n" +
+"  :geospatial_vertical_units = \"m\";\n" +
+"  :history = \"2017-03-08T19:21:00Z - pyaxiom - File created using pyaxiom\n";
+       Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), expected, "\nresults=\n" + results);
+
+//"2017-03-28T22:21:20Z (local files)\n" +
+//"2017-03-28T22:21:20Z http://localhost:8080/cwexperimental/tabledap/testLong.nc?feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03\";\n" +
+expected =
+"  :id = \"EDDTableFromMultidimNcFiles_Longnc3\";\n" +
+"  :infoUrl = \"http://oceanobservatories.org\";\n" +
+"  :institution = \"CGSN\";\n" +
+"  :keywords = \"bank, batteries, battery\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"  :ncei_template_version = \"NCEI_NetCDF_TimeSeries_Orthogonal_Template_v2.0\";\n" +
+"  :Northernmost_Northing = 44.63893; // double\n" +
+"  :project = \"Ocean Observatories Initiative\";\n" +
+"  :references = \"http://oceanobservatories.org\";\n" +
+"  :sourceUrl = \"(local files)\";\n" +
+"  :Southernmost_Northing = 44.63893; // double\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
+"  :subsetVariables = \"feature_type_instance, latitude, longitude, crs, platform, depth, deploy_id\";\n" +
+"  :summary = \"Measures the status of the mooring power system controller, encompassing the batteries, recharging sources (wind and solar), and outputs.\";\n" +
+"  :time_coverage_duration = \"PT86339S\";\n" +
+"  :time_coverage_resolution = \"PT60S\";\n" +
+"  :title = \"Mooring Power System Controller (PSC) Status Data\";\n" +
+"  :Westernmost_Easting = -124.30379; // double\n" +
+" data:\n" +
+"feature_type_instance =\"ce02shsm\", \"ce02shsm\", \"ce02shsm\"\n" +
+"latitude =\n" +
+"  {44.63893, 44.63893, 44.63893}\n" +
+"longitude =\n" +
+"  {-124.30379, -124.30379, -124.30379}\n" +
+"error_flag3 =\n" +
+"  {2.53755392E8, 2.53755392E8, 2.53755392E8}\n" +    //appears as double values
+"}\n";
+        int po = results.indexOf(expected.substring(0, 30));
+        Test.ensureEqual(results.substring(po), expected, "\nresults=\n" + results);
+
+*/
+      //make nc4 
+      try {
+        userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_Longnc4", ".nc4"); 
+        results = NcHelper.dumpString(dir + tName, true);
+        //String2.log(results);
+        expected = 
+"zztop\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+      } catch (Throwable t) {
+          String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+              "\nENABLE .nc4?"); 
+      }
+
+    }
+
+    /**
+     * This tests the methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testW1M3A(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****************** EDDTableFromMultidimNcFiles.testW1M3A() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        int po, po2;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        //test the floats work as expected
+        float f = String2.parseFloat("-3.4E38");
+        String2.log(">> parse -3.4E38 => " + f + " isFinite=" + Math2.isFinite(f) + " equal5? " + Math2.almostEqual(5, -3.4e38, f)); 
+        Test.ensureTrue(Math2.isFinite(f), "");
+        Test.ensureTrue(Math2.almostEqual(5, -3.4e38, f), "");
+
+        //dump the temp attributes form all files file
+//  float TEMP(TIME=620, DEPTH=7);
+//      :long_name = "Sea temperature";
+//      :standard_name = "sea_water_temperature";
+//      :units = "degree_Celsius";
+//      :_FillValue = 9.96921E36f; // float
+//
+//    byte TEMP_QC(TIME=620, DEPTH=7);
+        for (int year = 2004; year <= 2016; year++) {
+            try {
+                String s = NcHelper.dumpString("/data/briand/W1M3A/OS_W1M3A_" + year + "_R.nc", false);
+                if (year == 2004)
+                    String2.log(s);
+
+                String2.log("" + year); 
+//                po = s.indexOf("  variables:");
+//                String2.log(s.substring(0, po));
+
+                po = s.indexOf("float TEMP");
+                po2 = s.indexOf("byte TEMP_QC");
+                String2.log(s.substring(po, po2));
+
+                if (year == 2016)
+                    String2.log(s);
+
+            } catch (Throwable t) {
+            }
+        }
+
+        //make the dataset        
+        String id = "W1M3A";
+        if (deleteCachedInfo)
+            EDD.deleteCachedDatasetInfo(id);
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
+
+
+        //reported problem
+        userDapQuery = "time,depth,TEMP&time>=2011-01-03T00&time<=2011-01-03T03";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_1profile", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time,depth,TEMP\n" +
+"UTC,m,\n" +
+"2011-01-03T00:00:00Z,0.0,\n" +    //was -3.4E38
+"2011-01-03T00:00:00Z,1.0,13.151\n" +
+"2011-01-03T00:00:00Z,6.0,13.168\n" +
+"2011-01-03T00:00:00Z,12.0,13.165\n" +
+"2011-01-03T00:00:00Z,20.0,13.166\n" +
+"2011-01-03T00:00:00Z,36.0,13.395\n" +
+"2011-01-03T03:00:00Z,0.0,\n" +  //was -3.4E38
+"2011-01-03T03:00:00Z,1.0,13.194\n" +
+"2011-01-03T03:00:00Z,6.0,13.241\n" +
+"2011-01-03T03:00:00Z,12.0,13.186\n" +
+"2011-01-03T03:00:00Z,20.0,13.514\n" +
+"2011-01-03T03:00:00Z,36.0,13.927\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+
+    }
+
 
     /**
      * This tests the methods in this class.
@@ -1733,9 +2758,16 @@ expected=
     public static void test() throws Throwable {
 /* */
         testGenerateDatasetsXml();
-        testBasic();
+        testGenerateDatasetsXmlSeaDataNet();
+        
+        String2.log(NcHelper.dumpString(
+           "/erddapTest/nc/1900081_prof.nc", "PRES_QC"));
+        testBasic(true);
+        testBasic(false);
+        testLongAndNetcdf4();
 
         /* */
+        //testW1M3A(boolean deleteCachedInfo);
     }
 }
 

@@ -85,7 +85,8 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     connection, ERDDAP's responses will be constrained by how fast ERDDAP can get data from
     the data sources and how fast ERDDAP can return data to the clients. The only solution
     is to get a faster Internet connection.
-  <li>Memory - If there are many simultaneous requests, ERDDAP can run out of memory 
+  <li><a name="memory">Memory</a> - 
+     If there are many simultaneous requests, ERDDAP can run out of memory 
      and temporarily refuse new requests. 
      (ERDDAP has a couple of mechanisms to avoid this and to minimize the 
      consequences if it does
@@ -99,7 +100,8 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      for ERDDAP/Tomcat.     
      An ERDDAP getting heavy usage on a computer with a 64-bit server
      with 8GB of memory and -Xmx set to 4000M is rarely, if ever, constrained by memory.
-  <li>Hard drive bandwidth - Accessing data stored on the server's hard drive 
+  <li><a name="hardDriveBandwidth">Hard drive bandwidth</a> - 
+     Accessing data stored on the server's hard drive 
      is vastly faster than 
      accessing remote data. Even so, if the ERDDAP server has a very high 
      bandwidth Internet connection, 
@@ -109,7 +111,8 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      or SSD drives (if it makes
      sense cost-wise). Another solution is to store different datasets
      on different drives, so that the cumulative hard drive bandwidth is much higher.
-  <li>Too many files in a <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory - 
+  <li><a name="tooManyFiles">Too many files</a>
+    in a <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory - 
      ERDDAP caches all images, but only caches the 
      data for certain types of data requests. It is possible for the cache directory for a 
      dataset to have a large number of files temporarily. This will slow down requests to see 
@@ -118,13 +121,21 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
        lets you set how 
      long a file can be in the cache before it is deleted. Setting a smaller 
      number would minimize this problem.
-  <li>CPU - Making graphs (including maps) 
-    is the only thing that takes significant CPU time 
-    (roughly 0.2 - 1 second per graph).   
-     So if there were many simultaneous unique requests for graphs (WMS clients!), 
+  <li><a name="CPU">CPU</a> - Only two things take a lot of CPU time:
+    <ul>
+    <li>NetCDF 4 and HDF 5 now support internal compression of data.
+      Decompressing a large compressed NetCDF 4 / HDF 5 data file can take 10 
+      or more seconds. So multiple simultaneous requests to datasets with 
+      data stored in compressed files can put a severe strain on any server.
+      If this is a problem, the solution is to store popular datasets
+      in uncompressed files, or get a server with a CPU with more cores.
+    <li>Making graphs (including maps):  roughly 0.2 - 1 second per graph.   
+     So if there were many simultaneous unique requests for graphs 
+     (WMS clients often make 6 simultaneous requests!), 
      there could be a CPU limitation. 
-     On a multi-core server, it would take a lot of requests before this became a problem. 
+     When multiple users are running WMS clients, this becomes a problem.
      <br>&nbsp;
+    </ul>
   </ol>
 
 
@@ -234,9 +245,13 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
 
   <p><a name="gridParts">The parts of the grid are:</a>
   
-  <p><b><font color="#0000FF">A</font></b>) For every ERDDAP data source that 
-    has a high-bandwidth server, use EDDGridFromErddap or
-    EDDTableFromERDDAP to serve the data in the Composite ERDDAP.
+  <p><b><font color="#0000FF">A</font></b>) For every remote data source that 
+    has a high-bandwidth OPeNDAP server, you can connect directly 
+    to the remote server. 
+    If the remote server is an ERDDAP, use EDDGridFromErddap or
+      EDDTableFromERDDAP to serve the data in the Composite ERDDAP.
+    If the remote server is some other type of DAP server, 
+      e.g., THREDDS, Hyrax, or GrADS, use EDDGridFromDap. 
 
   <p><b><font color="#0000FF">B</font></b>) For every ERDDAP-able data source 
     (a data source from which ERDDAP
@@ -260,6 +275,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+     <li><b>B</b> servers must be publicly accessible.
      </ul>
 
   <p><b><font color="#0000FF">C</font></b>) For every ERDDAP-able data source 
@@ -272,6 +288,7 @@ and/or
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
      If several such ERDDAPs
     aren't getting many requests for data, you can consolidate them into one ERDDAP. 
+    <br><b>C</b> servers must be publicly accessible.
 
   <p><b><font color="#0000FF">D</font></b>) The composite ERDDAP is a regular 
   ERDDAP except that it just serves data from other ERDDAPs. 
@@ -357,31 +374,42 @@ and/or
 
   <p><a name="failures">Failures</a> - What happens if...
   <ul>
-  <li>There is a burst of requests for one dataset (e.g., all students in a class simultaneously
-    request similar data)? Only the ERDDAP serving that dataset will be overwhelmed and
+  <li>There is a burst of requests for one dataset (e.g., all students in a class
+    simultaneously request similar data)? 
+    <br>Only the ERDDAP serving that dataset will be overwhelmed and
     slow down or refuse requests. The composite ERDDAP and other ERDDAPs won't be
     affected. Since the limiting factor for a given dataset within the system is the hard
     drive with the data (not ERDDAP), the only solution (not immediate) is to make a copy
     of the dataset on a different server+hardDrive+ERDDAP.
   <li>An <b>A</b>, <b>B</b>, or <b>C</b> ERDDAP fails (e.g., hard drive failure)? 
-      Only the dataset(s) served by that ERDDAP are affected. 
+      <br>Only the dataset(s) served by that ERDDAP are affected. 
       If the dataset(s) is mirrored on another server+hardDrive+ERDDAP, the effect is minimal.
       If the problem is a hard drive failure in a level 5 or 6 RAID, you just replace the
       drive and have the RAID rebuild the data on the drive.
   <li>The composite ERDDAP fails?
-      If you have no 
-      <a href="http://vista.intersystems.com/csp/docbook/DocBook.UI.Page.cls?KEY=GHA_failover">hot or warm failover<img 
+      <br>If you want to make a system with very 
+      <a href="https://en.wikipedia.org/wiki/High_availability">high availability<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>, 
-      the system is effectively down until you set up
-      a replacement. That's not good. So if this is a concern, 
-      set up multiple composite ERDDAPs
-      or a hot or warm failover. Then the effect is minimal. 
-      Failures of the composite ERDDAP
-      should be rare because it has minimal hard drive activity. 
+      you can set up multiple composite ERDDAPs, 
+      using something like
+      <a href="https://www.nginx.com/">NGINX<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      or
+      <a href="https://traefik.io/">Traefik<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      to handle load balancing.
+      Note that a given composite ERDDAP can handle a large number of requests
+      from a large number of users, because 
+      <br>requests for metadata are small and are handled by information that is in memory, 
+        and
+      <br>requests for data (which may be large) are redirected to the child ERDDAPs.  
   </ul>
 
-  <p>Simple, Scalable - This system is easy to set up and administer, 
+  <p><a name="simple">Simple,</a> <a name="scalable">Scalable</a>
+    - This system is easy to set up and administer, 
     and easily extensible when
     any part of it becomes over-burdened. The only real limitation for a given data center
     is the data center's bandwidth.
@@ -435,7 +463,8 @@ and/or
     offer all the Internet bandwidth
     you need, but don't solve the price problem.
 
-<p>For general information on designing scalable, high capacity, fault-tolerant systems, 
+<p><a name="Nygard">For</a> general information on designing scalable,
+  high capacity, fault-tolerant systems, 
   see Michael T. Nygard's book 
       <a href="http://www.amazon.com/Release-Production-Ready-Software-Pragmatic-Programmers/dp/0978739213">Release It<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -525,7 +554,7 @@ Several companies offer cloud computing services
         it is that we are using and buying a lot of the service.)
         <br>&nbsp;
       </ul>
-    <li>The subsetting problem:
+    <li><a name="subsetting">The subsetting problem:</a>
       The only way to efficiently distribute data from data files 
       is to have the program which is distributing the data (e.g., ERDDAP) running on
       a server which has the data stored on a local hard drive 
@@ -538,29 +567,15 @@ Several companies offer cloud computing services
       has to request the entire file or big chunks of a file 
       from a non-local (hence slower) data storage system and then extract a subset. 
       If the cloud setup doesn't give ERDDAP fast access to byte ranges of the files
-      (as with local files),
+      (as fast as with local files),
       ERDDAP's access to the data will be a severe bottleneck
       and negate other benefits of using a cloud service.    
-
-      <p>One possible solution is that ERDDAP and the underlying libraries 
-      could be rewritten to use a
-      <a href="https://en.wikipedia.org/wiki/MapReduce">MapReduce<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
-      approach to the problem, 
-      i.e., make multiple, simultaneous requests to the file system 
-      and then merge the responses. 
-      Unfortunately, that would be a big project for multiple groups.
-      It competes with many other projects for the limited development 
-      resources available for ERDDAP, netcdf-java, and other libraries.
-      And it seems like a lot of effort given that the common solution 
-      (getting local access to the files) already exists.
-
     </ul>  
 
 
 <p><b>Thanks</b> - 
-  Many thanks to Matthew Arrott and his group for their work on putting ERDDAP in
+  Many thanks to Matthew Arrott and his group in the original OOI effort 
+  for their work on putting ERDDAP in
   the cloud and the resulting discussions.
 
 <!-- ******* -->
@@ -577,7 +592,7 @@ Please send an email with the correction to <tt>bob dot simons at noaa dot gov</
 and include the ERDDAP URL directly related to your question or comment.
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.74
+<p>ERDDAP, Version 1.76
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

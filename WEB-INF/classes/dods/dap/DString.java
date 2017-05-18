@@ -105,7 +105,7 @@ public class DString extends BaseType implements ClientIO {
        throws IOException, EOFException, DataReadException {
     int len = source.readInt();
     if (len < 0)
-      throw new DataReadException("Negative string length read.");
+      throw new DataReadException("Negative string length read (" + len + ")."); //bob added (len)
     int modFour = len%4;
     // number of bytes to pad
     int pad = (modFour != 0) ? (4-modFour) : 0;
@@ -131,11 +131,12 @@ public class DString extends BaseType implements ClientIO {
     // This was chosen because it converts each byte to its Unicode value
     // with no translation (the first 256 glyphs in Unicode are ISO8859_1)
     try {
-      val = new String(byteArray, 0, len, "ISO8859_1");
+      val = new String(byteArray, 0, len, "ISO-8859-1"); //bob changed from ISO8859_1
+      //System.out.println(">>DString string=\"" + com.cohort.util.String2.replaceAll(val, "\u0007", "") + "\"");
     }
     catch (UnsupportedEncodingException e) {
       // this should never happen
-      System.err.println("ISO8859_1 encoding not supported by this VM!");
+      System.err.println("ISO-8859-1 encoding not supported by this VM!"); //bob changed from ISO8859_1
       System.exit(1);
     }
   }
@@ -155,7 +156,7 @@ public class DString extends BaseType implements ClientIO {
 	// with no translation (the first 256 glyphs in Unicode are ISO8859_1)
 
 	try {
-	    byte byteArray[] = val.getBytes("ISO8859_1");
+	    byte byteArray[] = val.getBytes("ISO-8859-1"); //bob changed from ISO8859_1
 	    sink.writeInt(byteArray.length);
 	    int modFour = byteArray.length%4;
 	    // number of bytes to pad
@@ -167,7 +168,7 @@ public class DString extends BaseType implements ClientIO {
 	}
 	catch (UnsupportedEncodingException e) {
 	    // this should never happen
-	    System.err.println("ISO8859_1 encoding not supported by this VM!");
+	    System.err.println("ISO-8859-1 encoding not supported by this VM!"); //bob changed from ISO8859_1
 	    System.exit(1);
 	}
     }

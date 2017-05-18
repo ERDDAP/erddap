@@ -21,14 +21,9 @@ import java.util.Enumeration;
 import java.util.List;
 
 /**
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -75,8 +70,8 @@ public class NcHelper  {
      */
     public final static String StringLengthSuffix = "_strlen"; //pre 2012-06-05 was StringLength="StringLength"; 
 
-    /** Since .nc files can store 16bit char or longs, those data types are stored as
-     * shorts or Strings and these messages are added to the attributes.
+    /** Since .nc files can't store 16bit char or longs, those data types are stored as
+     * shorts or doubles and these messages are added to the attributes.
      */
     public final static String originally_a_CharArray = "originally a CharArray";
     public final static String originally_a_LongArray = "originally a LongArray";
@@ -85,6 +80,15 @@ public class NcHelper  {
      * If saving longs as Strings, this is the maxStringLength.
      */
     public final static int LONG_MAXSTRINGLENGTH = 20;
+
+    /**
+     * Tell netcdf-java to object if a file is truncated 
+     *  (e.g., didn't get completely copied over)
+     * See email from Christian Ward-Garrison Nov 2, 2016
+     */
+    static {
+        ucar.nc2.iosp.netcdf3.N3header.disallowFileTruncation = true;
+    }
 
     /**
      * This generates a String with a dump of the contents of a netcdf file.
@@ -241,7 +245,9 @@ public class NcHelper  {
         long n;
         if (array instanceof ArrayChar.D2) {
             n = ((ArrayChar.D2)array).getShape()[0]; 
-        } else n = array.getSize();
+        } else {
+            n = array.getSize();
+        }
         Test.ensureTrue(n < Integer.MAX_VALUE,  
             String2.ERROR + " in NcHelper.getSize; n = " + n);
         return (int)n; //safe since checked above
@@ -255,18 +261,38 @@ public class NcHelper  {
      * @param pa 
      * @return an Attribute
      */
-    public static Attribute createAttribute(String name, PrimitiveArray pa) {
+    public static Attribute createAttribute(boolean nc3Mode, String name, PrimitiveArray pa) {
         if (pa instanceof StringArray) {
-            //String2.log("***getAttribute nStrings=" + pa.size());
-            String ts = Attributes.valueToNcString(pa);
-            //int maxLength = 32000; //pre 2010-10-13 8000 ok; 9000 not; now >32K ok; unclear what new limit is
-            //if (ts.length() > maxLength) 
-            //    ts = ts.substring(0, maxLength - 3) + "...";
-            //String2.log("***getAttribute string=\"" + ts + "\"");
-            return new Attribute(name, ts);
+            if (nc3Mode) {
+                //String2.log("***getAttribute nStrings=" + pa.size());
+                String ts = Attributes.valueToNcString(pa);
+                //int maxLength = 32000; //pre 2010-10-13 8000 ok; 9000 not; now >32K ok; unclear what new limit is
+                //if (ts.length() > maxLength) 
+                //    ts = ts.substring(0, maxLength - 3) + "...";
+               //String2.log("***getAttribute string=\"" + ts + "\"");
+                return new Attribute(name, ts);
+            } else {
+                String s = ((StringArray)pa).toNewlineString();
+                return new Attribute(name, s.length() == 0? "" : s.substring(0, s.length() - 1));
+            }
         }
-        return new Attribute(name, get1DArray(pa.toObjectArray()));
+        return new Attribute(name, pa instanceof CharArray?
+            //pass all (Unicode) chars through unchanged
+            Array.factory(char.class, new int[]{pa.size()}, pa.toObjectArray()) :
+            get1DArray(pa.toObjectArray()));  //this would convert chars to ISO_8859_1
     }
+
+    /** 
+     * This makes an ArrayString.D1 for use with netcdf-4.
+     */
+    public static ArrayString.D1 getStringArrayD1(StringArray sa) {
+        int n = sa.size();
+        ArrayString.D1 asd1 = new ArrayString.D1(n);
+        for (int i = 0; i < n; i++)
+            asd1.set(i, sa.get(i));
+        return asd1;
+    }
+
 
     /** 
      * This converts a String or array of primitives into a 
@@ -283,13 +309,24 @@ public class NcHelper  {
             //will be handled below
         }
 
-        if (o instanceof char[])   return Array.factory(char.class,   new int[]{((char[])o).length}, o);
+        if (o instanceof char[]) {
+            //netcdf-java just writes low byte, so use String2.toIso88591Chars()
+            char[] car1 = (char[])o;
+            int n = car1.length;
+            char[] car2 = new char[n];
+            for (int i = 0; i < n; i++)
+                car2[i] = String2.toIso88591Char(car1[i]);
+            return Array.factory(char.class, new int[]{n}, car2);
+        }
+
+
         if (o instanceof byte[])   return Array.factory(byte.class,   new int[]{((byte[])o).length}, o);
         if (o instanceof short[])  return Array.factory(short.class,  new int[]{((short[])o).length}, o);
         if (o instanceof int[])    return Array.factory(int.class,    new int[]{((int[])o).length}, o);
         if (o instanceof long[])   {
-            o = (new LongArray((long[])o)).toStringArray();
-            //then falls through to String[] handling
+            //String2.log("\n>> long values=" + String2.toCSSVString((long[])o));
+            o = (new DoubleArray(new LongArray((long[])o))).toArray();  //then falls through to Double handling
+            //String2.log(">> as doubles=" + String2.toCSSVString((double[])o));
         }
         if (o instanceof float[])  return Array.factory(float.class,  new int[]{((float[])o).length}, o);
         if (o instanceof double[]) return Array.factory(double.class, new int[]{((double[])o).length}, o);
@@ -305,7 +342,8 @@ public class NcHelper  {
             //String2.log("NcHelper.get1DArray String[] max=" + max);
             ArrayChar.D2 ac = new ArrayChar.D2(sar.length, max);
             for (int i = 0; i < sar.length; i++) {
-                ac.setString(i, sar[i]);
+                //setString just does low byte, so use String2.toIso88591String()
+                ac.setString(i, String2.toIso88591String(sar[i]));  
                 //String s = sar[i];
                 //int sLength = s.length();
                 //for (int po = 0; po < sLength; po++) 
@@ -400,7 +438,7 @@ public class NcHelper  {
             ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
             String sa[] = String2.toStringArray((Object[])ao.copyTo1DJavaArray());
             for (int i = 0; i < sa.length; i++)
-                sa[i] = String2.canonical(sa[i]);
+                sa[i] = String2.canonical(String2.trimEnd(sa[i]));
             return sa;
         }
 
@@ -446,22 +484,25 @@ public class NcHelper  {
 
     /** 
      * This converts an ElementType (e.g., int.class for integer primitives) 
-     * into an netcdf DataType.
+     * into an netcdf-3 DataType.
      * BEWARE: .nc files store strings as char arrays, so 
      * if variable.getRank()==1 it is a char variable, but
-     * if variable.getRang()==2 it is a String variable.
+     * if variable.getRang()==2 it is a String variable. [It isn't that simple!]
      * This throws Exception if elementClass not found.
      *
-     * @param elementClass the PrimitiveArray elementClass (e.g., int.class for integer primitives)
+     * @param elementClass the PrimitiveArray elementClass 
+     *   (e.g., int.class for integer primitives).
+     *   longs are converted to doubles.
      * @return the corresponding netcdf dataType 
      */
      public static DataType getDataType(Class elementClass) {
-         if (elementClass == boolean.class) return DataType.BOOLEAN;
+         if (elementClass == boolean.class) return DataType.BOOLEAN; //?
          if (elementClass == byte.class)    return DataType.BYTE;
          if (elementClass == char.class)    return DataType.CHAR;
          if (elementClass == double.class)  return DataType.DOUBLE;
          if (elementClass == float.class)   return DataType.FLOAT;
          if (elementClass == int.class)     return DataType.INT;
+         if (elementClass == long.class)    return DataType.DOUBLE;  // long -> double
          if (elementClass == short.class)   return DataType.SHORT;
          if (elementClass == String.class)  return DataType.STRING;
          //STRUCTURE not converted
@@ -888,19 +929,20 @@ public class NcHelper  {
     /**
      * This adds global (group) attributes to a netcdf file's group.
      *
-     * @param rootGroup
+     * @param group usually the rootGroup
      * @param attributes the Attributes that will be set
      */
-    public static void setAttributes(Group group, Attributes attributes) {
+    public static void setAttributes(boolean nc3Mode, Group group, Attributes attributes) {
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) { 
             String tName = names[ni];
-            if (!String2.isSomething(tName)) 
+            if (!String2.isSomething(tName) || 
+                tName.equals("_NCProperties")) //If I write this, netcdf nc4 code later throws Exception when it writes its own version
                 continue;
             PrimitiveArray tValue = attributes.get(tName);
             if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) 
                 continue; //do nothing
-            group.addAttribute(createAttribute(tName, tValue));
+            group.addAttribute(createAttribute(nc3Mode, tName, tValue));
         }
     }
 
@@ -910,7 +952,7 @@ public class NcHelper  {
      * @param var  e.g., from findVariable(netcdfFile, varName)
      * @param attributes the Attributes that will be set
      */
-    public static void setAttributes(Variable var, Attributes attributes) {
+    public static void setAttributes(boolean nc3Mode, Variable var, Attributes attributes) {
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) { 
             String tName = names[ni];
@@ -919,7 +961,7 @@ public class NcHelper  {
             PrimitiveArray tValue = attributes.get(tName);
             if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) 
                 continue; //do nothing
-            var.addAttribute(createAttribute(tName, tValue));
+            var.addAttribute(createAttribute(nc3Mode, tName, tValue));
         }
     }
 
@@ -1147,8 +1189,8 @@ public class NcHelper  {
             addPA   != null? addPA.elementClass() : 
             unsigned && oClass == byte.class?  short.class :  //similar code below
             unsigned && oClass == short.class? int.class :
-            unsigned && oClass == int.class?   double.class : //longs are trouble
-            unsigned && oClass == long.class?  double.class :
+            unsigned && oClass == int.class?   double.class : //longs are converted to double
+            unsigned && oClass == long.class?  double.class : //longs are converted to double
             oClass;  
         if (sAtts.remove("_FillValue")    != null)
             sAtts.set(   "_FillValue",    PrimitiveArray.factory(destClass, 1, ""));
@@ -1264,8 +1306,8 @@ public class NcHelper  {
             if (unsigned && tClass == dataPaClass) {
                 if      (tClass == byte.class)  tClass = short.class;
                 else if (tClass == short.class) tClass = int.class;
-                else if (tClass == int.class)   tClass = double.class; //longs are trouble
-                else if (tClass == long.class)  tClass = double.class;
+                else if (tClass == int.class)   tClass = double.class; //longs are converted to doubles
+                else if (tClass == long.class)  tClass = double.class; //longs are converted to doubles
             }
 
             //switch data type
@@ -1342,7 +1384,7 @@ public class NcHelper  {
             }
 
             //convert numeric time to epochSeconds
-            dataPa2.scaleAddOffset(baseFactor[1], baseFactor[0]);
+            dataPa2 = Calendar2.unitsSinceToEpochSeconds(baseFactor[0], baseFactor[1], dataPa2);
             if (debugMode)
                 String2.log(
                     ">> numeric time as epochSeconds: " + dataPa2.subset(0, 1, Math.min(10, dataPa2.size()-1)).toString());
@@ -1842,41 +1884,23 @@ public class NcHelper  {
 
     /**
      * This writes values to a 1D netcdf variable in a NetcdfFileWriter.
-     * This works with all PrimitiveArray types, but
-     * <br>LongArray is stored as a StringArray, so retrieve with 
+     * This works with all PrimitiveArray types, but in nc3mode:
+     * <br>LongArray is stored as doubles, so retrieve with 
      * <br>pa = new LongArray(pa), and
-     * <br>CharArray is stored as a ShortArray, so retrieve with
-     * <br>pa = new CharArray(((ShortArray)pa).toArray()).
+     * <br>CharArray is stored as chars (ISO-8859-1).
      *
      * @param netcdfFileWriter
      * @param variableName
-     * @param firstRow   
+     * @param firstRow  This is the origin/where to write this chunk of data
+     *     within the complete var in the nc file.
      * @param pa will be converted to the appropriate numeric type
      * @throws Exception if trouble
      */
-    public static void write(NetcdfFileWriter netcdfFileWriter, 
+    public static void write(boolean nc3Mode, NetcdfFileWriter netcdfFileWriter, 
         Variable var, int firstRow, PrimitiveArray pa) throws Exception {
 
-        write(netcdfFileWriter, 
+        write(nc3Mode, netcdfFileWriter, 
             var, new int[]{firstRow}, new int[]{pa.size()}, pa);
-
-    }
-
-    /**
-     * This returns a PrimitiveArray (usually the same one) that has a 
-     * data type that is suitable for .nc files
-     * (LongArray becomes StringArray, CharArray becomes ShortArray).
-     *
-     * @param pa a PrimitiveArray
-     * @return a PrimitiveArray (usually the same one) that has a 
-     * data type that is suitable for .nc files.
-     */
-    public static PrimitiveArray getNcSafePA(PrimitiveArray pa) {
-        if (pa.elementClass() == char.class) 
-            return new ShortArray(((CharArray)pa).toArray());
-        if (pa.elementClass() == long.class)
-            return new StringArray(pa);
-        return pa;
     }
 
     /** 
@@ -1894,10 +1918,17 @@ public class NcHelper  {
      *    Don't include StringLength dimension.
      * @param pa   the data to be written 
      */
-    public static void write(NetcdfFileWriter netcdfFileWriter, 
+    public static void write(boolean nc3Mode, NetcdfFileWriter netcdfFileWriter, 
         Variable var, int origin[], int shape[], PrimitiveArray pa) throws Exception {
 
-        pa = getNcSafePA(pa);
+        if (nc3Mode) {
+            if (pa.elementClass() == long.class)
+                pa = new DoubleArray(pa);
+            else if (pa.elementClass() == char.class)
+                pa = (new CharArray(pa)).toIso88591(); //netcdf-java just writes low byte
+            else if (pa.elementClass() == String.class)
+                pa = (new StringArray(pa)).toIso88591(); //netcdf-java just writes low byte
+        }
 
         if (pa instanceof StringArray) {
             netcdfFileWriter.writeStringData(var, origin, 
@@ -1983,7 +2014,7 @@ public class NcHelper  {
 
     /** 
      * This writes the PrimitiveArrays into an .nc file.
-     * This works with all PrimitiveArray types, but some datatypes 
+     * This works with all PrimitiveArray types, but some datatypes (chars and longs)
      * are specially encoded in the files and then automatically decoded when read.
      *
      * @param fullName for the file (This writes to an intermediate file then renames quickly.)
@@ -2101,7 +2132,10 @@ public class NcHelper  {
     /**
      * This reads the PAs in the .nc file.
      * This works with all PrimitiveArray types, but some datatypes 
-     * are specially encoded in the files and then automatically decoded when read.
+     * (char, long, String)
+     * are specially encoded in the files and then automatically decoded when read,
+     * so that this fully supports 2byte chars, longs, and Unicode Strings
+     * (by encoding as json in file).
      *
      * @param fullName the name of the .nc file.
      * @param loadVarNames the names of the variables to load (null to get all)
@@ -2563,7 +2597,7 @@ String2.log(pas13.toString());
         DoubleArray da = new DoubleArray(new double[]{1.1, 2.2, 9.9, Double.NaN});
         StringArray sa = new StringArray();
         for (int i = 0; i < 65536; i++) 
-            sa.add("a" + (char)i + "z");  
+            sa.add("a" + (i==8?" " : (char)i) + "z");  //backspace not saved
         //write to file
         fullName = "c:/temp/PAsInNc.nc";
         File2.delete(fullName); //for test, make double sure it doesn't already exist

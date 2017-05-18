@@ -42,13 +42,9 @@ import java.util.GregorianCalendar;
 
 /**
  * NcHelper and ucar classes only used for testing netcdf-java.
- * Get netcdf-X.X.XX.jar from 
- * http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html
+ * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Get slf4j-jdk14.jar from 
- * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
- * and copy it to <context>/WEB-INF/lib.
- * Put both of these .jar files in the classpath for the compiler and for Java.
+ * Put it in the classpath for the compiler and for Java.
  */
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 //import ucar.nc2.*;
@@ -204,7 +200,7 @@ public class EDDTableFromDapSequence extends EDDTable{
      * constructor.
      *
      * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
+     *  (recommended: [A-Za-z][A-Za-z0-9_]* )
      *   for this dataset. See EDD.datasetID().
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
@@ -250,10 +246,10 @@ public class EDDTableFromDapSequence extends EDDTable{
      *        describing how to interpret source time values 
      *        (which should always be numeric since they are a dimension of a grid)
      *        (e.g., "seconds since 1970-01-01T00:00:00").
-     *      <li> a org.joda.time.format.DateTimeFormat string
+     *      <li> a java.time.format.DateTimeFormatter string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html or 
+     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html or 
      *        https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -744,6 +740,8 @@ public class EDDTableFromDapSequence extends EDDTable{
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
 
         //get DConnect
+        if (tLocalSourceUrl.endsWith(".html"))
+            tLocalSourceUrl = tLocalSourceUrl.substring(0, tLocalSourceUrl.length() - 5);
         DConnect dConnect = new DConnect(tLocalSourceUrl, acceptDeflate, 1, 1);
         DAS das;
         try {
@@ -902,6 +900,8 @@ public class EDDTableFromDapSequence extends EDDTable{
      * testGenerateDatasetsXml
      */
     public static void testGenerateDatasetsXml() throws Throwable {
+        String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml\n" +
+            "This requires testNccsvScalar in localhost ERDDAP.\n");
         testVerboseOn();
 
         String tUrl = "http://cimt.dyndns.org:8080/dods/drds/vCTD";
@@ -928,6 +928,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">DYNDNS CIMT</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
@@ -1132,8 +1133,209 @@ directionsForGenerateDatasetsXml() +
                 "zztop",
                 "");
             */
+    }
 
+    /**
+     * testGenerateDatasetsXml
+     */
+    public static void testGenerateDatasetsXml2() throws Throwable {
+        String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml2\n" +
+            "This requires testNccsvScalar in localhost ERDDAP.\n");
+        testVerboseOn();
 
+        String tUrl = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html"; //test that it removes .html
+        String results = generateDatasetsXml(tUrl, 1440, null) + "\n";
+
+String expected = 
+directionsForGenerateDatasetsXml() +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDTableFromDapSequence\" datasetID=\"localhost_a9c0_2412_8777\" active=\"true\">\n" +
+"    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar</sourceUrl>\n" +
+"    <outerSequenceName>s</outerSequenceName>\n" +
+"    <skipDapperSpacerRows>false</skipDapperSpacerRows>\n" +
+"    <sourceCanConstrainStringEQNE>true</sourceCanConstrainStringEQNE>\n" +
+"    <sourceCanConstrainStringGTLT>true</sourceCanConstrainStringGTLT>\n" +
+"    <sourceCanConstrainStringRegex></sourceCanConstrainStringRegex>\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"cdm_data_type\">Trajectory</att>\n" +
+"        <att name=\"cdm_trajectory_variables\">ship</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0</att>\n" +
+"        <att name=\"creator_email\">bob.simons@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">Bob Simons</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
+"        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
+"        <att name=\"Easternmost_Easting\" type=\"double\">-130.2576</att>\n" +
+"        <att name=\"featureType\">Trajectory</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">28.0003</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">27.9998</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">-130.2576</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-132.1591</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
+"        <att name=\"history\">";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        
+//        2017-05-05T16:27:08Z (local files)
+//2017-05-05T16:27:08Z 
+//"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das</att>\n" +
+expected = 
+"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</att>\n" +
+"        <att name=\"institution\">NOAA NMFS SWFSC ERD, NOAA PMEL</att>\n" +
+"        <att name=\"keywords\">center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">&quot;NCCSV Demonstration&quot; by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .</att>\n" +
+"        <att name=\"Northernmost_Northing\" type=\"double\">28.0003</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"Southernmost_Northing\" type=\"double\">27.9998</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">ship, status, testLong</att>\n" +
+"        <att name=\"summary\">This is a paragraph or two describing the dataset.</att>\n" +
+"        <att name=\"title\">NCCSV Demonstration</att>\n" +
+"        <att name=\"Westernmost_Easting\" type=\"double\">-132.1591</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"keywords\">center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testlong, testnccsvscalar, time, trajectory</att>\n" +
+"        <att name=\"subsetVariables\">ship, time, latitude, longitude, status, testLong, sst</att>\n" +
+"        <att name=\"title\">NCCSV Demonstration (testNccsvScalar)</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ship</sourceName>\n" +
+"        <destinationName>ship</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"cf_role\">trajectory_id</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Ship</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Time</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_origin\">01-JAN-1970 00:00:00</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>latitude</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Lat</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">27.9998 28.0003</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>longitude</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Lon</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">-132.1591 -130.2576</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>status</sourceName>\n" +
+"        <destinationName>status</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\">?</att>\n" +  //trouble??? should be \t ?
+"            <att name=\"comment\">From http://some.url.gov/someProjectDocument , Table C</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Status</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>testLong</sourceName>\n" +
+"        <destinationName>testLong</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+              //these are largest doubles that can round trip to longs
+"            <att name=\"actual_range\" type=\"doubleList\">-9.223372036854776E18 9.2233720368547748E18</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Test of Longs</att>\n" +
+"            <att name=\"units\">1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1.0E19</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-1.0E19</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sst</sourceName>\n" +
+"        <destinationName>sst</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">10.0 10.9</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Sea Surface Temperature</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">99.0</att>\n" +
+"            <att name=\"standard_name\">sea_surface_temperature</att>\n" +
+"            <att name=\"testBytes\" type=\"byteList\">-128 0 127</att>\n" +
+"            <att name=\"testChars\">,\n" +
+"&quot;\n" +
+"?</att>\n" +   //test of \\u20ac 
+"            <att name=\"testDoubles\" type=\"doubleList\">-1.7976931348623157E308 0.0 1.7976931348623157E308</att>\n" +
+//??? !!! Unlike Java parseFloat, JDAP reads+/-3.40282345E38 as NaN. !!!
+//Hence NaNs here.  This is an unfixed bug (hopefully won't ever affect anyone).
+"            <att name=\"testFloats\" type=\"floatList\">NaN 0.0 NaN</att>\n" + 
+"            <att name=\"testInts\" type=\"intList\">-2147483648 0 2147483647</att>\n" +
+"            <att name=\"testLongs\" type=\"doubleList\">-9.223372036854776E18 9.2233720368547748E18 NaN</att>\n" +
+"            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
+"            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
+"&#39;z&quot;?</att>\n" +
+"            <att name=\"units\">degrees_C</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+            int po = results.indexOf(expected.substring(0, 60));
+            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+            //ensure it is ready-to-use by making a dataset from it
+            EDD edd = oneFromXmlFragment(null, results);
+            Test.ensureEqual(edd.datasetID(), "localhost_a9c0_2412_8777", "");
+            Test.ensureEqual(edd.title(), "NCCSV Demonstration (testNccsvScalar)", "");
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+                "ship, time, latitude, longitude, status, testLong, sst",
+                "");
 
     }
 
@@ -1373,7 +1575,7 @@ directionsForGenerateDatasetsXml() +
         //the basicQuery
         for (int test = 1; test < 2; test++) {
             String url = test == 0? 
-                "http://oceanwatch.pfeg.noaa.gov:8080/dods/GLOBEC/GLOBEC_birds?birds.year,birds.species,birds.head_c,birds.month_local,birds.day_local&birds.year=2000&birds.month_local=8&birds.day_local=7" :
+                "https://oceanwatch.pfeg.noaa.gov:8080/dods/GLOBEC/GLOBEC_birds?birds.year,birds.species,birds.head_c,birds.month_local,birds.day_local&birds.year=2000&birds.month_local=8&birds.day_local=7" :
                 "http://las.pfeg.noaa.gov/cgi-bin/ERDserver/northwest.sql?northwest.temperature,northwest.ctd_station_code,northwest.datetime,northwest.station,northwest.longitude,northwest.latitude&northwest.datetime%3E13821";
             System.out.println("\ntesting url=" + url);
             DConnect dConnect = new DConnect(url, true);
@@ -1557,13 +1759,13 @@ try {
 
             //*** test a TableWriter that doesn't convert time to iso format
             query = "&station=\"1612340\"&datum=\"MLLW\"&beginTime=" + yesterday + "&endTime=" + today;             
-//http://opendap.co-ops.nos.noaa.gov/dods/IOOS/SixMin_Verified_Water_Level.ascii?
+//https://opendap.co-ops.nos.noaa.gov/dods/IOOS/SixMin_Verified_Water_Level.ascii?
 //&WATERLEVEL_6MIN_VFD_PX._STATION_ID="1612340"&WATERLEVEL_6MIN_VFD_PX._DATUM="MLLW"
 //&WATERLEVEL_6MIN_VFD_PX._BEGIN_DATE="20100825"&WATERLEVEL_6MIN_VFD_PX._END_DATE="20100826"            
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_RWL", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-//trouble: Joda doesn't like space-padded hour values
+//trouble: java.time (was Joda) doesn't like space-padded hour values
 
             expected = 
 "zztop\n";
@@ -1827,6 +2029,7 @@ expected =
 /* */
         //always done        
         testGenerateDatasetsXml();
+        testGenerateDatasetsXml2();
         testPsdac();
         testSourceNeedsExpandedFP_EQ();
         testReadDas();

@@ -1155,7 +1155,7 @@ Dataset {
     /**
      * This connects to the opendapUrl and gets the dataDds from the query.
      *
-     * @param opendapUrl e.g., "http://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/satellite/AG/ssta/3day"
+     * @param opendapUrl e.g., "https://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/satellite/AG/ssta/3day"
      * @param query e.g., "?CMusfc.CMusfc[0:1:0][0:1:0][0:1:20][0:1:20]", already percentEncoded as needed
      * @param doAsciiTestToo
      * @throws Exception if trouble
@@ -1246,7 +1246,7 @@ Dataset {
     public static void doOceanWatchSpeedTests(boolean doDotTestToo, boolean doAsciiTestToo) throws Exception {
         System.out.println("\nOpendap.doOceanWatchSpeedTests");
         try {
-            doSimpleSpeedTests("http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/", 
+            doSimpleSpeedTests("https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/", 
                 doDotTestToo, doAsciiTestToo);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
@@ -1408,7 +1408,7 @@ Dataset {
         
 
         //test THREDDS        //was :8081
-        opendap = new Opendap("http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/3day", true, null); 
+        opendap = new Opendap("https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/3day", true, null); 
         DConnect dConnect = new DConnect(opendap.url, opendap.acceptDeflate, 1, 1);
         opendap.getGridInfo(dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT),
             dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT), "GAssta", "-1.0e34");
@@ -1421,7 +1421,7 @@ Dataset {
       
         //test THREDDS
         opendap = new Opendap(            //was :8081
-            "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AG/ssta/3day",
             true, null); 
         dConnect = new DConnect(opendap.url, opendap.acceptDeflate, 1, 1);
         opendap.getGridInfo(dConnect.getDAS(60000), dConnect.getDDS(60000), "AGssta", "-1.0e34");
