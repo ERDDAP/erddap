@@ -471,7 +471,7 @@ public class EDV {
      */
     protected void makeCombinedAttributes() throws Throwable {
         combinedAttributes = new Attributes(addAttributes, sourceAttributes); //order is important
-        combinedAttributes.removeValue("null");
+        combinedAttributes.removeValue("\"null\"");
 
         //test presence and validity of colorBar attributes
         //ERDDAP.doWmsGetMap relies on these tests.

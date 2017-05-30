@@ -22,6 +22,7 @@ import com.cohort.util.XML;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -389,7 +390,7 @@ directionsForGenerateDatasetsXml() +
 "        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">M/d/YYYY H:mm:ss</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
@@ -549,6 +550,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.4902299e+9, 1.4903127e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -649,6 +651,8 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String subsetVariables \"ship, status, testLong\";\n" +
 "    String summary \"This is a paragraph or two describing the dataset.\";\n" +
+"    String time_coverage_end \"2017-03-23T23:45:00Z\";\n" +
+"    String time_coverage_start \"2017-03-23T00:45:00Z\";\n" +
 "    String title \"NCCSV Demonstration\";\n" +
 "    Float64 Westernmost_Easting -132.1591;\n" +
 "  }\n" +
@@ -798,6 +802,8 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
+"*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
+"*GLOBAL*,time_coverage_start,2017-03-23T00:45:00Z\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
 "*GLOBAL*,Westernmost_Easting,-132.1591d\n" +
 "ship,*DATA_TYPE*,String\n" +
@@ -806,6 +812,7 @@ expected =
 "ship,long_name,Ship\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
+"time,actual_range,2017-03-23T00:45:00Z\\n2017-03-23T23:45:00Z\n" +
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +
@@ -904,6 +911,8 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
+"*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
+"*GLOBAL*,time_coverage_start,2017-03-23T00:45:00Z\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
 "*GLOBAL*,Westernmost_Easting,-132.1591d\n" +
 "ship,*DATA_TYPE*,String\n" +
@@ -1016,6 +1025,8 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
+"*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
+"*GLOBAL*,time_coverage_start,2017-03-23T00:45:00Z\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
 "*GLOBAL*,Westernmost_Easting,-132.1591d\n" +
 "time,*DATA_TYPE*,String\n" +
@@ -2040,7 +2051,7 @@ expected =
         expected = 
 //"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</Creator>[10]\n" +
 //"//<CreateTime>2017-04-21T21:32:32</CreateTime>[10]\n" +
-"//<Software>ERDDAP - Version 1.76</Software>[10]\n" +
+"//<Software>ERDDAP - Version 1.77</Software>[10]\n" +
 "//<Source>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -2205,6 +2216,322 @@ expected =
     }
 
 
+    /**
+     * This tests actual_range in .nccsvMetadata and .nccsv responses.
+     * This requires pmelTaoDySst and rPmelTaoDySst in localhost erddap.
+     */
+    public static void testActualRange() throws Throwable {
+        String2.log("\n****************** EDDTableFromNccsv.testActualRange\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
+        String error = "";
+        int epo, tPo;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10); 
+        String  baseUrl = "http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst";
+        String rbaseUrl = "http://localhost:8080/cwexperimental/tabledap/rlPmelTaoDySst";
+
+
+        //*** test getting .nccsvMetadata for entire dataset
+        tQuery = ".nccsvMetadata";
+        expected = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,cdm_data_type,TimeSeries\n" +
+"*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
+"*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n" +
+"*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n" +
+"*GLOBAL*,creator_type,group\n" +
+"*GLOBAL*,creator_url,https://www.pmel.noaa.gov/gtmba/mission\n" +
+"*GLOBAL*,Data_Source,Global Tropical Moored Buoy Array Project Office/NOAA/PMEL\n" +
+"*GLOBAL*,defaultGraphQuery,\"longitude,latitude,T_25&time>=now-7days\"\n" +
+"*GLOBAL*,Easternmost_Easting,350.0d\n" +
+"*GLOBAL*,featureType,TimeSeries\n" +
+"*GLOBAL*,File_info,Contact: Dai.C.McClurg@noaa.gov\n" +
+"*GLOBAL*,geospatial_lat_max,21.0d\n" +
+"*GLOBAL*,geospatial_lat_min,-25.0d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,350.0d\n" +
+"*GLOBAL*,geospatial_lon_min,0.0d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,geospatial_vertical_max,15.0d\n" +
+"*GLOBAL*,geospatial_vertical_min,1.0d\n" +
+"*GLOBAL*,geospatial_vertical_positive,down\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +
+"*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n2017-05-04 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
+"*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
+"*GLOBAL*,keywords,\"Oceans > Ocean Temperature > Sea Surface Temperature,\\nbuoys, centered, daily, depth, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n" +
+"*GLOBAL*,Northernmost_Northing,21.0d\n" +
+"*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n" +
+"*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n" +
+"*GLOBAL*,sourceUrl,(local files)\n" +
+"*GLOBAL*,Southernmost_Northing,-25.0d\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
+"*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
+"*GLOBAL*,time_coverage_end,2017-05-03T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
+"*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
+"*GLOBAL*,Westernmost_Easting,0.0d\n" +
+"array,*DATA_TYPE*,String\n" +
+"array,ioos_category,Identifier\n" +
+"array,long_name,Array\n" +
+"station,*DATA_TYPE*,String\n" +
+"station,cf_role,timeseries_id\n" +
+"station,ioos_category,Identifier\n" +
+"station,long_name,Station\n" +
+"wmo_platform_code,*DATA_TYPE*,int\n" +
+"wmo_platform_code,actual_range,13001i,56055i\n" +
+"wmo_platform_code,ioos_category,Identifier\n" +
+"wmo_platform_code,long_name,WMO Platform Code\n" +
+"wmo_platform_code,missing_value,2147483647i\n" +
+"longitude,*DATA_TYPE*,float\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,actual_range,0.0f,350.0f\n" +
+"longitude,axis,X\n" +
+"longitude,epic_code,502i\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Nominal Longitude\n" +
+"longitude,missing_value,1.0E35f\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,type,EVEN\n" +
+"longitude,units,degrees_east\n" +
+"latitude,*DATA_TYPE*,float\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,actual_range,-25.0f,21.0f\n" +
+"latitude,axis,Y\n" +
+"latitude,epic_code,500i\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Nominal Latitude\n" +
+"latitude,missing_value,1.0E35f\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,type,EVEN\n" +
+"latitude,units,degrees_north\n" +
+"time,*DATA_TYPE*,String\n" +
+"time,_CoordinateAxisType,Time\n" +
+"time,actual_range,1977-11-03T12:00:00Z\\n2017-05-03T12:00:00Z\n" +
+"time,axis,T\n" +
+"time,ioos_category,Time\n" +
+"time,long_name,Centered Time\n" +
+"time,standard_name,time\n" +
+"time,time_origin,01-JAN-1970 00:00:00\n" +
+"time,type,EVEN\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
+"depth,*DATA_TYPE*,float\n" +
+"depth,_CoordinateAxisType,Height\n" +
+"depth,_CoordinateZisPositive,down\n" +
+"depth,actual_range,1.0f,15.0f\n" +
+"depth,axis,Z\n" +
+"depth,epic_code,3i\n" +
+"depth,ioos_category,Location\n" +
+"depth,long_name,Depth\n" +
+"depth,missing_value,1.0E35f\n" +
+"depth,positive,down\n" +
+"depth,standard_name,depth\n" +
+"depth,type,EVEN\n" +
+"depth,units,m\n" +
+"T_25,*DATA_TYPE*,float\n" +
+"T_25,actual_range,17.12f,35.4621f\n" +
+"T_25,colorBarMaximum,32.0d\n" +
+"T_25,colorBarMinimum,0.0d\n" +
+"T_25,epic_code,25i\n" +
+"T_25,generic_name,temp\n" +
+"T_25,ioos_category,Temperature\n" +
+"T_25,long_name,Sea Surface Temperature\n" +
+"T_25,missing_value,1.0E35f\n" +
+"T_25,name,T\n" +
+"T_25,standard_name,sea_surface_temperature\n" +
+"T_25,units,degree_C\n" +
+"QT_5025,*DATA_TYPE*,float\n" +
+"QT_5025,actual_range,0.0f,5.0f\n" +
+"QT_5025,colorBarContinuous,false\n" +
+"QT_5025,colorBarMaximum,6.0d\n" +
+"QT_5025,colorBarMinimum,0.0d\n" +
+"QT_5025,description,\"Quality: 0=missing data, 1=highest, 2=standard, 3=lower, 4=questionable, 5=bad, -9=contact Dai.C.McClurg@noaa.gov.  To get probably valid data only, request QT_5025>=1 and QT_5025<=3.\"\n" +
+"QT_5025,epic_code,5025i\n" +
+"QT_5025,generic_name,qt\n" +
+"QT_5025,ioos_category,Quality\n" +
+"QT_5025,long_name,Sea Surface Temperature Quality\n" +
+"QT_5025,missing_value,1.0E35f\n" +
+"QT_5025,name,QT\n" +
+"ST_6025,*DATA_TYPE*,float\n" +
+"ST_6025,actual_range,0.0f,5.0f\n" +
+"ST_6025,colorBarContinuous,false\n" +
+"ST_6025,colorBarMaximum,8.0d\n" +
+"ST_6025,colorBarMinimum,0.0d\n" +
+"ST_6025,description,\"Source Codes:\\n0 = No Sensor, No Data\\n1 = Real Time (Telemetered Mode)\\n2 = Derived from Real Time\\n3 = Temporally Interpolated from Real Time\\n4 = Source Code Inactive at Present\\n5 = Recovered from Instrument RAM (Delayed Mode)\\n6 = Derived from RAM\\n7 = Temporally Interpolated from RAM\"\n" +
+"ST_6025,epic_code,6025i\n" +
+"ST_6025,generic_name,st\n" +
+"ST_6025,ioos_category,Other\n" +
+"ST_6025,long_name,Sea Surface Temperature Source\n" +
+"ST_6025,missing_value,1.0E35f\n" +
+"ST_6025,name,ST\n" +
+"\n" +
+"*END_METADATA*\n";
+
+        //note that there is actual_range info
+        results = SSR.getUrlResponseString(baseUrl + tQuery);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        results = SSR.getUrlResponseString(rbaseUrl + tQuery);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+      
+        //*** test getting .nccsv 
+        tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
+        expected = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
+"*GLOBAL*,cdm_data_type,TimeSeries\n" +
+"*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
+"*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n" +
+"*GLOBAL*,creator_name,GTMBA Project Office/NOAA/PMEL\n" +
+"*GLOBAL*,creator_type,group\n" +
+"*GLOBAL*,creator_url,https://www.pmel.noaa.gov/gtmba/mission\n" +
+"*GLOBAL*,Data_Source,Global Tropical Moored Buoy Array Project Office/NOAA/PMEL\n" +
+"*GLOBAL*,defaultGraphQuery,\"longitude,latitude,T_25&time>=now-7days\"\n" +
+"*GLOBAL*,Easternmost_Easting,350.0d\n" +
+"*GLOBAL*,featureType,TimeSeries\n" +
+"*GLOBAL*,File_info,Contact: Dai.C.McClurg@noaa.gov\n" +
+"*GLOBAL*,geospatial_lat_max,21.0d\n" +
+"*GLOBAL*,geospatial_lat_min,-25.0d\n" +
+"*GLOBAL*,geospatial_lat_units,degrees_north\n" +
+"*GLOBAL*,geospatial_lon_max,350.0d\n" +
+"*GLOBAL*,geospatial_lon_min,0.0d\n" +
+"*GLOBAL*,geospatial_lon_units,degrees_east\n" +
+"*GLOBAL*,geospatial_vertical_max,15.0d\n" +
+"*GLOBAL*,geospatial_vertical_min,1.0d\n" +
+"*GLOBAL*,geospatial_vertical_positive,down\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +
+"*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
+  "2017-05-04 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+//  "2017-05-26T18:30:46Z (local files)\\n" + 
+//  "2017-05-26T18:30:46Z 
+expected2 = 
+"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n" +
+"*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
+"*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
+"*GLOBAL*,keywords,\"Oceans > Ocean Temperature > Sea Surface Temperature,\\nbuoys, centered, daily, depth, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
+"*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
+"*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n" +
+"*GLOBAL*,Northernmost_Northing,21.0d\n" +
+"*GLOBAL*,project,\"TAO/TRITON, RAMA, PIRATA\"\n" +
+"*GLOBAL*,Request_for_acknowledgement,\"If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\"\n" +
+"*GLOBAL*,sourceUrl,(local files)\n" +
+"*GLOBAL*,Southernmost_Northing,-25.0d\n" +
+"*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
+"*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
+"*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
+"*GLOBAL*,time_coverage_end,2017-05-03T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
+"*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
+"*GLOBAL*,Westernmost_Easting,0.0d\n" +
+"array,*DATA_TYPE*,String\n" +
+"array,ioos_category,Identifier\n" +
+"array,long_name,Array\n" +
+"station,*DATA_TYPE*,String\n" +
+"station,cf_role,timeseries_id\n" +
+"station,ioos_category,Identifier\n" +
+"station,long_name,Station\n" +
+"wmo_platform_code,*DATA_TYPE*,int\n" +
+"wmo_platform_code,ioos_category,Identifier\n" +
+"wmo_platform_code,long_name,WMO Platform Code\n" +
+"wmo_platform_code,missing_value,2147483647i\n" +
+"longitude,*DATA_TYPE*,float\n" +
+"longitude,_CoordinateAxisType,Lon\n" +
+"longitude,axis,X\n" +
+"longitude,epic_code,502i\n" +
+"longitude,ioos_category,Location\n" +
+"longitude,long_name,Nominal Longitude\n" +
+"longitude,missing_value,1.0E35f\n" +
+"longitude,standard_name,longitude\n" +
+"longitude,type,EVEN\n" +
+"longitude,units,degrees_east\n" +
+"latitude,*DATA_TYPE*,float\n" +
+"latitude,_CoordinateAxisType,Lat\n" +
+"latitude,axis,Y\n" +
+"latitude,epic_code,500i\n" +
+"latitude,ioos_category,Location\n" +
+"latitude,long_name,Nominal Latitude\n" +
+"latitude,missing_value,1.0E35f\n" +
+"latitude,standard_name,latitude\n" +
+"latitude,type,EVEN\n" +
+"latitude,units,degrees_north\n" +
+"time,*DATA_TYPE*,String\n" +
+"time,_CoordinateAxisType,Time\n" +
+"time,axis,T\n" +
+"time,ioos_category,Time\n" +
+"time,long_name,Centered Time\n" +
+"time,standard_name,time\n" +
+"time,time_origin,01-JAN-1970 00:00:00\n" +
+"time,type,EVEN\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
+"depth,*DATA_TYPE*,float\n" +
+"depth,_CoordinateAxisType,Height\n" +
+"depth,_CoordinateZisPositive,down\n" +
+"depth,axis,Z\n" +
+"depth,epic_code,3i\n" +
+"depth,ioos_category,Location\n" +
+"depth,long_name,Depth\n" +
+"depth,missing_value,1.0E35f\n" +
+"depth,positive,down\n" +
+"depth,standard_name,depth\n" +
+"depth,type,EVEN\n" +
+"depth,units,m\n" +
+"T_25,*DATA_TYPE*,float\n" +
+"T_25,colorBarMaximum,32.0d\n" +
+"T_25,colorBarMinimum,0.0d\n" +
+"T_25,epic_code,25i\n" +
+"T_25,generic_name,temp\n" +
+"T_25,ioos_category,Temperature\n" +
+"T_25,long_name,Sea Surface Temperature\n" +
+"T_25,missing_value,1.0E35f\n" +
+"T_25,name,T\n" +
+"T_25,standard_name,sea_surface_temperature\n" +
+"T_25,units,degree_C\n" +
+"QT_5025,*DATA_TYPE*,float\n" +
+"QT_5025,colorBarContinuous,false\n" +
+"QT_5025,colorBarMaximum,6.0d\n" +
+"QT_5025,colorBarMinimum,0.0d\n" +
+"QT_5025,description,\"Quality: 0=missing data, 1=highest, 2=standard, 3=lower, 4=questionable, 5=bad, -9=contact Dai.C.McClurg@noaa.gov.  To get probably valid data only, request QT_5025>=1 and QT_5025<=3.\"\n" +
+"QT_5025,epic_code,5025i\n" +
+"QT_5025,generic_name,qt\n" +
+"QT_5025,ioos_category,Quality\n" +
+"QT_5025,long_name,Sea Surface Temperature Quality\n" +
+"QT_5025,missing_value,1.0E35f\n" +
+"QT_5025,name,QT\n" +
+"ST_6025,*DATA_TYPE*,float\n" +
+"ST_6025,colorBarContinuous,false\n" +
+"ST_6025,colorBarMaximum,8.0d\n" +
+"ST_6025,colorBarMinimum,0.0d\n" +
+"ST_6025,description,\"Source Codes:\\n0 = No Sensor, No Data\\n1 = Real Time (Telemetered Mode)\\n2 = Derived from Real Time\\n3 = Temporally Interpolated from Real Time\\n4 = Source Code Inactive at Present\\n5 = Recovered from Instrument RAM (Delayed Mode)\\n6 = Derived from RAM\\n7 = Temporally Interpolated from RAM\"\n" +
+"ST_6025,epic_code,6025i\n" +
+"ST_6025,generic_name,st\n" +
+"ST_6025,ioos_category,Other\n" +
+"ST_6025,long_name,Sea Surface Temperature Source\n" +
+"ST_6025,missing_value,1.0E35f\n" +
+"ST_6025,name,ST\n" +
+"\n" +
+"*END_METADATA*\n" +
+"array,station,wmo_platform_code,longitude,latitude,time,depth,T_25,QT_5025,ST_6025\n" +
+"TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-01T12:00:00Z,1.0,1.0E35,0.0,0.0\n" +
+"TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-02T12:00:00Z,1.0,1.0E35,0.0,0.0\n" +
+"TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-03T12:00:00Z,1.0,1.0E35,0.0,0.0\n" +
+"TAO/TRITON,0n125w,51011,235.0,0.0,2010-01-04T12:00:00Z,1.0,1.0E35,0.0,0.0\n" +
+"*END_DATA*\n";
+
+        //note no actual_range info
+        results = SSR.getUrlResponseString(baseUrl + tQuery);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        tPo = results.indexOf(expected2.substring(0, 100));
+        Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
+
+        results = SSR.getUrlResponseString(rbaseUrl + tQuery);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+        tPo = results.indexOf(expected2.substring(0, 100));
+        Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
+
+    }
 
 
     /** Test reading data from testNccsvScalar by EDDTableFromDapSequence. */
@@ -2239,6 +2566,7 @@ expected =
         testBasic(false); //deleteCachedDatasetInfo
         testChar();
         testDap();
+        testActualRange();
     }
 }
 

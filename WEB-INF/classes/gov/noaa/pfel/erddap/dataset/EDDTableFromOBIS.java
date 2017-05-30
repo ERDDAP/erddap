@@ -431,7 +431,7 @@ public class EDDTableFromOBIS extends EDDTable{
             tLicense = String2.replaceAll(tLicense, "&creator_email;", tCreator_email);
             combinedGlobalAttributes.set("license", tLicense);
         }
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         //souceCanConstrain:
         sourceNeedsExpandedFP_EQ      = tSourceNeedsExpandedFP_EQ;

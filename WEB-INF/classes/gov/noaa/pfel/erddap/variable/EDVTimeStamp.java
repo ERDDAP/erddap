@@ -263,6 +263,8 @@ public class EDVTimeStamp extends EDV {
             if (actualRange != null) {
             //String2.log(">>destMin=" + destinationMin + " max=" + destinationMax + " sourceTimeIsNumeric=" + sourceTimeIsNumeric);
             //String2.log(">>actual_range metadata for " + destinationName + " (size=" + actualRange.size() + "): " + actualRange);
+                if (actualRange.elementClass() == String.class && actualRange.size() == 1) 
+                    actualRange = new StringArray(String2.split(actualRange.getString(0), '\n'));                  
                 if (actualRange.size() == 2) {
                     if (Double.isNaN(destinationMin)) destinationMin = sourceTimeToEpochSeconds(actualRange.getString(0));
                     if (Double.isNaN(destinationMax)) destinationMax = sourceTimeToEpochSeconds(actualRange.getString(1));

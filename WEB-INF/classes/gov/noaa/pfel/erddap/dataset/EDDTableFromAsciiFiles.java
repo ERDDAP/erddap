@@ -40,6 +40,10 @@ import java.util.TimeZone;
 
 import java.time.ZoneId;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 /** 
  * This class represents a table of data from a collection of ASCII CSV or TSV data files.
  *
@@ -2991,6 +2995,378 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         //The file confirms that is probably the range (there's no data before 2000).
     }
 
+
+    /**
+     * This makes chunks of datasets.xml for datasets from BCO-DMO.
+     * It gets info from a BCO-DMO JSON service that Adam Shepherd 
+     * (ashepherd at whoi.edu) up for Bob Simons.
+     *
+     * @param useLocalFilesIfPossible
+     * @param catalogUrl e.g., https://www.bco-dmo.org/erddap/datasets
+     * @param baseDir e.g, /u00/data/points/bcodmo/
+     * @param datasetNumberRegex   .* for all or e.g., (549122|549123)
+     * @throws Throwable if trouble with outer catalog, but individual dataset
+     *   exceptions are caught and logged.
+     */
+    public static String generateDatasetsXmlFromBCODMO(boolean useLocalFilesIfPossible,
+        String catalogUrl, String baseDir, String datasetNumberRegex)
+        throws Throwable {
+
+        String tsvCharset = String2.UTF_8;
+        baseDir = File2.addSlash(baseDir); //ensure trailing slash
+        String2.log("\n*** EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO\n" +
+            "url=" + catalogUrl + 
+            "\ndir=" + baseDir);
+        long time = System.currentTimeMillis();
+        File2.makeDirectory(baseDir);
+        StringBuffer results = new StringBuffer();
+
+        //get the main catalog and parse it
+        String catalogName = baseDir + "catalog.json"; 
+        if (!useLocalFilesIfPossible || !File2.isFile(catalogName))
+            SSR.downloadFile(catalogUrl, catalogName, true); //tryToCompress
+        String catalogContent[] = String2.readFromFile(catalogName, String2.UTF_8);
+        Test.ensureEqual(catalogContent[0], "", "");
+        JSONTokener tokener = new JSONTokener(catalogContent[1]);
+        JSONObject catalogObject = new JSONObject(tokener);
+        JSONArray datasetsArray = catalogObject.getJSONArray("datasets");
+        int nMatching = 0;
+        int nSucceeded = 0; 
+        int nFailed = 0; 
+        for (int dsi = 0; dsi < datasetsArray.length(); dsi++) {
+            try {
+                JSONObject ds = datasetsArray.getJSONObject(dsi);
+
+                //"dataset":"http:\/\/lod.bco-dmo.org\/id\/dataset\/549122",
+                String dsNumber = File2.getNameAndExtension(ds.getString("dataset"));
+                if (!dsNumber.matches(datasetNumberRegex))
+                    continue;
+                String2.log("Processing #" + dsi + ": bcodmo" + dsNumber); 
+                nMatching++;
+                Table addTable = new Table();
+                Attributes gatts = addTable.globalAttributes();
+                String dsDir = baseDir + dsNumber + "/";
+                File2.makeDirectory(dsDir);                
+
+                //standard things
+                gatts.add("institution",     "BCO-DMO");
+                gatts.add("keywords", 
+                    "Biological, Chemical, Oceanography, Data, Management, Office, " +
+                    "BCO-DMO, NSF");
+                gatts.add("publisher_name",  "BCO-DMO");
+                gatts.add("publisher_email", "info@bco-dmo.org");
+                gatts.add("publisher_type",  "institution");
+                gatts.add("publisher_url",   "http://www.bco-dmo.org/");
+
+
+                //??? fixed values not from catalog   
+                //http://www.bco-dmo.org/dataset/549122
+                gatts.add("validated",     "Yes");
+                gatts.add("restricted",    "No");
+                gatts.add("current_state", "Final no updates expected");
+               
+                //"doi":"10.1575\/1912\/bco-dmo.641155",
+                if (ds.has(   "doi")) {
+                    gatts.add("doi", ds.getString("doi"));
+                    gatts.add("id",  ds.getString("doi"));
+                    gatts.add("naming_authority", "org.bco-dmo"); //??? or doi type?
+                }
+
+                //"version_date":"2015-02-17",
+                if (ds.has(   "version_date")) {
+                    gatts.add("date_created", ds.getString("version_date"));
+                    gatts.add("version_date", ds.getString("version_date"));
+                }
+
+                //"landing_page":"http:\/\/www.bco-dmo.org\/dataset\/549122",
+                if (ds.has(   "landing_page")) {
+                    gatts.add("infoUrl",      ds.getString("landing_page"));
+                    gatts.add("landing_page", ds.getString("landing_page"));
+                }
+
+                //"dataset_name":"GT10-11 - cellular element quotas",
+                if (ds.has(   "dataset_name"))
+                    gatts.add("dataset_name", ds.getString("dataset_name"));
+                //"brief_desc":"Element quotas of individual phytoplankton cells",
+                if (ds.has(   "brief_desc"))
+                    gatts.add("brief_description", ds.getString("brief_desc"));
+                //"title":"Cellular elemental content of individual phytoplankton cells collected during US GEOTRACES North Atlantic Transect cruises in the Subtropical western and eastern North Atlantic Ocean during Oct and Nov, 2010 and Nov. 2011.",          
+                String tTitle = "BCO-DMO " + dsNumber + 
+                    (ds.has("title"       )? ": " + ds.getString("title") : 
+                     ds.has("dataset_name")? ": " + ds.getString("dataset_name") : 
+                     ds.has("brief_desc"  )? ": " + ds.getString("brief_desc") : 
+                     "");
+                gatts.add("title", tTitle);
+
+                //"abstract":  ???different from Description on landing_page
+                //"Phytoplankton contribute significantly to global C
+                //cycling and serve as the base of ocean food webs. 
+                //Phytoplankton require trace metals for growth and also mediate
+                //the vertical distributions of many metals in the ocean. This
+                //dataset provides direct measurements of metal quotas in 
+                //phytoplankton from across the North Atlantic Ocean, known to 
+                //be subjected to aeolian Saharan inputs and anthropogenic inputs from North America and Europe. Bulk particulate material and individual phytoplankton cells were collected from the upper water column (\u003C150 m) as part of the US GEOTRACES North Atlantic Zonal Transect cruises (KN199-4, KN199-5, KN204-1A,B). The cruise tracks spanned several ocean biomes and geochemical regions. Chemical leaches (to extract biogenic and otherwise labile particulate phases) are combined together with synchrotron X-ray fluorescence (SXRF) analyses of individual micro and nanophytoplankton to discern spatial trends across the basin. Individual phytoplankton cells were analyzed for elemental content using SXRF (Synchrotron radiation X-Ray Fluorescence). Carbon was calculated from biovolume using the relationships of Menden-Deuer \u0026 Lessard (2000).",            
+                gatts.add("summary", ds.has("abstract")? ds.getString("abstract"): tTitle);
+
+                //"license":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/",
+                gatts.add("license", 
+                    (ds.has("license")? ds.getString("license") + "\n" : "") +
+                    //modified slightly from Terms of Use at http://www.bco-dmo.org/
+                    "This data set is freely available as long as one follows the\n" +                   
+                    "terms of use (http://www.bco-dmo.org/terms-use), including\n" +                   
+                    "the understanding that any such use will properly acknowledge\n" +                   
+                    "the originating Investigator. It is highly recommended that\n" +                   
+                    "anyone wishing to use portions of this data should contact\n" +                   
+                    "the originating principal investigator (PI).");
+
+                //"filename":"GT10_11_cellular_element_quotas.tsv",
+                //"file_size_in_bytes":"70567",
+                //"download_url":"http:\/\/darchive.mblwhoilibrary.org\/bitstream\/handle\/
+                //  1912\/7908\/1\/GT10_11_cellular_element_quotas.tsv",
+                String sourceUrl = ds.getString("download_url");
+                gatts.add("sourceUrl", sourceUrl);
+                String fileName = File2.getNameAndExtension(sourceUrl);
+                String tsvName = dsDir + fileName;
+                if (!useLocalFilesIfPossible || !File2.isFile(tsvName))
+                    SSR.downloadFile(sourceUrl, tsvName, true); //tryToCompress
+                Table sourceTable = new Table();
+                sourceTable.readASCII(tsvName, tsvCharset, 0, 1, "\t",
+                    null, null, null, null, true); //simplify???
+
+                //"acquisition_desc":"\u003Cdiv xmlns=\u0022http:\/\/www.w3.org\/1999\/xhtml\u0022 
+                //lang=\u0022en\u0022\u003E\u003Cp\u003ESXRF samples were prepared ...
+                //... of Twining et al. (2011).\u003C\/p\u003E\u003C\/div\u003E",
+                if (ds.has(   "acquisition_desc"))
+                    gatts.add("acquisition_description", 
+                        XML.removeHTMLTags(ds.getString("acquisition_desc")));
+
+                //"processing_desc":"\u003Cdiv xmlns=\u0022http:\/\/www.w3.org\/1999\/xhtml\u0022
+                //lang=\u0022en\u0022\u003E\u003Cp\u003EData were processed as ...
+                //... via the join method.\u003C\/p\u003E\u003C\/div\u003E",
+                if (ds.has(   "processing_desc"))
+                    gatts.add("processing_description", 
+                        XML.removeHTMLTags(ds.getString("processing_desc")));
+
+                //"parameters_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/parameters",
+                String paramUrl = ds.getString("parameters_service");
+                String paramName = dsDir + "parameters.json";
+                if (!useLocalFilesIfPossible || !File2.isFile(paramName))
+                    SSR.downloadFile(paramUrl, paramName, true); //tryToCompress
+
+                    //"parameter":"http:\/\/lod.bco-dmo.org\/id\/dataset-parameter\/550520",
+                    //"parameter_name":"cruise_id",
+                    //"desc":"cruise identification",
+                    //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/dataset-parameter\/550520",
+                    //"master_parameter":"http:\/\/lod.bco-dmo.org\/id\/parameter\/1102",
+                    //   goes to web page: http://www.bco-dmo.org/parameter/1102
+                    //   which lists: Units: dimensionless
+                    //"master_parameter_name":"cruise_id",
+                    //"master_parameter_desc":"cruise designation; name"},
+                    //??? can he add units here?
+                    //??? data type? int float double String?   or I can determine it
+
+
+                //"instruments_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/instruments",
+
+                //"people_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/people",
+                String peopleUrl = ds.getString("people_service");
+                String peopleName = dsDir + "people.json";
+                if (!useLocalFilesIfPossible || !File2.isFile(peopleName))
+                    SSR.downloadFile(peopleUrl, peopleName, true); //tryToCompress
+
+                    //{"people":[
+                    //{"person":"http:\/\/lod.bco-dmo.org\/id\/person\/51087",
+                    // "person_name":"Dr Benjamin Twining",
+                    // "bcodmo_webpage":"http:\/\/www.bco-dmo.org\/person\/51087",
+                    // "institution":"http:\/\/lod.bco-dmo.org\/id\/affiliation\/94",
+                    // "institution_name":"Bigelow Laboratory for Ocean Sciences (Bigelow)",
+                    // "role_name":"Principal Investigator"},
+                    //{"person":
+                    // "role_name":"BCO-DMO Data Manager"}
+                    //],...
+
+                //"deployments_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/deployments",
+                if (ds.has("deployments_service")) {
+                    String deploymentsUrl = ds.getString("deployments_service");
+                    String deploymentsName = dsDir + "deployments.json";
+                    try {
+                        if (!useLocalFilesIfPossible || !File2.isFile(deploymentsName))
+                            SSR.downloadFile(deploymentsUrl, deploymentsName, true); //tryToCompress
+
+                    } catch (Exception e2) {
+                        String2.log("Caught: " + MustBe.throwableToString(e2));
+                    }
+                }
+
+                //"projects_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/projects"},
+                if (ds.has("projects_service")) {
+                    String projectsUrl = ds.getString("projects_service");
+                    String projectsName = dsDir + "projects.json";
+                    try {
+                        if (!useLocalFilesIfPossible || !File2.isFile(projectsName))
+                            SSR.downloadFile(projectsUrl, projectsName, true); //tryToCompress
+                        String tReturn[] = String2.readFromFile(projectsName, String2.UTF_8);
+                        Test.ensureEqual(tReturn[0], "", "");
+                        JSONTokener tTokener = new JSONTokener(tReturn[1]);
+                        JSONObject tOuterObject = new JSONObject(tokener);
+                        JSONArray tArray = catalogObject.getJSONArray("projects");
+                        JSONObject tObject = datasetsArray.getJSONObject(0);
+                        if (tObject.has("project_title"))
+                            gatts.add(  "project", tObject.getString("project_title"));
+                        if (tObject.has("bcodmo_webpage"))
+                            gatts.add(  "project_url", tObject.getString("bcodmo_webpage"));
+
+                    } catch (Exception e2) {
+                        String2.log("Caught: " + MustBe.throwableToString(e2));
+                    }
+                }
+
+                //??? Funding Source            available on landing_page
+
+                //??? Related references        available on landing_page
+
+                //??? related image files
+
+                //* standard processing
+
+                //add columns to addTable
+                boolean dateTimeAlreadyFound = false;
+                String tSortedColumnSourceName = "";
+                String tSortFilesBySourceNames = "";
+                String tColumnNameForExtract   = "";
+
+                DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
+                for (int col = 0; col < sourceTable.nColumns(); col++) {
+                    String colName = sourceTable.getColumnName(col);
+                    PrimitiveArray pa = (PrimitiveArray)sourceTable.getColumn(col).clone(); //clone because going into addTable
+
+                    Attributes sourceAtts = sourceTable.columnAttributes(col);
+                    Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        null, //no source global attributes
+                        sourceAtts, colName, 
+                        true, true); //addColorBarMinMax, tryToFindLLAT
+
+                    //dateTime?
+                    boolean isDateTime = false;
+                    if (pa instanceof StringArray) {
+                        String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                        if (dtFormat.length() > 0) { 
+                            isDateTime = true;
+                            addAtts.set("units", dtFormat);
+                        }
+                    }
+
+                    //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
+                    //  even if StringArray
+                    double stats[] = pa.calculateStats();
+                    int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
+                    if (whichMv9 < 0)
+                        whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
+                    if (whichMv9 >= 0) {
+                        addAtts.add("missing_value", 
+                            PrimitiveArray.factory(pa.elementClass(), 1, 
+                                "" + mv9.getInt(whichMv9)));
+                        String2.log("\nADDED missing_value=" + mv9.getInt(whichMv9) +
+                            " to col=" + colName);
+                    }
+         
+                    //add to addTable
+                    addTable.addColumn(col, colName, 
+                        makeDestPAForGDX(pa, sourceAtts), addAtts);
+
+                    //files are likely sorted by first date time variable
+                    //and no harm if files aren't sorted that way
+                    if (tSortedColumnSourceName.length() == 0 && 
+                        isDateTime && !dateTimeAlreadyFound) {
+                        dateTimeAlreadyFound = true;
+                        tSortedColumnSourceName = colName;
+                    }
+
+
+                }
+
+                //after dataVariables known, add global attributes in the addTable
+                addTable.globalAttributes().set(
+                    makeReadyToUseAddGlobalAttributesForDatasetsXml(
+                        sourceTable.globalAttributes(), 
+                        //another cdm_data_type could be better; this is ok
+                        probablyHasLonLatTime(sourceTable, addTable)? "Point" : "Other",
+                        dsDir, addTable.globalAttributes(), //externalAddGlobalAttributes, 
+                        suggestKeywords(sourceTable, addTable)));
+
+                //subsetVariables
+                if (sourceTable.globalAttributes().getString("subsetVariables") == null &&
+                       addTable.globalAttributes().getString("subsetVariables") == null) 
+                    addTable.globalAttributes().add("subsetVariables",
+                        suggestSubsetVariables(sourceTable, addTable, true)); //1file/dataset
+
+                //write the information
+                StringBuilder sb = new StringBuilder();
+                if (tSortFilesBySourceNames.length() == 0) {
+                    if (tColumnNameForExtract.length() > 0 &&
+                        tSortedColumnSourceName.length() > 0 &&
+                        !tColumnNameForExtract.equals(tSortedColumnSourceName))
+                        tSortFilesBySourceNames = tColumnNameForExtract + ", " + tSortedColumnSourceName;
+                    else if (tColumnNameForExtract.length() > 0)
+                        tSortFilesBySourceNames = tColumnNameForExtract;
+                    else 
+                        tSortFilesBySourceNames = tSortedColumnSourceName;
+                }
+                sb.append(
+                    directionsForGenerateDatasetsXml() +
+                    " * Since the source files don't have any metadata, you must add metadata\n" +
+                    "   below, notably 'units' for each of the dataVariables.\n" +
+                    "-->\n\n" +
+                    "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo" + 
+                        dsNumber + "\" active=\"true\">\n" +
+                    "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" +  
+                    "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
+                    "    <fileDir>" + XML.encodeAsXML(dsDir) + "</fileDir>\n" +
+                    "    <fileNameRegex>" + XML.encodeAsXML(
+                        String2.plainTextToRegex(fileName)) + "</fileNameRegex>\n" +
+                    "    <recursive>false</recursive>\n" +
+                    "    <pathRegex>.*</pathRegex>\n" +
+                    "    <metadataFrom>last</metadataFrom>\n" +
+                    "    <charset>" + tsvCharset + "</charset>\n" +
+                    "    <columnNamesRow>1</columnNamesRow>\n" +
+                    "    <firstDataRow>2</firstDataRow>\n" +
+                    //"    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+                    //"    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+                    //"    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
+                    //"    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
+                    "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
+                    "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
+                    "    <fileTableInMemory>false</fileTableInMemory>\n" +
+                    "    <accessibleViaFiles>true</accessibleViaFiles>\n");
+                sb.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
+                sb.append(cdmSuggestion());
+                sb.append(writeAttsForDatasetsXml(true,     addTable.globalAttributes(), "    "));
+
+                //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+                sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, 
+                    "dataVariable", true, true, false));
+                sb.append(
+                    "</dataset>\n" +
+                    "\n");
+
+                //success
+                results.append(sb.toString());                    
+                nSucceeded++;
+
+            } catch (Exception e) {
+                nFailed++;
+                String2.log(String2.ERROR + " while processing dataset #" + dsi + "\n" +
+                    MustBe.throwableToString(e));
+            }
+        }
+        String2.log("\n*** generateDatasetsXmlFromBcodmo finished in " +
+            ((time - System.currentTimeMillis())/1000) + " seconds\n" +
+            "nDatasets: total=" + datasetsArray.length() + 
+            " matching=" + nMatching + 
+            " (succeeded=" + nSucceeded + " failed=" + nFailed + ")");
+        return results.toString();
+    }
+
     /**
      * This tests the methods in this class.
      *
@@ -3009,6 +3385,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         testTimeRange2();
         testGenerateDatasetsXmlFromInPort();
         testGenerateDatasetsXmlFromInPort2();
+
         /* */
 
         //not usually run

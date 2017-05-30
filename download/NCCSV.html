@@ -335,7 +335,7 @@ same data type and separated by commas, for example:
   will generate an error message. 
   <br>&nbsp;
 <li><a name="String"><tt><b>String</b></tt></a>
-  attribute values are a sequence of UCS-16 characters 
+  attribute values are a sequence of UCS-2 characters 
   (i.e., 2-byte Unicode characters, as in Java), 
   which must be written as 7-bit ASCII, JSON-like strings 
   so that non-ASCII characters can be specified. 
@@ -365,7 +365,8 @@ same data type and separated by commas, for example:
     or use a software library.
   <li>If the String has a space at the beginning or end, or includes <tt>"</tt>
     (double quote) or a comma, or contains values that would otherwise be 
-    interpreted as some other data type (e.g., an int), the entire String must
+    interpreted as some other data type (e.g., an int), or is the word "null", 
+    the entire String must
     be enclosed in double quotes; otherwise, unlike JSON, 
     the enclosing double quotes are optional. 
     We recommend: when in doubt, enclose the entire String in double quotes. 
@@ -380,7 +381,7 @@ same data type and separated by commas, for example:
     <br>&nbsp;
   </ul>
 <li><a name="char"><tt><b>char</b></tt></a>
-  attribute values are a single UCS-16 character
+  attribute values are a single UCS-2 character
   (i.e., 2-byte Unicode characters, as in Java), which must be written
   as 7-bit ASCII, JSON-like characters so that other characters can be specified
   (see the <tt>String</tt> definition above for encoding of special characters,
@@ -667,7 +668,7 @@ ship,*DATA_TYPE*,String
 ship,cf_role,trajectory_id
 time,*DATA_TYPE*,String
 time,standard_name,time
-time,units,"M/d/YYYY H:mm:ss"
+time,units,"yyyy-MM-dd'T'HH:mm:ssZ"
 lat,*DATA_TYPE*,double
 lat,units,degrees_north
 lon,*DATA_TYPE*,double
@@ -692,12 +693,12 @@ sst,testStrings," a~,\n'z""\u20AC"
 
 *END_METADATA*
 ship,time,lat,lon,status,testLong,sst
-Bell M. Shimada,3/23/2017 0:45:00,28.0002,-130.2576,A,-9223372036854775808L,10.9
-Bell M. Shimada,3/23/2017 1:45:00,28.0003,-130.3472,\u20AC,-1234567890123456L,
-"Bell M. Shimada","3/23/2017 2:45:00",28.0001,-130.4305,"'\t'",0L,10.7
-Bell M. Shimada,3/23/2017 12:45:00,27.9998,-131.5578,"'""'",1234567890123456L,99
-Bell M. Shimada,3/23/2017 21:45:00,28.0003,-132.0014,\u00fc,9223372036854775806L,10.0
-Bell M. Shimada,3/23/2017 23:45:00,28.0002,-132.1591,,NaN
+Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9
+Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\u20AC,-1234567890123456L,
+"Bell M. Shimada","2017-03-23T02:45:00Z",28.0001,-130.4305,"'\t'",0L,10.7
+Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,"'""'",1234567890123456L,99
+Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,9223372036854775806L,10.0
+Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,,NaN
 </pre>
 
 <p>Notes:
@@ -783,8 +784,7 @@ The software that converts NCCSV files into .nc files will ignore the extra comm
 <p>In Excel, the sample NCCSV file above appears as
 
 <p>
-<img alt="sampleExcel_1.png" src="sampleExcel_1.png" title="">
-<br><img alt="sampleExcel_2.png" src="sampleExcel_2.png" title="">
+<img alt="sampleExcel.png" src="sampleExcel.png" title="">
 
 
 <h3><a name="GoogleSheets">Google Sheets</a></h3>

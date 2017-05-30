@@ -737,10 +737,10 @@ if (lonIndex < nAv - 1)
         String query = oLocalSourceUrl + "tabledap/allDatasets.csv" + 
             "?datasetID,title,griddap,minLongitude,maxLongitude" +
             "&dataStructure=" + SSR.minimalPercentEncode("\"grid\"") + 
-            "&maxLongitude>180" +
+            "&maxLongitude%3E180" +
             (String2.isSomething(datasetNameRegex)? 
                 "&datasetID=" + SSR.minimalPercentEncode("~\"" + datasetNameRegex + "\""): "") +
-            "&orderBy(\"datasetID\")";
+            "&orderBy(%22datasetID%22)";
         String lines[] = null;
         try {
             lines = SSR.getUrlResponse(query);
@@ -813,7 +813,7 @@ sb.append(
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMWchlamday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Child\">\n" +
-"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xc2;&#xb0;, West US, EXPERIMENTAL, 2002-present (Monthly Composite)\n" +
+"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xb0;, West US, EXPERIMENTAL, 2002-present (Monthly Composite)\n" +
 "             minLon=205.0 maxLon=255.0 -->\n" +
 "        <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
 "    </dataset>\n" +

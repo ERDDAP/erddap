@@ -2067,19 +2067,26 @@ public class String2 {
         return sb.toString();
     }
 
-   
+    /**
+     * This is like the other fromJson, but returns "" instead of null.
+     */
+    public static String fromJsonNotNull(String s) {
+        s = fromJson(s);
+        return s == null? "" : s;
+    }
+
     /**
      * This returns the unJSON version of a JSON string 
      * (surrounding "'s (if any) are removed and \\, \f, \n, \r, \t, \/, and \" are unescaped).
      * This is very liberal in what it accepts, including all common C escaped characters:
      * http://msdn.microsoft.com/en-us/library/h21280bw%28v=vs.80%29.aspx
-     * null and "null" are returned as null.
+     * "null" returns the String "null". null returns null.
      *
      * @param s  it may be enclosed by "'s, or not.
      * @return the decoded string
      */
     public static String fromJson(String s) {
-        if (s == null || s.equals("null"))
+        if (s == null)
             return null;
         if (s.length() >= 2 && s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"')
             s = s.substring(1, s.length() - 1);
@@ -2227,7 +2234,8 @@ public class String2 {
         if (s.startsWith(" ") ||
             s.endsWith(" ") ||
             s.indexOf(',') >= 0 || 
-            s.indexOf('"') >= 0)
+            s.indexOf('"') >= 0 ||
+            s.equals("null"))
             return "\"" + sb.toString() + "\"";
         return sb.toString();
     }
@@ -2248,6 +2256,7 @@ public class String2 {
             s.endsWith(" ") ||
             s.indexOf(',') >= 0 || 
             s.indexOf('"') >= 0 ||
+            s.equals("null") ||
             NCCSV_CHAR_ATT_PATTERN.matcher(s).matches() ||  //Looks Like A char
             NCCSV_LLA_NUMBER_PATTERN.matcher(s).matches())  //Looks Like A number
             return "\"" + sb.toString() + "\"";
@@ -6132,6 +6141,23 @@ and zoom and pan with controls in
         //if not pretty sure, don't specify
         return null;
      }
+
+     /**
+      * Convert plain text to simple regex by backslash encoding
+      * all special regex chars.
+      */
+     public static String plainTextToRegex(String s) {
+         int n = s.length();
+         StringBuilder sb = new StringBuilder(n + 32);
+         for (int i = 0; i < n; i++) {
+             char ch = s.charAt(i);
+             if ("\\^$.?*+|{}[]()".indexOf(ch) >= 0)  // , -
+                 sb.append('\\');
+             sb.append(ch);
+         }
+         return sb.toString();
+     }
+
 
 
 } //End of String2 class.

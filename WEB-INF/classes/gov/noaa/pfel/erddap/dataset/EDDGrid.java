@@ -6324,10 +6324,20 @@ Attributes {
                 Attributes catts = av.combinedAttributes();
                 Class tClass = av.destinationDataTypeClass();
                 if (av instanceof EDVTimeStampGridAxis) {
-                    catts = new Attributes(catts); //make changes to a copy
-                    catts.set("units", Calendar2.timePrecisionToTimeFormat(
-                        catts.getString(EDV.TIME_PRECISION)));
+                    //convert to String times
                     tClass = String.class;
+                    catts = new Attributes(catts); //make changes to a copy
+                    String timePre = catts.getString(EDV.TIME_PRECISION);
+                    catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
+
+                    PrimitiveArray pa = catts.get("actual_range");
+                    if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+                        StringArray sa = new StringArray();
+                        for (int i = 0; i < 2; i++)
+                            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(
+                                timePre, pa.getDouble(i), ""));
+                        catts.set("actual_range", sa);
+                    }
                 }
                 table.addColumn(avi, av.destinationName(), 
                     PrimitiveArray.factory(tClass, 1, false), catts);
@@ -6345,7 +6355,7 @@ Attributes {
                 table.addColumn(table.nColumns(), dv.destinationName(), 
                     PrimitiveArray.factory(tClass, 1, false), catts);
             }        
-            table.toNccsv(false, true, 0, writer); //catchScalars, writeMetadata, writeDataRows
+            table.saveAsNccsv(false, true, 0, writer); //catchScalars, writeMetadata, writeDataRows
             return;
         }
 

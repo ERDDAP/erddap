@@ -352,7 +352,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         sourceGlobalAttributes = tSourceAttributes; //at the top of table, so collected last
         addGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         int nav = tAxisVariables.size();
         axisVariables = new EDVGridAxis[nav]; 
