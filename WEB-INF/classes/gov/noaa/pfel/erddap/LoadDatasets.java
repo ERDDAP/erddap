@@ -725,7 +725,7 @@ public class LoadDatasets extends Thread {
 
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
-                EDStatic.majorLoadDatasetsTimeSeriesSB.append(  //header in EDStatic
+                EDStatic.majorLoadDatasetsTimeSeriesSB.insert(0,   //header in EDStatic
 //"Major LoadDatasets Time Series: MLD    Datasets Loaded    Requests (medianTime in seconds)     Number of Threads      Memory (MB)\n" +
 //"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median)  tomWait inotify other  inUse highWater\n");
                     "  " + cDateTimeLocal +  
@@ -912,7 +912,13 @@ public class LoadDatasets extends Thread {
                 EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
                 EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.DistributionSize];
                 EDStatic.responseTimesDistributionLoadDatasets = new int[String2.DistributionSize];
-                removeOldLines(EDStatic.majorLoadDatasetsTimeSeriesSB, 101, 132); //nLines, nChar/line
+                int tpo = 13200; //132 char/line * 100 lines 
+                if (EDStatic.majorLoadDatasetsTimeSeriesSB.length() > tpo) {
+                    //hopefully, start looking at exact desired \n location
+                    int apo = EDStatic.majorLoadDatasetsTimeSeriesSB.indexOf("\n", tpo - 1);
+                    if (apo >= 0)
+                        EDStatic.majorLoadDatasetsTimeSeriesSB.setLength(apo + 1);
+                }                   
 
                 String2.flushLog(); //useful to have this info ASAP and ensure log is flushed periodically
             }

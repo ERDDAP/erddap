@@ -279,7 +279,7 @@ public class EDDTableFromMWFS extends EDDTable{
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         //make the fixedVariables
         dataVariables = new EDV[nFixedVariables + tDataVariables.length];

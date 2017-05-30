@@ -2091,7 +2091,7 @@ public abstract class EDDTable extends EDD {
                 //this isn't precise!!!   should it be required??? or forbidden???
                 if (debugMode) String2.log(">>isTimeStamp=true");
                 if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
-                    tValue = String2.fromJson(tValue);
+                    tValue = String2.fromJsonNotNull(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
                 }                
 
@@ -2141,7 +2141,7 @@ public abstract class EDDTable extends EDD {
                         tValue = tValue + "\"";
 
                     //decode
-                    tValue = String2.fromJson(tValue);
+                    tValue = String2.fromJsonNotNull(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
 
                 } else {
@@ -2164,7 +2164,7 @@ public abstract class EDDTable extends EDD {
                             tValue = tValue + "\"";
 
                         //decode
-                        tValue = String2.fromJson(tValue);
+                        tValue = String2.fromJsonNotNull(tValue);
                         constraintValues.set(constraintValues.size() - 1, tValue);
                     } else {
                         throw new SimpleException(EDStatic.queryError +
@@ -2672,15 +2672,25 @@ public abstract class EDDTable extends EDD {
                 Attributes catts = dv.combinedAttributes();
                 Class tClass = dv.destinationDataTypeClass();
                 if (dv instanceof EDVTimeStamp) {
-                    catts = new Attributes(catts); //make changes to a copy
-                    catts.set("units", Calendar2.timePrecisionToTimeFormat(
-                        catts.getString(EDV.TIME_PRECISION)));
+                    //convert to String times
                     tClass = String.class;
+                    catts = new Attributes(catts); //make changes to a copy
+                    String timePre = catts.getString(EDV.TIME_PRECISION);
+                    catts.set("units", Calendar2.timePrecisionToTimeFormat(timePre));
+
+                    PrimitiveArray pa = catts.get("actual_range");
+                    if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+                        StringArray sa = new StringArray();
+                        for (int i = 0; i < 2; i++)
+                            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(
+                                timePre, pa.getDouble(i), ""));
+                        catts.set("actual_range", sa);
+                    }
                 }
                 table.addColumn(dvi, dv.destinationName(), 
                     PrimitiveArray.factory(tClass, 1, false), catts);
             }        
-            table.toNccsv(false, true, 0, writer); //catchScalars, writeMetadata, writeDataRows
+            table.saveAsNccsv(false, true, 0, writer); //catchScalars, writeMetadata, writeDataRows
             return;
         }
         
@@ -10877,7 +10887,7 @@ public abstract class EDDTable extends EDD {
         if (File2.isFile(adminSubsetFileName + ".json")) {
             //json
             if (reallyVerbose) String2.log("* " + datasetID + 
-                " is making subsetVariablesDataTable(" + loggedInAs + ")\n" +
+                " is making subsetVariablesDataTable(loggedInAs=" + loggedInAs + ")\n" +
                 "from file=" + adminSubsetFileName + ".json");
             table = new Table();
             table.readJson(adminSubsetFileName + ".json");  //throws Exception if trouble
@@ -10909,7 +10919,7 @@ public abstract class EDDTable extends EDD {
         } else if (File2.isFile(adminSubsetFileName + ".csv")) {
             //csv
             if (reallyVerbose) String2.log("* " + datasetID + 
-                " is making subsetVariablesDataTable(" + loggedInAs + ")\n" +
+                " is making subsetVariablesDataTable(loggedInAs=" + loggedInAs + ")\n" +
                 "from file=" + adminSubsetFileName + ".csv");
             table = new Table();
             table.readASCII(adminSubsetFileName + ".csv", 0, 1, "",  //throws Exception if trouble
@@ -10975,7 +10985,7 @@ public abstract class EDDTable extends EDD {
             //save it as subset file
             table.saveAsEnhancedFlatNc(datasetDir() + subsetFileName);
             if (verbose) String2.log("* " + datasetID + 
-                " made subsetVariablesDataTable(" + loggedInAs + ") in time=" +
+                " made subsetVariablesDataTable(loggedInAs=" + loggedInAs + ") in time=" +
                 (System.currentTimeMillis() - time));
             return table;
         }
@@ -11014,7 +11024,7 @@ public abstract class EDDTable extends EDD {
         //save it
         table.saveAsEnhancedFlatNc(datasetDir() + subsetFileName);
         if (verbose) String2.log("* " + datasetID + 
-            " made subsetVariablesDataTable(" + loggedInAs + ").  time=" +
+            " made subsetVariablesDataTable(loggedInAs=" + loggedInAs + ").  time=" +
             (System.currentTimeMillis() - time));
 
 
@@ -11067,7 +11077,7 @@ public abstract class EDDTable extends EDD {
         //create the table and store it in the file
         //**** NOTE: the columns are unrelated!  Each column is sorted separately!
         if (reallyVerbose) String2.log("* " + datasetID + 
-            " is making distinctSubsetVariablesDataTable(" + loggedInAs + ")");
+            " is making distinctSubsetVariablesDataTable(loggedInAs=" + loggedInAs + ")");
         long time = System.currentTimeMillis();
 
         //read the combinations table
@@ -11098,7 +11108,7 @@ public abstract class EDDTable extends EDD {
             throw t;
         }
         if (verbose) String2.log("* " + datasetID + 
-            " made distinctSubsetVariablesDataTable(" + loggedInAs + ").  time=" +
+            " made distinctSubsetVariablesDataTable(loggedInAs=" + loggedInAs + ").  time=" +
             (System.currentTimeMillis() - time) + " (includes subsetVariablesDataTable() time)");
 
 
@@ -11126,8 +11136,8 @@ public abstract class EDDTable extends EDD {
                             "(sourceUrl=" + publicSourceUrl() + "),\n" +
                             "EDDTable.distinctSubsetVariablesDataTable found carriageReturns ('\\r' below)\n" +
                             "or newlines ('\\n' below) in some of the data values.\n" + 
-                            "Since this makes data searches error-prone and causes ERDDAP's .subset web\n" +
-                            "page to fail, it would be great if you could remove the offending characters.\n" +
+                            "Since this makes data searches error-prone and causes ERDDAP's .subset web page\n" +
+                            "to have problems, it would be great if you could remove the offending characters.\n" +
                             "Thank you for looking into this.\n\n");
                         datasetIdPrinted = true;
                     }

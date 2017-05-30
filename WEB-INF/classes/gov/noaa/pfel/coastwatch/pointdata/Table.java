@@ -3148,9 +3148,9 @@ public class Table  {
         }
     }
 
-    /** This is like toNccsv(true, true, Integer.MAX_VALUE) */
-    public String toNccsv() throws Exception {
-        return toNccsv(true, true, Integer.MAX_VALUE);
+    /** This is like saveAsNccsv(true, true, Integer.MAX_VALUE) */
+    public String saveAsNccsv() throws Exception {
+        return saveAsNccsv(true, true, Integer.MAX_VALUE);
     }
 
     /**
@@ -3163,11 +3163,11 @@ public class Table  {
      *    If 0, *END_METADATA* is the last thing in the file.
      * @throws Exception if trouble. No_data is not an error.
      */
-    public String toNccsv(boolean catchScalars, boolean writeMetadata, 
+    public String saveAsNccsv(boolean catchScalars, boolean writeMetadata, 
         int writeDataRows) throws Exception {
 
         StringWriter sw = new StringWriter(1024 + nColumns() * nRows() * 10);
-        toNccsv(catchScalars, writeMetadata, writeDataRows, sw);
+        saveAsNccsv(catchScalars, writeMetadata, writeDataRows, sw);
         return sw.toString();
     }
 
@@ -3176,7 +3176,7 @@ public class Table  {
      * This writes this table to an nccsv file.
      * This writes to a temp file, then renames it into place.
      */
-    public void toNccsvFile(boolean catchScalars, boolean writeMetadata, 
+    public void saveAsNccsvFile(boolean catchScalars, boolean writeMetadata, 
         int writeDataRows, String fullFileName) throws Exception {
 
         BufferedWriter bw = null;
@@ -3186,7 +3186,7 @@ public class Table  {
             bw = new BufferedWriter(
                  new OutputStreamWriter(
                  new FileOutputStream(fullFileName + randomInt), String2.ISO_8859_1));
-            toNccsv(catchScalars, writeMetadata, writeDataRows, bw);
+            saveAsNccsv(catchScalars, writeMetadata, writeDataRows, bw);
             bw.close(); 
             bw = null;
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -3204,8 +3204,9 @@ public class Table  {
 
 
     /**
-     * This saves this table in an NCCSV .csv file.
+     * This saves this table as an NCCSV .csv file.
      * This can be a metadata table -- where scalar vars have 1 value and others have 0 values.
+     * This doesn't change representation of time (e.g., as seconds or as String).
      * This doesn't close the writer at the end.
      * 
      * @param catchScalars If true, this looks at the data for scalars (just 1 value).
@@ -3216,7 +3217,7 @@ public class Table  {
      * @param writer   At the end it is flushed, not closed.
      * @throws Exception if trouble. No_data is not an error.
      */
-    public void toNccsv(boolean catchScalars, boolean writeMetadata, 
+    public void saveAsNccsv(boolean catchScalars, boolean writeMetadata, 
         int writeDataRows, Writer writer) throws Exception {
 
         //figure out what's what
@@ -3313,7 +3314,7 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
-        String results = table.toNccsv(); 
+        String results = table.saveAsNccsv(); 
         String expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -3334,7 +3335,7 @@ public class Table  {
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
-"time,units,M/d/YYYY H:mm:ss\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
 "lat,*DATA_TYPE*,double\n" +
 "lat,units,degrees_north\n" +
 "lon,*DATA_TYPE*,double\n" +
@@ -3359,16 +3360,16 @@ public class Table  {
 "\n" +
 "*END_METADATA*\n" +
 "time,lat,lon,status,testLong,sst\n" +
-"3/23/2017 0:45:00,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"3/23/2017 1:45:00,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"3/23/2017 2:45:00,28.0001,-130.4305,\\t,0L,10.7\n" +
-"3/23/2017 12:45:00,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"3/23/2017 21:45:00,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
-"3/23/2017 23:45:00,28.0002,-132.1591,?,,\n" +
+"2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
+"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
+"2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
+"2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
+"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
+"2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        results = table.toNccsv(false, true, Integer.MAX_VALUE); //don't catch scalar
+        results = table.saveAsNccsv(false, true, Integer.MAX_VALUE); //don't catch scalar
         expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -3389,7 +3390,7 @@ public class Table  {
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
-"time,units,M/d/YYYY H:mm:ss\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
 "lat,*DATA_TYPE*,double\n" +
 "lat,units,degrees_north\n" +
 "lon,*DATA_TYPE*,double\n" +
@@ -3414,12 +3415,12 @@ public class Table  {
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,lat,lon,status,testLong,sst\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",3/23/2017 0:45:00,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",3/23/2017 1:45:00,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",3/23/2017 2:45:00,28.0001,-130.4305,\\t,0L,10.7\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",3/23/2017 12:45:00,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",3/23/2017 21:45:00,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",3/23/2017 23:45:00,28.0002,-132.1591,?,,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -3431,7 +3432,7 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
-        results = table.toNccsv(false, true, Integer.MAX_VALUE); //don't catch scalars
+        results = table.saveAsNccsv(false, true, Integer.MAX_VALUE); //don't catch scalars
         expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -3452,7 +3453,7 @@ public class Table  {
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
-"time,units,M/d/YYYY H:mm:ss\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
 "lat,*DATA_TYPE*,double\n" +
 "lat,units,degrees_north\n" +
 "lon,*DATA_TYPE*,double\n" +
@@ -3477,12 +3478,12 @@ public class Table  {
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,lat,lon,status,testLong,sst\n" +
-"Bell M. Shimada,3/23/2017 0:45:00,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"Bell M. Shimada,3/23/2017 1:45:00,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"Bell M. Shimada,3/23/2017 2:45:00,28.0001,-130.4305,\\t,0L,10.7\n" +
-"Bell M. Shimada,3/23/2017 12:45:00,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"Bell M. Shimada,3/23/2017 21:45:00,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
-"Bell M. Shimada,3/23/2017 23:45:00,28.0002,-132.1591,?,,\n" +
+"Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
+"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
+"Bell M. Shimada,2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
+"Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
+"Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
+"Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
@@ -3494,7 +3495,7 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
-        results = table.toNccsv(true, true, 0);  //catch scalar, writeMetadata, don't write data
+        results = table.saveAsNccsv(true, true, 0);  //catch scalar, writeMetadata, don't write data
         expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -3515,7 +3516,7 @@ public class Table  {
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
-"time,units,M/d/YYYY H:mm:ss\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
 "lat,*DATA_TYPE*,double\n" +
 "lat,units,degrees_north\n" +
 "lon,*DATA_TYPE*,double\n" +
@@ -3554,7 +3555,7 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
-        results = table.toNccsv(); 
+        results = table.saveAsNccsv(); 
         expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -3575,7 +3576,7 @@ public class Table  {
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
-"time,units,M/d/YYYY H:mm:ss\n" +
+"time,units,yyyy-MM-dd'T'HH:mm:ssZ\n" +
 "lat,*DATA_TYPE*,double\n" +
 "lat,units,degrees_north\n" +
 "lon,*DATA_TYPE*,double\n" +
@@ -3600,12 +3601,12 @@ public class Table  {
 "\n" +
 "*END_METADATA*\n" +
 "time,lat,lon,status,testLong,sst\n" +
-"3/23/2017 0:45:00,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
-"3/23/2017 1:45:00,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
-"3/23/2017 2:45:00,28.0001,-130.4305,\\t,0L,10.7\n" +
-"3/23/2017 12:45:00,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
-"3/23/2017 21:45:00,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
-"3/23/2017 23:45:00,28.0002,-132.1591,?,,\n" +
+"2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808L,10.9\n" +
+"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456L,\n" +
+"2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0L,10.7\n" +
+"2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456L,99.0\n" +
+"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806L,10.0\n" +
+"2017-03-23T23:45:00Z,28.0002,-132.1591,?,,\n" +
 "*END_DATA*\n";
         try {
             Test.ensureEqual(results, expected, "results=\n" + results);
@@ -19258,8 +19259,8 @@ String2.log(table.dataToString());
         }
         if (testColumns != null) {
             for (int col = 0; col < testColumns.length; col++) {
-                qSB.append("&" + testColumns[col] + ">=" + testMin[col]);
-                qSB.append("&" + testColumns[col] + "<=" + testMax[col]);
+                qSB.append("&" + testColumns[col] + "%3E=" + testMin[col]);
+                qSB.append("&" + testColumns[col] + "%3C=" + testMax[col]);
             }
         }
         readOpendapSequence(url + "?" + qSB.toString(), skipDapperSpacerRows);
@@ -19845,7 +19846,7 @@ String2.log(table.dataToString());
                 //this isn't precise!!!   should it be required??? or forbidden???
                 if (debugMode) String2.log(">>isTimeStamp=true");
                 if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
-                    tValue = String2.fromJson(tValue);
+                    tValue = String2.fromJsonNotNull(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
                 }                
 
@@ -19895,7 +19896,7 @@ String2.log(table.dataToString());
                         tValue = tValue + "\"";
 
                     //decode
-                    tValue = String2.fromJson(tValue);
+                    tValue = String2.fromJsonNotNull(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
 
                 } else {
@@ -19918,7 +19919,7 @@ String2.log(table.dataToString());
                             tValue = tValue + "\"";
 
                         //decode
-                        tValue = String2.fromJson(tValue);
+                        tValue = String2.fromJsonNotNull(tValue);
                         constraintValues.set(constraintValues.size() - 1, tValue);
                     } else {
                         throw new SimpleException(QUERY_ERROR +
@@ -24049,7 +24050,7 @@ String2.log(table.dataToString());
                     if (sar.length != nCol)
                         throw new IOException( errorInMethod + "JSON syntax error (incorrect number of data values?) on data row #" + pas[0].size() + ".");
                     for (int col = 0; col < nCol; col++) {
-                        String ts = String2.fromJson(sar[col]);
+                        String ts = String2.fromJsonNotNull(sar[col]);
                         //String2.log(">> col=" + col + " ts=" + String2.annotatedString(ts));
                         if (isUTC[col]) 
                             pas[col].addDouble(Calendar2.safeIsoStringToEpochSeconds(ts)); //returns NaN if trouble
@@ -26362,7 +26363,7 @@ expected =
 
 
         try {
-            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?abund_m3&station_id=\"NH05\""; 
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?abund_m3&station_id=%22NH05%22"; 
             table.readOpendapSequence(url, false);
             String2.log(table.toString(3));
             //source has no global metadata 
@@ -26396,7 +26397,7 @@ expected =
 
 
         try {
-            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude&program=\"MESO_1\"";
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude&program=%22MESO_1%22";
             table.readOpendapSequence(url, false);
             results = table.dataToString();
             String2.log(results);
@@ -26934,7 +26935,8 @@ expected =
 
         try {
             String url = 
-                "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet?&time>=1999-01-01&time<=1999-04-01&station=%2241009%22";
+                "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet?" +
+                "&time%3E=1999-01-01&time%3C=1999-04-01&station=%2241009%22";
             long time = 0;
 
             for (int attempt = 0; attempt < 3; attempt++) {

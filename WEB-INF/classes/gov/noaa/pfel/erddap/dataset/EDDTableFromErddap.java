@@ -59,7 +59,7 @@ import ucar.ma2.*;
 public class EDDTableFromErddap extends EDDTable implements FromErddap { 
 
     protected double sourceErddapVersion = 1.22; //default = last version before /version service was added
-    boolean useNccsv;
+    boolean useNccsv; //when requesting data from the remote ERDDAP
 
     /** Indicates if data can be transmitted in a compressed form.
      * It is unlikely anyone would want to change this. */
@@ -223,7 +223,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         sourceGlobalAttributes = sourceTable.globalAttributes();
         boolean qrMode = EDStatic.quickRestart && 
             EDStatic.initialLoadDatasets() && 
-            File2.isFile(quickRestartFullFileName());
+            File2.isFile(quickRestartFullFileName()); //goofy: name is .nc but contents are NCCSV
         if (qrMode) {
             //try to do quick initialLoadDatasets()
             //If this fails anytime during construction, the dataset will be loaded 
@@ -236,7 +236,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 String2.log("  using info from quickRestartFile");
 
             //starting with 1.76, use nccsv for quick restart info
-            sourceTable.readNccsv(quickRestartFullFileName(), false); //readData?
+            sourceTable.readNccsv(quickRestartFullFileName(), false); //goofy: name is .nc but contents are NCCSV
 
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
@@ -321,7 +321,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         }
 
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         //make the dataVariables
         ArrayList<EDV> tDataVariables = new ArrayList();
@@ -392,10 +392,10 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         //save quickRestart info
         if (!qrMode) { //i.e., there is new info
             try {
-                File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
+                File2.makeDirectory(File2.getDirectory(quickRestartFullFileName())); //goofy: name is .nc but contents are NCCSV
                 sourceGlobalAttributes.set("creationTimeMillis", "" + creationTimeMillis);
                 sourceGlobalAttributes.set("sourceErddapVersion", sourceErddapVersion);
-                sourceTable.toNccsvFile(false, true, 0, quickRestartFullFileName());
+                sourceTable.saveAsNccsvFile(false, true, 0, quickRestartFullFileName()); //goofy: name is .nc but contents are NCCSV
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
             }
@@ -707,6 +707,8 @@ try {
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
+"*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
+"*GLOBAL*,time_coverage_start,2017-03-23T00:45:00Z\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
 "*GLOBAL*,Westernmost_Easting,-132.1591d\n" +
 "ship,*DATA_TYPE*,String\n" +
@@ -715,6 +717,7 @@ try {
 "ship,long_name,Ship\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
+"time,actual_range,2017-03-23T00:45:00Z\\n2017-03-23T23:45:00Z\n" +
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +
@@ -814,6 +817,8 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"ship, status, testLong\"\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
+"*GLOBAL*,time_coverage_end,2017-03-23T23:45:00Z\n" +
+"*GLOBAL*,time_coverage_start,2017-03-23T00:45:00Z\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
 "*GLOBAL*,Westernmost_Easting,-132.1591d\n" +
 "ship,*DATA_TYPE*,String\n" +
@@ -1014,7 +1019,7 @@ expected =
             "ChukchiSea_454a_037a_fcf4"); //should work
 
         //*** test getting das for entire dataset
-        String2.log("\n****************** EDDTableFromErddap.test das dds for entire dataset\n");
+        String2.log("\n****************** EDDTableFromErddap.testChukchiSea das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_Entire", ".das"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -1094,7 +1099,7 @@ expected =
 
 
         //*** test make data files
-        String2.log("\n****************** EDDTableFromErddap.test make DATA FILES\n");       
+        String2.log("\n****************** EDDTableFromErddap.testChukchiSea make DATA FILES\n");       
 
         //.asc
         tName = eddTable.makeNewFileForDapQuery(null, null, "&id=\"ae1001c011\"", EDStatic.fullTestCacheDirectory, 
@@ -1134,6 +1139,7 @@ expected =
 
     }
     
+    
     /**
      * This tests the methods in this class.
      *
@@ -1144,13 +1150,14 @@ expected =
         testVerboseOn();
         
         //always done
-        /* 
+        /* */
         testBasic(true);   //rTestNccsvScalar
         testBasic(false);  //rTestNccsvScalarNoRedirect
         testGenerateDatasetsXml();
-*/        testTableNoIoosCat();
-  /*      testQuotes();
+        testTableNoIoosCat();
+        testQuotes();
         testChukchiSea();
+
         /* */
 
         //not usually done

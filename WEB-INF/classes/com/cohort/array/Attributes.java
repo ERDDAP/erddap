@@ -615,6 +615,8 @@ public class Attributes {
 
     /** 
      * This removes any entry which has a String value of 'value'. 
+     * value must equal the pa.toString() of the attribute's value,
+     * so a string with the word null must be requesth here as "\"null\""
      *
      * @param value Any attribute that has this value (when evaluated as a String)
      *   will be removed.
@@ -623,6 +625,7 @@ public class Attributes {
         Iterator it = hashmap.keySet().iterator(); //iterator (not enumeration) since I use it.remove() below
         while (it.hasNext()) {
             String name = (String)it.next();
+            //String2.log(">> lookFor=" + value + " found=" + get(name).toString());
             if (get(name).toString().equals(value))
                 it.remove();
         }
@@ -823,7 +826,7 @@ public class Attributes {
     /**
      * This makes a set of addAttributes which are needed to change a into b.
      * If an attribute in 'a' needs to be set to null, this sets it to the String 
-     *   "null" instead of just nulling it.
+     * "null" instead of just nulling it.
      *
      * @param a an Attributes object
      * @param b another Attributes object
@@ -1115,7 +1118,7 @@ public class Attributes {
 "    number=11, 22\n",
             "atts=\n" + atts.toString());
         a.add(atts);
-        a.removeValue("null");
+        a.removeValue("\"null\"");
         Test.ensureEqual(a, b, "");
         Test.ensureEqual(a.toString(), b.toString(), "");
 

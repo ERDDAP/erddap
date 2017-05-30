@@ -167,7 +167,7 @@ public class TestAll  {
 //          "testNccsvScalar",
 //          "srtm15plus",
 //          "ChukchiSea_454a_037a_fcf4", //for Kevin, SocketException: Connection reset
-//          "ncdcOisst2AmsrAgg", 
+//          "nwioosCoral", 
 //        "-verbose"});
 
 /*    if (false) { //one time fixup of scrippsGliders
@@ -739,6 +739,7 @@ m Pathfinder Version 5.2 grid.";
         //17336 has data url!    //<data_set type="CSV Files">
 //         "/u00/data/points/inportXml/NOAA/NMFS/AFSC/inport/xml/17336.xml",  ".*", ".*", "/u00/data/points/inportData/afsc/", 0, "")); 
 
+//         "https://inport.nmfs.noaa.gov/inport/item/12866/inport-xml",  ".*", ".*", "/u00/data/points/inportData/test/")); 
 //         "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport/xml/17336.xml",  ".*", ".*", "/u00/data/points/inportData/test/", 1, "")); 
 //         "/u00/data/points/inportXml/NOAA/NMFS/AFSC/inport/xml/17336.xml",  ".*", ".*", "/u00/data/points/inportData/afsc/", 1, ""));
 //         "/u00/data/points/inportXml/NOAA/NMFS/AFSC/inport/xml/17336.xml",  ".*", ".*", "/u00/data/points/inportData/afsc/")); 
@@ -751,6 +752,10 @@ m Pathfinder Version 5.2 grid.";
 //    EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort2();
 //    EDDTableFromAsciiFiles.testTimeRange2();
 //    EDD.generateInPortXmlFilesForCoastwatchErddap();
+//   String2.log(EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO(true, 
+//       "https://www.bco-dmo.org/erddap/datasets", "/u00/data/points/bcodmo/", 
+//       "(549122)"));
+
 
 //    EDDTableFromAsciiFiles.testBasic2();
 //    EDDTableFromAsciiFiles.testTimeZone();
@@ -1176,6 +1181,7 @@ m Pathfinder Version 5.2 grid.";
 //    EDDTableFromNccsvFiles.test();
 //    EDDTableFromNccsvFiles.testBasic(true);
 //    EDDTableFromNccsvFiles.testChar();
+//    EDDTableFromNccsvFiles.testActualRange();
 //    EDDGridFromNcFiles.testNccsv();
 //    EDDTableFromDapSequence.testGenerateDatasetsXml2(); 
 //    EDDTableFromErddap.test();

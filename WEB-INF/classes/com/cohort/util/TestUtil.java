@@ -1459,6 +1459,11 @@ public class TestUtil {
         Test.ensureEqual(String2.fromJson("\\x6m"), "", "");
         Test.ensureEqual(String2.fromJson("\\u006m"), "", "");
 
+        Test.ensureEqual(String2.fromJson("null"),        "null", "");
+        Test.ensureEqual(String2.fromJson(null),           null, "");
+        Test.ensureEqual(String2.fromJsonNotNull("null"), "null",   "");
+        Test.ensureEqual(String2.fromJsonNotNull(null),    "",   "");
+
         //toIso88591String
         String2.log("test toIso88591String");
         s = String2.annotatedString(String2.toIso88591String("\u0000\n\r\t\f aA\u0091\u00fc\u20ac"));

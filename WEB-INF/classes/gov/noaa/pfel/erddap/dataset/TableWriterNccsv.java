@@ -5,7 +5,9 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -33,8 +35,6 @@ public class TableWriterNccsv extends TableWriter {
     //set by constructor
 
     //set by firstTime
-//    protected boolean isChar[];
-//    protected boolean isString[];
     protected boolean isLong[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
@@ -90,8 +90,6 @@ public class TableWriterNccsv extends TableWriter {
             writer.write(globalAttributes.toNccsvString(String2.NCCSV_GLOBAL));
 
             //write the column attributes   
-//            isChar    = new boolean[nColumns];
-//            isString  = new boolean[nColumns];
             isLong      = new boolean[nColumns];
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
@@ -99,8 +97,6 @@ public class TableWriterNccsv extends TableWriter {
 
                 String tClass = table.getColumn(col).elementClassString();
                 isLong[col] = tClass.equals("long");
-//                isChar[col]   = tClass.equals("char");
-//                isString[col] = tClass.equals("String");
                 Attributes catts = table.columnAttributes(col);
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
@@ -109,6 +105,14 @@ public class TableWriterNccsv extends TableWriter {
                     tClass = "String";
                     time_precision[col] = catts.getString(EDV.TIME_PRECISION);
                     catts.set("units", Calendar2.timePrecisionToTimeFormat(time_precision[col]));
+                    PrimitiveArray pa = catts.get("actual_range");
+                    if (pa != null && pa instanceof DoubleArray && pa.size() == 2) {
+                        StringArray sa = new StringArray();
+                        for (int i = 0; i < 2; i++)
+                            sa.add(Calendar2.epochSecondsToLimitedIsoStringT(
+                                time_precision[col], pa.getDouble(0), ""));
+                        catts.set("actual_range", sa);
+                    }
                 }
 
                 //this never detects *SCALAR* because it can't see all the data 
