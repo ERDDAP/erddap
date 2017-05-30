@@ -163,7 +163,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 
         addGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         //make the axisVariables
         axisVariables = new EDVGridAxis[2];

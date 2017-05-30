@@ -372,7 +372,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         //create structures to hold the sourceAttributes temporarily
         int ndv = tDataVariables.length;
@@ -1194,6 +1194,8 @@ expected =
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"subsetVariables\">ship, status, testLong</att>\n" +
 "        <att name=\"summary\">This is a paragraph or two describing the dataset.</att>\n" +
+"        <att name=\"time_coverage_end\">2017-03-23T23:45:00Z</att>\n" +
+"        <att name=\"time_coverage_start\">2017-03-23T00:45:00Z</att>\n" +
 "        <att name=\"title\">NCCSV Demonstration</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"double\">-132.1591</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -1224,6 +1226,7 @@ expected =
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">1.4902299E9 1.4903127E9</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -1232,6 +1235,8 @@ expected =
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1.49032E9</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">1.49022E9</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +

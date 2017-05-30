@@ -1559,7 +1559,7 @@ expected =
 "*GLOBAL*,Westernmost_Easting,0.125d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1.1991888E9d,1.1999664E9d\n" +
+"time,actual_range,2008-01-01T12:00:00Z\\n2008-01-10T12:00:00Z\n" +
 "time,axis,T\n" +
 "time,fraction_digits,0i\n" +
 "time,ioos_category,Time\n" +
@@ -1810,7 +1810,7 @@ expected =
 "*GLOBAL*,Westernmost_Easting,0.125d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1.1991888E9d,1.1991888E9d\n" +
+"time,actual_range,2008-01-01T12:00:00Z\\n2008-01-01T12:00:00Z\n" +
 "time,axis,T\n" +
 "time,fraction_digits,0i\n" +
 "time,ioos_category,Time\n" +

@@ -280,7 +280,7 @@ public class EDDTableFromBMDE extends EDDTable{
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
 
         //sourceCanConstrain:
         sourceNeedsExpandedFP_EQ = true;

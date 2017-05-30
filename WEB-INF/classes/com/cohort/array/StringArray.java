@@ -181,7 +181,7 @@ public class StringArray extends PrimitiveArray {
      */
     public void fromJson() {
         for (int i = 0; i < size; i++) 
-            array[i] = String2.canonical(String2.fromJson(array[i])); //doesn't require enclosing "'s
+            array[i] = String2.canonical(String2.fromJsonNotNull(array[i])); //doesn't require enclosing "'s
     }
 
     /** 

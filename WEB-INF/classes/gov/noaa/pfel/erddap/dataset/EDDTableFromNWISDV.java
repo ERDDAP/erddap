@@ -399,7 +399,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
         parameterCode = combinedGlobalAttributes.getString("parameterCode");
         statisticCode = combinedGlobalAttributes.getString("statisticCode");
         if (parameterCode == null)

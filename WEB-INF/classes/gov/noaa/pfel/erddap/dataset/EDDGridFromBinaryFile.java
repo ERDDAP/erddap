@@ -208,7 +208,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
-        combinedGlobalAttributes.removeValue("null");
+        combinedGlobalAttributes.removeValue("\"null\"");
         if (combinedGlobalAttributes.getString("cdm_data_type") == null)
             combinedGlobalAttributes.add("cdm_data_type", "Grid");
         reloadEveryNMinutes = tReloadEveryNMinutes;
