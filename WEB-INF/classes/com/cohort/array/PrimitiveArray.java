@@ -1113,12 +1113,20 @@ public abstract class PrimitiveArray {
 
     /**
      * This returns a JSON-style comma-separated-value list of the elements.
-     * StringArray overwrites this to make a JSON-style representation.
+     * Numeric values where getString(i) returns "" (e.g., NaN) are written as "null" in Json.
+     * CharArray and StringArray overwrite this.
      *
      * @return a csv string of the elements.
      */
     public String toJsonCsvString() {
-        return toString();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(", ");
+            String s = getString(i);
+            sb.append(s.length() == 0? "null" : s); //number missing values -> null
+        }
+        return sb.toString();
     }
 
     /** 
@@ -4717,6 +4725,7 @@ public abstract class PrimitiveArray {
      */
     public static void test() throws Throwable {
         String2.log("*** PrimitiveArray.test");
+/* for releases, this line should have open/close comment */
         testBasic();
         testTestValueOpValue();
         testNccsv();

@@ -467,11 +467,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                         }
                         axisSourceTable.addColumn(avi, axisName, new DoubleArray(), //type doesn't matter
                             sourceAtts); 
-                        String destName = String2.modifyToBeVariableNameSafe(axisName);
-                        axisAddTable.addColumn(   avi, destName, new DoubleArray(), //type doesn't matter
+                        axisAddTable.addColumn(   avi, axisName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
                                 globalSourceAtts,
-                                sourceAtts, destName, false, true)); //addColorBarMinMax, tryToFindLLAT
+                                sourceAtts, null, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
 
@@ -503,12 +502,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 }
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, 
                     sourceAtts);
-                String destName = String2.modifyToBeVariableNameSafe(varName);
-
-                dataAddTable.addColumn(   dataAddTable.nColumns(),   destName, 
+                dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, 
                     makeDestPAForGDX(pa, sourceAtts), 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        globalSourceAtts, sourceAtts, destName, 
+                        globalSourceAtts, sourceAtts, null, varName, 
                         true, false)); //tryToAddColorBarMinMax, tryToFindLLAT); 
             }
 
@@ -594,6 +591,12 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     "!!! The source for " + tDatasetID + " has nGridVariables=" + nGridsAtSource + ",\n" +
                     "but this dataset will only serve " + dataAddTable.nColumns() + 
                     " because the others use different dimensions.\n");
+
+            //tryToFindLLAT 
+            tryToFindLLAT(   axisSourceTable, axisAddTable); //just axisTables
+            ensureValidNames(dataSourceTable, dataAddTable);
+
+            //write results
             sb.append(
                 (generateDatasetsXmlCoastwatchErdMode? "": "-->\n") +
                 "\n" +
@@ -614,9 +617,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             sb.append(writeAttsForDatasetsXml(false, globalSourceAtts, "    "));
             sb.append(writeAttsForDatasetsXml(true,  globalAddAtts,    "    "));
             
-            //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
-            sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, true,  false));
-            sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true,  false, false));
+            //last 2 params: includeDataType, questionDestinationName
+            sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
+            sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true,  false));
             sb.append(
                 "</dataset>\n" +
                 "\n");

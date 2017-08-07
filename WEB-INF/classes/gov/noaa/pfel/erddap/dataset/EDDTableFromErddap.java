@@ -338,7 +338,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
                 //guess ioos_category   (alternative is always assign "Unknown")
                 Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    sourceGlobalAttributes, tSourceAtt, tSourceName, 
+                    sourceGlobalAttributes, tSourceAtt, null, tSourceName, 
                     false, false); //tryToAddColorBarMinMax, tryToFindLLAT
                 //if put it in tSourceAtt, it will be available for quick restart 
                 tSourceAtt.add("ioos_category", tAtts.getString("ioos_category"));
@@ -495,6 +495,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     public static String generateDatasetsXml(String tLocalSourceUrl, boolean keepOriginalDatasetIDs) 
         throws Throwable {
 
+        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("\n*** EDDTableFromErddap.generateDatasetsXml" +
             "\ntLocalSourceUrl=" + tLocalSourceUrl + 
             " keepOriginalDatasetIDs=" + keepOriginalDatasetIDs);
@@ -1149,8 +1150,8 @@ expected =
         String2.log("\n****************** EDDTableFromErddap.test() *****************\n");
         testVerboseOn();
         
+/* for releases, this line should have open/close comment */
         //always done
-        /* */
         testBasic(true);   //rTestNccsvScalar
         testBasic(false);  //rTestNccsvScalarNoRedirect
         testGenerateDatasetsXml();

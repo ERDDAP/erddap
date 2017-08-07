@@ -200,6 +200,7 @@ public class Tally  {
      * @throws Exception if trouble
      */
     public static void test() {
+/* for releases, this line should have open/close comment */
         Tally tally = new Tally();
         tally.add("cat a", "att 2");
         tally.add("cat a", "att 2");

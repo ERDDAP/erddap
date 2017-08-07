@@ -1308,6 +1308,7 @@ reallyVerbose=false;
         String2.log("\n****************** EDDTableCopy.test() *****************\n");
         testVerboseOn();
 
+/* for releases, this line should have open/close comment */
         //always done
         testBasic();    //tests testTableCopy dataset on local erddap
 

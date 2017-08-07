@@ -319,7 +319,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
@@ -340,13 +340,17 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
             "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -407,9 +411,9 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -536,7 +540,7 @@ cdmSuggestion() +
 "Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, eastward, eastward_wind, GST, gust, height, identifier, LAT, latitude, layer, level, LON, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans,\n" +
+"atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, eastward, eastward_wind, GST, gust, height, identifier, latitude, layer, level, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
 "Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" +
 "Oceans &gt; Ocean Waves &gt; Swells,\n" +
@@ -1075,7 +1079,7 @@ cdmSuggestion() +
 
         expected = 
 "  :instrument_type = \"Ocean Surveyor OS75\";\n" +
-"  :QC_Manual = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_Manual = \"Contact Principle Investigaror(s)\";\n" +    //sic
 "  :QC_test_names = \"Contact Principle Investigaror(s)\";\n" +
 "  :QC_test_codes = \"Contact Principle Investigaror(s)\";\n" +
 "  :QC_test_results = \"Contact Principle Investigaror(s)\";\n" +
@@ -1093,7 +1097,7 @@ cdmSuggestion() +
             "sampling_interval,crs"}, false);  //loop?
 
         expected = 
-"  :QC_indicator = \"Contact Principle Investigaror(s)\";\n" +
+"  :QC_indicator = \"Contact Principle Investigaror(s)\";\n" +  //sic
 "  :QC_Software = \"Contact Principle Investigaror(s)\";\n" +
 " data:\n" +
 "sampling_interval =9999.9\n" +
@@ -2681,11 +2685,6 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
 
-        if (String2.getStringFromSystemIn(
-            "This test is very memory intensive. Please close unneeded applications.\n" +
-            "Press Enter to continue or type 'skip' to skip this test: ").equals("skip"))
-            return;
-
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
 
 
@@ -2765,7 +2764,7 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //.csv   test orderBy with implicit all vars
+        //.csv   test orderBy with 1 orderBy var and with implicit all data vars
         userDapQuery = "&station>\"51\"&station<\"512\"" +
             "&time=2005-04-19T23:00:00Z&orderBy(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
@@ -2796,13 +2795,97 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
+        //quick reject -> no orderBy vars
+        //orderBy()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderBy(\"\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "No column names were specified for 'orderBy'.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
         //distinct() + orderBy is not an error
         tName = eddTable.makeNewFileForDapQuery(null, null, 
-            "station,wtmp&orderBy(\"station\")&distinct()",
-            dir, eddTable.className() + "_qr2", ".csv"); 
+            "station,wtmp&station>\"51\"&station<\"512\"" +
+            "&time=2005-04-19T23:00:00Z&orderBy(\"station\")&distinct()",
+            dir, eddTable.className() + "_qr3", ".csv"); 
 
 
     }
+
+    /**
+     * This tests orderByCount.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testOrderByCount() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testOrderByCount() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String error = "";
+
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+
+
+        //.csv
+        //from NdbcMetStation.test31201
+        //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
+        //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
+        userDapQuery = "station,time,wd,wtmp,atmp&station<\"42003\"" +
+            "&time>=2000-01-01&time<2000-01-02&orderByCount(\"station\")";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obc1", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"station,time,wd,wtmp,atmp\n" +
+",count,count,count,count\n" +
+"41001,24,0,24,24\n" +
+"41002,24,24,24,24\n" +
+"41004,24,24,24,24\n" +
+"41008,24,24,24,24\n" +
+"41009,24,24,24,24\n" +
+"41010,24,24,24,24\n" +
+"42001,24,24,24,24\n" +
+"42002,24,23,24,24\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv
+        //from NdbcMetStation.test31201
+        //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
+        //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
+        userDapQuery = "time,wd,wtmp,atmp&station=\"41001\"" +
+            "&time>=2000-01-01&time<2000-01-02&orderByCount(\"\")";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obc2", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"time,wd,wtmp,atmp\n" +
+"count,count,count,count\n" +
+"24,0,24,24\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv   orderByCount can have 0 column names
+        userDapQuery = "station,time,wd,wtmp,atmp" +
+            "&time>=2000-01-01&time<2000-01-02&orderByCount(\"\")";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddTable.className() + "_obc2", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"station,time,wd,wtmp,atmp\n" +
+"count,count,count,count,count\n" +
+"3120,3120,2467,3120,3120\n";  //3120 is nStations*24hours, so nStations=130 during that time period
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+ 
+    }
+
 
     /**
      * This tests orderByMax.
@@ -2865,8 +2948,7 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //quick reject -> orderBy var not in results vars
-        //orderBy()  
+        //quick reject -> orderByMax var not in results vars
         try {
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "station,wtmp&orderByMax(\"station,latitude\")",
@@ -2877,6 +2959,20 @@ expected =
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: orderBy " +
                 "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> 0 orderByMax vars
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByMax(\"\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "No column names were specified for 'orderByMax'.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
     }
@@ -2943,8 +3039,7 @@ expected =
 "2005-04-19T23:00:00Z,51001,24.2,22.1\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //quick reject -> orderBy var not in results vars
-        //orderBy()  
+        //quick reject -> orderByMin var not in results vars
         try {
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "station,wtmp&orderByMin(\"station,latitude\")",
@@ -2955,6 +3050,20 @@ expected =
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: orderBy " +
                 "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> 0 orderByMin vars
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByMin(\"\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "No column names were specified for 'orderByMin'.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
     }
@@ -3032,8 +3141,7 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //quick reject -> orderBy var not in results vars
-        //orderBy()  
+        //quick reject -> orderByMinMax var not in results vars
         try {
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "station,wtmp&orderByMinMax(\"station,latitude\")",
@@ -3044,6 +3152,20 @@ expected =
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: orderBy " +
                 "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> 0 orderByMinMax vars
+        try {
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "station,wtmp&orderByMinMax(\"\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "No column names were specified for 'orderByMinMax'.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
     }
@@ -3068,7 +3190,7 @@ expected =
             "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
             "&orderByClosest(%22station,time,1 day%22)";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_obc", ".csv"); 
+            eddTable.className() + "_obc1", ".csv"); 
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
@@ -3096,7 +3218,7 @@ expected =
             "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
             "&orderByClosest(%22time,1 day%22)";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddTable.className() + "_obc", ".csv"); 
+            eddTable.className() + "_obc2", ".csv"); 
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
@@ -3118,7 +3240,7 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: For " +
-                "orderByClosest, you must specify a CSV list of orderBy " +
+                "orderByClosest, you must specify a CSV list of 1 or more orderBy " +
                 "column names (each of which must be in the list of results " +
                 "variables) plus the interval for the last orderBy variable " +
                 "(e.g., \"stationID,time,10 minutes\"). (CSV.length<2)";
@@ -3136,8 +3258,8 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "java.lang.IllegalArgumentException: Query error: For " +
-                "orderByClosest, you must specify a CSV list of orderBy column " + 
-                "names (each of which must be in the list of results variables) " + 
+                "orderByClosest, you must specify a CSV list of 1 or more orderBy " + 
+                "column names (each of which must be in the list of results variables) " + 
                 "plus the interval for the last orderBy variable (e.g., " +
                 "\"stationID,time,10 minutes\"). " +
                 "(The last orderBy column=station isn't numeric.)";
@@ -3155,7 +3277,7 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: For orderByClosest, " +
-                "you must specify a CSV list of orderBy column names (each of which " +
+                "you must specify a CSV list of 1 or more orderBy column names (each of which " +
                 "must be in the list of results variables) plus the interval for " +
                 "the last orderBy variable (e.g., \"stationID,time,10 minutes\"). " +
                 "(col=time not in results variables)";
@@ -3205,10 +3327,10 @@ expected =
 "-80.166,28.519,2006-01-01T02:00:00Z,21.5,41009\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        //test orderByLimit()
+        //test orderByLimit("3")
         userDapQuery = "longitude,latitude,time,wtmp,station&station=%2241004%22" +
             "&time%3E=2006-01-01T00%3A00%3A00Z&time%3C=2006-01-03T00%3A00%3A00Z" +
-            "&orderByLimit(%223%22)";
+            "&orderByLimit(%223%22)";  //3
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obl2", ".csv"); 
         results = new String((new ByteArray(dir + tName)).toArray());
@@ -3232,9 +3354,9 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: For " +
-                "orderByLimit, you must specify a CSV list of orderBy column " +
-                "names (each of which must be in the list of results variables, " +
-                "but 0 names is okay) plus the maximum number of rows for each " +
+                "orderByLimit, you must specify a CSV list of 0 or more orderBy column " +
+                "names (each of which must be in the list of results variables) " +
+                "plus the maximum number of rows for each " +
                 "group (e.g., \"stationID,100\"). (no CSV)";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
@@ -3250,9 +3372,9 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: For " +
-                "orderByLimit, you must specify a CSV list of orderBy column " +
-                "names (each of which must be in the list of results variables, " +
-                "but 0 names is okay) plus the maximum number of rows for each " +
+                "orderByLimit, you must specify a CSV list of 0 or more orderBy column " +
+                "names (each of which must be in the list of results variables) " +
+                "plus the maximum number of rows for each " +
                 "group (e.g., \"stationID,100\"). (col=station not in results variables)";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
@@ -3268,9 +3390,9 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "java.lang.IllegalArgumentException: Query error: " +
-                "For orderByLimit, you must specify a CSV list of orderBy column " +
-                "names (each of which must be in the list of results variables, " +
-                "but 0 names is okay) plus the maximum number of rows for each " +
+                "For orderByLimit, you must specify a CSV list of 0 or more orderBy column " +
+                "names (each of which must be in the list of results variables) " +
+                "plus the maximum number of rows for each " +
                 "group (e.g., \"stationID,100\"). " +
                 "(limit=zztop must be a positive integer)";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
@@ -4592,7 +4714,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 28775473;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 29293972;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4637,7 +4759,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e\\+8, 1.4932074e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.811229e\\+8, 1.4984832e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4699,7 +4821,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2017-05-13 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2017-07-14 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4709,7 +4831,7 @@ expected =
 "    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "    String creator_url \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +                  //2 changes below:
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2017-04-24&time%3C=2017-05-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2017-06-24&time%3C=2017-07-01&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4727,9 +4849,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2017-05-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2017-07-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2017-05-13 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2017-07-14 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4748,7 +4870,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2017-05-13 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2017-07-14 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4773,7 +4895,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the April 2017 data\\) but is a subset of the " + //month changes
+    "up to and including the June 2017 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4785,7 +4907,7 @@ expected =
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2017-04-26T11:50:00Z\";\n" + //changes
+"    String time_coverage_end \"2017-06-26T13:20:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -10413,7 +10535,6 @@ String expected3 = expected2 +
 "  \"propertyNames\": [\"NO3\", \"time\"],\n" +
 "  \"propertyUnits\": [\"micromoles L-1\", \"UTC\"],\n" +
 "  \"features\": [\n" +
-"\n" +
 "{\"type\": \"Feature\",\n" +
 "  \"geometry\": {\n" +
 "    \"type\": \"Point\",\n" +
@@ -10442,7 +10563,6 @@ expected =
 "    \"NO3\": 24.45,\n" +
 "    \"time\": \"2002-08-19T20:18:00Z\" }\n" +
 "}\n" +
-"\n" +
 "  ],\n" +
 "  \"bbox\": [-126.0, 41.9, -124.1, 44.65]\n" +
 "}\n";
@@ -10459,7 +10579,6 @@ expected =
 "{\n" +
 "  \"type\": \"MultiPoint\",\n" +
 "  \"coordinates\": [\n" +
-"\n" +
 "[-124.4, 44.0],\n" +
 "[-124.4, 44.0],\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -10467,7 +10586,6 @@ expected =
 
 expected = 
 "[-124.1, 44.65]\n" +
-"\n" +
 "  ],\n" +
 "  \"bbox\": [-126.0, 41.9, -124.1, 44.65]\n" +
 "}\n";
@@ -10485,7 +10603,6 @@ expected =
 "{\n" +
 "  \"type\": \"MultiPoint\",\n" +
 "  \"coordinates\": [\n" +
-"\n" +
 "[-124.4, 44.0],\n" +
 "[-124.4, 44.0],\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -10493,7 +10610,6 @@ expected =
 
 expected = 
 "[-124.1, 44.65]\n" +
-"\n" +
 "  ],\n" +
 "  \"bbox\": [-126.0, 41.9, -124.1, 44.65]\n" +
 "}\n" +
@@ -12150,7 +12266,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2017-05-04 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2017-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -12945,7 +13061,6 @@ So the changes seem good. */
 "  \"propertyNames\": [\"time\", \"hours\", \"minutes\", \"seconds\", \"millis\", \"ints\", \"floats\", \"doubles\", \"Strings\"],\n" +
 "  \"propertyUnits\": [\"UTC\", \"UTC\", \"UTC\", \"UTC\", \"UTC\", null, null, null, null],\n" +
 "  \"features\": [\n" +
-"\n" +
 "{\"type\": \"Feature\",\n" +
 "  \"geometry\": {\n" +
 "    \"type\": \"Point\",\n" +
@@ -12991,7 +13106,6 @@ So the changes seem good. */
 "    \"doubles\": 1.0000000000002E12,\n" +
 "    \"Strings\": \"20\" }\n" +
 "}\n" +
-"\n" +
 "  ],\n" +
 "  \"bbox\": [10000.0, 40.0, 10002.0, 42.0]\n" +
 "}\n";
@@ -13566,7 +13680,6 @@ expected =
 "  \"propertyNames\": [\"time\", \"millis\", \"doubles\", \"Strings\"],\n" +
 "  \"propertyUnits\": [\"UTC\", \"UTC\", null, null],\n" +
 "  \"features\": [\n" +
-"\n" +
 "{\"type\": \"Feature\",\n" +
 "  \"geometry\": {\n" +
 "    \"type\": \"Point\",\n" +
@@ -13587,7 +13700,6 @@ expected =
 "    \"doubles\": 1.0000000000002E12,\n" +
 "    \"Strings\": \"20\" }\n" +
 "}\n" +
-"\n" +
 "  ],\n" +
 "  \"bbox\": [10001.0, 41.0, 10002.0, 42.0]\n" +
 "}\n";
@@ -15035,7 +15147,9 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean doAllGraphicsTests) throws Throwable {
-/* */
+        String2.log("\n*** EDDTableFromNcFiles.test()");
+
+/* for releases, this line should have open/close comment */
         test1D(false); //deleteCachedDatasetInfo
         test2D(true); 
         test3D(false);
@@ -15051,7 +15165,8 @@ expected =
         testLatLon();
         testId();
         testDistinct();
-        testOrderBy();   //Needs lots of memory. Close other apps?
+        testOrderBy();  
+        testOrderByCount();  
         testOrderByMax();
         testOrderByMin();
         testOrderByMinMax();

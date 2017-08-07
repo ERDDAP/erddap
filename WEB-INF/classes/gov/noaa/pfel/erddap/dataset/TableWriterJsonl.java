@@ -43,7 +43,6 @@ public class TableWriterJsonl extends TableWriter {
     protected BufferedWriter writer;
 
     //other
-    protected boolean rowsWritten = false;
     public long totalNRows = 0;
 
     /**
@@ -159,6 +158,8 @@ public class TableWriterJsonl extends TableWriter {
                 } else {
                     String s = pas[col].getString(row);
                     //represent NaN as null? yes, that is what json library does
+                    //If I go to https://jsonlint.com/ and enter [1, 2.0, 1e30], it says it is valid.
+                    //If I enter [1, 2.0, NaN, 1e30], it says NaN is not valid.
                     writer.write(s.length() == 0? "null" : s); 
                 }
             }

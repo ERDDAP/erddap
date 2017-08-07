@@ -16,7 +16,7 @@ rem CoastWatch/Bob Simons  bob.simons@noaa.gov
 rem
 
 set thisDir=%~dp0
-java -cp classes;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/itext-1.3.1.jar;lib/activation.jar;lib/activation.jar;lib/lucene-core.jar;lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.sgt.SgtMap %*
+java -cp classes;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.sgt.SgtMap %*
 
 rem finished 
 

@@ -5291,6 +5291,10 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
     &lt;-- (For EDDTableFromAsciiFiles and EDDTableFromColumnarAsciiFiles only) 
     This specifies the number of the first row with data in the files. 
     (The first row of the file is "1". Default = 2.) --&gt;
+  &lt;dimensionsCSV&gt;...&lt;/dimensionsCSV&gt; &lt;-- (For EDDTableFromNcFiles and
+    EDDTableFromMultidimNcFiles only) This is a comma-separated list of dimension names. 
+    If specified, ERDDAP will only read variables in the source files which use
+    some or all of these dimensions, plus all of the scalar variables. --&gt;
   &lt;-- For the next four tags, see <a rel="help" href="#fileNameExtracts">File Name Extracts</a>. --&gt;
   &lt;preExtractRegex&gt;...&lt;/preExtractRegex&gt;
   &lt;postExtractRegex&gt;...&lt;/postExtractRegex&gt;
@@ -5974,8 +5978,11 @@ on how this class works and how to use this class.
   Some advantages of this class are:
   <ul>
   <li>This class can read more variables from a wider variety of file structures.
-    So when you specify a DimensionsCSV in GenerateDatasetXml, this class
-    will find more matching variables.
+    If you specify DimensionsCSV 
+    (a comma-separated list of dimension names) in GenerateDatasetsXml
+    (or &lt;dimensionsCSV&gt; in the datasets.xml info for one of these datasets), 
+    then ERDDAP will only read variables in the source files which use
+    some or all of these dimensions, plus all scalar variables.
   <li>This class can often reject files very quickly if they don't match a request's constraints.
     So reading data from large collections will often go much faster.
   <li>This class handles true char variables (non-String variables) correctly.
@@ -6004,9 +6011,9 @@ on how this class works and how to use this class.
 
   <p>DimensionsCSV - GenerateDatasetsXml will ask for a "DimensionsCSV" string.
   This is a comma-separated-value list of source names of a set of dimensions. 
-  GenerateDatasetsXml will find the data variables in sample .nc file which uses 
-  any or all of those dimensions (and no other dimensions) 
-  and all of the scalar variables in the file
+  GenerateDatasetsXml will only read data variables in sample .nc file which use 
+  some or all of those dimensions (and no other dimensions),
+  plus all of the scalar variables in the file,
   and make the dataset from those data variables. 
   <br>If you specify nothing (an empty string), GenerateDatasetsXml will look for 
   the variables with the most dimensions, on the theory that they will be
@@ -6015,6 +6022,8 @@ on how this class works and how to use this class.
   other group of dimensions. 
   <br>If you just specify a dimension name that doesn't exist 
   (e.g., <tt>NO_MATCH</tt>), ERDDAP will just find all of the scalar variables. 
+  <br>The "DimensionsCSV" string becomes &lt;dimensionsCSV&gt; in the datasets.xml 
+    info for the dataset.
 </ul>
 
 
@@ -6055,8 +6064,9 @@ on how this class works and how to use this class.
 
   <p>DimensionsCSV - GenerateDatasetsXml will ask for a "DimensionsCSV" string.
   This is a comma-separated-value list of source names of a set of dimensions. 
-  GenerateDatasetsXml will find the data variables in the .nc files which use that
-  list of dimensions and make the dataset from those data variables. 
+  GenerateDatasetsXml will find the data variables in the .nc files which use 
+  some or all of those dimensions, plus all scalar variables,
+  and make the dataset from those data variables. 
   If you specify nothing (an empty string), GenerateDatasetsXml will look for 
   the variables with the most dimensions, on the theory that they will be
   the most interesting, but there may be times when you will want to 
@@ -9153,7 +9163,7 @@ zonal&lt;/att&gt;</tt>
           which are an alternative way to specify the actual_range.
         </ul>
 
-      <li><a name="charset"><b>charset</b></a>
+      <!-- <li><a name="charset"><b>charset</b></a>
         <ul>
         <li>This attribute may only be used with char variables 
           (see also <a rel="help" href="#_Encoding">_Encoding</a> which is 
@@ -9200,7 +9210,7 @@ zonal&lt;/att&gt;</tt>
           These characters then show up as odd characters or '?' in ERDDAP.
           <br>&nbsp;
         </ul>
-
+        -->
       <li><a name="colorBar"><b>Color Bar Attributes</b></a> - 
         There are several OPTIONAL variable attributes which specify the suggested
         default attributes for a color bar 
@@ -9306,6 +9316,15 @@ zonal&lt;/att&gt;</tt>
             <ul>
             <li>Valid values are the strings <tt>true</tt> and <tt>false</tt>.
             <li>If this attribute isn't present, the default is <tt>true</tt>.
+            </ul>
+          <li><tt><b>colorBarNSections</b></tt> specifies the default number
+            of sections on the colorBar.  For example,
+            <br><tt>&lt;att name="colorBarNSections"&gt;6&lt;/att&gt;</tt>
+            <ul>
+            <li>Valid values are positive integers.
+            <li>If this attribute isn't present, the default is <tt>-1</tt>,
+              which tells ERDDAP to pick the number of sections based on the
+              range of the colorBar.
             </ul>
           </ul>
         </ul>
@@ -9426,6 +9445,37 @@ zonal&lt;/att&gt;</tt>
           <br>&nbsp;
         </ul>
 
+      <li><a name="fileAccessBaseUrl"><b>fileAccessBaseUrl</b></a> 
+        is a very rarely used attribute that is not from any standard.        
+        If an EDDTable column has file names of web accessible files (e.g., 
+        image, video, or audio files), you can add 
+        <tt>&lt;att name="fileAccessBaseUrl"&gt;<i>someBaseURL</i>&lt;/a&gt;
+        </tt>to specify the base URL (ending with / ) needed
+        to make the file names into complete URLs. Then for .htmlTable responses, ERDDAP will 
+        show the file name as a link to the combined URL (the baseUrl plus the file name). 
+
+        <p>If you want ERDDAP to serve the related files, 
+        make a separate 
+        <a rel="help" href="#EDDTableFromFileNames">EDDTableFromFileNames</a>
+        dataset for those files
+        (it may be a private dataset).
+         <br>&nbsp;
+ 
+      <li><a name="fileAccessArchiveUrl"><b>fileAccessArchiveUrl</b></a> 
+        is a very rarely used attribute that is not from any standard.        
+        If an EDDTable column has file names of web accessible files (e.g., 
+        image, video, or audio files) which are accessible via an archive (e.g., .zip file)
+        accessible via a URL, use 
+        <tt>&lt;att name="fileAccessArchiveUrl"&gt;<i>theURL</i>&lt;/att&gt; 
+        </tt>to specify the URL for the archive. 
+
+        <p>If you want ERDDAP to serve the archive file, 
+        make a separate 
+        <a rel="help" href="#EDDTableFromFileNames">EDDTableFromFileNames</a>
+        dataset for that file
+        (it may be a private dataset).
+         <br>&nbsp;
+ 
       <li><a name="ioos_category"><b>ioos_category</b></a> - 
         This is a REQUIRED variable attribute if <tt>&lt;variablesMustHaveIoosCategory&gt;</tt>
         is set to true (the default) in
@@ -9832,6 +9882,9 @@ zonal&lt;/att&gt;</tt>
             href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml"
             >setup.xml</a>
             file.
+        <li>The CF standard section 8.1 says that if a variable's data is packed via 
+           <a rel="help" href="#scale_factor">scale_factor and/or add_offset</a>,
+           "The units of a variable should be representative of the unpacked data."
         <li><a name="timeUnits">For</a> time and timestamp variables, either the variable's <a rel="help" href="#variableAttributes">sourceAttributes</a>
           or <tt>&lt;addAttributes&gt;</tt> (which takes precedence) MUST have 
             <tt><a rel="help" href="#units">units</a></tt> which is either 
@@ -10018,7 +10071,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.78
+<p>ERDDAP, Version 1.80
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

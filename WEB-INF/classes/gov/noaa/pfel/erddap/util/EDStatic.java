@@ -151,8 +151,9 @@ public class EDStatic {
      * <br>1.74 released on 2016-10-07
      * <br>1.76 released on 2017-05-12
      * <br>1.78 released on 2017-05-27
+     * <br>1.80 released on 2017-08-04
      */   
-    public static String erddapVersion = "1.78";  
+    public static String erddapVersion = "1.80";  
 
     /** 
      * This is almost always false.  
@@ -425,7 +426,8 @@ public static boolean developmentMode = false;
         reallyVerbose,
         subscriptionSystemActive,  convertersActive, slideSorterActive,
         fgdcActive, iso19115Active, geoServicesRestActive, 
-        filesActive, dataProviderFormActive, sosActive, wcsActive, wmsActive,
+        filesActive, dataProviderFormActive, openLayersActive, politicalBoundariesActive,
+        sosActive, wcsActive, wmsActive,
         quickRestart, subscribeToRemoteErddapDataset,
         useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
@@ -760,15 +762,16 @@ public static boolean developmentMode = false;
         fileHelpGrid_nc4,
         fileHelpTable_nc3,
         fileHelpTable_nc4,
-        fileHelp_nccsv,
         fileHelp_nc3Header,
         fileHelp_nc4Header,
+        fileHelp_nccsv,
         fileHelp_nccsvMetadata,
         fileHelp_ncCF,
         fileHelp_ncCFHeader,
         fileHelp_ncCFMA,
         fileHelp_ncCFMAHeader,
         fileHelp_ncml,
+        fileHelp_ncoJson,
         fileHelpGrid_odvTxt,
         fileHelpTable_odvTxt,
         fileHelp_subset,
@@ -1539,6 +1542,10 @@ public static boolean developmentMode = false;
 geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
         filesActive                = setup.getBoolean(         "filesActive",                true); 
         dataProviderFormActive     = setup.getBoolean(         "dataProviderFormActive",     true); 
+        openLayersActive           = setup.getBoolean(         "openLayersActive",           true); 
+        politicalBoundariesActive  = setup.getBoolean(         "politicalBoundariesActive",  true); 
+        SgtMap.drawPoliticalBoundaries = politicalBoundariesActive;
+
 //until SOS is finished, it is always inactive
 sosActive = false;//        sosActive                  = setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
@@ -1991,15 +1998,16 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fileHelpGrid_nc4           = messages.getNotNothingString("fileHelpGrid_nc4",           "");
         fileHelpTable_nc3          = messages.getNotNothingString("fileHelpTable_nc3",          "");
         fileHelpTable_nc4          = messages.getNotNothingString("fileHelpTable_nc4",          "");
-        fileHelp_nccsv             = messages.getNotNothingString("fileHelp_nccsv",             "");
         fileHelp_nc3Header         = messages.getNotNothingString("fileHelp_nc3Header",         "");
         fileHelp_nc4Header         = messages.getNotNothingString("fileHelp_nc4Header",         "");
+        fileHelp_nccsv             = messages.getNotNothingString("fileHelp_nccsv",             "");
         fileHelp_nccsvMetadata     = messages.getNotNothingString("fileHelp_nccsvMetadata",       "");
         fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              "");
         fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        "");
         fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            "");
         fileHelp_ncCFMAHeader      = messages.getNotNothingString("fileHelp_ncCFMAHeader",      "");
         fileHelp_ncml              = messages.getNotNothingString("fileHelp_ncml",              "");
+        fileHelp_ncoJson           = messages.getNotNothingString("fileHelp_ncoJson",           "");
         fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        "");
         fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       "");
         fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            "");

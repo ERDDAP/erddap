@@ -3528,6 +3528,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /** This runs all of the test for this class. */
     public static void test() throws Throwable {
         String2.log("\n*** EDDTableFromFiles.test");
+
+/* for releases, this line should have open/close comment */
         testIsOK();
         testRegex();
     }

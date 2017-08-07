@@ -1138,20 +1138,19 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This overwrites the default PrimitiveArray.toJsonCsvString 
-     * so that strings can be stored in "" with backslash encoding of special characters.
+     * This returns a JSON-style comma-separated-value list of the elements.
+     * CharArray and StringArray overwrite this.
      *
      * @return a csv string of the elements.
      */
     public String toJsonCsvString() {
-        Math2.ensureMemoryAvailable(8L * size, "StringArray.toJsonCsvString"); //8L is lame estimate of bytes/element
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(", ");
-            sb.append(String2.toJson(array[i]));
+            sb.append(String2.toJson(get(i))); //only null returns null
         }
-        return sb.toString(); 
+        return sb.toString();
     }
 
 
@@ -2096,6 +2095,7 @@ public class StringArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing StringArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         StringArray anArray = new StringArray();

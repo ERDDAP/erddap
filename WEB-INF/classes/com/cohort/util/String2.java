@@ -449,6 +449,40 @@ public class String2 {
     }
 
     /**
+     * This goes beyond equalsIgnoreCase by looking after punctuation removed.
+     *
+     * @param s1
+     * @param s2
+     * @return true if find is loosely in s. Return false if s or find !isSomething.
+     */
+    public static boolean looselyEquals(String s1, String s2) {
+        if (s1 == null || s2 == null) 
+            return false;
+
+        int s1Length = s1.length();
+        StringBuilder s1sb = new StringBuilder();
+        for (int i = 0; i < s1Length; i++) {
+            char ch = s1.charAt(i);
+            if (Character.isLetterOrDigit(ch))
+                s1sb.append(Character.toLowerCase(ch));
+        }
+        if (s1sb.length() == 0)
+            return false;
+
+        int s2Length = s2.length();
+        StringBuilder s2sb = new StringBuilder();
+        for (int i = 0; i < s2Length; i++) {
+            char ch = s2.charAt(i);
+            if (Character.isLetterOrDigit(ch))
+                s2sb.append(Character.toLowerCase(ch));
+        }
+        if (s2sb.length() == 0)
+            return false;
+
+        return s1sb.toString().equals(s2sb.toString());
+    }
+
+    /**
      * Finds the first instance of s at or after fromIndex (0.. ) in sb.
      *
      * @param sb a StringBuilder
@@ -1282,7 +1316,7 @@ public class String2 {
      * @return true if c is a whitespace character
      */
     public static final boolean isWhite(int c) {
-        return (c >= '\u0001') && (c <= ' ');
+        return ((c >= '\u0001') && (c <= ' ')) || c == '\u00a0'; //nbsp
     }
 
     /**
@@ -1532,7 +1566,7 @@ public class String2 {
             sb.append(isFileNameSafe(ch)? ch : '_');
         }
         while (sb.indexOf("__") >= 0)
-            String2.replaceAll(sb, "__", "_");
+            replaceAll(sb, "__", "_");
 
         return sb.toString();
     }
@@ -1948,6 +1982,30 @@ public class String2 {
     }
 
     /**
+     * This converts many common &gt;255 Unicode characters to the similar
+     * plain text character.
+     *
+     * @return sb for convenience
+     */
+    public static StringBuilder commonUnicodeToPlainText(StringBuilder sb) {
+        replaceAll(sb, '\u2013', '-');  //endash 
+        replaceAll(sb, '\u2014', '-');  //emdash   --?
+        replaceAll(sb, '\u2018', '\''); //left quote
+        replaceAll(sb, '\u2019', '\''); //right quote
+        replaceAll(sb, '\u201c', '\"'); //left double quote
+        replaceAll(sb, '\u201d', '\"'); //right double quote
+        replaceAll(sb, '\u2212', '-');  //math minus sign
+        replaceAll(sb, '\u03bc', 'µ');  //mu
+        replaceAll(sb, "\u2264", "<="); 
+        replaceAll(sb, "\u2265", ">="); 
+        return sb;
+    }
+
+    public static String commonUnicodeToPlainText(String s) {
+        return commonUnicodeToPlainText(new StringBuilder(s)).toString();
+    }
+
+    /**
      * This adds 0's to the left of the string until there are <TT>nDigits</TT>
      *   to the left of the decimal point (or nDigits total if there isn't
      *   a decimal point).
@@ -2051,7 +2109,7 @@ public class String2 {
                 else if (ch == '\t') sb.append("\\t");
                 else if (ch == '\b') {} //remove it
                 //  / can be encoded as \/ but there is no need and it looks odd
-                else sb.append("\\u" + String2.zeroPad(Integer.toHexString(ch), 4)); 
+                else sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4)); 
             } else if (ch == '\\') {
                 sb.append(s.substring(start, i));  
                 start = i + 1;
@@ -2065,6 +2123,26 @@ public class String2 {
         sb.append(s.substring(start));  
         sb.append('\"');
         return sb.toString();
+    }
+
+    /** This encodes one char to the Json encoding. */
+    public static String charToJsonString(char ch, int firstUEncodedChar, boolean encodeNewline) {
+        //using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
+        if (ch < 32 || ch >= firstUEncodedChar) { 
+            if      (ch == '\f') return "\\f";
+            else if (ch == '\n') return encodeNewline? "\\n" : "\n";
+            else if (ch == '\r') return "\\r";
+            else if (ch == '\t') return "\\t";
+            else if (ch == '\b') return ""; //remove it
+            //  / can be encoded as \/ but there is no need and it looks odd
+            return "\\u" + zeroPad(Integer.toHexString(ch), 4); 
+        } 
+        if (ch == '\\') 
+            return "\\\\";
+        if (ch == '\"') 
+            return "\\\"";
+        // else normal character
+        return "" + ch;
     }
 
     /**
@@ -2199,7 +2277,7 @@ public class String2 {
      * @return the decoded string
      */
     public static String fromNccsvString(String s) {
-        return String2.replaceAll(fromJson(s), "\"\"", "\"");
+        return replaceAll(fromJson(s), "\"\"", "\"");
     }
 
     /**
@@ -2213,7 +2291,7 @@ public class String2 {
         if (ch == '\r') return "\\r";
         if (ch == '\t') return "\\t";
         if (ch == '\"') return "\"\"";
-        if (ch < ' ' || ch > '~') return "\\u" + String2.zeroPad(Integer.toHexString(ch), 4); 
+        if (ch < ' ' || ch > '~') return "\\u" + zeroPad(Integer.toHexString(ch), 4); 
         return "" + ch;
     }
 
@@ -2645,7 +2723,7 @@ public class String2 {
      * Negative numbers are twos compliment, e.g., -4 -&gt; 0xfffffffc.
      */
     public static String to0xHexString(int i, int nHexDigits) {
-        return "0x" + String2.zeroPad(Integer.toHexString(i), nHexDigits);
+        return "0x" + zeroPad(Integer.toHexString(i), nHexDigits);
     }
 
     /**
@@ -3493,7 +3571,7 @@ public class String2 {
      */
     public static void returnLoggingToSystemOut() {
         try {
-            String2.setupLog(true, false, "", false, logFileDefaultMaxSize);
+            setupLog(true, false, "", false, logFileDefaultMaxSize);
         } catch (Throwable t2) {
             System.out.println(MustBe.throwableToString(t2));
         }
@@ -4182,7 +4260,7 @@ and zoom and pan with controls in
             //String2.log(">> parseFloat " + s + " -> " + f);
             return f;
         } catch (Exception e) {
-            String2.log(">> parseFloat exception: " + s);
+            log(">> parseFloat exception: " + s);
             return Float.NaN;
         }
     }
@@ -4504,7 +4582,7 @@ and zoom and pan with controls in
         String fullOutFileName, String search, String replace) 
         throws Exception {       
              
-        String2.log("simpleSearchAndReplace in=" + fullInFileName +
+        log("simpleSearchAndReplace in=" + fullInFileName +
             " out=" + fullOutFileName + " search=" + search + " replace=" + replace);
         String tOutFileName = fullOutFileName + Math2.random(Integer.MAX_VALUE);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(fullInFileName));
@@ -4568,7 +4646,7 @@ and zoom and pan with controls in
         String s = bufferedReader.readLine();
         while (s != null) { //null = end-of-file
             bufferedWriter.write(s.replaceAll(search, replace));
-            bufferedWriter.write(String2.lineSeparator);
+            bufferedWriter.write(lineSeparator);
             s = bufferedReader.readLine();
         }
 
@@ -4777,7 +4855,7 @@ and zoom and pan with controls in
             return s;
         int sLength = s.length();
         int po = 0;
-        while (po < sLength && String2.isWhite(s.charAt(po))) 
+        while (po < sLength && isWhite(s.charAt(po))) 
             po++;
         return po > 0? s.substring(po) : s;
     }
@@ -4794,7 +4872,7 @@ and zoom and pan with controls in
             return s;
         int sLength = s.length();
         int po = sLength;
-        while (po > 0 && String2.isWhite(s.charAt(po - 1))) 
+        while (po > 0 && isWhite(s.charAt(po - 1))) 
             po--;
         return po < sLength? s.substring(0, po) : s;
     }
@@ -4825,9 +4903,9 @@ and zoom and pan with controls in
             //classPath is a URL! so spaces are encoded as %20 on Windows!
             //UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
             try {
-                classPath = URLDecoder.decode(classPath, String2.UTF_8);  
+                classPath = URLDecoder.decode(classPath, UTF_8);  
             } catch (Throwable t) {
-                String2.log(MustBe.throwableToString(t));
+                log(MustBe.throwableToString(t));
             }
         }
 
@@ -5087,8 +5165,8 @@ and zoom and pan with controls in
 
     /**
      * This makes s valid Unicode by converting invalid characters (e.g., #128)
-     * with \\uhhhh. The invalid characters are often Windows charset
-     * characters #127 - 159.
+     * with \\uhhhh (literally 2 backslashes, so no info is lost). 
+     * The invalid characters are often Windows charset characters #127 - 159.
      *
      * @param s
      * @param alsoOK a string with characters (e.g., \r, \n, \t) which are also valid
@@ -5104,11 +5182,11 @@ and zoom and pan with controls in
             if (alsoOK.indexOf(ch) >= 0) 
                 sb.append(ch);
             else if (ch < 32) 
-                sb.append("\\u" + String2.zeroPad(Integer.toHexString(ch), 4));
+                sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4));
             else if (ch < 127) 
                 sb.append(ch);
             else if (ch < 160)
-                sb.append("\\u" + String2.zeroPad(Integer.toHexString(ch), 4));
+                sb.append("\\u" + zeroPad(Integer.toHexString(ch), 4));
             else sb.append(ch);   //160+ is valid                         
         }
         return sb.toString();
@@ -5193,9 +5271,9 @@ and zoom and pan with controls in
      */
     public static byte[] getUTF8Bytes(String s) {
         try {
-            return s.getBytes(String2.UTF_8);             
+            return s.getBytes(UTF_8);             
         } catch (Exception e) {
-            String2.log("Caught " + ERROR + " in String2.getUTF8Bytes(" + s + "): " + 
+            log("Caught " + ERROR + " in String2.getUTF8Bytes(" + s + "): " + 
                 MustBe.throwableToString(e));
             return new byte[]{59, 92, 92, 79, 92}; //ERROR
         }
@@ -5207,11 +5285,11 @@ and zoom and pan with controls in
      */
     public static String utf8ToString(byte[] bar) {
         try {
-            return new String(bar, String2.UTF_8);             
+            return new String(bar, UTF_8);             
         } catch (Exception e) {
-            String2.log("Caught " + ERROR + " in String2.utf8ToString: " + 
+            log("Caught " + ERROR + " in String2.utf8ToString: " + 
                 MustBe.throwableToString(e));
-            return String2.ERROR; 
+            return ERROR; 
         }
     }
 
@@ -5223,11 +5301,11 @@ and zoom and pan with controls in
      */
     public static String toUTF8String(String s) {
         try {
-            return new String(s.getBytes(String2.UTF_8));             
+            return new String(s.getBytes(UTF_8));             
         } catch (Exception e) {
-            String2.log("Caught " + ERROR + " in String2.toUTF8String(" + s + "): " + 
+            log("Caught " + ERROR + " in String2.toUTF8String(" + s + "): " + 
                 MustBe.throwableToString(e));
-            return String2.ERROR; 
+            return ERROR; 
         }
     }
 
@@ -5238,9 +5316,9 @@ and zoom and pan with controls in
         try {
             return utf8ToString(toByteArray(s));             
         } catch (Exception e) {
-            String2.log("Caught " + ERROR + " in String2.fromUTF8String(" + s + "): " + 
+            log("Caught " + ERROR + " in String2.fromUTF8String(" + s + "): " + 
                 MustBe.throwableToString(e));
-            return String2.ERROR; 
+            return ERROR; 
         }
     }
 
@@ -5370,7 +5448,7 @@ and zoom and pan with controls in
                     (int)bytes[i] & 0xFF), 2));   //safe, (int) and 0xFF make it unsigned byte
             return sb.toString();
         } catch (Throwable t) {
-            String2.log(MustBe.throwableToString(t));
+            log(MustBe.throwableToString(t));
             return null;
         }
     }
@@ -5552,12 +5630,12 @@ and zoom and pan with controls in
             }
             char ch = s.charAt(i);
 
-            if (ch != 'x' && String2.isFileNameSafe(ch)) {
+            if (ch != 'x' && isFileNameSafe(ch)) {
                 sb.append(ch);
             } else if (ch <= 255) {
-                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+                sb.append("x" + zeroPad(Integer.toHexString(ch), 2));
             } else {
-                sb.append("xx" + String2.zeroPad(Integer.toHexString(ch), 4));
+                sb.append("xx" + zeroPad(Integer.toHexString(ch), 4));
             }
         }
 
@@ -5603,13 +5681,13 @@ and zoom and pan with controls in
             char ch = s.charAt(i);
 
             //THIS ISN'T RIGHT because isFileNameSafe now allows high ASCII letters! BUT LEAVE IT AS IS.
-            if (ch != 'x' && String2.isFileNameSafe(ch) && ch != '-' && ch != '.' &&
+            if (ch != 'x' && isFileNameSafe(ch) && ch != '-' && ch != '.' &&
                 (i > 0 || ((ch >= 'A' && ch <= 'Z') || (ch >='a' && ch <='z') || (ch == '_')))) {
                 sb.append(ch);
             } else if (ch <= 255) {
-                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+                sb.append("x" + zeroPad(Integer.toHexString(ch), 2));
             } else {
-                sb.append("xx" + String2.zeroPad(Integer.toHexString(ch), 4));
+                sb.append("xx" + zeroPad(Integer.toHexString(ch), 4));
             }
         }
 
@@ -5654,15 +5732,15 @@ and zoom and pan with controls in
             char ch = s.charAt(i);
 
             if (ch == 'x') {
-                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+                sb.append("x" + zeroPad(Integer.toHexString(ch), 2));
             } else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) { //1st chars
                 sb.append(ch);
             } else if (i > 0 && ((ch >= '0' && ch <= '9') || ch == '_')) { //subsequent chars
                 sb.append(ch);
             } else if (ch <= 255) {  //others
-                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+                sb.append("x" + zeroPad(Integer.toHexString(ch), 2));
             } else { //others
-                sb.append("xx" + String2.zeroPad(Integer.toHexString(ch), 4));
+                sb.append("xx" + zeroPad(Integer.toHexString(ch), 4));
             }
         }
 
@@ -5736,7 +5814,7 @@ and zoom and pan with controls in
             if (t != null && t.isDataFlavorSupported(DataFlavor.stringFlavor)) 
                 return (String)t.getTransferData(DataFlavor.stringFlavor);
         } catch (Throwable th) {
-            String2.log(ERROR + " while getting the string from the clipboard:\n" +
+            log(ERROR + " while getting the string from the clipboard:\n" +
                 MustBe.throwableToString(th));
         }
         return null;
@@ -5752,7 +5830,7 @@ and zoom and pan with controls in
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(s), null);
         } catch (Throwable t) {
-            String2.log(ERROR + " while putting the string on the clipboard:\n" +
+            log(ERROR + " while putting the string on the clipboard:\n" +
                 MustBe.throwableToString(t));
         }
     }
@@ -5798,7 +5876,7 @@ and zoom and pan with controls in
                 //not a reference to the parent string, see TestUtil.testString2canonical2()
                 canonical = new String(s); //in case s is from s2.substring, copy to be just the characters
                 tCanonicalMap.put(canonical, new WeakReference(canonical));
-                //String2.log("new canonical string: " + canonical);
+                //log("new canonical string: " + canonical);
             }
             return canonical;
         }

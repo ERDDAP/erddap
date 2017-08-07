@@ -589,7 +589,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * This determines if a variable is a TimeStamp variable by looking
      * for " since " (used for UDUNITS numeric times).
      * Currently, this does not look for String time units 
-     * ("yy" or "YY", a formatting string which has the year designator) 
+     * ("yyyy" or "YYYY", a formatting string which has the year designator) 
      * in the units attribute because this class currently doesn't support String times.
      */
     public static boolean hasTimeUnits(Attributes sourceAttributes, 
@@ -606,7 +606,7 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      * This determines if a variable is a TimeStamp variable by looking
      * for " since " (used for UDUNITS numeric times).
      * Currently, this does not look for String time units 
-     * ("yy" or "YY", a formatting string which has the year designator) 
+     * ("yyyy" or "YYYY", a formatting string which has the year designator) 
      * in the units attribute because this class currently doesn't support String times.
      */
     public static boolean hasTimeUnits(String tUnits) {

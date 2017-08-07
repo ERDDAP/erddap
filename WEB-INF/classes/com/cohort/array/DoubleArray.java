@@ -1269,6 +1269,7 @@ public class DoubleArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing DoubleArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         DoubleArray anArray = new DoubleArray();

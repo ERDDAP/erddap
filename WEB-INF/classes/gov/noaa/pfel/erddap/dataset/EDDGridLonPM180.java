@@ -1442,15 +1442,15 @@ expected =
         results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 78];\n" + //changes
+"  Float64 time[time = 80];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 78][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 80][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 78];\n" +  //changes
+"      Float64 time[time = 80];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1785,7 +1785,7 @@ expected =
     public static void test() throws Throwable {
 
         String2.log("\n****************** EDDGridLonPM180.test() *****************\n");
-        /* */
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXmlFromErddapCatalog(); 
         testGT180();  //this also tests /files/ working for fromErddap localhost dataset
         test1to359(); //NEEDS UPDATE.   this also tests /files/ working for fromNcFiles dataset

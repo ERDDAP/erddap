@@ -20,7 +20,8 @@ import java.io.OutputStreamWriter;
 /**
  * TableWriterGeoJson provides a way to write a longitude,latitude,otherColumns 
  * table to a GeoJSON (http://wiki.geojson.org/Main_Page and specifically
- * http://wiki.geojson.org/GeoJSON_draft_version_5)
+ * http://wiki.geojson.org/GeoJSON_draft_version_5
+ * Ratified in Aug 2016: https://tools.ietf.org/html/rfc7946
  * outputStream in chunks so that the whole table doesn't have to be in memory 
  * at one time.
  * If the results table is just longitude and latitude,
@@ -84,6 +85,8 @@ public class TableWriterGeoJson extends TableWriter {
      * <p>The table should have missing values stored as destinationMissingValues
      * or destinationFillValues.
      * This implementation converts them to NaNs and stores them as nulls.
+     * If I go to https://jsonlint.com/ and enter [1, 2.0, 1e30], it says it is valid.
+     * If I enter [1, 2.0, NaN, 1e30], it says NaN is not valid.
      *
      * @param table with destinationValues
      * @throws Throwable if trouble
@@ -101,11 +104,11 @@ public class TableWriterGeoJson extends TableWriter {
         if (firstTime) {
             lonColumn = table.findColumnNumber(EDV.LON_NAME);
             latColumn = table.findColumnNumber(EDV.LAT_NAME);
+            altColumn = table.findColumnNumber(EDV.ALT_NAME); 
             if (lonColumn < 0 || latColumn < 0) 
                 throw new SimpleException("Error: " +
                     "Requests for GeoJSON data must include the longitude and latitude variables.");
             //it is unclear to me if specification supports altitude in coordinates info...
-            altColumn = -1; //table.findColumnNumber(EDV.ALT_NAME); 
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
@@ -131,13 +134,13 @@ public class TableWriterGeoJson extends TableWriter {
             //create the containing object
             isChar   = new boolean[nColumns];
             isString = new boolean[nColumns];
-            if (nColumns == 2) {
+            if (nColumns == 2 ||
+               (nColumns == 3 && altColumn >= 0)) {
                 //write as MultiPoint
                 writer.write(
                     "{\n" +
                     "  \"type\": \"MultiPoint\",\n" +
-                    "  \"coordinates\": [\n" + 
-                    "\n");
+                    "  \"coordinates\": [\n");
             } else {
                 //write as FeatureCollection
                 writer.write(
@@ -149,7 +152,7 @@ public class TableWriterGeoJson extends TableWriter {
                     Class cClass = table.getColumn(col).elementClass();
                     isChar[  col] = cClass == char.class;
                     isString[col] = cClass == String.class;
-                    if (col != lonColumn && col != latColumn) {
+                    if (col != lonColumn && col != latColumn && col != altColumn) {
                         if (somethingWritten) writer.write(", "); else somethingWritten = true;
                         writer.write(String2.toJson(table.getColumnName(col)));
                     }
@@ -159,7 +162,7 @@ public class TableWriterGeoJson extends TableWriter {
                     "  \"propertyUnits\": [");
                 somethingWritten = false;
                 for (int col = 0; col < nColumns; col++) {
-                    if (col != lonColumn && col != latColumn) {
+                    if (col != lonColumn && col != latColumn && col != altColumn) {
                         if (somethingWritten) writer.write(", "); else somethingWritten = true;
                         String units = isTimeStamp[col]? "UTC" : //not seconds since...
                             table.columnAttributes(col).getString("units");
@@ -168,8 +171,7 @@ public class TableWriterGeoJson extends TableWriter {
                 }
                 writer.write(
                     "],\n" +
-                    "  \"features\": [\n" + 
-                    "\n");
+                    "  \"features\": [\n");
             }
 
         }
@@ -183,7 +185,8 @@ public class TableWriterGeoJson extends TableWriter {
         EDStatic.ensureArraySizeOkay(totalNRows, "GeoJson");
 
         //write the data
-        if (nColumns == 2) {
+        if (nColumns == 2 ||
+            (nColumns == 3 && altColumn >= 0)) {
             /* if nColumns = 2, just write points in a multipoint    example:
             {
               "type": "MultiPoint",
@@ -194,19 +197,26 @@ public class TableWriterGeoJson extends TableWriter {
             }
             */
             for (int row = 0; row < nRows; row++) {
-                if (rowsWritten) writer.write(",\n"); //end previous row
                 double tLon = table.getNiceDoubleData(lonColumn, row);
                 double tLat = table.getNiceDoubleData(latColumn, row);
-                if (!Double.isNaN(tLon) && !Double.isNaN(tLat)) {
-                    //if no lon or lat, don't write the row
-                    //on the theory that data without lon or lat is invalid in wfs client...
-                    minLon = Math.min(minLon, tLon);
-                    minLat = Math.min(minLat, tLat);
-                    maxLon = Math.max(maxLon, tLon);
-                    maxLat = Math.max(maxLat, tLat);                  
-                    writer.write("[" + tLon + ", " + tLat + "]"); //no comma or new line
-                    rowsWritten = true;
+                double tAlt = (altColumn >= 0? table.getNiceDoubleData(altColumn, row) : Double.NaN);
+                if (Double.isNaN(tLon) || Double.isNaN(tLat)) 
+                    continue;
+                minLon = Math.min(minLon, tLon);
+                maxLon = Math.max(maxLon, tLon);
+                minLat = Math.min(minLat, tLat);
+                maxLat = Math.max(maxLat, tLat);                  
+                if (!Double.isNaN(tAlt)) {
+                    minAlt = Math.min(minAlt, tAlt);
+                    maxAlt = Math.max(maxAlt, tAlt);                  
                 }
+                writer.write(
+                    (rowsWritten? ",\n" : "") + //end previous row
+                    "["  + tLon + 
+                    ", " + tLat + 
+                    (Double.isNaN(tAlt)? "" : ", " + tAlt) + 
+                    "]"); //no comma or new line
+                rowsWritten = true;
             }       
 
         } else {
@@ -224,51 +234,60 @@ public class TableWriterGeoJson extends TableWriter {
             for (int row = 0; row < nRows; row++) {
                 double tLon = table.getNiceDoubleData(lonColumn, row);
                 double tLat = table.getNiceDoubleData(latColumn, row);
-                if (!Double.isNaN(tLon) && !Double.isNaN(tLat)) {
-                    //if no lon or lat, don't write the row
-                    //on the theory that data without lon or lat is invalid in wfs client...
-                    minLon = Math.min(minLon, tLon);
-                    minLat = Math.min(minLat, tLat);
-                    maxLon = Math.max(maxLon, tLon);
-                    maxLat = Math.max(maxLat, tLat);                  
-                    if (rowsWritten) writer.write(",\n"); //end previous row
-                    writer.write(
-                        "{\"type\": \"Feature\",\n" + //begin feature
-                            //id?  seems to be not required. I could use cumulativeRowNumber. 
-                        "  \"geometry\": {\n" +
-                        "    \"type\": \"Point\",\n" +
-                        "    \"coordinates\": [" + tLon + ", " + tLat + "] },\n" +
-                        "  \"properties\": {\n");
-
-                    boolean colWritten = false;
-                    for (int col = 0; col < nColumns; col++) {
-                        if (col == lonColumn || col == latColumn) 
-                            continue;
-                        if (colWritten)
-                            writer.write(",\n");
-                        else colWritten = true;
-
-                        String s;
-                        if (isTimeStamp[col]) {
-                            double d = table.getDoubleData(col, row);
-                            s = Double.isNaN(d)? "null" : 
-                                "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
-                                    time_precision[col], d, "") + "\"";
-                        } else if (isChar[col] || isString[col]) {
-                            s = String2.toJson(table.getStringData(col, row));
-                        } else { //numeric
-                            s = table.getStringData(col, row);
-                            //represent NaN as null? yes, that is what json library does
-                            if (s.length() == 0)
-                                s = "null"; 
-                        }
-                        writer.write(
-                            "    " + String2.toJson(table.getColumnName(col)) + ": " + s);
-                    }
-                    writer.write(" }\n"); //end properties
-                    writer.write("}"); //end feature   //no comma or newline
-                    rowsWritten = true;
+                double tAlt = (altColumn >= 0? table.getNiceDoubleData(altColumn, row) : Double.NaN);
+                if (Double.isNaN(tLon) || Double.isNaN(tLat)) 
+                    continue;
+                minLon = Math.min(minLon, tLon);
+                maxLon = Math.max(maxLon, tLon);
+                minLat = Math.min(minLat, tLat);
+                maxLat = Math.max(maxLat, tLat);                  
+                if (!Double.isNaN(tAlt)) {
+                    minAlt = Math.min(minAlt, tAlt);
+                    maxAlt = Math.max(maxAlt, tAlt);                  
                 }
+
+                writer.write(
+                    (rowsWritten? ",\n" : "") + //end previous row
+                    "{\"type\": \"Feature\",\n" + //begin feature
+                        //id?  seems to be not required. I could use cumulativeRowNumber. 
+                    "  \"geometry\": {\n" +
+                    "    \"type\": \"Point\",\n" +
+                    "    \"coordinates\": [" + tLon + 
+                        ", " + tLat + 
+                        (Double.isNaN(tAlt)? "" : ", " + tAlt) + 
+                        "] },\n" +
+                    "  \"properties\": {\n");
+
+                boolean colWritten = false;
+                for (int col = 0; col < nColumns; col++) {
+                    if (col == lonColumn || col == latColumn || col == altColumn) 
+                        continue;
+                    if (colWritten)
+                        writer.write(",\n");
+                    else colWritten = true;
+
+                    String s;
+                    if (isTimeStamp[col]) {
+                        double d = table.getDoubleData(col, row);
+                        s = Double.isNaN(d)? "null" : 
+                            "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
+                                time_precision[col], d, "") + "\"";
+                    } else if (isChar[col] || isString[col]) {
+                        s = String2.toJson(table.getStringData(col, row));
+                    } else { //numeric
+                        s = table.getStringData(col, row);
+                        //represent NaN as null? yes, that is what json library does
+                        //If I go to https://jsonlint.com/ and enter [1, 2.0, 1e30], it says it is valid.
+                        //If I enter [1, 2.0, NaN, 1e30], it says NaN is not valid.
+                        if (s.length() == 0)
+                            s = "null"; 
+                    }
+                    writer.write(
+                        "    " + String2.toJson(table.getColumnName(col)) + ": " + s);
+                }
+                writer.write(" }\n"); //end properties
+                writer.write("}"); //end feature   //no comma or newline
+                rowsWritten = true;
             }       
         }
 
@@ -290,19 +309,28 @@ public class TableWriterGeoJson extends TableWriter {
             return;
 
         //check for MustBe.THERE_IS_NO_DATA
-        if (writer == null)
+        if (writer == null || !rowsWritten)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //end of big array
+        //if rowsWritten, then min/max/Lat/Lon should be finite
+        boolean writeAlt = altColumn >= 0 &&
+            minAlt != Double.MAX_VALUE &&
+            maxAlt != -Double.MAX_VALUE;
         writer.write(
             "\n" + //for end line (no comma) of last coordinate or feature
-            "\n" + //gap
             "  ],\n" + //end of features array
             "  \"bbox\": [" + 
-                minLon + ", " + minLat + 
-                (altColumn >= 0? ", " + minAlt : "") + ", " +
-                maxLon + ", " + maxLat + 
-                (altColumn >= 0? ", " + maxAlt : "") + "]\n" + //2009-07-31 removed ',' after ]
+                (minLon == Double.MAX_VALUE? "null" : minLon) + 
+                ", " + 
+                (minLat == Double.MAX_VALUE? "null" : minLat) + 
+                (writeAlt? ", " + minAlt : "") + 
+                ", " +
+                (maxLon == -Double.MAX_VALUE? "null" : maxLon) + 
+                ", " + 
+                (maxLat == -Double.MAX_VALUE? "null" : maxLat) + 
+                (writeAlt? ", " + maxAlt : "") + 
+                "]\n" + 
             "}\n"); //end of features collection
         if (jsonp != null) 
             writer.write(")");

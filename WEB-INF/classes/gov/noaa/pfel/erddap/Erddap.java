@@ -4380,8 +4380,8 @@ writer.write(
             return;
         }
 
-        //get the datasetID
-        String endOfRequestUrl = requestUrl.substring(datasetIDStartsAt);
+        //get the datasetID          percentDecode because there can be spaces (%20) in dir and file names
+        String endOfRequestUrl = SSR.percentDecode(requestUrl.substring(datasetIDStartsAt));
         //remove nextPath, e.g., after first / in datasetID/someDir/someSubDir
         String id = endOfRequestUrl;
         String nextPath = ""; 
@@ -6688,13 +6688,16 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 String palette = tDataVariable.combinedAttributes().getString("colorBarPalette"); 
                 if (String2.indexOf(EDStatic.palettes, palette) < 0)
                     palette = Math2.almostEqual(3, -minData, maxData)? "BlueWhiteRed" : "Rainbow"; 
+                int nSections = tDataVariable.combinedAttributes().getInt("colorBarNSections"); 
+                if (nSections > 100)
+                    nSections = -1;
                 boolean paletteContinuous = String2.parseBoolean( //defaults to true
                     tDataVariable.combinedAttributes().getString("colorBarContinuous")); 
                 String scale = tDataVariable.combinedAttributes().getString("colorBarScale"); 
                 if (String2.indexOf(EDV.VALID_SCALES, scale) < 0)
                     scale = "Linear";
                 String cptFullName = CompoundColorMap.makeCPT(EDStatic.fullPaletteDirectory, 
-                    palette, scale, minData, maxData, -1, paletteContinuous, 
+                    palette, scale, minData, maxData, nSections, paletteContinuous, 
                     EDStatic.fullCptCacheDirectory);
 
                 //draw the data on the map
@@ -7377,6 +7380,7 @@ writer.write(
 
         if (!EDStatic.wmsActive)
             throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
+        boolean olActive = EDStatic.openLayersActive;
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         if (!tVersion.equals("1.1.0") &&
@@ -7548,7 +7552,10 @@ writer.write(
             "          bgcolor:'0x808080', format:'image/png', transparent:'true'} );\n" +
             "    LakesAndRivers.isBaseLayer=false;\n" +
             "    LakesAndRivers.setVisibility(false);\n" +
-            "\n" +
+            "\n");
+
+        if (EDStatic.politicalBoundariesActive) {
+            scripts.append(
             "    var Nations = new OpenLayers.Layer.WMS( \"National Boundaries\",\n" +
             "        \"" + requestUrl + "?\", \n" +
             "        {" + exceptions + "version:'" + tVersion + "', srs:'EPSG:4326', layers:'Nations', \n" +
@@ -7562,13 +7569,16 @@ writer.write(
             "    States.isBaseLayer=false;\n" +
             "    States.setVisibility(false);\n" +
             "\n");
+        }
 
         scripts.append(
             "    map.addLayers([Land"); //, jplLayer");
         for (int v = 0; v < nLayers; v++) 
             scripts.append(", vLayer[" + v + "]");
 
-        scripts.append(", LandMask, Coastlines, LakesAndRivers, Nations, States]);\n" +  
+        scripts.append(", LandMask, Coastlines, LakesAndRivers" +
+            (EDStatic.politicalBoundariesActive? ", Nations, States" : "") +
+            "]);\n" +  
             "    map.addControl(new OpenLayers.Control.LayerSwitcher());\n" +
             "    map.zoomToMaxExtent();\n" +
             "  }\n");
@@ -7587,6 +7597,8 @@ writer.write(
 
         scripts.append(
             "</script>\n");
+        if (!olActive) 
+            scripts.setLength(0);
 
         //*** html head
         OutputStream out = getHtmlOutputStream(request, response);
@@ -7598,7 +7610,9 @@ writer.write(
             "</head>\n");
 
         //*** html body
-        String tBody = String2.replaceAll(EDStatic.startBodyHtml(loggedInAs), "<body", "<body onLoad=\"init()\"");
+        String tBody = EDStatic.startBodyHtml(loggedInAs);
+        if (olActive)
+            tBody = String2.replaceAll(tBody, "<body", "<body onLoad=\"init()\"");
         String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".graph\">" +
             EDStatic.mag + "</a>";
         writer.write(
@@ -7611,101 +7625,108 @@ writer.write(
                 queryString = "";
             eddGrid.writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, true, 
                 queryString, "");
-            writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
-            writer.write(
-                "&nbsp;\n" + //necessary for the blank line before start of form (not <p>)
-                "<form name=\"f1\" action=\"\">\n" +
-                "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
-                "  <tr>\n" +
-                "    <td colspan=\"2\">" +
-                    String2.replaceAll(
-                        String2.replaceAll(EDStatic.wmsInstructions, "&wmsVersion;", tVersion),
-                        "&erddapUrl;", tErddapUrl) + 
-                    "</td>\n" +
-                "  </tr>\n" 
-                );
+            if (olActive) {
+                writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
+                writer.write(
+                    "&nbsp;\n" + //necessary for the blank line before start of form (not <p>)
+                    "<form name=\"f1\" action=\"\">\n" +
+                    "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
+                    "  <tr>\n" +
+                    "    <td colspan=\"2\">" +
+                        String2.replaceAll( //these are actually OpenLayers instructions
+                            String2.replaceAll(EDStatic.wmsInstructions, "&wmsVersion;", tVersion),
+                            "&erddapUrl;", tErddapUrl) + 
+                        "</td>\n" +
+                    "  </tr>\n" 
+                    );
 
-            //a select widget for each axis (but not for lon or lat)
-            StringBuilder tAxisConstraints = new StringBuilder();
-            for (int gai = 0; gai < gaa.length; gai++) {
-                if (gai == loni || gai == lati) {
-                    tAxisConstraints.append("[]");
-                    continue;
-                }
-                int nOptions = options[gai].length;
-                int nOptionsM1 = nOptions - 1;
-                writer.write(   
-                "  <tr align=\"left\">\n" +
-                "    <td>" + tgaNames[gai] + ":&nbsp;</td>\n" + //2012-12-28 was gaa[gai].destinationName()
-                "    <td width=\"95%\" align=\"left\">");
+                //a select widget for each axis (but not for lon or lat)
+                
+                StringBuilder tAxisConstraints = new StringBuilder();
+                for (int gai = 0; gai < gaa.length; gai++) {
+                    if (gai == loni || gai == lati) {
+                        tAxisConstraints.append("[]");
+                        continue;
+                    }
+                    int nOptions = options[gai].length;
+                    int nOptionsM1 = nOptions - 1;
+                    writer.write(   
+                    "  <tr align=\"left\">\n" +
+                    "    <td>" + tgaNames[gai] + ":&nbsp;</td>\n" + //2012-12-28 was gaa[gai].destinationName()
+                    "    <td width=\"95%\" align=\"left\">");
 
-                //one value: display it
-                if (nOptions <= 1) {
-                    tAxisConstraints.append("[0]");
+                    //one value: display it
+                    if (nOptions <= 1) {
+                        tAxisConstraints.append("[0]");
+                        writer.write(
+                            options[gai][0] + //numeric or time so don't need XML.encodeAsHTML
+                            "</td>\n");
+                        continue;
+                    }
+
+                    //many values: select
                     writer.write(
-                        options[gai][0] + //numeric or time so don't need XML.encodeAsHTML
-                        "</td>\n");
-                    continue;
+                    "      <table cellspacing=\"0\" cellpadding=\"0\">\n" +
+                    "        <tr>\n" +
+                    "          <td><select name=\"" + tgaNames[gai] + "\" size=\"1\" title=\"\" " +
+                    "onChange=\"update" + tgaNames[gai] + "()\" >\n");
+                    tAxisConstraints.append("[" + nOptionsM1 + "]"); //not ideal; legend not updated by user choice
+
+                    for (int i = 0; i < nOptions; i++) 
+                        writer.write("<option" + 
+                            (i == nOptionsM1? " selected=\"selected\"" : "") + //initial selection
+                            ">" + options[gai][i] + "</option>\n"); //numeric or time so don't need XML.encodeAsHTML
+                    writer.write(
+                    "            </select></td>\n");
+
+                    String axisSelectedIndex = "document.f1." + tgaNames[gai] + ".selectedIndex"; //var name can't have internal "." or "-"
+                    writer.write(
+                    "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif\"  \n" +
+                    "            title=\"Select the first item.\"   alt=\"&larr;\" \n" +
+                    "            onMouseUp=\"" + axisSelectedIndex + "=0; update" + tgaNames[gai] + 
+                        "();\" ></td>\n" +
+                    "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "minus.gif\"\n" +
+                    "            title=\"Select the previous item.\"   alt=\"-\" \n" +
+                    "            onMouseUp=\"" + axisSelectedIndex + "=Math.max(0, " +
+                        axisSelectedIndex + "-1); update" + tgaNames[gai] + "();\" ></td>\n" +
+                    "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "plus.gif\"  \n" +
+                    "            title=\"Select the next item.\"   alt=\"+\" \n" +
+                    "            onMouseUp=\"" + axisSelectedIndex + "=Math.min(" + nOptionsM1 + 
+                       ", " + axisSelectedIndex + "+1); update" + tgaNames[gai] + "();\" ></td>\n" +
+                    "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif\" \n" +
+                    "            title=\"Select the last item.\"   alt=\"&rarr;\" \n" +
+                    "            onMouseUp=\"" + axisSelectedIndex + "=" + nOptionsM1 + 
+                        "; update" + tgaNames[gai] + "();\" ></td>\n" +
+                    "        </tr>\n" +
+                    "      </table>\n"); //end of <select> table
+
+                    writer.write(
+                    "    </td>\n" +
+                    "  </tr>\n");
+                } //end of gai loop
+
+                writer.write(
+                    "</table>\n" +
+                    "</form>\n" +
+                    "\n" +
+                    "&nbsp;\n" + //necessary for the blank line before div (not <p>)
+                    "<div style=\"width:600px; height:300px\" id=\"map\"></div>\n" +
+                    "\n");
+
+                //legend for each data var with colorbar info
+                for (int dv = 0; dv < nVars; dv++) {
+                    if (!dva[dv].hasColorBarMinMax())
+                        continue;
+                    writer.write("<p><img src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + 
+                            "/griddap/" + tDatasetID + ".png?" + dva[dv].destinationName() + 
+                            tAxisConstraints.toString() + "&.legend=Only") +
+                        "\" alt=\"The legend.\" title=\"The legend. This colorbar is always relevant for " +
+                        dva[dv].destinationName() + ", even if the other settings don't match.\"/>\n");
                 }
-
-                //many values: select
-                writer.write(
-                "      <table cellspacing=\"0\" cellpadding=\"0\">\n" +
-                "        <tr>\n" +
-                "          <td><select name=\"" + tgaNames[gai] + "\" size=\"1\" title=\"\" " +
-                "onChange=\"update" + tgaNames[gai] + "()\" >\n");
-                tAxisConstraints.append("[" + nOptionsM1 + "]"); //not ideal; legend not updated by user choice
-
-                for (int i = 0; i < nOptions; i++) 
-                    writer.write("<option" + 
-                        (i == nOptionsM1? " selected=\"selected\"" : "") + //initial selection
-                        ">" + options[gai][i] + "</option>\n"); //numeric or time so don't need XML.encodeAsHTML
-                writer.write(
-                "            </select></td>\n");
-
-                String axisSelectedIndex = "document.f1." + tgaNames[gai] + ".selectedIndex"; //var name can't have internal "." or "-"
-                writer.write(
-                "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif\"  \n" +
-                "            title=\"Select the first item.\"   alt=\"&larr;\" \n" +
-                "            onMouseUp=\"" + axisSelectedIndex + "=0; update" + tgaNames[gai] + 
-                    "();\" ></td>\n" +
-                "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "minus.gif\"\n" +
-                "            title=\"Select the previous item.\"   alt=\"-\" \n" +
-                "            onMouseUp=\"" + axisSelectedIndex + "=Math.max(0, " +
-                    axisSelectedIndex + "-1); update" + tgaNames[gai] + "();\" ></td>\n" +
-                "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "plus.gif\"  \n" +
-                "            title=\"Select the next item.\"   alt=\"+\" \n" +
-                "            onMouseUp=\"" + axisSelectedIndex + "=Math.min(" + nOptionsM1 + 
-                   ", " + axisSelectedIndex + "+1); update" + tgaNames[gai] + "();\" ></td>\n" +
-                "          <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif\" \n" +
-                "            title=\"Select the last item.\"   alt=\"&rarr;\" \n" +
-                "            onMouseUp=\"" + axisSelectedIndex + "=" + nOptionsM1 + 
-                    "; update" + tgaNames[gai] + "();\" ></td>\n" +
-                "        </tr>\n" +
-                "      </table>\n"); //end of <select> table
-
-                writer.write(
-                "    </td>\n" +
-                "  </tr>\n");
-            } //end of gai loop
-
-            writer.write(
-                "</table>\n" +
-                "</form>\n" +
-                "\n" +
-                "&nbsp;\n" + //necessary for the blank line before div (not <p>)
-                "<div style=\"width:600px; height:300px\" id=\"map\"></div>\n" +
-                "\n");
-
-            //legend for each data var with colorbar info
-            for (int dv = 0; dv < nVars; dv++) {
-                if (!dva[dv].hasColorBarMinMax())
-                    continue;
-                writer.write("<p><img src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + 
-                        "/griddap/" + tDatasetID + ".png?" + dva[dv].destinationName() + 
-                        tAxisConstraints.toString() + "&.legend=Only") +
-                    "\" alt=\"The legend.\" title=\"The legend. This colorbar is always relevant for " +
-                    dva[dv].destinationName() + ", even if the other settings don't match.\"/>\n");
+            } else { //olActive = false
+                writer.write("\n<p><font class=\"warningColor\">" +
+                    MessageFormat.format(EDStatic.noXxxBecause, "OpenLayers", 
+                        MessageFormat.format(EDStatic.noXxxNotActive, "OpenLayers")) + "</font>\n\n");
             }
 
             //flush
@@ -15871,6 +15892,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
      *
      */
     public static void test() throws Throwable {
+/* for releases, this line should have open/close comment */
         testBasic();
     }
 

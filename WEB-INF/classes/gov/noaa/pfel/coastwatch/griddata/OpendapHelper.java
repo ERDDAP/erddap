@@ -2128,34 +2128,34 @@ public class OpendapHelper  {
 
         String results = atts.toString();
         String expected = //the DODS_ attributes are from an attribute that is a  container.
-"    A=\"Units added\"\n" +
-"    B=\"Data out of range\"\n" +
-"    C=\"Non-sequential time\"\n" +
-"    D=\"Failed T>=Tw>=Td\"\n" +
-"    DODS_dimName=\"f_string\"\n" +
-"    DODS_strlen=13\n" +
-"    E=\"True wind error\"\n" +
-"    F=\"Velocity unrealistic\"\n" +
-"    G=\"Value > 4 s. d. from climatology\"\n" +
-"    H=\"Discontinuity\"\n" +
-"    I=\"Interesting feature\"\n" +
-"    J=\"Erroneous\"\n" +
-"    K=\"Suspect - visual\"\n" +
-"    L=\"Ocean platform over land\"\n" +
-"    long_name=\"quality control flags\"\n" +
-"    M=\"Instrument malfunction\"\n" +
-"    N=\"In Port\"\n" +
-"    O=\"Multiple original units\"\n" +
-"    P=\"Movement uncertain\"\n" +
-"    Q=\"Pre-flagged as suspect\"\n" +
-"    R=\"Interpolated data\"\n" +
-"    S=\"Spike - visual\"\n" +
-"    T=\"Time duplicate\"\n" +
-"    U=\"Suspect - statistial\"\n" +
-"    V=\"Spike - statistical\"\n" +
-"    X=\"Step - statistical\"\n" +
-"    Y=\"Suspect between X-flags\"\n" +
-"    Z=\"Good data\"\n";
+"    A=Units added\n" +
+"    B=Data out of range\n" +
+"    C=Non-sequential time\n" +
+"    D=Failed T>=Tw>=Td\n" +
+"    DODS_dimName=f_string\n" +
+"    DODS_strlen=13i\n" +
+"    E=True wind error\n" +
+"    F=Velocity unrealistic\n" +
+"    G=Value > 4 s. d. from climatology\n" +
+"    H=Discontinuity\n" +
+"    I=Interesting feature\n" +
+"    J=Erroneous\n" +
+"    K=Suspect - visual\n" +
+"    L=Ocean platform over land\n" +
+"    long_name=quality control flags\n" +
+"    M=Instrument malfunction\n" +
+"    N=In Port\n" +
+"    O=Multiple original units\n" +
+"    P=Movement uncertain\n" +
+"    Q=Pre-flagged as suspect\n" +
+"    R=Interpolated data\n" +
+"    S=Spike - visual\n" +
+"    T=Time duplicate\n" +
+"    U=Suspect - statistial\n" +
+"    V=Spike - statistical\n" +
+"    X=Step - statistical\n" +
+"    Y=Suspect between X-flags\n" +
+"    Z=Good data\n";
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(

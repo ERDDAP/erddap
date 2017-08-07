@@ -224,7 +224,7 @@ public class TableWriterAll extends TableWriter {
     /**
      * Call this after finish() to get the data from a DataInputStream 
      * with all of the data for one of the columns.
-     * IT IS UP TO THE CALLER TO COSE THE DataInputStream.
+     * IT IS UP TO THE CALLER TO CLOSE THE DataInputStream.
      * THIS USES ALMOST NO MEMORY.
      * 
      * <p>Missing values are still represented as destinationMissingValue or

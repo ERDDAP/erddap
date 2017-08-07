@@ -1421,8 +1421,11 @@ These datasets were hard to work with:
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsMC"); 
 
-            String id =     "8452660";
-            String cityLL = ",Newport,RI,1930-09-11T00:00:00Z,NWPR1,\"NWLON,PORTS\",-71.3261,41.5044,"; 
+            //String id =     "8452660";
+            //String cityLL = ",Newport,RI,1930-09-11T00:00:00Z,NWPR1,\"NWLON,PORTS\",-71.3261,41.5044,"; 
+            String id =     "8447386";
+            String cityLL = ",Fall River,MA,1955-10-28T00:00:00Z,FRVM3,\"PORTS,Global\",-71.1641,41.7043,"; 
+
             String daysAgo = daysAgo20;
             query = "&stationID=\"" + id + "\"&time>=" + daysAgo + 
                                         "00:00&time<=" + daysAgo + "01:00";             
@@ -1721,7 +1724,9 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
     public static void test(boolean makeSubsetFiles, boolean reloadSF) throws Throwable {
         String2.log("\n****************** EDDTableFromAsciiServiceNOS.test() *****************\n");
         testVerboseOn();
- 
+
+/* for releases, this line should have open/close comment */
+
         //update nosCoops datasets every 3 months
         //then copy [tomcat]/content/erddap/subset/nosCoops*.json files 
         //  to coastwatch ERDDAP /subset
@@ -1735,7 +1740,6 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
         }
 
         //always done   could test all with testNosCoops(".*"); but troublesome to debug
-        /* */
         testNosCoops("nosCoopsWLR1");
         testNosCoops("nosCoopsWLV6");
         testNosCoops("nosCoopsWLR60");

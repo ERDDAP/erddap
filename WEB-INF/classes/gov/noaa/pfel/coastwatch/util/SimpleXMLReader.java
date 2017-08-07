@@ -726,7 +726,8 @@ public class SimpleXMLReader {
         SimpleXMLReader xmlReader;
         String2.log("SimpleXMLReader will now intentionally throw and catch several exceptions.");
         String results, expected;
-        
+ /* for releases, this line should have open/close comment */
+       
         //test invalid start of xml
         String error = "";
         try {

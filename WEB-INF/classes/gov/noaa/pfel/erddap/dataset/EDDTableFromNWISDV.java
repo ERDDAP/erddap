@@ -1317,6 +1317,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         StringArray nonQualifierVars = new StringArray();
         for (int col = 0; col < nCols; col++) { 
            String sourceName = dataSourceTable.getColumnName(col);
+           String destName = sourceName;
 
            //move atts from "source" to addAtts
            Attributes sourceAtts = dataSourceTable.columnAttributes(col);
@@ -1327,13 +1328,8 @@ public class EDDTableFromNWISDV extends EDDTable{
            //so put all atts in add atts
            Attributes tAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                dataSourceTable.globalAttributes(), //but there aren't any
-               addAtts, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
+               addAtts, null, destName, true, true); //addColorBarMinMax, tryToFindLLAT
            addAtts.add(tAtts);  //tAtts have precedence
-
-           String destName = suggestDestinationName(sourceName, sourceAtts, addAtts,
-               addAtts.getString("units"), 
-               addAtts.getString("positive"), 
-               Float.NaN, true);
 
            //add a similar column to dataAddTable
            dataAddTable.addColumn(col, destName,
@@ -1395,6 +1391,9 @@ public class EDDTableFromNWISDV extends EDDTable{
            }
         }
 
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //work on globalAttributes        
         String tSummary = "This dataset has " + tCharacteristicName + 
             " (" + tStatisticName + ") (" + nonQualifierVars.toString() + 
@@ -1443,7 +1442,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));        
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", 
-            true, false, false)); // includeDataType, tryToFindLLAT, questionDestinationName
+            true, false)); // includeDataType, questionDestinationName
         sb.append(
             "</dataset>\n" +
             "\n");

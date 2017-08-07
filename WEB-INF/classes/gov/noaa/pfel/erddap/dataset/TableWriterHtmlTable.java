@@ -60,6 +60,7 @@ public class TableWriterHtmlTable extends TableWriter {
     protected boolean isCharOrString[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
+    protected String fileAccessBaseUrl[];
     protected BufferedWriter writer;
 
     //set later
@@ -176,10 +177,12 @@ public class TableWriterHtmlTable extends TableWriter {
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
+            fileAccessBaseUrl = new String[nColumns];
             int bytesPerRow = (xhtmlMode? 10 : 5) +  //e.g., <tr> </tr> \n
                 nColumns * (xhtmlMode? 9 : 4) ;      //e.g., <td> </td>
             for (int col = 0; col < nColumns; col++) {
                 Attributes catts = table.columnAttributes(col);
+                fileAccessBaseUrl[col] = catts.getString("fileAccessBaseUrl"); //null if none
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
@@ -310,7 +313,14 @@ public class TableWriterHtmlTable extends TableWriter {
                                 s = encode(s);
                             } else {
                                 //if html, display urls and email addresses as links
-                                if (String2.isUrl(s)) {
+                                if (fileAccessBaseUrl[col] != null) {
+                                    //display as a link
+                                    boolean isLocal = fileAccessBaseUrl[col].startsWith(EDStatic.baseUrl);
+                                    s = "<a href=\"" + 
+                                        XML.encodeAsHTMLAttribute(fileAccessBaseUrl[col] + s) + 
+                                        "\">" + XML.encodeAsHTMLAttribute(s) + //just the fileName
+                                       (isLocal? "" : externalLinkHtml) + "</a>";
+                                } else if (String2.isUrl(s)) {
                                     //display as a link
                                     boolean isLocal = s.startsWith(EDStatic.baseUrl);
                                     s = XML.encodeAsHTMLAttribute(s);

@@ -312,7 +312,7 @@ public class EDVTimeStamp extends EDV {
     /**
      * This determines if a variable is a TimeStamp variable by looking
      * for " since " (used for UDUNITS numeric times) or 
-     * "yy" or "YY" (a formatting string which has the year designator) in the units attribute.
+     * "yyyy" or "YYYY" (a formatting string which has the year designator) in the units attribute.
      */
     public static boolean hasTimeUnits(Attributes sourceAttributes, Attributes addAttributes) {
         String tUnits = null;

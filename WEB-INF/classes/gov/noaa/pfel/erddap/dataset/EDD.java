@@ -1618,9 +1618,24 @@ public abstract class EDD {
                         else File2.delete(tName + tmp);                
 
                     } else if (fgdcFile.length() > 0) {
-                        //download the file or copy file from local file system
-                        SSR.downloadFile(fgdcFile, tName, false); //throws Exception
-                    } //else "": the admin is saying this dataset won't have an fgdcFile
+                        if (String2.isUrl(fgdcFile)) {
+                            //download the file
+                            //It is unfortunate that it is re-downloaded each time dataset is reloaded.
+                            SSR.downloadFile(fgdcFile, tName, false); //throws Exception
+                            fgdcFile = tName;
+                        } else if (File2.isFile(fgdcFile)) {
+                            //copy the file to datasetDir
+                            File2.copy(fgdcFile, tName);
+                        } else {  
+                            //file doesn't exist
+                            throw new SimpleException(
+                                "The specified <fgdcFile> doesn't exist.");
+                        }
+                            
+                    } else {
+                        accessibleViaFGDC = MessageFormat.format(
+                            EDStatic.noXxx, "FGDC"); 
+                    }
                     
                 } catch (Throwable t) {
                     String2.log(MessageFormat.format(
@@ -1676,9 +1691,24 @@ public abstract class EDD {
                         else File2.delete(tName + tmp);                
 
                     } else if (iso19115File.length() > 0) {
-                        //download the file or copy file from local file system
-                        SSR.downloadFile(fgdcFile, tName, false); //throws Exception
-                    } //else "": the admin is saying this dataset won't have an iso19115
+                        if (String2.isUrl(iso19115File)) {
+                            //download the file
+                            //It is unfortunate that it is re-downloaded each time dataset is reloaded.
+                            SSR.downloadFile(iso19115File, tName, false); //throws Exception
+                            iso19115File = tName;
+                        } else if (File2.isFile(iso19115File)) {
+                            //copy the file to datasetDir
+                            File2.copy(iso19115File, tName);
+                        } else {  
+                            //file doesn't exist
+                            throw new SimpleException(
+                                "The specified <iso19115File> doesn't exist.");
+                        }
+                            
+                    } else {
+                        accessibleViaISO19115 = MessageFormat.format(
+                            EDStatic.noXxx, "ISO 19115-2/19139"); 
+                    }
 
                 } catch (Throwable t) {
                     String2.log(MessageFormat.format(
@@ -3006,7 +3036,8 @@ public abstract class EDD {
                     "title=\"" + 
                     XML.encodeAsHTMLAttribute(EDStatic.filesDescription +
                         (this instanceof EDDTableFromFileNames? "" : 
-                            " " + EDStatic.warning + " " + EDStatic.filesWarning)) +
+                            "\n" + EDStatic.warning + " " + 
+                            String2.replaceAll(EDStatic.filesWarning, "<br>", ""))) +
                     "\" \n" +
                 "         href=\"" + tErddapUrl + "/files/" + datasetID + "/\">" + 
                 EDStatic.EDDFiles + "</a>\n";
@@ -3164,6 +3195,22 @@ public abstract class EDD {
 
     /**
      * This is used by generateDatasetsXml to find out if a table 
+     * has longitude, latitude, and time variables.
+     *
+     * @param addTable with columns meanings that exactly parallel sourceTable
+     *   (although, often different column names, e.g., lat, latitude).
+     *   This can't be null.
+     * @return true if it probably does
+     */
+    public static boolean hasLonLatTime(Table addTable) {
+        return 
+            addTable.findColumnNumber(EDV.LON_NAME) >= 0 &&
+            addTable.findColumnNumber(EDV.LAT_NAME) >= 0 &&
+            addTable.findColumnNumber(EDV.TIME_NAME) >= 0;
+    }
+
+    /**
+     * This is used by generateDatasetsXml to find out if a table 
      * probably has longitude, latitude, and time variables.
      *
      * @param sourceTable  This can't be null.
@@ -3182,9 +3229,9 @@ public abstract class EDD {
                 "!= addTable nColumns=" + an + " (" +    addTable.getColumnNamesCSVString() + ")");
         for (int col = 0; col < sn; col++) {
             String colName = addTable.getColumnName(col).toLowerCase();
-            String units = addTable.columnAttributes(col).getString("units");
-            if (units == null)
-                units = sourceTable.columnAttributes(col).getString("units");
+            String units = getAddOrSourceAtt(
+                   addTable.columnAttributes(col), 
+                sourceTable.columnAttributes(col), "units", null);
             if (colName.equals(EDV.LON_NAME) || 
                 colName.equals("lon") ||
                 EDV.LON_UNITS.equals(units)) 
@@ -3201,9 +3248,141 @@ public abstract class EDD {
     }
 
     /**
+     * This ensures the destination names are valid (e.g., no bad chars).
+     *
+     * @param sourceTable  May be be null.
+     * @param addTable with columns meanings that exactly parallel sourceTable
+     *   (although, often different column names, e.g., lat, latitude).
+     *   This can't be null.
+     */
+    public static void ensureValidNames(Table sourceTable, Table addTable) {
+        //String2.log(">> tryToFindLLAT");
+        int an = addTable.nColumns();
+        int sn = sourceTable == null? an : sourceTable.nColumns();
+        if (sn != an)
+            throw new RuntimeException(
+                "sourceTable nColumns=" + sn + " (" + sourceTable.getColumnNamesCSVString() + ")\n" +
+                "!= addTable nColumns=" + an + " (" +    addTable.getColumnNamesCSVString() + ")");
+
+        for (int col = 0; col < sn; col++) {
+            //class not always known
+            Class tClass = addTable.getColumn(col).elementClass();
+            boolean isNumeric = tClass != String.class && tClass != char.class;
+            String colName = addTable.getColumnName(col);
+            String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
+            Attributes sourceAtts = sourceTable == null? null : sourceTable.columnAttributes(col);
+            Attributes    addAtts =                                addTable.columnAttributes(col);
+            String units      = getAddOrSourceAtt(addAtts, sourceAtts, "units",         null);
+            String positive   = getAddOrSourceAtt(addAtts, sourceAtts, "positive",      null);
+            String stdName    = getAddOrSourceAtt(addAtts, sourceAtts, "standard_name", null);
+            float scaleFactor = addAtts.getFloat("scale_factor");
+            if (sourceAtts != null && Float.isNaN(scaleFactor))
+                scaleFactor = sourceAtts.getFloat("scale_factor");
+
+            //ensure destination name is valid
+            colName = suggestDestinationName(colName, sourceAtts, addAtts, units, 
+                positive, scaleFactor, false); //tryToFindLLAT - do it below
+            addTable.setColumnName(col, colName);
+
+            //Do LLAT already exist?
+            //String2.log("\n>>colName=" + colName + " units=" + units);
+            String colNameLC = colName.toLowerCase();
+            if (colNameLC.equals(EDV.LON_NAME)) {
+                if (isNumeric && EDV.couldBeLonUnits(units)) {
+                    addTable.setColumnName(col, EDV.LON_NAME);
+                    if (!String2.looselyEquals(sourceName, EDV.LON_NAME) &&
+                        !"lon".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
+                    if (!EDV.LON_UNITS.equals(units))
+                        addAtts.set("units", EDV.LON_UNITS);
+                    if (stdName == null)
+                        addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
+                } else {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.LON_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.LON_NAME) &&
+                        !"lon".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
+                }
+            } else if (colNameLC.equals(EDV.LAT_NAME)) {
+                if (isNumeric && EDV.couldBeLatUnits(units)) {
+                    addTable.setColumnName(col, EDV.LAT_NAME);
+                    if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) &&
+                        !"lat".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
+                    if (!EDV.LAT_UNITS.equals(units))
+                        addAtts.set("units", EDV.LAT_UNITS);
+                    if (stdName == null)
+                        addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
+                } else {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.LAT_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) &&
+                        !"lat".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
+                }
+            } else if ((colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
+                if (isNumeric &&
+                    (units == null || units.length() == 0 || 
+                     String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { //case sensitive
+                    addTable.setColumnName(col, colNameLC);
+                    if (!EDV.ALT_UNITS.equals(units))
+                        addAtts.set("units", EDV.ALT_UNITS); //EDV.DEPTH_UNITS are also "m"
+                    if (colNameLC.equals(EDV.ALT_NAME)) {
+                        if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                            addAtts.set("source_name", sourceName);
+                        if (stdName == null)
+                            addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
+                    } else {
+                        if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                            addAtts.set("source_name", sourceName);
+                        if (stdName == null)
+                            addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
+                    }
+                } else if (EDV.ALT_NAME.equals(colNameLC)) {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.ALT_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.ALT_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                        addAtts.set("source_name", sourceName);
+                } else if (EDV.DEPTH_NAME.equals(colNameLC)) {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.DEPTH_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.DEPTH_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                        addAtts.set("source_name", sourceName);
+                }
+            } else if (colNameLC.equals(EDV.TIME_NAME)) {
+                if (Calendar2.isTimeUnits(units)) {
+                    addTable.setColumnName(col, EDV.TIME_NAME);
+                    if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+                        addAtts.set("source_name", sourceName);
+                    if (stdName == null)
+                        addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
+                } else {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.TIME_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+                        addAtts.set("source_name", sourceName);
+                //String2.log(">>Set time_");
+                }
+            }
+        }
+    }
+
+    /**
      * This is used by generateDatasetsXml to change the 
      * names in the addTable to longitude, latitude, altitude/depth, and time,
      * if warranted.
+     * This also ensures that destinationNames are valid names (e.g., no bad chars).
      *
      * @param sourceTable  May be be null.
      * @param addTable with columns meanings that exactly parallel sourceTable
@@ -3213,6 +3392,7 @@ public abstract class EDD {
      * @return true if it found LLT (altitude/depth is ignored)
      */
     public static boolean tryToFindLLAT(Table sourceTable, Table addTable) {
+        //String2.log(">> tryToFindLLAT");
         boolean hasLon = false, hasLat = false, hasAltDepth = false, hasTime = false;
         int an = addTable.nColumns();
         int sn = sourceTable == null? an : sourceTable.nColumns();
@@ -3224,77 +3404,252 @@ public abstract class EDD {
         //simple search for existing LLAT
         //Does it have the correct name and correct units (or units="")?
         for (int col = 0; col < sn; col++) {
+            //class not always known
+            Class tClass = addTable.getColumn(col).elementClass();
+            boolean isNumeric = tClass != String.class && tClass != char.class;
             String colName = addTable.getColumnName(col);
+            String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
+            Attributes sourceAtts = sourceTable == null? null : sourceTable.columnAttributes(col);
+            Attributes    addAtts =                                addTable.columnAttributes(col);
+            String units      = getAddOrSourceAtt(addAtts, sourceAtts, "units",         null);
+            String positive   = getAddOrSourceAtt(addAtts, sourceAtts, "positive",      null);
+            String stdName    = getAddOrSourceAtt(addAtts, sourceAtts, "standard_name", null);
+            float scaleFactor = addAtts.getFloat("scale_factor");
+            if (sourceAtts != null && Float.isNaN(scaleFactor))
+                scaleFactor = sourceAtts.getFloat("scale_factor");
+
+            //ensure destination name is valid
+            colName = suggestDestinationName(colName, sourceAtts, addAtts, units, 
+                positive, scaleFactor, false); //tryToFindLLAT - do it below
+            addTable.setColumnName(col, colName);
+
+            //Do LLAT already exist?
+            //String2.log("\n>>colName=" + colName + " units=" + units);
             String colNameLC = colName.toLowerCase();
-            String units = addTable.columnAttributes(col).getString("units");
-            if (units == null && sourceTable != null)
-                units = sourceTable.columnAttributes(col).getString("units");
             if (!hasLon && colNameLC.equals(EDV.LON_NAME)) {
-                if (units == null || units.length() == 0 || 
-                    String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, units) >= 0) {
-                    addTable.setColumnName(col, colNameLC);
+                if (isNumeric && EDV.couldBeLonUnits(units)) {
+                    addTable.setColumnName(col, EDV.LON_NAME);
+                    if (!String2.looselyEquals(sourceName, EDV.LON_NAME) &&
+                        !"lon".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
                     if (!EDV.LON_UNITS.equals(units))
-                        addTable.columnAttributes(col).set("units", EDV.LON_UNITS);
+                        addAtts.set("units", EDV.LON_UNITS);
+                    if (stdName == null)
+                        addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
                     hasLon = true;
-                } else if (colName.equals(colNameLC)) {
-                    addTable.setColumnName(col, colName + "_");
+                } else {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.LON_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.LON_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.LON_NAME) &&
+                        !"lon".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
                 }
             } else if (!hasLat && colNameLC.equals(EDV.LAT_NAME)) {
-                if (units == null || units.length() == 0 || 
-                    String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, units) >= 0) {
-                    addTable.setColumnName(col, colNameLC);
+                if (isNumeric && EDV.couldBeLatUnits(units)) {
+                    addTable.setColumnName(col, EDV.LAT_NAME);
+                    if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) &&
+                        !"lat".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
                     if (!EDV.LAT_UNITS.equals(units))
-                        addTable.columnAttributes(col).set("units", EDV.LAT_UNITS);
+                        addAtts.set("units", EDV.LAT_UNITS);
+                    if (stdName == null)
+                        addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
                     hasLat = true;
-                } else if (colName.equals(colNameLC)) {
-                    addTable.setColumnName(col, colName + "_");
+                } else {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.LAT_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.LAT_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) &&
+                        !"lat".equals(sourceName.toLowerCase()))
+                        addAtts.set("source_name", sourceName);
                 }
             } else if (!hasAltDepth && 
                        (colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
-                if (units == null || units.length() == 0 || 
-                    String2.indexOf(EDV.METERS_VARIANTS, units) >= 0) { //case sensitive
+                if (isNumeric &&
+                    (units == null || units.length() == 0 || 
+                     String2.indexOf(EDV.METERS_VARIANTS, units) >= 0)) { //case sensitive
                     addTable.setColumnName(col, colNameLC);
                     if (!EDV.ALT_UNITS.equals(units))
-                        addTable.columnAttributes(col).set("units", EDV.ALT_UNITS);
+                        addAtts.set("units", EDV.ALT_UNITS); //EDV.DEPTH_UNITS are also "m"
+                    if (colNameLC.equals(EDV.ALT_NAME)) {
+                        if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                            addAtts.set("source_name", sourceName);
+                        if (stdName == null)
+                            addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
+                    } else {
+                        if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                            addAtts.set("source_name", sourceName);
+                        if (stdName == null)
+                            addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
+                    }
                     hasAltDepth = true;
-                } else if (colName.equals(colNameLC)) {
-                    addTable.setColumnName(col, colName + "_");
+                } else if (EDV.ALT_NAME.equals(colNameLC)) {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.ALT_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.ALT_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                        addAtts.set("source_name", sourceName);
+                } else if (EDV.DEPTH_NAME.equals(colNameLC)) {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.DEPTH_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.DEPTH_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                        addAtts.set("source_name", sourceName);
                 }
             } else if (!hasTime && colNameLC.equals(EDV.TIME_NAME)) {
                 if (Calendar2.isTimeUnits(units)) {
-                    addTable.setColumnName(col, colNameLC);
+                    addTable.setColumnName(col, EDV.TIME_NAME);
+                    if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+                        addAtts.set("source_name", sourceName);
+                    if (stdName == null)
+                        addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
                     hasTime = true;
-                } else if (colName.equals(colNameLC)) {
-                    addTable.setColumnName(col, colName + "_");
+                } else {
+                    int n = 2;
+                    while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0)
+                        n++;
+                    addTable.setColumnName(col, EDV.TIME_NAME + n);
+                    if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+                        addAtts.set("source_name", sourceName);
+                //String2.log(">>Set time_");
                 }
             }
         }
+        //String2.log(">> hasLat=" + hasLat + " hasLon=" + hasLon + " hasTime=" + hasTime); 
 
-        //search for compatible units for LLT
+        //look for lat and lon and time with date and time
         for (int col = 0; col < sn; col++) {
+            //class not always known
+            Class tClass = addTable.getColumn(col).elementClass();
+            boolean isNumeric = tClass != String.class && tClass != char.class;
             String colName = addTable.getColumnName(col);
             String colNameLC = colName.toLowerCase();
-            String units = addTable.columnAttributes(col).getString("units");
-            if (units == null && sourceTable != null)
-                units = sourceTable.columnAttributes(col).getString("units");
-            if (!hasLon && 
-                String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, units) >= 0) {
+            String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
+            Attributes sourceAtts = sourceTable == null? null : sourceTable.columnAttributes(col);
+            Attributes    addAtts =                                addTable.columnAttributes(col);
+            String units    = getAddOrSourceAtt(addAtts, sourceAtts, "units",         null);
+            String positive = getAddOrSourceAtt(addAtts, sourceAtts, "positive",      null);
+            String stdName  = getAddOrSourceAtt(addAtts, sourceAtts, "standard_name", null);
+            if (!hasLon && isNumeric && 
+                colNameLC.equals("lon") &&  //extra criteria compared to below
+                (EDV.LON_STANDARD_NAME.equals(stdName) || EDV.probablyLon(colName, units))) {
                 addTable.setColumnName(col, EDV.LON_NAME);
+                if (!String2.looselyEquals(sourceName, EDV.LON_NAME) &&
+                    !"lon".equals(sourceName.toLowerCase()))
+                    addAtts.set("source_name", sourceName);
                 if (!EDV.LON_UNITS.equals(units))
-                        addTable.columnAttributes(col).set("units", EDV.LON_UNITS);
+                    addAtts.set("units", EDV.LON_UNITS);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
                 hasLon = true;
-            } else if (!hasLat && 
-                String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, units) >= 0) {
+            } else if (!hasLat && isNumeric && 
+                colNameLC.equals("lat") &&  //extra criteria compared to below
+                (EDV.LAT_STANDARD_NAME.equals(stdName) || EDV.probablyLat(colName, units))) {
                 addTable.setColumnName(col, EDV.LAT_NAME);
+                if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) &&
+                    !"lat".equals(sourceName.toLowerCase()))
+                    addAtts.set("source_name", sourceName);
                 if (!EDV.LAT_UNITS.equals(units))
-                        addTable.columnAttributes(col).set("units", EDV.LAT_UNITS);
+                    addAtts.set("units", EDV.LAT_UNITS);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
                 hasLat = true;
-            } else if (!hasTime && Calendar2.isTimeUnits(units)) {
+            } else if (!hasTime && Calendar2.isTimeUnits(units) &&            //has yyyy if string format
+                units.indexOf('d') >= 0 && units.indexOf('H') >= 0) {   //has date and has hour!
                 addTable.setColumnName(col, EDV.TIME_NAME);
+                if (units.toLowerCase().indexOf("yyyy") >= 0 &&
+                    addTable.getColumn(col).elementClass() != String.class)
+                    addTable.setColumn(col, new StringArray(addTable.getColumn(col)));
+                if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+                    addAtts.set("source_name", sourceName);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
                 hasTime = true;
             }
             //String2.log(">> hasTime=" + hasTime + " col=" + addTable.getColumnName(col) + " units=" + units + " timeUnits=" + EDVTimeStamp.hasTimeUnits(units));             
         }
+
+        //look for LLAT
+        for (int col = 0; col < sn; col++) {
+            //class not always known
+            Class tClass = addTable.getColumn(col).elementClass();
+            boolean isNumeric = tClass != String.class && tClass != char.class;
+            String colName = addTable.getColumnName(col);
+            String colNameLC = colName.toLowerCase();
+            String     sourceName = sourceTable == null? colName : sourceTable.getColumnName(col);
+            Attributes sourceAtts = sourceTable == null? null : sourceTable.columnAttributes(col);
+            Attributes    addAtts =                                addTable.columnAttributes(col);
+            String units    = getAddOrSourceAtt(addAtts, sourceAtts, "units",         null);
+            String positive = getAddOrSourceAtt(addAtts, sourceAtts, "positive",      null);
+            String stdName  = getAddOrSourceAtt(addAtts, sourceAtts, "standard_name", null);
+            if (!hasLon && isNumeric && 
+                (EDV.LON_STANDARD_NAME.equals(stdName) || EDV.probablyLon(colName, units))) {
+                addTable.setColumnName(col, EDV.LON_NAME);
+                if (!String2.looselyEquals(sourceName, EDV.LON_NAME) &&
+                    !"lon".equals(sourceName.toLowerCase()))
+                    addAtts.set("source_name", sourceName);
+                if (!EDV.LON_UNITS.equals(units))
+                    addAtts.set("units", EDV.LON_UNITS);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.LON_STANDARD_NAME);
+                hasLon = true;
+            } else if (!hasLat && isNumeric && 
+                (EDV.LAT_STANDARD_NAME.equals(stdName) || EDV.probablyLat(colName, units))) {
+                addTable.setColumnName(col, EDV.LAT_NAME);
+                if (!String2.looselyEquals(sourceName, EDV.LAT_NAME) &&
+                    !"lat".equals(sourceName.toLowerCase()))
+                    addAtts.set("source_name", sourceName);
+                if (!EDV.LAT_UNITS.equals(units))
+                    addAtts.set("units", EDV.LAT_UNITS);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.LAT_STANDARD_NAME);
+                hasLat = true;
+            } else if (!hasAltDepth && 
+                isNumeric &&
+                String2.indexOf(EDV.METERS_VARIANTS, units) >= 0 && //case sensitive
+                (colNameLC.indexOf("altitude") >= 0 ||
+                 colNameLC.indexOf("elevation") >= 0 ||
+                 (colNameLC.indexOf("_above_ground") >= 0 && "up".equals(positive)))) {
+                addTable.setColumnName(col, EDV.ALT_NAME);
+                if (!String2.looselyEquals(sourceName, EDV.ALT_NAME))
+                    addAtts.set("source_name", sourceName);
+                if (!EDV.ALT_UNITS.equals(units))
+                    addAtts.set("units", EDV.ALT_UNITS);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.ALT_STANDARD_NAME);
+                hasAltDepth = true;
+            } else if (!hasAltDepth && 
+                isNumeric &&
+                String2.indexOf(EDV.METERS_VARIANTS, units) >= 0 && //case sensitive
+                colNameLC.indexOf("depth") >= 0) {
+                addTable.setColumnName(col, EDV.DEPTH_NAME);
+                if (!String2.looselyEquals(sourceName, EDV.DEPTH_NAME))
+                    addAtts.set("source_name", sourceName);
+                if (!EDV.DEPTH_UNITS.equals(units))
+                    addAtts.set("units", EDV.DEPTH_UNITS);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.DEPTH_STANDARD_NAME);
+                hasAltDepth = true;
+            } else if (!hasTime && Calendar2.isTimeUnits(units) &&
+                    !"yyyy".equals(units) && !"YYYY".equals(units)) { //many datasets have date components. Don't treat year as time.
+                addTable.setColumnName(col, EDV.TIME_NAME);
+                if (units.toLowerCase().indexOf("yyyy") >= 0 &&
+                    addTable.getColumn(col).elementClass() != String.class)
+                    addTable.setColumn(col, new StringArray(addTable.getColumn(col)));
+                if (!String2.looselyEquals(sourceName, EDV.TIME_NAME))
+                    addAtts.set("source_name", sourceName);
+                if (stdName == null)
+                    addAtts.set("standard_name", EDV.TIME_STANDARD_NAME);
+                hasTime = true;
+            }
+            //String2.log(">> hasTime=" + hasTime + " col=" + addTable.getColumnName(col) + " units=" + units + " timeUnits=" + EDVTimeStamp.hasTimeUnits(units));             
+        }
+        //String2.log(">> hasLat=" + hasLat + " hasLon=" + hasLon + " hasTime=" + hasTime); 
         return hasLon && hasLat && hasTime;
     }
 
@@ -3554,6 +3909,8 @@ public abstract class EDD {
             keywords.add(     "sixth");  
         if (keywords.contains("adcp"))  
             chopUpAndAdd(     "current currents velocity", keywords);
+        if (keywords.contains("anomalies")) 
+            keywords.add(     "anomaly");  
         if (keywords.contains("calcofi") || 
             keywords.contains("CalCOFI"))  
             chopUpAndAdd(     "California Cooperative Fisheries Investigations", keywords);
@@ -3872,14 +4229,21 @@ public abstract class EDD {
     }
 
     /**
-     * This is a convenience for dealing with attributes I don't want to change.
+     * This is a convenience for dealing with attributes.
+     * 
+     * @param addAtts may be null
+     * @param sourceAtts may be null
+     * @param oValue specify null if none.
+     * @return value (null if none)
      */
     static String getAddOrSourceAtt(Attributes addAtts, Attributes sourceAtts,
         String name, String oValue) {
         if (isSomething(oValue))
             return oValue;
-        String                   value =    addAtts.getString(name);
-        if (!isSomething(value)) value = sourceAtts.getString(name);
+        String value = addAtts == null? null :
+            addAtts.getString(name);
+        if (!isSomething(value) && sourceAtts != null)
+            value = sourceAtts.getString(name);
         return value;
     }
 
@@ -3960,6 +4324,7 @@ public abstract class EDD {
             "coastwatch.pfeg.noaa.gov",
             "data.nodc.noaa.gov",
             "eastcoast.coastwatch.noaa.gov",
+            "ecowatch.ncddc.noaa.gov",
             "glos.us/",
             "gmt.soest.hawaii.edu",
             "marine.rutgers.edu",
@@ -3980,6 +4345,7 @@ public abstract class EDD {
             "www.class.ncdc.noaa.gov",
             "www.cru.uea.ac.uk",
             "www.ec.gc.ca",
+            "www.esrl.noaa.gov",
             "www.fgdc.gov",
             "www.gfdl.noaa.gov",
             "www.glerl.noaa.gov",
@@ -4126,8 +4492,9 @@ public abstract class EDD {
         String infoUrl = null;
         HashSet toRemove = new HashSet(Arrays.asList( 
             //Enter them lowercase here. The search for them is case-insensitive.
-            "_NCProperties", //If I write this, netcdf nc4 code later throws Exception when it writes its own version
-            "cols", "columns", "cpu", "cwhdf_version",
+            "_ncproperties", //If I write this, netcdf nc4 code later throws Exception when it writes its own version
+            "cols", "columns", "cpu", 
+            "cwhdf_version",
             "data_bins", "data_center", "data_maximum", "data_minimum", "day",
             "easternmost_longitude",
             "end_day", "end_millisec", "end_time", "end_year",
@@ -4159,7 +4526,8 @@ public abstract class EDD {
             "longitude_step", "longitude_units", 
             "longitudes",
             "map_time_range", "minimum_bin_pts", "month",
-            "northernmost_latitude",
+            "ncei_template_version",
+            "netcdf_version_id", "northernmost_latitude",
             "number_of_columns", "number_of_lines",
             "num_l3_columns", "num_l3_rows",
             "observation_date", "operationmode", "orbitparameterspointer",
@@ -4168,6 +4536,7 @@ public abstract class EDD {
             "period", 
             "period_end_day", "period_end_year", "period_start_day", "period_start_year", 
             "polygon_latitude", "polygon_longitude",
+            "principal_year_day_for_collated_orbits",
             "qagranulepointer", "qapercentmissingdata", "qapercentoutofboundsdata",
             "range_beginning_date", "rangebeginningdate", 
             "range_beginning_time", "rangebeginningtime", 
@@ -4232,9 +4601,19 @@ public abstract class EDD {
                     addAtts.set(sn, "null");    //  neutralize bad att name
                     if (reallyVerbose)
                         String2.log("  bad     sourceAttName=\"" + sn + "\" converted to \"" + safeSN + "\".");
+                    if (!safeSN.equals("cw_cwhdf_version") &&  //orig %3a which is :
+                        !safeSN.equals("cw_et_affine") &&
+                        !safeSN.equals("cw_gctp_datum") &&
+                        !safeSN.equals("cw_gctp_parm") &&
+                        !safeSN.equals("cw_gctp_sys") &&
+                        !safeSN.equals("cw_gctp_zone") &&
+                        !safeSN.equals("cw_pass_date") &&
+                        !safeSN.equals("cw_start_time") &&
+                        !safeSN.equals("cw_temporal_extent") &&
+                        !safeSN.equals("cw_time"))
                     addAtts.setIfNotAlreadySet(safeSN, sourceAtts.get(sn)); 
                 }
-            } else {
+            } else {  //has one of removePrefixes
                 addAtts.set(sn, "null");   //remove full original prefixed att name
                 String safeSN = sn.substring(pre.length()); //e.g., fgdc_X becomes X
                 safeSN = String2.modifyToBeVariableNameSafe(safeSN);
@@ -6131,6 +6510,10 @@ public abstract class EDD {
         addAtts.removeIfSame(sourceAtts);
         addAtts.remove("suffixForTitle");
 
+        //clean
+        addAtts.trimAndMakeValidUnicode();       
+        //String2.log("\n>> SUMMARY=" + String2.annotatedString(addAtts.getString("summary")) + "\n");
+
         return addAtts;
     }
 
@@ -6197,7 +6580,7 @@ public abstract class EDD {
 
         //get the readyToUseAddVariableAttributes for suggestions
         Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-            sourceGlobalAtts, sourceAtts, tSourceName, addColorBarMinMax, false);
+            sourceGlobalAtts, sourceAtts, null, tSourceName, addColorBarMinMax, false);
 
         if (addColorBarMinMax) {
             if (sourceAtts.getString("colorBarMinimum") == null) 
@@ -6239,6 +6622,8 @@ public abstract class EDD {
      *
      * @param sourceGlobalAtts the source's global attributes (may be null)
      * @param sourceAtts the source's variable attributes
+     * @param addAtts some atts that should be in addAtts (may be null if none).
+     *   If not null, this is the Attributes that will be modified.
      * @param tSourceName   
      * @param tryToAddColorBarMinMax
      * @param tryToFindLLAT   This tries to identify longitude, latitude, altitude/depth, 
@@ -6248,7 +6633,8 @@ public abstract class EDD {
      * @throws Exception if trouble
      */
     public static Attributes makeReadyToUseAddVariableAttributesForDatasetsXml(
-        Attributes sourceGlobalAtts, Attributes sourceAtts, String tSourceName, 
+        Attributes sourceGlobalAtts, Attributes sourceAtts, Attributes addAtts,
+        String tSourceName, 
         boolean tryToAddColorBarMinMax, boolean tryToFindLLAT) throws Exception {
 
         String value;
@@ -6274,7 +6660,8 @@ public abstract class EDD {
             sourceGlobalAtts = new Attributes();
 
         //this is what this method creates and populates
-        Attributes addAtts = new Attributes();
+        if (addAtts == null)
+            addAtts = new Attributes();
 
         String sourceNames[] = sourceAtts.getNames();
 
@@ -6482,17 +6869,50 @@ public abstract class EDD {
 
         //tUnits cleanup
         if (isSomething(tUnits)) {
-            if (tUnits.startsWith("deg-")) //some podaac datasets have this
-                tUnits = "deg_" + tUnits.substring(4);
+            String tUnitsLC = tUnits.toLowerCase();
+
+            if (     tUnitsLC.equals("dimensionless") ||
+                     tUnitsLC.equals("na") || 
+                     tUnitsLC.equals("n/a") || 
+                     tUnitsLC.equals("none") || 
+                     tUnitsLC.equals("text") || 
+                     tUnitsLC.equals("unitless")) 
+                     tUnits = "";
+            else if (tUnitsLC.equals("decimal number") ||
+                     tUnitsLC.equals("integer") ||
+                     tUnitsLC.equals("number"))         
+                     tUnits = "1"; 
+            else if (tUnitsLC.equals("YYYY-mm-ddTHH:MM:SS.ssZ")) 
+                     tUnits = "yyyy-MM-dd'T'HH:mm:ss.SSZ";
+            else if (tUnitsLC.indexOf("yy") >= 0)
+                     tUnits = Calendar2.convertToJavaDateTimeFormat(tUnits);
+            else if (tUnitsLC.equals("decimal degrees") && tSourceName.equals("lat")) 
+                     tUnits = "degrees_north";
+            else if (tUnitsLC.equals("decimal degrees") && tSourceName.equals("lon")) 
+                     tUnits = "degrees_east";
+            else if (tUnitsLC.equals("decimal degrees")) 
+                     tUnits = "degrees";
+            else if (tUnitsLC.startsWith("deg-")) //some podaac datasets have this
+                     tUnits = "deg_" + tUnits.substring(4);
             else if (tUnits.equals("seq")) //netcdf-java 4.6.4 generates this
-                tUnits = "count";
-            else if (tUnits.equals("degree_Celcius")) //OOI generates this
+                     tUnits = "count";
+            else if (tUnitsLC.equals("degree celcius") || //c[sic]
+                     tUnitsLC.equals("degree_celcius") || //OOI generates this
+                     tUnitsLC.equals("degree centigrade") || //BCO-DMO does this
+                     tUnitsLC.equals("degree_centigrade") ||
+                     tUnitsLC.equals("degrees centigrade") ||
+                     tUnitsLC.equals("degrees_centigrade") ||
+                     tUnitsLC.equals("degree celsius") ||
+                     tUnitsLC.equals("degree c") ||
+                     tUnitsLC.equals("degrees celsius") ||
+                     tUnitsLC.equals("degrees c"))
                 tUnits = "degree_Celsius";
-            else if (String2.indexOf(new String[]{"n/a", "none", "unitless"}, tUnits.toLowerCase()) >= 0) 
-                tUnits = "";
             else if (tUnits.indexOf(" since -4713") > 0)
                 tUnits = String2.replaceAll(tUnits, " since -4713", " since -4712"); //seaDataNet 4713 BC -> ERDDAP astronomical year -4712 
-            if (tUnits.toLowerCase().indexOf("%y") < 0) //e.g., a date format
+
+            if (tUnitsLC.indexOf("%y") >= 0) //e.g., a date format
+                tUnits = String2.replaceAll(tUnits, "%", "");
+            else if (tUnits.indexOf("%") >= 0)
                 tUnits = String2.replaceAll(tUnits, "%", "percent");
         } else {
             tUnits = "";
@@ -6502,7 +6922,33 @@ public abstract class EDD {
             tUnits = EDV.LON_UNITS;
         if (String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, tUnits) >= 0)
             tUnits = EDV.LAT_UNITS;
-        String tUnitsLC      = tUnits.toLowerCase();
+        String tUnitsLC = tUnits.toLowerCase();
+
+        //time_precision
+        String tTimePre = getAddOrSourceAtt(addAtts, sourceAtts, "time_precision",  null);        
+        if (tUnitsLC.indexOf("yyyy") >= 0 &&
+            tUnits.indexOf("M") >= 0 &&
+            !String2.isSomething(tTimePre)) {
+            if (tUnits.indexOf("d") < 0 &&
+                tUnits.indexOf("D") < 0)  //day of year
+                tTimePre = "1970-01";
+            else if (tUnits.indexOf("H") < 0)
+                tTimePre = "1970-01-01";
+            else if (tUnits.indexOf("m") < 0)
+                tTimePre = "1970-01-01T00Z";
+            else if (tUnits.indexOf("s") < 0)
+                tTimePre = "1970-01-01T00:00Z";
+            else if (tUnits.indexOf(".S") < 0)
+                tTimePre = "1970-01-01T00:00:00Z";
+            else if (tUnits.indexOf(".SS") < 0)
+                tTimePre = "1970-01-01T00:00:00.0Z";
+            else if (tUnits.indexOf(".SSS") < 0)
+                tTimePre = "1970-01-01T00:00:00.00Z";
+            else 
+                tTimePre = "1970-01-01T00:00:00.000Z";
+            //String2.log(">> tUnits=" + tUnits + " timePre=" + tTimePre);
+            addAtts.add("time_precision", tTimePre);
+        }
 
         //tLongName cleanup
         if (tLongName.length() > 0 && tLongName.equals(tLongName.toLowerCase()) &&
@@ -8433,7 +8879,7 @@ public abstract class EDD {
                 lcu.indexOf("|sand|")       >= 0 ||
                 lcu.indexOf("sediment")     >= 0 ||
                 lcu.indexOf("roughness")    >= 0 ||
-                lcu.indexOf("tide")         >= 0 ||
+                lcu.indexOf("|tide|")       >= 0 ||
                 lcu.indexOf("tidal")        >= 0 ||
                 lcu.indexOf("mixed|layer")  >= 0) {
                 addAtts.add("ioos_category", "Physical Oceanography");
@@ -8570,6 +9016,9 @@ public abstract class EDD {
                     addAtts.set(qcHttp[i], value); 
             }
         }
+
+        //clean
+        addAtts.trimAndMakeValidUnicode();       
 
         return addAtts;
     }
@@ -8814,25 +9263,19 @@ public abstract class EDD {
      *    The whole thing can be null 
      *    (it is for oldGenerateDatasetsXml methods, since the table has the source attributes), 
      *    or any element may be null.
-     * @param tryToFindLLAT if true, this tries to catch and rename variables
-     *    to longitude, latitude, altitude, depth, and time.
-     *    <br>This should be true for tabular dataVariables and grid axis variables.
-     *    <br>This should be false for grid data variables.
      * @param questionDestinationName if true, the destinationName is preceded by "???"
      *    if it is different from sourceName.
      * @throws Throwable if trouble
      */
     public static String writeVariablesForDatasetsXml(Table sourceTable, Table addTable,
         String variableType, boolean includeDataType, 
-        boolean tryToFindLLAT, boolean questionDestinationName) throws Throwable {
+        boolean questionDestinationName) throws Throwable {
 
         if (sourceTable != null)
             Test.ensureEqual(sourceTable.nColumns(), addTable.nColumns(),
                 "The number of columns in sourceTable and addTable isn't equal!");
         String indent = "    ";
         StringBuilder sb = new StringBuilder();
-        if (tryToFindLLAT)
-            tryToFindLLAT(sourceTable, addTable);
 
         //e.g., don't change "lon" to "longitude" if there is already a "longitude" variable
         int sLongitude  = addTable.findColumnNumber("longitude"), 
@@ -8848,7 +9291,10 @@ public abstract class EDD {
             if (tUnits == null && sourceTable != null) 
                 tUnits = sourceTable.columnAttributes(sTime).getString("units");
             if (!Calendar2.isTimeUnits(tUnits)) {
-                addTable.setColumnName(sTime, "time_");
+                int n = 2;
+                while (addTable.findColumnNumber(EDV.TIME_NAME + n) >= 0)
+                    n++;
+                addTable.setColumnName(sTime, EDV.TIME_NAME + n);
                 sTime = -1;
             }
         }
@@ -8872,97 +9318,12 @@ public abstract class EDD {
             if (tPositive == null) 
                 tPositive = sourceAtts.getString("positive");
             float tScaleFactor = sourceAtts.getFloat("scale_factor");
-            String ttn = addTable.getColumnName(col);
-            if (!isSomething(ttn))
-                ttn = tSourceName;
-            String suggestDestName = suggestDestinationName(
-                ttn, sourceAtts, addAtts, tUnits, 
-                tPositive, tScaleFactor, tryToFindLLAT); 
-            String tDestName = null;
+            String tDestName = addTable.getColumnName(col);
+            if (!isSomething(tDestName))
+                tDestName = tSourceName;
+
+            //String tDestName = null;
             //String2.log(">> col=" + col + " sourceName=" + tSourceName + " units=" + tUnits + " suggestDestName=" + suggestDestName);
-
-            if (col == sLongitude ||
-                (sLongitude < 0 && suggestDestName.equals("longitude"))) {
-                //even though sourceName may be longitude, be explicit so I know it was caught
-                tDestName = "longitude"; 
-                //addAtts.set("long_name", "Longitude");
-                sLongitude = col; //no other column will be longitude
-
-            } else if (col == sLatitude ||
-                (sLatitude < 0 && suggestDestName.equals("latitude"))) {
-                //even though sourceName may be latitude, be explicit so I know it was caught
-                tDestName = "latitude"; 
-                //addAtts.set("long_name", "Latitude");
-                sLatitude = col; //no other column will be latitude
-
-            } else if (col == sAltitude ||
-                (sAltitude < 0 && sDepth < 0 && suggestDestName.equals("altitude"))) {
-                tDestName = "altitude"; 
-                sAltitude = col; //no other column will be altitude
-
-            } else if (col == sDepth ||
-                (sAltitude < 0 && sDepth < 0 && suggestDestName.equals("depth"))) {
-                tDestName = "depth"; 
-                sDepth = col; //no other column will be depth
-
-            } else if ((col == sTime || sTime < 0) && suggestDestName.equals("time")) {
-                //above test deals ensures that "time" var is either
-                //  already called "time"  and has proper units
-                //  or if no sourceName is "time" and this has proper units.
-                //See suggestDestinationName comments regarding time.
-                tDestName = "time"; 
-                //addAtts.set("long_name", "Time");
-                sTime = col; //no other column will be time
-
-        //*** deal with duplicate names
-            } else if (sLongitude >= 0 && suggestDestName.equals("longitude")) {
-                //longitude already assigned
-                suggestDestName = suggestDestinationName(tSourceName, 
-                    sourceAtts, addAtts, tUnits, tPositive, tScaleFactor, 
-                    false); //tryToFindLLAT
-                tDestName = suggestDestName;
-                if (tDestName.equals("longitude"))
-                    tDestName = "longitude2";
-
-            } else if (sLatitude >= 0 && suggestDestName.equals("latitude")) {
-                //latitude already assigned
-                suggestDestName = suggestDestinationName(tSourceName, 
-                    sourceAtts, addAtts, tUnits, tPositive, tScaleFactor, 
-                    false); //tryToFindLLAT
-                tDestName = suggestDestName;
-                if (tDestName.equals("latitude"))
-                    tDestName = "latitude2";
-
-            } else if ((sAltitude >= 0 || sDepth >= 0) && suggestDestName.equals("altitude")) {
-                //altitude already assigned
-                suggestDestName = suggestDestinationName(tSourceName, 
-                    sourceAtts, addAtts, tUnits, tPositive, tScaleFactor, 
-                    false); //tryToFindLLAT
-                tDestName = suggestDestName;
-                if (tDestName.equals("altitude"))
-                    tDestName = "altitude2";
-
-            } else if ((sAltitude >= 0 || sDepth >= 0) && suggestDestName.equals("depth")) {
-                //depth already assigned
-                suggestDestName = suggestDestinationName(tSourceName, 
-                    sourceAtts, addAtts, tUnits, tPositive, tScaleFactor, 
-                false); //tryToFindLLAT
-                tDestName = suggestDestName;
-                if (tDestName.equals("depth"))
-                    tDestName = "depth2";
-
-            } else if (sTime >= 0 && suggestDestName.equals("time")) {
-                //time already assigned
-                suggestDestName = suggestDestinationName(tSourceName, 
-                    sourceAtts, addAtts, tUnits, tPositive, tScaleFactor, 
-                    false); //tryToFindLLAT
-                tDestName = suggestDestName;
-                if (tDestName.equals("time"))
-                    tDestName = "time2";
-
-            } else { //always show destName, not just if different;  was: if (!tSourceName.equals(suggestDestName)) {
-                tDestName = suggestDestName;
-            }
 
             if (questionDestinationName && !tDestName.equals(tSourceName)) {
                 tDestName = "???" + tDestName;
@@ -9046,24 +9407,10 @@ public abstract class EDD {
         tPositive = tPositive.toLowerCase();
 
         if (tryToFindLLAT) {
-            if ((lcSourceName.startsWith("lon") ||  //startsWith allows for e.g., "lon (degE)", "long"
-                  lcSourceName.equals("x") ||
-                  lcSourceName.equals("xax")) &&  //must check, since uCurrent and uWind use degrees_east, too
-                 (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, tUnitsLC) >= 0 ||    
-                  tUnitsLC.equals("degrees_west") || //bizarre, but sometimes used for postive or negative degrees_east values
-                  tUnitsLC.equals("degree_west") ||
-                  tUnitsLC.equals("degrees") ||
-                  tUnitsLC.equals("degree"))) 
-
+            if (EDV.probablyLon(tSourceName, tUnits))
                 return "longitude"; 
                  
-            if ((lcSourceName.startsWith("lat") ||
-                  lcSourceName.equals("y") ||
-                  lcSourceName.equals("yax")) &&  
-                 (String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, tUnitsLC) >= 0 ||
-                  tUnitsLC.equals("degrees") ||
-                  tUnitsLC.equals("degree"))) 
-     
+            if (EDV.probablyLat(tSourceName, tUnits))      
                 return "latitude"; 
 
             if (lcSourceName.startsWith("altitude") ||  //stricter than lat and lon
@@ -9072,8 +9419,7 @@ public abstract class EDD {
                 return "altitude"; 
 
             if (lcSourceName.startsWith("depth") ||     //stricter than lat and lon
-                (tPositive.equals("down") && unitsAreMeters)) 
-     
+                (tPositive.equals("down") && unitsAreMeters))      
                 return "depth"; 
 
             if (Calendar2.isNumericTimeUnits(tUnitsLC)) { //simple test; definitive test is below
@@ -9088,7 +9434,7 @@ public abstract class EDD {
             }
 
             //see Calendar2.suggestDateTimeFormat for common java.time (was Joda) date time formats
-            if (tUnitsLC.indexOf("yy") >= 0 || tUnitsLC.indexOf("%y") >= 0 ) 
+            if (tUnitsLC.indexOf("yyyy") >= 0 || tUnitsLC.indexOf("%y") >= 0 ) 
                 return "time"; 
 
             if (tSourceName.equals("time") && !tUnits.equals("")) 

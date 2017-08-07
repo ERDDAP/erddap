@@ -197,7 +197,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -212,6 +212,10 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
             "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
@@ -267,9 +271,9 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -654,7 +658,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">World Ocean Database</att>\n" +
 "        <att name=\"infoUrl\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"institution\">NGDC(NODC), NOAA</att>\n" +
-"        <att name=\"keywords\">Access_no, accession, bathymetry, below, bottom, Bottom_Depth, cast, Cast_Direction, Cast_Duration, Cast_Tow_number, center, chemistry, chlorophyll, Chlorophyll_Instrument, Chlorophyll_row_size, Chlorophyll_uncalibrated, Chlorophyll_WODprofileflag, color, concentration, concentration_of_chlorophyll_in_sea_water, conductivit, Conductivit_row_size, country, crs, cruise, currents, data, database, dataset, date, dbase_orig, density, depth, direction, dissolved, dissolved o2, duration, file, flag, floor, geophysical, GMT_time, high, High_res_pair, identifier, institute, instrument, latitude, level, longitude, measured, multi, multi-cast, name, national, ncei, ngdc, noaa, nodc, number, O2, observation, observations, ocean, ocean color, oceanographic, oceans,\n" +
+"        <att name=\"keywords\">Access_no, accession, bathymetry, below, cast, Cast_Direction, Cast_Duration, Cast_Tow_number, center, chemistry, chlorophyll, Chlorophyll_Instrument, Chlorophyll_row_size, Chlorophyll_uncalibrated, Chlorophyll_WODprofileflag, color, concentration, concentration_of_chlorophyll_in_sea_water, conductivit, Conductivit_row_size, country, crs, cruise, currents, data, database, dataset, date, dbase_orig, density, depth, direction, dissolved, dissolved o2, duration, file, flag, floor, geophysical, GMT_time, high, High_res_pair, identifier, institute, instrument, latitude, level, longitude, measured, multi, multi-cast, name, national, ncei, ngdc, noaa, nodc, number, O2, observation, observations, ocean, ocean color, oceanographic, oceans,\n" +
 "Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
@@ -864,7 +868,7 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>Bottom_Depth</sourceName>\n" +
-"        <destinationName>Bottom_Depth</destinationName>\n" +
+"        <destinationName>depth</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"long_name\">Bottom_Depth</att>\n" +
@@ -875,7 +879,9 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
 "            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"source_name\">Bottom_Depth</att>\n" +
 "            <att name=\"standard_name\">sea_floor_depth</att>\n" +
+"            <att name=\"units\">m</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -957,7 +963,7 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>z</sourceName>\n" +
-"        <destinationName>depth</destinationName>\n" +
+"        <destinationName>z</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"long_name\">depth_below_sea_level</att>\n" +

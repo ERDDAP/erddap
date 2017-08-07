@@ -803,6 +803,23 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
+     * This returns a JSON-style comma-separated-value list of the elements.
+     * CharArray and StringArray overwrite this.
+     *
+     * @return a csv string of the elements.
+     */
+    public String toJsonCsvString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(", ");
+            char ch = get(i);  //write each as a separate json string
+            sb.append(ch == '\uFFFF'? "null" : String2.toJson("" + ch));
+        }
+        return sb.toString();
+    }
+
+    /**
      * Return a value from the array as a String.
      * This "raw" variant leaves missingValue from integer data types 
      * (e.g., ByteArray missingValue=127) AS IS.
@@ -1433,6 +1450,7 @@ public class CharArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing CharArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         CharArray anArray = new CharArray();

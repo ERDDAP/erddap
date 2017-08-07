@@ -300,7 +300,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     //guess ioos_category   (alternative is always assign "Unknown")
                     Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
                         null, //sourceGlobalAtts not yet known
-                        tSourceAttributes, varName, false, true); //tryToAddColorBarMinMax, tryToFindLLAT
+                        tSourceAttributes, null, varName, false, true); //tryToAddColorBarMinMax, tryToFindLLAT
                     tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
                 }
 
@@ -323,7 +323,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     //guess ioos_category   (alternative is always assign "Unknown")
                     Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
                         null, //sourceGlobalAtts not yet known
-                        tSourceAttributes, varName, false, false); //tryToAddColorBarMinMax, tryToFindLLAT
+                        tSourceAttributes, null, varName, false, false); //tryToAddColorBarMinMax, tryToFindLLAT
                     tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
                 }
 
@@ -801,6 +801,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     public static String generateDatasetsXml(String url, boolean keepOriginalID) 
         throws Throwable {
 
+        url = updateUrls(url); //http: to https:
         String2.log("\n*** EDDGridFromErddap.generateDatasetsXml" +
             "\nurl=" + url + " keepOriginalID=" + keepOriginalID);
 
@@ -1678,7 +1679,7 @@ expected2 =
         String2.log("\n****************** EDDGridFromErddap.test() *****************\n");
 
         //standard tests 
-        /* */
+/* for releases, this line should have open/close comment */
         testBasic(false);
         testBasic(true);
         testGenerateDatasetsXml();
