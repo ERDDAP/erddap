@@ -69,6 +69,8 @@ public class TestAll  {
      * @throws Throwable if trouble
      */
     public static void main(String args[]) throws Throwable {
+         
+        String s;
 
         //always setup commons logging
         String2.setupCommonsLogging(-1);
@@ -118,6 +120,7 @@ public class TestAll  {
 
 //      Boundaries.bobConvertAll();
 //      Boundaries.test();
+//    String2.log("" + ((double)(float)-165.0439527));
 
 //    Calendar2
 //    String2.log(Calendar2.epochSecondsToIsoStringT(1000* 86400L));
@@ -136,7 +139,7 @@ public class TestAll  {
 //    
 //    Table.testAddIndexColumns();
 //    Table.testEnhancedFlatNcFile();
-//    Table.testOpendapSequence();
+//    Table.testOrderByCount();
 //    Table.testReadMultidimNc();
 //    Table.testReadNcCFMATimeSeriesReversed(false);  //readMultidimNc 
 //    {
@@ -163,7 +166,7 @@ public class TestAll  {
 //    Table.testOpendapSequence();
 
 //    Table.debugMode = true; DasDds.main(new String[]{
-//          "nesdisVHNchlaDaily2",
+//          "nesdisVHNchlaMonthly",
 //          "testNccsvScalar",
 //          "srtm15plus",
 //          "ChukchiSea_454a_037a_fcf4", //for Kevin, SocketException: Connection reset
@@ -182,12 +185,12 @@ public class TestAll  {
         }
     } /* */
 
-//    String2.log(NcHelper.dumpString("/u00/srtm/topo15_compressed.nc", false));
+//    String2.log(NcHelper.dumpString("/programs/nco/source4.6.7/in.nc", true));
 //    String2.log(NcHelper.dumpString("/u00/data/points/scrippsGlidersUpload2/sp034-20170418T0959/sp034-20170419T024900_rt.nc", false));
 //    String2.log(NcHelper.dumpString("/u00/data/points/scrippsGlidersUpload2/sp022-20170209T1616/sp022-20170420T055200_rt.nc", false));
 //    String2.log(NcHelper.dumpString("/data/scrippsGliders/qaqc/sp025-20160914T132800.nc", true)); 
-//    String2.log(NcHelper.dumpString("/data/kerfoot/ce05/deployment0002_CE05MOAS-GL381-05-CTDGVM000-telemetered-ctdgv_m_glider_instrument_20160530T010752.621670-20160621T054549.394040.nc", "time")); 
-//    String2.log(NcHelper.dumpString("/u00/data/points/trinidadCTD/CoralSea_CS150513.nc", "maxStationNameLength")); //short data
+//    String2.log(NcHelper.dumpString("/data/kerfoot/CP02PMCI-WFP01-03-CTDPFK000-ctdpf_ckl_wfp_instrument-telemetered-deployment0007-tabledap.ncCF4.nc", "trajectory")); 
+//    String2.log(NcHelper.dumpString("/u00/satellite/MPOC/8day/A20153132015320.L3m_8D_POC_poc_4km.nc", false)); 
 //    String2.log(NcHelper.dumpString("/data/ncei/ind199105_ctd.nc", "time"));
 //    String2.log(NcHelper.dumpString("/u00/satellite/VH3/chla/1day/V2016001.ncml", false)); 
 //    String2.log(NcHelper.dumpString("/data/argo/briand/2901175_prof.nc", "PRES_QC"));
@@ -329,22 +332,25 @@ m Pathfinder Version 5.2 grid.";
 //
 //    String2.writeToFile("/temp/urlsFromUAF.txt", 
 //        String2.toNewlineString(EDDGridFromDap.getUrlsFromThreddsCatalog(
-//            "http://ferret.pmel.noaa.gov/geoide/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog/ncom/ncom_reg1_agg/catalog.html?dataset=ncom.ncom_reg1_agg.NCOM_Region_1_Aggregation_best.ncd", 
-//            ".*", true)));
+//            "http://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/carbontracker.xml", 
+//            ".*", true, ".*")));
 //
 //    EDD.debugMode = true;
-//    String2.log("\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
-//        "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/SalinityDensity/smap/aggregate__SMAP_JPL_L3_SSS_CAP_MONTHLY_V3.ncml.html",
+//    s = "\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
+//        "https://www.star.nesdis.noaa.gov/thredds/dodsC/CoastWatch/VIIRS/kd490/Monthly/WW00.html",
 //         String2.readLinesFromFile("/temp/urlsFromUAF.txt", "", 1)[2342], //one URL
 //         String2.readLinesFromFile("/temp/urlsFromPodaac.txt", "", 1)[161], //one URL
 //          "http://cwcgom.aoml.noaa.gov/thredds/dodsC/AFAI/USFAFAI3D.nc",
 //      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
-//      -1, null));
-//    DasDds.main(new String[]{"nceiSMOSsssMonthly20170317", "-verbose"});
+//      -1, null);
+//      String2.setClipboardString(s); String2.log(s); 
+//    DasDds.main(new String[]{"nceiSMOSsssMonthly", "-verbose"});
 //        
 //    Crawl UAF clean catalog:
 //      done 2012-10-17, 2012-12-09, 2013-11-06, 2014-03-31, 2014-12-18,
 //           2015-10-22, 2016-04-19, 2016-08-26, 2017-04-16 (fail)
+//           2017-06-19 (fail)
+//      EDDGridFromDap.testUAFSubThreddsCatalog(0); //entire official clean catalog  ~4hrs
 //      Results file is /temp/datasetsUAF{uafi}_{dateTime}.xml          
 //      Log file is     /u00/cwatch/erddap2/logs/TestAll.log  /
 //        Look at problems, creator_, title, .... Make improvements.
@@ -357,7 +363,6 @@ m Pathfinder Version 5.2 grid.";
 //        Look for "error", , 
 //        Sort it. 
 // Next time: improve standardization of 'institution' in EDD.makeReadyToUseAddGlobalAttributes.
-//    EDDGridFromDap.testUAFSubThreddsCatalog(0); //entire official clean catalog  ~4hrs
 //    EDDGridFromDap.testUAFSubThreddsCatalog(17);  //test one sub catalog
 //    for (int uafi = 6; uafi < EDDGridFromDap.UAFSubThreddsCatalogs.length; uafi++) {
 //        String2.log("\n\n************************************* UAFI=" + uafi);
@@ -369,7 +374,7 @@ m Pathfinder Version 5.2 grid.";
 //      Arrays.sort(ar);
 //      String2.log(String2.toNewlineString(ar)); 
 
-//    EDDGridFromDap.testScale1Offset0();
+//    EDDGridFromDap.testBasic3();
 //    EDDGridFromDap.testFromJson();
 //    EDDGridFromDap.testUInt16Dap();
 //    EDDGridFromErddap.testDataVarOrder(); 
@@ -447,17 +452,23 @@ m Pathfinder Version 5.2 grid.";
 //        String2.log(EDD.testDasDds(ds)); 
 //    }
 //    Projects.makeSoda331Ncml("ocean", 1980, 2025);
-//    Projects.makePH2Ncml("sstn");
+//    Projects.makePH53Ncml(false);
 //    Projects.testLongInNc3();
 //    String2.log(NcHelper.dumpString(
-//        "/u00/satellite/PH2/sstd/1day/19811101145206-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA07_G_1981305_day-v02.0-fv01.0.nc.ncml", "time"));
+//        "/u00/satellite/PH2/ssta/8day/PHA1981304_1981311_ssta.nc", "time"));
     if (false) {
-        String s = EDDGridFromNcFiles.generateDatasetsXml(
-        "/u00/satellite/PH3/sstn/", ".*\\.nc", "", -1, null);
+        s = EDDGridFromNcFiles.generateDatasetsXml(
+        "/u00/satellite/SSH/", "rads.*\\.nc", "",
+        -1, null);
         String2.setClipboardString(s);
         String2.log(s);
     }
-//    String2.log(EDD.testDasDds("nceiOisst2agg")); 
+//    String2.log(EDD.testDasDds("nceiPH53sstd1day")); 
+//    Projects.tallyGridValues( 
+//        "/u00/satellite/PH53/1981/data/" +
+//        "19810826023552-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981238_night-v02.0-fv01.0.nc", 
+//        "sea_surface_temperature", 0.01);
+
 //
 //      for (int di4 = 0; di4 < 6; di4++) 
 //          for (int dd = 0; dd < 3; dd++) 
@@ -748,14 +759,14 @@ m Pathfinder Version 5.2 grid.";
 //         "/u00/data/points/inportXml/NOAA/NMFS/SEFSC/inport/xml/1917.xml",  ".*", ".*", "/u00/data/points/inportData/sefsc/")); //has column info
 //         "/u00/data/points/inportXml/NOAA/NMFS/SEFSC/inport/xml/7332.xml",  ".*", ".*", "/u00/data/points/inportData/sefsc/"));
 //         "/u00/data/points/inportXml/NOAA/NMFS/SWFSC/inport/xml/11132.xml", ".*", ".*", "/u00/data/points/inportData/swfsc/"));
+//    EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromBCODMO();
 //    EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort();
 //    EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort2();
 //    EDDTableFromAsciiFiles.testTimeRange2();
 //    EDD.generateInPortXmlFilesForCoastwatchErddap();
-//   String2.log(EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO(true, 
-//       "https://www.bco-dmo.org/erddap/datasets", "/u00/data/points/bcodmo/", 
-//       "(549122)"));
-
+//    String2.log(EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO(true, //tryToUseLocal?
+//       "https://www.bco-dmo.org/erddap/datasets", "/u00/data/points/bcodmo/", "(644080)")); 
+//    Table.debugMode = true; DasDds.main(new String[]{"bcodmo549122_20150217", "-verbose"});
 
 //    EDDTableFromAsciiFiles.testBasic2();
 //    EDDTableFromAsciiFiles.testTimeZone();
@@ -803,7 +814,7 @@ m Pathfinder Version 5.2 grid.";
 //    EDDTableFromColumnarAsciiFiles.batchFromEML(
 //        true, false, "lterSbc");  //reuseLocalFiles? pauseForErrors?
 //    EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromOneInEMLCollection(
-//        "lterSbc", 6); 
+//        "lterSbc", 85); 
 //    EDDTableFromColumnarAsciiFiles.testGenerateDatasetsXmlFromEML(); 
 //    EDDTableFromColumnarAsciiFiles.generateDatasetsXmlFromEML(false, //pauseForErrors
 //        "/u00/data/points/lterNtl/", 
@@ -852,7 +863,7 @@ m Pathfinder Version 5.2 grid.";
 //    EDDTableFromFiles.testIsOK();
 //      String2.log(EDDTableFromFileNames.generateDatasetsXml(
 //        //"http://nasanex.s3.amazonaws.com/", 
-//        "/u00/mnt/cwdata/p/i/ea5/",
+//        "/u00/data/points/bcodmo/bcodmoRelatedFiles",
 //        ".*", true, 10080, "","","","",null));
 //    EDDTableFromHttpGet.testStatic();
 //    String2.log(EDDTableFromHyraxFiles.generateDatasetsXml(
@@ -873,7 +884,7 @@ m Pathfinder Version 5.2 grid.";
 //        "", "", 
 //        "", "", "", "", new Attributes()); 
 //    String2.setClipboardString(s);  String2.log(s);
-//    EDDTableFromNcFiles.testGenerateDatasetsXmlNcdump();
+//    EDDTableFromNcFiles.testGlobec();
 //    EDDTableFromNcCFFiles.testNoAttName(); 
 //    EDDTableFromNcCFFiles.testKevin20160519();
 //    EDDTableFromNcCFFiles.testJP14323();
@@ -891,7 +902,7 @@ m Pathfinder Version 5.2 grid.";
 //    EDDTableFromNcFiles.testGlobec(); 
 //    EDDTableFromNcFiles.testTimeSince19000101(); 
 //    EDDTableFromNcFiles.testIgor(); 
-//    EDDTableFromNcFiles.testOrderByClosest(); 
+//    EDDTableFromNcFiles.testOrderByCount(); 
 //    EDDTableFromNcFiles.testOrderByLimit(); 
 //    EDDTableFromNcFiles.testSpeed(13); 
 //    NOT FINISHED  EDDTableFromNcFiles.bobConsolidateWOD("APB", "1960-01-01"); 
@@ -925,8 +936,9 @@ m Pathfinder Version 5.2 grid.";
 //    EDDTableFromNcFiles.testHardFlag();
 
 //    String s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-//        "/data/briand/W1M3A/", ".*\\.nc", "", //sample file
-//        "TIME,DEPTH", -1, //dimensions
+//        "/data/kerfoot/", "CP02PMCI-WFP01-03-CTDPFK000-ctdpf_ckl_wfp_instrument-telemetered-deployment0007-tabledap.ncCF4\\.nc", 
+//        "", //sample file
+//        "row", -1, //dimensions
 //        "", "", "", "", true, //removeMVRows 
 //        "", "", "", "", "", new Attributes()); 
 //    String2.setClipboardString(s);  String2.log(s);
@@ -952,7 +964,7 @@ m Pathfinder Version 5.2 grid.";
 //         Temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //           On Access Scanner : All Processes
 //             Scan Items: check: specified file types only (instead of usual All Files) 
-//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2015, 6, 2017, 4, false);  //first/last year(1985..)/month(1..), testMode
+//     EDDTableFromNcFiles.bobConsolidateGtsppTgz(2017, 3, 2017, 6, false);  //first/last year(1985..)/month(1..), testMode
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun
 //       [was Melanie Hamilton, now retired]
@@ -977,7 +989,7 @@ m Pathfinder Version 5.2 grid.";
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBestNc");
 //    6) Create ncCF files with the same date range as 2a) above: 
 //       It takes ~2 minutes per month processed.
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2015, 6, 2017, 4); //e.g., first/last year(1990..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2017, 3, 2017, 6); //e.g., first/last year(1990..)/month(1..)
 //       String2.log(NcHelper.dumpString("/u00/data/points/gtsppNcCF/201406a.nc", false));
 //    7) * Load erdGtsppBest in localHost ERDDAP.  (long time if lots of files changed)
 //       * Generate .json file from
@@ -1001,7 +1013,7 @@ m Pathfinder Version 5.2 grid.";
 
 //    String2.log(EDDTableFromSOS.generateDatasetsXml(
 //        "http://data.gcoos.org:8080/52nSOS/sos/kvp", "1.0.0", "IOOS_52N"));
-//    EDDTableFromSOS.testErddapSos();
+//    EDDTableFromSOS.testNosSosWTemp("");
 
 //** To update pmelTAO data on/after 9am 2nd day of every month:
 // In datasets2.xml, see MONTHLY TAO UPDATE 
@@ -1040,35 +1052,44 @@ m Pathfinder Version 5.2 grid.";
 
       //Run the GenerateDatasetsXml program in interactive mode:
 //    GenerateDatasetsXml.main(null);
-/*  
+/* 
          EDDGridAggregateExistingDimension.testGenerateDatasetsXml();  //after EDDGridFromDap
-         EDDGridFromDap.testGenerateDatasetsXml();
-         EDDGridFromDap.testGenerateDatasetsXml2(); 
+         //EDDGridFromDap.testGenerateDatasetsXml();  //often not accessible
+         EDDGridFromDap.testGenerateDatasetsXml2();
          //EDDGridFromDap.testGenerateDatasetsXml3(); //source is gone
+         EDDGridFromDap.testGenerateDatasetsXml4();
          EDDGridFromEDDTable.testGenerateDatasetsXml();  
          EDDGridFromErddap.testGenerateDatasetsXml();  
          EDDGridFromMergeIRFiles.testGenerateDatasetsXml();  
          EDDGridFromNcFiles.testGenerateDatasetsXml();
          EDDGridFromNcFiles.testGenerateDatasetsXml2();
-         EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3();  //slow!
+         EDDGridFromNcFiles.testGenerateDatasetsXml3();
+         //EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3();  //slow!
          EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml();
          EDDGridLonPM180.testGenerateDatasetsXmlFromErddapCatalog(); 
 
          EDDTableFromAsciiFiles.testGenerateDatasetsXml();
+         EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort();
+         EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort2();
          EDDTableFromAwsXmlFiles.testGenerateDatasetsXml();
          EDDTableFromCassandra.testGenerateDatasetsXml();
          EDDTableFromColumnarAsciiFiles.testGenerateDatasetsXml();
+         EDDTableFromColumnarAsciiFiles.testGenerateDatasetsXmlFromEML();
          EDDTableFromDapSequence.testGenerateDatasetsXml();
+         EDDTableFromDapSequence.testGenerateDatasetsXml2();
          EDDTableFromDatabase.testGenerateDatasetsXml();
          EDDTableFromErddap.testGenerateDatasetsXml(); 
          EDDTableFromFileNames.testGenerateDatasetsXml(); 
-         EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3(); //slow!
+         //EDDTableFromFileNames.testGenerateDatasetsXmlAwsS3(); //slow!
          EDDTableFromHyraxFiles.testGenerateDatasetsXml(); 
          //EDDTableFromHyraxFiles.testGenerateDatasetsXml2(); //not yet working
+         EDDTableFromMultidimNcFiles.testGenerateDatasetsXml();
+         EDDTableFromMultidimNcFiles.testGenerateDatasetsXmlSeaDataNet();
          EDDTableFromNcCFFiles.testGenerateDatasetsXml();
+         EDDTableFromNcCFFiles.testGenerateDatasetsXml2();
+         EDDTableFromNccsvFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml();
          EDDTableFromNcFiles.testGenerateDatasetsXml2();
-         EDDTableFromMultidimNcFiles.testGenerateDatasetsXml();
          //EDDTableFromNWISDV.testGenerateDatasetsXml(); //inactive
          EDDTableFromOBIS.testGenerateDatasetsXml();
          EDDTableFromSOS.testGenerateDatasetsXml(true); //useCachedInfo); 
@@ -1586,7 +1607,7 @@ EDDTableFromHyraxFiles eddtfhf;
 EDDTableFromMultidimNcFiles eddtfmdnf; 
 EDDTableFromNcFiles eddtfnf; 
 EDDTableFromNccsvFiles eddtfnccsvf; 
-EDDTableFromNWISDV eddtfnwisdv;
+//EDDTableFromNWISDV eddtfnwisdv; //INACTIVE
 EDDTableFromOBIS eddtfo; 
 //EDDTableFromPostDatabase eddtfpdb; 
 //EDDTableFromPostNcFiles eddtfpnf; 
@@ -1636,8 +1657,11 @@ TableWriterJsonl twjl;
 TableWriterNccsv twn;
 TableWriterOrderBy twob;
 TableWriterOrderByClosest twobc;
+TableWriterOrderByCount twobcount;
 TableWriterOrderByLimit twobl;
 TableWriterOrderByMax twobm;
+TableWriterOrderByMin twobmin;
+TableWriterOrderByMinMax twobmm;
 TableWriterSeparatedValue twsv;
 TableWriterUnits twu;
 TaskThread tt;

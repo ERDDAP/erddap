@@ -894,27 +894,27 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         expected = 
 "directory,name,lastModified,size\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,,,\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,48128\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,14336\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1941.nc,1262881740000,16384\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1942.nc,1262881740000,49152\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1943.nc,1262881740000,57344\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1944.nc,1262881740000,92160\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1945.nc,1262881740000,117760\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1946.nc,1262881740000,130048\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1947.nc,1262881740000,162816\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1948.nc,1262881740000,202752\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1949.nc,1262881740000,103424\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1942.nc,1262881740000,20480\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1943.nc,1262881740000,16384\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1944.nc,1262881740000,12288\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1945.nc,1262881740000,15360\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1946.nc,1262881740000,16384\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1947.nc,1262881740000,11264\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1948.nc,1262881740000,12288\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1949.nc,1262881740000,14336\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,,,\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1940.nc,1262881740000,284672\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1941.nc,1262881740000,246784\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1942.nc,1262881740000,239616\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1943.nc,1262881740000,302080\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1944.nc,1262881740000,335872\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1945.nc,1262881740000,401408\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1946.nc,1262881740000,592896\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1947.nc,1262881740000,506880\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1948.nc,1262881740000,452608\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1949.nc,1262881740000,694272\n";
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1940.nc,1262881740000,285696\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1941.nc,1262881740000,336896\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1942.nc,1262881740000,297984\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1943.nc,1262881740000,175104\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1944.nc,1262881740000,215040\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1945.nc,1262881740000,194560\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1946.nc,1262881740000,238592\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1947.nc,1262881740000,189440\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1948.nc,1262881740000,262144\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1949.nc,1262881740000,351232\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1262881740),
@@ -935,26 +935,26 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,48128\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,14336\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1941.nc,1262881740000,16384\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1942.nc,1262881740000,49152\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1943.nc,1262881740000,57344\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1944.nc,1262881740000,92160\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1945.nc,1262881740000,117760\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1946.nc,1262881740000,130048\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1947.nc,1262881740000,162816\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1948.nc,1262881740000,202752\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1949.nc,1262881740000,103424\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1940.nc,1262881740000,284672\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1941.nc,1262881740000,246784\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1942.nc,1262881740000,239616\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1943.nc,1262881740000,302080\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1944.nc,1262881740000,335872\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1945.nc,1262881740000,401408\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1946.nc,1262881740000,592896\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1947.nc,1262881740000,506880\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1948.nc,1262881740000,452608\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1949.nc,1262881740000,694272\n";
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1942.nc,1262881740000,20480\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1943.nc,1262881740000,16384\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1944.nc,1262881740000,12288\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1945.nc,1262881740000,15360\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1946.nc,1262881740000,16384\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1947.nc,1262881740000,11264\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1948.nc,1262881740000,12288\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1949.nc,1262881740000,14336\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1940.nc,1262881740000,285696\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1941.nc,1262881740000,336896\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1942.nc,1262881740000,297984\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1943.nc,1262881740000,175104\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1944.nc,1262881740000,215040\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1945.nc,1262881740000,194560\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1946.nc,1262881740000,238592\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1947.nc,1262881740000,189440\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1948.nc,1262881740000,262144\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/4/,1949.nc,1262881740000,351232\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test via oneStep 
@@ -973,16 +973,16 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,48128\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1940.nc,1262881740000,14336\n" +
 "http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1941.nc,1262881740000,16384\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1942.nc,1262881740000,49152\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1943.nc,1262881740000,57344\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1944.nc,1262881740000,92160\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1945.nc,1262881740000,117760\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1946.nc,1262881740000,130048\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1947.nc,1262881740000,162816\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1948.nc,1262881740000,202752\n" +
-"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1949.nc,1262881740000,103424\n";
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1942.nc,1262881740000,20480\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1943.nc,1262881740000,16384\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1944.nc,1262881740000,12288\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1945.nc,1262881740000,15360\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1946.nc,1262881740000,16384\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1947.nc,1262881740000,11264\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1948.nc,1262881740000,12288\n" +
+"http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/3/,1949.nc,1262881740000,14336\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test via oneStep 
@@ -1042,12 +1042,12 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/,,,\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1489504860000,307200\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1489504860000,307200\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1489504860000,305152\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1489504920000,307200\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1489504920000,309248\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1489504920000,311296\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1499387820000,309248\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1499387880000,309248\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1499387880000,307200\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1499387880000,309248\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1499387880000,311296\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1499387940000,313344\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //* Test ncei WAF        
@@ -2264,8 +2264,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
             String expected = //the lastModified values change periodically
 //these are the files which were downloaded
 "remote,local,lastModified\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1491319260000\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1491319320000\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1499387820000\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1501308000000\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //no changes, do the sync again
@@ -2634,7 +2634,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
      */
     public static void test(boolean doBigTest) throws Throwable {
         String2.log("\n****************** FileVisitorDNLS.test() *****************\n");
-/* */
+/* for releases, this line should have open/close comment */
         //always done        
         testLocal(doBigTest);
         testAWSS3(); 

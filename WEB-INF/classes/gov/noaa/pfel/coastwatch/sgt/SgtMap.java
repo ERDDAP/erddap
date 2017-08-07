@@ -80,11 +80,12 @@ public class SgtMap  {
 
     public static Color oceanColor  = new Color(128, 128, 128);
     public static Color landColor   = new Color(204, 204, 204);  //lynn uses 191
-    public static Color landMaskStrokeColor = Color.DARK_GRAY;
+    public static Color landMaskStrokeColor = Color.DARK_GRAY;  //is 64,64,64
     public static Color nationsColor = Color.DARK_GRAY;
-    public static Color statesColor = new Color(119, 0, 119); //192, 64, 192); //128, 32, 32);
+    public static Color statesColor = new Color(96, 96, 96); //119, 0, 119); //192, 64, 192); //128, 32, 32);
     public static Color riversColor = new Color(122, 170, 210);  //matches ocean.cpt and topography.cpt
-    public static Color lakesColor  = riversColor;  
+    public static Color lakesColor  = riversColor; 
+    public static boolean drawPoliticalBoundaries = true; //a kill switch for nation and state boundaries
     public final static int NO_LAKES_AND_RIVERS = 0;       //used for drawLakesAndRivers
     public final static int STROKE_LAKES_AND_RIVERS = 1;   //strokes lakes and rivers
     public final static int FILL_LAKES_AND_RIVERS = 2;     //fills+strokes lakes, strokes rivers
@@ -1083,7 +1084,7 @@ public class SgtMap  {
                 }
 
                 //*** draw the StateBOUNDARY
-                if (boundaryResolution < cRes && !transparent) {
+                if (drawPoliticalBoundaries && boundaryResolution < cRes && !transparent) {
                     CartesianGraph graph = new CartesianGraph("", xt, yt);
                     Layer layer = new Layer("stateBoundary", layerDimension2D);
                     layerNames.add(layer.getId());
@@ -1101,7 +1102,7 @@ public class SgtMap  {
                 }
 
                 //*** draw the NationalBOUNDARY 
-                if (!transparent) {
+                if (drawPoliticalBoundaries && !transparent) {
                     CartesianGraph graph = new CartesianGraph("", xt, yt);
                     Layer layer = new Layer("nationalBoundary", layerDimension2D);
                     layerNames.add(layer.getId());
@@ -1707,6 +1708,10 @@ public class SgtMap  {
         //   Layer - 'P'hysical coordinates  (e.g., psuedo-inches, 0,0 is lower left)
         //   JPane - 'D'evice coordinates    (pixels, 0,0 is upper left)
 
+        if (!drawPoliticalBoundaries) {
+            drawNationalBoundaries = false;
+            drawStateBoundaries = false;
+        }
       
         //set the clip region
         g2.setClip(null); //clear any previous clip region  //this is necessary!
@@ -2401,7 +2406,7 @@ public class SgtMap  {
 
         //draw the state boundary
         LineAttribute lineAttribute;
-        if (boundaryResolution != CRUDE_RESOLUTION) {
+        if (drawPoliticalBoundaries && boundaryResolution != CRUDE_RESOLUTION) {
             graph = new CartesianGraph("", xt, yt);
             layer = new Layer("state", layerDimension2D);
             layerNames.add(layer.getId());
@@ -2419,18 +2424,20 @@ public class SgtMap  {
 
         //draw the national boundary
         graph = new CartesianGraph("", xt, yt);
-        layer = new Layer("national", layerDimension2D);
-        layerNames.add(layer.getId());
-        jPane.add(layer);      //calls layer.setPane(this);
-        layer.setGraph(graph); //calls graph.setLayer(this);
         graph.setClip(xUserRange.start, xUserRange.end,
                       yUserRange.start, yUserRange.end);
         graph.setClipping(true);
-        lineAttribute = new LineAttribute();
-        lineAttribute.setColor(nationsColor);
-        graph.setData(
-            nationalBoundaries.getSgtLine(boundaryResolution, minX, maxX, minY, maxY), 
-            lineAttribute); 
+        if (drawPoliticalBoundaries) {
+            layer = new Layer("national", layerDimension2D);
+            layerNames.add(layer.getId());
+            jPane.add(layer);      //calls layer.setPane(this);
+            layer.setGraph(graph); //calls graph.setLayer(this);
+            lineAttribute = new LineAttribute();
+            lineAttribute.setColor(nationsColor);
+            graph.setData(
+                nationalBoundaries.getSgtLine(boundaryResolution, minX, maxX, minY, maxY), 
+                lineAttribute); 
+        }
 
         //create the x axes
         Font myLabelFont = new Font(fontFamily, Font.PLAIN, 9); 

@@ -1730,7 +1730,7 @@ public class EDDTableFromCassandra extends EDDTable{
             else if (destName.equals(EDV.DEPTH_NAME)) sourceAtts.add("units", EDV.DEPTH_UNITS);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
-                sourceAtts, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
+                sourceAtts, null, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
             //but make it real here, and undo the lie
             if (     destName.equals(EDV.LON_NAME))   {
                 addAtts.add("units", EDV.LON_UNITS);
@@ -1772,6 +1772,9 @@ public class EDDTableFromCassandra extends EDDTable{
                 makeDestPAForGDX(pa, sourceAtts), addAtts);
         }
 
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //subsetVariables source->dest name
         StringArray subsetVariablesDestNameSA = new StringArray(
             subsetVariablesSourceNameSA.size(), true);
@@ -1803,7 +1806,7 @@ public class EDDTableFromCassandra extends EDDTable{
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 "cassandra/" + keyspace + "/" + tableName, //fake file dir.  Cass identifiers are [a-zA-Z0-9_]*
                 externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
@@ -1840,9 +1843,9 @@ public class EDDTableFromCassandra extends EDDTable{
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, false, false)); 
+            "dataVariable", true, false)); 
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1894,6 +1897,7 @@ public class EDDTableFromCassandra extends EDDTable{
         //addGlobalAtts.
         String results, expected;
 
+        try {
         //get the list of keyspaces
 //Cassandra not running?
 //As of 2016-04-06, I start Cassandra manually and leave it running in foreground:
@@ -2045,7 +2049,7 @@ expected =
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">deviceid, date</att>\n" +
+"        <att name=\"subsetVariables\">deviceid, time</att>\n" +
 "        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">The Title for Bob&#39;s Cassandra Test Data (bobTable)</att>\n" +
 "    </addAttributes>\n" +
@@ -2062,13 +2066,15 @@ expected =
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>date</sourceName>\n" +
-"        <destinationName>date</destinationName>\n" +
+"        <destinationName>time</destinationName>\n" +//this is not the best time var, but no way for ERDDAP to know
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Date</att>\n" +
+"            <att name=\"source_name\">date</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2347,7 +2353,7 @@ expected =
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">deviceid, date, latitude, longitude</att>\n" +
+"        <att name=\"subsetVariables\">deviceid, time, latitude, longitude</att>\n" +
 "        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">Cassandra Static Test</att>\n" +
 "    </addAttributes>\n" +
@@ -2364,13 +2370,15 @@ expected =
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>date</sourceName>\n" +
-"        <destinationName>date</destinationName>\n" +
+"        <destinationName>time</destinationName>\n" + //not the best choice, but no way for ERDDAP to know
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Date</att>\n" +
+"            <att name=\"source_name\">date</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2457,6 +2465,11 @@ expected =
 "</dataset>\n\n";
             //String2.log(results);
             Test.ensureEqual(results, expected, "results=\n" + results);
+
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                    "\nThis test requires Cassandra running on Bob's laptop."); 
+            }
 
     }
 
@@ -3764,7 +3777,7 @@ expected =
         String2.log("\n****************** EDDTableFromCassandra.test() *****************\n");
 
         //tests usually run       
-        /* */
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testBasic(false); //pauseBetweenTests
         testMaxRequestFraction(false);  //pauseBetweenTests

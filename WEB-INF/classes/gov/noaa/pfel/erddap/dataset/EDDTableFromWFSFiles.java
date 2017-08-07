@@ -231,7 +231,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
 
             //make addAtts
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                 timeUnits.length() == 0, true); //addColorBarMinMax, tryToFindLLAT
 
             //put time units
@@ -250,13 +250,16 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
                 tSortedColumnSourceName = colName;
         }
 
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //after dataVariables known, add global attributes in the dataAddTable
         String tDatasetID = suggestDatasetID(tSourceUrl);
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is good for now
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 EDStatic.fullCopyDirectory + tDatasetID + "/", 
                 externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
@@ -301,7 +304,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
 
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", 
-            true, true, false)); //includeDataType, tryToFindLLAT, questionDestinationName
+            true, false)); //includeDataType, questionDestinationName
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1192,6 +1195,9 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
+        String2.log("\n*** EDDTableFromWFSFiles.test()");
+
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testBasic();
     }

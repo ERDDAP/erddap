@@ -1238,7 +1238,7 @@ public class EDDTableFromDatabase extends EDDTable{
             Attributes sourceAtts = new Attributes();
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
-                sourceAtts, sqlName, true, true); //sourceAtts, sourceName, addColorBarMinMax, tryToFindLLAT
+                sourceAtts, null, sqlName, true, true); //sourceAtts, addAtts, sourceName, addColorBarMinMax, tryToFindLLAT
             if (isTime) {
                 addAtts.add("ioos_category", "Time");
                 addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");  //no "???"
@@ -1264,7 +1264,6 @@ public class EDDTableFromDatabase extends EDDTable{
         rs.close();
         con.close();
 
-
         //globalAttributes
         if (externalAddGlobalAttributes == null)
             externalAddGlobalAttributes = new Attributes();
@@ -1273,13 +1272,17 @@ public class EDDTableFromDatabase extends EDDTable{
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local database)");
+
+        //tryToFindLLAT 
+        tryToFindLLAT(dataSourceTable, dataAddTable); //just axisTables
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 "database/" + //fake file dir
                     (catalogName == null? "" : catalogName + "/") +
                     (schemaName  == null? "" : schemaName + "/") +
@@ -1323,9 +1326,9 @@ public class EDDTableFromDatabase extends EDDTable{
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1565,6 +1568,8 @@ expected =
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Birthdate</att>\n" +
+"            <att name=\"source_name\">birthdate</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -2027,7 +2032,7 @@ expected =
         String2.log("\n****************** EDDTableFromDatabase.test() *****************\n");
 
         //tests usually run       
-        /* */
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         //test sourceCanOrderBy=x and sourceCanDoDistinct=x (x=no|partial|yes).
         testBasic("testMyDatabaseNo");  

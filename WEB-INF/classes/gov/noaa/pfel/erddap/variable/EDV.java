@@ -1488,6 +1488,77 @@ public class EDV {
     }
 
     /**
+     * This returns true if this variable is probably longitude.
+     */
+    public static boolean probablyLon(String tName, String tUnits) {
+        if (!String2.isSomething(tName))
+            return false;
+        tName = tName.toLowerCase();
+        return  
+           //must check name, since uCurrent and uWind use degrees_east, too          
+           (tName.startsWith("lon") ||  //startsWith allows for e.g., "lon (degE)", "long"
+            tName.indexOf("longitude") >= 0 ||
+            tName.equals("x") ||
+            tName.equals("xax")) &&  
+           couldBeLonUnits(tUnits);
+    }
+
+    /**
+     * This returns true if this variable is probably latitude.
+     */
+    public static boolean probablyLat(String tName, String tUnits) {
+        if (!String2.isSomething(tName))
+            return false;
+        tName = tName.toLowerCase();
+        return  
+           //must check name, since uCurrent and uWind use degrees_east, too          
+           (tName.startsWith("lat") ||  //startsWith allows for e.g., "lat (degN)", "lat"
+            tName.indexOf("latitude") >= 0 ||
+            tName.equals("y") ||
+            tName.equals("yax")) &&  
+           couldBeLatUnits(tUnits);
+    }
+
+    /**
+     * This returns true if the units are consistent with longitude units.
+     * Use this if the var name is e.g., lon.
+     */
+    public static boolean couldBeLonUnits(String tUnits) {
+        if (tUnits == null || tUnits.length() == 0)
+            return true;
+        tUnits = tUnits.toLowerCase();
+        if (tUnits.indexOf("north") >= 0 ||
+            tUnits.indexOf("south") >= 0)
+            return false;
+        return "deg".equals(tUnits) || "degree".equals(tUnits) || "degrees".equals(tUnits) || 
+            tUnits.indexOf("decimal degrees") >= 0 || //BCO-DMO has "decimal degrees; negative = South of Equator"
+            tUnits.indexOf("degrees east") >= 0 || 
+            tUnits.indexOf("degree west") >= 0 ||   //some goofy datasets
+            tUnits.indexOf("degrees west") >= 0 ||  //some goofy datasets
+            tUnits.startsWith("ddd.d") ||
+            String2.indexOf(LON_UNITS_VARIANTS, tUnits) >= 0;
+    }
+
+    /**
+     * This returns true if the units are consistent with latitude units.
+     * Use this if the var name is e.g., lat.
+     */
+    public static boolean couldBeLatUnits(String tUnits) {
+        if (tUnits == null || tUnits.length() == 0)
+            return true;
+        tUnits = tUnits.toLowerCase();
+        if (tUnits.indexOf("east") >= 0 ||
+            tUnits.indexOf("west") >= 0)
+            return false;
+        return "deg".equals(tUnits) || "degree".equals(tUnits) || "degrees".equals(tUnits) || 
+            tUnits.indexOf("decimal degrees") >= 0 ||
+            tUnits.indexOf("degrees north") >= 0 || 
+            tUnits.startsWith("dd.d") ||
+            String2.indexOf(LAT_UNITS_VARIANTS, tUnits) >= 0;
+    }
+
+
+    /**
      * This tests the methods of this class.
      * @throws Throwable if trouble.
      */

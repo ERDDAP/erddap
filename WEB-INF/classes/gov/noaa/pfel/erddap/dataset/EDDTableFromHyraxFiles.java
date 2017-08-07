@@ -431,7 +431,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                     makeDestPAForGDX(pa, sourceAtts), 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         dataSourceTable.globalAttributes(),
-                        sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                        sourceAtts, null, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
                 //if a variable has timeUnits, files are likely sorted by time
                 //and no harm if files aren't sorted that way
@@ -455,13 +455,17 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         if (externalAddGlobalAttributes == null)
             externalAddGlobalAttributes = new Attributes();
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -508,9 +512,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1157,9 +1161,10 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
+        String2.log("\n*** EDDTableFromHyraxFiles.test");
 
+/* for releases, this line should have open/close comment */
         //usually run
-/* */
         testGenerateDatasetsXml();
         testJpl(true);   //deleteCachedInfoAndOneFile
         testJpl(false);  

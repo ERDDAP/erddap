@@ -200,7 +200,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -215,13 +215,17 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
             "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -275,9 +279,9 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -347,7 +351,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.argodatamgt.org/Documentation</att>\n" +
 "        <att name=\"infoUrl\">http://www.argodatamgt.org/Documentation</att>\n" +
-"        <att name=\"keywords\">adjusted, argo, array, assembly, best, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, identifier, in-situ, instrument, investigator, its, its-90, JULD, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
+"        <att name=\"keywords\">adjusted, argo, array, assembly, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, identifier, in-situ, instrument, investigator, its, its-90, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
 "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
@@ -617,6 +621,7 @@ directionsForGenerateDatasetsXml() +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"source_name\">JULD</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1788,7 +1793,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.seadatanet.org/</att>\n" +
 "        <att name=\"infoUrl\">http://www.seadatanet.org/</att>\n" +
 "        <att name=\"institution\">SeaDataNet</att>\n" +
-"        <att name=\"keywords\">above, ASLVZZ01, ASLVZZ01_SEADATANET_QC, bathymetric, bathymetry, below, cdi, chronological, code, common, crs, data, date, depth, DEPTH_SEADATANET_QC, directory, earth, european, flag, floor, format, generated, geodetics, geoid, gravity, height, identifier, julian, latitude, level, list, longitude, marine, measurement, nemo, network, numbers, ocean, oceans,\n" +
+"        <att name=\"keywords\">above, ASLVZZ01, ASLVZZ01_SEADATANET_QC, bathymetric, bathymetry, below, cdi, code, common, crs, data, depth, DEPTH_SEADATANET_QC, directory, earth, european, flag, floor, format, generated, geodetics, geoid, gravity, height, identifier, latitude, level, list, longitude, marine, measurement, nemo, network, numbers, ocean, oceans,\n" +
 "Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry,\n" +
 "Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
@@ -1800,7 +1805,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">SDN_EDMO_CODE, SDN_CRUISE, SDN_STATION, SDN_LOCAL_CDI_ID, SDN_BOT_DEPTH, longitude, latitude, POSITION_SEADATANET_QC, crs, TIME_SEADATANET_QC, depth, depth, ASLVZZ01_SEADATANET_QC, TEMPPR01_SEADATANET_QC, PRESPR01_SEADATANET_QC</att>\n" +
+"        <att name=\"subsetVariables\">SDN_EDMO_CODE, SDN_CRUISE, SDN_STATION, SDN_LOCAL_CDI_ID, SDN_BOT_DEPTH, longitude, latitude, POSITION_SEADATANET_QC, crs, TIME_SEADATANET_QC, depth, DEPTH_SEADATANET_QC, ASLVZZ01_SEADATANET_QC, TEMPPR01_SEADATANET_QC, PRESPR01_SEADATANET_QC</att>\n" +
 "        <att name=\"summary\">Network Common Data Format (NetCDF) TIMESERIES - Generated by NEMO, version 1.6.0</att>\n" +
 "        <att name=\"title\">NetCDF TIMESERIES, Generated by NEMO, version 1.6.0</att>\n" +
 "    </addAttributes>\n" +
@@ -2756,7 +2761,9 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-/* */
+        String2.log("\n*** EDDTableFromMultidimNcFiles.test()");
+
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testGenerateDatasetsXmlSeaDataNet();
         

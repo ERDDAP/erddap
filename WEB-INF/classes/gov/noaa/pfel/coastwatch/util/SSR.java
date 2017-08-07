@@ -1638,6 +1638,7 @@ public class SSR {
         URLConnection conn = turl.openConnection();
         conn.setRequestProperty("Accept-Encoding", 
             "gzip, x-gzip, deflate"); //compress, x-compress, 
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
         //String2.log("request: " + String2.toString(conn.getRequestProperties()));
         if (timeOutMillis <= 0)
             timeOutMillis = 10 * Calendar2.SECONDS_PER_MINUTE * 1000; //ten minutes, in ms

@@ -10401,17 +10401,17 @@ Dataset {
 
         results = table.columnAttributes(6).toString();
         expected = 
-"    coordinates=\"time lat lon alt\"\n" +
-"    long_name=\"Humidity\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"specific_humidity\"\n" +
-"    units=\"Percent\"\n";
+"    coordinates=time lat lon alt\n" +
+"    long_name=Humidity\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=specific_humidity\n" +
+"    units=Percent\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = table.globalAttributes().toString();
         expected = 
-"    Conventions=\"CF-1.6\"\n" +
-"    featureType=\"point\"\n";
+"    Conventions=CF-1.6\n" +
+"    featureType=point\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         table.readNcCF(fileName, StringArray.fromCSV(
@@ -10468,8 +10468,8 @@ Dataset {
         //and test that it gets the global attributes from the file.
         results = table.globalAttributes().toString();
         expected = 
-"    Conventions=\"CF-1.6\"\n" +
-"    featureType=\"point\"\n";
+"    Conventions=CF-1.6\n" +
+"    featureType=point\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#1f " + pauseMessage); 
@@ -10564,13 +10564,13 @@ Dataset {
         Test.ensureEqual(table.nRows(), 118, table.toString());
         results = table.columnAttributes(0).toString();
         expected = 
-"    actual_range=465958, 848984\n" +
-"    cf_role=\"profile_id\"\n" +
-"    colorBarMaximum=1000000.0\n" +
-"    colorBarMinimum=0.0\n" +
-"    ioos_category=\"Identifier\"\n" +
-"    long_name=\"Sequence ID\"\n" +
-"    missing_value=2147483647\n";
+"    actual_range=465958i,848984i\n" +
+"    cf_role=profile_id\n" +
+"    colorBarMaximum=1000000.0d\n" +
+"    colorBarMinimum=0.0d\n" +
+"    ioos_category=Identifier\n" +
+"    long_name=Sequence ID\n" +
+"    missing_value=2147483647i\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         gatts = table.globalAttributes();
         Test.ensureEqual(gatts.getString("cdm_data_type"), "Profile", gatts.toString());
@@ -10887,9 +10887,9 @@ String2.log(table.toString());
             Test.ensureEqual(table.nRows(), 23, table.toString());
             results = table.columnAttributes(0).toString();
             expected = 
-"    cf_role=\"timeseries_id\"\n" +
-"    ioos_category=\"Identifier\"\n" +
-"    long_name=\"CalCOFI Line + Station\"\n";
+"    cf_role=timeseries_id\n" +
+"    ioos_category=Identifier\n" +
+"    long_name=CalCOFI Line + Station\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             gatts = table.globalAttributes();
             Test.ensureEqual(gatts.getString("cdm_data_type"), "TimeSeries", gatts.toString());
@@ -11504,7 +11504,7 @@ String2.log(table.toString());
 "    String publisher_email \"NODC.Services@noaa.gov\";\n" +
 "    String publisher_name \"US DOC; NESDIS; NATIONAL CENTERS FOR ENVIRONMENTAL INFORMATION - IN295\";\n" +
 "    String publisher_url \"http://www.nodc.noaa.gov/\";\n" +
-"    String QC_indicator \"Contact Principle Investigaror(s)\";\n" +
+"    String QC_indicator \"Contact Principle Investigaror(s)\";\n" +   //sic
 "    String QC_Manual \"Contact Principle Investigaror(s)\";\n" +
 "    String QC_Software \"Contact Principle Investigaror(s)\";\n" +
 "    String QC_test_codes \"Contact Principle Investigaror(s)\";\n" +
@@ -11768,10 +11768,10 @@ String2.log(table.toString());
             Test.ensureEqual(table.nRows(), 53, table.toString());
             results = table.columnAttributes(0).toString();
             expected = 
-"    comment=\"See the list of platform codes (sorted in various ways) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\"\n" +
-"    ioos_category=\"Identifier\"\n" +
-"    long_name=\"GTSPP Platform Code\"\n" +
-"    references=\"http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\"\n";
+"    comment=See the list of platform codes (sorted in various ways) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\n" +
+"    ioos_category=Identifier\n" +
+"    long_name=GTSPP Platform Code\n" +
+"    references=http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             gatts = table.globalAttributes();
             Test.ensureEqual(gatts.getString("cdm_data_type"), "TrajectoryProfile", gatts.toString());
@@ -12378,9 +12378,9 @@ if (fileType.equals("ragged"))
         Test.ensureEqual(table.nRows(), 58, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#4a " + pauseMessage); 
@@ -12665,9 +12665,9 @@ if (fileType.equals("ragged"))
         Test.ensureEqual(table.nRows(), 5754, ""); 
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#4b " + pauseMessage); 
@@ -12889,9 +12889,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 100, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#4c " + pauseMessage); 
@@ -13212,9 +13212,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 5964, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#4g " + pauseMessage); 
@@ -13346,11 +13346,11 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 1000, "");
         results = table.columnAttributes(5).toString(); //temperature
         expected = 
-"    coordinates=\"lat lon alt\"\n" +   //this is what source has.  But it should include time.
-"    long_name=\"Air Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"air_temperature\"\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=lat lon alt\n" +   //this is what source has.  But it should include time.
+"    long_name=Air Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=air_temperature\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#5a " + pauseMessage); 
@@ -13836,11 +13836,11 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 200, "");
         results = table.columnAttributes(7).toString();  //temperature
         expected = 
-"    coordinates=\"time lat lon alt\"\n" +
-"    long_name=\"Air Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"air_temperature\"\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=time lat lon alt\n" +
+"    long_name=Air Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=air_temperature\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#5b " + pauseMessage); 
@@ -14128,12 +14128,12 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 163, ""); 
         results = table.columnAttributes(5).toString(); //temperature
         expected = 
-"    axis=\"Z\"\n" +
-"    long_name=\"height above mean sea level\"\n" +
-"    missing_value=-999.0\n" +
-"    positive=\"up\"\n" +
-"    standard_name=\"altitude\"\n" +
-"    units=\"m\"\n";
+"    axis=Z\n" +
+"    long_name=height above mean sea level\n" +
+"    missing_value=-999.0f\n" +
+"    positive=up\n" +
+"    standard_name=altitude\n" +
+"    units=m\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#8a " + pauseMessage); 
@@ -14584,12 +14584,12 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 200, "");
         results = table.columnAttributes(5).toString();  //temperature
         expected = 
-"    axis=\"Z\"\n" +
-"    long_name=\"height above mean sea level\"\n" +
-"    missing_value=-999.9\n" +
-"    positive=\"up\"\n" +
-"    standard_name=\"altitude\"\n" +
-"    units=\"m\"\n";
+"    axis=Z\n" +
+"    long_name=height above mean sea level\n" +
+"    missing_value=-999.9f\n" +
+"    positive=up\n" +
+"    standard_name=altitude\n" +
+"    units=m\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#8b " + pauseMessage); 
@@ -14626,11 +14626,11 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 100, "");
         results = table.columnAttributes(table.findColumnNumber("temperature")).toString();  
         expected = 
-"    coordinates=\"time lat lon z\"\n" +
-"    long_name=\"Air Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"air_temperature\"\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=time lat lon z\n" +
+"    long_name=Air Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=air_temperature\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#8c " + pauseMessage); 
@@ -14832,11 +14832,11 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 213, "");
         results = table.columnAttributes(6).toString();  //temperature
         expected = 
-"    coordinates=\"time lat lon z\"\n" +
-"    long_name=\"Air Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"air_temperature\"\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=time lat lon z\n" +
+"    long_name=Air Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=air_temperature\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#8d " + pauseMessage); 
@@ -15066,9 +15066,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 240, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6a " + pauseMessage); 
@@ -15295,16 +15295,16 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 120, "");
         results = table.columnAttributes(table.findColumnNumber("alt")).toString();
         expected = 
-"    axis=\"Z\"\n" +
-"    positive=\"up\"\n" +
-"    units=\"m\"\n";
+"    axis=Z\n" +
+"    positive=up\n" +
+"    units=m\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         results = table.columnAttributes(table.findColumnNumber("temperature")).toString();
         expected = 
-"    coordinates=\"time lat lon alt\"\n" +
-"    long_name=\"Water Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=time lat lon alt\n" +
+"    long_name=Water Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6b " + pauseMessage); 
@@ -15530,9 +15530,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 800, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6c " + pauseMessage); 
@@ -15758,9 +15758,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 400, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6d " + pauseMessage); 
@@ -15973,9 +15973,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 1, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6e " + pauseMessage); 
@@ -16147,9 +16147,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 12, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6j " + pauseMessage); 
@@ -16373,7 +16373,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 10, "");
         results = table.columnAttributes(table.findColumnNumber("profile")).toString();
         expected = 
-"    cf_role=\"profile_id\"\n";
+"    cf_role=profile_id\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6m " + pauseMessage); 
@@ -16586,9 +16586,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 1, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station latitude\"\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=station latitude\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6n " + pauseMessage); 
@@ -16610,10 +16610,10 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 4, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"time\"\n" +
-"    missing_value=-999\n" +
-"    standard_name=\"time\"\n" +
-"    units=\"seconds since 1990-01-01 00:00:00\"\n";
+"    long_name=time\n" +
+"    missing_value=-999i\n" +
+"    standard_name=time\n" +
+"    units=seconds since 1990-01-01 00:00:00\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6o " + pauseMessage); 
@@ -16635,7 +16635,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 4, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station info\"\n";
+"    long_name=station info\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6p " + pauseMessage); 
@@ -16658,7 +16658,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 3, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station info\"\n";
+"    long_name=station info\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6q " + pauseMessage); 
@@ -16681,11 +16681,11 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 3, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    coordinates=\"time lat lon height\"\n" +
-"    long_name=\"Water Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"sea_water_temperature\"\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=time lat lon height\n" +
+"    long_name=Water Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=sea_water_temperature\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#6r " + pauseMessage); 
@@ -16880,19 +16880,19 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 20, "");
         results = table.columnAttributes(table.findColumnNumber("lat")).toString();
         expected = 
-"    long_name=\"Latitude\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=Latitude\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         results = table.columnAttributes(table.findColumnNumber("alt")).toString();
         expected = 
-"    axis=\"Z\"\n" +
-"    long_name=\"height below mean sea level\"\n" +
-"    missing_value=-999.9\n" +
-"    positive=\"down\"\n" +
-"    standard_name=\"altitude\"\n" +
-"    units=\"m\"\n";
+"    axis=Z\n" +
+"    long_name=height below mean sea level\n" +
+"    missing_value=-999.9f\n" +
+"    positive=down\n" +
+"    standard_name=altitude\n" +
+"    units=m\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10a " + pauseMessage); 
@@ -17125,10 +17125,10 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 65, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"Latitude\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=Latitude\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10c " + pauseMessage); 
@@ -17369,10 +17369,10 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 28, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"Latitude\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=Latitude\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10d " + pauseMessage); 
@@ -17392,10 +17392,10 @@ String2.log(table.dataToString());
         Test.ensureEqual(results, expected, "results=\n" + results);
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"Latitude\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"latitude\"\n" +
-"    units=\"degrees_north\"\n";
+"    long_name=Latitude\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=latitude\n" +
+"    units=degrees_north\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10e " + pauseMessage); 
@@ -17580,7 +17580,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 594, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    cf_role=\"trajectory_id\"\n";
+"    cf_role=trajectory_id\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10m " + pauseMessage); 
@@ -17796,7 +17796,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 5, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    cf_role=\"trajectory_id\"\n";
+"    cf_role=trajectory_id\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10n " + pauseMessage); 
@@ -17834,10 +17834,10 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 20, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"time of measurement\"\n" +
-"    missing_value=-999\n" +
-"    standard_name=\"time\"\n" +
-"    units=\"seconds since 1990-01-01 00:00:00\"\n";
+"    long_name=time of measurement\n" +
+"    missing_value=-999i\n" +
+"    standard_name=time\n" +
+"    units=seconds since 1990-01-01 00:00:00\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10o " + pauseMessage); 
@@ -17875,9 +17875,9 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 20, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    long_name=\"station longitude\"\n" +
-"    standard_name=\"longitude\"\n" +
-"    units=\"degrees_east\"\n";
+"    long_name=station longitude\n" +
+"    standard_name=longitude\n" +
+"    units=degrees_east\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10p " + pauseMessage); 
@@ -17918,7 +17918,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 21, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    cf_role=\"trajectory_id\"\n";
+"    cf_role=trajectory_id\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10q " + pauseMessage); 
@@ -17959,11 +17959,11 @@ String2.log(table.dataToString());
         Test.ensureEqual(table.nRows(), 21, "");
         results = table.columnAttributes(0).toString();
         expected = 
-"    coordinates=\"time lat lon z\"\n" +
-"    long_name=\"Air Temperature\"\n" +
-"    missing_value=-999.9\n" +
-"    standard_name=\"air_temperature\"\n" +
-"    units=\"Celsius\"\n";
+"    coordinates=time lat lon z\n" +
+"    long_name=Air Temperature\n" +
+"    missing_value=-999.9f\n" +
+"    standard_name=air_temperature\n" +
+"    units=Celsius\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         if (pauseAfterEach) 
             String2.pressEnterToContinue("#10r " + pauseMessage); 
@@ -19662,6 +19662,7 @@ String2.log(table.dataToString());
      *      (see http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
      *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", 
      *      "orderByMax("...")", "orderByMin("...")", "orderByMinMax("...")", 
+     *      "orderByCount("...")", 
      *      "orderByClosest("...")", "orderByLimit("...")", "units("...")", 
      *      it is ignored.
      *    <br>If an &amp;-separated part starts with ".", it is ignored.
@@ -19771,6 +19772,7 @@ String2.log(table.dataToString());
                 (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderBy(\"") ||
                   constraint.startsWith("orderByClosest(\"") ||
+                  constraint.startsWith("orderByCount(\"") ||
                   constraint.startsWith("orderByLimit(\"") ||
                   constraint.startsWith("orderByMax(\"") ||
                   constraint.startsWith("orderByMin(\"") ||
@@ -19844,7 +19846,7 @@ String2.log(table.dataToString());
                 columnAttributes(dvi).getString("units"));
             if (constrainTimeStamp) {
                 //this isn't precise!!!   should it be required??? or forbidden???
-                if (debugMode) String2.log(">>isTimeStamp=true");
+                if (debugMode) String2.log(">> isTimeStamp=true");
                 if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
                     tValue = String2.fromJsonNotNull(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
@@ -20259,8 +20261,7 @@ String2.log(table.dataToString());
      * @param dapQuery A PERCENT-ENCODED DAP query.
      *   Unofficially (e.g., for testing) the query can be already percent decoded
      *     if there are no %dd in the decoded query.
-     *   This supports filters: distinct(), orderBy(), orderByMin(), orderByMax(), 
-     *     orderByMinMax(), but not units().
+     *   This supports filters: distinct(), orderBy(), orderBy...(), but not units().
      * @return the number of rows remaining (may be 0!).
      */
     public int subsetViaDapQuery(String dapQuery) throws Exception {
@@ -20316,6 +20317,8 @@ String2.log(table.dataToString());
                 ascendingSort(StringArray.arrayFromCSV(part.substring(9, partL-2)));
             } else if (part.equals("orderByClosest(\"") && part.endsWith("\")")) {
                 orderByClosest(part.substring(16, partL-2));
+            } else if (part.equals("orderByCount(\"") && part.endsWith("\")")) {
+                orderByCount(StringArray.arrayFromCSV(part.substring(14, partL-2)));
             } else if (part.equals("orderByLimit(\"") && part.endsWith("\")")) {
                 orderByClosest(part.substring(14, partL-2));
             } else if (part.equals("orderByMin(\"") && part.endsWith("\")")) {
@@ -20575,10 +20578,9 @@ String2.log(table.dataToString());
     }
 
     public void sort(String keyNames[], boolean ascending[]) {
-        int keyColumns[] = new int[keyNames.length];
-        for (int k = 0; k < keyNames.length; k++)
-            keyColumns[k] = findColumnNumber(keyNames[k]);
-        PrimitiveArray.sort(columns, keyColumns, ascending);
+        PrimitiveArray.sort(columns, 
+            keyColumnNamesToNumbers("sort", keyNames),
+            ascending);
     }
 
     /**
@@ -20597,10 +20599,9 @@ String2.log(table.dataToString());
 
     /** Like sortIgnoreCase, but based on key column's names. */
     public void sortIgnoreCase(String keyNames[], boolean ascending[]) {
-        int keyColumns[] = new int[keyNames.length];
-        for (int k = 0; k < keyNames.length; k++)
-            keyColumns[k] = findColumnNumber(keyNames[k]);
-        PrimitiveArray.sortIgnoreCase(columns, keyColumns, ascending);
+        PrimitiveArray.sortIgnoreCase(columns, 
+            keyColumnNamesToNumbers("sortIgnoreCase", keyNames),
+            ascending);
     }
 
     /**
@@ -20619,17 +20620,11 @@ String2.log(table.dataToString());
 
     /** Like ascendingSort, but based on key column's names. */
     public void ascendingSort(String keyNames[]) {
-        int keyColumns[] = new int[keyNames.length];
-        for (int k = 0; k < keyNames.length; k++) {
-            keyColumns[k] = findColumnNumber(keyNames[k]);
-            if (keyColumns[k] < 0)
-                throw new SimpleException(QUERY_ERROR + 
-                    "Sort column name=" + keyNames[k] + 
-                    " isn't in the results table.");
-        }
-        boolean ascending[] = new boolean[keyColumns.length];
+        boolean ascending[] = new boolean[keyNames.length];
         Arrays.fill(ascending, true);
-        PrimitiveArray.sort(columns, keyColumns, ascending);
+        PrimitiveArray.sort(columns, 
+            keyColumnNamesToNumbers("orderBy", keyNames),
+            ascending);
     }
 
     /**
@@ -20649,16 +20644,11 @@ String2.log(table.dataToString());
 
     /** Like ascendingSortIgnoreCase, but based on key column's names. */
     public void ascendingSortIgnoreCase(String keyNames[]) {
-        int keyColumns[] = new int[keyNames.length];
-        for (int k = 0; k < keyNames.length; k++) {
-            keyColumns[k] = findColumnNumber(keyNames[k]);
-            if (keyColumns[k] < 0)
-                throw new SimpleException("One of the sort column names (" + 
-                    keyNames[k] + " isn't in the table.");
-        }
-        boolean ascending[] = new boolean[keyColumns.length];
+        boolean ascending[] = new boolean[keyNames.length];
         Arrays.fill(ascending, true);
-        PrimitiveArray.sortIgnoreCase(columns, keyColumns, ascending);
+        PrimitiveArray.sortIgnoreCase(columns, 
+            keyColumnNamesToNumbers("ascendingSortIgnoreCase", keyNames),
+            ascending);
     }
 
     /**
@@ -21011,22 +21001,44 @@ String2.log(table.dataToString());
     }
 
     /**
-     * Like the other orderByMax, but based on keyColumnNames.
+     * This converts an array of column names to column numbers.
      *
-     * @param keyColumnNames  1 or more column numbers (0..).
-     * @throws Exception if trouble (e.g., a keyColumnName not found)
+     * @param responsible The name of the caller (for an error message).
+     * @param keyColumnNames
+     * @return an array of column numbers
+     * @throws SimpleException if name not found
      */
-    public void orderByMax(String keyColumnNames[]) throws Exception {
-
+    public int[] keyColumnNamesToNumbers(String responsible, String keyColumnNames[]) {
         //find the key column numbers
         int keys[] = new int[keyColumnNames.length];
         for (int kc = 0; kc < keyColumnNames.length; kc++) {
             keys[kc] = findColumnNumber(keyColumnNames[kc]);
             if (keys[kc] < 0)
                 throw new SimpleException(QUERY_ERROR +
-                    "'orderByMax' column=" + keyColumnNames[kc] + " isn't in the results table.");
+                    "\"" + responsible + "\" column=" + keyColumnNames[kc] + 
+                    " isn't in the results table.");
         }
-        orderByMax(keys);
+        return keys;
+    }
+
+    /**
+     * Like the other orderByCount, but based on keyColumnNames.
+     *
+     * @param keyColumnNames  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., a keyColumnName not found)
+     */
+    public void orderByCount(String keyColumnNames[]) throws Exception {
+        orderByCount(keyColumnNamesToNumbers("orderByCount", keyColumnNames));
+    }
+
+    /**
+     * Like the other orderByMax, but based on keyColumnNames.
+     *
+     * @param keyColumnNames  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., a keyColumnName not found)
+     */
+    public void orderByMax(String keyColumnNames[]) throws Exception {
+        orderByMax(keyColumnNamesToNumbers("orderByMax", keyColumnNames));
     }
 
     /**
@@ -21036,16 +21048,7 @@ String2.log(table.dataToString());
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMin(String keyColumnNames[]) throws Exception {
-
-        //find the key column numbers
-        int keys[] = new int[keyColumnNames.length];
-        for (int kc = 0; kc < keyColumnNames.length; kc++) {
-            keys[kc] = findColumnNumber(keyColumnNames[kc]);
-            if (keys[kc] < 0)
-                throw new SimpleException(QUERY_ERROR +
-                    "'orderByMin' column=" + keyColumnNames[kc] + " isn't in the results table.");
-        }
-        orderByMin(keys);
+        orderByMin(keyColumnNamesToNumbers("orderByMin", keyColumnNames));
     }
 
     /**
@@ -21055,16 +21058,7 @@ String2.log(table.dataToString());
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMinMax(String keyColumnNames[]) throws Exception {
-
-        //find the key column numbers
-        int keys[] = new int[keyColumnNames.length];
-        for (int kc = 0; kc < keyColumnNames.length; kc++) {
-            keys[kc] = findColumnNumber(keyColumnNames[kc]);
-            if (keys[kc] < 0)
-                throw new SimpleException(QUERY_ERROR +
-                    "'orderByMinMax' column=" + keyColumnNames[kc] + " isn't in the results table.");
-        }
-        orderByMinMax(keys);
+        orderByMinMax(keyColumnNamesToNumbers("orderByMinMax", keyColumnNames));
     }
 
     /** This tests orderByMax, orderByMin, orderByMinMax */
@@ -21532,6 +21526,186 @@ String2.log(table.dataToString());
 
     }
 
+
+    /**
+     * This sorts the table by keyColumns (all ascending) then, 
+     * for each block where the nKeyColumns-1 values are constant,
+     * makes just one row with the count of all non-NaN values of 
+     * each variable. 
+     * For example, orderByCount([stationID]) would sort by stationID, 
+     * then for each stationID, just return a count of the number
+     * of non-NaN values for each other variable.
+     *
+     * <p>Missing values for the keyColumns are treated as however sort() treats them.
+     * So they may sort low. 
+     * So a missing value in the last keyColumn may be the min value.
+     * 
+     * <p>If there are 0 rows:
+     * <br>There must still be all keyCols.
+     * <br>The non-keyCols will be changed to be IntArrays with size=0.
+     *
+     * @param keyColumns  0 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., invalid column number).
+     *    0 rows is not an error, but returns 0 rows.
+     */
+    public void orderByCount(int keyCols[]) throws Exception {
+        if (verbose) String2.log("* orderByCount(" + String2.toCSSVString(keyCols) + ")");
+        int nRows = nRows();
+        int nCols = nColumns();
+        int nKeyCols = keyCols.length;
+
+        //sort based on keys
+        if (nKeyCols > 0)
+            ascendingSort(keyCols);
+        //String2.log(dataToString());
+
+        //note which are keyCol
+        boolean isKeyCol[] = new boolean[nCols]; //all false
+        for (int kc = 0; kc < nKeyCols; kc++)
+            isKeyCol[keyCols[kc]] = true;
+
+        //make resultPAs for count columns (IntArrays)
+        //and set units to "count"
+        PrimitiveArray resultPAs[] = new PrimitiveArray[nCols];
+        for (int col = 0; col < nCols; col++) {
+            if (!isKeyCol[col]) {
+                resultPAs[col] = new IntArray(32, false);
+                columnAttributes(col).set("units", "count");
+            }
+        }
+
+        //walk through the table
+        int resultsRow = -1;
+        BitSet keep = new BitSet(nRows); //all false
+        for (int row = 0; row < nRows; row++) { 
+
+            //isNewGroup?
+            boolean isNewGroup = true;
+            if (row > 0) {
+                isNewGroup = false;
+                if (nKeyCols > 0) {
+                    for (int kc = nKeyCols - 1; kc >= 0; kc--) { //count down more likely to find change sooner
+                        if (columns.get(keyCols[kc]).compare(row - 1, row) != 0) {
+                            isNewGroup = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (isNewGroup) {
+                resultsRow++;
+                keep.set(row);
+                //add a row to resultsPAs
+                for (int col = 0; col < nCols; col++) {
+                    if (!isKeyCol[col]) 
+                        resultPAs[col].addInt(0);
+                }
+            }
+
+            //increment count?
+            for (int col = 0; col < nCols; col++) {
+                //String2.log("row=" + row + " col=" + col + "value=\"" + columns.get(col).getString(row) + "\"");
+                if (!isKeyCol[col] && String2.isSomething(columns.get(col).getString(row))) {
+                    resultPAs[col].setInt(resultsRow, 
+                        resultPAs[col].getInt(resultsRow) + 1);
+                }
+            }
+        }
+
+        //just keep new group 
+        justKeep(keep);
+
+        //swap resultPAs into place
+        for (int col = 0; col < nCols; col++) {
+            if (!isKeyCol[col])
+                columns.set(col, resultPAs[col]); 
+        }
+    }
+
+
+    /**
+     * This tests orderByCount.
+     */
+    public static void testOrderByCount() throws Exception {
+        String2.log("\n*** Table.testOrderByCount()");
+
+        //test 2 orderyBy variables
+        ShortArray shar = new ShortArray(new short[]{
+            100, 100, 100,        100, 100, 100, 100, 100,  100,  100,   2,   2,   2});      
+        StringArray sar = new StringArray(new String[]{
+            "b", "b", "b",        "b", "b", "b", "c", "a",  "d",  "a", "c", "a",  ""});
+        DoubleArray dar = new DoubleArray(new double[]{
+            -121,-100, Double.NaN, 110, 132, -2, 1e30,  132, 1e30,125, 1.1, 1.2, 1.3});
+        ByteArray    bar = new    ByteArray(new byte[]{ //127=NaN
+            0,   127,    2,         3,   4,   5,   6,   7,    8,    9,  10,  11,  12});  
+        Table table = new Table();
+        table.addColumn("shar",shar);
+        table.addColumn("bar", bar);
+        table.addColumn("sar", sar);
+        table.addColumn("dar", dar);
+        table.orderByCount(new String[]{"shar","sar"});
+        String results = table.toString();
+        String expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 7 ;\n" +
+"\tsar_strlen = 1 ;\n" +
+"variables:\n" +
+"\tshort shar(row) ;\n" +
+"\tint bar(row) ;\n" +
+"\t\tbar:units = \"count\" ;\n" +
+"\tchar sar(row, sar_strlen) ;\n" +
+"\tint dar(row) ;\n" +
+"\t\tdar:units = \"count\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"}\n" +
+"shar,bar,sar,dar\n" +
+"2,1,,1\n" +
+"2,1,a,1\n" +
+"2,1,c,1\n" +
+"100,2,a,2\n" +
+"100,5,b,5\n" +
+"100,1,c,1\n" +
+"100,1,d,1\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test 0 orderBy variables
+        sar = new StringArray(new String[]{
+            "b", "b", "b",        "b", "b", "b", "c", "a",  "d",  "a", "c", "a",  ""});
+        dar = new DoubleArray(new double[]{
+            -121,-100, Double.NaN, 110, 132, -2, 1e30,  132, 1e30,125, 1.1, 1.2, 1.3});
+        bar = new    ByteArray(new byte[]{ //127=NaN
+            0,   127,    2,         3,   4,   5,   6,   7,    8,    9,  10,  11,  12});  
+        table = new Table();
+        table.addColumn("bar", bar);
+        table.addColumn("sar", sar);
+        table.addColumn("dar", dar);
+        table.orderByCount(new String[]{});
+        results = table.toString();
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 1 ;\n" +
+"variables:\n" +
+"\tint bar(row) ;\n" +
+"\t\tbar:units = \"count\" ;\n" +
+"\tint sar(row) ;\n" +
+"\t\tsar:units = \"count\" ;\n" +
+"\tint dar(row) ;\n" +
+"\t\tdar:units = \"count\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"}\n" +
+"bar,sar,dar\n" +
+"12,12,12\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+    }
+
+
+    
     /** 
      * This is a higher level orderByLimit that takes the csv string
      * with the names of the orderBy columns (may be none) plus the limitN 
@@ -27834,7 +28008,7 @@ readAsNcCF?
         verbose = true;
         reallyVerbose = true;
 
-        /* */
+/* for releases, this line should have open/close comment */
         testLittleMethods();
         testReorderColumns();
         testSortColumnsByName();
@@ -27842,6 +28016,7 @@ readAsNcCF?
         testEnhancedFlatNcFile();
         testOrderByMinMax();
         testOrderByClosest();
+        testOrderByCount();
         testOrderByLimit();
         testGetDapQueryParts();
         testParseDapQuery();

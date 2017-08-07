@@ -691,7 +691,9 @@ directionsForGenerateDatasetsXml() +
 "optical, optical properties, pathfinder, pathfinder_quality_level, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
+"        <att name=\"netcdf_version_id\">null</att>\n" +
 "        <att name=\"northernmost_latitude\">null</att>\n" +
+"        <att name=\"principal_year_day_for_collated_orbits\">null</att>\n" +
 "        <att name=\"publisher_type\">group</att>\n" +
 "        <att name=\"references\">https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
@@ -1135,6 +1137,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">rama.nemani@nasa.gov</att>\n" +
 "        <att name=\"creator_name\">Rama Nemani</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
 "        <att name=\"creator_url\">https://www.nasa.gov/</att>\n" +
 "        <att name=\"driving_data_tracking_ids\">null</att>\n" +
 "        <att name=\"infoUrl\">http://nasanex.s3.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/</att>\n" +
@@ -8048,7 +8051,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-/* */
+/* for releases, this line should have open/close comment */
         testNc(deleteCachedDatasetInfo);
         testCwHdf(deleteCachedDatasetInfo);
         testHdf();

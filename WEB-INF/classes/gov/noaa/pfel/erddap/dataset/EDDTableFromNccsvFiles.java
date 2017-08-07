@@ -192,7 +192,7 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
@@ -213,13 +213,17 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
             "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -280,9 +284,9 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -395,6 +399,7 @@ directionsForGenerateDatasetsXml() +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1246,7 +1251,6 @@ expected =
 "  \"propertyNames\": [\"ship\", \"time\", \"status\", \"testLong\", \"sst\"],[10]\n" +
 "  \"propertyUnits\": [null, \"UTC\", null, \"1\", \"degrees_C\"],[10]\n" +
 "  \"features\": [[10]\n" +
-"[10]\n" +
 "{\"type\": \"Feature\",[10]\n" +
 "  \"geometry\": {[10]\n" +
 "    \"type\": \"Point\",[10]\n" +
@@ -1313,7 +1317,6 @@ expected =
 "    \"testLong\": null,[10]\n" +
 "    \"sst\": null }[10]\n" +
 "}[10]\n" +
-"[10]\n" +
 "  ],[10]\n" +
 "  \"bbox\": [-132.1591, 27.9998, -130.2576, 28.0003][10]\n" +
 "}[10]\n" +
@@ -2042,6 +2045,327 @@ expected =
             results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
 
+
+        //*** getting ncoJson
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            eddTable.className() + "_char", ".ncoJson"); 
+        results = String2.annotatedString(
+            String2.directReadFromFile(dir + tName, String2.UTF_8));
+        //2017-08-03 I tested the resulting file for validity at https://jsonlint.com/
+        String2.log(">> NCO JSON " + dir + tName);
+        //String2.log(results);
+        expected = 
+"{[10]\n" +
+"  \"attributes\": {[10]\n" +
+"    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Trajectory\"},[10]\n" +
+"    \"cdm_trajectory_variables\": {\"type\": \"char\", \"data\": \"ship\"},[10]\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"},[10]\n" +
+"    \"creator_email\": {\"type\": \"char\", \"data\": \"bob.simons@noaa.gov\"},[10]\n" +
+"    \"creator_name\": {\"type\": \"char\", \"data\": \"Bob Simons\"},[10]\n" +
+"    \"creator_type\": {\"type\": \"char\", \"data\": \"person\"},[10]\n" +
+"    \"creator_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},[10]\n" +
+"    \"Easternmost_Easting\": {\"type\": \"double\", \"data\": -130.2576},[10]\n" +
+"    \"featureType\": {\"type\": \"char\", \"data\": \"Trajectory\"},[10]\n" +
+"    \"geospatial_lat_max\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
+"    \"geospatial_lat_min\": {\"type\": \"double\", \"data\": 27.9998},[10]\n" +
+"    \"geospatial_lat_units\": {\"type\": \"char\", \"data\": \"degrees_north\"},[10]\n" +
+"    \"geospatial_lon_max\": {\"type\": \"double\", \"data\": -130.2576},[10]\n" +
+"    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": -132.1591},[10]\n" +
+"    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},[10]\n" +
+"    \"history\": {\"type\": \"char\", \"data\": \"";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
+expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson\"},[10]\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\"},[10]\n" +
+"    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
+"    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n" +
+"    \"license\": {\"type\": \"char\", \"data\": \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"},[10]\n" +
+"    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"(local files)\"},[10]\n" +
+"    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 27.9998},[10]\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},[10]\n" +
+"    \"subsetVariables\": {\"type\": \"char\", \"data\": \"ship, status, testLong\"},[10]\n" +
+"    \"summary\": {\"type\": \"char\", \"data\": \"This is a paragraph or two describing the dataset.\"},[10]\n" +
+"    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2017-03-23T23:45:00Z\"},[10]\n" +
+"    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2017-03-23T00:45:00Z\"},[10]\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"NCCSV Demonstration\"},[10]\n" +
+"    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": -132.1591}[10]\n" +
+"  },[10]\n" +
+"  \"dimensions\": {[10]\n" +
+"    \"row\": 6,[10]\n" +
+"    \"ship_strlen\": 11[10]\n" +
+"  },[10]\n" +
+"  \"variables\": {[10]\n" +
+"    \"ship\": {[10]\n" +
+"      \"shape\": [\"row\", \"ship_strlen\"],[10]\n" +
+"      \"type\": \"char\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"cf_role\": {\"type\": \"char\", \"data\": \"trajectory_id\"},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Identifier\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Ship\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"]][10]\n" +
+"    },[10]\n" +
+"    \"time\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"double\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Time\"},[10]\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [1.4902299E9, 1.4903127E9]},[10]\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"T\"},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Time\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Time\"},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"time\"},[10]\n" +
+"        \"time_origin\": {\"type\": \"char\", \"data\": \"01-JAN-1970 00:00:00\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"seconds since 1970-01-01T00:00:00Z\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9][10]\n" +
+"    },[10]\n" +
+"    \"latitude\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"double\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lat\"},[10]\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [27.9998, 28.0003]},[10]\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"Y\"},[10]\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 90.0},[10]\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": -90.0},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Latitude\"},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"latitude\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_north\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002][10]\n" +
+"    },[10]\n" +
+"    \"longitude\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"double\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lon\"},[10]\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [-132.1591, -130.2576]},[10]\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"X\"},[10]\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 180.0},[10]\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": -180.0},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Longitude\"},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"longitude\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_east\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591][10]\n" +
+"    },[10]\n" +
+"    \"status\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"char\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"actual_range\": {\"type\": \"char\", \"data\": \"\\t\\n\\u20ac\"},[10]\n" +
+"        \"comment\": {\"type\": \"char\", \"data\": \"From http://some.url.gov/someProjectDocument , Table C\"},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Status\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [\"A\\u20ac\\t\\\"\\u00fc?\"][10]\n" +
+"    },[10]\n" +
+"    \"testLong\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"int64\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854774784]},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Test of Longs\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [-9223372036854775808, -1234567890123456, 0, 1234567890123456, 9223372036854775806, null][10]\n" +
+"    },[10]\n" +
+"    \"sst\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"float\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"actual_range\": {\"type\": \"float\", \"data\": [10.0, 10.9]},[10]\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 32.0},[10]\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": 0.0},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Temperature\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Sea Surface Temperature\"},[10]\n" +
+"        \"missing_value\": {\"type\": \"float\", \"data\": 99.0},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"sea_surface_temperature\"},[10]\n" +
+"        \"testBytes\": {\"type\": \"byte\", \"data\": [-128, 0, null]},[10]\n" +
+"        \"testChars\": {\"type\": \"char\", \"data\": \",\\n\\\"\\n\\u20ac\"},[10]\n" +
+"        \"testDoubles\": {\"type\": \"double\", \"data\": [-1.7976931348623157E308, 0.0, 1.7976931348623157E308]},[10]\n" +
+"        \"testFloats\": {\"type\": \"float\", \"data\": [-3.4028235E38, 0.0, 3.4028235E38]},[10]\n" +
+"        \"testInts\": {\"type\": \"int\", \"data\": [-2147483648, 0, null]},[10]\n" +
+"        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806, null]},[10]\n" +
+"        \"testShorts\": {\"type\": \"short\", \"data\": [-32768, 0, null]},[10]\n" +
+"        \"testStrings\": {\"type\": \"char\", \"data\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_C\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [10.9, null, 10.7, 99.0, 10.0, null][10]\n" +
+"    }[10]\n" +
+"  }[10]\n" +
+"}[10]\n" +
+"[end]";
+        po = results.indexOf(expected.substring(0, 20));        
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);        
+
+
+        //*** getting ncoJson with jsonp
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&.jsonp=myFunctionName", dir, 
+            eddTable.className() + "_charjp", ".ncoJson"); 
+        results = String2.annotatedString(
+            String2.directReadFromFile(dir + tName, String2.UTF_8));
+        //String2.log(results);
+        expected = "myFunctionName(" + 
+"{[10]\n" +
+"  \"attributes\": {[10]\n" +
+"    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Trajectory\"},[10]\n" +
+"    \"cdm_trajectory_variables\": {\"type\": \"char\", \"data\": \"ship\"},[10]\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"},[10]\n" +
+"    \"creator_email\": {\"type\": \"char\", \"data\": \"bob.simons@noaa.gov\"},[10]\n" +
+"    \"creator_name\": {\"type\": \"char\", \"data\": \"Bob Simons\"},[10]\n" +
+"    \"creator_type\": {\"type\": \"char\", \"data\": \"person\"},[10]\n" +
+"    \"creator_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},[10]\n" +
+"    \"Easternmost_Easting\": {\"type\": \"double\", \"data\": -130.2576},[10]\n" +
+"    \"featureType\": {\"type\": \"char\", \"data\": \"Trajectory\"},[10]\n" +
+"    \"geospatial_lat_max\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
+"    \"geospatial_lat_min\": {\"type\": \"double\", \"data\": 27.9998},[10]\n" +
+"    \"geospatial_lat_units\": {\"type\": \"char\", \"data\": \"degrees_north\"},[10]\n" +
+"    \"geospatial_lon_max\": {\"type\": \"double\", \"data\": -130.2576},[10]\n" +
+"    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": -132.1591},[10]\n" +
+"    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},[10]\n" +
+"    \"history\": {\"type\": \"char\", \"data\": \"";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
+expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\"},[10]\n" +
+"    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
+"    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n" +
+"    \"license\": {\"type\": \"char\", \"data\": \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"},[10]\n" +
+"    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"(local files)\"},[10]\n" +
+"    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 27.9998},[10]\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},[10]\n" +
+"    \"subsetVariables\": {\"type\": \"char\", \"data\": \"ship, status, testLong\"},[10]\n" +
+"    \"summary\": {\"type\": \"char\", \"data\": \"This is a paragraph or two describing the dataset.\"},[10]\n" +
+"    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2017-03-23T23:45:00Z\"},[10]\n" +
+"    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2017-03-23T00:45:00Z\"},[10]\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"NCCSV Demonstration\"},[10]\n" +
+"    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": -132.1591}[10]\n" +
+"  },[10]\n" +
+"  \"dimensions\": {[10]\n" +
+"    \"row\": 6,[10]\n" +
+"    \"ship_strlen\": 11[10]\n" +
+"  },[10]\n" +
+"  \"variables\": {[10]\n" +
+"    \"ship\": {[10]\n" +
+"      \"shape\": [\"row\", \"ship_strlen\"],[10]\n" +
+"      \"type\": \"char\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"cf_role\": {\"type\": \"char\", \"data\": \"trajectory_id\"},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Identifier\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Ship\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [[\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"], [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"]][10]\n" +
+"    },[10]\n" +
+"    \"time\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"double\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Time\"},[10]\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [1.4902299E9, 1.4903127E9]},[10]\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"T\"},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Time\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Time\"},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"time\"},[10]\n" +
+"        \"time_origin\": {\"type\": \"char\", \"data\": \"01-JAN-1970 00:00:00\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"seconds since 1970-01-01T00:00:00Z\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [1.4902299E9, 1.4902335E9, 1.4902371E9, 1.4902731E9, 1.4903055E9, 1.4903127E9][10]\n" +
+"    },[10]\n" +
+"    \"latitude\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"double\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lat\"},[10]\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [27.9998, 28.0003]},[10]\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"Y\"},[10]\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 90.0},[10]\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": -90.0},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Latitude\"},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"latitude\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_north\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [28.0002, 28.0003, 28.0001, 27.9998, 28.0003, 28.0002][10]\n" +
+"    },[10]\n" +
+"    \"longitude\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"double\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lon\"},[10]\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [-132.1591, -130.2576]},[10]\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"X\"},[10]\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 180.0},[10]\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": -180.0},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Longitude\"},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"longitude\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_east\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [-130.2576, -130.3472, -130.4305, -131.5578, -132.0014, -132.1591][10]\n" +
+"    },[10]\n" +
+"    \"status\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"char\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"actual_range\": {\"type\": \"char\", \"data\": \"\\t\\n\\u20ac\"},[10]\n" +
+"        \"comment\": {\"type\": \"char\", \"data\": \"From http://some.url.gov/someProjectDocument , Table C\"},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Status\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [\"A\\u20ac\\t\\\"\\u00fc?\"][10]\n" +
+"    },[10]\n" +
+"    \"testLong\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"int64\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"actual_range\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854774784]},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Unknown\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Test of Longs\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"1\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [-9223372036854775808, -1234567890123456, 0, 1234567890123456, 9223372036854775806, null][10]\n" +
+"    },[10]\n" +
+"    \"sst\": {[10]\n" +
+"      \"shape\": [\"row\"],[10]\n" +
+"      \"type\": \"float\",[10]\n" +
+"      \"attributes\": {[10]\n" +
+"        \"actual_range\": {\"type\": \"float\", \"data\": [10.0, 10.9]},[10]\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 32.0},[10]\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": 0.0},[10]\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Temperature\"},[10]\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Sea Surface Temperature\"},[10]\n" +
+"        \"missing_value\": {\"type\": \"float\", \"data\": 99.0},[10]\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"sea_surface_temperature\"},[10]\n" +
+"        \"testBytes\": {\"type\": \"byte\", \"data\": [-128, 0, null]},[10]\n" +
+"        \"testChars\": {\"type\": \"char\", \"data\": \",\\n\\\"\\n\\u20ac\"},[10]\n" +
+"        \"testDoubles\": {\"type\": \"double\", \"data\": [-1.7976931348623157E308, 0.0, 1.7976931348623157E308]},[10]\n" +
+"        \"testFloats\": {\"type\": \"float\", \"data\": [-3.4028235E38, 0.0, 3.4028235E38]},[10]\n" +
+"        \"testInts\": {\"type\": \"int\", \"data\": [-2147483648, 0, null]},[10]\n" +
+"        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806, null]},[10]\n" +
+"        \"testShorts\": {\"type\": \"short\", \"data\": [-32768, 0, null]},[10]\n" +
+"        \"testStrings\": {\"type\": \"char\", \"data\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"},[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_C\"}[10]\n" +
+"      },[10]\n" +
+"      \"data\": [10.9, null, 10.7, 99.0, 10.0, null][10]\n" +
+"    }[10]\n" +
+"  }[10]\n" +
+"}[10]\n" +
+")[end]";
+        po = results.indexOf(expected.substring(0, 20));        
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);        
+
+
         //*** getting odvTxt
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".odvTxt"); 
@@ -2051,7 +2375,7 @@ expected =
         expected = 
 //"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</Creator>[10]\n" +
 //"//<CreateTime>2017-04-21T21:32:32</CreateTime>[10]\n" +
-"//<Software>ERDDAP - Version 1.77</Software>[10]\n" +
+"//<Software>ERDDAP - Version 1.79</Software>[10]\n" +
 "//<Source>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -2255,8 +2579,9 @@ expected =
 "*GLOBAL*,geospatial_vertical_max,15.0d\n" +
 "*GLOBAL*,geospatial_vertical_min,1.0d\n" +
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
-"*GLOBAL*,geospatial_vertical_units,m\n" +
-"*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n2017-05-04 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
+"*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
+    "2017-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"Oceans > Ocean Temperature > Sea Surface Temperature,\\nbuoys, centered, daily, depth, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -2270,7 +2595,7 @@ expected =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
-"*GLOBAL*,time_coverage_end,2017-05-03T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_end,2017-08-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2310,7 +2635,7 @@ expected =
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2017-05-03T12:00:00Z\n" +
+"time,actual_range,1977-11-03T12:00:00Z\\n2017-08-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -2402,9 +2727,9 @@ expected =
 "*GLOBAL*,geospatial_vertical_max,15.0d\n" +
 "*GLOBAL*,geospatial_vertical_min,1.0d\n" +
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
-"*GLOBAL*,geospatial_vertical_units,m\n" +
+"*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2017-05-04 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2017-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -2422,7 +2747,7 @@ expected2 =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
-"*GLOBAL*,time_coverage_end,2017-05-03T12:00:00Z\n" +
+"*GLOBAL*,time_coverage_end,2017-08-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2560,7 +2885,9 @@ expected2 =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-/* */
+        String2.log("\n*** EDDTableFromNccsvFiles.test()");
+
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testBasic(true); //deleteCachedDatasetInfo
         testBasic(false); //deleteCachedDatasetInfo

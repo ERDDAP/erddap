@@ -1356,6 +1356,7 @@ public class ShortArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing ShortArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         ShortArray anArray = new ShortArray();

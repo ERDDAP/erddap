@@ -49,7 +49,12 @@ public class NDimensionalIndex {
      * This will only be a valid value if increment() returned true.
      */
     protected int[] current;
- 
+
+    /** This indicates how many dimensions were changed by the last increment().
+     * Note that a dimension with size=1 may have been changed but still have the same value. 
+     */
+    protected int nDimensionsChanged;
+
     /**
      * The constructor.
      *
@@ -99,12 +104,13 @@ public class NDimensionalIndex {
         index = -1;
         Arrays.fill(current, 0);
         current[nDimensions  - 1] = -1;
+        nDimensionsChanged = 0;
     }
 
 
 
     /**
-     * This increments index and current (with the rightmost dimension varying fastest).
+     * This increments index and current (with the rightmost dimension, dim=nDimensions-1, varying fastest).
      * This is C and Java's "row-major order" storage, 
      * not "column-major order" storage typical of Fortran.
      * Afterwards, use getIndex() and/or getCurrent() to find out the current position.
@@ -118,19 +124,22 @@ public class NDimensionalIndex {
         int tDimension = nDimensions - 1;
         while (tDimension >= 0) {
             current[tDimension]++;
-            if (current[tDimension] < shape[tDimension]) 
+            if (current[tDimension] < shape[tDimension]) {
+                nDimensionsChanged = nDimensions - tDimension;
                 return true;
+            }
             current[tDimension] = 0;
             tDimension--;
         }
 
         //increment failed,  set to one past data range
         current[0] = shape[0]; //not perfect, but reflects index and is an invalid position
+        nDimensionsChanged = nDimensions;
         return false;
     }
 
     /**
-     * This increments index and current (with the leftmost dimension varying fastest).
+     * This increments index and current (with the leftmost dimension, dim=0, varying fastest).
      * This is Fortran-style "column-major order" storage, 
      * not "row-major order" storage typical of C and Java.
      * Afterwards, use getIndex() and/or getCurrent() to find out the current position.
@@ -161,6 +170,7 @@ public class NDimensionalIndex {
                     for (int i = 0; i < nDimensions; i++) 
                         index += current[i] * factors[i];
                 }
+                nDimensionsChanged = tDimension + 1;
                 return true;
             }
             current[tDimension] = 0;
@@ -170,6 +180,7 @@ public class NDimensionalIndex {
         //increment failed
         current[0] = shape[0]; //not perfect, but reflects index and is an invalid position
         index = size;
+        nDimensionsChanged = nDimensions;
         return false;
     }
 
@@ -211,6 +222,13 @@ public class NDimensionalIndex {
      * @return the current position in the 1 dimensional array
      */
     public long getIndex() {return index; }
+       
+    /** This indicates how many dimensions were changed by the last increment().
+     * Note that a dimension with size=1 may have been changed but still have the same value. 
+     *
+     * @return the number of dimensions that were changed by the last increment().
+     */
+    public int nDimensionsChanged() {return nDimensionsChanged; }
        
     /**
      * This returns the current position in the n dimensional array.
@@ -269,6 +287,11 @@ public class NDimensionalIndex {
         return index; 
     }
 
+    public Object clone() {
+        int[] tShape = new int[nDimensions];
+        System.arraycopy(shape, 0, tShape, 0, nDimensions);
+        return new NDimensionalIndex(tShape);
+    }
 
     /**
      * This tests this class.
@@ -276,6 +299,7 @@ public class NDimensionalIndex {
      */
     public static void test() throws Exception {
         String2.log("*** NDimensionalIndex.test");
+/* for releases, this line should have open/close comment */
 
         //test increment
         NDimensionalIndex a = new NDimensionalIndex(new int[]{2,2,3});

@@ -1324,6 +1324,7 @@ public class FloatArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing FloatArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         FloatArray anArray = new FloatArray();

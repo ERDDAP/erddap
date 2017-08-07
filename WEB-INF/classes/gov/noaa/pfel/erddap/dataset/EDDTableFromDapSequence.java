@@ -733,6 +733,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         //String outerSequenceName, String innerSequenceName, boolean sortColumnsByName) 
         throws Throwable {
 
+        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("EDDTableFromDapSequence.generateDatasetsXml" +
             "\ntLocalSourceUrl=" + tLocalSourceUrl +
             "\nreloadEveryNMinutes=" + tReloadEveryNMinutes +
@@ -769,7 +770,6 @@ public class EDDTableFromDapSequence extends EDDTable{
         //get all of the vars
         String outerSequenceName = null;
         String innerSequenceName = null;
-        StringArray tSubsetVariables = new StringArray();
         Enumeration datasetVars = dds.getVariables();
         int nOuterVars = 0; //so outerVars are first in dataAddTable
         while (datasetVars.hasMoreElements()) {
@@ -803,12 +803,17 @@ public class EDDTableFromDapSequence extends EDDTable{
                                             outerSequenceName + "." + innerSequenceName + "." + varName, 
                                             sourceAtts);
                                     dataSourceTable.addColumn(dataSourceTable.nColumns(), 
-                                        varName, new StringArray(), sourceAtts);
+                                        varName, 
+                                        //just need to know String vs numeric for tryToFindLLAT
+                                        innerVar instanceof DString? new StringArray() : new DoubleArray(), 
+                                        sourceAtts);
                                     dataAddTable.addColumn(dataAddTable.nColumns(), 
-                                        varName, new StringArray(), 
+                                        varName, 
+                                        //just need to know String vs numeric for tryToFindLLAT
+                                        innerVar instanceof DString? new StringArray() : new DoubleArray(), 
                                         makeReadyToUseAddVariableAttributesForDatasetsXml(
                                             dataSourceTable.globalAttributes(),
-                                            sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
+                                            sourceAtts, null, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
                                 }
                             }
                         } else {
@@ -826,17 +831,14 @@ public class EDDTableFromDapSequence extends EDDTable{
                                 outerSequenceName + "." + varName, sourceAtts);
                         Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                             dataSourceTable.globalAttributes(),
-                            sourceAtts, varName, true, true); //addColorBarMinMax, tryToFindLLAT
-                        //just outer vars get added to subsetVariables
-                        String destName = suggestDestinationName(
-                            varName, sourceAtts, addAtts,
-                            sourceAtts.getString("units"), 
-                            sourceAtts.getString("positive"), 
-                            sourceAtts.getFloat("scale_factor"), true);
-                        tSubsetVariables.add(destName); 
-                        dataSourceTable.addColumn(nOuterVars,  varName, new StringArray(), 
+                            sourceAtts, null, varName, true, true); //addColorBarMinMax, tryToFindLLAT
+                        dataSourceTable.addColumn(nOuterVars, varName, 
+                            //just need to know String vs numeric for tryToFindLLAT
+                            outerVar instanceof DString? new StringArray() : new DoubleArray(), 
                             sourceAtts);
-                        dataAddTable.addColumn(   nOuterVars, destName, new StringArray(), 
+                        dataAddTable.addColumn(   nOuterVars, varName, 
+                            //just need to know String vs numeric for tryToFindLLAT
+                            outerVar instanceof DString? new StringArray() : new DoubleArray(), 
                             addAtts);
                         nOuterVars++;
                     }
@@ -844,20 +846,27 @@ public class EDDTableFromDapSequence extends EDDTable{
             }
         }
 
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
+        //don't suggestSubsetVariables(), instead:
+        //subset vars are nOuterVars (which are the first nOuterVar columns)
+        StringArray tSubsetVariables = new StringArray();
+        for (int col = 0; col < nOuterVars; col++)
+            tSubsetVariables.add(dataAddTable.getColumnName(col));
+        dataAddTable.globalAttributes().add("subsetVariables", tSubsetVariables.toString());
+
         //get global attributes and ensure required entries are present 
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tLocalSourceUrl, externalGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
         if (outerSequenceName == null)
             throw new SimpleException("No Sequence variable was found for " + tLocalSourceUrl + ".dds.");
-
-        //don't suggestSubsetVariables(), instead:
-        dataAddTable.globalAttributes().add("subsetVariables", tSubsetVariables.toString());
 
         //write the information
         boolean isDapper = tLocalSourceUrl.indexOf("dapper") > 0;
@@ -883,9 +892,9 @@ public class EDDTableFromDapSequence extends EDDTable{
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", false, true, false));
+            "dataVariable", false, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -925,7 +934,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Point</att>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">DYNDNS CIMT</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -934,17 +943,17 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
 "        <att name=\"keywords\">acceleration, anomaly, average, avg_sound_velocity, center, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, geopotential_anomaly, identifier, integrated, latitude, longitude, marine, ocean, oceans,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"optical, optical properties, practical, properties, salinity, sea, sea_water_practical_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, vctd, vctd.das, velocity, water</att>\n" +
+"optical, optical properties, practical, properties, salinity, sea, sea_water_practical_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, time2, vctd, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">time, latitude, longitude, station, depth, temperature, salinity, fluorescence, avg_sound_velocity, sigma_t, acceleration, geopotential_anomaly</att>\n" +
+"        <att name=\"subsetVariables\">time2, latitude, longitude, station, depth, temperature, salinity, fluorescence, avg_sound_velocity, sigma_t, acceleration, geopotential_anomaly</att>\n" +
 "        <att name=\"summary\">vCTD. DYNDNS Center for Integrated Marine Technology (CIMT) data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
 "        <att name=\"title\">vCTD. DYNDNS CIMT data from http://cimt.dyndns.org:8080/dods/drds/vCTD.das .</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
-"        <destinationName>time</destinationName>\n" +
+"        <destinationName>time2</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"Description\">A date-time string</att>\n" +
 "            <att name=\"Timezone\">GMT</att>\n" +
@@ -1142,6 +1151,8 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml2\n" +
             "This requires testNccsvScalar in localhost ERDDAP.\n");
         testVerboseOn();
+
+        try {
 
         String tUrl = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html"; //test that it removes .html
         String results = generateDatasetsXml(tUrl, 1440, null) + "\n";
@@ -1341,6 +1352,10 @@ expected =
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "ship, time, latitude, longitude, status, testLong, sst",
                 "");
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nThis test requires datasetID=testNccsvScalar in localhost ERDDAP."); 
+        }
 
     }
 
@@ -2031,7 +2046,7 @@ expected =
         String2.log("\n****************** EDDTableFromDapSequence.test() *****************\n");
         testVerboseOn();
 
-/* */
+/* for releases, this line should have open/close comment */
         //always done        
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();

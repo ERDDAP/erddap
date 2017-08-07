@@ -132,13 +132,22 @@ public abstract class EDDTable extends EDD {
     public static int REGEX_OP_INDEX = String2.indexOf(OPERATORS, PrimitiveArray.REGEX_OP);
 
     /** The orderBy options. The order/positions may change as new ones are added. 
-     * No codes depends on the specific order/positions. */
-    public static String orderByOptions[] = { 
-        "orderBy", "orderByClosest", "orderByLimit", "orderByMax", "orderByMin", "orderByMinMax"};
+     * No codes depends on the specific order/positions, except [0]="". */
+    public static String orderByOptions[] = { "",
+        "orderBy", "orderByClosest", "orderByCount", "orderByLimit", 
+        "orderByMax", "orderByMin", "orderByMinMax"};
+    public static String DEFAULT_ORDERBYCLOSEST = "1 hour";
+    public static String DEFAULT_ORDERBYLIMIT   = "100";
     /** These are used on web pages when a user changes orderBy. 
-     *  They parallel the orderByOptions. */
-    public static String orderByExtraDefaults[] = { 
-        "",        "1 hour",         "100",          "",           "",           ""};
+     *  They parallel the orderByOptions. */    
+    public static String orderByExtraDefaults[] = { "",
+        "", DEFAULT_ORDERBYCLOSEST,         "",      DEFAULT_ORDERBYLIMIT,          
+        "",                     "",         ""};
+     /** This is the minimum number of orderBy variables that must be specified
+       (not counting the orderByExtra item). */
+    public static byte minOrderByVariables[] = { 0,
+        1,        1,       0,      0,
+        1,        1,       1};
 
     /** This is used in many file types as the row identifier. */
     public final static String ROW_NAME = "row";  //see also Table.ROW_NAME
@@ -152,7 +161,7 @@ public abstract class EDDTable extends EDD {
         ".htmlTable", ".iso19115", ".itx", ".json", ".jsonlCSV", ".jsonlKVP", ".mat", 
         ".nc", ".ncHeader", ".ncCF", ".ncCFHeader", ".ncCFMA", ".ncCFMAHeader", 
 //        ".nc4", ".nc4Header", 
-        ".nccsv", ".nccsvMetadata",
+        ".nccsv", ".nccsvMetadata", ".ncoJson",
         ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
         ".asc", ".csv", ".csv", ".csv", ".das", ".dds", 
@@ -160,7 +169,7 @@ public abstract class EDDTable extends EDD {
         ".html", ".xml", ".itx", ".json", ".jsonl", ".jsonl", ".mat", 
         ".nc", ".txt", ".nc", ".txt", ".nc", ".txt", 
 //        ".nc", ".txt",
-        ".csv", ".csv",
+        ".csv", ".csv", ".json",
         ".txt", ".html", ".tsv", ".tsv", ".tsv", ".xhtml"};
     //These all used to have " (It may take a while. Please be patient.)" at the end.
     public static String[] dataFileTypeDescriptions = {
@@ -194,6 +203,7 @@ public abstract class EDDTable extends EDD {
 //        EDStatic.fileHelp_nc4Header,
         EDStatic.fileHelp_nccsv,
         EDStatic.fileHelp_nccsvMetadata,
+        EDStatic.fileHelp_ncoJson,
         EDStatic.fileHelpTable_odvTxt,
         EDStatic.fileHelp_subset,
         EDStatic.fileHelp_tsv,
@@ -233,6 +243,7 @@ public abstract class EDDTable extends EDD {
 //        "https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/ncdump-man-1.html", //nc4Header
         "https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html",
         "https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html",
+        "http://nco.sourceforge.net/nco.html#json",
         "https://odv.awi.de/en/documentation/", //odv
         "https://en.wikipedia.org/wiki/Faceted_search",  //subset
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
@@ -277,8 +288,9 @@ public abstract class EDDTable extends EDD {
     /** sosDSOutputFormat is for DescribeSensor. Note that it needs to be XML.encodeAsXML in a url. */
     public final static String sosDSOutputFormat = "text/xml;subtype=\"sensorML/1.0.1\"";
     public final static String sosPhenomenaDictionaryUrl = "phenomenaDictionary.xml";
+
     /** These are the mime types allowed for SOS requestFormat. */
-    public final static int sosDefaultDataResponseFormat = 11; //tsv
+    public final static int sosDefaultDataResponseFormat = 13; //tsv
     public final static int sosOostethysDataResponseFormat = 2;
     public final static String sosDataResponseFormats[] = {         
         "text/xml;schema=\"ioos/0.6.1\"",      //two names for the same IOOS SOS XML format
@@ -292,6 +304,8 @@ public abstract class EDDTable extends EDD {
           "application/x-netcdf",       //see http://www.wussu.com/various/mimetype.htm
           "application/x-netcdf", //ncCF, see http://www.wussu.com/various/mimetype.htm
           "application/x-netcdf", //ncCFMA
+        "application/json",     //ncoJson
+          "text/plain", //odv
           "text/tab-separated-values",     
         "application/xhtml+xml"};
     /** These are the corresponding tabledap dataFileTypeNames, not the final file extensions. */
@@ -310,9 +324,12 @@ public abstract class EDDTable extends EDD {
           ".nc", 
           ".ncCF", 
           ".ncCFMA", 
+        ".ncoJson", 
           ".odvTxt",     
+          ".tsvp",
         ".xhtml"};
-    //** And there are analogouse arrays for image formats (enable these when variables can be accessed separately)
+
+    //** And there are analogous arrays for image formats (enable these when variables can be accessed separately)
     public final static String sosImageResponseFormats[] = {
         OutputStreamFromHttpResponse.KML_MIME_TYPE, 
         "application/pdf",
@@ -325,6 +342,7 @@ public abstract class EDDTable extends EDD {
     static {
         int nDFTN = dataFileTypeNames.length;
         int nIFTN = imageFileTypeNames.length;
+        int nSDRF = sosDataResponseFormats.length;
         Test.ensureEqual(nDFTN, dataFileTypeDescriptions.length,
             "'dataFileTypeNames.length' not equal to 'dataFileTypeDescriptions.length'.");                                     
         Test.ensureEqual(nDFTN, dataFileTypeExtensions.length,
@@ -337,6 +355,8 @@ public abstract class EDDTable extends EDD {
             "'imageFileTypeNames.length' not equal to 'imageFileTypeExtensions.length'.");                                     
         Test.ensureEqual(nIFTN, imageFileTypeInfo.length,
             "'imageFileTypeNames.length' not equal to 'imageFileTypeInfo.length'.");                                     
+        Test.ensureEqual(nSDRF, sosTabledapDataResponseTypes.length,
+            "'sosDataResponseFormats.length' not equal to 'sosTabledapDataResponseTypes.length'.");                                     
         defaultFileTypeOption = String2.indexOf(dataFileTypeNames, ".htmlTable");
 
         //construct allFileTypeOptions
@@ -1800,9 +1820,7 @@ public abstract class EDDTable extends EDD {
      *      but in percent encoded form. 
      *      (see http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
      *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", 
-     *      "orderByMax("...")", "orderByMin("...")", "orderByMinMax("...")", 
-     *      "orderByClosest("...")", "orderByLimit("...")", "units("...")", 
-     *      it is ignored.
+     *      "orderBy...("...")", "units("...")", it is ignored.
      *    <br>If an &amp;-separated part starts with ".", it is ignored.
      *      It can't be a variable name.
      *      &amp;.[param]=value is used to pass special values (e.g., &amp;.colorBar=...).
@@ -1909,12 +1927,14 @@ public abstract class EDDTable extends EDD {
             //special case: server-side functions: standard orderBy (varCSV)
             if (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderBy(\"") ||
+                  constraint.startsWith("orderByCount(\"") ||
                   constraint.startsWith("orderByMax(\"") ||
                   constraint.startsWith("orderByMin(\"") ||
                   constraint.startsWith("orderByMinMax(\""))) {
-                  //orderByTime... are in next section
+                  //orderByClosest(... and orderByLimit( are below
 
                 //ensure all orderBy vars are in resultsVariables
+                //TableWriters for orderBy... do additional checking
                 if (!repair) {
                     int ppo = constraint.indexOf("(\"");
                     StringArray obv = StringArray.fromCSV(constraint.substring(
@@ -1929,7 +1949,7 @@ public abstract class EDDTable extends EDD {
                 continue;
             }
 
-            //special case: server-side functions: special orderByClosest...(varCSV, nTimeUnits)
+            //special case: server-side functions: special orderByClosest(varCSV, nTimeUnits)
             if (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderByClosest(\""))) {
 
@@ -1941,7 +1961,7 @@ public abstract class EDDTable extends EDD {
                     if (obv.size() < 2)
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_CLOSEST_ERROR + " (csv.length<2)");
-                    for (int obvi = 0; obvi < obv.size() - 1; obvi++) {
+                    for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is interval
                         if (resultsVariables.indexOf(obv.get(obvi)) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 Table.ORDER_BY_CLOSEST_ERROR + 
@@ -1953,7 +1973,7 @@ public abstract class EDDTable extends EDD {
                 continue;
             }
 
-            //special case: server-side functions: special orderByLimit...(varCSV, nTimeUnits)
+            //special case: server-side functions: special orderByLimit(varCSV, limitN)
             if (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderByLimit(\""))) {
 
@@ -1965,7 +1985,7 @@ public abstract class EDDTable extends EDD {
                     if (obv.size() == 0)
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_LIMIT_ERROR + " (csv.length=0)");
-                    for (int obvi = 0; obvi < obv.size() - 1; obvi++) {
+                    for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is limitN
                         if (resultsVariables.indexOf(obv.get(obvi)) < 0)
                             throw new SimpleException(EDStatic.queryError +
                                 Table.ORDER_BY_LIMIT_ERROR + 
@@ -2089,7 +2109,7 @@ public abstract class EDDTable extends EDD {
             } else if (conEdvIsTimeStamp) {
                 //convert <time><op><isoString> to <time><op><epochSeconds>   
                 //this isn't precise!!!   should it be required??? or forbidden???
-                if (debugMode) String2.log(">>isTimeStamp=true");
+                if (debugMode) String2.log(">> isTimeStamp=true");
                 if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
                     tValue = String2.fromJsonNotNull(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
@@ -2706,6 +2726,7 @@ public abstract class EDDTable extends EDD {
         TableWriter tableWriter = null;
         TableWriterAllWithMetadata twawm = null;
         String tNewHistory = getNewHistory(requestUrl, userDapQuery);
+        String jsonp = null;
         if (fileTypeName.equals(".asc")) 
             tableWriter = new TableWriterDodsAscii(this, tNewHistory, outputStreamSource, SEQUENCE_NAME);
         else if (fileTypeName.equals(".csv")) 
@@ -2721,10 +2742,11 @@ public abstract class EDDTable extends EDD {
         else if (fileTypeName.equals(".geoJson") || 
                  fileTypeName.equals(".json") || 
                  fileTypeName.equals(".jsonlCSV") || 
-                 fileTypeName.equals(".jsonlKVP")) {
+                 fileTypeName.equals(".jsonlKVP") ||
+                 fileTypeName.equals(".ncoJson")) {
             //did query include &.jsonp= ?
             String parts[] = Table.getDapQueryParts(userDapQuery); //decoded
-            String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
+            jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
             if (jsonp != null) {
                 jsonp = jsonp.substring(7);
                 if (!String2.isJsonpNameSafe(jsonp))
@@ -2738,6 +2760,11 @@ public abstract class EDDTable extends EDD {
                 tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, false, jsonp); //writeKVP=false
             else if (fileTypeName.equals(".jsonlKVP"))
                 tableWriter = new TableWriterJsonl(this, tNewHistory, outputStreamSource, true, jsonp);  //writeKVP=true
+            else if (fileTypeName.equals(".ncoJson")) { 
+                twawm = new TableWriterAllWithMetadata(this, tNewHistory, dir, fileName);  //used after getDataForDapQuery below...
+                tableWriter = twawm;
+            }
+
         } else if (fileTypeName.equals(".htmlTable")) 
             tableWriter = new TableWriterHtmlTable(this, tNewHistory, loggedInAs, outputStreamSource, 
                 true, fileName, false, "", "", true, true, -1);
@@ -2789,6 +2816,8 @@ public abstract class EDDTable extends EDD {
                 saveAsMatlab(outputStreamSource, twawm, datasetID);
             else if (fileTypeName.equals(".itx")) 
                 saveAsIgor(outputStreamSource, twawm, datasetID);
+            else if (fileTypeName.equals(".ncoJson")) 
+                saveAsNcoJson(outputStreamSource, twawm, jsonp);
             else if (fileTypeName.equals(".odvTxt")) 
                 saveAsODV(outputStreamSource, twawm, datasetID, publicSourceUrl(), 
                     infoUrl());
@@ -3055,6 +3084,16 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(EDStatic.queryError +
                             Table.ORDER_BY_CLOSEST_ERROR + 
                             " (unknown column name=" + twobc.orderBy[ob] + ")");
+                }
+            } else if (p.startsWith("orderByCount(\"") && p.endsWith("\")")) {
+                TableWriterOrderByCount twobc = new TableWriterOrderByCount(this, tNewHistory, 
+                    dir, fileName, tableWriter, p.substring(14, p.length() - 2));
+                tableWriter = twobc;
+                //minimal test: ensure orderBy columns are valid column names
+                for (int ob = 0; ob < twobc.orderBy.length; ob++) {
+                    if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob]) < 0)
+                        throw new SimpleException(EDStatic.queryError +
+                            "'orderByCount' variable=" + twobc.orderBy[ob] + " isn't in the dataset.");
                 }
             } else if (p.startsWith("orderByLimit(\"") && p.endsWith("\")")) {
                 TableWriterOrderByLimit twobl = 
@@ -3647,7 +3686,8 @@ public abstract class EDDTable extends EDD {
             String scale = ts == null? "Linear" : ts;
             double paletteMin = zVar == null? Double.NaN : zVar.combinedAttributes().getDouble("colorBarMinimum");
             double paletteMax = zVar == null? Double.NaN : zVar.combinedAttributes().getDouble("colorBarMaximum");
-            int nSections = -1;
+            int nSections     = zVar == null? -1         : zVar.combinedAttributes().getInt(   "colorBarNSections");
+            if (nSections < 0 || nSections >= 100) nSections = -1;
             ts = zVar == null? null : zVar.combinedAttributes().getString("colorBarContinuous");
             boolean continuous = String2.parseBoolean(ts); //defaults to true
 
@@ -4416,6 +4456,207 @@ public abstract class EDDTable extends EDD {
             (System.currentTimeMillis() - time) + "\n");
     }
 
+
+    /**
+     * Save the TableWriterAllWithMetadata data as an NCO .json lvl=2 pedantic file.
+     * http://nco.sourceforge.net/nco.html#json
+     *
+     * <p>Issues (that I have raised with Charlie Zender): 
+     * <ul>
+     * <li>How should NaN data values be represented? 
+     *   The sample file http://dust.ess.uci.edu/tmp/in.json.fmt2 has comments about nan for vars nan_arr and nan_scl.
+     *   Basically, it says they are hard to work with so "comment them out",
+     *   which is not helpful for my purposes. 
+     *   Further test: 
+     *     If I go to https://jsonlint.com/ and enter [1, 2.0, 1e30], it says it is valid.
+     *     If I enter [1, 2.0, NaN, 1e30], it says NaN is not valid.  If I enter [1, 2.0, null, 1e30], it says it is valid.
+     *   See also https://stackoverflow.com/questions/15228651/how-to-parse-json-string-containing-nan-in-node-js
+     *   So my code (PrimitiveArray.toJsonCsvString()) represents them as null.
+     *   Charlie Zender now agrees and will change NCO behavior: use null.
+     *
+     * <li>char vs String (collapse rightmost dimension) variables?
+     *   I see that for data variables, NCO json mimics what is in nc the file
+     *   and represents the rightmost dimension's chunks as strings (see below).
+     *   But that approach doesn't handle the netcdf-4's clear distinction
+     *   between char and String variables.
+     *   I see there are examples with data "type"="string" in 
+     *   http://dust.ess.uci.edu/tmp/in_grp.json.fmt2 ("string_arr"),
+     *   but no examples of "string" attributes.
+     *   For now, I'll write string vars as if in nc3 file: char arrays with extra dimension for strlen.
+     *   See writeStringsAsStrings below.
+     *   char attributes are always written as chars.
+     *
+     * <li>The example of a representation of a NUL char in http://dust.ess.uci.edu/tmp/in.json.fmt2 seems wrong.
+     *   How is this different than the character 0 (zero)?
+     *   I think it should be json-encoded as "\u0000" 
+     *   (If this were a string (which it isn't here), NUL is a terminator so it might be represented as "").
+     *      "char_var_nul": {
+     *        "type": "char",
+     *        "attributes": {
+     *          "long_name": { "type": "char", "data": "Character variable containing one NUL"}
+     *        },
+     *        "data": "0"
+     *      },
+     *   My code writes the json encoding e.g., "\u0000".
+     *   Charlie Zender is thinking about this.
+     * </ul>
+     *
+     * <p>See test of this in EDDTableFromNccsvFiles.testChar().
+     * 
+     * @param outputStreamSource
+     * @param twawm  all the results data, with missingValues stored as destinationMissingValues
+     *    or destinationFillValues  (they are converted to NaNs)
+     * @param tJsonp the not-percent-encoded jsonp functionName to be prepended to the results 
+     *     (or null if none).
+     *     See https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
+     *     and http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
+     *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
+     *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
+     * @throws Throwable 
+     */
+    public void saveAsNcoJson(OutputStreamSource outputStreamSource, 
+        TableWriterAllWithMetadata twawm, String jsonp) throws Throwable {
+        if (reallyVerbose) String2.log("EDDTable.saveAsNcoJson"); 
+        long time = System.currentTimeMillis();
+
+        //for now, write strings as if in nc3 file: char arrays with extra dimension for strlen
+        boolean writeStringsAsStrings = false; //if false, they are written as chars
+        String  stringOpenBracket = writeStringsAsStrings? "" : "[";
+        String stringCloseBracket = writeStringsAsStrings? "" : "]";
+
+        //make sure there is data
+        long nRows = twawm.nRows();
+        if (nRows == 0)
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsNcoJson)");
+        int nCols = twawm.nColumns();
+
+        //create a writer
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+            outputStreamSource.outputStream(String2.UTF_8), String2.UTF_8));
+        if (jsonp != null) 
+            writer.write(jsonp + "(");
+
+        //write start
+        writer.write("{\n");
+
+        //write the global attributes
+        writer.write(twawm.globalAttributes().toNcoJsonString("  "));
+
+        //write row dimension
+//{
+//  "dimensions": {
+//    "row": 10,
+//    "bnd": 2 
+//  }
+        writer.write(
+            "  \"dimensions\": {\n" +
+            "    \"row\": " + nRows);
+        String stringDim[] = new String[nCols];
+        if (!writeStringsAsStrings) {
+            for (int col = 0; col < nCols; col++) {
+                boolean isString = twawm.columnType(col) == String.class;
+                if (isString) {
+                    stringDim[col] = String2.toJson(twawm.columnName(col) + NcHelper.StringLengthSuffix);
+                    writer.write(",\n" + //end of previous line
+                        "    " + stringDim[col] + ": " + Math.max(1, twawm.columnMaxStringLength(col)));
+                }
+            }
+        }
+        writer.write("\n" + //end of previous line
+            "  },\n");  //end of dimensions
+
+        //write the variables
+        writer.write(
+            "  \"variables\": {\n");
+
+        StringBuilder ssb = new StringBuilder(); //reused for string variables
+        for (int col = 0; col < nCols; col++) {
+//    "att_var": {
+//      "shape": ["time"],
+//      "type": "float",
+//      "attributes": { ... },
+//      "data": [10.0, 10.10, 10.20, 10.30, 10.40101, 10.50, 10.60, 10.70, 10.80, 10.990]
+//    }
+            Attributes atts = twawm.columnAttributes(col); 
+            String tType = PrimitiveArray.elementClassToString(twawm.columnType(col));
+            boolean isString = tType.equals("String");
+            boolean isChar   = tType.equals("char");
+            int bufferSize = (int)Math.min(isChar? 8192 : 10, nRows);  //this is also nPerLine for all except char
+            if (isString) 
+                tType = writeStringsAsStrings? "string": "char";
+            else if (tType.equals("long"))
+                tType = "int64"; //see http://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+            writer.write(
+                "    " + String2.toJson(twawm.columnName(col)) + ": {\n" +
+                "      \"shape\": [\"row\"" + 
+                    (isString && !writeStringsAsStrings? ", " + stringDim[col]: "") +
+                    "],\n" +
+                "      \"type\": \"" + tType + "\",\n");
+            writer.write(atts.toNcoJsonString("      "));
+            writer.write(
+                "      \"data\": [");
+            DataInputStream dis = twawm.dataInputStream(col);
+            //create the bufferPA
+            PrimitiveArray pa = 
+                PrimitiveArray.factory(twawm.columnType(col), 
+                   bufferSize, false);  //safe since checked above
+            long nRowsRead = 0;
+            while (nRowsRead < nRows) {
+                int nToRead = (int)Math.min(bufferSize, nRows - nRowsRead);
+                pa.clear();
+                pa.readDis(dis, nToRead);
+                if (isChar) {
+                    //write it as one string with chars concatenated
+                    //see "md5_abc" in in http://dust.ess.uci.edu/tmp/in.json.fmt2
+                    //  "shape": ["lev"],          //dim lev size=3
+                    //  ...
+                    //  "data": ["abc"] 
+                    //here: write it in buffersize chunks
+                    if (nRowsRead == 0)
+                        writer.write("\""); //start the string
+                    String s = String2.toJson(new String(((CharArray)pa).toArray()));
+                    writer.write(s.substring(1, s.length() - 1));  //remove start and end "
+                } else if (isString) {
+                    //Arrays of Strings are written oddly: (example from http://dust.ess.uci.edu/tmp/in.json.fmt2)
+                    //    "date_rec": {
+                    //      "shape": ["time", "char_dmn_lng26"],
+                    //      "type": "char",
+                    //      "attributes": ...,
+                    //      "data": [["2010-11-01T00:00:00.000000"], ["2010-11-01T01:00:00.000000"], ["2010-11-01T02:00:00.000000"], ["2010-11-01T03:00:00.000000"], ["2010-11-01T04:00:00.000000"], ["2010-11-01T05:00:00.000000"], ["2010-11-01T06:00:00.000000"], ["2010-11-01T07:00:00.000000"], ["2010-11-01T08:00:00.000000"], ["2010-11-01T09:00:00.000000"]]
+                    //    },
+                    if (nRowsRead > 0)
+                        writer.write(",\n    "); //separate and write on next line
+                    ssb.setLength(0);
+                    for (int row = 0; row < nToRead; row++) 
+                        ssb.append((row == 0? "" : ", ") +
+                        stringOpenBracket + 
+                        String2.toJson(pa.getString(row)) + 
+                        stringCloseBracket);
+                    writer.write(ssb.toString());
+                } else {
+                    if (nRowsRead > 0)
+                        writer.write(",\n    "); //separate and write on next line
+                    writer.write(pa.toJsonCsvString());
+                }
+                nRowsRead += nToRead;
+            }
+            dis.close();
+            if (isChar)
+                writer.write('\"'); //terminate the string
+            writer.write("]\n" +  //end of data
+                "    }" + 
+                (col < nCols-1? ",\n" : "\n"));  //end of variable
+        }
+        writer.write(
+            "  }\n" +  //end of variables object
+            "}\n"); //end of main object
+        if (jsonp != null) 
+            writer.write(")");
+        writer.flush(); //essential
+
+        if (reallyVerbose) String2.log("  EDDTable.saveAsNcoJson done. TIME=" + 
+            (System.currentTimeMillis() - time) + "\n");
+    }
 
     /**
      * Save this table of data as a flat netCDF .nc file (a column for each 
@@ -6364,7 +6605,7 @@ public abstract class EDDTable extends EDD {
     /** 
      * This writes the Function options for the Make A Graph and Data Access Form web pages. 
      *
-     * @param nOrderByDropdown must be 4 or 5.
+     * @param nOrderByDropdown The number of variable list dropdowns must be 4 or 5.
      */
     void writeFunctionHtml(String loggedInAs, String[] queryParts, Writer writer, HtmlWidgets widgets, 
         String formName, int nOrderByDropdown) throws Throwable {
@@ -6404,8 +6645,8 @@ public abstract class EDDTable extends EDD {
                          EDStatic.functionOrderBySortLeast};
         //find first part that uses orderBy...
         String obPart = null;
-        int whichOb = -1;
-        for (int ob = 0; ob < orderByOptions.length; ob++) {
+        int whichOb = 0;
+        for (int ob = 1; ob < orderByOptions.length; ob++) { //1 because option[0] is ""
             obPart = String2.stringStartsWith(queryParts, orderByOptions[ob] + "(\"");
             if (obPart != null) {
                 if (obPart.endsWith("\")")) {
@@ -6417,10 +6658,11 @@ public abstract class EDDTable extends EDD {
             }
         }        
         //String2.log("obPart=" + obPart); //orderBy("time")
-        String orderBy[] = obPart == null? new String[0] :
-            String2.split(obPart.substring(orderByOptions[whichOb].length() + 2, obPart.length() - 2), ',');
+        String orderBy[] = String2.isSomething(obPart)?
+            String2.split(obPart.substring(orderByOptions[whichOb].length() + 2, obPart.length() - 2), ',') :
+            new String[0];
         String orderByExtra = "";
-        if (whichOb >= 0 && 
+        if (whichOb > 0 && 
             ((orderByOptions[whichOb].equals("orderByClosest") && orderBy.length >= 2) ||
              (orderByOptions[whichOb].equals("orderByLimit")   && orderBy.length >= 1)))  {
             //make the last csv value into the orderByExtra
@@ -6467,22 +6709,30 @@ public abstract class EDDTable extends EDD {
             "\n" +
             "    var nActiveOb = 0;\n" +
             "    var ObOS = d." + formName + ".orderBy;\n" +  //the OrderBy... option Select widget
-            "    var ObO = ObOS.options[ObOS.selectedIndex].text;\n" +
-            "    for (var ob = 0; ob < " + nOrderByDropdown + "; ob++) {\n" +
-            "      var tOb = eval(\"d." + formName + ".orderBy\" + ob);\n" +
-            "      var obVar = tOb.options[tOb.selectedIndex].text;\n" +
-            "      if (obVar != \"\") {\n" +               //       "          ,
-            "        q2 += (nActiveOb++ == 0? \"\\x26\" + ObO + \"(%22\" : \"%2C\") + obVar;\n" +
-            "        if (rv.indexOf(obVar) < 0) rv.push(obVar);\n" +
+            "    if (ObOS.selectedIndex > 0) {\n" +  //0 is ""
+            "      var ObO = ObOS.options[ObOS.selectedIndex].text;\n" +
+            "      var tq2 = \"\\x26\" + ObO + \"(%22\";\n" +  // &orderBy...("
+            "      for (var ob = 0; ob < " + nOrderByDropdown + "; ob++) {\n" +
+            "        var tOb = eval(\"d." + formName + ".orderBy\" + ob);\n" +
+            "        var obVar = tOb.options[tOb.selectedIndex].text;\n" +
+            "        if (obVar != \"\") {\n" +             
+            "          tq2 += (nActiveOb++ == 0? \"\" : \"%2C\") + obVar;\n" +  // ,obVar
+            "          if (rv.indexOf(obVar) < 0) rv.push(obVar);\n" +
+            "        }\n" +
+            "      }\n" +  
+            //valid?
+            //orderByClosest, orderByLimit require obev but can have nActiveOb=0
+            "      var obev = d." + formName + ".orderByExtra.value;\n" +
+            "      if (ObO == \"orderByClosest\") {\n" + 
+            "        if (nActiveOb > 0 && obev.length > 0)\n" +
+            "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
+            "      } else if (ObO == \"orderByLimit\") {\n" + 
+            "        if (obev.length > 0)\n" +
+            "          q2 += tq2 + (nActiveOb == 0? \"\" : \"%2C\") + percentEncode(obev) + \"%22)\";\n" +  // ,obev")
+            //orderByCount can have nActiveOb = 0, all others require nActiveOb > 0
+            "      } else if (ObO == \"orderByCount\" || nActiveOb > 0) {\n" +
+            "        q2 += tq2 + \"%22)\";\n" +  //  ")
             "      }\n" +
-            "    }\n" +
-            "    if (ObO == \"orderByLimit\" && d." + formName + ".orderByExtra.value.length > 0) {\n" +
-            "      q2 += (nActiveOb == 0? \"\\x26\" + ObO + \"(%22\" : \"%2C\") + " +
-                    "percentEncode(d." + formName + ".orderByExtra.value) + \"%22)\";\n" +
-            "    } else if (nActiveOb > 0) {\n" +
-            "      if (ObO == \"orderByClosest\") q2 += \"%2C\" + percentEncode(d." + 
-                formName + ".orderByExtra.value);\n" +
-            "      q2 += \"%22)\";\n" +
             "    }\n" +
             "\n";
     }
@@ -7408,7 +7658,7 @@ public abstract class EDDTable extends EDD {
             "      <br>But in some cases, ERDDAP must look through all rows of the source dataset. \n" +
             "      <br>If the data set isn't local, this may be VERY slow, may return only some of the\n" +
             "      <br>results (without an error), or may throw an error.\n" +
-            "    <li><a name=\"orderBy\"><tt>&amp;orderBy(\"<i>comma-separated list of variable names</i>\")</tt></a>\n" +
+            "    <li><a name=\"orderBy\"><tt>&amp;orderBy(\"<i>comma-separated list of 1 or more variable names</i>\")</tt></a>\n" +
             "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
             "      <br>table (starting with the first variable, then using the second variable if the first\n" +
             "      <br>variable has a tie, ...).\n" +
@@ -7424,9 +7674,9 @@ public abstract class EDDTable extends EDD {
             "      <br>The orderBy variables MUST be included in the list of requested variables in the\n" +
             "      <br>query as well as in the orderBy list of variables.\n" +
             "    <li><a name=\"orderByClosest\"><tt>&amp;orderByClosest(\"<i>comma-separated list</i>\")</tt></a>\n" +
-            "      <br>The comma-separated list lets you specify how the results table will be sorted and\n" +
-            "      <br>an interval (with the format <i>n[timeUnits]</i>, e.g., 2 hours). Within each sort\n" +
-            "      <br>group, only the rows closest to the interval will be kept.  For example,\n" +
+            "      <br>The comma-separated list lets you specify how the results table will be sorted (1 or more\n" +
+            "      <br>variable names) and an interval (with the format <i>n[timeUnits]</i>, e.g., 2 hours). Within\n" +
+            "      <br>each sort group, only the rows closest to the interval will be kept.  For example,\n" +
             "      <br><tt>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByClosest(\"stationID,time,2 hours\")</tt>\n" +
             "      <br>will sort by stationID and time, but only return the rows for each stationID where\n" +
             "      <br>the last orderBy column (time) are closest to 2 hour intervals.\n" +
@@ -7439,9 +7689,22 @@ public abstract class EDDTable extends EDD {
             "      <br>the query as well as in the orderByClosest list of variables (the .html and .graph\n" +
             "      <br>forms will do this for you).\n" +
             "      <br>This is the closest thing in tabledap to stride values in a griddap request.\n" +
+            "    <li><a name=\"orderByCount\"><tt>&amp;orderByCount(\"<i>comma-separated list of 0 or more variable names</i>\")</tt></a>\n" +
+            "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
+            "      <br>table (starting with the first variable, then using the second variable if the first\n" +
+            "      <br>variable has a tie, ...) and then just return the count of the number of non-NaN values\n" +
+            "      <br>for each combination of those values).\n" +
+            "      <br>For example, use the query\n" +
+            "      <br><tt>stationID,temperature,windSpeed&amp;time&gt;" + daysAgo7 + "&amp;orderByCount(\"stationID\")</tt>\n" +
+            "      <br>to get a count of the number of non-NaN temperature and windspeed values for each stationID\n" +
+            "      <br>(for stations with data from after " + daysAgo7 + ").\n" +
+            "      <br>(Without the time constraint, ERDDAP would have to look through all rows of the \n" +
+            "      <br>the dataset, which might be VERY slow.)\n" +
+            "      <br>The orderByCount variables MUST be included in the list of requested variables in the\n" +
+            "      <br>query as well as in the orderByCount list of variables.\n" +
             "    <li><a name=\"orderByLimit\"><tt>&amp;orderByLimit(\"<i>comma-separated list</i>\")</tt></a>\n" +
-            "      <br>The comma-separated list lets you specify how the results table will be sorted and\n" +
-            "      <br>a limit number (e.g., 100). Within each sort group, only the first 'limit' rows will\n" +
+            "      <br>The comma-separated list lets you specify how the results table will be sorted (0 or more\n" +
+            "      <br>variable names) and a limit number (e.g., 100). Within each sort group, only the first 'limit' rows will\n" +
             "      <br>be kept. For example,\n" +
             "      <br><tt>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByLimit(\"stationID,100\")</tt>\n" +
             "      <br>will sort by stationID, but only return the first 100 rows for each stationID.\n" +
@@ -7450,7 +7713,7 @@ public abstract class EDDTable extends EDD {
             "      <br>This is similar to SQL's LIMIT clause.\n" +
             "      <br>WARNING: This will usually return the same rows as the first n rows of a similar\n" +
             "      <br>request with no limit, but not always.\n" + 
-            "    <li><a name=\"orderByMax\"><tt>&amp;orderByMax(\"<i>comma-separated list of variable names</i>\")</tt></a>\n" +
+            "    <li><a name=\"orderByMax\"><tt>&amp;orderByMax(\"<i>comma-separated list of 1 or more variable names</i>\")</tt></a>\n" +
             "      <br>If you add this to the end of a query, ERDDAP will sort all of the rows in the results\n" +
             "      <br>table (starting with the first variable, then using the second variable if the first\n" +
             "      <br>variable has a tie, ...) and then just keeps the rows where the value of the last\n" +
@@ -7465,10 +7728,10 @@ public abstract class EDDTable extends EDD {
             "      <br>query as well as in the orderByMax list of variables.\n" +
             "      <br>This is the closest thing in tabledap to griddap's allowing requests for the <tt>[last]</tt>\n" +
             "      <br>axis value.\n" +
-            "    <li><a name=\"orderByMin\"><tt>&amp;orderByMin(\"<i>comma-separated list of variable names</i>\")</tt></a>\n" +
+            "    <li><a name=\"orderByMin\"><tt>&amp;orderByMin(\"<i>comma-separated list of 1 or more variable names</i>\")</tt></a>\n" +
             "      <br>orderByMin is exactly like <a href=\"#orderByMax\">orderByMax</a>, except that it\n" +
             "      <br>returns the minimum value(s).\n" +
-            "    <li><a name=\"orderByMinMax\"><tt>&amp;orderByMinMax(\"<i>comma-separated list of variable names</i>\")</tt></a>\n" +
+            "    <li><a name=\"orderByMinMax\"><tt>&amp;orderByMinMax(\"<i>comma-separated list of 1 or more variable names</i>\")</tt></a>\n" +
             "      <br>orderByMinMax is like <a href=\"#orderByMax\">orderByMax</a>, except that it returns\n" +
             "      <br>two rows for every combination of the n-1 variables: one row with the minimum value,\n" +
             "      <br>and one row with the maximum value.\n" +
@@ -8786,29 +9049,37 @@ public abstract class EDDTable extends EDD {
                 graphQueryNoLatLon.append("&distinct()");
                 graphQueryNoTime.append("&distinct()");
             }
-            for (int i = 0; i < 2; i++) {  //don't translate
-                String start = i == 0? "orderBy(\"" : "orderByMax(\"";
+            //find first orderBy in queryParts
+            for (int i = 1; i < orderByOptions.length; i++) {  //1 since [0]=""
+                String start = orderByOptions[i] + "(\"";
                 String obPart = String2.stringStartsWith(queryParts, start);
                 if (obPart == null || !obPart.endsWith("\")")) 
                     continue;
                 StringArray names = StringArray.fromCSV(
                     obPart.substring(start.length(), obPart.length() - 2));
                 StringArray goodNames = new StringArray();
-                for (int n = 0; n < names.size(); n++) {
+                boolean usesExtra = orderByExtraDefaults[i].length() > 0; //e.g., orderByLimit, orderByClosest
+                int nNames = names.size() - (usesExtra? 1 : 0); //if uses extra, don't check last item
+                if (nNames < minOrderByVariables[i]) 
+                    continue;  //too few items in csv
+                for (int n = 0; n < nNames; n++) {
                     if (String2.indexOf(dataVariableDestinationNames, names.get(n)) < 0)
                         continue;
                     goodNames.add(names.get(n));
                     if (resultsVariables.indexOf(names.get(n)) < 0)
                         resultsVariables.add(names.get(n));
                 }
-                if (goodNames.size() > 0) {
-                    String tq = "&" + 
-                        start.substring(0, start.length() - 1) + "%22" + 
+                if (goodNames.size() >= minOrderByVariables[i]) {
+                    //success
+                    String tq = "&" + SSR.minimalPercentEncode(
+                        start +  
                         String2.replaceAll(goodNames.toString(), " ", "") + 
-                        "%22)";
+                        (usesExtra? (goodNames.size() > 0? "," : "") + names.get(names.size() - 1) : "") +
+                        "\")");
                     graphQuery.append(tq);
                     graphQueryNoLatLon.append(tq);
                     graphQueryNoTime.append(tq);
+                    break; //don't look for another orderBy
                 }
             }
 
@@ -17595,14 +17866,15 @@ writer.write(
             }
             int tnRows = pa.size();
             pa.removeDuplicates();  //don't worry about mv's: they reduce to 1 value
-            double nDup = tnRows / Math.max(1.0, pa.size());  //average number of duplicates (1.0=no duplicates)
+            int nUnique = Math.max(1, pa.size());
+            double nDup = tnRows / (double)nUnique;  //average number of duplicates (1.0=no duplicates)
             if (debugMode) String2.log(">> " + sourceTable.getColumnName(col) + " isString?" + (pa instanceof StringArray) + 
                 " nRows=" + nRows + " tnRows=" + tnRows + " pa.size=" + pa.size() + " nDup=" + nDup);
             if (pa.size() == 1 || 
-                (oneFilePerDataset && pa.size() < 10000 && 
-                    pa.size() < (pa instanceof StringArray? 1000 * nDup : //allow more if lots of dups
-                                        pa.isIntegerType()?  500 * nDup : 
-                                                             500 * nDup))) { //floating point
+                (oneFilePerDataset && nUnique < 10000 && nDup > 4 &&
+                    nUnique < (pa instanceof StringArray? 1000 * nDup : //allow more if lots of dups
+                                      pa.isIntegerType()?  500 * nDup : 
+                                                           200 * nDup))) { //floating point
 
                 //if long strings skip it.
                 if (pa instanceof StringArray) {
@@ -17619,7 +17891,7 @@ writer.write(
                 if (tUnits == null)
                     tUnits = sourceAtts.getString("units");
                 tName = suggestDestinationName(tName, sourceAtts, destAtts,
-                    tUnits, null, Float.NaN, true); //tryToFindLLAT
+                    tUnits, null, Float.NaN, false); //tryToFindLLAT
                 suggest.add(tName);
             }
         }

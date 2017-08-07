@@ -1717,6 +1717,7 @@ This constraint variable has a limited number of values. They are listed here.
 <fileHelp_nc3Header>View the UTF-8 header (the metadata) for the NetCDF-3 .nc file.</fileHelp_nc3Header>
 <fileHelp_nc4Header>View the UTF-8 header (the metadata) for the NetCDF-4 .nc file.</fileHelp_nc4Header>
 <fileHelp_nccsvMetadata>View the dataset's metadata as the top half of a 7-bit ASCII NCCSV .csv file.</fileHelp_nccsvMetadata>
+<fileHelp_ncoJson>Download an NCO lvl=2 JSON file with COARDS/CF/ACDD metadata.</fileHelp_ncoJson>
 <fileHelp_ncCF>Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).</fileHelp_ncCF>
 <fileHelp_ncCFHeader>View the UTF-8 header (the metadata) for the .ncCF file.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).</fileHelp_ncCFMA>
@@ -1905,25 +1906,30 @@ Checking 'distinct()' tells ERDDAP to sort the results table by all of the
 <functionOrderByHtml><![CDATA[
 <p>The orderBy... functions let you specify how the results table will be sorted and which rows will be kept.
 <br>To use an orderBy... function, select a function at left, then select one or more variables at right.
-<br>To not use any orderBy... function, set all of the variables at right to "".
+<br>To not use any orderBy... function, choose the first option at left ("").
 <br>The orderBy... functions are:
 <ul>
-<li>orderBy lets you specify how the results table will be sorted and keeps all rows.
-<li>orderByClosest lets you specify how the results table will be sorted and an interval (e.g., 2 hours).
+<li><b>orderBy</b> lets you specify how the results table will be sorted and keeps all rows. For example,
+ <br>orderBy("stationID, time") will sort the results primarily by stationID and secondarily by time.
+<li><b>orderByClosest</b> lets you specify how the results table will be sorted and an interval (e.g., 2 hours).
  <br>Within each sort group, only the rows closest to the interval will be kept.  For example,
  <br>orderByClosest("stationID, time, 2 hours") will sort by stationID and time, but only return 
  <br>the rows for each stationID where the last orderBy column (time) are closest to 2 hour intervals.
-<li>orderByLimit lets you specify how the results table will be sorted and a limit number (e.g., 100).
- <br>Within each sort group, only the first 'limit' rows will be kept.
+<li><b>orderByCount</b> lets you specify how the results table will be sorted (or not) and just returns
+ <br>one row for each sort group, with the count of the number of non-missing-values for each variable.
+ <br>For example, orderByCount("stationID") will sort by stationID and return one row for
+ <br>each stationID, with a count of the number of non-missing-values for each variable.
+<li><b>orderByLimit</b> lets you specify how the results table will be sorted (or not) and a limit number
+ <br>(e.g., 100). Within each sort group, only the first 'limit' rows will be kept.
  <br>For example, orderByMax("stationID, 100") will sort by stationID, but only return the first 
  <br>100 rows for each stationID.
-<li>orderByMax lets you specify how the results table will be sorted and removes some rows.
- <br>Within each sort group, only the row with the maximum value for the last orderByMax variable will be kept.
+<li><b>orderByMax</b> lets you specify how the results table will be sorted and removes some rows. Within
+ <br>each sort group, only the row with the maximum value for the last orderByMax variable will be kept.
  <br>For example, orderByMax("stationID, time") will sort by stationID, but only return the row with 
  <br>the maximum time value for each stationID.
-<li>orderByMin is like orderByMax, but only keeps the row with the minimum value for the last orderByMin
- <br>variable.
-<li>orderByMinMax is like orderByMin plus orderByMax. Within each sort group, only the row with the
+<li><b>orderByMin</b> is like orderByMax, but only keeps the row with the minimum value for the last
+ <br>orderByMin variable.
+<li><b>orderByMinMax</b> is like orderByMin plus orderByMax. Within each sort group, only the row with the
  <br>minimum value and the row with the maximum value for the last orderByMinMax variable will be kept.
  <br>For example, orderByMinMax("stationID, time") will return the row with the minimum time value and
  <br>the row with the maximum time value for each stationID.
@@ -2697,8 +2703,8 @@ Widths are in ratio 1:2:3.
 <queryErrorNotExpectedAt>"{0}" was not expected at position={1}.</queryErrorNotExpectedAt>
 <queryErrorNotFoundAfter>"{0}" was not found after position={1}.</queryErrorNotFoundAfter>
 <queryErrorOccursTwice>Variable name={0} occurs twice.</queryErrorOccursTwice>
-<queryErrorOrderByClosest>For orderByClosest, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables) plus the interval for the last orderBy variable (e.g., "stationID,time,10 minutes").</queryErrorOrderByClosest>
-<queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables, but 0 names is okay) plus the maximum number of rows for each group (e.g., "stationID,100").</queryErrorOrderByLimit>
+<queryErrorOrderByClosest>For orderByClosest, you must specify a CSV list of 1 or more orderBy column names (each of which must be in the list of results variables) plus the interval for the last orderBy variable (e.g., "stationID,time,10 minutes").</queryErrorOrderByClosest>
+<queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of 0 or more orderBy column names (each of which must be in the list of results variables) plus the maximum number of rows for each group (e.g., "stationID,100").</queryErrorOrderByLimit>
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 

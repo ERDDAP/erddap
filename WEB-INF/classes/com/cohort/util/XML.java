@@ -110,9 +110,17 @@ public class XML {
 
             //is it the start of a tag? skip the tag
             if (ch == '<') {
+                int po1 = po - 1;
                 while (po < htmlStringLength && ch != '>') {
                     ch = htmlString.charAt(po++);
                 }
+                //save href from <a> or <img>
+                String tag = htmlString.substring(po1, po);
+                String href = String2.extractCaptureGroup(tag, ".*href=\"(.*?)\".*", 1);
+                if (String2.isUrl(href))  //just show if it is a complete URL, not if relative fragment
+                    sb.append(
+                        (sb.length() > 0 && !String2.isWhite(sb.charAt(sb.length() - 1)) ? " " : "") + 
+                        "[ " + href + " ] ");
             } else sb.append(ch);
         }
         return decodeEntities(sb.toString());
@@ -822,11 +830,13 @@ public class XML {
      */
     public static void test() throws Exception {
         String2.log("\n*********************************************************** XML.test");
+/* for releases, this line should have open/close comment */
 
         //test removeHTMLTags
         String2.log("test removeHTMLTags");
-        Test.ensureEqual(removeHTMLTags("Hi, <b>bob.simons&amp;</b>!"), 
-            "Hi, bob.simons&!", "a");
+        Test.ensureEqual(removeHTMLTags(
+            "Hi, <b>bob.simons&amp;</b>! <a href=\"http://someUrl\">Click here!</a>"), 
+            "Hi, bob.simons&! [ http://someUrl ] Click here!", "a");
 
         //test encodeAsXML
         String2.log("test encode");

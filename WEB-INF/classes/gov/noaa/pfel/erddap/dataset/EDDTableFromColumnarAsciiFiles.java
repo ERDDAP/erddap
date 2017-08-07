@@ -342,7 +342,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
-                sourceAtts, colName, 
+                sourceAtts, null, colName, 
                 true, true); //addColorBarMinMax, tryToFindLLAT
             addAtts.add("startColumn", start.get(col));
             addAtts.add("stopColumn", stop.get(col));
@@ -394,12 +394,15 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
 
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -444,9 +447,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1575,7 +1578,7 @@ boolean columnar = false;  // are there any? how detect?
             //make and apply revisions to the variable's addAtts
             Attributes addVarAtts = addTable.columnAttributes(col);
             addVarAtts.set(makeReadyToUseAddVariableAttributesForDatasetsXml(
-                addGlobalAtts, addVarAtts, colName, 
+                addGlobalAtts, sourceVarAtts, addVarAtts, colName, 
                 true, true)); //addColorBarMinMax, tryToFindLLAT
             if (columnar) {
                 addVarAtts.add("startColumn", colStart.get(col));
@@ -1607,7 +1610,7 @@ boolean columnar = false;  // are there any? how detect?
             //dataType
             Class sourceClass = sourceTable.getColumn(col).elementClass(); //from file
             Class destClass   =    addTable.getColumn(col).elementClass(); //as defined
-            if (tUnits.indexOf("yy") >= 0) {
+            if (tUnits.indexOf("yyyy") >= 0) { //was "yy"
                 //force to be String
                 sourceClass = String.class;
                 destClass   = String.class;
@@ -1842,7 +1845,7 @@ boolean columnar = false;  // are there any? how detect?
                 if (tUnits == null)
                     tUnits = "";
                 //some vars don't qualify as isTimeUnits, but do have time info
-                if (tUnits.indexOf("yy") >= 0 ||
+                if (tUnits.indexOf("yyyy") >= 0 ||  //was "yy"
                     tColNameLC.indexOf("year") >= 0) hasyyCol = true;
                 if (tUnits.indexOf("MM") >= 0 ||
                     tColNameLC.indexOf("month") >= 0) hasMMCol = true;
@@ -1851,7 +1854,7 @@ boolean columnar = false;  // are there any? how detect?
                     tColNameLC.indexOf("date") >= 0) hasddCol = true;
                 if (tUnits.indexOf("HH") >= 0) hasHHCol = true;
 
-                if (tUnits.indexOf("yy") >= 0 ||
+                if (tUnits.indexOf("yyyy") >= 0 ||  //was "yy"
                     tUnits.indexOf("MM") >= 0 ||
                     tUnits.indexOf("dd") >= 0 ||
                     tUnits.indexOf("HH") >= 0 ||
@@ -1877,7 +1880,7 @@ boolean columnar = false;  // are there any? how detect?
                     (infoLC.indexOf("time") >= 0 ||   //knb-lter-sbc.1113
                      infoLC.indexOf("day") >= 0 || 
                      infoLC.indexOf("date") >= 0) &&
-                    infoLC.indexOf("yy") < 0 &&
+                    infoLC.indexOf("yyyy") < 0 &&  //was "yy"
                     infoLC.indexOf("mm") < 0 &&
                     infoLC.indexOf("dd") < 0 &&
                     infoLC.indexOf("hh") < 0) {
@@ -1942,7 +1945,7 @@ boolean columnar = false;  // are there any? how detect?
                 //        tUnits.startsWith("yyyyMMdd")) {
                 //because ERDDAP required that when searching minMaxTable.
                 //But that was fixed in ERDDAP v1.74.
-                if (tUnits.indexOf("yy") >= 0 &&
+                if (tUnits.indexOf("yyyy") >= 0 &&  //was "yy"
                     tUnits.indexOf("MM") >= 0 &&
                     tUnits.indexOf("dd") >= 0) {
                     if (tUnits.indexOf("HH") < 0) { //no HH, just date 
@@ -1959,11 +1962,11 @@ boolean columnar = false;  // are there any? how detect?
                         }
                     }
                 } else if (
-                    tUnits.indexOf("yy") >= 0 &&
+                    tUnits.indexOf("yyyy") >= 0 &&  //was "yy"
                     tUnits.indexOf("MM") >= 0) {
                     if (goodStringMonthName == null)
                         goodStringMonthName = addName;
-                } else if (tUnits.indexOf("yy") >= 0) {
+                } else if (tUnits.indexOf("yyyy") >= 0) {  //was "yy"
                     if (goodStringYearName == null)
                         goodStringYearName = addName;
                 }
@@ -2003,7 +2006,7 @@ boolean columnar = false;  // are there any? how detect?
                     String tUnits = addTable.columnAttributes(col).getString("units");
                     if (tUnits != null && 
                         (Calendar2.isNumericTimeUnits(tUnits) ||
-                         tUnits.indexOf("yy") >= 0 || 
+                         tUnits.indexOf("yyyy") >= 0 ||  //was "yy"
                          tUnits.indexOf("MM") >= 0 || 
                          tUnits.indexOf("dd") >= 0 || 
                          tUnits.indexOf("HH") >= 0 || 
@@ -2032,18 +2035,14 @@ boolean columnar = false;  // are there any? how detect?
             }
         }
 
-        //after LLAT found, ensure column names are valid (for subsetVariables)
+        //tryToFindLLAT
+        tryToFindLLAT(sourceTable, addTable);
+
+        //after LLAT found
         //*** This fails for knb_lter_sbc_85_t1 where it finds "time2" instead of time
         for (int col = 0; col < addTable.nColumns(); col++) {
             Attributes addAtts = addTable.columnAttributes(col);
-            String destName = suggestDestinationName(
-                addTable.getColumnName(col), //usually sourceTable, here addTable 
-                sourceTable.columnAttributes(col), addAtts,
-                addAtts.getString("units"),
-                addAtts.getString("positive"), 
-                addAtts.getFloat("scale_factor"), false); //tryToFindLLAT
-            addTable.setColumnName(col, destName);
-
+            String destName = addTable.getColumnName(col);
             Class destClass = addTable.getColumn(col).elementClass();
 
             //if numeric, set colorBarMin Max
@@ -2069,25 +2068,12 @@ boolean columnar = false;  // are there any? how detect?
             }
         }
 
-        //check for duplicate addTable column names.
-        {
-            StringArray tAddColNames = new StringArray((String[])(addTable.getColumnNames().clone()));
-            tAddColNames.sort();
-            StringBuilder dupLog = new StringBuilder();
-            int nDup = tAddColNames.removeDuplicates(false, dupLog);
-            if (nDup > 0) 
-                throw new SimpleException(
-                    "DUPLICATE COLUMN NAMES For datasetID=" + datasetID + ", datafile=" + dataFileName + ":\n" + 
-                    "There are " + nDup + " duplicate column names in the EML dataTable:\n" +
-                    dupLog);
-        }
-
         //after dataVariables known, add global attributes in the addTable
         addGlobalAtts.set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 addGlobalAtts,  //unusual
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(sourceTable, addTable)? "Point" : "Other",
+                hasLonLatTime(addTable)? "Point" : "Other",
                 emlDir, null, 
                 suggestKeywords(sourceTable, addTable)));
 
@@ -2147,9 +2133,9 @@ boolean columnar = false;  // are there any? how detect?
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     addTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -2458,7 +2444,7 @@ String expected =
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">site_code</att>\n" +
+"        <att name=\"subsetVariables\">site_code, NH4_uM, PO4_uM, TDP_uM</att>\n" +
 "        <att name=\"summary\">SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000. Stream chemistry, registered stations, all years. stream water chemistry at REGISTERED SBC stations. Registered stations are geo-located in metadata.</att>\n" +
 "        <att name=\"time_coverage_end\">2014-09-17</att>\n" +
 "        <att name=\"time_coverage_start\">2000-10-01</att>\n" +
@@ -2503,7 +2489,9 @@ String expected =
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"missing_value\">9997-04-06T00:00:00-08:00</att>\n" +
+"            <att name=\"source_name\">timestamp_local</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
 "            <att name=\"time_zone\">US/Pacific</att>\n" +
 "            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss</att>\n" +
 "        </addAttributes>\n" +
@@ -2840,7 +2828,7 @@ String expected =
 "        <att name=\"publisher_type\">institution</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"subsetVariables\">site_code</att>\n" +
+"        <att name=\"subsetVariables\">site_code, NH4_uM, PO4_uM, TDP_uM, TPP_uM</att>\n" +
 "        <att name=\"summary\">SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000. Stream chemistry, non-registered stations, all years. stream water chemistry at NON_REGISTERED stations</att>\n" +
 "        <att name=\"time_coverage_end\">2014-09-17</att>\n" +
 "        <att name=\"time_coverage_start\">2000-10-01</att>\n" +
@@ -2872,7 +2860,9 @@ String expected =
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"missing_value\">9997-04-06T00:00:00</att>\n" +
+"            <att name=\"source_name\">timestamp_local</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
 "            <att name=\"time_zone\">US/Pacific</att>\n" +
 "            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss</att>\n" +
 "        </addAttributes>\n" +
@@ -3696,7 +3686,9 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-        /* */
+        String2.log("\n*** EDDTableFromColumnarAsciiFiles.test");
+
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testBasic();
         testGlerl();

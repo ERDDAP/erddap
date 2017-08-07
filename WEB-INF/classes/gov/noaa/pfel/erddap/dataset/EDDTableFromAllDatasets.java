@@ -571,6 +571,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
     public static void test() throws Throwable {
         String2.log("\n****************** EDDTableFromAllDatasets.test() *****************\n");
 
+/* for releases, this line should have open/close comment */
         //tests usually run
         testBasic();
     }

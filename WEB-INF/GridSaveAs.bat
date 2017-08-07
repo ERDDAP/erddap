@@ -16,4 +16,4 @@ rem CoastWatch/Bob Simons  bob.simons@noaa.gov
 rem
 
 set thisDir=%~dp0
-java -cp %thisDir%/classes;%thisDir%/lib/netcdfAll-latest.jar;lib/slf4j.jar;%thisDir%/lib/activation.jar;%thisDir%/lib/lucene-core.jar;%thisDir%/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GridSaveAs %*
+java -cp %thisDir%/classes;%thisDir%/lib/netcdfAll-latest.jar;lib/slf4j.jar;%thisDir%/lib/lucene-core.jar;%thisDir%/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GridSaveAs %*

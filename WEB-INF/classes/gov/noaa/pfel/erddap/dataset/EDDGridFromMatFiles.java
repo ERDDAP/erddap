@@ -368,7 +368,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                         axisAddTable.addColumn(   avi, axisName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
                                 axisSourceTable.globalAttributes(),
-                                sourceAtts, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
+                                sourceAtts, null, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
 
@@ -399,7 +399,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                     makeDestPAForGDX(sourceAtts, pa), 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         axisSourceTable.globalAttributes(),
-                        sourceAtts, varName, true, false)); //addColorBarMinMax, tryToFindLLAT
+                        sourceAtts, null, varName, true, false)); //addColorBarMinMax, tryToFindLLAT
             }
 
             //after dataVariables known, add global attributes in the axisAddTable
@@ -437,9 +437,12 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
             sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
             sb.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
             
-            //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
-            sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, true,  false));
-            sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true,  false, false));
+            //tryToFindLLAT 
+            tryToFindLLAT(axisSourceTable, axisAddTable); //just axisTables
+
+            //last 2 params: includeDataType, questionDestinationName
+            sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
+            sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true,  false));
             sb.append(
                 "</dataset>\n" +
                 "\n");

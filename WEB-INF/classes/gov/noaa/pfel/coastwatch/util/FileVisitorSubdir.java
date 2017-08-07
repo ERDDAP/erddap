@@ -238,7 +238,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
      */
     public static void test() throws Throwable {
         String2.log("\n****************** FileVisitorSubdir.test() *****************\n");
-/* */
+/* for releases, this line should have open/close comment */
         //always done        
         testLocal();
         testAWSS3();

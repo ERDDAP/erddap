@@ -2663,6 +2663,14 @@ public class TestUtil {
         String2.log("current time local: " + Calendar2.getCurrentISODateTimeStringLocalTZ());
         String2.pressEnterToContinue(); 
 
+        dtf = Calendar2.makeDateTimeFormatter("yyyyMMdd", "Zulu");
+        d = Calendar2.toEpochSeconds("20151012", dtf); 
+        Test.ensureEqual(d, 1444608000, ""); 
+
+        dtf = Calendar2.makeDateTimeFormatter("yyyy", "Zulu");
+        d = Calendar2.toEpochSeconds("2015", dtf); 
+        Test.ensureEqual(d, 1420070400, ""); 
+
         //timePrecisionToTimeFormat
         Test.ensureEqual(Calendar2.timePrecisionToTimeFormat("1970-01-01T00:00:00.000Z"), "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "");
         Test.ensureEqual(Calendar2.timePrecisionToTimeFormat("1970-01-01T00:00:00.0Z"),   "yyyy-MM-dd'T'HH:mm:ss.SZ", "");
@@ -2929,8 +2937,8 @@ public class TestUtil {
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("0000001"),        "yyyyDDD", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2999366"),        "yyyyDDD", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("4999399"),        "yyyyDDD", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("5000034"),        "", "");        //5000 invalid for compact formats
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("2999399"),        "yyyyDDD", ""); //not very smart
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("3000034"),        "", "");        //3000 invalid for compact formats
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985400"),        "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("-4713400"),       "", ""); 
 
@@ -2962,8 +2970,8 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("9985-01-02"),                    "yyyy-MM-dd", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("00000101000000"),  "yyyyMMddHHmmss", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("49991939295959"),  "yyyyMMddHHmmss", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("50000102235959"),  "", ""); //5000 invalid for compact formats 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("29991939295959"),  "yyyyMMddHHmmss", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("30000102235959"),  "", ""); //3000 invalid for compact formats 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("19852002235959"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("19850942235959"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("19850909335959"),  "", ""); 
@@ -2972,8 +2980,8 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("-47130909295969"), "", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("000001010000"),  "yyyyMMddHHmm", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("499919392959"),  "yyyyMMddHHmm", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("500001022359"),  "", ""); //5000 invalid for compact formats
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("299919392959"),  "yyyyMMddHHmm", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("300001022359"),  "", ""); //3000 invalid for compact formats
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("198520022359"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("198509422359"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("198509093359"),  "", ""); 
@@ -2981,44 +2989,50 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("-471309092969"), "", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("0000010100"),  "yyyyMMddHH", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("4999193929"),  "yyyyMMddHH", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("5000010223"),  "", ""); //5000 invalid for compact formats
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("2999193929"),  "yyyyMMddHH", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("3000010223"),  "", ""); //3000 invalid for compact formats
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985200223"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985094223"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985090933"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("-4713090933"), "", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("00000101"),  "yyyyMMdd", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("49991939"),  "yyyyMMdd", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("50000102"),  "", ""); //5000 invalid for compact formats
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("29991939"),  "yyyyMMdd", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("30000102"),  "", ""); //3000 invalid for compact formats
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("19852002"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("19850942"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("-47130942"), "", ""); 
 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("000001"),  "yyyyMM", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("499919"),  "yyyyMM", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("500001"),  "", ""); //5000 invalid for compact formats
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("100001"),  "yyyyMM", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("299919"),  "yyyyMM", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("300001"),  "", ""); //3000 invalid for compact formats
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("000001"),  "", ""); //0 millenia invalid to avoid confusion w 6 digit numbers
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("198520"),  "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("-471320"), "", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1/2/85"),          "", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("01/2/85"),         "", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1/02/85"),         "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("11/22/85"),        "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 2, 85"),       "", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 02, 85"),      "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 22, 85"),      "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2 Jan 85"),        "", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2-JAN-85"),        "", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1/2/1985"),        "M/d/yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("01/2/1985"),       "M/d/yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1/02/1985"),       "M/d/yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("11/22/1985"),      "M/d/yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1/2/1985"),        "M/d/yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("11/22/1985"),      "M/d/yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 2, 1985"),       "MMM d, yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 22, 1985"),      "MMM d, yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 2, 1985"),     "MMM d, yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("2 Jan 1985"),        "d MMM yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 22, 1985"),    "MMM d, yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("Jan 02, 1985"),    "MMM d, yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2 Jan 1985"),      "d MMM yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02 Jan 1985"),     "d MMM yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("22 Jan 1985"),     "d MMM yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("2-JAN-1985"),        "d-MMM-yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("2-JAN-1985"),      "d-MMM-yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("02-JAN-1985"),     "d-MMM-yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("Sun, 06 Nov 1994 08:49:37 GMT"),   
                                                          "EEE, dd MMM yyyy HH:mm:ss 'GMT'", ""); 
@@ -3032,6 +3046,8 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 1985-01-02, 9000-10-a1")),
             "", "");
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 4 Feb 9999, 2 Jan 1985")),
+            "d MMM yyyy", "");
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 04 Feb 9999, 2 Jan 1985")),
             "d MMM yyyy", "");
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 1985-01-02, Jan 2, 1985")),
             "", "");
@@ -3079,8 +3095,8 @@ public class TestUtil {
 
 
         //isTimeUnits
-        s = "mm-dd-yy";    Test.ensureTrue(Calendar2.isTimeUnits(s), s);
-        s = "mm-dd-YY";    Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "mm-dd-yyyy";  Test.ensureTrue(Calendar2.isTimeUnits(s), s);
+        s = "mm-dd-YYYY";  Test.ensureTrue(Calendar2.isTimeUnits(s), s);
         s = "d since 1-";  Test.ensureTrue(Calendar2.isTimeUnits(s), s);
         s = "d  since 1-"; Test.ensureTrue(Calendar2.isTimeUnits(s), s);
         s = "d since  1-"; Test.ensureTrue(Calendar2.isTimeUnits(s), s);
@@ -3099,6 +3115,8 @@ public class TestUtil {
         s = "d1 since 2001";    Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
         s = "d since analysis"; Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
         s = "d since2001";      Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "mm-dd-yy";         Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
+        s = "mm-dd-YY";         Test.ensureTrue(!Calendar2.isTimeUnits(s), s);
 
         //test that all of those formats work
         dtf = Calendar2.makeDateTimeFormatter("yyyy-DDD", "UTC");
@@ -5105,7 +5123,7 @@ expected =
         long time = System.currentTimeMillis();
         String2.log("time=" + time);
         //storeLongsInDoubles(); //one time
-        /* */
+/* for releases, this line should have open/close comment */
         testTest();
         testMath2();
         testString2();

@@ -83,6 +83,10 @@ so ERDDAP reflects your organization and fits in with the rest of your web site.
 <h2><a name="organizations">ERDDAP</a> has been installed by over 60 organizations worldwide,</h2>
 including:
 <ul>
+<li><a rel="bookmark" href="http://apdrc.soest.hawaii.edu/erddap/index.html">APDRC</a>
+(Asia-Pacific Data-Research Center, International Pacific Research Center) 
+at the University of Hawaii (UH)
+  <!-- 2017-07-20 email Kin Lik Wang  -->
 <li><a rel="bookmark" href="http://rs-data1-mel.csiro.au/erddap/index.html">CSIRO and IMOS</a> (Australia's Commonwealth Scientific and Industrial Research Organisation and the Integrated Marine Observing System)
   <!-- 2015-06-28 email Jonathan Hodge  -->
 <li><a rel="bookmark" href="https://bluehub.jrc.ec.europa.eu/erddap/index.html">IPSC JRC EC</a>  (Maritime Affairs Unit, Institute for the Protection and Security of the Citizen,
@@ -155,7 +159,7 @@ Joint Research Centre of the European Commission)
 <li>USGS Coastal and Marine Geology Program 
   <!-- 2015-03-18 Ellyn Montgomery -->
 <li><a rel="bookmark" href="https://salishsea.eos.ubc.ca/erddap/index.html"
-  >University of British Columbia, Earth, Ocean & Atmospheric Sciences Department</a>
+  >University of British Columbia, Earth, Ocean &amp; Atmospheric Sciences Department</a>
   <!-- 2017-05-18 Doug Latornell -->
 <li><a rel="bookmark" href="http://bmlsc.ucdavis.edu:8080/erddap/index.html"
  >University of California at Davis, Bodega Marine Laboratory</a>
@@ -298,17 +302,17 @@ or Mac server instead.
       <li>After unpacking Tomcat, from the parent of the apache-tomcat directory:
         <ul>
         <li>Change ownership of the apache-tomcat directory tree to the tomcat user.
-          <br><tt>chown -R tomcat apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+          <br><tt>chown -R tomcat apache-tomcat-<i>8.5.15</i></tt>  <!-- tomcatVersion -->
           <br>(but substitute the actual name of your tomcat directory). 
         <li>Change the "group" to be tomcat, your username, 
           or the name of a small group that includes tomcat and 
           all the administrators of Tomcat/ERDDAP, e.g., 
-          <br><tt>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+          <br><tt>chgrp -R <i>yourUserName</i> apache-tomcat-<i>8.5.15</i></tt>  <!-- tomcatVersion -->
         <li>Change permissions so that tomcat and the group have 
           read, write, execute privileges, e.g,. 
-          <br><tt>chmod -R ug+rwx apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+          <br><tt>chmod -R ug+rwx apache-tomcat-<i>8.5.15</i></tt>  <!-- tomcatVersion -->
         <li>Remove "other" user's permissions to read, write, or execute:
-          <br><tt>chmod -R o-rwx apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+          <br><tt>chmod -R o-rwx apache-tomcat-<i>8.5.15</i></tt>  <!-- tomcatVersion -->
           <br>This is important, because it prevents other users from
             reading possibly sensitive information in ERDDAP setup files.
         </ul>
@@ -324,10 +328,10 @@ or Mac server instead.
       to set Tomcat's environmental variables.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain something like:<tt>
-      <br>export JAVA_HOME=/usr/local/jdk1.8.0_111/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk1.8.0_141/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.0.23</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.0.23</i></tt>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.5.15</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.5.15</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -337,10 +341,10 @@ or Mac server instead.
       to set Tomcat's environmental variables.
       This file will be used by <i>tomcat</i>\bin\startup.bat and shutdown.bat.
       The file should contain something like:<tt>
-      <br>SET "JAVA_HOME=\Program Files\Java\jdk1.8.0_111/jre"  <!-- javaVersion -->
+      <br>SET "JAVA_HOME=\Program Files\Java\jdk1.8.0_141/jre"  <!-- javaVersion -->
       <br>SET "JAVA_OPTS=-server -Xmx1500M -Xms1500M"
-      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>8.0.23</i>"         <!-- tomcatVersion -->
-      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>8.0.23</i>"</tt>  <!-- tomcatVersion -->
+      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>8.5.15</i>"         <!-- tomcatVersion -->
+      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>8.5.15</i>"</tt>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).
       <br>If this is just for local testing, remove "-server".      
       <br>(If you previously set JRE_HOME, you can remove that.)
@@ -463,10 +467,10 @@ or Mac server instead.
       Please check back here tomorrow. Sorry for the inconvenience,
       but the new version is worth the wait. -->
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: c:\content\bat\md5.bat erddapContent1.76.zip -->
+     <!-- Use: c:\content\bat\md5.bat erddapContent1.80.zip -->
     <a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.76, size=23,878 bytes, MD5=D988149831895B41164F53F4245BF5AD, dated 2017-05-12)
+    (version 1.80, size=23,878 bytes, MD5=7F85DEF1445B247010049C73984554EB, dated 2017-08-04)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
@@ -495,6 +499,12 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.74.zip">1.74</a>
     (size=26,708 bytes, MD5=D70DF53AE98785CC35614571E719BC54, dated 2016-10-07)
+    <br><a rel="bookmark"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.76.zip">1.76</a>
+    (size=23,878 bytes, MD5=D988149831895B41164F53F4245BF5AD, dated 2017-05-12)
+    <br><a rel="bookmark"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.78.zip">1.78</a>
+    (size=23,878 bytes, MD5=9AB513BE1DFB6C9EA8DAA24A8114E855, dated 2017-05-27)
     ]
 
   <p>Then,
@@ -552,12 +562,12 @@ or Mac server instead.
 
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
-    <!-- use: c:\content\bat\md5.bat erddap1.76.war  
+    <!-- use: c:\content\bat\md5.bat erddap1.80.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.76/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v1.78/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 1.76, size=534,583,353 bytes, MD5=72F90E2C26E9E3806573CADD239855F0, dated 2017-05-12)
+    <br>(version 1.80, size=502,908,740 bytes, MD5=F09D55AAACF1221F13276541FEF61AE8, dated 2017-08-04)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -580,6 +590,12 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v1.74/erddap.war">1.74</a>
     (size=552,359,929 bytes, MD5=5976EDF01CC9D3A6046D83DB0CF10EA0, dated 2016-10-07)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v1.76/erddap.war">1.76</a>
+    (size=534,583,353 bytes, MD5=72F90E2C26E9E3806573CADD239855F0, dated 2017-05-12)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v1.78/erddap.war">1.78</a>
+    (size=534,713,263 bytes, MD5=E8407EDC977C073CB816D873EF85320F, dated 2017-05-27)
     ]
 
 <li><a name="ApacheTimeout">On Linux computers,</a> change the Apache timeout settings
@@ -750,9 +766,9 @@ As the root user:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.76/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v1.80/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 1.76, size=534,583,353 bytes, MD5=72F90E2C26E9E3806573CADD239855F0, dated 2017-05-12)
+    <br>(version 1.80, size=502,908,740 bytes, MD5=F09D55AAACF1221F13276541FEF61AE8, dated 2017-08-04)
   <br>&nbsp;
 
 <li><a name="messages.xml">messages.xml</a>
@@ -770,7 +786,8 @@ As the root user:
     <br>&nbsp;
   <li>Rare: If you always make changes to the standard messages, 
     <br>you need to make those changes to the new messages.xml file (which is
-    <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml after erddap.war is decompressed by Tomcat).
+    <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml after erddap.war 
+    is decompressed by Tomcat).
     <br>&nbsp;
   <li>Rare: If you maintain a custom messages.xml file 
     <br>in <i>tomcat</i>/content/erddap/,
@@ -795,7 +812,7 @@ As the root user:
       From a command line, use: <tt><i>tomcat</i>/bin/shutdown.sh</tt>
       <br>And use <tt>ps -ef | grep tomcat</tt> to see if/when 
         the process has been stopped.  (It may take a minute or two.)
-    <li>Remove the uncompressed ERDDAP installation:
+    <li>Remove the decompressed ERDDAP installation:
       In <tt><i>tomcat</i>/webapps</tt>, use
       <br><tt>rm -rf erddap</tt>
     <li>Delete the old erddap.war file:
@@ -813,7 +830,7 @@ As the root user:
     <ol>
     <li>Shutdown Tomcat: 
       From a command line, use: <tt><i>tomcat</i>\bin\shutdown.bat</tt>
-    <li>Remove the uncompressed ERDDAP installation:
+    <li>Remove the decompressed ERDDAP installation:
       In <tt><i>tomcat</i>/webapps</tt>, use 
       <br><tt>del /S/Q erddap</tt>
     <li>Delete the old erddap.war file:
@@ -3180,16 +3197,16 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
     If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use javac 1.8.0_77 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
+  <li>We currently use javac 1.8.0_51 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
-     and java 1.8.0_111 <!-- javaVersion --> to run the tests.  
+     and java 1.8.0_141 <!-- javaVersion --> to run the tests.  
      For security reasons, it is almost always best to use the latest versions of Java and Tomcat.
      <ul>
      <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
      <li><a name="classpath">Our</a> javac and java classpath (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><tt>
-./classes;../../../lib/servlet-api.jar;lib/axis.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/jaxrpc.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;lib/saaj.jar;lib/wsdl4j.jar;lib/aws-java-sdk.jar;lib/commons-codec.jar;lib/commons-logging.jar;lib/fluent-hc.jar;lib/httpclient.jar;lib/httpclient-cache.jar;lib/httpcore.jar;lib/httpmime.jar;lib/jna.jar;lib/jna-platform.jar;lib/jackson-annotations.jar;lib/jackson-core.jar;lib/jackson-databind.jar</tt>
+./classes;../../../lib/servlet-api.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib/snappy-java.jar;lib/commons-compress.jar;lib/itext-1.3.1.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/slf4j.jar;lib/postgresql.jdbc.jar;</tt>
        <br>If you get error messages about classes not found
          when you compile or run ERDDAP or one of its tools, 
          compare your command line's classpath to the classpath above
@@ -3353,7 +3370,12 @@ credit where credit is due.)
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The data sets are from various sources. See the metadata (in particular the "sourceUrl", "infoUrl", 
-  and "institution") for each dataset.
+  "institution", and "license") for each dataset.  
+  Many datasets have a restriction on their use that requires you to cite/credit the 
+  data provider whenever you use the data.  It is always good form to cite/credit the 
+  data provider. See
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#citeDataset"
+  >How to Cite a Dataset in a Paper</a>.
 <li> The com/cohort classes are from CoHort Software 
     (<a rel="help" href="http://www.cohort.com">http://www.cohort.com<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -3361,13 +3383,15 @@ credit where credit is due.)
     which makes these classes available with an MIT/X-like license (see classes/com/cohort/util/LICENSE.txt).
 <li>Data from <a rel="help" href="https://www.opendap.org">OPeNDAP<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> servers are read 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+    servers are read 
     with <a rel="bookmark" href="https://www.opendap.org/download/index.html">Java DAP 1.1.7<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
     (license: LGPL).
 <li>NetCDF files (.nc) and GMT-style NetCDF files (.grd) are read and written with code in the
-  <a rel="help" href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html">NetCDF Java Library<img 
+  <a rel="help" href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/index.html"
+  >NetCDF Java Library<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
     (license: <a rel="bookmark" href="https://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
@@ -3404,42 +3428,77 @@ credit where credit is due.)
      href="http://www.joda.org/joda-time/license.html">Apache 2.0<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>). -->
-<li>The NetCDF Java Library uses code from some .jar files from 
+<li>ERDDAP and the NetCDF Java Library uses code from some .jar files from 
   <a rel="help" href="https://www.apache.org/">Apache projects<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>:
   <a rel="help" href="https://commons.apache.org/codec/">commons-codec<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>, and
+      title="This link to an external web site does not constitute an endorsement."/></a>,
   <a rel="help" href="https://hc.apache.org/httpcomponents-client-ga/">commons-httpclient<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>.
-  <!--a rel="help" href="https://commons.apache.org/logging/">commons-logging<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
-  (license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>). -->
-  Other parts of ERDDAP use code from other 
-  <a rel="help" href="https://www.apache.org/">Apache projects<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>:
-  <a rel="help" href="https://commons.apache.org/compress/">commons-compress<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> and
+      title="This link to an external web site does not constitute an endorsement."/></a>, and
   <a rel="help" href="https://commons.apache.org/discovery/">commons-discovery<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
   (For all: license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
+  These are included in the netcdfAll.jar.
 <li>The NetCDF Java Library uses XML processing code from 
     <a rel="help" href="http://www.jdom.org/">JDOM<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
     (license: <a rel="bookmark" href="http://www.jdom.org/docs/faq.html#a0030">Apache<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
+      title="This link to an external web site does not constitute an endorsement."/></a>),
+      which is included in the netcdfAll.jar.
+<li> For working with Amazon AWS and S3, the NetCDF Java Library and ERDDAP use the
+  <a rel="help" href="https://aws.amazon.com/sdk-for-java/">aws-java-sdk.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>),
+      which is included in the netcdfAll.jar.
+  <br>aws-java-sdk.jar requires commons-codec.jar, commons-logging.jar,
+      fluent-hc.jar,
+      httpclient.jar, httpclient-cache.jar, httpclient-win.jar, 
+      httpcore.jar, and httpmime.jar, which are all from the    
+      <a rel="help" href="https://hc.apache.org/downloads.cgi">Apache Project<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>),
+      which are included in the netcdfAll.jar.
+  <br>aws-java-sdk.jar also requires the 
+      <a rel="help" href="https://github.com/java-native-access/jna">Java Native Access 
+      jna.jar and jna-platform.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="https://github.com/java-native-access/jna/blob/master/LICENSE">Apache 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>),
+      which are included in the netcdfAll.jar.
+  <br>aws-java-sdk.jar also requires the 
+      <a rel="help" href="https://mvnrepository.com/artifact/com.fasterxml.jackson.core"
+      >jackson-annotations.jar, jackson-core.jar, and jackson-databind.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> from 
+      <a rel="help" href="https://github.com/FasterXML">FasterXML<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (license: 
+      <a rel="bookmark" href="https://github.com/FasterXML/jackson-core#overview"
+      >Apache 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>),
+      which are included in the netcdfAll.jar.
+
 <li>ERDDAP uses 
     <a rel="help" href="http://www.json.org/java/index.html">json.org's Java-based JSON library<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -3448,6 +3507,13 @@ credit where credit is due.)
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> data
   (license: <a rel="bookmark" href="http://www.json.org/license.html">copyrighted open source<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+<li>ERDDAP use code from Apache
+  <a rel="help" href="https://commons.apache.org/compress/">commons-compress<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  (License: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The graphs and maps are created on-the-fly with a modified version of NOAA's 
@@ -3484,6 +3550,8 @@ credit where credit is due.)
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>)
     and created by Paul Wessel and Walter Smith.
+    <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE SHORELINE DATA THAT COMES WITH ERDDAP --
+    DO NOT USE IT FOR NAVIGATIONAL PURPOSES.
 <li>The political boundary and river data are from the 
     <a rel="help" href="https://gmt.soest.hawaii.edu/doc/5.2.1/pscoast.html">pscoast<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -3497,6 +3565,8 @@ credit where credit is due.)
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
     (license: public domain).
+    <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE POLITCAL BOUNDARY
+    DATA THAT COMES WITH ERDDAP.
 <li>The bathymetry/topography data used in the background of some maps is the  
   <a rel="help" href="https://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -3511,6 +3581,8 @@ credit where credit is due.)
     <a rel="bookmark" href="https://www.ngdc.noaa.gov">NOAA NGDC<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>.
+    <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE BATHYMETRY/TOPOGRAPHY
+    DATA THAT COMES WITH ERDDAP. DO NOT USE IT FOR NAVIGATIONAL PURPOSES.
 <li> Emails are sent using code in mail.jar from Oracle's   
     <a rel="help" href="https://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -3520,29 +3592,6 @@ credit where credit is due.)
       >Oracle Binary Code License Agreement for Java EE Technologies<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
-<!--li> JavaMail uses activation.jar from the 
-    <a rel="help" href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
-    (license: 
-    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt"
-    >Oracle Binary Code License Agreement for Java EE Technologies<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>. -->
-<!-- li> For <a rel="help" href="https://openid.net/">OpenID<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      authentication, ERDDAP uses the
-     joid.jar and tsik.jar libraries from the 
-     <a rel="help" href="https://github.com/bferg/joid">joid project<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-  from <a rel="bookmark" href="https://www.verisign.com">Verisign<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
-     (license: <a rel="bookmark" href="https://github.com/bferg/joid/blob/master/LICENSE.txt">Apache 2.0<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>). -->
 <li> ERDDAP includes the 
      <a rel="help" href="https://jdbc.postgresql.org/download.html">PostGres JDBC42<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -3606,86 +3655,12 @@ credit where credit is due.)
         title="This link to an external web site does not constitute an endorsement."/></a>).
     </ul>
 
-<li> For SOAP services, ERDDAP uses: 
-  <ul>
-  <li><a rel="help" href="https://ws.apache.org/axis/index.html">axis.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>)
-  <li><a rel="help" href="http://java.net/projects/jax-rpc/">jaxrpc.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.opensource.org/licenses/cddl1.php">CDDL v1.0<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>)
-  <li><a rel="help" href="http://java.net/projects/saaj/">saaj.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.opensource.org/licenses/cddl1.php">CDDL v1.0<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>)
-  <li><a rel="help" href="https://sourceforge.net/projects/wsdl4j/">wsdl4j.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://sourceforge.net/projects/wsdl4j/">Common Public License 1.0<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>)
-  </ul>
-
 <li> EDDGridFromMergeIRFiles.java was written and contributed by
    Jonathan Lafite and Philippe Makowski of 
    <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>
    (license: copyrighted open source).
-
-<li> For working with Amazon AWS and S3, ERDDAP uses the
-  <a rel="help" href="https://aws.amazon.com/sdk-for-java/">aws-java-sdk.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
-  <br>aws-java-sdk.jar requires commons-codec.jar, commons-logging.jar,
-      fluent-hc.jar,
-      httpclient.jar, httpclient-cache.jar, httpclient-win.jar, 
-      httpcore.jar, and httpmime.jar, which are all from the    
-      <a rel="help" href="https://hc.apache.org/downloads.cgi">Apache Project<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
-  <br>aws-java-sdk.jar also requires the 
-      <a rel="help" href="https://github.com/java-native-access/jna">Java Native Access 
-      jna.jar and jna-platform.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://github.com/java-native-access/jna/blob/master/LICENSE">Apache 2.0<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
-  <br>aws-java-sdk.jar also requires the 
-      <a rel="help" href="https://mvnrepository.com/artifact/com.fasterxml.jackson.core"
-      >jackson-annotations.jar, jackson-core.jar, and jackson-databind.jar<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> from 
-      <a rel="help" href="https://github.com/FasterXML">FasterXML<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
-      (license: 
-      <a rel="bookmark" href="https://github.com/FasterXML/jackson-core#overview"
-      >Apache 2.0<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
 
 <li> ERDDAP uses code from the 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
@@ -3733,7 +3708,7 @@ The ERDDAP-specific code is licensed as copyrighted open source,
       title="This link to an external web site does not constitute an endorsement."/></a> holding the copyright.  
 The license is:
 <blockquote>
-ERDDAP, Copyright 2016, NOAA.
+ERDDAP, Copyright 2017, NOAA.
 
 <P>PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE THIS SOFTWARE AND 
 ITS DOCUMENTATION FOR ANY PURPOSE AND WITHOUT FEE IS HEREBY GRANTED,
@@ -3764,7 +3739,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.78
+<p>ERDDAP, Version 1.80
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;

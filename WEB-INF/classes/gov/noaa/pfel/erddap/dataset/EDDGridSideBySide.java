@@ -1021,7 +1021,7 @@ public class EDDGridSideBySide extends EDDGrid {
     public static void test(boolean doGraphicsTests) throws Throwable {
 
         String2.log("\n****************** EDDGridSideBySide.test() *****************\n");
-
+/* for releases, this line should have open/close comment */
         //usually done
         testQSWind(doGraphicsTests); 
         testQSStress();

@@ -43,7 +43,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-/* This uses axis.jar, jaxrps.jar, saaj.jar, and wsdl4j.jar. */
 import javax.xml.soap.*;
 
 import org.xml.sax.InputSource;
