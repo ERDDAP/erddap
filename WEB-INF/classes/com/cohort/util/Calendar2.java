@@ -138,9 +138,11 @@ public class Calendar2 {
         //  That makes it likely that numbers won't be interpreted as compact date times.
         //check for julian date before ISO 8601 format
         "-?[0-9]{4}-[0-3][0-9]{2}", "yyyy-DDD",  
-        "[0-4][0-9]{3}[0-3][0-9]{2}",  "yyyyDDD",  //compact
+        "[012][0-9]{3}[0-3][0-9]{2}",  "yyyyDDD",  //compact, negative is uncommon and too much like a number
         //variants of space-separated 1970-01-01 00:00:00.000
         "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}[+-][0-9].*",
+             "yyyy-MM-dd HH:mm:ss.SSSZ", 
+        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}Z",
              "yyyy-MM-dd HH:mm:ss.SSSZ", 
         "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}",
              "yyyy-MM-dd HH:mm:ss.SSS", 
@@ -154,6 +156,8 @@ public class Calendar2 {
              "yyyy-MM-dd HH", 
         //all other variants go to T-separated 1970-01-01T00:00:00.000  (for formatting date times)
         "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}[+-][0-9].*",
+             "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
+        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}Z",
              "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
         "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}",
              "yyyy-MM-dd'T'HH:mm:ss.SSS", 
@@ -169,26 +173,31 @@ public class Calendar2 {
         "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9]",                          "yyyy-MM-dd", 
         "-?[0-9]{4}-[0-1][0-9].*",                                   "yyyy-MM", 
         //compact ISO
-        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]",          
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]",          
                                                                    "yyyyMMddHHmmss",
-        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]",  
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]",  
                                                                    "yyyyMMddHHmm",
-        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]",  
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]",  
                                                                    "yyyyMMddHH",
-        "[0-4][0-9]{3}[0-1][0-9][0-3][0-9]",                       "yyyyMMdd",
-        "[0-4][0-9]{3}[0-1][0-9]",                                 "yyyyMM",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]",                       "yyyyMMdd",
+        "[12][0-9]{3}[0-1][0-9]",                                  "yyyyMM", //no 0xxx years, avoid misinterpret HHMMSS
         //2017-03-23 2 digit year (yy) is no longer supported
-        "[0-9]{1,2}/[0-9]{1,2}/[0-9]{4} [0-9]{1,2}:[0-9]{2}:[0-9]{2}",  "M/d/yyyy H:mm:ss",      //assume US ordering
-        "[0-9]{1,2} [a-zA-Z]{3} [0-9]{4} [0-9]{1,2}:[0-9]{2}:[0-9]{2}", "d MMM yyyy H:mm:ss",  //2 Jan 85
-        "[0-9]{1,2}-[a-zA-Z]{3}-[0-9]{4} [0-9]{1,2}:[0-9]{2}:[0-9]{2}", "d-MMM-yyyy H:mm:ss",  //02-JAN-1985
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "M/d/yyyy H:m:s",    //assume US ordering
+        "[012]?[0-9]-[0123]?[0-9]-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "M-d-yyyy H:m:s",    //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "d MMM yyyy H:m:s", //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "d-MMM-yyyy H:m:s", //02-JAN-1985
 
-        "[0-9]{1,2}/[0-9]{1,2}/[0-9]{4} [0-9]{1,2}:[0-9]{2}",  "M/d/yyyy H:m",      //assume US ordering
-        "[0-9]{1,2} [a-zA-Z]{3} [0-9]{4} [0-9]{1,2}:[0-9]{2}", "d MMM yyyy H:mm",  //2 Jan 85
-        "[0-9]{1,2}-[a-zA-Z]{3}-[0-9]{4} [0-9]{1,2}:[0-9]{2}", "d-MMM-yyyy H:mm",  //02-JAN-1985
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]",  "M/d/yyyy H:m",  //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]", "d MMM yyyy H:m", //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]", "d-MMM-yyyy H:m", //02-JAN-1985
 
-        "[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}",                        "M/d/yyyy",      //assume US ordering
-        "[0-9]{1,2} [a-zA-Z]{3} [0-9]{4}",                       "d MMM yyyy",    //2 Jan 85
-        "[0-9]{1,2}-[a-zA-Z]{3}-[0-9]{4}",                       "d-MMM-yyyy"     //02-JAN-1985
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4}",                        "M/d/yyyy",      //assume US ordering
+        "[012]?[0-9]-[0123]?[0-9]-[0-9]{4}",                        "M-d-yyyy",      //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4}",                       "d MMM yyyy",    //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4}",                       "d-MMM-yyyy",    //02-JAN-1985
+
+        "[0-9]{4}/[012]?[0-9]/[0123]?[0-9]",                        "yyyy/M/d",      //bad iso variant
+        "[0-9]{4}-[012]?[0-9]-[0123]?[0-9]",                        "yyyy-M-d",      //bad iso variant
     };
 
     /** 
@@ -197,7 +206,7 @@ public class Calendar2 {
      */
     public final static String letterRegexTimeFormat[] = {
         //test formats that start with a letter
-        "[a-zA-Z]{3} [0-9]{1,2}, [0-9]{4}",   //2017-03-23 was {2,4} but 2 digit year (yy) no longer supported
+        "[a-zA-Z]{3} [0123]?[0-9], [0-9]{4}",   
             "MMM d, yyyy",   //Jan 2, 1985
         //                 "Sun, 06 Nov 1994 08:49:37 GMT"  //GMT is literal. java.time (was Joda) doesn't parse z
         "[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT",  
@@ -285,7 +294,7 @@ public class Calendar2 {
     /**
      * This tests if the units are 
      * numeric time units (regex="[a-zA-Z]+ +since +[0-9].*") or 
-     * or String time units ("yy" or "YY": a formatting string which has the year designator).
+     * or String time units ("yyyy" or "YYYY": a formatting string which has the year designator).
      *
      * <p>The test for numeric time units is a good, quick hueristic. 
      * For a definitive test, use getTimeBaseAndFactor(String tsUnits).
@@ -294,7 +303,7 @@ public class Calendar2 {
         if (tUnits == null)
             return false;
         tUnits = tUnits.toLowerCase();
-        return tUnits.indexOf("yy") >= 0 || isNumericTimeUnits(tUnits);
+        return tUnits.indexOf("yyyy") >= 0 || isNumericTimeUnits(tUnits);
     }
 
     /** This variant assumes Zulu time zone. */
@@ -1754,6 +1763,8 @@ public class Calendar2 {
         if (s == null)
             s = "";
         s = s.trim();
+        if ("nd".equals(s))
+            return null;
         boolean negative = s.startsWith("-");
         if (negative) 
             s = s.substring(1);
@@ -2829,10 +2840,14 @@ public class Calendar2 {
         //If it's a date, it doesn't have a time zone or a way to get time at start of day.
         //I miss Joda.
 
-        //convert year month into dateTime
+        //convert year or year month into dateTime
         if (dtf.getZone() == null) {
             //OffsetDateTime
-            if (!ta.isSupported(ChronoField.DAY_OF_MONTH))
+            if (!ta.isSupported(ChronoField.MONTH_OF_YEAR))
+                ta = OffsetDateTime.of(
+                    ta.get(ChronoField.YEAR), 1, 1,
+                    0, 0, 0, 0, ZoneOffset.ofTotalSeconds(ta.get(ChronoField.OFFSET_SECONDS)));
+            else if (!ta.isSupported(ChronoField.DAY_OF_MONTH))
                 ta = OffsetDateTime.of(
                     ta.get(ChronoField.YEAR), ta.get(ChronoField.MONTH_OF_YEAR), 1,
                     0, 0, 0, 0, ZoneOffset.ofTotalSeconds(ta.get(ChronoField.OFFSET_SECONDS)));
@@ -2844,7 +2859,11 @@ public class Calendar2 {
                     0, 0, 0, 0, ZoneOffset.ofTotalSeconds(ta.get(ChronoField.OFFSET_SECONDS)));
         } else {
             //ZonedDateTime
-            if (!ta.isSupported(ChronoField.DAY_OF_MONTH))
+            if (!ta.isSupported(ChronoField.MONTH_OF_YEAR))
+                ta = ZonedDateTime.of(
+                    ta.get(ChronoField.YEAR), 1, 1,
+                    0, 0, 0, 0, dtf.getZone());
+            else if (!ta.isSupported(ChronoField.DAY_OF_MONTH))
                 ta = ZonedDateTime.of(
                     ta.get(ChronoField.YEAR), ta.get(ChronoField.MONTH_OF_YEAR), 1,
                     0, 0, 0, 0, dtf.getZone());
@@ -3058,6 +3077,10 @@ public class Calendar2 {
         s = String2.replaceAll(s, " ", "' '");
         s = String2.replaceAll(s, "'T'", "T"); //in case already quoted
         s = String2.replaceAll(s, "T", "'T'");
+
+        s = String2.replaceAll(s, ".sss", ".SSS");
+        s = String2.replaceAll(s, ".ss",  ".SS");
+        s = String2.replaceAll(s, ".s",   ".S");
 
         //String2.log(">Calendar2.convertToJavaDateTimeFormat " + os + " -> " + s);
         return s;

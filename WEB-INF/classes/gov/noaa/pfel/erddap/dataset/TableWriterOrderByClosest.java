@@ -18,7 +18,7 @@ import java.util.BitSet;
  * TableWriterOrderByClosest provides a way to sort the response table's rows
  * and just keep the rows where values of the last sort column (often a time variable)
  * are closest to the specified interval (e.g., every 10 minutes).
- * For example, you could use orderBy(\"stationID,time,10 minutes\") 
+ * For example, you could use orderByClosest(\"stationID,time,10 minutes\") 
  * to just get the rows of data for each station as close as possible to 
  * 10 minutes apart.
  *

@@ -799,7 +799,7 @@ public class ArchiveADataset {
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         String results = ra[1];
         String expected = 
 "cwwcNDBCMet.das                                                  " + today + "T.{8}Z         147..\n" +
@@ -812,7 +812,7 @@ public class ArchiveADataset {
 
         //look at external ...tar.gz.md5.txt
         ra = String2.readFromFile(targzName + ".md5.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{32}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -829,7 +829,7 @@ public class ArchiveADataset {
         String targzName = (new ArchiveADataset()).doIt(new String[]{
             "-verbose",
             "BagIt",
-            "default", //zip
+            "default", //tar.gz
             "bob.simons@noaa.gov",
             "cwwcNDBCMet", 
             "default", //all data vars
@@ -837,7 +837,7 @@ public class ArchiveADataset {
             "nothing", //should be station, but use "nothing" as test of ncCFMA
             ".ncCF", //default is .ncCFMA
             "MD5"});   
-        Test.ensureTrue(targzName.endsWith(".zip"), "targzName=" + targzName);
+        Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
 
         //display it (in 7zip)
         Math2.sleep(5000);
@@ -845,8 +845,8 @@ public class ArchiveADataset {
         Math2.sleep(5000);
 
         //decompress and look at contents 
-        SSR.unzipADirectory(targzName, 60, null); //timeoutSeconds
-        String tempDir = targzName.substring(0, targzName.length() - 4) + "/";
+        SSR.windowsDecompressTargz(targzName, false, 5); //timeout minutes
+        String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
         int tempDirLen = tempDir.length();
         Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
             true, ".*", "");
@@ -864,7 +864,7 @@ public class ArchiveADataset {
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-md5.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{32}  data/cwwcNDBCMet.nc\n";   //2017-03-07 actual md5 verified by hand
@@ -872,7 +872,7 @@ public class ArchiveADataset {
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "BagIt-Version: 0.97\n" +
@@ -881,13 +881,13 @@ public class ArchiveADataset {
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "Contact-Email: bob.simons@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: BagIt\n" +
-"ArchiveADataset_compression: zip\n" +
+"ArchiveADataset_compression: tar.gz\n" +
 "ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: cwwcNDBCMet\n" +
 "ArchiveADataset_data_variables: \n" +
@@ -899,7 +899,7 @@ public class ArchiveADataset {
         
         //look at optional tagmanifest-md5.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-md5.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected =       //2017-03-07 actual md5's verified by hand
 "[0-9a-f]{32}  bag-info.txt\n" +  
@@ -909,7 +909,7 @@ public class ArchiveADataset {
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.md5.txt
         ra = String2.readFromFile(targzName + ".md5.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = //2017-03-07 actual md5 verified by hand
 "[0-9a-f]{32}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -967,7 +967,7 @@ public class ArchiveADataset {
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  data/31201.nc\n" + 
@@ -980,7 +980,7 @@ public class ArchiveADataset {
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "BagIt-Version: 0.97\n" +
@@ -989,7 +989,7 @@ public class ArchiveADataset {
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "Contact-Email: bob.simons@noaa.gov\n" +
@@ -1007,7 +1007,7 @@ public class ArchiveADataset {
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected =       //2017-03-07 actual sha256's verified by hand
 "[0-9a-f]{64}  bag-info.txt\n" +  
@@ -1017,7 +1017,7 @@ public class ArchiveADataset {
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1051,7 +1051,7 @@ public class ArchiveADataset {
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         String results = ra[1];
         String expected = 
 "READ_ME.txt                                                      " + today + "T.{8}Z           4..\n" +
@@ -1066,7 +1066,7 @@ public class ArchiveADataset {
         
         //look at external ...tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1110,24 +1110,24 @@ public class ArchiveADataset {
 "url,size\n" +
 "bag-info.txt,4..\n" +
 "bagit.txt,55\n" +
-"manifest-sha1.txt,130\n" +
-"tagmanifest-sha1.txt,167\n" +
+"manifest-sha256.txt,178\n" +
+"tagmanifest-sha256.txt,241\n" +
 "data/sp051-20141112.nc,148...\n" +
 "data/sp052-20140814.nc,499...\n";  //will change periodically
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
-        String ra[] = String2.readFromFile(tempDir + "manifest-sha1.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"[0-9a-f]{40}  data/sp051-20141112.nc\n" +
-"[0-9a-f]{40}  data/sp052-20140814.nc\n"; 
+"[0-9a-f]{64}  data/sp051-20141112.nc\n" +
+"[0-9a-f]{64}  data/sp052-20140814.nc\n"; 
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "BagIt-Version: 0.97\n" +
@@ -1136,7 +1136,7 @@ public class ArchiveADataset {
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "Contact-Email: bob.simons@noaa.gov\n" +
@@ -1149,25 +1149,25 @@ public class ArchiveADataset {
 "ArchiveADataset_extra_constraints: &trajectory=~\"sp05.*\"&time>=2015-01-01&time<=2015-01-05\n" +
 "ArchiveADataset_subset_by: trajectory\n" +
 "ArchiveADataset_data_file_type: .ncCFMA\n" +
-"ArchiveADataset_digest_type: SHA-1\n";
+"ArchiveADataset_digest_type: SHA-256\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
         
-        //look at optional tagmanifest-sha1.txt
-        ra = String2.readFromFile(tempDir + "tagmanifest-sha1.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        //look at optional tagmanifest-sha256.txt
+        ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected =       
-"[0-9a-f]{40}  bag-info.txt\n" +  
-"[0-9a-f]{40}  bagit.txt\n" +
-"[0-9a-f]{40}  manifest-sha1.txt\n";
+"[0-9a-f]{64}  bag-info.txt\n" +  
+"[0-9a-f]{64}  bagit.txt\n" +
+"[0-9a-f]{64}  manifest-sha256.txt\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
-        //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha1.txt
-        ra = String2.readFromFile(targzName + ".sha1.txt");
-        Test.ensureEqual(ra[0], "", "");
+        //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
+        ra = String2.readFromFile(targzName + ".sha256.txt");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
+"[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
         
         
@@ -1196,7 +1196,7 @@ public class ArchiveADataset {
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         String results = ra[1];
         String expected = 
 "erdVHNchla8day.das                                               " + today + "T.{8}Z          6...\n" +
@@ -1211,7 +1211,7 @@ public class ArchiveADataset {
         
         //look at external ...tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1261,7 +1261,7 @@ public class ArchiveADataset {
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  data/20150301000000Z.nc\n" +
@@ -1270,7 +1270,7 @@ public class ArchiveADataset {
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "BagIt-Version: 0.97\n" +
@@ -1279,7 +1279,7 @@ public class ArchiveADataset {
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "Contact-Email: bob.simons@noaa.gov\n" +
@@ -1295,7 +1295,7 @@ public class ArchiveADataset {
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  bag-info.txt\n" +  
@@ -1305,7 +1305,7 @@ public class ArchiveADataset {
 
         //look at external cwwcNDBCMet_20170307183959Z.tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1337,7 +1337,7 @@ public class ArchiveADataset {
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String ra[] = String2.readFromFile(targzName + ".listOfFiles.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         String results = ra[1];
         String expected = 
 "erdVHNchla8day.das                                               " + today + "T.{8}Z          6...\n" +
@@ -1350,7 +1350,7 @@ public class ArchiveADataset {
         
         //look at external ...tar.gz.sha1.txt
         ra = String2.readFromFile(targzName + ".sha1.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1399,7 +1399,7 @@ public class ArchiveADataset {
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha1.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{40}  data/20150302000000Z.nc\n";   
@@ -1407,7 +1407,7 @@ public class ArchiveADataset {
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "BagIt-Version: 0.97\n" +
@@ -1416,7 +1416,7 @@ public class ArchiveADataset {
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "Contact-Email: bob.simons@noaa.gov\n" +
@@ -1432,7 +1432,7 @@ public class ArchiveADataset {
         
         //look at optional tagmanifest-sha1.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha1.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected =       
 "[0-9a-f]{40}  bag-info.txt\n" +  
@@ -1442,7 +1442,7 @@ public class ArchiveADataset {
 
         //look at external ....tar.gz.sha1.txt
         ra = String2.readFromFile(targzName + ".sha1.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{40}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1468,12 +1468,12 @@ public class ArchiveADataset {
         Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
 
         //display it (in 7zip)
-        Math2.sleep(5000);
+        Math2.sleep(10000);
         SSR.displayInBrowser("file://" + targzName); 
-        Math2.sleep(5000);
+        Math2.sleep(10000);
 
         //decompress and look at contents 
-        SSR.windowsDecompressTargz(targzName, false, 5); //timeout minutes
+        SSR.windowsDecompressTargz(targzName, false, 20); //timeout minutes
         String tempDir = targzName.substring(0, targzName.length() - 7) + "/";
         int tempDirLen = tempDir.length();
         Table table = FileVisitorDNLS.oneStepWithUrlsNotDirs(tempDir, ".*", 
@@ -1493,7 +1493,7 @@ public class ArchiveADataset {
 
         //look at manifest
         String ra[] = String2.readFromFile(tempDir + "manifest-sha256.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  data/20150301000000Z.nc\n" +
@@ -1502,7 +1502,7 @@ public class ArchiveADataset {
 
         //look at bagit.txt
         ra = String2.readFromFile(tempDir + "bagit.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "BagIt-Version: 0.97\n" +
@@ -1511,7 +1511,7 @@ public class ArchiveADataset {
         
         //look at optional bag-info.txt
         ra = String2.readFromFile(tempDir + "bag-info.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "Contact-Email: bob.simons@noaa.gov\n" +
@@ -1527,7 +1527,7 @@ public class ArchiveADataset {
         
         //look at optional tagmanifest-sha256.txt
         ra = String2.readFromFile(tempDir + "tagmanifest-sha256.txt", String2.UTF_8);
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected =       
 "[0-9a-f]{64}  bag-info.txt\n" +  
@@ -1537,7 +1537,7 @@ public class ArchiveADataset {
 
         //look at external ....tar.gz.sha256.txt
         ra = String2.readFromFile(targzName + ".sha256.txt");
-        Test.ensureEqual(ra[0], "", "");
+        Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
 "[0-9a-f]{64}  " + File2.getNameAndExtension(targzName) + "\n";
@@ -1551,7 +1551,7 @@ public class ArchiveADataset {
     public static void test() throws Throwable {
         String2.log("*** ArchiveADataset.test()");
 
-        /* 
+/* for releases, this line should have open/close comment */
         testOriginalNcCF();
         testOriginalTrajectoryProfile();
         testOriginalGridAll();
@@ -1559,7 +1559,7 @@ public class ArchiveADataset {
 
         testBagItNcCF();
         testBagItTrajectoryProfile();
-*/        testBagItGridAll();
+        testBagItGridAll();
         testBagItGridSubset(); 
         testBagItNcCFMA();  //w NCEI preferences
         testBagItGridSubset2();  //w NCEI preferences

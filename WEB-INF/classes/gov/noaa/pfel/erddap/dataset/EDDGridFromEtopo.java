@@ -440,6 +440,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     public static void test(boolean doGraphicsTests) throws Throwable {
 
         String2.log("\n****************** EDDGridFromEtopo.test() *****************\n");
+/* for releases, this line should have open/close comment */
         verbose = true;
         reallyVerbose = true;
         GridDataAccessor.verbose = true;

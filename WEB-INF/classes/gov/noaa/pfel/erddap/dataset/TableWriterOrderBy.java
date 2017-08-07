@@ -12,7 +12,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 
 
 /**
- * TableWriterDistinct provides a way to gather all rows,
+ * TableWriterOrderBy provides a way to gather all rows,
  * sort them, then write to some other TableWriter.
  * This functions like SQL's ORDER BY.
  *

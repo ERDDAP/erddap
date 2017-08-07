@@ -608,7 +608,7 @@ public class Attributes {
         StringBuilder sb = new StringBuilder();
         String names[] = getNames();
         for (int i = 0; i < names.length; i++) {
-            sb.append("    " + names[i] + "=" + get(names[i]).toJsonCsvString() + "\n");
+            sb.append("    " + names[i] + "=" + get(names[i]).toNccsvAttString() + "\n");
         }
         return sb.toString();
     }
@@ -735,7 +735,7 @@ public class Attributes {
 
     /**
      * This removes keys and values from this Attributes which 
-     * are the same in otherAtts.
+     * are exactly equal (even same data type) in otherAtts.
      * 
      * @param otherAtts another Attributes object
      */
@@ -802,8 +802,11 @@ public class Attributes {
                 int tSize = pa.size();
                 pa.setString(0, String2.trimStart(pa.getString(0)));
                 pa.setString(tSize - 1, String2.trimEnd(pa.getString(tSize - 1)));
-                for (int i = 0; i < tSize; i++) 
-                    pa.setString(0, String2.makeValidUnicode(pa.getString(i), "\r\n\t"));
+                for (int i = 0; i < tSize; i++) {
+                    String s = String2.makeValidUnicode(pa.getString(i), "\r\n\t");
+                    s = String2.commonUnicodeToPlainText(s); //a little aggressive, but reasonable for attributes
+                    pa.setString(0, s);
+                }
             }
         }
 
@@ -911,15 +914,87 @@ public class Attributes {
     }
 
     /**
+     * This writes the attributes for a variable (or *GLOBAL*) to a String using
+     * NCO JSON lvl=2 pedantic style.
+     * See http://nco.sourceforge.net/nco.html#json
+     * This doesn't change any of the attributes.
+     * See issues in javadoc for EDDTable.saveAsNcoJson().
+     *
+     * <p>String attributes are written as type="char". 
+     * See comments in EDDTable.
+     * 
+     * @param indent a String a spaces for the start of each line
+     * @return a string with all of the attributes for a variable (or *GLOBAL*) 
+     *   formatted for NCO JSON, with a comma after the closing }.
+     */
+    public String toNcoJsonString(String indent) {
+        StringBuilder sb = new StringBuilder();
+
+//"attributes": {
+//  "byte_att": { "type": "byte", "data": [0, 1, 2, 127, -128, -127, -2, -1]},
+//  "char_att": { "type": "char", "data": "Sentence one.\nSentence two.\n"},
+//  "short_att": { "type": "short", "data": 37},
+//  "int_att": { "type": "int", "data": 73},
+//  "long_att": { "type": "int", "data": 73},                            //???!!! why not "type"="long"???       
+//  "float_att": { "type": "float", "data": [73.0, 72.0, 71.0, 70.010, 69.0010, 68.010, 67.010]},
+//  "double_att": { "type": "double", "data": [73.0, 72.0, 71.0, 70.010, 69.0010, 68.010, 67.0100010]}
+//},
+        sb.append(indent + "\"attributes\": {\n");
+
+        //each of the attributes
+        String names[] = getNames();
+        boolean somethingWritten = false;
+        for (int ni = 0; ni < names.length; ni++) { 
+            String tName = names[ni];
+            PrimitiveArray pa = get(tName);
+            if (pa == null || pa.size() == 0) 
+                continue; //do nothing
+            String tType = pa.elementClassString();
+            boolean isString = tType.equals("String");
+            //In NCO JSON, all char and String attributes appear as 1 string with type=char.
+            //There are no "string" attributes.
+            if (isString) {
+                tType = "char";
+            } else if (tType.equals("long")) {
+                tType = "int64"; //see http://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+            }
+            sb.append(
+                (somethingWritten? ",\n" : "") +
+                indent + "  " +
+                String2.toJson(tName) + ": {\"type\": \"" + tType + "\", \"data\": ");
+            if (isString) {
+                String s = ((StringArray)pa).toNewlineString();
+                sb.append(String2.toJson(s.substring(0, s.length() - 1))); //remove trailing \n
+            } else if (pa.elementClass() == char.class) {
+                //each char becomes a string, then displayed as newline separated string
+                String s = (new StringArray(pa)).toNewlineString();
+                sb.append(String2.toJson(s.substring(0, s.length() - 1))); //remove trailing \n
+            } else {
+                String js = pa.toJsonCsvString();
+                sb.append(pa.size() == 1?  js :
+                    "[" + js + "]");
+            }
+            sb.append('}');
+            somethingWritten = true;
+        }
+        sb.append(
+            (somethingWritten? "\n" : "") +  //end previous line
+            indent + "},\n");
+        return sb.toString();        
+    }
+
+    /**
      * This tests the methods in this class.
      *
      * @throws Exception if trouble
      */
     public static void test() throws Exception {
         String2.log("\n*** test Attributes...");
+/* for releases, this line should have open/close comment */
 
         //set  and size
         Attributes atts = new Attributes();
+        String results;
         Test.ensureEqual(atts.size(), 0, "");
         atts.set("byte", (byte)1);
         atts.set("char", 'a');
@@ -991,17 +1066,17 @@ public class Attributes {
             "");
 
         //toString
-        Test.ensureEqual(atts.toString(), 
-            "    byte=1\n" +
-            "    char=a\n" +
-            "    double=3.141592653589793\n" +
-            "    float=2.5\n" +
-            "    int=1000000\n" +
-            "    long=1000000000000\n" +
-            "    PA=1, 2, 3\n" +   
-            "    short=3000\n" +
-            "    String=\"a, csv, string\"\n",
-            "");
+        results = atts.toString();
+        Test.ensureEqual(results, 
+            "    byte=1b\n" +
+            "    char=\"'a'\"\n" +
+            "    double=3.141592653589793d\n" +
+            "    float=2.5f\n" +
+            "    int=1000000i\n" +
+            "    long=1000000000000L\n" +
+            "    PA=1i,2i,3i\n" +   
+            "    short=3000s\n" +
+            "    String=\"a, csv, string\"\n", "results=\n" + results);
 
         //clone   
         Attributes atts2 = (Attributes)atts.clone();
@@ -1050,18 +1125,19 @@ public class Attributes {
             .add("char", 'd')   //diff value
             .add("short", (short)3000); //same value
         atts3.set(atts4);
-        Test.ensureEqual(atts3.toString(), 
-            "    byte=1\n" +
-            "    char=d\n" +
-            "    double=3.141592653589793\n" +
-            "    float=2.5\n" +
-            "    int=1000000\n" +
-            "    long=1000000000000\n" +
-            "    PA=1, 2, 3\n" +   
-            "    short=3000\n" +
+        results = atts3.toString();
+        Test.ensureEqual(results, 
+            "    byte=1b\n" +
+            "    char=\"'d'\"\n" +
+            "    double=3.141592653589793d\n" +
+            "    float=2.5f\n" +
+            "    int=1000000i\n" +
+            "    long=1000000000000L\n" +
+            "    PA=1i,2i,3i\n" +   
+            "    short=3000s\n" +
             "    String=\"a, csv, string\"\n" +
-            "    zztop=77\n",
-            "");
+            "    zztop=77i\n",
+            "results=\n" + results);
 
         //_FillValue
         atts.clear();
@@ -1083,8 +1159,8 @@ public class Attributes {
         atts2.add("d", 4d);
         atts.removeIfSame(atts2);
         Test.ensureEqual(atts.toString(), 
-            "    a=1\n" +
-            "    c=3.0\n",
+            "    a=1i\n" +
+            "    c=3.0f\n", //different type
             "");
 
         //trim
@@ -1094,12 +1170,13 @@ public class Attributes {
         atts.add("c",  "C");
         atts.add("d",  4);
         atts.trim();
-        Test.ensureEqual(atts.toString(), 
-            "    a=\"A\"\n" +
-            "    b=\"B\"\n" +
-            "    c=\"C\"\n" +
-            "    d=4\n",
-            "");
+        results = atts.toString();
+        Test.ensureEqual(results, 
+            "    a=A\n" +
+            "    b=B\n" +
+            "    c=C\n" +
+            "    d=4i\n",
+            "results=\n" + results);
 
         //makeALikeB
         Attributes a =  new Attributes();
@@ -1114,8 +1191,8 @@ public class Attributes {
         atts = makeALikeB(a, b);
         Test.ensureEqual(atts.toString(), 
 "    inA=\"null\"\n" +
-"    inB=3, 4, 5\n" +
-"    number=11, 22\n",
+"    inB=3i,4i,5i\n" +
+"    number=11i,22i\n",
             "atts=\n" + atts.toString());
         a.add(atts);
         a.removeValue("\"null\"");

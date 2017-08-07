@@ -1317,6 +1317,7 @@ public class IntArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing IntArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         IntArray anArray = new IntArray();

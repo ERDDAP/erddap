@@ -27,6 +27,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.Tally;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -288,7 +289,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             Attributes sourceAtts = dataSourceTable.columnAttributes(col);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 null, //no source global attributes
-                sourceAtts, colName, 
+                sourceAtts, null, colName, 
                 true, true); //addColorBarMinMax, tryToFindLLAT
 
             //dateTime?
@@ -340,12 +341,15 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
 
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -398,9 +402,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1925,11 +1929,11 @@ expected =
                     //if it's a date time format, convertToJavaDateTimeFormat e.g., yyyy-MM-dd'T'HH:mm:ssZ
                     String newContent = Calendar2.convertToJavaDateTimeFormat(content);
                     if (!newContent.equals(content) ||
-                        newContent.indexOf("yy") >= 0) {
+                        newContent.indexOf("yyyy") >= 0) {
 
                         atts.set("units", newContent);
 
-                        if (newContent.indexOf("y") >= 0 && //has years
+                        if (newContent.indexOf("yyyy") >= 0 && //has years
                             newContent.indexOf("M") >= 0 && //has month
                             newContent.indexOf("d") >= 0 && //has days
                             newContent.indexOf("H") <  0)   //doesn't have hours
@@ -1942,7 +1946,7 @@ expected =
                     //description -> comment
                     //widely used  (Is <description> used another way?)
                     if (content.toLowerCase().equals("month/day/year")) {  //date format
-                         atts.set("units", "M/d/yy");
+                         atts.set("units", "M/d/yyyy");
                          atts.set("time_precision", "1970-01-01");
                     } else {
                         atts.set("comment", content);
@@ -2139,9 +2143,13 @@ expected =
         if (urls.length() > 0)
             addAtts.add("urls", urls.toString().trim());
 
+        //tryToFindLLAT
+        tryToFindLLAT(sourceTable, addTable);
+
         //*** makeReadyToUseGlobalAtts
         addAtts.set(makeReadyToUseAddGlobalAttributesForDatasetsXml(
-            sourceAtts, "Other", //cdm_data_type. Can't know if Point/etc correct without info about variables.
+            sourceAtts, 
+            hasLonLatTime(addTable)? "Point" : "Other",
             "(local files)", //???
             addAtts, 
             suggestKeywords(sourceTable, addTable)));
@@ -2195,9 +2203,9 @@ expected =
         results.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
         results.append(writeAttsForDatasetsXml(true,  addTable.globalAttributes(),    "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         results.append(writeVariablesForDatasetsXml(sourceTable, addTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         results.append(
             "</dataset>\n" +
             "\n");        
@@ -2697,7 +2705,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "        <att name=\"InPort_catalog_type\">Data Entity</att>\n" +
 "        <att name=\"InPort_XML_URL\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport/xml/17336.xml</att>\n" +
 "        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
-"        <att name=\"keywords\">aerial, afsc, agreement, beaufort, beaufort sea, between, biota, boem, bowfest, bowhead, bureau, chukchi, chukchi sea, comments, data, date, ecology, energy, feeding, fisheries, hole, identification, initiated, institution, interagency, management, marine, national, nmfs, noaa, ocean, oceanographic, oceans, oregon, osu, photo, photo-identification, sea, service, state, study, summer, through, time, university, whale, whoi, woods</att>\n" +
+"        <att name=\"keywords\">aerial, afsc, agreement, beaufort, beaufort sea, between, biota, boem, bowfest, bowhead, bureau, chukchi, chukchi sea, comments, data, ecology, energy, feeding, fisheries, hole, identification, initiated, institution, interagency, management, marine, national, nmfs, noaa, ocean, oceanographic, oceans, oregon, osu, photo, photo-identification, sea, service, state, study, summer, through, time, time2, university, whale, whoi, woods</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">Distribution Liability: The user is responsible for the results of any application of this data for other than its intended purpose. NOAA denies liability if the data are misused.\n" +
 "Data access constraints: There are no legal restrictions on access to the data.  They reside in public domain and can be freely distributed.\n" +
@@ -2752,7 +2760,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>TIME</sourceName>\n" +
-"        <destinationName>TIME</destinationName>\n" +
+"        <destinationName>time2</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
@@ -2765,14 +2773,16 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "    <dataVariable>\n" +
 "        <sourceName>DATE</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
-"        <dataType>double</dataType>\n" +
+"        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"allowed_values\">200708230000 - 201109160000</att>\n" +
 "            <att name=\"isPrimaryKey\">N</att>\n" +
+"            <att name=\"source_name\">DATE</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"time_precision\">1970-01-01</att>\n" +
-"            <att name=\"units\">M/d/yy</att>\n" +
+"            <att name=\"units\">M/d/yyyy</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -2996,10 +3006,52 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
     }
 
 
+    //Adam says "if there are non 7-bit ASCII chars in our JSON, 
+    //  they will be encoded as \\uxxxx"
+    //  and tsv are "us-ascii".
+    //so safe to use ISO_8859_1 or UTF_8 to decode them.
+    public static final String bcodmoCharset = String2.ISO_8859_1;
+
+    /**
+     * This is a helper for generateDatasetsXmlFromBCODMO.
+     *
+     * @param ds 
+     * @param dsDir
+     * @param name e.g., "parameters"
+     * @param useLocalFilesIfPossible
+     * @return a JSONArray (or null if 'name'_service) not defined
+     */
+    public static JSONArray getBCODMOSubArray(JSONObject ds, String dsDir,
+        String name, boolean useLocalFilesIfPossible) throws Exception{
+
+        try {
+            String serviceName = name + "_service";
+            if (!ds.has(serviceName))
+                return null;
+            String subUrl = ds.getString(serviceName);
+            if (!String2.isSomething(subUrl))
+                return null;
+            String subFileName = dsDir + name + ".json";
+            if (!useLocalFilesIfPossible || !File2.isFile(subFileName))
+                SSR.downloadFile(subUrl, subFileName, true); //tryToCompress
+            String subContent[] = String2.readFromFile(subFileName, bcodmoCharset);
+            Test.ensureEqual(subContent[0], "", "");
+            JSONTokener subTokener       = new JSONTokener(subContent[1]);
+            JSONObject  subOverallObject = new JSONObject( subTokener);
+            if (!subOverallObject.has(name))
+                return null;
+            return subOverallObject.getJSONArray(name);
+        } catch (Exception e) {
+            String2.log("ERROR while getting " + name + "_service:\n" + 
+                MustBe.throwableToString(e));
+            return null;
+        }
+    }
+
     /**
      * This makes chunks of datasets.xml for datasets from BCO-DMO.
      * It gets info from a BCO-DMO JSON service that Adam Shepherd 
-     * (ashepherd at whoi.edu) up for Bob Simons.
+     * (ashepherd at whoi.edu) set up for Bob Simons.
      *
      * @param useLocalFilesIfPossible
      * @param catalogUrl e.g., https://www.bco-dmo.org/erddap/datasets
@@ -3012,7 +3064,6 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         String catalogUrl, String baseDir, String datasetNumberRegex)
         throws Throwable {
 
-        String tsvCharset = String2.UTF_8;
         baseDir = File2.addSlash(baseDir); //ensure trailing slash
         String2.log("\n*** EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO\n" +
             "url=" + catalogUrl + 
@@ -3020,32 +3071,53 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         long time = System.currentTimeMillis();
         File2.makeDirectory(baseDir);
         StringBuffer results = new StringBuffer();
+        StringArray noTime = new StringArray();
+
+        //for the sub files
+        JSONArray subArray;
+        JSONObject subObject;
 
         //get the main catalog and parse it
         String catalogName = baseDir + "catalog.json"; 
         if (!useLocalFilesIfPossible || !File2.isFile(catalogName))
             SSR.downloadFile(catalogUrl, catalogName, true); //tryToCompress
-        String catalogContent[] = String2.readFromFile(catalogName, String2.UTF_8);
+        String catalogContent[] = String2.readFromFile(catalogName, bcodmoCharset);
         Test.ensureEqual(catalogContent[0], "", "");
         JSONTokener tokener = new JSONTokener(catalogContent[1]);
         JSONObject catalogObject = new JSONObject(tokener);
         JSONArray datasetsArray = catalogObject.getJSONArray("datasets");
+
         int nMatching = 0;
         int nSucceeded = 0; 
         int nFailed = 0; 
+        //Tally charTally = new Tally();
+        String2.log("datasetsArray has " + datasetsArray.length() + " datasets."); 
         for (int dsi = 0; dsi < datasetsArray.length(); dsi++) {
             try {
                 JSONObject ds = datasetsArray.getJSONObject(dsi);
 
                 //"dataset":"http:\/\/lod.bco-dmo.org\/id\/dataset\/549122",
-                String dsNumber = File2.getNameAndExtension(ds.getString("dataset"));
+                //Do FIRST to see if it matches regex
+                String dsNumber = File2.getNameAndExtension(ds.getString("dataset"));  //549122
                 if (!dsNumber.matches(datasetNumberRegex))
                     continue;
-                String2.log("Processing #" + dsi + ": bcodmo" + dsNumber); 
+                String2.log("\nProcessing #" + dsi + ": bcodmo" + dsNumber); 
                 nMatching++;
-                Table addTable = new Table();
-                Attributes gatts = addTable.globalAttributes();
-                String dsDir = baseDir + dsNumber + "/";
+                Attributes gatts = new Attributes();
+                gatts.add("BCO_DMO_dataset_ID", dsNumber);
+
+                //"version_date":"2015-02-17",
+                String versionDate = "";
+                String compactVersionDate = "";
+                if (ds.has(   "version_date")) {
+                    versionDate = ds.getString("version_date");
+                    gatts.add("date_created", versionDate);
+                    gatts.add("version_date", versionDate);
+                    compactVersionDate = "v" + String2.replaceAll(versionDate, "-", "");
+                }
+
+                //Adam says dsNumber+compactVersionDate is a unique dataset identifier.
+                String dsDir = baseDir + dsNumber + compactVersionDate + "/";
                 File2.makeDirectory(dsDir);                
 
                 //standard things
@@ -3058,55 +3130,60 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                 gatts.add("publisher_type",  "institution");
                 gatts.add("publisher_url",   "http://www.bco-dmo.org/");
 
-
-                //??? fixed values not from catalog   
-                //http://www.bco-dmo.org/dataset/549122
-                gatts.add("validated",     "Yes");
-                gatts.add("restricted",    "No");
-                gatts.add("current_state", "Final no updates expected");
-               
                 //"doi":"10.1575\/1912\/bco-dmo.641155",
+                //Adam says "The uniqueness of records will be by this DOI 
+                //  (which is a proxy for the 'dataset' and 'version_date' keys combined)."
                 if (ds.has(   "doi")) {
                     gatts.add("doi", ds.getString("doi"));
                     gatts.add("id",  ds.getString("doi"));
                     gatts.add("naming_authority", "org.bco-dmo"); //??? or doi type?
                 }
 
-                //"version_date":"2015-02-17",
-                if (ds.has(   "version_date")) {
-                    gatts.add("date_created", ds.getString("version_date"));
-                    gatts.add("version_date", ds.getString("version_date"));
-                }
-
                 //"landing_page":"http:\/\/www.bco-dmo.org\/dataset\/549122",
                 if (ds.has(   "landing_page")) {
                     gatts.add("infoUrl",      ds.getString("landing_page"));
-                    gatts.add("landing_page", ds.getString("landing_page"));
+                    //gatts.add("landing_page", ds.getString("landing_page"));
                 }
 
-                //"dataset_name":"GT10-11 - cellular element quotas",
-                if (ds.has(   "dataset_name"))
-                    gatts.add("dataset_name", ds.getString("dataset_name"));
-                //"brief_desc":"Element quotas of individual phytoplankton cells",
-                if (ds.has(   "brief_desc"))
-                    gatts.add("brief_description", ds.getString("brief_desc"));
                 //"title":"Cellular elemental content of individual phytoplankton cells collected during US GEOTRACES North Atlantic Transect cruises in the Subtropical western and eastern North Atlantic Ocean during Oct and Nov, 2010 and Nov. 2011.",          
                 String tTitle = "BCO-DMO " + dsNumber + 
+                    (versionDate.length() == 0? "" : " " + compactVersionDate) +
                     (ds.has("title"       )? ": " + ds.getString("title") : 
                      ds.has("dataset_name")? ": " + ds.getString("dataset_name") : 
                      ds.has("brief_desc"  )? ": " + ds.getString("brief_desc") : 
                      "");
                 gatts.add("title", tTitle);
 
-                //"abstract":  ???different from Description on landing_page
-                //"Phytoplankton contribute significantly to global C
-                //cycling and serve as the base of ocean food webs. 
-                //Phytoplankton require trace metals for growth and also mediate
-                //the vertical distributions of many metals in the ocean. This
-                //dataset provides direct measurements of metal quotas in 
-                //phytoplankton from across the North Atlantic Ocean, known to 
-                //be subjected to aeolian Saharan inputs and anthropogenic inputs from North America and Europe. Bulk particulate material and individual phytoplankton cells were collected from the upper water column (\u003C150 m) as part of the US GEOTRACES North Atlantic Zonal Transect cruises (KN199-4, KN199-5, KN204-1A,B). The cruise tracks spanned several ocean biomes and geochemical regions. Chemical leaches (to extract biogenic and otherwise labile particulate phases) are combined together with synchrotron X-ray fluorescence (SXRF) analyses of individual micro and nanophytoplankton to discern spatial trends across the basin. Individual phytoplankton cells were analyzed for elemental content using SXRF (Synchrotron radiation X-Ray Fluorescence). Carbon was calculated from biovolume using the relationships of Menden-Deuer \u0026 Lessard (2000).",            
-                gatts.add("summary", ds.has("abstract")? ds.getString("abstract"): tTitle);
+                //"description" is info from landing_page
+                //  ??? I need to extract "Related references" and "related image files"
+                //  from html tags in "description"
+                //"abstract": different from Description on landing_page
+                //  "Phytoplankton contribute significantly to global C
+                //  cycling and serve as the base of ocean food webs. 
+                //  Phytoplankton require trace metals for growth and also mediate
+                //  the vertical distributions of many metals in the ocean. This
+                //  dataset provides direct measurements of metal quotas in 
+                //  phytoplankton from across the North Atlantic Ocean, known to 
+                //  be subjected to aeolian Saharan inputs and anthropogenic inputs from North America and Europe. Bulk particulate material and individual phytoplankton cells were collected from the upper water column (\u003C150 m) as part of the US GEOTRACES North Atlantic Zonal Transect cruises (KN199-4, KN199-5, KN204-1A,B). The cruise tracks spanned several ocean biomes and geochemical regions. Chemical leaches (to extract biogenic and otherwise labile particulate phases) are combined together with synchrotron X-ray fluorescence (SXRF) analyses of individual micro and nanophytoplankton to discern spatial trends across the basin. Individual phytoplankton cells were analyzed for elemental content using SXRF (Synchrotron radiation X-Ray Fluorescence). Carbon was calculated from biovolume using the relationships of Menden-Deuer \u0026 Lessard (2000).",            
+                gatts.add("summary", 
+                    ds.has("description")? XML.removeHTMLTags(ds.getString("description")):
+                    ds.has("abstract")? ds.getString("abstract"): 
+                    tTitle);
+
+                //iso_19115_2
+                String iso19115File = null;
+                if (ds.has("dataset_iso")) {
+                    try {
+                        iso19115File = dsDir + "iso_19115_2.xml";
+                        if (!useLocalFilesIfPossible || !File2.isFile(iso19115File))
+                            SSR.downloadFile(ds.getString("dataset_iso"), 
+                                iso19115File, true); //tryToUseCompression) 
+                    } catch (Exception e) {
+                        iso19115File = null;
+                        String2.log("ERROR while getting iso_19115_2.xml file:\n" +
+                            MustBe.throwableToString(e));
+                    }
+                }
 
                 //"license":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/",
                 gatts.add("license", 
@@ -3120,9 +3197,9 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                     "the originating principal investigator (PI).");
 
                 //"filename":"GT10_11_cellular_element_quotas.tsv",
-                //"file_size_in_bytes":"70567",
                 //"download_url":"http:\/\/darchive.mblwhoilibrary.org\/bitstream\/handle\/
                 //  1912\/7908\/1\/GT10_11_cellular_element_quotas.tsv",
+                //"file_size_in_bytes":"70567",
                 String sourceUrl = ds.getString("download_url");
                 gatts.add("sourceUrl", sourceUrl);
                 String fileName = File2.getNameAndExtension(sourceUrl);
@@ -3130,131 +3207,390 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                 if (!useLocalFilesIfPossible || !File2.isFile(tsvName))
                     SSR.downloadFile(sourceUrl, tsvName, true); //tryToCompress
                 Table sourceTable = new Table();
-                sourceTable.readASCII(tsvName, tsvCharset, 0, 1, "\t",
-                    null, null, null, null, true); //simplify???
+
+                //look for colNamesRow after rows starting with "# ".
+                //see /u00/data/points/bcodmo/488871_20140127/data_ctdmocness1.tsv
+                //Adam says tsv files are US-ASCII chars only
+                int colNamesRow = 0; //0-based
+                String lines[] = String2.readLinesFromFile(tsvName, bcodmoCharset, 2);
+                int nLines = lines.length;
+                while (colNamesRow < nLines && lines[colNamesRow].startsWith("# "))
+                    colNamesRow++;
+                lines = null; //gc
+
+                //read the data
+                sourceTable.readASCII(tsvName, bcodmoCharset, 
+                    colNamesRow, colNamesRow + 1, "\t",
+                    null, null, null, null, false); //don't simplify until "nd" removed
+                Table addTable = (Table)(sourceTable.clone());
+                addTable.globalAttributes().add(gatts);
+                gatts = addTable.globalAttributes();
+
+                if (ds.has(      "current_state")) //"Final no updates expected"
+                    gatts.add(   "current_state", 
+                    ds.getString("current_state"));
+
+                if (ds.has(      "validated")) 
+                    gatts.add(   "validated", "" + 
+                    String2.parseBoolean(
+                    ds.getString("validated"))); //0|1
+
+                if (ds.has(      "restricted")) 
+                    gatts.add(   "restricted", "" + 
+                    String2.parseBoolean(
+                    ds.getString("restricted"))); //0|1
+               
+                //"dataset_name":"GT10-11 - cellular element quotas",
+                if (ds.has(      "dataset_name"))
+                    gatts.add(   "dataset_name", 
+                    ds.getString("dataset_name"));
 
                 //"acquisition_desc":"\u003Cdiv xmlns=\u0022http:\/\/www.w3.org\/1999\/xhtml\u0022 
                 //lang=\u0022en\u0022\u003E\u003Cp\u003ESXRF samples were prepared ...
                 //... of Twining et al. (2011).\u003C\/p\u003E\u003C\/div\u003E",
-                if (ds.has(   "acquisition_desc"))
-                    gatts.add("acquisition_description", 
-                        XML.removeHTMLTags(ds.getString("acquisition_desc")));
+                if (ds.has(      "acquisition_desc"))
+                    gatts.add(   "acquisition_description", 
+                    XML.removeHTMLTags(
+                    ds.getString("acquisition_desc")));
+
+                //"brief_desc":"Element quotas of individual phytoplankton cells",
+                if (ds.has(      "brief_desc"))
+                    gatts.add(   "brief_description", 
+                    ds.getString("brief_desc"));
 
                 //"processing_desc":"\u003Cdiv xmlns=\u0022http:\/\/www.w3.org\/1999\/xhtml\u0022
                 //lang=\u0022en\u0022\u003E\u003Cp\u003EData were processed as ...
                 //... via the join method.\u003C\/p\u003E\u003C\/div\u003E",
-                if (ds.has(   "processing_desc"))
-                    gatts.add("processing_description", 
-                        XML.removeHTMLTags(ds.getString("processing_desc")));
+                if (ds.has(      "processing_desc"))
+                    gatts.add(   "processing_description", 
+                    XML.removeHTMLTags(
+                    ds.getString("processing_desc")));
 
                 //"parameters_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/parameters",
-                String paramUrl = ds.getString("parameters_service");
-                String paramName = dsDir + "parameters.json";
-                if (!useLocalFilesIfPossible || !File2.isFile(paramName))
-                    SSR.downloadFile(paramUrl, paramName, true); //tryToCompress
+                subArray = getBCODMOSubArray(ds, dsDir, "parameters", useLocalFilesIfPossible);
+                if (subArray != null) {
+                    for (int sai = 0; sai < subArray.length(); sai++) {
+                        subObject = subArray.getJSONObject(sai);
 
-                    //"parameter":"http:\/\/lod.bco-dmo.org\/id\/dataset-parameter\/550520",
-                    //"parameter_name":"cruise_id",
-                    //"desc":"cruise identification",
-                    //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/dataset-parameter\/550520",
-                    //"master_parameter":"http:\/\/lod.bco-dmo.org\/id\/parameter\/1102",
-                    //   goes to web page: http://www.bco-dmo.org/parameter/1102
-                    //   which lists: Units: dimensionless
-                    //"master_parameter_name":"cruise_id",
-                    //"master_parameter_desc":"cruise designation; name"},
-                    //??? can he add units here?
-                    //??? data type? int float double String?   or I can determine it
+                        //"parameter_name":"cruise_id",
+                        String colName = subObject.getString("parameter_name");
+                        int col = addTable.findColumnNumber(colName);
+                        if (col < 0) {
+                            String2.log("WARNING: parameter_name=" + colName + 
+                                " not found in " + tsvName);
+                            continue;
+                        }
+                        Attributes colAtts = addTable.columnAttributes(col);
+
+                        //"parameter":"http:\/\/lod.bco-dmo.org\/id\/dataset-parameter\/550520",
+                        //SKIP since web page has ID# and info
+                        //if (subObject.has(      "parameter")) 
+                        //    colAtts.add(        "BCO_DMO_dataset_parameter_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("parameter")));
+
+                        //"units":"unitless",
+                        if (subObject.has(  "units")) {
+                            //will be cleaned up by makeReadyToUseAddVariableAttributes
+                            String s = subObject.getString("units");
+                            if (s != null || s.length() > 0)
+                                colAtts.add("units", s);
+                        }
+
+                        //"data_type":"",  //always "". Adam says this is just a placeholder for now
+
+                        //"desc":"cruise identification", //often long
+                        if (subObject.has(      "desc")) 
+                            colAtts.add(        "description", 
+                            XML.removeHTMLTags(  //some are, some aren't
+                            subObject.getString("desc")));
+
+                        //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/dataset-parameter\/550520",
+                        if (subObject.has(      "bcodmo_webpage")) 
+                            colAtts.add(        "webpage", //??? "BCO_DMO_webpage",
+                            subObject.getString("bcodmo_webpage"));
+
+                        //"master_parameter":"http:\/\/lod.bco-dmo.org\/id\/parameter\/1102",
+                        //"master_parameter_name":"cruise_id",
+                        //"master_parameter_desc":"cruise designation; name", //often long
+
+                        //"no_data_value":"nd",
+                        //"master_parameter_no_data_value":"nd"},
+                        //switchFromTo? no.  Leave source file unchanged
+                        if (subObject.has("no_data_value")) {
+                            String s = subObject.getString("no_data_value");
+                            if (!"nd".equals(s) && !"".equals(s))
+                                String2.log("WARNING: " + colName + " no_data_value=" + String2.toJson(s));
+                        }
+                    }
+                }
 
 
                 //"instruments_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/instruments",
+                //550520 has only "self" and "previous"
+                subArray = getBCODMOSubArray(ds, dsDir, "instruments", useLocalFilesIfPossible);
+                if (subArray != null) {
+                    for (int sai = 0; sai < subArray.length(); sai++) {
+                        subObject = subArray.getJSONObject(sai);
+                        String pre = "instrument_" + (sai + 1) + "_";
+
+                        //"instrument":"http:\/\/lod.bco-dmo.org\/id\/dataset-instrument\/643392",
+                        //SKIP since web page has ID# and info
+                        //if (subObject.has(      "instrument")) 
+                        //    gatts.add(pre +     "BCO_DMO_dataset_instrument_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("instrument")));
+
+                        //"instrument_name":"",
+                        if (subObject.has(      "instrument_name")) 
+                            gatts.add(pre +     "name", 
+                            subObject.getString("instrument_name"));
+
+                        //"desc":"",
+                        if (subObject.has(      "desc")) 
+                            gatts.add(pre +     "description", 
+                            XML.removeHTMLTags(  //some are, some aren't
+                            subObject.getString("desc")));
+
+                        //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/dataset-instrument\/643392",
+                        if (subObject.has(      "bcodmo_webpage")) 
+                            gatts.add(pre +     "webpage", //??? "BCO_DMO_webpage", 
+                            subObject.getString("bcodmo_webpage"));
+
+                        //"instrument_type":"http:\/\/lod.bco-dmo.org\/id\/instrument\/411",
+
+                        //"type_name":"GO-FLO Bottle",
+                        if (subObject.has(      "type_name")) 
+                            gatts.add(pre +     "type_name", 
+                            subObject.getString("type_name"));
+
+                        //"type_desc":"GO-FLO bottle cast used to collect water samples for pigment, nutrient, plankton, etc. The GO-FLO sampling bottle is specially designed to avoid sample contamination at the surface, internal spring contamination, loss of sample on deck (internal seals), and exchange of water from different depths."},
+                        if (subObject.has(      "type_desc")) 
+                            gatts.add(pre +     "type_description", 
+                            XML.removeHTMLTags(  //some are, some aren't
+                            subObject.getString("type_desc")));
+                    }
+                }
 
                 //"people_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/people",
-                String peopleUrl = ds.getString("people_service");
-                String peopleName = dsDir + "people.json";
-                if (!useLocalFilesIfPossible || !File2.isFile(peopleName))
-                    SSR.downloadFile(peopleUrl, peopleName, true); //tryToCompress
+                subArray = getBCODMOSubArray(ds, dsDir, "people", useLocalFilesIfPossible);
+                if (subArray != null) {
+                    for (int sai = 0; sai < subArray.length(); sai++) {
+                        subObject = subArray.getJSONObject(sai);
+                        String pre = "person_" + (sai + 1) + "_";
 
-                    //{"people":[
-                    //{"person":"http:\/\/lod.bco-dmo.org\/id\/person\/51087",
-                    // "person_name":"Dr Benjamin Twining",
-                    // "bcodmo_webpage":"http:\/\/www.bco-dmo.org\/person\/51087",
-                    // "institution":"http:\/\/lod.bco-dmo.org\/id\/affiliation\/94",
-                    // "institution_name":"Bigelow Laboratory for Ocean Sciences (Bigelow)",
-                    // "role_name":"Principal Investigator"},
-                    //{"person":
-                    // "role_name":"BCO-DMO Data Manager"}
-                    //],...
+                        //"person":"http:\/\/lod.bco-dmo.org\/id\/person\/51087",
+                        //SKIP since web page has ID# and info
+                        //if (subObject.has(      "person")) 
+                        //    gatts.add(pre +     "BCO_DMO_person_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("person")));
+
+                        //"person_name":"Dr Benjamin Twining",
+                        if (subObject.has(      "person_name")) 
+                            gatts.add(pre +     "name", 
+                            subObject.getString("person_name"));
+
+                        //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/person\/51087",
+                        if (subObject.has(      "bcodmo_webpage")) 
+                            gatts.add(pre +     "webpage", //??? "BCO_DMO_webpage", 
+                            subObject.getString("bcodmo_webpage"));
+
+                        //"institution":"http:\/\/lod.bco-dmo.org\/id\/affiliation\/94",
+                        //SKIP: the webpage, http://www.bco-dmo.org/affiliation/94
+                        //  just has institution_name and list of people affiliated with it.
+                        //  Institution name is the important thing.
+                        //if (subObject.has(      "institution")) 
+                        //    gatts.add(pre +     "BCO_DMO_affiliation_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("institution")));
+
+                        //"institution_name":"Bigelow Laboratory for Ocean Sciences (Bigelow)",
+                        if (subObject.has(      "institution_name")) 
+                            gatts.add(pre +     "institution_name", 
+                            subObject.getString("institution_name"));
+
+                        //"role_name":"Principal Investigator"},
+                        if (subObject.has(      "role_name")) {
+                            String role = subObject.getString("role_name");
+                            gatts.add(pre +     "role", role);
+
+                            if (gatts.getString("creator_name") == null &&
+                                "Principal Investigator".equals(role)) {
+                                gatts.add("creator_name", subObject.getString("person_name"));
+                                gatts.add("creator_url",  subObject.getString("bcodmo_webpage"));
+                                gatts.add("creator_type", "person");
+                            }
+                        }
+                    }
+                }
 
                 //"deployments_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/deployments",
-                if (ds.has("deployments_service")) {
-                    String deploymentsUrl = ds.getString("deployments_service");
-                    String deploymentsName = dsDir + "deployments.json";
-                    try {
-                        if (!useLocalFilesIfPossible || !File2.isFile(deploymentsName))
-                            SSR.downloadFile(deploymentsUrl, deploymentsName, true); //tryToCompress
+                subArray = getBCODMOSubArray(ds, dsDir, "deployments", useLocalFilesIfPossible);
+                if (subArray != null) {
+                    for (int sai = 0; sai < subArray.length(); sai++) {
+                        subObject = subArray.getJSONObject(sai);
+                        String pre = "deployment_" + (sai + 1) + "_";
 
-                    } catch (Exception e2) {
-                        String2.log("Caught: " + MustBe.throwableToString(e2));
+                        //"deployment":"http:\/\/lod.bco-dmo.org\/id\/deployment\/58066",
+                        //SKIP since web page has ID# and info
+                        //if (subObject.has(      "deployment")) 
+                        //    gatts.add(pre +     "BCO_DMO_deployment_ID", 
+                        //    File2.getNameAndExtension( 
+                        //    subObject.getString("deployment")));
+
+                        //"title":"KN199-04",
+                        if (subObject.has(      "title")) 
+                            gatts.add(pre +     "title", 
+                            subObject.getString("title"));
+
+                        //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/deployment\/58066",
+                        if (subObject.has(      "bcodmo_webpage")) 
+                            gatts.add(pre +     "webpage", //??? "BCO_DMO_webpage", 
+                            subObject.getString("bcodmo_webpage"));
+
+                        //"description":"\u003Cdiv xmlns=\u0022http:\/\/www.w3.org\/1999\/xhtml\u0022 lang=\u0022en\u0022\u003E\u003Cp\u003EKN199-04 is the US GEOTRACES Zonal North Atlantic Survey Section cruise planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\u003C\/p\u003E\n\u003Cp\u003E4 November 2010 update: Due to engine failure, the scheduled science activities were canceled on 2 November 2010. On 4 November the R\/V KNORR put in at Porto Grande, Cape Verde and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University. The objective of this leg is to carry the vessel in transit to Charleston, SC while conducting science activities modified from the original plan.\u003C\/p\u003E\n\u003Cp\u003EPlanned scientific activities and operations area during this transit will be as follows: the ship\u0027s track will cross from the highly productive region off West Africa into the oligotrophic central subtropical gyre waters, then across the western boundary current (Gulf Stream), and into the productive coastal waters of North America. During this transit, underway surface sampling will be done using the towed fish for trace metals, nanomolar nutrients, and arsenic speciation. In addition, a port-side high volume pumping system will be used to acquire samples for radium isotopes. Finally, routine aerosol and rain sampling will be done for trace elements. This section will provide important information regarding atmospheric deposition, surface transport, and transformations of many trace elements.\u003C\/p\u003E\n\u003Cp\u003EThe vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\u003C\/p\u003E\n\u003Cp\u003Efunding: NSF OCE award 0926423\u003C\/p\u003E\n\u003Cp\u003E\u003Cstrong\u003EScience Objectives\u003C\/strong\u003E are to obtain state of the art trace metal and isotope measurements on a suite of samples taken on a mid-latitude zonal transect of the North Atlantic. In particular sampling will target the oxygen minimum zone extending off the west African coast near Mauritania, the TAG hydrothermal field, and the western boundary current system along Line W. In addition, the major biogeochemical provinces of the subtropical North Atlantic will be characterized. For additional information, please refer to the GEOTRACES program Web site (\u003Ca href=\u0022http:\/\/www.GEOTRACES.org\u0022\u003EGEOTRACES.org\u003C\/a\u003E) for overall program objectives and a summary of properties to be measured.\u003C\/p\u003E\n\u003Cp\u003E\u003Cstrong\u003EScience Activities\u003C\/strong\u003E include seawater sampling via GoFLO and Niskin carousels, in situ pumping (and filtration), CTDO2 and transmissometer sensors, underway pumped sampling of surface waters, and collection of aerosols and rain.\u003C\/p\u003E\n\u003Cp\u003EHydrography, CTD and nutrient measurements will be supported by the Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography and funded through NSF Facilities. They will be providing an additional CTD rosette system along with nephelometer and LADCP. A trace metal clean Go-Flo Rosette and winch will be provided by the group at Old Dominion University (G. Cutter) along with a towed underway pumping system.\u003C\/p\u003E\n\u003Cp\u003EList of cruise participants: [ \u003Ca href=\u0022http:\/\/data.bcodmo.org\/US_GEOTRACES\/AtlanticSection\/GNAT_2010_cruiseParticipants.pdf\u0022\u003EPDF \u003C\/a\u003E]\u003C\/p\u003E\n\u003Cp\u003ECruise track: \u003Ca href=\u0022http:\/\/data.bcodmo.org\/US_GEOTRACES\/AtlanticSection\/KN199-04_crtrk.jpg\u0022 target=\u0022_blank\u0022\u003EJPEG image\u003C\/a\u003E (from Woods Hole Oceanographic Institution, vessel operator)\u003C\/p\u003E\n\u003Cp\u003EAdditional information may still be available from the vessel operator: \u003Ca href=\u0022http:\/\/www.whoi.edu\/cruiseplanning\/synopsis.do?id=581\u0022 target=\u0022_blank\u0022\u003EWHOI cruise planning synopsis\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003ECruise information and original data are available from the \u003Ca href=\u0022http:\/\/www.rvdata.us\/catalog\/KN199-04\u0022 target=\u0022_blank\u0022\u003ENSF R2R data catalog\u003C\/a\u003E.\u003C\/p\u003E\n\u003Cp\u003EADCP data are available from the Currents ADCP group at the University of Hawaii: \u003Ca href=\u0022http:\/\/currents.soest.hawaii.edu\/uhdas_adcp\/year2010.html#kn199_4\u0022 target=\u0022_blank\u0022\u003EKN199-04 ADCP\u003C\/a\u003E\u003C\/p\u003E\u003C\/div\u003E",
+                        if (subObject.has(      "description")) 
+                            gatts.add(pre +     "description", 
+                            XML.removeHTMLTags(
+                            subObject.getString("description")));
+
+                        //"location":"Subtropical northern Atlantic Ocean",
+                        if (subObject.has(      "location")) 
+                            gatts.add(pre +     "location", 
+                            subObject.getString("location"));
+
+                        //"start_date":"2010-10-15",
+                        if (subObject.has(      "start_date")) 
+                            gatts.add(pre +     "start_date", 
+                            subObject.getString("start_date"));
+
+                        //"end_date":"2010-11-04"},
+                        if (subObject.has(      "end_date")) 
+                            gatts.add(pre +     "end_date", 
+                            subObject.getString("end_date"));
+
                     }
                 }
 
                 //"projects_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/projects"},
-                if (ds.has("projects_service")) {
-                    String projectsUrl = ds.getString("projects_service");
-                    String projectsName = dsDir + "projects.json";
-                    try {
-                        if (!useLocalFilesIfPossible || !File2.isFile(projectsName))
-                            SSR.downloadFile(projectsUrl, projectsName, true); //tryToCompress
-                        String tReturn[] = String2.readFromFile(projectsName, String2.UTF_8);
-                        Test.ensureEqual(tReturn[0], "", "");
-                        JSONTokener tTokener = new JSONTokener(tReturn[1]);
-                        JSONObject tOuterObject = new JSONObject(tokener);
-                        JSONArray tArray = catalogObject.getJSONArray("projects");
-                        JSONObject tObject = datasetsArray.getJSONObject(0);
-                        if (tObject.has("project_title"))
-                            gatts.add(  "project", tObject.getString("project_title"));
-                        if (tObject.has("bcodmo_webpage"))
-                            gatts.add(  "project_url", tObject.getString("bcodmo_webpage"));
+                subArray = getBCODMOSubArray(ds, dsDir, "projects", useLocalFilesIfPossible);
+                if (subArray != null) {
+                    for (int sai = 0; sai < subArray.length(); sai++) {
+                        subObject = subArray.getJSONObject(sai);
+                        String pre = "project_" + (sai + 1) + "_";
 
-                    } catch (Exception e2) {
-                        String2.log("Caught: " + MustBe.throwableToString(e2));
+                        //"project":"http:\/\/lod.bco-dmo.org\/id\/project\/2066",
+                        //SKIP since web page has ID# and info
+                        //if (subObject.has(      "project")) 
+                        //    gatts.add(pre +     "BCO_DMO_project_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("project")));
+
+                        //"created_date":"2010-06-09T17:40:05-04:00",
+                        //"desc":"\u003Cdiv xmlns=\u0022http:\/\/www.w3.org\/1999\/xhtml\u0022 lang=\u0022en\u0022\u003E\u003Cp\u003E\u003Cem\u003EMuch of this text appeared in an article published in OCB News, October 2008, by the OCB Project Office.\u003C\/em\u003E\u003C\/p\u003E\n\u003Cp\u003EThe first U.S. GEOTRACES Atlantic Section will be specifically centered around a sampling cruise to be carried out in the North Atlantic in 2010. Ed Boyle (MIT) and Bill Jenkins (WHOI) organized a three-day planning workshop that was held September 22-24, 2008 at the Woods Hole Oceanographic Institution. The main goal of the workshop, sponsored by the National Science Foundation and the U.S. GEOTRACES Scientific Steering Committee, was to design the implementation plan for the first U.S. GEOTRACES Atlantic Section. The primary cruise design motivation was to improve knowledge of the sources, sinks and internal cycling of Trace Elements and their Isotopes (TEIs) by studying their distributions along a section in the North Atlantic (Figure 1). The North Atlantic has the full suite of processes that affect TEIs, including strong meridional advection, boundary scavenging and source effects, aeolian deposition, and the salty Mediterranean Outflow. The North Atlantic is particularly important as it lies at the \u0022origin\u0022 of the global Meridional Overturning Circulation.\u003C\/p\u003E\n\u003Cp\u003EIt is well understood that many trace metals play important roles in biogeochemical processes and the carbon cycle, yet very little is known about their large-scale distributions and the regional scale processes that affect them. Recent advances in sampling and analytical techniques, along with advances in our understanding of their roles in enzymatic and catalytic processes in the open ocean provide a natural opportunity to make substantial advances in our understanding of these important elements. Moreover, we are motivated by the prospect of global change and the need to understand the present and future workings of the ocean\u0027s biogeochemistry. The GEOTRACES strategy is to measure a broad suite of TEIs to constrain the critical biogeochemical processes that influence their distributions. In addition to these \u0022exotic\u0022 substances, more traditional properties, including macronutrients (at micromolar and nanomolar levels), CTD, bio-optical parameters, and carbon system characteristics will be measured. The cruise starts at Line W, a repeat hydrographic section southeast of Cape Cod, extends to Bermuda and subsequently through the North Atlantic oligotrophic subtropical gyre, then transects into the African coast in the northern limb of the coastal upwelling region. From there, the cruise goes northward into the Mediterranean outflow. The station locations shown on the map are for the \u0022fulldepth TEI\u0022 stations, and constitute approximately half of the stations to be ultimately occupied.\u003C\/p\u003E\n\u003Cp\u003E\u003Cem\u003EFigure 1. The proposed 2010 Atlantic GEOTRACES cruise track plotted on dissolved oxygen at 400 m depth. Data from the World Ocean Atlas (Levitus et al., 2005) were plotted using Ocean Data View (courtesy Reiner Schlitzer). [click on the image to view a larger version]\u003C\/em\u003E\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/bcodata.whoi.edu\/US_GEOTRACES\/AtlanticSection\/GEOTRACES_Atl_stas.jpg\u0022 target=\u0022_blank\u0022\u003E\u003Cimg alt=\u0022\u0022 src=\u0022http:\/\/bcodata.whoi.edu\/US_GEOTRACES\/AtlanticSection\/GEOTRACES_Atl_stas.jpg\u0022 style=\u0022width:350px\u0022 \/\u003E\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003EHydrography, CTD and nutrient measurements will be supported by the Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography and funded through NSF Facilities. They will be providing an additional CTD rosette system along with nephelometer and LADCP. A trace metal clean Go-Flo Rosette and winch will be provided by the group at Old Dominion University (G. Cutter) along with a towed underway pumping system.\u003C\/p\u003E\n\u003Cp\u003EThe North Atlantic Transect cruise began in 2010 with KN199 leg 4 (station sampling) and leg 5 (underway sampling only) (Figure 2).\u003C\/p\u003E\n\u003Cp\u003E\u003Ca href=\u0022http:\/\/bcodata.whoi.edu\/\/US_GEOTRACES\/AtlanticSection\/Cruise_Report_for_Knorr_199_Final_v3.pdf\u0022 target=\u0022_blank\u0022\u003EKN199-04 Cruise Report (PDF)\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003E\u003Cem\u003EFigure 2. The red line shows the cruise track for the first leg of the US Geotraces North Atlantic Transect on the R\/V Knorr in October 2010.\u00a0 The rest of the stations (beginning with 13) will be completed in October-December 2011 on the R\/V Knorr (courtesy of Bill Jenkins, Chief Scientist, GNAT first leg). [click on the image to view a larger version]\u003C\/em\u003E\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/bcodata.whoi.edu\/US_GEOTRACES\/AtlanticSection\/GNAT_stationPlan.jpg\u0022 target=\u0022_blank\u0022\u003E\u003Cimg alt=\u0022Atlantic Transect Station location map\u0022 src=\u0022http:\/\/bcodata.whoi.edu\/US_GEOTRACES\/AtlanticSection\/GNAT_stationPlan_sm.jpg\u0022 style=\u0022width:350px\u0022 \/\u003E\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003EThe section completion effort resumed again in November 2011 with KN204-01A,B (Figure 3).\u003C\/p\u003E\n\u003Cp\u003E\u003Ca href=\u0022http:\/\/bcodata.whoi.edu\/\/US_GEOTRACES\/AtlanticSection\/Submitted_Preliminary_Cruise_Report_for_Knorr_204-01.pdf\u0022 target=\u0022_blank\u0022\u003EKN204-01A,B Cruise Report (PDF)\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003E\u003Cem\u003EFigure 3. Station locations occupied on the US Geotraces North Atlantic Transect on the R\/V Knorr in November 2011.\u00a0 [click on the image to view a larger version]\u003C\/em\u003E\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/bcodata.whoi.edu\/US_GEOTRACES\/AtlanticSection\/KN204-01_Stations.png\u0022 target=\u0022_blank\u0022\u003E\u003Cimg alt=\u0022Atlantic Transect\/Part 2 Station location map\u0022 src=\u0022http:\/\/bcodata.whoi.edu\/US_GEOTRACES\/AtlanticSection\/KN204-01_Stations.png\u0022 style=\u0022width:350px\u0022 \/\u003E\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003EData from the North Atlantic Transect cruises are available under the Datasets heading below, and consensus values for the SAFe and North Atlantic GEOTRACES Reference Seawater Samples are available from the GEOTRACES Program Office: \u003Ca href=\u0022http:\/\/www.geotraces.org\/science\/intercalibration\/322-standards-and-reference-materials?acm=455_215\u0022 target=\u0022_blank\u0022\u003EStandards and Reference Materials\u003C\/a\u003E\u003C\/p\u003E\n\u003Cp\u003E\u003Cstrong\u003EADCP data\u003C\/strong\u003E are available from the Currents ADCP group at the University of Hawaii at the links below:\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/currents.soest.hawaii.edu\/uhdas_adcp\/year2010.html#kn199_4\u0022 target=\u0022_blank\u0022\u003EKN199-04\u003C\/a\u003E\u00a0\u00a0 (leg 1 of 2010 cruise; Lisbon to Cape Verde)\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/currents.soest.hawaii.edu\/uhdas_adcp\/year2010.html#kn199_5\u0022 target=\u0022_blank\u0022\u003EKN199-05\u003C\/a\u003E\u00a0\u00a0 (leg 2 of 2010 cruise; Cape Verde to Charleston, NC)\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/currents.soest.hawaii.edu\/uhdas_adcp\/year2011.html#kn204_01\u0022 target=\u0022_blank\u0022\u003EKN204-01A\u003C\/a\u003E (part 1 of 2011 cruise; Woods Hole, MA to Bermuda)\u003Cbr \/\u003E\u003Ca href=\u0022http:\/\/currents.soest.hawaii.edu\/uhdas_adcp\/year2011.html#kn204_02\u0022 target=\u0022_blank\u0022\u003EKN204-01B\u003C\/a\u003E (part 2 of 2011 cruise; Bermuda to Cape Verde)\u003C\/p\u003E\u003C\/div\u003E",
+                        if (subObject.has(      "desc")) {
+                            String s = XML.removeHTMLTags(subObject.getString("desc"));
+                            s = String2.replaceAll(s, "[click on the image to view a larger version]", "");
+                            gatts.add(pre +     "description", s);
+                        }
+
+                        //"last_modified_date":"2016-02-17T11:37:46-05:00",
+                        //"project_title":"U.S. GEOTRACES North Atlantic Transect",
+                        if (subObject.has(      "project_title")) 
+                            gatts.add(pre +     "title", 
+                            subObject.getString("project_title"));
+
+                        //"bcodmo_webpage":"http:\/\/www.bco-dmo.org\/project\/2066",
+                        if (subObject.has(      "bcodmo_webpage")) 
+                            gatts.add(pre +     "webpage", //??? "BCO_DMO_webpage", 
+                            subObject.getString("bcodmo_webpage"));
+
+                        //"project_acronym":"U.S. GEOTRACES NAT"}],
+                        if (subObject.has(      "project_acronym")) 
+                            gatts.add(pre +     "acronym", 
+                            subObject.getString("project_acronym"));
+                
                     }
                 }
 
-                //??? Funding Source            available on landing_page
+                //"funding_service":"https:\/\/www.bco-dmo.org\/erddap\/dataset\/549122\/funding"},
+                subArray = getBCODMOSubArray(ds, dsDir, "funding", useLocalFilesIfPossible);
+                if (subArray != null) {
+                    for (int sai = 0; sai < subArray.length(); sai++) {
+                        subObject = subArray.getJSONObject(sai);
+                        String pre = "funding_" + (sai + 1) + "_";
 
-                //??? Related references        available on landing_page
+                        //"award":"http:\/\/lod.bco-dmo.org\/id\/award\/55138",
+                        //SKIP since web page has ID# and info
+                        //if (subObject.has(      "award")) 
+                        //    gatts.add(pre +     "BCO_DMO_award_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("award")));
 
-                //??? related image files
+                        //"award_number":"OCE-0928289",
+                        if (subObject.has(      "award_number")) 
+                            gatts.add(pre +     "award_number", 
+                            subObject.getString("award_number"));
 
-                //* standard processing
+                        //"award_url":"http:\/\/www.nsf.gov\/awardsearch\/showAward?AWD_ID=0928289\u0026HistoricalAwards=false"
+                        if (subObject.has(      "award_url")) 
+                            gatts.add(pre +     "award_url", 
+                            subObject.getString("award_url"));
 
-                //add columns to addTable
+                        //"funding":"http:\/\/lod.bco-dmo.org\/id\/funding\/355",
+                        //SKIP since funding_source and fundref_doi have info
+                        //if (subObject.has(      "funding")) 
+                        //    gatts.add(pre +     "BCO_DMO_funding_ID", 
+                        //    File2.getNameAndExtension(
+                        //    subObject.getString("funding")));
+
+                        //"funding_source":"NSF Division of Ocean Sciences (NSF OCE)",
+                        if (subObject.has(      "funding_source")) 
+                            gatts.add(pre +     "source", 
+                            subObject.getString("funding_source"));
+
+                        //"fundref_doi":"http:\/\/dx.doi.org\/10.13039\/100000141"}
+                        if (subObject.has(      "fundref_doi")) 
+                            gatts.add(pre +     "doi", 
+                            subObject.getString("fundref_doi"));
+
+                    }
+                }
+
+                //cleanup
                 boolean dateTimeAlreadyFound = false;
                 String tSortedColumnSourceName = "";
                 String tSortFilesBySourceNames = "";
                 String tColumnNameForExtract   = "";
 
                 DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
-                for (int col = 0; col < sourceTable.nColumns(); col++) {
-                    String colName = sourceTable.getColumnName(col);
-                    PrimitiveArray pa = (PrimitiveArray)sourceTable.getColumn(col).clone(); //clone because going into addTable
+                for (int col = 0; col < addTable.nColumns(); col++) {
+                    String colName = addTable.getColumnName(col);
+                    PrimitiveArray pa = (PrimitiveArray)addTable.getColumn(col).clone(); //clone because going into addTable
+                    pa.switchFromTo("nd", ""); //the universal BCO-DMO missing value?
+                    pa = pa.simplify();
+                    addTable.setColumn(col, pa);
 
-                    Attributes sourceAtts = sourceTable.columnAttributes(col);
-                    Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        null, //no source global attributes
-                        sourceAtts, colName, 
-                        true, true); //addColorBarMinMax, tryToFindLLAT
-
-                    //dateTime?
-                    boolean isDateTime = false;
-                    if (pa instanceof StringArray) {
-                        String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)pa);
-                        if (dtFormat.length() > 0) { 
-                            isDateTime = true;
-                            addAtts.set("units", dtFormat);
-                        }
+                    //look for date columns
+                    String tUnits = addTable.columnAttributes(col).getString("units");
+                    if (tUnits == null) tUnits = "";
+                    if (tUnits.toLowerCase().indexOf("yy") >= 0 &&
+                        pa.elementClass() != String.class) 
+                        //convert e.g., yyyyMMdd columns from int to String
+                        addTable.setColumn(col, new StringArray(pa));                       
+                    if (pa.elementClass() == String.class) {
+                        tUnits = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                        if (tUnits.length() > 0)
+                            addTable.columnAttributes(col).set("units", tUnits);
+                        //??? and if tUnits = "", set to ""???
                     }
+                    boolean isDateTime = Calendar2.isTimeUnits(tUnits);
+
+                    Attributes sourceAtts = sourceTable.columnAttributes(col); //none
+                    Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        gatts, sourceTable.columnAttributes(col), addTable.columnAttributes(col), 
+                        colName, true, true); //addColorBarMinMax, tryToFindLLAT
 
                     //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
                     //  even if StringArray
@@ -3270,10 +3606,6 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                             " to col=" + colName);
                     }
          
-                    //add to addTable
-                    addTable.addColumn(col, colName, 
-                        makeDestPAForGDX(pa, sourceAtts), addAtts);
-
                     //files are likely sorted by first date time variable
                     //and no harm if files aren't sorted that way
                     if (tSortedColumnSourceName.length() == 0 && 
@@ -3281,24 +3613,48 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                         dateTimeAlreadyFound = true;
                         tSortedColumnSourceName = colName;
                     }
-
-
                 }
+
+                //tryToFindLLAT
+                tryToFindLLAT(sourceTable, addTable);
 
                 //after dataVariables known, add global attributes in the addTable
                 addTable.globalAttributes().set(
                     makeReadyToUseAddGlobalAttributesForDatasetsXml(
                         sourceTable.globalAttributes(), 
                         //another cdm_data_type could be better; this is ok
-                        probablyHasLonLatTime(sourceTable, addTable)? "Point" : "Other",
+                        hasLonLatTime(addTable)? "Point" : "Other",
                         dsDir, addTable.globalAttributes(), //externalAddGlobalAttributes, 
                         suggestKeywords(sourceTable, addTable)));
+                
+                //tally for char > #255
+                /*
+                String s = addTable.globalAttributes().getString("summary");
+                if (s != null)
+                    for (int i = 0; i < s.length(); i++)
+                        if (s.charAt(i) > 255) 
+                            charTally.add("charTally", String2.annotatedString("" + s.charAt(i)));
+                s = addTable.globalAttributes().getString("acquisition_description");
+                if (s != null)
+                    for (int i = 0; i < s.length(); i++)
+                        if (s.charAt(i) > 255) 
+                            charTally.add("charTally", String2.annotatedString("" + s.charAt(i)));
+                */
 
                 //subsetVariables
                 if (sourceTable.globalAttributes().getString("subsetVariables") == null &&
                        addTable.globalAttributes().getString("subsetVariables") == null) 
                     addTable.globalAttributes().add("subsetVariables",
-                        suggestSubsetVariables(sourceTable, addTable, true)); //1file/dataset
+                        suggestSubsetVariables(sourceTable, addTable, true)); //1file/dataset?
+
+                StringBuilder defaultDataQuery = new StringBuilder();
+                StringBuilder defaultGraphQuery = new StringBuilder();
+                if (addTable.findColumnNumber(EDV.TIME_NAME) >= 0) {
+                    defaultDataQuery.append( "&amp;time&gt;=min(time)&amp;time&lt;=max(time)");
+                    defaultGraphQuery.append("&amp;time&gt;=min(time)&amp;time&lt;=max(time)");
+                }
+                defaultGraphQuery.append("&amp;.marker=1|5");
+
 
                 //write the information
                 StringBuilder sb = new StringBuilder();
@@ -3313,23 +3669,29 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                         tSortFilesBySourceNames = tSortedColumnSourceName;
                 }
                 sb.append(
-                    directionsForGenerateDatasetsXml() +
-                    " * Since the source files don't have any metadata, you must add metadata\n" +
-                    "   below, notably 'units' for each of the dataVariables.\n" +
-                    "-->\n\n" +
+                    //directionsForGenerateDatasetsXml() +
+                    //" * Since the source files don't have any metadata, you must add metadata\n" +
+                    //"   below, notably 'units' for each of the dataVariables.\n" +
+                    //"-->\n\n" +
                     "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo" + 
-                        dsNumber + "\" active=\"true\">\n" +
+                        dsNumber + compactVersionDate + //Adam says this is a unique combination
+                        "\" active=\"true\">\n" +
+"    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +
                     "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" +  
                     "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
+                    (defaultDataQuery.length() > 0? 
+                    "    <defaultDataQuery>" + defaultDataQuery + "</defaultDataQuery>\n" : "") +
+                    (defaultGraphQuery.length() > 0? 
+                    "    <defaultGraphQuery>" + defaultGraphQuery + "</defaultGraphQuery>\n" : "") +
                     "    <fileDir>" + XML.encodeAsXML(dsDir) + "</fileDir>\n" +
                     "    <fileNameRegex>" + XML.encodeAsXML(
                         String2.plainTextToRegex(fileName)) + "</fileNameRegex>\n" +
                     "    <recursive>false</recursive>\n" +
                     "    <pathRegex>.*</pathRegex>\n" +
                     "    <metadataFrom>last</metadataFrom>\n" +
-                    "    <charset>" + tsvCharset + "</charset>\n" +
-                    "    <columnNamesRow>1</columnNamesRow>\n" +
-                    "    <firstDataRow>2</firstDataRow>\n" +
+                    "    <charset>" + bcodmoCharset + "</charset>\n" +
+                    "    <columnNamesRow>" + (colNamesRow + 1) + "</columnNamesRow>\n" +
+                    "    <firstDataRow>" + (colNamesRow + 2) + "</firstDataRow>\n" +
                     //"    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
                     //"    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
                     //"    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
@@ -3337,20 +3699,24 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                     "    <sortedColumnSourceName>" + XML.encodeAsXML(tSortedColumnSourceName) + "</sortedColumnSourceName>\n" +
                     "    <sortFilesBySourceNames>" + XML.encodeAsXML(tSortFilesBySourceNames) + "</sortFilesBySourceNames>\n" +
                     "    <fileTableInMemory>false</fileTableInMemory>\n" +
-                    "    <accessibleViaFiles>true</accessibleViaFiles>\n");
+                    "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
+                    (iso19115File == null? "" : 
+                    "    <iso19115File>" + iso19115File + "</iso19115File>\n"));
                 sb.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
                 sb.append(cdmSuggestion());
                 sb.append(writeAttsForDatasetsXml(true,     addTable.globalAttributes(), "    "));
 
-                //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+                //last 2 params: includeDataType, questionDestinationName
                 sb.append(writeVariablesForDatasetsXml(sourceTable, addTable, 
-                    "dataVariable", true, true, false));
+                    "dataVariable", true, false));
                 sb.append(
                     "</dataset>\n" +
                     "\n");
 
                 //success
                 results.append(sb.toString());                    
+                if (addTable.findColumnNumber("time") < 0)
+                    noTime.add(dsNumber);
                 nSucceeded++;
 
             } catch (Exception e) {
@@ -3359,12 +3725,723 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                     MustBe.throwableToString(e));
             }
         }
-        String2.log("\n*** generateDatasetsXmlFromBcodmo finished in " +
-            ((time - System.currentTimeMillis())/1000) + " seconds\n" +
+        //String2.log(charTally.toString());
+        String2.log(">> noTime: " + noTime);
+        String2.log("\n*** generateDatasetsXmlFromBCODMO finished in " +
+            ((System.currentTimeMillis() - time)/1000) + " seconds\n" +
             "nDatasets: total=" + datasetsArray.length() + 
             " matching=" + nMatching + 
             " (succeeded=" + nSucceeded + " failed=" + nFailed + ")");
         return results.toString();
+    }
+
+    /**
+     * This tests GenerateDatasetsXml with EDDTableFromInPort when there are  
+     * data variables. 
+     */
+    public static void testGenerateDatasetsXmlFromBCODMO() throws Throwable {
+        String2.log("\n*** testGenerateDatasetsXmlFromBCODMO()\n");
+        testVerboseOn();
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+
+        try {
+            boolean useLocal = true;
+            String catalogUrl = "https://www.bco-dmo.org/erddap/datasets";
+            String dataDir = "/u00/data/points/bcodmo/";
+            String numberRegex = "(549122)";
+
+            String results = generateDatasetsXmlFromBCODMO(
+                useLocal, catalogUrl, dataDir, numberRegex) + "\n";
+
+            //GenerateDatasetsXml
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "EDDTableFromBCODMO",
+                useLocal + "", catalogUrl, dataDir, numberRegex},
+                false); //doIt loop?
+
+String expected = 
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo549122v20150217\" active=\"true\">\n" +
+"    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +
+"    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <defaultDataQuery>&amp;time&gt;=min(time)&amp;time&lt;=max(time)</defaultDataQuery>\n" +
+"    <defaultGraphQuery>&amp;time&gt;=min(time)&amp;time&lt;=max(time)&amp;.marker=1|5</defaultGraphQuery>\n" +
+"    <fileDir>/u00/data/points/bcodmo/549122v20150217/</fileDir>\n" +
+"    <fileNameRegex>GT10_11_cellular_element_quotas\\.tsv</fileNameRegex>\n" +
+"    <recursive>false</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>2</firstDataRow>\n" +
+"    <sortedColumnSourceName>BTL_ISO_DateTime_UTC</sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames>BTL_ISO_DateTime_UTC</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>true</accessibleViaFiles>\n" +
+"    <iso19115File>/u00/data/points/bcodmo/549122v20150217/iso_19115_2.xml</iso19115File>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"acquisition_description\">SXRF samples were prepared from unfiltered water taken from GEOTRACES GO-Flo bottles at the shallowest depth and deep chlorophyll maximum. Cells were preserved with 0.25&#37; trace-metal clean buffered glutaraldehyde and centrifuged onto C/formvar-coated Au TEM grids. Grids were briefly rinsed with a drop of ultrapure water and dried in a Class-100 cabinet. SXRF analysis was performed using the 2-ID-E beamline at the Advanced Photon source (Argonne National Laboratory) following the protocols of Twining et al. (2011).</att>\n" +
+"        <att name=\"BCO_DMO_dataset_ID\">549122</att>\n" +
+"        <att name=\"brief_description\">Element quotas of individual phytoplankton cells</att>\n" +
+"        <att name=\"cdm_data_type\">Point</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">info@bco-dmo.org</att>\n" +
+"        <att name=\"creator_name\">Dr Benjamin Twining</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
+"        <att name=\"creator_url\">http://www.bco-dmo.org/person/51087</att>\n" +
+"        <att name=\"current_state\">Final no updates expected</att>\n" +
+"        <att name=\"dataset_name\">GT10-11 - cellular element quotas</att>\n" +
+"        <att name=\"date_created\">2015-02-17</att>\n" +
+"        <att name=\"deployment_1_description\">KN199-04 is the US GEOTRACES Zonal North Atlantic Survey Section cruise planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\n" +
+"4 November 2010 update: Due to engine failure, the scheduled science activities were canceled on 2 November 2010. On 4 November the R/V KNORR put in at Porto Grande, Cape Verde and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University. The objective of this leg is to carry the vessel in transit to Charleston, SC while conducting science activities modified from the original plan.\n" +
+"Planned scientific activities and operations area during this transit will be as follows: the ship&#39;s track will cross from the highly productive region off West Africa into the oligotrophic central subtropical gyre waters, then across the western boundary current (Gulf Stream), and into the productive coastal waters of North America. During this transit, underway surface sampling will be done using the towed fish for trace metals, nanomolar nutrients, and arsenic speciation. In addition, a port-side high volume pumping system will be used to acquire samples for radium isotopes. Finally, routine aerosol and rain sampling will be done for trace elements. This section will provide important information regarding atmospheric deposition, surface transport, and transformations of many trace elements.\n" +
+"The vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\n" +
+"funding: NSF OCE award 0926423\n" +
+"Science Objectives are to obtain state of the art trace metal and isotope measurements on a suite of samples taken on a mid-latitude zonal transect of the North Atlantic. In particular sampling will target the oxygen minimum zone extending off the west African coast near Mauritania, the TAG hydrothermal field, and the western boundary current system along Line W. In addition, the major biogeochemical provinces of the subtropical North Atlantic will be characterized. For additional information, please refer to the GEOTRACES program Web site ( [ http://www.GEOTRACES.org ] GEOTRACES.org) for overall program objectives and a summary of properties to be measured.\n" +
+"Science Activities include seawater sampling via GoFLO and Niskin carousels, in situ pumping (and filtration), CTDO2 and transmissometer sensors, underway pumped sampling of surface waters, and collection of aerosols and rain.\n" +
+"Hydrography, CTD and nutrient measurements will be supported by the Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography and funded through NSF Facilities. They will be providing an additional CTD rosette system along with nephelometer and LADCP. A trace metal clean Go-Flo Rosette and winch will be provided by the group at Old Dominion University (G. Cutter) along with a towed underway pumping system.\n" +
+"List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
+"Cruise track: [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/KN199-04_crtrk.jpg ] JPEG image (from Woods Hole Oceanographic Institution, vessel operator)\n" +
+"Additional information may still be available from the vessel operator: [ http://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
+"Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN199-04 ] NSF R2R data catalog.\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04 ADCP</att>\n" +
+"        <att name=\"deployment_1_end_date\">2010-11-04</att>\n" +
+"        <att name=\"deployment_1_location\">Subtropical northern Atlantic Ocean</att>\n" +
+"        <att name=\"deployment_1_start_date\">2010-10-15</att>\n" +
+"        <att name=\"deployment_1_title\">KN199-04</att>\n" +
+"        <att name=\"deployment_1_webpage\">http://www.bco-dmo.org/deployment/58066</att>\n" +
+"        <att name=\"deployment_2_description\">KN199-05 is the completion of the US GEOTRACES Zonal North Atlantic Survey Section cruise originally planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\n" +
+"4 November 2010 update: Due to engine failure, the science activities scehduled for the KN199-04 cruise were canceled on 2 November 2010. On 4 November the R/V KNORR put in at Porto Grande, Cape Verde (ending KN199 leg 4) and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University.&#xa0; The objective of KN199 leg 5 (KN199-05) is to carry the vessel in transit to Charleston, SC while conducting abbreviated science activities originally planned for KN199-04. The vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\n" +
+"Planned scientific activities and operations area during the KN199 leg 5 (KN199-05)  transit will be as follows: the ship&#39;s track will cross from the highly productive region off West Africa into the oligotrophic central subtropical gyre waters, then across the western boundary current (Gulf Stream), and into the productive coastal waters of North America. During this transit, underway surface sampling will be done using the towed fish for trace metals, nanomolar nutrients, and arsenic speciation. In addition, a port-side high volume pumping system will be used to acquire samples for radium isotopes. Finally, routine aerosol and rain sampling will be done for trace elements. This section will provide important information regarding atmospheric deposition, surface transport, and transformations of many trace elements.\n" +
+"Science Objectives are to obtain state of the art  trace metal and isotope measurements on a suite of samples taken on a  mid-latitude zonal transect of the North Atlantic. In particular  sampling will target the oxygen minimum zone extending off the west  African coast near Mauritania, the TAG hydrothermal field, and the  western boundary current system along Line W. In addition, the major  biogeochemical provinces of the subtropical North Atlantic will be  characterized. For additional information, please refer to the GEOTRACES  program Web site ( [ http://www.geotraces.org/ ] GEOTRACES.org) for overall program objectives and a summary of properties to be measured.\n" +
+"Science Activities include seawater sampling via  GoFLO and Niskin carousels, in situ pumping (and filtration), CTDO2 and  transmissometer sensors, underway pumped sampling of surface waters, and  collection of aerosols and rain.\n" +
+"Hydrography, CTD and nutrient measurements will be supported by the  Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography  and funded through NSF Facilities. They will be providing an additional  CTD rosette system along with nephelometer and LADCP. A trace metal  clean Go-Flo Rosette and winch will be provided by the group at Old  Dominion University (G. Cutter) along with a towed underway pumping  system.\n" +
+"List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
+"[ http://data.bcodmo.org/GEOTRACES/cruises/Atlantic_2010/KN199-04_crtrk.jpg ] JPEG image (from Woods Hole Oceanographic Institution, vessel operator) --&gt;funding: NSF OCE award 0926423\n" +
+"[ http://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
+"Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN199-05 ] NSF R2R data catalog.\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05 ADCP</att>\n" +
+"        <att name=\"deployment_2_end_date\">2010-11-26</att>\n" +
+"        <att name=\"deployment_2_location\">Subtropical northern Atlantic Ocean</att>\n" +
+"        <att name=\"deployment_2_start_date\">2010-11-08</att>\n" +
+"        <att name=\"deployment_2_title\">KN199-05</att>\n" +
+"        <att name=\"deployment_2_webpage\">http://www.bco-dmo.org/deployment/58142</att>\n" +
+"        <att name=\"deployment_3_description\">The US GEOTRACES North Atlantic cruise aboard the R/V Knorr completed the section between Lisbon and Woods Hole that began in October 2010 but was rescheduled for November-December 2011. The R/V Knorr made a brief stop in Bermuda to exchange samples and personnel before continuing across the basin. Scientists disembarked in Praia, Cape Verde, on 11 December. The cruise was identified as KN204-01A (first part before Bermuda) and KN204-01B (after the Bermuda stop). However, the official deployment name for this cruise is KN204-01 and includes both part A and B.\n" +
+"Science activities included: ODF 30 liter rosette CTD casts, ODU Trace metal rosette CTD casts, McLane particulate pump casts, underway sampling with towed fish and sampling from the shipboard &quot;uncontaminated&quot; flow-through system.\n" +
+"Full depth stations are shown in the accompanying figure (see below). Additional stations to sample for selected trace metals to a depth of 1000 m are not shown. Standard stations are shown in red (as are the ports) and &quot;super&quot; stations, with extra casts to provide large-volume samples for selected parameters, are shown in green.\n" +
+"[ http://data.bco-dmo.org/GEOTRACES/cruises/KN204-01_GEOTRACES_Station_Plan.jpg ] \n" +
+"Station spacing is concentrated along the western margin to evaluate the transport of trace elements and isotopes by western boundary currents. Stations across the gyre will allow scientists to examine trace element supply by Saharan dust, while also contrasting trace element and isotope distributions in the oligotrophic gyre with conditions near biologically productive ocean margins, both in the west, to be sampled now, and within the eastern boundary upwelling system off Mauritania, sampled last year.\n" +
+"The cruise was funded by NSF OCE awards 0926204, 0926433 and 0926659.\n" +
+"Additional information may be available from the vessel operator site, URL: [ http://www.whoi.edu/cruiseplanning/synopsis.do?id=1662 ] http://www.whoi.edu/cruiseplanning/synopsis.do?id=1662.\n" +
+"Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN204-01 ] NSF R2R data catalog.\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
+"        <att name=\"deployment_3_end_date\">2011-12-11</att>\n" +
+"        <att name=\"deployment_3_location\">Subtropical northern Atlantic Ocean</att>\n" +
+"        <att name=\"deployment_3_start_date\">2011-11-06</att>\n" +
+"        <att name=\"deployment_3_title\">KN204-01</att>\n" +
+"        <att name=\"deployment_3_webpage\">http://www.bco-dmo.org/deployment/58786</att>\n" +
+"        <att name=\"doi\">10.1575/1912/bco-dmo.641155</att>\n" +
+"        <att name=\"id\">10.1575/1912/bco-dmo.641155</att>\n" +
+"        <att name=\"infoUrl\">http://www.bco-dmo.org/dataset/549122</att>\n" +
+"        <att name=\"institution\">BCO-DMO</att>\n" +
+"        <att name=\"instrument_1_type_description\">GO-FLO bottle cast used to collect water samples for pigment, nutrient, plankton, etc. The GO-FLO sampling bottle is specially designed to avoid sample contamination at the surface, internal spring contamination, loss of sample on deck (internal seals), and exchange of water from different depths.</att>\n" +
+"        <att name=\"instrument_1_type_name\">GO-FLO Bottle</att>\n" +
+"        <att name=\"instrument_1_webpage\">http://www.bco-dmo.org/dataset-instrument/643392</att>\n" +
+"        <att name=\"instrument_2_type_description\">The GeoFish towed sampler is a custom designed near surface (&lt;2m) sampling system for the collection of trace metal clean seawater. It consists of a PVC encapsulated lead weighted torpedo and separate PVC depressor vane supporting the intake utilizing all PFA Teflon tubing connected to a deck mounted, air-driven, PFA Teflon dual-diaphragm pump which provides trace-metal clean seawater at up to 3.7L/min. The GeoFish is towed at up to 13kts off to the side of the vessel outside of the ship&#39;s wake to avoid possible contamination from the ship&#39;s hull. It was developed by Geoffrey Smith and Ken Bruland (University of California, Santa Cruz).</att>\n" +
+"        <att name=\"instrument_2_type_name\">GeoFish Towed near-Surface Sampler</att>\n" +
+"        <att name=\"instrument_2_webpage\">http://www.bco-dmo.org/dataset-instrument/643393</att>\n" +
+"        <att name=\"instrument_3_type_description\">Instruments that generate enlarged images of samples using the phenomena of reflection and absorption of visible light. Includes conventional and inverted instruments. Also called a &quot;light microscope&quot;.</att>\n" +
+"        <att name=\"instrument_3_type_name\">Microscope-Optical</att>\n" +
+"        <att name=\"instrument_3_webpage\">http://www.bco-dmo.org/dataset-instrument/643394</att>\n" +
+"        <att name=\"instrument_4_description\">SXRF analysis was performed on the 2-ID-E beamline at the Advanced Photon source (Argonne National Laboratory). The synchetron consists of a storage ring which produces high energy electromagnetic radiation. X-rays diverted to the 2-ID-E beamline are used for x-ray fluorescence mapping of biological samples. X-rays were tuned to an energy of 10 keV to enable the excition of K-alpha fluorescence for the elements reported. The beam is focused using Fresnel zoneplates to achieve high spatial resolution; for our application a focused spot size of 0.5um was used. A single element germanium energy dispersive detector is used to record the X-ray fluorescence spectrum.</att>\n" +
+"        <att name=\"instrument_4_type_description\">Instruments that identify and quantify the elemental constituents of a sample from the spectrum of electromagnetic radiation emitted by the atoms in the sample when excited by X-ray radiation.</att>\n" +
+"        <att name=\"instrument_4_type_name\">X-ray fluorescence analyser</att>\n" +
+"        <att name=\"instrument_4_webpage\">http://www.bco-dmo.org/dataset-instrument/648912</att>\n" +
+"        <att name=\"keywords\">atlantic, bco, bco-dmo, biological, bottle, bottle_GEOTRC, btl, cast, cast_GEOTRC, cell, cell_C, cell_Co, cell_Cu, cell_Fe, cell_Mn, cell_Ni, cell_P, cell_S, cell_Si, cell_type, cell_vol, cell_Zn, cells, cellular, chemical, chemistry, chl, chl_image_filename, chlorophyll, collected, concentration, content, cruise, cruise_id, cruises, data, date, depth, depth_GEOTRC_CTD_round, dissolved, dissolved nutrients, dmo, during, eastern, elemental, event, event_GEOTRC, filename, foundation, geotraces, geotrc, grid, grid_num, grid_type, identifier, image, individual, iso, latitude, light, light_image_filename, longitude, management, map, mda, mda_id, mole, mole_concentration_of_silicate_in_sea_water, national, north, nsf, num, nutrients, ocean, oceanography, oceans,\n" +
+"Oceans &gt; Ocean Chemistry &gt; Silicate,\n" +
+"office, phytoplankton, project, run, sample, sample_bottle_GEOTRC, sample_GEOTRC, science, sea, seawater, silicate, spectrum, sta, sta_PI, station, station_GEOTRC, subtropical, sxrf, SXRF_map_filename, SXRF_run, SXRF_spectrum_filename, time, transect, type, US, v20150217, vol, water, western</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">http://creativecommons.org/licenses/by/4.0/\n" +
+"This data set is freely available as long as one follows the\n" +
+"terms of use (http://www.bco-dmo.org/terms-use), including\n" +
+"the understanding that any such use will properly acknowledge\n" +
+"the originating Investigator. It is highly recommended that\n" +
+"anyone wishing to use portions of this data should contact\n" +
+"the originating principal investigator (PI).</att>\n" +
+"        <att name=\"naming_authority\">org.bco-dmo</att>\n" +
+"        <att name=\"person_1_institution_name\">Bigelow Laboratory for Ocean Sciences (Bigelow)</att>\n" +
+"        <att name=\"person_1_name\">Dr Benjamin Twining</att>\n" +
+"        <att name=\"person_1_role\">Principal Investigator</att>\n" +
+"        <att name=\"person_1_webpage\">http://www.bco-dmo.org/person/51087</att>\n" +
+"        <att name=\"person_2_institution_name\">Woods Hole Oceanographic Institution (WHOI BCO-DMO)</att>\n" +
+"        <att name=\"person_2_name\">Nancy Copley</att>\n" +
+"        <att name=\"person_2_role\">BCO-DMO Data Manager</att>\n" +
+"        <att name=\"person_2_webpage\">http://www.bco-dmo.org/person/50396</att>\n" +
+"        <att name=\"processing_description\">Data were processed as described in Twining et al. (2015)\n" +
+"Between 9 and 20 cells were analyzed from the shallowest bottle and deep chlorophyll maximum at the subset of stations. The elemental content of each cell has been corrected for elements contained in the carbon substrate. Trace element concentrations are presented as mmol/mol P. Geometric mean concentrations (+/- standard error of the mean) are presented, along with the number of cells analyzed.\n" +
+"BCO-DMO Processing:\n" +
+"- added conventional header with dataset name, PI name, version date\n" +
+"- renamed parameters to BCO-DMO standard\n" +
+"- replaced blank cells with nd\n" +
+"- sorted by cruise, station, grid#\n" +
+"- changed station 99 and 153 to cruise AT199-05 from AT199-04\n" +
+"- revised station 9 depths to match master events log\n" +
+"With the agreement of BODC and the US GEOTRACES lead PIs, BCO-DMO added standard US GEOTRACES information, such as the US GEOTRACES event number. To accomplish this, BCO-DMO compiled a &#39;master&#39; dataset composed of the following parameters: station_GEOTRC, cast_GEOTRC (bottle and pump data only), event_GEOTRC, sample_GEOTRC, sample_bottle_GEOTRC (bottle data only), bottle_GEOTRC (bottle data only), depth_GEOTRC_CTD (bottle data only), depth_GEOTRC_CTD_rounded (bottle data only), BTL_ISO_DateTime_UTC (bottle data only), and GeoFish_id (GeoFish data only). This added information will facilitate subsequent analysis and inter comparison of the datasets.\n" +
+"Bottle parameters in the master file were taken from the GT-C_Bottle_GT10, GT-C_Bottle_GT11, ODF_Bottle_GT10, and ODF_Bottle_GT11 datasets. Non-bottle parameters, including those from GeoFish tows, Aerosol sampling, and McLane Pumps, were taken from the Event_Log_GT10 and Event_Log_GT11 datasets. McLane pump cast numbers missing in event logs were taken from the Particulate Th-234 dataset submitted by Ken Buesseler.\n" +
+"A standardized BCO-DMO method (called &quot;join&quot;) was then used to merge the missing parameters to each US GEOTRACES dataset, most often by matching on sample_GEOTRC or on some unique combination of other parameters.\n" +
+"If the master parameters were included in the original data file and the values did not differ from the master file, the original data columns were retained and the names of the parameters were changed from the PI-submitted names to the standardized master names. If there were differences between the PI-supplied parameter values and those in the master file, both columns were retained. If the original data submission included all of the master parameters, no additional columns were added, but parameter names were modified to match the naming conventions of the master file.\n" +
+"See the dataset parameters documentation for a description of which parameters were supplied by the PI and which were added via the join method.</att>\n" +
+"        <att name=\"project_1_acronym\">U.S. GEOTRACES NAT</att>\n" +
+"        <att name=\"project_1_description\">Much of this text appeared in an article published in OCB News, October 2008, by the OCB Project Office.\n" +
+"The first U.S. GEOTRACES Atlantic Section will be specifically centered around a sampling cruise to be carried out in the North Atlantic in 2010. Ed Boyle (MIT) and Bill Jenkins (WHOI) organized a three-day planning workshop that was held September 22-24, 2008 at the Woods Hole Oceanographic Institution. The main goal of the workshop, sponsored by the National Science Foundation and the U.S. GEOTRACES Scientific Steering Committee, was to design the implementation plan for the first U.S. GEOTRACES Atlantic Section. The primary cruise design motivation was to improve knowledge of the sources, sinks and internal cycling of Trace Elements and their Isotopes (TEIs) by studying their distributions along a section in the North Atlantic (Figure 1). The North Atlantic has the full suite of processes that affect TEIs, including strong meridional advection, boundary scavenging and source effects, aeolian deposition, and the salty Mediterranean Outflow. The North Atlantic is particularly important as it lies at the &quot;origin&quot; of the global Meridional Overturning Circulation.\n" +
+"It is well understood that many trace metals play important roles in biogeochemical processes and the carbon cycle, yet very little is known about their large-scale distributions and the regional scale processes that affect them. Recent advances in sampling and analytical techniques, along with advances in our understanding of their roles in enzymatic and catalytic processes in the open ocean provide a natural opportunity to make substantial advances in our understanding of these important elements. Moreover, we are motivated by the prospect of global change and the need to understand the present and future workings of the ocean&#39;s biogeochemistry. The GEOTRACES strategy is to measure a broad suite of TEIs to constrain the critical biogeochemical processes that influence their distributions. In addition to these &quot;exotic&quot; substances, more traditional properties, including macronutrients (at micromolar and nanomolar levels), CTD, bio-optical parameters, and carbon system characteristics will be measured. The cruise starts at Line W, a repeat hydrographic section southeast of Cape Cod, extends to Bermuda and subsequently through the North Atlantic oligotrophic subtropical gyre, then transects into the African coast in the northern limb of the coastal upwelling region. From there, the cruise goes northward into the Mediterranean outflow. The station locations shown on the map are for the &quot;fulldepth TEI&quot; stations, and constitute approximately half of the stations to be ultimately occupied.\n" +
+"Figure 1. The proposed 2010 Atlantic GEOTRACES cruise track plotted on dissolved oxygen at 400 m depth. Data from the World Ocean Atlas (Levitus et al., 2005) were plotted using Ocean Data View (courtesy Reiner Schlitzer).  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/GEOTRACES_Atl_stas.jpg ] \n" +
+"Hydrography, CTD and nutrient measurements will be supported by the Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography and funded through NSF Facilities. They will be providing an additional CTD rosette system along with nephelometer and LADCP. A trace metal clean Go-Flo Rosette and winch will be provided by the group at Old Dominion University (G. Cutter) along with a towed underway pumping system.\n" +
+"The North Atlantic Transect cruise began in 2010 with KN199 leg 4 (station sampling) and leg 5 (underway sampling only) (Figure 2).\n" +
+"[ http://bcodata.whoi.edu//US_GEOTRACES/AtlanticSection/Cruise_Report_for_Knorr_199_Final_v3.pdf ] KN199-04 Cruise Report (PDF)\n" +
+"Figure 2. The red line shows the cruise track for the first leg of the US Geotraces North Atlantic Transect on the R/V Knorr in October 2010.&#xa0; The rest of the stations (beginning with 13) will be completed in October-December 2011 on the R/V Knorr (courtesy of Bill Jenkins, Chief Scientist, GNAT first leg).  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/GNAT_stationPlan.jpg ] \n" +
+"The section completion effort resumed again in November 2011 with KN204-01A,B (Figure 3).\n" +
+"[ http://bcodata.whoi.edu//US_GEOTRACES/AtlanticSection/Submitted_Preliminary_Cruise_Report_for_Knorr_204-01.pdf ] KN204-01A,B Cruise Report (PDF)\n" +
+"Figure 3. Station locations occupied on the US Geotraces North Atlantic Transect on the R/V Knorr in November 2011.&#xa0;  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/KN204-01_Stations.png ] \n" +
+"Data from the North Atlantic Transect cruises are available under the Datasets heading below, and consensus values for the SAFe and North Atlantic GEOTRACES Reference Seawater Samples are available from the GEOTRACES Program Office: [ http://www.geotraces.org/science/intercalibration/322-standards-and-reference-materials?acm=455_215 ] Standards and Reference Materials\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04&#xa0;&#xa0; (leg 1 of 2010 cruise; Lisbon to Cape Verde) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05&#xa0;&#xa0; (leg 2 of 2010 cruise; Cape Verde to Charleston, NC) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
+"        <att name=\"project_1_title\">U.S. GEOTRACES North Atlantic Transect</att>\n" +
+"        <att name=\"project_1_webpage\">http://www.bco-dmo.org/project/2066</att>\n" +
+"        <att name=\"publisher_email\">info@bco-dmo.org</att>\n" +
+"        <att name=\"publisher_name\">BCO-DMO</att>\n" +
+"        <att name=\"publisher_type\">institution</att>\n" +
+"        <att name=\"publisher_url\">http://www.bco-dmo.org/</att>\n" +
+"        <att name=\"restricted\">false</att>\n" +
+"        <att name=\"sourceUrl\">http://darchive.mblwhoilibrary.org/bitstream/handle/1912/7908/1/GT10_11_cellular_element_quotas.tsv</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">cruise_id, project, station_GEOTRC, sta_PI, latitude, longitude, cast_GEOTRC, event_GEOTRC, depth, depth_GEOTRC_CTD_round, sample_GEOTRC, sample_bottle_GEOTRC, bottle_GEOTRC, grid_type, grid_num, SXRF_run, cell_type, time</att>\n" +
+"        <att name=\"summary\">Individual phytoplankton cells were collected on the GEOTRACES North Atlantic Transect cruises were analyzed for elemental content using SXRF (Synchrotron radiation X-Ray Fluorescence). Carbon was calculated from biovolume using the relationships of Menden-Deuer &amp; Lessard (2000). Trace metal concentrations are reported.\n" +
+"Download zipped images: [ http://data.bco-dmo.org/GEOTRACES/Twining/Chl_image.zip ] Chlorophyll [ http://data.bco-dmo.org/GEOTRACES/Twining/Light_image.zip ] Light [ http://data.bco-dmo.org/GEOTRACES/Twining/SXRF_map.zip ] SXRF maps [ http://data.bco-dmo.org/GEOTRACES/Twining/SXRF_spectra.zip ] SXRF spectra\n" +
+"Related references:\n" +
+"Menden-Deuer, S. and E. J. Lessard (2000). Carbon to volume relationships for dinoflagellates, diatoms, and other protist plankton. Limnology and Oceanography 45(3): 569-579.\n" +
+"* Twining, B. S., S. Rauschenberg, P. L. Morton, and S. Vogt. 2015. Metal contents of phytoplankton and labile particulate material in the North Atlantic Ocean. Progress in Oceanography 137: 261-283.)</att>\n" +
+"        <att name=\"title\">BCO-DMO 549122 v20150217: Cellular elemental content of individual phytoplankton cells collected during US GEOTRACES North Atlantic Transect cruises in the Subtropical western and eastern North Atlantic Ocean during Oct and Nov, 2010 and Nov. 2011.</att>\n" +
+"        <att name=\"validated\">true</att>\n" +
+"        <att name=\"version_date\">2015-02-17</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cruise_id</sourceName>\n" +
+"        <destinationName>cruise_id</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">cruise identification</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Cruise Id</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550520</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>project</sourceName>\n" +
+"        <destinationName>project</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">GEOTRACES project: North Atlantic Zonal Transect</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Project</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550531</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>station_GEOTRC</sourceName>\n" +
+"        <destinationName>station_GEOTRC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">GEOTRACES station number; ranges from 1 through 12 for KN199-04 and 1 through 24 for KN204-01. Stations 7 and 9 were skipped on KN204-01. Some GeoFish stations are denoted as X_to_Y indicating the tow occurred between stations X and Y. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Station GEOTRC</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550521</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sta_PI</sourceName>\n" +
+"        <destinationName>sta_PI</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">station number given by PI</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Sta PI</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/564854</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"description\">station latitude; north is positive</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550522</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
+"            <att name=\"description\">station longitude; east is postive</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550523</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cast_GEOTRC</sourceName>\n" +
+"        <destinationName>cast_GEOTRC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Cast identifier; numbered consecutively within a station. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cast GEOTRC</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550524</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>event_GEOTRC</sourceName>\n" +
+"        <destinationName>event_GEOTRC</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Unique identifying number for US GEOTRACES sampling events; ranges from 2001 to 2225 for KN199-04 events and from 3001 to 3282 for KN204-01 events. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Event GEOTRC</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550525</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>depth_GEOTRC_CTD</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
+"            <att name=\"description\">Observation/sample depth in meters; calculated from CTD pressure. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Depth</att>\n" +
+"            <att name=\"source_name\">depth_GEOTRC_CTD</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550526</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>depth_GEOTRC_CTD_round</sourceName>\n" +
+"        <destinationName>depth_GEOTRC_CTD_round</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-8000.0</att>\n" +
+"            <att name=\"colorBarPalette\">TopographyDepth</att>\n" +
+"            <att name=\"description\">Rounded observation/sample depth in meters; calculated from CTD pressure. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Depth</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">meters</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550527</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sample_GEOTRC</sourceName>\n" +
+"        <destinationName>sample_GEOTRC</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Unique identifying number for US GEOTRACES samples; ranges from 5033 to 6078 for KN199-04 and from 6112 to 8148 for KN204-01. PI-supplied values were identical to those in the intermediate US GEOTRACES master file. Originally submitted as &#39;GEOTRACES #&#39;; this parameter name has been changed to conform to BCO-DMO&#39;s GEOTRACES naming conventions.</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Sample GEOTRC</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550528</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sample_bottle_GEOTRC</sourceName>\n" +
+"        <destinationName>sample_bottle_GEOTRC</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Unique identification numbers given to samples taken from bottles; ranges from 1 to 24; often used synonymously with bottle number. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Sample Bottle GEOTRC</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550529</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>bottle_GEOTRC</sourceName>\n" +
+"        <destinationName>bottle_GEOTRC</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Alphanumeric characters identifying bottle type (e.g. NIS representing Niskin and GF representing GOFLO) and position on a CTD rosette. Values were added from the intermediate US GEOTRACES master file (see Processing Description).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Bottle GEOTRC</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550530</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>grid_type</sourceName>\n" +
+"        <destinationName>grid_type</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">grid type: plankton samples were mounted onto either gold (Au) or aluminum (Al) electron microscopy grids</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Grid Type</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550532</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>grid_num</sourceName>\n" +
+"        <destinationName>grid_num</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">GEOTRACES bottle number followed by an internal designation for the grid</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Grid Num</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550533</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SXRF_run</sourceName>\n" +
+"        <destinationName>SXRF_run</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">samples were analyzed by synchrotron x-ray fluorescence (SXRF) during two analytical runs in July 2011 (2011r2) or August 2012 (2012r2).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">SXRF Run</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550534</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>mda_id</sourceName>\n" +
+"        <destinationName>mda_id</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">unique identifier given to each SXRF scan during each run</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Mda Id</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550535</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_type</sourceName>\n" +
+"        <destinationName>cell_type</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">each cell was classified as either an autotrophic flagellate (Aflag); autotrophic picoplankter (Apico); or a diatom.</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Type</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550536</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_vol</sourceName>\n" +
+"        <destinationName>cell_vol</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">biovolume of each cell estimated from microscope measurements of cell dimensions</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Vol</att>\n" +
+"            <att name=\"units\">um^3</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550537</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_C</sourceName>\n" +
+"        <destinationName>cell_C</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">cellular C content  calculated from biovolume using the relationships of Menden-Deuer &amp; Lessard (2000)</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell C</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550538</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Si</sourceName>\n" +
+"        <destinationName>cell_Si</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">50.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"description\">total elemental Si content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Dissolved Nutrients</att>\n" +
+"            <att name=\"long_name\">Mole Concentration Of Silicate In Sea Water</att>\n" +
+"            <att name=\"standard_name\">mole_concentration_of_silicate_in_sea_water</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550539</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_P</sourceName>\n" +
+"        <destinationName>cell_P</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental P content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell P</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550540</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_S</sourceName>\n" +
+"        <destinationName>cell_S</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental S content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell S</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550541</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Mn</sourceName>\n" +
+"        <destinationName>cell_Mn</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental Mn content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Mn</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550542</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Fe</sourceName>\n" +
+"        <destinationName>cell_Fe</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental Fe content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Fe</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550543</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Co</sourceName>\n" +
+"        <destinationName>cell_Co</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental Co content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Co</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550544</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Ni</sourceName>\n" +
+"        <destinationName>cell_Ni</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental Ni content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Ni</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550545</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Cu</sourceName>\n" +
+"        <destinationName>cell_Cu</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental Cu content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Cu</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550546</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cell_Zn</sourceName>\n" +
+"        <destinationName>cell_Zn</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">total elemental Zn content of each cell was measured with SXRF.  Details provided in Twining et al. (2015).</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cell Zn</att>\n" +
+"            <att name=\"units\">mol/cell</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550547</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>light_image_filename</sourceName>\n" +
+"        <destinationName>light_image_filename</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">light image filename</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Light Image Filename</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550548</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>chl_image_filename</sourceName>\n" +
+"        <destinationName>chl_image_filename</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Chl image filename</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Chl Image Filename</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550549</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SXRF_map_filename</sourceName>\n" +
+"        <destinationName>SXRF_map_filename</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">SXRF map filename</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">SXRF Map Filename</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550550</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>SXRF_spectrum_filename</sourceName>\n" +
+"        <destinationName>SXRF_spectrum_filename</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">SXRF spectrum filename</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">SXRF Spectrum Filename</att>\n" +
+"            <att name=\"units\">null</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550551</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>BTL_ISO_DateTime_UTC</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"description\">Date and time (UTC) variable recorded at the bottle sampling time in ISO compliant format. Values were added from the intermediate US GEOTRACES master file (see Processing Description). This standard is based on ISO 8601:2004(E) and takes on the following form: 2009-08-30T14:05:00[.xx]Z (UTC time)</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">BTL ISO Date Time UTC</att>\n" +
+"            <att name=\"source_name\">BTL_ISO_DateTime_UTC</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00.000Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSSZ</att>\n" +
+"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550552</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+
+            String tResults = results.substring(0, expected.length());
+            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+
+            tResults = gdxResults.substring(0, expected.length());
+            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+
+        } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+                String2.pressEnterToContinue(msg + 
+                    "\nUnexpected error using generateDatasetsXmlFromBCODMO."); 
+        }
+
     }
 
     /**
@@ -3373,7 +4450,8 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-        /* */
+        String2.log("\n*** EDDTableFromAsciiFiles.test()");
+/* for releases, this line should have open/close comment */
         testBasic(deleteCachedDatasetInfo);
         testGenerateDatasetsXml();
         testFixedValue();
@@ -3385,6 +4463,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         testTimeRange2();
         testGenerateDatasetsXmlFromInPort();
         testGenerateDatasetsXmlFromInPort2();
+        testGenerateDatasetsXmlFromBCODMO();
 
         /* */
 

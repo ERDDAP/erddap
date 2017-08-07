@@ -303,6 +303,7 @@ directionsForGenerateDatasetsXml() +
 "product, propulsion, real, records, research, resolution, scale, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"netcdf_version_id\">null</att>\n" +
 "        <att name=\"northernmost_latitude\">null</att>\n" +
 "        <att name=\"southernmost_latitude\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
@@ -1006,21 +1007,21 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=-32767.0\n" +
-"    long_name=\"Longitude\"\n" +
-"    units=\"degree_east\"\n" +
-"    valid_max=180.0\n" +
-"    valid_min=-180.0\n";
+"    _FillValue=-32767.0f\n" +
+"    long_name=Longitude\n" +
+"    units=degree_east\n" +
+"    valid_max=180.0f\n" +
+"    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         NcHelper.unpackAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=NaN\n" +  //converted to PA standard mv
-"    long_name=\"Longitude\"\n" +
-"    units=\"degree_east\"\n" +
-"    valid_max=180.0\n" +
-"    valid_min=-180.0\n";
+"    _FillValue=NaNf\n" +  //converted to PA standard mv
+"    long_name=Longitude\n" +
+"    units=degree_east\n" +
+"    valid_max=180.0f\n" +
+"    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette
@@ -1029,15 +1030,15 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=-1\n" +
-"    _Unsigned=\"true\"\n";
+"    _FillValue=-1b\n" +
+"    _Unsigned=true\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         NcHelper.unpackAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=32767\n"; //byte -> short  //converted to PA standard mv
-//"    _Unsigned=\"true\"\n"; //removed
+"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv
+//"    _Unsigned=true\n"; //removed
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette as unsigned byte
@@ -1063,37 +1064,37 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _ChunkSizes=64, 64\n" +
-"    _FillValue=-32767.0\n" +
-"    add_offset=0.0\n" +
-"    display_max=1000.0\n" +
-"    display_min=10.0\n" +
-"    display_scale=\"log\"\n" +
+"    _ChunkSizes=64i,64i\n" +
+"    _FillValue=-32767.0f\n" +
+"    add_offset=0.0f\n" +
+"    display_max=1000.0d\n" +
+"    display_min=10.0d\n" +
+"    display_scale=log\n" +
 "    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
-"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
-"    scale_factor=1.0\n" +
-"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
-"    units=\"mg m^-3\"\n" +
-"    valid_max=1000.0\n" +
-"    valid_min=0.0\n";
+"    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+"    scale_factor=1.0f\n" +
+"    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
+"    units=mg m^-3\n" +
+"    valid_max=1000.0f\n" +
+"    valid_min=0.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         NcHelper.unpackAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _ChunkSizes=64, 64\n" +
-"    _FillValue=NaN\n" +  //standardized
-//"    add_offset=0.0\n" +  //removed
-"    display_max=1000.0\n" +
-"    display_min=10.0\n" +
-"    display_scale=\"log\"\n" +
+"    _ChunkSizes=64i,64i\n" +
+"    _FillValue=NaNf\n" +  //standardized
+//"    add_offset=0.0f\n" +  //removed
+"    display_max=1000.0d\n" +
+"    display_min=10.0d\n" +
+"    display_scale=log\n" +
 "    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
-"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
-//"    scale_factor=1.0\n" + //removed
-"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
-"    units=\"mg m^-3\"\n" +
-"    valid_max=1000.0\n" +
-"    valid_min=0.0\n";
+"    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+//"    scale_factor=1.0f\n" + //removed
+"    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
+"    units=mg m^-3\n" +
+"    valid_max=1000.0f\n" +
+"    valid_min=0.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //poc as packed values (shorts)
@@ -1175,21 +1176,21 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=-999.0\n" +
-"    long_name=\"Longitude\"\n" +
-"    units=\"degree_east\"\n" +
-"    valid_max=180.0\n" +
-"    valid_min=-180.0\n";
+"    _FillValue=-999.0f\n" +
+"    long_name=Longitude\n" +
+"    units=degree_east\n" +
+"    valid_max=180.0f\n" +
+"    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         NcHelper.unpackAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=NaN\n" + //converted to PA standard mv
-"    long_name=\"Longitude\"\n" +
-"    units=\"degree_east\"\n" +
-"    valid_max=180.0\n" +
-"    valid_min=-180.0\n";
+"    _FillValue=NaNf\n" + //converted to PA standard mv
+"    long_name=Longitude\n" +
+"    units=degree_east\n" +
+"    valid_max=180.0f\n" +
+"    valid_min=-180.0f\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette
@@ -1198,15 +1199,15 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=-1\n" +
-"    _Unsigned=\"true\"\n";
+"    _FillValue=-1b\n" +
+"    _Unsigned=true\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         NcHelper.unpackAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _FillValue=32767\n"; //byte -> short  //converted to PA standard mv
-//"    _Unsigned=\"true\"\n"; //removed
+"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv
+//"    _Unsigned=true\n"; //removed
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //palette as unsigned byte
@@ -1232,37 +1233,37 @@ NcHelper.debugMode = true;
         NcHelper.getVariableAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _ChunkSizes=40, 1729\n" +
-"    _FillValue=-32767\n" +
-"    add_offset=6400.0\n" +
-"    display_max=1000.0\n" +
-"    display_min=10.0\n" +
-"    display_scale=\"log\"\n" +
+"    _ChunkSizes=40i,1729i\n" +
+"    _FillValue=-32767s\n" +
+"    add_offset=6400.0f\n" +
+"    display_max=1000.0f\n" +
+"    display_min=10.0f\n" +
+"    display_scale=log\n" +
 "    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
-"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
-"    scale_factor=0.2\n" +
-"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
-"    units=\"mg m^-3\"\n" +
-"    valid_max=-27000\n" +
-"    valid_min=-32000\n";
+"    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+"    scale_factor=0.2f\n" +
+"    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
+"    units=mg m^-3\n" +
+"    valid_max=-27000s\n" +
+"    valid_min=-32000s\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         NcHelper.unpackAttributes(var, atts);
         results = atts.toString();
         expected = 
-"    _ChunkSizes=40, 1729\n" +
-"    _FillValue=NaN\n" +  //standardized
+"    _ChunkSizes=40i,1729i\n" +
+"    _FillValue=NaNf\n" +  //standardized
 //"    add_offset=6400.0\n" +  //removed
-"    display_max=1000.0\n" +
-"    display_min=10.0\n" +
-"    display_scale=\"log\"\n" +
+"    display_max=1000.0f\n" +
+"    display_min=10.0f\n" +
+"    display_scale=log\n" +
 "    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
-"    reference=\"Stramski, D., et al. \\\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\\\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
-//"    scale_factor=0.2\n" + removed
-"    standard_name=\"mole_concentration_of_particulate_organic_carbon_in_sea_water\"\n" +
-"    units=\"mg m^-3\"\n" +
-"    valid_max=1000.0\n" + //unpacked
-"    valid_min=0.0\n";     //unpacked
+"    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+//"    scale_factor=0.2f\n" + removed
+"    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
+"    units=mg m^-3\n" +
+"    valid_max=1000.0f\n" + //unpacked
+"    valid_min=0.0f\n";     //unpacked
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //poc as packed values (shorts)
@@ -1615,7 +1616,9 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
- 
+
+/* for releases, this line should have open/close comment */
+        String2.log("\n*** EDDGridFromNcFilesUnpacked.test");
         testGenerateDatasetsXml();
         testBasic(deleteCachedDatasetInfo);
         testUInt16File();

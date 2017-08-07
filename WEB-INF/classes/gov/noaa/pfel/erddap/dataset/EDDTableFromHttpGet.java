@@ -499,7 +499,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             if (columnNames[col].equals(EDV.TIME_NAME)) {
                 timeColumn = col;
                 if (columnIsString[col]) {
-                    if (columnUnits[col].toLowerCase().indexOf("yy") < 0)
+                    if (columnUnits[col].toLowerCase().indexOf("yyyy") < 0)  //was "yy"
                         throw new SimpleException(EDStatic.queryError + 
                             "Invalid units for the string time variable. " +
                             "Units MUST specify the format of the time values.");
@@ -1038,8 +1038,8 @@ oneAuthorArray.set(0, author);
             dataAddTable.addColumn(c, colName,
                 makeDestPAForGDX(sourceAtts, dataSourceTable.getColumn(c)),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
-                    true, true)); //addColorBarMinMax, tryToFindLLAT
+                    dataSourceTable.globalAttributes(), sourceAtts, null, 
+                    colName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
@@ -1059,13 +1059,17 @@ oneAuthorArray.set(0, author);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
             "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -1119,9 +1123,9 @@ oneAuthorArray.set(0, author);
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");

@@ -9305,6 +9305,79 @@ towTypesDescription);
         }
     }
 
+    /**
+     * This makes ncml files for PH53.
+     *
+     * @param dayMode
+     * @throws Exception if trouble
+     */
+    public static void makePH53Ncml(boolean dayMode)
+        throws Exception {
+        String2.log("*** Projects.makePH53Ncml(" + dayMode + ")");
+        String dir = "/u00/satellite/PH53/";
+        String dayNight = dayMode? "day" : "night";
+        String ncmlDir = "/u00/satellite/PH53Ncml/" + dayNight + "Ncml/";
+        File2.makeDirectory(ncmlDir);
+
+        //get list of filenames: with dir was easier: cd /u00/satellite/PH53
+        //  find -name *day*.nc > dayNames.txt  
+        //  find -name *night*.nc > nightNames.txt  
+        //copy to laptop
+        String names[] = String2.readLinesFromFile(ncmlDir + dayNight + "Names.txt", null, 1);
+        HashMap<String,String> hm = new HashMap();
+
+        //for each file
+        //19811101145206-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA07_G_1981305_day-v02.0-fv01.0.nc
+        for (int i = 0; i < names.length; i++) {
+
+            //extract date yyyyddd
+            String tName = File2.getNameAndExtension(names[i]);
+            String date = String2.extractCaptureGroup(tName, ".*_(\\d{7})_.*", 1);
+            if (date == null)
+                continue;
+//19810825023019-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981237_night-v02.0-fv01.0.nc
+            int epochSeconds = Math2.roundToInt(
+                (Calendar2.parseYYYYDDDZulu(date).getTimeInMillis() /
+                1000.0) + 12 * Calendar2.SECONDS_PER_HOUR); //center on noon of that day
+            String oldName = hm.put("" + epochSeconds, tName);
+            if (oldName != null) 
+                throw new RuntimeException("duplicate epSec=" +epochSeconds + 
+                   "\n" + oldName +
+                   "\n" + tName);
+
+            String2.log("writing " + ncmlDir + tName + ".ncml " + epochSeconds);
+            Writer writer = new FileWriter(ncmlDir + tName + ".ncml");
+            StringBuilder values = new StringBuilder();
+            writer.write(
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
+"  location=\"" + tName + "\">\n" +
+"  <variable name=\"time\">\n" +
+"    <attribute name='units' value='seconds since 1970-01-01T00:00:00Z' />\n" +
+"    <values>" + epochSeconds + "</values>\n" +
+"  </variable>\n" +
+"</netcdf>\n");
+            writer.close();
+        }
+    }
+
+    public static void tallyGridValues(String fileName, String varName,
+        double scale) throws Exception {
+
+        String2.log("\n***Projects.tallyGridValues(\n" + 
+            fileName + "\n" + 
+            varName + " scale=" + scale);
+        NetcdfFile file = NcHelper.openFile(fileName);
+        Variable var = file.findVariable(varName);
+        PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+        int n = pa.size();
+        Tally tally = new Tally();
+        for (int i = 0; i < n; i++)
+            tally.add("value", "" + Math2.roundToInt(pa.getDouble(i) * scale));
+        String2.log(tally.toString());
+    }
+
+
+    
 
 }
 

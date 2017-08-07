@@ -66,6 +66,158 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.80">Changes</a> in ERDDAP version 1.80 (released 2017-08-04)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <br>&nbsp;
+  <ul>
+  <li>NEW orderByCount() filter lets you specify how the results table will be sorted 
+    (or not) and just returns one row for each sort group, with the count of the number of non-missing-values for each variable.
+    <br>For example, orderByCount("stationID") will sort by stationID and return one row for
+    each stationID, with a count of the number of non-missing-values for each variable.
+    <br>If you just specify orderByCount(""), the response will be just one row with 
+    the number of non-missing-values for each data variable.
+    <br>See the 
+    <a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBy"
+    >orderBy... documentation</a>
+    Thanks to Ben Adams. 
+  <li>NEW .ncoJson fileType option for gridded and tabular datasets.
+    This option makes an NCO lvl=2 "pedantic" JSON file with all of the 
+    information normally found in a .nc file. See    
+    <a rel="help"
+    href="http://nco.sourceforge.net/nco.html#json"
+    >http://nco.sourceforge.net/nco.html#json</a>
+    Thanks to Charlie Zender.
+  <li>BUG FIX: The orderBy...() options on the Make A Graph web page are now 
+    handled correctly.
+  <li>BUG FIX: .geoJson output now doesn't print rows where the lat 
+    or lon values are missing. Also, altitude values (if available)
+    are now included in the coordinates, not as data values.
+    Thanks to Jonathan Wilkins.
+    <br>&nbsp;
+  </ul>
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <br>&nbsp;
+  <ul>
+  <li>SECURITY ISSUE: The protocols.js library used for the OpenLayers demo
+    on the WMS pages in ERDDAP is out-of-date and has a bug that allows it to be misused.
+    (Unfortunately, updating OpenLayers and protocols.js isn't easy.)
+    That opens up the possibility that the library could be set up to allow a 
+    cross-site vulnerability. However, since ERDDAP only uses OpenLayers
+    in a specific pre-set-up way and only with specific ERDDAP-based data sources, 
+    we believe there is no cross-site vulnerability
+    in ERDDAP's use of OpenLayers and protocols.js.
+    However, if you don't believe this, you can now disable the use of the OpenLayers demo
+    on the WMS pages of your ERDDAP by adding     
+    <br>&lt;openLayersActive&gt;false&lt;/openLayersActive&gt;
+    <br>to your setup.xml file. The default is "true".
+    Thanks to Charles Carleton and NCEI.
+  <li>SECURITY CHANGES: Unused .jar files and duplicate .jar files 
+    (because they are also in netcdfAll.jar) 
+    have been removed from the ERDDAP distribution. 
+    Out-of-date .jar files have been updated.
+    Thanks to Charles Carleton and NCEI.
+  <li>SECURITY CHANGES: The netcdfAll.jar file distributed with ERDDAP is the 
+    latest version (currently 4.6.10), but it still contains internal .jar files 
+    that are known to be out-of-date and have security vulnerabilities,
+    notably the Jackson libraries that are only used when accessing Amazon S3
+    data sources. 
+    The netcdf-java developers maintain that these vulnerabilities are not relevant
+    because of the way that netcdf code uses these libraries
+    and in any case would only be relevant when accessing Amazon S3.
+    See 
+    <a rel="help"
+        href="https://github.com/Unidata/thredds/issues/866"
+        >https://github.com/Unidata/thredds/issues/866<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> .
+    I believe them.  If you still have concerns about this, 
+    please contact the netcdf-java developers.
+    (Note that if you don't believe the netcdf-java developers
+    and are contemplating not using ERDDAP because of this, you shouldn't use
+    THREDDS either, because THREDDS uses netcdf-java more fundamentally and more extensively than ERDDAP.)
+    <p>Details: The troublesome code and the vulnerability warnings are: 
+    <br>netcdfAll-latest.jar/META-INF/maven/com.fasterxml.jackson.core/jackson-databind/pom.xml
+    <br>See https://nvd.nist.gov/vuln/detail/CVE-2016-7051 - High
+    <br>netcdfAll-latest.jar/META-INF/maven/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/pom.xml
+    <br>See https://nvd.nist.gov/vuln/detail/CVE-2016-7051 - High
+    <br>netcdfAll-latest.jar/META-INF/maven/com.fasterxml.jackson.core/jackson-annotations/pom.xml
+    <br>See https://nvd.nist.gov/vuln/detail/CVE-2016-7051 - High
+    <br>See https://nvd.nist.gov/vuln/detail/CVE-2016-3720 - Critical
+    <br>netcdfAll-latest.jar/META-INF/maven/com.fasterxml.jackson.core/jackson-core/pom.xml
+    <br>See https://nvd.nist.gov/vuln/detail/CVE-2016-7051 - High
+    <br>See https://nvd.nist.gov/vuln/detail/CVE-2016-3720 - Critical
+    <br>"For version 4.6.10, aws-java-sdk-core pulls in version 2.6.6 of jackson-* artifacts."
+       (email from netcdf-java people).
+    <br>Thanks to Charles Carleton and NCEI.
+  <li>COMPILER CHANGES: If you recompile ERDDAP, note that the -cp classpath parameter 
+    needed for the command line is now much shorter than before. See the new -cp setting in 
+    <a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#developmentEnvironment"
+    >this documentation</a>.
+    Thanks to Charles Carleton and NCEI.
+  <li>NEW OPTION in GenerateDatasetsXml: EDDTableFromBcodmo, which is 
+    just for internal use at BCO-DMO.
+    <br>Thanks to Adam Shepherd and BCODMO.
+  <li>NEW ATTRIBUTE and FEATURE: 
+    If an EDDTable column has file names of web accessible files (e.g., 
+    image, video, or audio files), you can add 
+    <br>&lt;att name="fileAccessBaseUrl"&gt;<i>someBaseURL</i>&lt;/a&gt;
+    <br>to specify the base URL (ending with / ) needed
+    to make the file names into complete URLs. Then for .htmlTable responses, ERDDAP will 
+    show the file name as a link to the combined URL (the baseUrl plus the file name). 
+    <br>If you want ERDDAP to serve the related files, 
+      make a separate EDDTableFromFileNames dataset for those files
+      (it may be a private dataset).
+    <br>Thanks to Adam Shepherd and BCODMO.
+  <li>NEW ATTRIBUTE RECOMMENDATION: 
+    If an EDDTable column has file names of web accessible files (e.g., 
+    image, video, or audio files) which are accessible via an archive (e.g., .zip file)
+    accessible via a URL, use 
+    <br>&lt;att name="fileAccessArchiveUrl"&gt;<i>theURL</i>&lt;/att&gt; 
+    <br>to specify the URL for the archive.
+    <br>If you want ERDDAP to serve the archive file, 
+    make a separate EDDTableFromFileNames dataset for that file
+    (it may be a private dataset).
+    <br>Thanks to Adam Shepherd and BCODMO.
+  <li>IMPROVEMENTS to GenerateDatasetsXml to remove the causes of 
+    invalid/bad &lt;subsetVariables&gt; suggestions and 
+    duplicate/bad suggested variable names, etc. 
+    Thanks to Rich Signell, Adam Shepherd, and BCO-DMO.
+  <li>NEW OPTION: The political boundary information distributed with ERDDAP
+    is from a third party and somewhat out-of-date. Also, there are 
+    disputed boundaries at several places in the world, 
+    where different people will have different ideas about
+    what is correct. WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE POLITCAL BOUNDARY
+    DATA THAT COMES WITH ERDDAP.
+    If you don't like the political boundary information that comes with ERDDAP, 
+    you can now tell ERDDAP to never draw political boundaries by adding 
+    <br>&lt;politicalBoundariesActive&gt;false&lt;/politicalBoundariesActive&gt;
+    <br>to your setup.xml file. The default is "true".
+    Thanks to Raju Devender.
+  <li>NEW METADATA TAG: In the datasets.xml for a dataset, you can now specify 
+    the default number of colorBar sections
+    for a dataVariable on graphs and maps with 
+    <br>&lt;att name="colorBarNSections"&gt;<i>anInteger</i>&lt;/att&gt; 
+    <br>(default=-1, which says to let ERDDAP decide).    
+    See the <a rel="help"
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar"
+    >colorBar settings</a>.
+  <li>CHANGE: the state boundary color on maps was purple 
+    (Deep Purple for you Baby Boomers).
+    Now it is gray 
+    (in between the national boundary gray and the land gray).
+  <li>BUG FIX: &lt;iso19115File&gt; and &lt;fgdcFile&gt; in datasets.xml 
+    were not always handled correctly.
+    Now they are.
+    Thanks to BCO-DMO.
+  </ul>
+</ul>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.78">Changes</a> in ERDDAP version 1.78 (released 2017-05-27)</h2>
 <ul>
 <li><b>New Features (for users):</b> 
@@ -84,7 +236,7 @@
     info from a remote dataset and from the quickRestart file for all EDDTableFrom...Files
     datasets.
     (The time actual_range will be wrong the first time the dataset loads in v1.78 
-     but thereafter, e.g., if you flag it.)
+     but correct after it is reloaded, e.g., if you flag the dataset.)
   </ul>
 </ul>
 
@@ -3920,7 +4072,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.78
+<p>ERDDAP, Version 1.80
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

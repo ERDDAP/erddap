@@ -905,6 +905,7 @@ public class EDDGridFromDap extends EDDGrid {
         String tLocalSourceUrl, DAS das, DDS dds, String dimensionNames[], 
         int tReloadEveryNMinutes, Attributes externalAddGlobalAttributes) throws Throwable {
 
+        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("\n*** EDDGridFromDap.generateDatasetsXml" +
             "\ntLocalSourceUrl=" + tLocalSourceUrl +
             "\ndimNames=" + String2.toCSVString(dimensionNames) +
@@ -1085,7 +1086,6 @@ public class EDDGridFromDap extends EDDGrid {
             //first data variable found? create axis tables
             if (axisSourceTable.nColumns() == 0) {
                 StringBuilder sourceNamesInBrackets = new StringBuilder();
-                StringBuilder destNamesInBrackets = new StringBuilder();
                 for (int av = 0; av < numDimensions; av++) {
                     DArrayDimension dad = mainDArray.getDimension(av);
                     String aName = dad.getName();
@@ -1097,21 +1097,16 @@ public class EDDGridFromDap extends EDDGrid {
                     }
                     Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                         axisSourceTable.globalAttributes(),
-                        sourceAtts, aName, false, true); //addColorBarMinMax, tryToFindLLAT
-                    axisSourceTable.addColumn(axisSourceTable.nColumns(), aName, new DoubleArray(), sourceAtts); //type doesn't matter here
-                    axisAddTable.addColumn(   axisAddTable.nColumns(),    aName, new DoubleArray(), addAtts);    //type doesn't matter here
+                        sourceAtts, null, aName, false, true); //addColorBarMinMax, tryToFindLLAT
+                    axisSourceTable.addColumn(axisSourceTable.nColumns(), aName, 
+                        new DoubleArray(), sourceAtts); //type doesn't matter here
+                    axisAddTable.addColumn(   axisAddTable.nColumns(),    aName, 
+                        new DoubleArray(), addAtts);    //type doesn't matter here
 
                     //accumulate namesInBrackets
                     sourceNamesInBrackets.append("[" + aName + "]");
-                    destNamesInBrackets.append("[" + 
-                        suggestDestinationName(aName, sourceAtts, addAtts, 
-                            sourceAtts.getString("units"), 
-                            sourceAtts.getString("positive"), 
-                            sourceAtts.getFloat("scale_factor"), true) +  //lookForLLAT
-                        "]");
                 }
                 sourceDimensionNamesInBrackets = sourceNamesInBrackets.toString();
-                destDimensionNamesInBrackets   = destNamesInBrackets.toString();
             }
 
             //add the data variable to dataAddTable
@@ -1119,7 +1114,7 @@ public class EDDGridFromDap extends EDDGrid {
             OpendapHelper.getAttributes(das, dName, sourceAtts);
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
                 axisSourceTable.globalAttributes(),
-                sourceAtts, dName, true, false); //addColorBarMinMax, tryToFindLLAT
+                sourceAtts, null, dName, true, false); //addColorBarMinMax, tryToFindLLAT
             if (tLocalSourceUrl.indexOf("ncep") >= 0 &&
                 tLocalSourceUrl.indexOf("reanalysis") >= 0)
                 addAtts.add("drawLandMask", "under");
@@ -1127,15 +1122,6 @@ public class EDDGridFromDap extends EDDGrid {
             dataSourceTable.addColumn(dataSourceTable.nColumns(), dName, new DoubleArray(), sourceAtts); //type doesn't matter here
             dataAddTable.addColumn(   dataAddTable.nColumns(),    dName, new DoubleArray(), addAtts);    //type doesn't matter here
         }
-
-        //*** after data variables known, improve global attributes in axisAddTable
-        axisAddTable.globalAttributes().set(
-            makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                axisSourceTable.globalAttributes(), 
-                "Grid",  //another cdm type could be better; this is ok
-                tLocalSourceUrl, externalAddGlobalAttributes, 
-                EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
-                    suggestKeywords(dataSourceTable, dataAddTable))));
 
 
         //if dimensionNames wasn't specified, this is controller, so were're done
@@ -1165,6 +1151,19 @@ public class EDDGridFromDap extends EDDGrid {
 
         //***Here down, we know dimensionNames != null
 
+        //tryToFindLLAT 
+        tryToFindLLAT(   axisSourceTable, axisAddTable); //just axisTables
+        ensureValidNames(dataSourceTable, dataAddTable);
+
+        //*** after data variables known, improve global attributes in axisAddTable
+        axisAddTable.globalAttributes().set(
+            makeReadyToUseAddGlobalAttributesForDatasetsXml(
+                axisSourceTable.globalAttributes(), 
+                "Grid",  //another cdm type could be better; this is ok
+                tLocalSourceUrl, externalAddGlobalAttributes, 
+                EDD.chopUpCsvAndAdd(axisAddTable.getColumnNamesCSVString(),
+                    suggestKeywords(dataSourceTable, dataAddTable))));
+
         //if otherComboFound, add dimensionNameInBrackets to title and use to make datasetID
         String tDatasetID = suggestDatasetID(tPublicSourceUrl); 
         if (otherComboFound) {
@@ -1173,7 +1172,7 @@ public class EDDGridFromDap extends EDDGrid {
             String tTitle = axisAddTable.globalAttributes().getString("title");
             if (tTitle == null) 
                 tTitle = axisSourceTable.globalAttributes().getString("title");
-            axisAddTable.globalAttributes().set("title", tTitle + " " + destDimensionNamesInBrackets);
+            axisAddTable.globalAttributes().set("title", tTitle + " " + sourceDimensionNamesInBrackets);
 
             //change tDatasetID
             //DON'T CHANGE THIS! else id's will change in various erddaps
@@ -1301,7 +1300,6 @@ public class EDDGridFromDap extends EDDGrid {
             }
         }
 
-
         //write the information
         results.append(
             "<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
@@ -1310,9 +1308,9 @@ public class EDDGridFromDap extends EDDGrid {
         results.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
         results.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
-        results.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, true,  false));
-        results.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false, false));
+        //last 2 params: includeDataType, questionDestinationName
+        results.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, false));
+        results.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", false, false));
         results.append(
             "</dataset>\n" +
             "\n");
@@ -1341,6 +1339,7 @@ public class EDDGridFromDap extends EDDGrid {
         int datasetSuccessTimes[], int datasetFailureTimes[]) {
 
         long time = System.currentTimeMillis();
+        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
         try {
             //append to results  (it should succeed completely, or fail)
             results.write(generateDatasetsXml(false, tLocalSourceUrl, 
@@ -1412,6 +1411,7 @@ public class EDDGridFromDap extends EDDGrid {
         int catalogXmlTimes[], int datasetSuccessTimes[], int datasetFailureTimes[],
         HashSet alreadyDone) {
 
+        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
         if (reallyVerbose) String2.log(
             "\n<<< recursivelyGenerateDatasetsXmlFromThreddsCatalogs  regex=" + datasetNameRegex +
             "\n  tLocalSourceUrl=" + tLocalSourceUrl);
@@ -1632,6 +1632,15 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
                         name[cLevel] = "";
                     //String2.log("  <dataset> cLevel=" + cLevel + " name=" + name[cLevel]);
                     urlPath[cLevel] = xmlReader.attributeValue("urlPath");
+                    if ("latest.xml".equals(urlPath[cLevel])) {
+                        String tHref = File2.getDirectory(tLocalSourceUrl) + "latest.xml";
+                        recursivelyGenerateDatasetsXmlFromThreddsCatalog(tHref,
+                            datasetNameRegex, recursive, pathRegex,
+                            cLevel < 0? "" : name[cLevel],  //cLevel=-1 was parentName, now ""
+                            tReloadEveryNMinutes, justURLs, results,
+                            summary, catalogXmlTimes,
+                            datasetSuccessTimes, datasetFailureTimes, alreadyDone);
+                    }
                     extraGlobalAtts[cLevel] = new Attributes();   //see "inherited" below
                     service[cLevel] = cLevel == 0? 
                         (defaultService == null? defaultDefaultService : defaultService) :
@@ -1655,10 +1664,16 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
                     }
                     cLevel = whichEndDatasetTag;  //it should be already
                     String tUrlPath = urlPath[cLevel];
+                    String noDatasets = "no datasets that met the UAF standards";
                     if (!name[cLevel].matches(datasetNameRegex)) {
                         //skip this dataset
                         if (verbose)
                             String2.log("regex=" + datasetNameRegex + " rejectedName=" + name[cLevel]);
+                    
+                    } else if (name[cLevel].indexOf(noDatasets) >= 0) {
+                        String ts = indent[cLevel] + noDatasets + ": " + urlPath[cLevel];
+                        summary.append(ts);
+                        String2.log(ts);
 
                     } else if (String2.lineContainingIgnoreCase(name, "do not test", 0) >= 0) {
                         //skip this dataset
@@ -1670,7 +1685,11 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
                         if (tUrlPath.startsWith("http")) { }
                         else if (service[cLevel].startsWith("http")) 
                              tUrlPath = service[cLevel] + tUrlPath;
-                        else tUrlPath = threddsBase + service[cLevel] + tUrlPath;
+                        else if (service[cLevel].startsWith("/"))
+                            tUrlPath = threddsBase + service[cLevel] + tUrlPath;
+                        else 
+                            tUrlPath = threddsBase + "/" + service[cLevel] + tUrlPath;
+                        //String2.log(": </dataset> tUrlPath=" + tUrlPath);  
 
                         //is there a port number in the url that can be removed?
                         String port = String2.extractRegex(tUrlPath, ":\\d{4}/", 0);
@@ -1744,24 +1763,21 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
                             sft = sft.substring(dpo + 7);
                         extraGlobalAtts[cLevel].add("suffixForTitle", sft);
 
-                        if (alreadyDone.add(tUrlPath)) {
-                            String tName = File2.getNameAndExtension(tUrlPath);
-                            if (tName.startsWith("catalog") && 
-                                (tName.endsWith(".html") || tName.endsWith(".xml"))) {
-                                //UAF clean catalog has these when no valid dataset in directory
-                                String ts = indent[cLevel] + "  Skipping UAF placeholder catalog: " + tUrlPath + "\n";
-                                summary.append(ts);
-                                String2.log(ts);
-                            } else if (justURLs) {
-                                results.write(tUrlPath + "\n");
+                        String tt = tUrlPath;
+                        if (tt.endsWith(".html") || tt.endsWith(".xml")) 
+                            tt = File2.forceExtension(tt, "");
+                        if (alreadyDone.add(tt)) {
+                            
+                            if (justURLs) {
+                                results.write(tt + "\n");
                             } else {
-                                safelyGenerateDatasetsXml(tUrlPath, 
+                                safelyGenerateDatasetsXml(tt, 
                                     tReloadEveryNMinutes, extraGlobalAtts[cLevel], 
                                     results, summary, indent[cLevel] + "  ", 
                                     datasetSuccessTimes, datasetFailureTimes);
                             }
                         } else {
-                            String ts = indent[cLevel] + "  Dataset already done: " + tUrlPath + "\n";
+                            String ts = indent[cLevel] + "  Dataset already done: " + tt + "\n";
                             summary.append(ts);
                             String2.log(ts);
                         }
@@ -2187,7 +2203,7 @@ if (tLocalSourceUrl.startsWith("https://thredds.jpl.nasa.gov/thredds") &&
 String expected2 = 
 "        <att name=\"infoUrl\">http://coastwatch.pfel.noaa.gov/infog/MH_chla_las.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">1-day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, data, day, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
+"        <att name=\"keywords\">1-day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, data, day, degrees, global, imaging, latitude, longitude, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
 "        <att name=\"pass_date\">null</att>\n" +
@@ -3344,6 +3360,213 @@ String expected2 =
 "}\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
+        //.ncoJson
+        String2.log("\n*** EDDGridFromDap test get .ncoJson axis data\n");
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".ncoJson"); 
+        //2017-08-03 I tested the resulting file for validity at https://jsonlint.com/
+        String2.log(">> NCO JSON " + EDStatic.fullTestCacheDirectory + tName);
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"{\n" +
+"  \"attributes\": {\n" +
+"    \"acknowledgement\": {\"type\": \"char\", \"data\": \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"},\n" +
+"    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Grid\"},\n" +
+"    \"composite\": {\"type\": \"char\", \"data\": \"true\"},\n" +
+"    \"contributor_name\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"contributor_role\": {\"type\": \"char\", \"data\": \"Source of level 2 data.\"},\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3\"},\n" +
+"    \"creator_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"creator_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"creator_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"creator_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"date_created\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"date_issued\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"Easternmost_Easting\": {\"type\": \"double\", \"data\": 360.0},\n" +
+"    \"geospatial_lon_max\": {\"type\": \"double\", \"data\": 360.0},\n" +
+"    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": 360.0},\n" +
+"    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},\n" +
+"    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
+//2017-07-31T20:10:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]\"},\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
+"    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"8-day,\\nOceans > Ocean Chemistry > Chlorophyll,\\naqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
+"    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},\n" +
+"    \"license\": {\"type\": \"char\", \"data\": \"The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"},\n" +
+"    \"naming_authority\": {\"type\": \"char\", \"data\": \"gov.noaa.pfel.coastwatch\"},\n" +
+"    \"origin\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"processing_level\": {\"type\": \"char\", \"data\": \"3\"},\n" +
+"    \"project\": {\"type\": \"char\", \"data\": \"CoastWatch (http://coastwatch.noaa.gov/)\"},\n" +
+"    \"projection\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"    \"projection_type\": {\"type\": \"char\", \"data\": \"mapped\"},\n" +
+"    \"publisher_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"publisher_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"publisher_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"publisher_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"references\": {\"type\": \"char\", \"data\": \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\"},\n" +
+"    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
+"    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
+"    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
+"    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2006-12-15T00:00:00Z\"},\n" +
+"    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 360.0}\n" +
+"  },\n" +
+"  \"dimensions\": {\n" +
+"    \"time\": 3,\n" +
+"    \"longitude\": 1\n" +
+"  },\n" +
+"  \"variables\": {\n" +
+"    \"time\": {\n" +
+"      \"shape\": [\"time\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [1.0260864E9, 1.1661408E9]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"T\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 0},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Centered Time\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"time\"},\n" +
+"        \"time_origin\": {\"type\": \"char\", \"data\": \"01-JAN-1970 00:00:00\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"seconds since 1970-01-01T00:00:00Z\"}\n" +
+"      },\n" +
+"      \"data\": [1.0260864E9, 1.0960704E9, 1.1661408E9]\n" +
+"    },\n" +
+"    \"longitude\": {\n" +
+"      \"shape\": [\"longitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lon\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [360.0, 360.0]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"X\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 4},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Longitude\"},\n" +
+"        \"point_spacing\": {\"type\": \"char\", \"data\": \"even\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"longitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_east\"}\n" +
+"      },\n" +
+"      \"data\": [360.0]\n" +
+"    }\n" +
+"  }\n" +
+"}\n";
+        tPo = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(tPo), expected, "results=\n" + results);
+
+        //.ncoJson with jsonp
+        String2.log("\n*** EDDGridFromDap test get .ncoJson axis data\n");
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]&.jsonp=myFunctionName", 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axisjp", ".ncoJson"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        expected = "myFunctionName(" +
+"{\n" +
+"  \"attributes\": {\n" +
+"    \"acknowledgement\": {\"type\": \"char\", \"data\": \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"},\n" +
+"    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Grid\"},\n" +
+"    \"composite\": {\"type\": \"char\", \"data\": \"true\"},\n" +
+"    \"contributor_name\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"contributor_role\": {\"type\": \"char\", \"data\": \"Source of level 2 data.\"},\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3\"},\n" +
+"    \"creator_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"creator_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"creator_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"creator_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"date_created\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"date_issued\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"Easternmost_Easting\": {\"type\": \"double\", \"data\": 360.0},\n" +
+"    \"geospatial_lon_max\": {\"type\": \"double\", \"data\": 360.0},\n" +
+"    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": 360.0},\n" +
+"    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},\n" +
+"    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
+//2017-07-31T20:10:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]&.jsonp=myFunctionName\"},\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
+"    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"8-day,\\nOceans > Ocean Chemistry > Chlorophyll,\\naqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
+"    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},\n" +
+"    \"license\": {\"type\": \"char\", \"data\": \"The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"},\n" +
+"    \"naming_authority\": {\"type\": \"char\", \"data\": \"gov.noaa.pfel.coastwatch\"},\n" +
+"    \"origin\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"processing_level\": {\"type\": \"char\", \"data\": \"3\"},\n" +
+"    \"project\": {\"type\": \"char\", \"data\": \"CoastWatch (http://coastwatch.noaa.gov/)\"},\n" +
+"    \"projection\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"    \"projection_type\": {\"type\": \"char\", \"data\": \"mapped\"},\n" +
+"    \"publisher_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"publisher_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"publisher_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"publisher_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"references\": {\"type\": \"char\", \"data\": \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\"},\n" +
+"    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
+"    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
+"    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
+"    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2006-12-15T00:00:00Z\"},\n" +
+"    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 360.0}\n" +
+"  },\n" +
+"  \"dimensions\": {\n" +
+"    \"time\": 3,\n" +
+"    \"longitude\": 1\n" +
+"  },\n" +
+"  \"variables\": {\n" +
+"    \"time\": {\n" +
+"      \"shape\": [\"time\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [1.0260864E9, 1.1661408E9]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"T\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 0},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Centered Time\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"time\"},\n" +
+"        \"time_origin\": {\"type\": \"char\", \"data\": \"01-JAN-1970 00:00:00\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"seconds since 1970-01-01T00:00:00Z\"}\n" +
+"      },\n" +
+"      \"data\": [1.0260864E9, 1.0960704E9, 1.1661408E9]\n" +
+"    },\n" +
+"    \"longitude\": {\n" +
+"      \"shape\": [\"longitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lon\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [360.0, 360.0]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"X\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 4},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Longitude\"},\n" +
+"        \"point_spacing\": {\"type\": \"char\", \"data\": \"even\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"longitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_east\"}\n" +
+"      },\n" +
+"      \"data\": [360.0]\n" +
+"    }\n" +
+"  }\n" +
+"}\n" +
+")";
+        tPo = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(tPo), expected, "results=\n" + results);
+
          //.tsv
         String2.log("\n*** EDDGridFromDap test get .TSV axis data\n");
         tName = gridDataset.makeNewFileForDapQuery(null, null, 
@@ -4048,6 +4271,370 @@ pre 2012-08-17 was
 "}\n";
         int po10 = results.indexOf("  :title");
         Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
+
+        //.ncoJson
+        String2.log("\n*** EDDGridFromDap test get .ncoJson data\n");
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]", 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".ncoJson"); 
+        //2017-08-03 I tested the resulting file for validity at https://jsonlint.com/
+        String2.log(">> NCO JSON " + EDStatic.fullTestCacheDirectory + tName);
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"{\n" +
+"  \"attributes\": {\n" +
+"    \"acknowledgement\": {\"type\": \"char\", \"data\": \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"},\n" +
+"    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Grid\"},\n" +
+"    \"composite\": {\"type\": \"char\", \"data\": \"true\"},\n" +
+"    \"contributor_name\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"contributor_role\": {\"type\": \"char\", \"data\": \"Source of level 2 data.\"},\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3\"},\n" +
+"    \"creator_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"creator_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"creator_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"creator_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"date_created\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"date_issued\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"Easternmost_Easting\": {\"type\": \"double\", \"data\": 245.82011806922097},\n" +
+"    \"geospatial_lat_max\": {\"type\": \"double\", \"data\": 49.82403334105115},\n" +
+"    \"geospatial_lat_min\": {\"type\": \"double\", \"data\": 28.985876360268577},\n" +
+"    \"geospatial_lat_resolution\": {\"type\": \"double\", \"data\": 0.041676313961565174},\n" +
+"    \"geospatial_lat_units\": {\"type\": \"char\", \"data\": \"degrees_north\"},\n" +
+"    \"geospatial_lon_max\": {\"type\": \"double\", \"data\": 245.82011806922097},\n" +
+"    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": 224.98437319134158},\n" +
+"    \"geospatial_lon_resolution\": {\"type\": \"double\", \"data\": 0.04167148975575877},\n" +
+"    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},\n" +
+"    \"geospatial_vertical_max\": {\"type\": \"double\", \"data\": 0.0},\n" +
+"    \"geospatial_vertical_min\": {\"type\": \"double\", \"data\": 0.0},\n" +
+"    \"geospatial_vertical_positive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
+"    \"geospatial_vertical_units\": {\"type\": \"char\", \"data\": \"m\"},\n" +
+"    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
+//2017-07-31T20:37:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+
+expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]\"},\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
+"    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"8-day,\\nOceans > Ocean Chemistry > Chlorophyll,\\naqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
+"    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},\n" +
+"    \"license\": {\"type\": \"char\", \"data\": \"The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"},\n" +
+"    \"naming_authority\": {\"type\": \"char\", \"data\": \"gov.noaa.pfel.coastwatch\"},\n" +
+"    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 49.82403334105115},\n" +
+"    \"origin\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"processing_level\": {\"type\": \"char\", \"data\": \"3\"},\n" +
+"    \"project\": {\"type\": \"char\", \"data\": \"CoastWatch (http://coastwatch.noaa.gov/)\"},\n" +
+"    \"projection\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"    \"projection_type\": {\"type\": \"char\", \"data\": \"mapped\"},\n" +
+"    \"publisher_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"publisher_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"publisher_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"publisher_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"references\": {\"type\": \"char\", \"data\": \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\"},\n" +
+"    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
+"    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
+"    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 28.985876360268577},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
+"    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2002-07-16T00:00:00Z\"},\n" +
+"    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 224.98437319134158}\n" +
+"  },\n" +
+"  \"dimensions\": {\n" +
+"    \"time\": 2,\n" +
+"    \"altitude\": 1,\n" +
+"    \"latitude\": 6,\n" +
+"    \"longitude\": 6\n" +
+"  },\n" +
+"  \"variables\": {\n" +
+"    \"time\": {\n" +
+"      \"shape\": [\"time\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [1.0260864E9, 1.0267776E9]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"T\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 0},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Centered Time\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"time\"},\n" +
+"        \"time_origin\": {\"type\": \"char\", \"data\": \"01-JAN-1970 00:00:00\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"seconds since 1970-01-01T00:00:00Z\"}\n" +
+"      },\n" +
+"      \"data\": [1.0260864E9, 1.0267776E9]\n" +
+"    },\n" +
+"    \"altitude\": {\n" +
+"      \"shape\": [\"altitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Height\"},\n" +
+"        \"_CoordinateZisPositive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [0.0, 0.0]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"Z\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 0},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Altitude\"},\n" +
+"        \"positive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"altitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"m\"}\n" +
+"      },\n" +
+"      \"data\": [0.0]\n" +
+"    },\n" +
+"    \"latitude\": {\n" +
+"      \"shape\": [\"latitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lat\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [28.985876360268577, 49.82403334105115]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"Y\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 4},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Latitude\"},\n" +
+"        \"point_spacing\": {\"type\": \"char\", \"data\": \"even\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"latitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_north\"}\n" +
+"      },\n" +
+"      \"data\": [28.985876360268577, 33.153507756425086, 37.32113915258161, 41.48877054873813, 45.65640194489464, 49.82403334105115]\n" +
+"    },\n" +
+"    \"longitude\": {\n" +
+"      \"shape\": [\"longitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lon\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [224.98437319134158, 245.82011806922097]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"X\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 4},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Longitude\"},\n" +
+"        \"point_spacing\": {\"type\": \"char\", \"data\": \"even\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"longitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_east\"}\n" +
+"      },\n" +
+"      \"data\": [224.98437319134158, 229.15152216691746, 233.31867114249334, 237.48582011806923, 241.65296909364508, 245.82011806922097]\n" +
+"    },\n" +
+"    \"chlorophyll\": {\n" +
+"      \"shape\": [\"time\", \"altitude\", \"latitude\", \"longitude\"],\n" +
+"      \"type\": \"float\",\n" +
+"      \"attributes\": {\n" +
+"        \"_FillValue\": {\"type\": \"float\", \"data\": -9999999.0},\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 30.0},\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": 0.03},\n" +
+"        \"colorBarScale\": {\"type\": \"char\", \"data\": \"Log\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 2},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Ocean Color\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Concentration Of Chlorophyll In Sea Water\"},\n" +
+"        \"missing_value\": {\"type\": \"float\", \"data\": -9999999.0},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"concentration_of_chlorophyll_in_sea_water\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"mg m-3\"}\n" +
+"      },\n" +
+"      \"data\":\n" + 
+"[ [ [ [ -9999999.0, -9999999.0, 0.05499, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.08882, 0.08416, -9999999.0, 0.34349, -9999999.0, -9999999.0 ],\n" +
+"[ 0.07901, 0.07788, 0.20406, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.10195, 0.13437, 0.14067, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, 0.38725, 0.14722, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.45281, 0.1994, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ] ] ],\n" +
+"[ [ [ -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.07097, -9999999.0 ],\n" +
+"[ 0.08856, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.08815, 0.08337, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, -9999999.0, 0.15922, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, 0.32735, 0.11346, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, 0.15682, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ] ] ] ]\n" +
+"    }\n" +
+"  }\n" +
+"}\n";
+//2017-08-01 I verified these number by hand in ERDDAP with 
+//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day.htmlTable?chlorophyll[(2002-07-08):1:(2002-07-16)][(0.0):1:(0.0)][(29):100:(50)][(225):100:(247)]
+        po10 = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
+
+        //.ncoJson with jsonp
+        String2.log("\n*** EDDGridFromDap test get .ncoJson data\n");
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]&.jsonp=myFunctionName", 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Datajp", ".ncoJson"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = "myFunctionName(" +
+"{\n" +
+"  \"attributes\": {\n" +
+"    \"acknowledgement\": {\"type\": \"char\", \"data\": \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"},\n" +
+"    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Grid\"},\n" +
+"    \"composite\": {\"type\": \"char\", \"data\": \"true\"},\n" +
+"    \"contributor_name\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"contributor_role\": {\"type\": \"char\", \"data\": \"Source of level 2 data.\"},\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3\"},\n" +
+"    \"creator_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"creator_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"creator_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"creator_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"date_created\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"date_issued\": {\"type\": \"char\", \"data\": \"2013-11-01Z\"},\n" +
+"    \"Easternmost_Easting\": {\"type\": \"double\", \"data\": 245.82011806922097},\n" +
+"    \"geospatial_lat_max\": {\"type\": \"double\", \"data\": 49.82403334105115},\n" +
+"    \"geospatial_lat_min\": {\"type\": \"double\", \"data\": 28.985876360268577},\n" +
+"    \"geospatial_lat_resolution\": {\"type\": \"double\", \"data\": 0.041676313961565174},\n" +
+"    \"geospatial_lat_units\": {\"type\": \"char\", \"data\": \"degrees_north\"},\n" +
+"    \"geospatial_lon_max\": {\"type\": \"double\", \"data\": 245.82011806922097},\n" +
+"    \"geospatial_lon_min\": {\"type\": \"double\", \"data\": 224.98437319134158},\n" +
+"    \"geospatial_lon_resolution\": {\"type\": \"double\", \"data\": 0.04167148975575877},\n" +
+"    \"geospatial_lon_units\": {\"type\": \"char\", \"data\": \"degrees_east\"},\n" +
+"    \"geospatial_vertical_max\": {\"type\": \"double\", \"data\": 0.0},\n" +
+"    \"geospatial_vertical_min\": {\"type\": \"double\", \"data\": 0.0},\n" +
+"    \"geospatial_vertical_positive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
+"    \"geospatial_vertical_units\": {\"type\": \"char\", \"data\": \"m\"},\n" +
+"    \"history\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\\n2013-11-01T20:42:40Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\\n";
+//2017-07-31T20:37:46Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+
+expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]&.jsonp=myFunctionName\"},\n" +
+"    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
+"    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"8-day,\\nOceans > Ocean Chemistry > Chlorophyll,\\naqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
+"    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},\n" +
+"    \"license\": {\"type\": \"char\", \"data\": \"The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"},\n" +
+"    \"naming_authority\": {\"type\": \"char\", \"data\": \"gov.noaa.pfel.coastwatch\"},\n" +
+"    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 49.82403334105115},\n" +
+"    \"origin\": {\"type\": \"char\", \"data\": \"NASA GSFC (OBPG)\"},\n" +
+"    \"processing_level\": {\"type\": \"char\", \"data\": \"3\"},\n" +
+"    \"project\": {\"type\": \"char\", \"data\": \"CoastWatch (http://coastwatch.noaa.gov/)\"},\n" +
+"    \"projection\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"    \"projection_type\": {\"type\": \"char\", \"data\": \"mapped\"},\n" +
+"    \"publisher_email\": {\"type\": \"char\", \"data\": \"erd.data@noaa.gov\"},\n" +
+"    \"publisher_name\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
+"    \"publisher_type\": {\"type\": \"char\", \"data\": \"institution\"},\n" +
+"    \"publisher_url\": {\"type\": \"char\", \"data\": \"https://www.pfeg.noaa.gov\"},\n" +
+"    \"references\": {\"type\": \"char\", \"data\": \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\"},\n" +
+"    \"satellite\": {\"type\": \"char\", \"data\": \"Aqua\"},\n" +
+"    \"sensor\": {\"type\": \"char\", \"data\": \"MODIS\"},\n" +
+"    \"source\": {\"type\": \"char\", \"data\": \"satellite observation: Aqua, MODIS\"},\n" +
+"    \"sourceUrl\": {\"type\": \"char\", \"data\": \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\"},\n" +
+"    \"Southernmost_Northing\": {\"type\": \"double\", \"data\": 28.985876360268577},\n" +
+"    \"standard_name_vocabulary\": {\"type\": \"char\", \"data\": \"CF Standard Name Table v29\"},\n" +
+"    \"summary\": {\"type\": \"char\", \"data\": \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\"},\n" +
+"    \"time_coverage_end\": {\"type\": \"char\", \"data\": \"2002-07-16T00:00:00Z\"},\n" +
+"    \"time_coverage_start\": {\"type\": \"char\", \"data\": \"2002-07-08T00:00:00Z\"},\n" +
+"    \"title\": {\"type\": \"char\", \"data\": \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\"},\n" +
+"    \"Westernmost_Easting\": {\"type\": \"double\", \"data\": 224.98437319134158}\n" +
+"  },\n" +
+"  \"dimensions\": {\n" +
+"    \"time\": 2,\n" +
+"    \"altitude\": 1,\n" +
+"    \"latitude\": 6,\n" +
+"    \"longitude\": 6\n" +
+"  },\n" +
+"  \"variables\": {\n" +
+"    \"time\": {\n" +
+"      \"shape\": [\"time\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [1.0260864E9, 1.0267776E9]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"T\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 0},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Time\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Centered Time\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"time\"},\n" +
+"        \"time_origin\": {\"type\": \"char\", \"data\": \"01-JAN-1970 00:00:00\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"seconds since 1970-01-01T00:00:00Z\"}\n" +
+"      },\n" +
+"      \"data\": [1.0260864E9, 1.0267776E9]\n" +
+"    },\n" +
+"    \"altitude\": {\n" +
+"      \"shape\": [\"altitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Height\"},\n" +
+"        \"_CoordinateZisPositive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [0.0, 0.0]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"Z\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 0},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Altitude\"},\n" +
+"        \"positive\": {\"type\": \"char\", \"data\": \"up\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"altitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"m\"}\n" +
+"      },\n" +
+"      \"data\": [0.0]\n" +
+"    },\n" +
+"    \"latitude\": {\n" +
+"      \"shape\": [\"latitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lat\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [28.985876360268577, 49.82403334105115]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"Y\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 4},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Latitude\"},\n" +
+"        \"point_spacing\": {\"type\": \"char\", \"data\": \"even\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"latitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_north\"}\n" +
+"      },\n" +
+"      \"data\": [28.985876360268577, 33.153507756425086, 37.32113915258161, 41.48877054873813, 45.65640194489464, 49.82403334105115]\n" +
+"    },\n" +
+"    \"longitude\": {\n" +
+"      \"shape\": [\"longitude\"],\n" +
+"      \"type\": \"double\",\n" +
+"      \"attributes\": {\n" +
+"        \"_CoordinateAxisType\": {\"type\": \"char\", \"data\": \"Lon\"},\n" +
+"        \"actual_range\": {\"type\": \"double\", \"data\": [224.98437319134158, 245.82011806922097]},\n" +
+"        \"axis\": {\"type\": \"char\", \"data\": \"X\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 4},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Location\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Longitude\"},\n" +
+"        \"point_spacing\": {\"type\": \"char\", \"data\": \"even\"},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"longitude\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degrees_east\"}\n" +
+"      },\n" +
+"      \"data\": [224.98437319134158, 229.15152216691746, 233.31867114249334, 237.48582011806923, 241.65296909364508, 245.82011806922097]\n" +
+"    },\n" +
+"    \"chlorophyll\": {\n" +
+"      \"shape\": [\"time\", \"altitude\", \"latitude\", \"longitude\"],\n" +
+"      \"type\": \"float\",\n" +
+"      \"attributes\": {\n" +
+"        \"_FillValue\": {\"type\": \"float\", \"data\": -9999999.0},\n" +
+"        \"colorBarMaximum\": {\"type\": \"double\", \"data\": 30.0},\n" +
+"        \"colorBarMinimum\": {\"type\": \"double\", \"data\": 0.03},\n" +
+"        \"colorBarScale\": {\"type\": \"char\", \"data\": \"Log\"},\n" +
+"        \"coordsys\": {\"type\": \"char\", \"data\": \"geographic\"},\n" +
+"        \"fraction_digits\": {\"type\": \"int\", \"data\": 2},\n" +
+"        \"ioos_category\": {\"type\": \"char\", \"data\": \"Ocean Color\"},\n" +
+"        \"long_name\": {\"type\": \"char\", \"data\": \"Concentration Of Chlorophyll In Sea Water\"},\n" +
+"        \"missing_value\": {\"type\": \"float\", \"data\": -9999999.0},\n" +
+"        \"standard_name\": {\"type\": \"char\", \"data\": \"concentration_of_chlorophyll_in_sea_water\"},\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"mg m-3\"}\n" +
+"      },\n" +
+"      \"data\":\n" + 
+"[ [ [ [ -9999999.0, -9999999.0, 0.05499, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.08882, 0.08416, -9999999.0, 0.34349, -9999999.0, -9999999.0 ],\n" +
+"[ 0.07901, 0.07788, 0.20406, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.10195, 0.13437, 0.14067, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, 0.38725, 0.14722, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.45281, 0.1994, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ] ] ],\n" +
+"[ [ [ -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.07097, -9999999.0 ],\n" +
+"[ 0.08856, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ 0.08815, 0.08337, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, -9999999.0, 0.15922, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, 0.32735, 0.11346, -9999999.0, -9999999.0, -9999999.0 ],\n" +
+"[ -9999999.0, 0.15682, -9999999.0, -9999999.0, -9999999.0, -9999999.0 ] ] ] ]\n" +
+"    }\n" +
+"  }\n" +
+"}\n" +
+")";
+//2017-08-01 I verified these number by hand in ERDDAP with 
+//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day.htmlTable?chlorophyll[(2002-07-08):1:(2002-07-16)][(0.0):1:(0.0)][(29):100:(50)][(225):100:(247)]
+        po10 = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
+
 
         //.tsv
         String2.log("\n*** EDDGridFromDap test get .TSV data\n");
@@ -4816,8 +5403,8 @@ String expected1 =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_e296_dcc3_34db\" active=\"true\">\n" +
-"    <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_cada_f1d6_7111\" active=\"true\">\n" +
+"    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday</sourceUrl>\n" +
 "    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" +   //60 or 180, important test of suggestReloadEveryNMinutes
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
@@ -7695,7 +8282,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); 
-        userDapQuery = "u[(1995-12-30)][][(22)][(225)]";
+        userDapQuery = "u[(0000-12-28)][][(22)][(225)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_clim", ".csv"); 
         results = new String((new ByteArray(
@@ -7703,7 +8290,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected = 
 "time,altitude,latitude,longitude,u\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
-"1995-12-30T00:00:00Z,10.0,22.0,225.0,-6.749089\n";
+"0000-12-13T00:00:00Z,10.0,22.0,225.0,-6.749089\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t)); 
@@ -9411,7 +9998,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.jpl.nasa.gov/</att>\n" +
 "        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/amsre/L3/sst_1deg_1mo/contents.html</att>\n" +
-"        <att name=\"keywords\">advanced, amsr, amsr-e, amsre, data, eos, intercomparisons, jet, jpl, laboratory, microwave, model, msr, nasa, nasa-jpl, obs, obs-amsre, obs4mips, observation, observations, ocean, oceans,\n" +
+"        <att name=\"keywords\">advanced, amsr, amsr-e, amsre, data, eos, intercomparisons, jet, jpl, laboratory, latitude, longitude, microwave, model, msr, nasa, nasa-jpl, obs, obs-amsre, obs4mips, observation, observations, ocean, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
 "output, prepared, propulsion, radiometer, remote, scanning, sea, sea_surface_temperature, sensing, surface, systems, temperature, time, tos</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -9519,7 +10106,7 @@ directionsForGenerateDatasetsXml() +
 
         String2.log("\n****************** EDDGridFromDap.test() *****************\n");
 
-/* */
+/* for releases, this line should have open/close comment */
         // standard tests 
         testBasic1();
         testBasic2();
@@ -9530,7 +10117,7 @@ directionsForGenerateDatasetsXml() +
         testScaleAddOffset();
         testNcml();
         //testPmelOscar(doGraphicsTests); DAPPER IS NO LONGER ACTIVE!
-        testGenerateDatasetsXml();
+        testGenerateDatasetsXml(); //often slow or troubled source
         testGenerateDatasetsXml2();
         testGenerateDatasetsXml3();
         testGenerateDatasetsXml4();

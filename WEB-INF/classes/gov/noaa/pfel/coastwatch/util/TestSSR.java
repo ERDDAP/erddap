@@ -436,6 +436,7 @@ public class TestSSR {
      */
     public static void main(String args[]) throws Throwable {
         SSR.verbose = true;
+/* for releases, this line should have open/close comment */
         runNonUnixTests();
         
 //        runUnixTests();

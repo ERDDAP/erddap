@@ -626,6 +626,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
         throws Throwable {
 
+        tLocalDirUrl = updateUrls(tLocalDirUrl); //http: to https:
+        oneFileDapUrl = updateUrls(oneFileDapUrl); //http: to https:
         String2.log("\n*** EDDTableFromThreddsFiles.generateDatasetsXml" +
             "\nlocalDirUrl=" + tLocalDirUrl + 
             " fileNameRegex=" + tFileNameRegex + 
@@ -676,7 +678,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    dataSourceTable.globalAttributes(), sourceAtts, colName, 
+                    dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
@@ -707,13 +709,17 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         if (externalAddGlobalAttributes == null)
             externalAddGlobalAttributes = new Attributes();
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
+
+        //tryToFindLLAT
+        tryToFindLLAT(dataSourceTable, dataAddTable);
+
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
+                hasLonLatTime(dataAddTable)? "Point" : "Other",
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -759,9 +765,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+        //last 2 params: includeDataType, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
-            "dataVariable", true, true, false));
+            "dataVariable", true, false));
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -841,7 +847,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
-"        <att name=\"keywords\">altitudes, center, data, data.nodc.noaa.gov, day, depth, expressed, flag, identifier, latitude, longitude, national, ncei, negative, nmsp, noaa, nodc, ocean, oceanographic, oceans,\n" +
+"        <att name=\"keywords\">center, data, data.nodc.noaa.gov, day, depth, flag, identifier, latitude, longitude, national, ncei, nmsp, noaa, nodc, ocean, oceanographic, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
 "quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, stationID, status, temperature, Temperature_flag, thredds, time, water, wcos, wes001, year, yearday, yearday_flag</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -2081,9 +2087,10 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n*** EDDTableFromThreddsFiles()");
 
         //usually run
-/* */
+/* for releases, this line should have open/close comment */
         testGetThreddsFileInfo();
         testGenerateDatasetsXml();
         testWcosTemp(deleteCachedInfo);  

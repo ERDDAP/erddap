@@ -3,12 +3,16 @@ acronym	fullName
 //Lines starting with // are ignored
 //Sources: https://www.nodc.noaa.gov/General/mhdj_acronyms3.html
 // and http://www.psmsl.org/train_and_info/training/manuals/acronyms.html
+// and http://www.bco-dmo.org/funding/355
+AASP	Australian Antarctic Sciences Program
 AATSR	Advanced Along Track Scanning Radiometer
 ABOM	Australia Bureau of Meteorology
 ACCLAIM	Antarctic Circumpolar Currents Levels by Altimetry and Island Measurement
+ACECRC	Antarctic Climate and Ecosystems Cooperative Research Centre
 ADCP	Acoustic Doppler Current Profiler
 ADCIRC	ADvanced CIRCulation
 adcirc	ADvanced CIRCulation
+AI	Agouron Institute
 AIMS	Australian Institute of Marine Science
 ALACE	Autonomous Lagrangian Circulation Explorer
 AMIP	Atmosphere Model Intercomparison Project
@@ -17,12 +21,14 @@ AMSRE	Advanced Microwave Scanning Radiometer on EOS
 AMSR-E	Advanced Microwave Scanning Radiometer on EOS
 AMSR	Advanced Microwave Scanning Radiometer
 ANDAS	Automated Near-real-time Data Acquiring System
+ANT	Antarctic Sciences
 AOD	Aerosol Optical Depth
 AODC	Australian Oceanographic Data Center
 AOML	Atlantic Oceanographic & Meteorological Laboratory
 AOOS	Alaska Ocean Observing System
 AOU	Apparent Oxygen Utilization
 APDRC	Asia-Pacific Data-Research Center
+ARC	Arctic Sciences
 ARGO	Array for Real-time Geostrophic Oceanography
 AR3	Third Assessment Report
 AR4	Fourth Assessment Report
@@ -34,11 +40,13 @@ ARSLOE	Atlantic Remote Sensing Land/Ocean Experiment
 ARW	Advanced Research Weather Research and Forecasting Model
 ASCAT	Advanced SCATterometer
 ASMD	Atlas of Surface Marine Data
+ASTEP	Astrobiology Science & Technology for Exploring Planets
 ATDB	Accession Tracking Data Base
 ATES	Alcatel Espace Systems
 AVHRR	Advanced Very High Resolution Radiometer
 AVISO	Archiving, Validation and Interpretation of Satellite Data in Oceanography
 AVNIR	Advanced Visible & Near-Infrared Radiometer
+AWI	Alfred Wegener Instituite for Polar and Marine Research
 AWIPS	Automated Weather Interactive Processing System
 AXBT	Airborne eXpendable BathyThermograph
 BCO-DMO	Biological and Chemical Oceanography Data Management Office
@@ -47,6 +55,7 @@ BODC	British Oceanographic Data Centre
 BOEM	Bureau of Ocean Energy Management
 BoM	Bureau of Meteorology
 BOM	Bureau of Meteorology
+C-DEBI	Center for Dark Energy Biosphere Investigations
 CalCOFI	California Cooperative Oceanic Fisheries Investigations
 CAMMP	Coastal and Marine Management Program
 CAMS	Climate Anomaly Monitoring System
@@ -54,11 +63,13 @@ CaRA	Caribbean Regional Association
 CariCOOS	Caribbean Coastal Ocean Observing System
 CARDEEP	CARbon dioxide and DEEPwater formation
 CARDS	Comprehensive Aerological Reference Data Set
+CASG	California Sea Grant
 CBMP	Chesapeake Bay Monitoring Program
 CCMA	Center for Coastal Monitoring and Assessment
 CCRS	Canadian Center for Remote Sensing
 CCSP	Climate Change Science Program
 CDAS	Climate Data Assimilation System
+CDFW	California Department of Fish and Wildlife
 CDOM	Colored Dissolved Organic Matter
 CDRI	Climate Data Research Institute
 CEMES	Centre d'Etudes de la Meteorologie Spatiale
@@ -70,6 +81,7 @@ CFC	ChloroFlouroCarbon
 CGDI	Canadian Geospatial Data Infrastructure
 CHLA	Chlorophyll-a
 CIGAR	Cooperative Investigations of the Caribbean & Adjacent Regions
+CIMAR	Centro de Investigacao Marinha e Ambiental
 CIMT	Center for Integrated Marine Technology
 CINECA	Cooperative Investigations of the Northern part of the Eastern Central Atlantic
 CIOSS	Cooperative Institute for Oceanographic Satellite Studies
@@ -102,35 +114,43 @@ COCMP	Coastal Ocean Currents Monitoring Program
 CODAR	Coastal Ocean Dynamics Applications Radar
 CODAS	Common Oceanographic Data Analysis System
 COGOW	Climatology of Global Ocean Winds
+CONICYT	National Commission for Science and Technology (CONICYT), Chile
 CONUS	Contiguous United States
+COOA	Coastal Ocean Observing and Analysis
 CPC	Climate Prediction Center
+CPO	Climate Program Office
 CPR	Continuous Plankton Recorder
 CRM	Coastal Relief Model
 CRMN	Coral Reef Monitoring Network
 CRU	Climatic Research Unit
 CRW	Coral Reef Watch
+CSCOR COP	Center for Sponsored Coastal Ocean Research Coastal Ocean Program
 CSIRO	Commonwealth Scientific and Industrial Research Organisation
 CTD	Conductivity, Temperature, Depth
 CWCGOM	CoastWatch Caribbean and Gulf of Mexico
 CW	CoastWatch
 DATARING	Data Acquisition for Tidal Applications for the Remote Interrogation of Network Gauges
 DCDB	Data Center for Digital Bathymetry
+DEB	Division of Environmental Biology
+DFO	Department of Fisheries and Oceans
 DOC	Department of Commerce
 DOD	Department of Defense
 DOE	Department of Energy
-DFO	Department of Fisheries and Oceans
 DMI	Danish Meteorological Institute
 DMSP	Defense Meteorological Satellite Program
+DSTL	Defence Science and Technology Laboratory
 DWD	Deutscher Wetterdienst
 DORIS	Doppler Orbitography and Radiopositioning Integrated by Satellite
 ECDA	Ensemble Coupled Data Assimilation
 ECDC	European Centre for Disease Prevention and Control
 //ECFWF	 typo: ECMWF?
+ECMCA	European Commission Marie Curie Actions Program
 ECMWF	European Centre for Medium-Range Weather Forecasts
 ECOMSED	Estuarine and Coastal Ocean Model with Sediment Transport
 EGMEX	Eastern Gulf of Mexico
 ENSO	El Nino - Southern Oscillation
 ENVISAT	ENVironmental SATellite
+EPA	Environmental Protection Agency
 ERS	European Remote Sensing Satellite
 ESDIM	Environmental Science Data and Information Management
 ESPRESSO	Experimental System for Predicting Shelf and Slope Optics
@@ -146,6 +166,9 @@ FCCC	Framework Convention on Climate Change
 FMRC	Forecast Model Run Collection
 FNMOC	Fleet Numerical Meteorology and Oceanography Center
 FOCI	Fisheries-Oceanography Cooperative Investigations
+FONACIT	Fondo Nacional de Ciencia, Tecnología e Innovación of Venezuela
+FP7-ENV-2010	European Commission Seventh Framework Program
+FRST	Foundation for Research, Science and Technology
 FSM	Free Surface Mask
 FWS	Fish & Wildlife Service
 GAC	Global Area Coverage
@@ -193,6 +216,7 @@ GRCTellus	Gravity Recovery and Climate Experiment Tellus
 GRACE	Gravity Recovery and Climate Experiment
 GSFC	Goddard Space Flight Center
 GSHHS	Global Self-consistent, Hierarchical, High-resolution Shorelines
+GTMBA	Global Tropical Moored Buoy Array
 GTOS	Global Terrestrial Observing System
 GTS	Global Telecommunications System
 GTSPP	Global Temperature-Salinity Profile Program
@@ -215,9 +239,11 @@ HURL	Hawai'i Undersea Research Laboratory
 HYCOM	HYbrid Coordinate Ocean Model
 IASNFS	Intra-Americas Sea Nowcast/Forecast System
 IATTC	Inter-American Tropical Tuna Commission
+ICER	Division of Integrative and Collaborative Education and Research
 ICOADS	International Comprehensive Ocean Atmosphere Data Set
 ICRAN	International Coral Reef Action Network
 IFREMER	Institut Francais de Recherche pour l'Exploitation de la Mer
+IGBP	International Geosphere Biosphere Programme
 IGOS	Integrated Global Observing Strategy
 IGOSS	Integrated Global Ocean Services System
 IHB	International Hydrographic Bureau
@@ -233,9 +259,11 @@ IOC	Intergovernmental Oceanographic Commission
 IODE	International Oceanographic Data Exchange
 IOCCG	International Ocean Colour Coordinating Group
 IOOS	Integrated Ocean Observing System
+IOS	Division of Integrative Organismal Systems
 IPCC	Intergovernmental Panel on Climate Change
 IPRC	International Pacific Research Center
 IR	InfraRed
+ISAT	International Science and Technology Fund
 ISOS	International Southern Ocean Studies
 ITCZ	InterTropical Convergence Zone
 ITF	Indonesian Through Flow
@@ -252,13 +280,16 @@ JMA	Japanese Meteorological Agency
 JPL	Jet Propulsion Laboratory
 JPO	Journal of Physical Oceanography
 JRA	Japanese Reanalysis
+KAUST	King Abdullah University of Science and Technology
 KFM	Kelp Forest Monitoring
 LAC	Local Area Coverage
 LTM	Long Term Mean
 LWP	Liquid Water Path
 MAO	Marine and Aviation Operations
 MARACOOS	Mid-Atlantic Regional Association Coastal Ocean Observing System
+MCB	Division of Molecular and Cellular Biosciences
 MCI	Maximum Chlorophyll Index
+MDNR	Maine Department of Marine Resources
 MEaSUREs	Making Earth System Data Records for Use in Research Environments
 //MED	Mediterranean?
 MEDAR	Mediterranean Data Archeology and Rescue
@@ -271,6 +302,7 @@ METOFFICE	Meteorological Office
 //METOPA
 MHI	Main Hawaiian Islands
 MMRP	Marine Mammal Research Program
+MNSG	Minnesota Sea Grant
 MOBS	Marine Optical Buoy System
 MOBY	MArine Optical BouY
 MOCE	Marine Optical Characterization Experiment
@@ -292,6 +324,7 @@ MSG	Meteosat Second Generation
 MSL	Mean Sea Level
 MSR	Microwave Scanning Radiometer
 MSS	MultiSpectral Scanner
+MSTF	Marine Science and Technology Foundation
 MSU	Microwave Sounding Unit
 MTPE	Mission to Planet Earth
 //MTS	Microwave Temperature Sounder, Marine Temperature Sounder , ...
@@ -304,6 +337,7 @@ NAM	North Americal Model
 NAO	North Atlantic Oscillation
 //NAR	NOAA AVHRR
 NASA	National Aeronautics and Space Administratio
+NATO	North Atlantic Treaty Organisation
 NAVGEM	Navy Global Environmental Model
 NAVOCEANO	Naval Oceanographic Office
 NAVO	Naval Oceanography
@@ -318,13 +352,15 @@ NCEP	National Centers for Environmental Prediction
 NCODA	Navy Coupled Ocean Data Assimilation
 NCOM	Navy Coastal Ocean Model
 NCRI	National Coral Reef Institute
+NCRIS	National Collaborative Research Infrastructure Strategy
 NDBC	National Data Buoy Center
 NDBO	National Data Buoy Office
 NDMC	National Drought Mitigation Center
 NDSI	Normalized Difference Snow Index
 NDVI	Normalized Difference Vegetation Index
+NEC	NorthEast Consortium
 NECC	North Equatorial CounterCurrent
-NEFS	Northeast Fisheries Science Center
+NEFSC	NorthEast Fisheries Science Center
 NEGOA	NorthEast Gulf of Alaska
 NEP	North East Pacific
 NERACOOS	Northeastern Regional Association Ocean Observing Systems
@@ -336,7 +372,10 @@ NEXRAD	NEXt Generation Weather RADar
 NGDC	National Geophysical Data Center
 NGWLMS	Next Generation Water Level Measurement System
 NHC	National Hurricane Center
+NIEHS	National Institute of Environmental Health Sciences
+NIH	National Institutes of Health
 NIST	National Institute of Standards and Technology
+NIWA	National Institute for Water and Atmospheric Research
 NJSOS	New Jersey Shelf Observing System
 NMAO	NOAA Marine and Aviation Operations
 NMC	National Meteorological Center
@@ -359,6 +398,7 @@ NRT	Near Real Time
 NSDI	National Spatial Data Infrastructure
 NSF	National Science Foundation
 NTF	National Tidal Facility
+NSERC	National Sciences and Engineering Research Council of Canada
 NSIDC	National Snow and Ice Data Center
 NSP	Neurotoxic Shellfish Poisoning
 NSSDAC	NOAA Shipboard Sensor Data Acquisition
@@ -378,7 +418,9 @@ OBIS	Ocean Biogeographic Information System
 OBPG	Ocean Biology Processing Group
 Obs4MIPs	Observations for Model Intercomparisons
 obs4MIPs	Observations for Model Intercomparisons
+OCB	Ocean Carbon and Biogeochemistry Program
 OCDD	Ocean Current Drifter Data
+OCE	Division of Ocean Sciences
 OCL	Ocean Climate Laboratory
 OCMP	Ocean-Coastal Management Program
 OCRM	Office of Ocean and Coastal Resource Management
@@ -386,8 +428,10 @@ OCTS	Ocean Color and Temperature Scanner
 ODP	Ocean Drilling Program
 ODV	Ocean Data View
 //ODYSSEA	a GHRSST dataset from Ifremer/CERSAT
+OEP	Ocean Exploration Program
 OGCM	Oceanic General Circulation Model
 OIA	Office of International Affairs
+OISE	Office of International Science and Engineering
 OISST	Optimum Interpolation Sea Surface Temperature
 OI	Optimum Interpolation
 OLR	Outgoing Longwave Radiation
@@ -419,9 +463,11 @@ PDSI	Palmer Drought Severity Index
 PEQUOD	Pacific Equatorial Ocean Dynamics
 PFEG	Pacific Fisheries Environmental Group
 PFEL	Pacific Fisheries Environmental Laboratory
+PFRP	Pelagic Fisheries Research Program
 PHOD	Physical Oceanography Division
 PhOD	Physical Oceanography Division
 PIRATA	Pilot Research Moored Array in the Tropical Atlantic
+PLR	Division of Polar Programs
 PMEL	Pacific Marine Environmental Laboratory
 PODAAC	Physical Oceanography Distributed Active Archive Center
 PODG	Physical Ocean Data Group
@@ -457,6 +503,7 @@ SAIC	Science Applications International Corporation
 SAL	Satellite Altimetry Laboratory
 SAR	Synthetic Aperture Radar
 SCAR	Scientific Committee on Antarctic Research
+SCOR	Scientific Committee on Oceanic Research
 scPDSI	Self-calibrated Palmer Drought Severity Index
 SCS	South China Sea
 SCUD	Surface CUrrents from a Diagnostic model
@@ -475,13 +522,16 @@ SLOSH	Sea, Lake & Overland Surge from Hurricanes
 SLP	Sea Level Pressure
 SLR	Satellite Laser Ranging
 SMI	Standard Mapped Image
+SNSF	Swiss National Science Foundation
 SODA	Simple Ocean Data Assimilation
 SOEST	School of Ocean and Earth Science and Technology
 SOFAR	Sound Fixing and Ranging
+SOI	Schmidt Ocean Institute
 SOLO	Sounding Oceanographic Lagrangian Observer
 SOSLC	Southern Ocean Sea Level Centre
 SPCZ	South Pacific Convergence Zone
 SPURS	Salinity Processes in the Upper Ocean Regional Study
+SQU	Sultan Qaboos University
 SSES	Single Sensor Error Statistics
 SSFC	Severe Storms Forecast Center
 SSH	Sea Surface Height
@@ -513,6 +563,7 @@ UH	University of Hawaii
 UHF	Ultra High Frequency
 UHSLC	University of Hawaii Sea Level Center
 UKMO	United Kingdom Meteorology Office
+UMe	University of Maine
 UNCED	United Nations Conference on Environment and Development
 UNDP	United Nations Development Programme
 UNEP	United Nations Environment Programme
@@ -520,6 +571,7 @@ UNESCO	United Nations Educational, Scientific and Cultural Organisation
 UNOLS	University-National Oceanographic Laboratory System
 US	United States
 USCRN	United States Climate Reference Network
+USDA	United States Department of Agriculture
 USDOC	United States Department of Commerce
 USDOD	United States Department of Defense
 USDOE	United States Department of Energy

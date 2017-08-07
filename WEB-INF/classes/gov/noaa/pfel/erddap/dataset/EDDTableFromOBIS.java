@@ -705,6 +705,7 @@ public class EDDTableFromOBIS extends EDDTable{
         Attributes externalAddGlobalAttributes)
         throws Throwable {
 
+        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("\n*** EDDTableFromOBIS.generateDatasetsXml" +
             "\nlocalSourceUrl=" + tLocalSourceUrl +
             " tSourceCode=" + tSourceCode + 
@@ -1451,6 +1452,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
      */
     public static void test() throws Throwable {
 
+/* for releases, this line should have open/close comment */
         //usually done
         testGenerateDatasetsXml();
 

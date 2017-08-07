@@ -1268,6 +1268,7 @@ public class LongArray extends PrimitiveArray {
      */
     public static void test() throws Throwable{
         String2.log("*** Testing LongArray");
+/* for releases, this line should have open/close comment */
 
         //** test default constructor and many of the methods
         LongArray anArray = new LongArray();

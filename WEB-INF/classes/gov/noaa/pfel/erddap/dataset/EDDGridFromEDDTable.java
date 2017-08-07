@@ -833,11 +833,11 @@ public class EDDGridFromEDDTable extends EDDGrid {
             "    -->\n\n");
         results.append(writeVariablesForDatasetsXml(sourceAxisTable, addAxisTable, 
             "axisVariable",        //assume LLAT already identified
-            false, false, false)); //includeDataType, tryToFindLLAT, questionDestinationName
+            false, false)); //includeDataType, questionDestinationName
         results.append("\n");
         results.append(writeVariablesForDatasetsXml(sourceDataTable, addDataTable, 
             "dataVariable", 
-            false, false, false)); //includeDataType, tryToFindLLAT, questionDestinationName
+            false, false)); //includeDataType, questionDestinationName
         results.append("\n" +
             "    <!-- *** Insert the entire <dataset> chunk for " + eddTableID + " here.\n" +
             "       If the original dataset will be accessible to users, change the\n" +
@@ -1528,7 +1528,7 @@ expected=
 
         String2.log("\n****************** EDDGridFromEDDTable.test() *****************\n");
         // standard tests 
-        /* */
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml(); 
         testBasic();
         /* */

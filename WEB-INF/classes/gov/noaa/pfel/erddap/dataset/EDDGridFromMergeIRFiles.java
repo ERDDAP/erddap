@@ -993,6 +993,7 @@ String expected2 =
 
     /** This tests this class. */
     public static void test() throws Throwable {
+/* for releases, this line should have open/close comment */
         testGenerateDatasetsXml();
         testMergeIR();
     }

@@ -568,6 +568,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     public static String generateDatasetsXml(String serverType, String startUrl, 
         String fileNameRegex, int tReloadEveryNMinutes) throws Throwable {
 
+        startUrl = updateUrls(startUrl); //http: to https:
         String2.log("\n*** EDDGridAggregateExistingDimension.generateDatasetsXml" +
             "\nserverType=" + serverType + " startUrl=" + startUrl + 
             "\nfileNameRegex=" + fileNameRegex + 
@@ -593,7 +594,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             sa = FileVisitorDNLS.getUrlsFromWAF(
                 startUrl, fileNameRegex, recursive, pathRegex);
         } else {
-            throw new RuntimeException("ERROR: serverType must be \"hyrax\" or \"thredds\".");
+            throw new RuntimeException("ERROR: serverType must be \"hyrax\", \"thredds\", or \"waf\".");
         }
 
         if (sa.length == 0)
@@ -760,7 +761,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"gctp_zone\">null</att>\n" +
 "        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">1day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, daily, data, day, degrees, global, imaging, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
+"        <att name=\"keywords\">1day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, daily, data, day, degrees, global, imaging, latitude, longitude, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
 "orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
 "        <att name=\"pass_date\">null</att>\n" +
@@ -944,7 +945,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, level, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
+"atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
@@ -1487,6 +1488,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
     public static void test() throws Throwable {
 
         String2.log("\n****************** EDDGridAggregateExistingDimension.test() *****************\n");
+/* for releases, this line should have open/close comment */       
         testGenerateDatasetsXml();
         testBasic();
 

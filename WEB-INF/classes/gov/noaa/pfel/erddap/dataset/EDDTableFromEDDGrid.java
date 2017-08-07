@@ -1426,7 +1426,7 @@ expected2 =
         String2.log("\n****************** EDDTableFromEDDGrid.test() *****************\n");
         testVerboseOn();
 
-/* */
+/* for releases, this line should have open/close comment */
         //always done        
         testBasic();
         testTableFromGriddap();

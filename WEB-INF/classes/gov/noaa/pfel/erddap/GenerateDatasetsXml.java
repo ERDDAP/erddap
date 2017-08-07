@@ -157,6 +157,7 @@ public class GenerateDatasetsXml {
             "EDDGridLonPM180FromErddapCatalog",
             "EDDTableFromAsciiFiles",
             "EDDTableFromAwsXmlFiles",
+            "EDDTableFromBCODMO",
             "EDDTableFromCassandra",
             "EDDTableFromColumnarAsciiFiles",
             "EDDTableFromDapSequence",
@@ -346,6 +347,15 @@ public class GenerateDatasetsXml {
                         s1, s2, s3, String2.parseInt(s4, 1), String2.parseInt(s5, 2), 
                         String2.parseInt(s6, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, null));
+
+                } else if (eddType.equals("EDDTableFromBCODMO")) {
+                    s1 = get(args,  1,  s1, "Use local files if possible (true|false)");
+                    s2 = get(args,  2,  s2, "Dataset Catalog URL");
+                    s3 = get(args,  3,  s3, "Base directory for files");
+                    s4 = get(args,  4,  s4, "Dataset number regex");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO(
+                        String2.parseBoolean(s1), s2, s3, s4));
 
                 //currently no EDDTableFromBMDE  //it is inactive
 
