@@ -5169,7 +5169,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 //* OperationNotSupported  Request is for an operation that is not supported by this server
 //* MissingParameterValue  Operation request does not include a parameter value, and this server did not declare a default value for that parameter
 //* InvalidParameterValue  Operation request contains an invalid parameter value a
-//* VersionNegotiationFailed  List of versions in “AcceptVersions” parameter value in GetCapabilities operation request did not include any version supported by this server
+//* VersionNegotiationFailed  List of versions in "AcceptVersions" parameter value in GetCapabilities operation request did not include any version supported by this server
 //* InvalidUpdateSequence  Value of (optional) updateSequence parameter in GetCapabilities operation request is greater than current value of service metadata updateSequence number
 //* OptionNotSupported  Request is for an option that is not supported by this server
 //* NoApplicableCode   No other exceptionCode specified by this service and server applies to this exception
@@ -11689,6 +11689,28 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                                 EDStatic.restfulViaService + "</a>.\n" +
                             "\n");
                     }
+                    if(EDStatic.isSchemaDotOrgEnabled()){
+                        String roles[] = EDStatic.getRoles(loggedInAs);
+                        ArrayList<EDD> datasets = new ArrayList<EDD>();
+                        for (int i = 0; i < tIDs.size(); i++) {
+                            String tId = tIDs.get(i);
+                            EDD edd = gridDatasetHashMap.get(tId);
+                            if (edd == null)
+                                edd = tableDatasetHashMap.get(tId);
+                            if (edd == null)  //if just deleted
+                                continue;
+                            boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
+                            if (isAllDatasets)
+                                continue;
+                            boolean isAccessible = edd.isAccessibleTo(roles);
+                            boolean graphsAccessible = isAccessible || edd.graphsAccessibleToPublic();
+                            if (!EDStatic.listPrivateDatasets && !isAccessible && !graphsAccessible)
+                                continue;
+                            datasets.add(edd);
+                        }
+                        writer.write(EDStatic.theSchemaDotOrgDataCatalog(datasets.toArray(new EDD[datasets.size()])));
+                
+                    }
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
@@ -11903,6 +11925,14 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
                 //close the table
                 writer.write("</table>\n");
+
+                if(EDStatic.isSchemaDotOrgEnabled()){
+                    String tId = parts[0];
+                    boolean isAllDatasets = tId.equals(EDDTableFromAllDatasets.DATASET_ID);
+                    if (!isAllDatasets){
+                        writer.write(EDStatic.theSchemaDotOrgDataset(edd));
+                   }
+                }
 
                 //list plain file types
                 writer.write(
