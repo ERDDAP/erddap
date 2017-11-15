@@ -53,6 +53,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -153,7 +160,7 @@ public class EDStatic {
      * <br>1.78 released on 2017-05-27
      * <br>1.80 released on 2017-08-04
      */   
-    public static String erddapVersion = "1.80";  
+    public static String erddapVersion = "1.80.mi";  
 
     /** 
      * This is almost always false.  
@@ -1213,6 +1220,7 @@ public static boolean developmentMode = false;
      */
     private static Table gdxAcronymsTable; 
     private static HashMap<String,String> gdxAcronymsHashMap, gdxVariableNamesHashMap; 
+    private static Invocable compiledJavascript;
 
     /** This static block reads this class's static String values from
      * contentDirectory, which must contain setup.xml and datasets.xml 
@@ -2582,6 +2590,22 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             computerName = "";
         }
 
+        try  {
+            String javascript = setup.getString("javascript",    "");
+            ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript");
+            engine.eval(javascript);
+            compiledJavascript = (Invocable) engine;
+            String2.log("javascript section compiled successfully");
+            if(compiledJavascript.getInterface(SchemaDotOrgDataCatalog.class) == null){
+              String2.log("WARNING: the javascript did not implement the SchemaDotOrgDataCatalog interface");
+            }
+            if(compiledJavascript.getInterface(SchemaDotOrgDataset.class) == null){
+              String2.log("WARNING: the javascript did not implement the SchemaDotOrgDataset interface");
+            }
+        } catch (Throwable t){
+            String2.log("WARNING: javascript section of setup.xml could not be compiled because " + MustBe.throwableToString(t));
+        }
+
         //**************************************************************** 
         //other initialization
 
@@ -3500,6 +3524,59 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         }
     public static String theLongDescriptionHtml(   String tErddapUrl) {return String2.replaceAll(theLongDescriptionHtml,  "&erddapUrl;", tErddapUrl); }
     public static String theShortDescriptionHtml(  String tErddapUrl) {return String2.replaceAll(theShortDescriptionHtml, "&erddapUrl;", tErddapUrl); }
+
+    public static interface SchemaDotOrgDataCatalog {
+        Object getSchemaDotOrgDataCatalog(EDD[] datasets);
+        String toLdJson(Object obj);
+    }
+
+    public static interface SchemaDotOrgDataset {
+        Object getSchemaDotOrgDataset(EDD dataset);
+        String toLdJson(Object obj);
+    }
+
+    private static SchemaDotOrgDataCatalog getSchemaDotOrgDataCatalogImpl(){
+        if (compiledJavascript != null)
+            return compiledJavascript.getInterface(SchemaDotOrgDataCatalog.class);
+        return null;
+    }
+
+    private static SchemaDotOrgDataset getSchemaDotOrgDatasetImpl(){
+        if (compiledJavascript != null)
+            return compiledJavascript.getInterface(SchemaDotOrgDataset.class);
+        return null;
+    }
+
+    public static boolean isSchemaDotOrgEnabled() { 
+         return getSchemaDotOrgDataCatalogImpl() != null;
+    }
+
+    public static String theSchemaDotOrgDataCatalog(EDD[] datasets) {
+        SchemaDotOrgDataCatalog impl = getSchemaDotOrgDataCatalogImpl();
+        if (impl == null)
+            return "";
+        try{
+            Object result = impl.getSchemaDotOrgDataCatalog(datasets);
+            return impl.toLdJson(result);
+        }catch (Throwable t){
+            String2.log("Error in getting schema.org DataCatalog: "+MustBe.throwableToString(t));
+            return "";
+        }
+    }
+
+    public static String theSchemaDotOrgDataset(EDD dataset) {
+        SchemaDotOrgDataset impl = getSchemaDotOrgDatasetImpl();
+        if (impl == null)
+            return "";
+        try{
+            Object result = impl.getSchemaDotOrgDataset(dataset);
+            return impl.toLdJson(result);
+        }catch (Throwable t){
+            String2.log("Error in getting schema.org Dataset: "+MustBe.throwableToString(t));
+            return "";
+        }
+    }
+
     public static String erddapHref(               String tErddapUrl) {
         return "<a title=\"" + clickERDDAP + "\" \n" +
             "rel=\"start\" " +

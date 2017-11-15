@@ -3002,6 +3002,192 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA
     please email them to <tt>bob dot simons at noaa dot gov</tt> .
   <br>&nbsp;
 
+  </li>
+
+  <li><b><a name="json-ld-support">Semantically Markup your Datasets</a></b>  
+  <p>You can now easily markup your 
+    <a href="https://developers.google.com/search/docs/data-types/datasets" 
+     title="Visit google site for full explanation">datasets</a> using
+     <a href='https://json-ld.org'>json-ld</a> for discovery and indexing 
+     by search engines and other semantic tools. This feature is not enabled by default.</p>
+  <p>Markup is implemented javascript code which is executed on the erddap
+   server, giving you the flexibility to design as you best see fit.
+   To see the json-ld markup, view the source on the 
+   <a href="../info/index.html">info/index.html</a> page and on the 
+   info/index.html page for each dataset. 
+  </p>
+  <p>Once ready, you can check your implementation by submitting the index 
+  pages to the 
+  <a href="https://search.google.com/structured-data/testing-tool">structured
+  data testing tool.</a>;
+  Finally when done you can submit your info/index.html pages to the search
+   engines in the usual way.</p>
+  <p>To get started, simply copy the section below into the bottom of your
+   setup.xml file (before &#x3C;/erddapSetup&#x3E;).</p>
+  <textarea style="width: 100%" rows=20>
+&#x3C;!--
+The javascript section allows you to implement a few methods which,
+if provided, will be evaluated on the ERDDAP server (not in the browser).
+--&#x3E;
+&#x3C;javascript&#x3E;&#x3C;![CDATA[
+var EDStatic = Packages.gov.noaa.pfel.erddap.util.EDStatic;
+/*
+ * Encode an application/ld+json object as a string within script tags.
+ */
+function toLdJson(obj){
+  return &#x27;&#x3C;script type=&#x22;application/ld+json&#x22;&#x3E;\n&#x27;+JSON.stringify(obj,null,2)+&#x27;\n&#x3C;/script&#x3E;\n&#x27;;
+}
+function getOwnerInfo(){
+                return {
+                                &#x22;@type&#x22;: &#x22;Organization&#x22;,
+                                &#x22;name&#x22;: &#x22;Example Institute&#x22;,
+                                &#x22;alternateName&#x22;: &#x22;A Good Institute&#x22;,
+                                &#x22;address&#x22;: {
+                                                &#x22;@type&#x22;: &#x22;PostalAddress&#x22;,
+                                                &#x22;addressCountry&#x22;: &#x22;US&#x22;,
+                                                &#x22;addressLocality&#x22;: &#x22;70 Bowman St, South Windsor&#x22;,
+                                                &#x22;addressRegion&#x22;: &#x22;Connecticut&#x22;,
+                                                &#x22;postalCode&#x22;: &#x22;CT 06074&#x22;
+                                },
+                                &#x22;telephone&#x22;: &#x22;(+)1 (234) 567-8910&#x22;,
+                                &#x22;faxNumber&#x22;: &#x22;(+)1 (234) 567-8901&#x22;,
+                                &#x22;email&#x22;: &#x22;institute.mail@example.com&#x22;,
+                                &#x22;sameAs&#x22;: &#x22;http://www.example.com&#x22;
+                };
+}
+/*
+ * return an object representation of the DataCatalog
+ */
+function getSchemaDotOrgDataCatalog(datasets){
+     var baseUrl = EDStatic.publicErddapUrl(true);
+     var answer = {
+                &#x22;@context&#x22;: &#x22;http://schema.org&#x22;,
+                &#x22;@type&#x22;: &#x22;DataCatalog&#x22;,
+                &#x22;name&#x22;: &#x22;Example ERDDAP Server&#x22;,
+                &#x22;alternativeHeadline&#x22;: &#x22;Serving data from the Example Institute&#x22;,
+                &#x22;url&#x22;: baseUrl,
+                &#x22;publisher&#x22;: getOwnerInfo(),
+                &#x22;fileFormat&#x22;: [
+                      &#x22;application/geo+json&#x22;,
+                      &#x22;application/json&#x22;,
+                      &#x22;text/csv&#x22;
+                ],
+                &#x22;isAccessibleForFree&#x22;: &#x22;True&#x22;,
+                &#x22;dataset&#x22;:[]
+      };
+      for( var i=0; i&#x3C;datasets.length;i++){
+          var dataset = {
+              &#x22;@type&#x22;: &#x22;Dataset&#x22;,
+              &#x22;name&#x22;: datasets[i].title(),
+              //&#x22;sameAs&#x22;: baseUrl+&#x22;/&#x22;+datasets[i].dapProtocol()+&#x22;/&#x22;+datasets[i].datasetID()+&#x22;.html&#x22;
+              &#x22;sameAs&#x22;: baseUrl+&#x22;/info/&#x22;+datasets[i].datasetID()+&#x22;/index.html&#x22;
+          };
+          answer.dataset.push(dataset);
+      }
+      return answer;
+}
+
+function getSchemaDotOrgDataset(dataset){
+    var baseUrl = EDStatic.publicErddapUrl(true);
+    var answer = {
+        &#x22;@context&#x22;: &#x22;http://schema.org&#x22;,
+        &#x22;@type&#x22;: &#x22;Dataset&#x22;,
+        &#x22;name&#x22;: dataset.title(),
+        &#x22;description&#x22;: dataset.summary(),
+        &#x22;url&#x22;: baseUrl+&#x22;/&#x22;+dataset.dapProtocol()+&#x22;/&#x22;+dataset.datasetID()+&#x22;.html&#x22;,
+        &#x22;includedInDataCatalog&#x22;: {
+                &#x22;@type&#x22;: &#x22;DataCatalog&#x22;,
+                &#x22;name&#x22;: &#x22;Example Institute ERDDAP Server&#x22;,
+                &#x22;sameAs&#x22;: &#x22;http://www.example.com&#x22;
+        },
+        &#x22;creator&#x22;: getOwnerInfo(),
+        &#x22;license&#x22;: dataset.combinedGlobalAttributes().getString(&#x22;license&#x22;),
+        keywords: [],
+        &#x22;variableMeasured&#x22;: []
+       };
+       var keywords = dataset.keywords();
+       for(var i = 0;i&#x3C;keywords.length; i++){
+          answer.keywords.push(keywords[i]);
+       }
+
+       var edv = [];
+       var arr = dataset.dataVariables();
+       for(var j=0;j&#x3C;arr.length;j++){
+         edv.push(arr[j]);
+       }
+       if(dataset.axisVariables){
+           arr = dataset.axisVariables();
+           for(var j=0;j&#x3C;arr.length;j++){
+             edv.push(arr[j]);
+           }
+       }
+       for(var i=0;i&#x3C;edv.length;i++){
+         var variable = {
+              &#x22;@type&#x22;: &#x22;PropertyValue&#x22;,
+              name: edv[i].destinationName(),
+              propertyID: edv[i].longName()
+         };
+         if(i != dataset.timeIndex() &#x26;&#x26; edv[i].units()){
+             variable.unitText = edv[i].units()
+         }
+         var maxValue = edv[i].destinationMaxString();
+         if(maxValue.length){
+           if(!isNaN(maxValue)){
+              maxValue = edv[i].destinationMax();
+           }
+           variable.maxValue = maxValue;
+         }
+         var minValue = edv[i].destinationMinString();
+         if(minValue.length){
+           if(!isNaN(minValue)){
+              minValue = edv[i].destinationMin();
+           }
+           variable.minValue = minValue;
+         }
+         answer.variableMeasured.push(variable);
+       }
+       //spatial coverage
+       var ilat = dataset.latIndex();
+       var ilon = dataset.lonIndex();
+       if(ilat&#x3E;=0 &#x26;&#x26; ilon&#x3E;=0){
+          edv = dataset.axisVariables? dataset.axisVariables()[ilon] : dataset.dataVariables()[ilon];
+          if(edv.destinationMinString().length &#x26;&#x26; edv.destinationMaxString().length){
+              var west = edv.destinationMin();
+              var east = edv.destinationMax();
+              if (west &#x3E;= 180) {
+                   west -= 360; east -= 360;
+              }
+              if (west &#x3C; 180 &#x26;&#x26; east &#x3E; 180){ //span date line?
+                   west = -180; east = 180;
+              }
+              edv = dataset.axisVariables? dataset.axisVariables()[ilat] : dataset.dataVariables()[ilat];
+              if(edv.destinationMinString().length &#x26;&#x26; edv.destinationMaxString().length){
+                  var south = edv.destinationMin();
+                  var north = edv.destinationMax();
+                  answer.spatialCoverage = {
+                    &#x22;@type&#x22;: &#x22;Place&#x22;,
+                        &#x22;geo&#x22;: {
+                                &#x22;@type&#x22;: &#x22;GeoShape&#x22;,
+                                &#x22;box&#x22;: &#x22;&#x22;+west+&#x22; &#x22;+south+&#x22; &#x22;+east+&#x22; &#x22;+north,
+                        }
+                   };
+              }
+          }
+       }
+       var itime = dataset.timeIndex();
+       if(itime&#x3E;=0){
+        edv = dataset.axisVariables? dataset.axisVariables()[itime] : dataset.dataVariables()[itime];
+        if(edv.destinationMinString().length &#x26;&#x26; edv.destinationMaxString().length){
+            answer.temporalCoverage=edv.destinationMinString()+&#x22;/&#x22;+edv.destinationMaxString();
+        }
+       }
+
+    return answer;
+}
+]]&#x3E;&#x3C;/javascript&#x3E;
+
+  </textarea>
+  </li>
 </ul>
 
 <!-- ******* -->
