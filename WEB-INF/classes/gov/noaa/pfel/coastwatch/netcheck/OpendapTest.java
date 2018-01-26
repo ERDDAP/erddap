@@ -224,7 +224,7 @@ public class OpendapTest extends NetCheckTest {
             //check mustRespondWithinSeconds
             //String2.log("opendap time=" + time);
             StringBuilder errorSB = new StringBuilder();
-            if (Math2.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
+            if (Double.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
                 errorSB.append("  " + String2.ERROR + ": response time (" + (time/1000.0) + 
                     " s) was too slow (mustRespondWithinSeconds = " + 
                     mustRespondWithinSeconds + ").\n");
@@ -320,7 +320,7 @@ public class OpendapTest extends NetCheckTest {
         error = opendapTest.test();
         Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS AGssta 3day finished successfully   time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
 
         //test of THREDDS opendap  CMusfc hday
         String2.log("\n*** netcheck.OpendapTest THREDDS CMusfc hday");
@@ -340,7 +340,7 @@ public class OpendapTest extends NetCheckTest {
         error = opendapTest.test();
         Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS CMusfc hday finished successfully   time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
 
         //test of THREDDS opendap  GAssta hday
         String2.log("\n*** netcheck.OpendapTest THREDDS GAssta hday");
@@ -360,7 +360,7 @@ public class OpendapTest extends NetCheckTest {
         error = opendapTest.test();
         Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS GAssta hday finished successfully   time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
 
         //test of THREDDS opendap MBchla 1day
         String2.log("\n*** netcheck.OpendapTest THREDDS MBchla 1day");
@@ -380,7 +380,7 @@ public class OpendapTest extends NetCheckTest {
         error = opendapTest.test();
         Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS MBchla 1day finished successfully   time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
 
 
         //test of THREDDS opendap QScurl 8day
@@ -401,7 +401,7 @@ public class OpendapTest extends NetCheckTest {
         error = opendapTest.test();
         Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS QScurl 8day finished successfully   time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
         /* */
 
     }

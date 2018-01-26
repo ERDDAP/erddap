@@ -67,7 +67,7 @@ public class HdfScientificData extends HdfTag {
 
         tagType = 0x02be;
         this.referenceNumber = referenceNumber;
-        data = File2.read(stream, length);
+        data = File2.readFully(stream, length);
     }
 
     /**

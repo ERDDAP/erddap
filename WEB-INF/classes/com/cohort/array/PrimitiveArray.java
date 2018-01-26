@@ -17,6 +17,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -105,6 +106,10 @@ public abstract class PrimitiveArray {
      * @return a PrimitiveArray which (at least initially) uses the array for data storage.
      */
     public static PrimitiveArray factory(Object o) {
+        if (o == null)
+            throw new IllegalArgumentException(String2.ERROR + 
+                " in PrimitiveArray.factory: o is null.");
+
         if (o instanceof char[][]) {
             char[][] car = (char[][])o;
             int nStrings = car.length;
@@ -126,6 +131,7 @@ public abstract class PrimitiveArray {
         if (o instanceof byte[])   return new ByteArray((byte[])o);
         if (o instanceof char[])   return new CharArray((char[])o);
         if (o instanceof String[]) return new StringArray((String[])o);
+
         if (o instanceof Object[]) {
             Object oar[] = (Object[])o;
             int n = oar.length;
@@ -135,12 +141,18 @@ public abstract class PrimitiveArray {
             return sa;
         }
 
-        if (o == null)
-            throw new IllegalArgumentException(String2.ERROR + 
-                " in PrimitiveArray.factory: o is null.");
-        throw new IllegalArgumentException(String2.ERROR + 
-            " in PrimitiveArray.factory: unexpected object type: " + o.toString());
+        if (o instanceof Double)   return new DoubleArray(new double[]{((Double)o).doubleValue()});
+        if (o instanceof Float)    return new FloatArray( new float[ ]{((Float)o).floatValue()});
+        if (o instanceof Long)     return new LongArray(  new long[  ]{((Long)o).longValue()});
+        if (o instanceof Integer)  return new IntArray(   new int[   ]{((Integer)o).intValue()});
+        if (o instanceof Short)    return new ShortArray( new short[ ]{((Short)o).shortValue()});
+        if (o instanceof Byte)     return new ByteArray(  new byte[  ]{((Byte)o).byteValue()});
+        if (o instanceof Character)return new CharArray(  new char[  ]{((Character)o).charValue()});
+
+        //String and fall through
+        return new StringArray(new String[]{o.toString()});
     }
+
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
@@ -379,10 +391,10 @@ public abstract class PrimitiveArray {
     abstract public Class elementClass();
 
     /**
-     * This returns the string form (e.g., "float" or "String") 
+     * This returns the string form (e.g., "float", "int", "char" or "String") 
      * of the element type.
      *
-     * @return the string form (e.g., "float" or "String") 
+     * @return the string form (e.g., "float", "int", "char" or "String") 
      * of the element type.
      */
     public String elementClassString() {
@@ -624,6 +636,12 @@ public abstract class PrimitiveArray {
             type == int.class ||
             type == short.class ||
             type == byte.class;
+    }
+
+    /** This indicates if this class' type is float.class or double.class. 
+     */
+    public boolean isFloatingPointType() {
+        return false;
     }
 
     /** 
@@ -1170,7 +1188,7 @@ public abstract class PrimitiveArray {
 
         for (int i = 0; i < size; i++) {
             double d = getDouble(i); //converts local missingValue to Double.NaN
-            if (Math2.isFinite(d)) { 
+            if (Double.isFinite(d)) { 
                 n++;
                 min = Math.min(min, d);
                 max = Math.max(max, d);
@@ -1268,6 +1286,12 @@ public abstract class PrimitiveArray {
     }
 
     /**
+     * This reverses the order of the bytes in each value,
+     * e.g., if the data was read from a little-endian source.
+     */
+    abstract public void reverseBytes();
+
+    /**
      * This writes 'size' elements to a DataOutputStream.
      *
      * @param dos the DataOutputStream
@@ -1277,13 +1301,7 @@ public abstract class PrimitiveArray {
      *    But if size=0, this returns 0.
      * @throws Exception if trouble
      */
-    public int writeDos(DataOutputStream dos) throws Exception {
-        //ByteArray overwrites this
-        int nb = 0;
-        for (int i = 0; i < size; i++)
-            nb = writeDos(dos, i);
-        return nb;
-    }
+    abstract public int writeDos(DataOutputStream dos) throws Exception;
 
     /**
      * This writes one element to a DataOutputStream.
@@ -1584,8 +1602,8 @@ public abstract class PrimitiveArray {
                 for (int i = 0; i < size; i++) {
                     float f1 = getFloat(i);
                     float f2 = other.getFloat(i);
-                    if (Math2.isFinite(f1)) {
-                        if (Math2.isFinite(f2)) {
+                    if (Float.isFinite(f1)) {
+                        if (Float.isFinite(f2)) {
                             if (f1 != f2) //exact 
                                 return MessageFormat.format(ArrayDifferentValue, "" + i, 
                                     "" + f1, "" + f2);
@@ -1593,7 +1611,7 @@ public abstract class PrimitiveArray {
                             return MessageFormat.format(ArrayDifferentValue, "" + i, 
                                 "" + f1, "" + f2);
                         }
-                    } else if (Math2.isFinite(f2)) {
+                    } else if (Float.isFinite(f2)) {
                         return MessageFormat.format(ArrayDifferentValue, "" + i, 
                             "" + f1, "" + f2);
                     }
@@ -1617,8 +1635,8 @@ public abstract class PrimitiveArray {
                 for (int i = 0; i < size; i++) {
                     double d1 = getDouble(i);
                     double d2 = other.getDouble(i);
-                    if (Math2.isFinite(d1)) {
-                        if (Math2.isFinite(d2)) {
+                    if (Double.isFinite(d1)) {
+                        if (Double.isFinite(d2)) {
                             if (d1 != d2) //exact
                                 return MessageFormat.format(ArrayDifferentValue, "" + i, 
                                     "" + d1, "" + d2);
@@ -1626,7 +1644,7 @@ public abstract class PrimitiveArray {
                             return MessageFormat.format(ArrayDifferentValue, "" + i, 
                                 "" + d1, "" + d2);
                         }
-                    } else if (Math2.isFinite(d2)) {
+                    } else if (Double.isFinite(d2)) {
                         return MessageFormat.format(ArrayDifferentValue, "" + i, 
                             "" + d1, "" + d2);
                     }
@@ -2614,7 +2632,7 @@ public abstract class PrimitiveArray {
         for (int row = 0; row < nRows; row++) { 
             //is this a good row?
             double d = columnPA.getDouble(row);
-            if (Math2.isFinite(d) && d < 1e300 && d >= lastGood) {
+            if (Double.isFinite(d) && d < 1e300 && d >= lastGood) {
                 //copy row 'row' to row 'nGood'
                 if (row != nGood) 
                     for (int col = 0; col < nColumns; col++) 
@@ -2852,7 +2870,7 @@ public abstract class PrimitiveArray {
      * @return the number of values switched
      */
     public int switchNaNToFakeMissingValue(double fakeMissingValue) {
-        if (Math2.isFinite(fakeMissingValue) && 
+        if (Double.isFinite(fakeMissingValue) && 
             elementClass() != String.class ||
             elementClass() != char.class)
             return switchFromTo("", "" + fakeMissingValue);
@@ -2867,7 +2885,7 @@ public abstract class PrimitiveArray {
      * @return the number of missing values converted
      */
     public int switchFakeMissingValueToNaN(double fakeMissingValue) {
-        if (Math2.isFinite(fakeMissingValue) &&
+        if (Double.isFinite(fakeMissingValue) &&
 //???why just FloatArray and DoubleArray???
             (this instanceof FloatArray || this instanceof DoubleArray))
             return switchFromTo("" + fakeMissingValue, "");
@@ -3098,6 +3116,38 @@ public abstract class PrimitiveArray {
      * The =~ regex test must be tested with String testValueOpValue, not here,
      *   because value2 is a regex (not a double).
      * 
+     * @param value1  Integer.MAX_VALUE is treated as NaN
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of "NaN = NaN" will evaluate to true.
+     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValue(int value1, String op, int value2) {
+         //String2.log("testValueOpValue (long): " + value1 + op + value2);
+         if (op.equals("="))  return value1 == value2;
+         if (op.equals("!=")) return value1 != value2;
+
+         if (value1 == Integer.MAX_VALUE || value2 == Integer.MAX_VALUE)
+             return false;
+         if (op.equals("<=")) return value1 <= value2;
+         if (op.equals(">=")) return value1 >= value2;
+         if (op.equals("<"))  return value1 <  value2;
+         if (op.equals(">"))  return value1 >  value2;
+
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
+     * This tests if 'value1 op value2' is true.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
      * @param value1  Long.MAX_VALUE is treated as NaN
      * @param op one of EDDTable.OPERATORS
      * @param value2
@@ -3229,6 +3279,39 @@ public abstract class PrimitiveArray {
      }
 
     /**
+     * This tests if 'value1 op value2' is true for doubles (e.g., source is an integer type).
+     * The &lt;=, &gt;=, and = tests are raw so there is no fudge factor.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
+     * @param value1
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of "NaN = NaN" will evaluate to true. 
+     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValueExact(double value1, String op, double value2) {
+         //String2.log("testValueOpValue (double): " + value1 + op + value2);
+         //if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
+         //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters 
+         //}
+         if (op.equals("<=")) return value1 <= value2;
+         if (op.equals(">=")) return value1 >= value2;
+         if (op.equals("="))  return (Double.isNaN(value1) && Double.isNaN(value2)) || value1 == value2;
+         if (op.equals("<"))  return value1 < value2;
+         if (op.equals(">"))  return value1 > value2;
+         if (op.equals("!=")) return Double.isNaN(value1) && Double.isNaN(value2)? false : 
+                                     value1 != value2;
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
      * This tests if 'value1 op value2' is true.
      * The ops containing with &lt; and &gt; compare value1.toLowerCase()
      * and value2.toLowerCase().
@@ -3317,16 +3400,48 @@ public abstract class PrimitiveArray {
             return nStillGood;
         }
 
-        //int types
-        long value2l = String2.parseLong(value2);
-        if (value2l != Long.MAX_VALUE &&   //value2 parsed cleanly as a long
-            isIntegerType()) {
-            //String2.log("applyConstraint(long)");
+        //long 
+        if (elementClass() == long.class) {
+            long value2l = String2.parseLong(value2);  //error if has decimal part
             int nStillGood = 0;
-            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
-                if (testValueOpValue(getLong(row), op, value2l)) 
-                    nStillGood++;
-                else keep.clear(row);
+            if (value2l != Long.MAX_VALUE) {  //value2 parsed cleanly as a long
+                //String2.log("applyConstraint(long)");
+                for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                    if (testValueOpValue(getLong(row), op, value2l)) 
+                        nStillGood++;
+                    else keep.clear(row);
+                }
+            } else { //do exact test
+                double value2d = String2.parseDouble(value2);
+                for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                    if (testValueOpValueExact(getDouble(row), op, value2d)) 
+                        nStillGood++;
+                    else keep.clear(row);
+                }
+            }
+            return nStillGood;
+        }
+
+        //int types
+        if (isIntegerType()) {
+            long value2l = String2.parseLong(value2);  //error if has decimal part
+            int value2i  = String2.parseInt(value2);
+            int nStillGood = 0;
+            if (value2l == value2i &&
+                value2i != Integer.MAX_VALUE) {   //value2 parsed cleanly as int
+                //String2.log("applyConstraint(int)");
+                for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                    if (testValueOpValue(getInt(row), op, value2i)) 
+                        nStillGood++;
+                    else keep.clear(row);
+                }
+            } else { //do exact test
+                double value2d = String2.parseDouble(value2);
+                for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                    if (testValueOpValueExact(getDouble(row), op, value2d)) 
+                        nStillGood++;
+                    else keep.clear(row);
+                }
             }
             return nStillGood;
         }
@@ -3344,7 +3459,7 @@ public abstract class PrimitiveArray {
             return nStillGood;
         }
 
-        //treat everything else via double tests (that should be all that is left)
+        //morePrecise
         if (morePrecise) {
             //String2.log("applyConstraint(double)");
             int nStillGood = 0;
@@ -3447,7 +3562,7 @@ public abstract class PrimitiveArray {
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         float f = String2.parseFloat(s.substring(0, s.length() - 1));
-                        fa.add(Math2.isFinite(f)? f : Float.NaN); //Infinity -> NaN
+                        fa.add(Float.isFinite(f)? f : Float.NaN); //Infinity -> NaN
                         if (Float.isNaN(fa.get(i)) && !"NaNf".equals(s)) 
                             throw new SimpleException("Invalid float value: " + s);
                     }
@@ -3460,7 +3575,7 @@ public abstract class PrimitiveArray {
                     for (int i = 0; i < saSize; i++) {
                         String s = sa.get(i);
                         double d = String2.parseDouble(s);
-                        da.add(Math2.isFinite(d)? d : Double.NaN); //Infinity -> NaN
+                        da.add(Double.isFinite(d)? d : Double.NaN); //Infinity -> NaN
                         if (Double.isNaN(da.get(i)) && !"NaNd".equals(s))
                             throw new SimpleException("Invalid double value: " + s);
                     }
@@ -3494,6 +3609,47 @@ public abstract class PrimitiveArray {
         //convert nccsv strings to true strings (and canonical) and return StringArray
         sa.fromNccsv();
         return sa;
+    }
+
+    /**
+     * This returns int[2] with the indices of the first 2 duplicate values,
+     * or null if no duplicates.
+     *
+     * @return int[2] with the indices of the first 2 duplicate values,
+     * or null if no duplicates.
+     */
+    public int[] firstDuplicates() {
+        HashSet hs = new HashSet(); 
+        for (int i = 0; i < size(); i++) {
+            String s = getString(i);
+            if (!hs.add(s)) 
+                return new int[]{indexOf(s), i};
+        }
+        return null;
+    }
+
+    /**
+     * This throws a SimpleException if there are duplicate values.
+     *
+     * @param partialMsg e.g., "Invalid table: Duplicate column names: "
+     */
+    public void ensureNoDuplicates(String partialMsg) {
+        int fd[] = firstDuplicates(); 
+        if (fd == null)
+            return;
+        throw new SimpleException(String2.ERROR + ": " + partialMsg + 
+            "[" + fd[0] + "] and [" + fd[1] + "] are both \"" + getString(fd[0]) + "\".");
+    }
+
+    /**
+     * For integer types, this fixes unsigned bytes that were incorrectly read as signed
+     * so that they have the correct ordering of values (0 to 255 becomes -128 to 127).
+     * <br>What were read as signed:    0  127 -128  -1
+     * <br>should become   unsigned: -128   -1    0 255
+     * <br>This also does the reverse.
+     * <br>For non-integer types, this does nothing.
+     */
+    public void changeSignedToFromUnsigned() {
     }
 
     /**
@@ -3792,6 +3948,15 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(factory(new double[]{1}).elementClass(), double.class, "");
         Test.ensureEqual(factory(new String[]{"1"}).elementClass(), String.class, "");
 
+        Test.ensureEqual(factory(new Byte((byte)1)).elementClass(), byte.class, "");
+        Test.ensureEqual(factory(new Character((char)1)).elementClass(), char.class, "");
+        Test.ensureEqual(factory(new Short((short)1)).elementClass(), short.class, "");
+        Test.ensureEqual(factory(new Integer(1)).elementClass(), int.class, "");
+        Test.ensureEqual(factory(new Long(1)).elementClass(), long.class, "");
+        Test.ensureEqual(factory(new Float(1)).elementClass(), float.class, "");
+        Test.ensureEqual(factory(new Double(1)).elementClass(), double.class, "");
+        Test.ensureEqual(factory(new String("1")).elementClass(), String.class, "");
+
         Test.ensureEqual(factory(byte.class, 1, true).elementClass(), byte.class, "");
         Test.ensureEqual(factory(char.class, 1, true).elementClass(), char.class, "");
         Test.ensureEqual(factory(short.class, 1, true).elementClass(), short.class, "");
@@ -4022,7 +4187,7 @@ public abstract class PrimitiveArray {
             sum += ia.get(2);
         time2 = System.currentTimeMillis() - time2;
 
-        String2.log("[] time=" + time1 + " IntArray time=" + time2);
+        String2.log("[] time=" + time1 + " IntArray time=" + time2 + "ms");
 
 
         //** raf tests
@@ -4571,7 +4736,7 @@ public abstract class PrimitiveArray {
 
         //test speed
         long tTime = System.currentTimeMillis();
-        int n = 1000000;
+        int n = 2000000;
         for (int i = 0; i < n; i++) {
             Test.ensureEqual(testValueOpValue("abcdefghijk", "=",  "abcdefghijk"), true,  "");
             Test.ensureEqual(testValueOpValue("abcdefghijk", "!=", "abcdefghijk"), false,  "");
@@ -4581,16 +4746,16 @@ public abstract class PrimitiveArray {
             Test.ensureEqual(testValueOpValue("abcdefghijk", ">",  "abcdefghijk"), false,  "");
         }
         String2.log("time for " + (6 * n) + " testValueOpValue(string): " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 312ms, 2012-06-29: 1859 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 456ms, 1.7M4700 624ms, 2012-06-29: 3718 ms)");
 
         //regex simple
         for (int i = 0; i < n; i++) {
             Test.ensureEqual(testValueOpValue("12345", PrimitiveArray.REGEX_OP, "[0-9]+"), true,  "");
         }
         String2.log("time for " + n + " regex testValueOpValue(string, regex): " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 718ms, 2012-06-29: 4453 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 1227ms, 1.7M4700 1436ms, 2012-06-29: 8906 ms)");
 
-        //long
+        //int
         tTime = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
             Test.ensureEqual(testValueOpValue(1, "=",  1), true,  "");
@@ -4602,8 +4767,23 @@ public abstract class PrimitiveArray {
             Test.ensureEqual(testValueOpValue(1, ">",  2), false, "");
             //regex tests always via testValueOpValue(string)
         }
+        String2.log("time for " + (7 * n) + " testValueOpValue(int): " + 
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 47ms, 1.7M4700 156ms, 2012-06-29: 656 ms)");
+
+        //long
+        tTime = System.currentTimeMillis();
+        for (int i = 0; i < n; i++) {
+            Test.ensureEqual(testValueOpValue(10000000000L, "=",  10000000000L), true,  "");
+            Test.ensureEqual(testValueOpValue(10000000000L, "!=", 10000000000L), false,  "");
+            Test.ensureEqual(testValueOpValue(10000000000L, "<=", 10000000000L), true,  "");
+            Test.ensureEqual(testValueOpValue(10000000000L, "<",  10000000000L), false,  "");
+            Test.ensureEqual(testValueOpValue(10000000000L, ">=", 10000000000L), true,  "");
+            Test.ensureEqual(testValueOpValue(20000000000L, ">",  10000000000L), true,  "");
+            Test.ensureEqual(testValueOpValue(10000000000L, ">",  20000000000L), false, "");
+            //regex tests always via testValueOpValue(string)
+        }
         String2.log("time for " + (7 * n) + " testValueOpValue(long): " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 78ms, 2012-06-29: 328 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 47ms, 1.7M4700 156ms, 2012-06-29: 656 ms)");
 
         //float
         tTime = System.currentTimeMillis();
@@ -4618,7 +4798,7 @@ public abstract class PrimitiveArray {
             //regex tests always via testValueOpValue(string)
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(float): " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 109ms, 2012-06-29: 328 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 147ms, 1.7M4700 218ms, 2012-06-29: 656 ms)");
 
         //double
         tTime = System.currentTimeMillis();
@@ -4633,14 +4813,14 @@ public abstract class PrimitiveArray {
             //regex tests always via testValueOpValue(string)
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(double): " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 78ms, 2012-06-29: 329 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 145ms, 1.7M4700 156ms, 2012-06-29: 658 ms)");
 
         tTime = System.currentTimeMillis();
         for (int i = 0; i < 7*n; i++) {
             Test.ensureEqual(testValueOpValue(1, "<=",  1), true,  "");
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(double <=): " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 62ms, 2012-06-29: 234 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 39ms, 1.7M4700 124ms, 2012-06-29: 468 ms)");
 
         //**********  test applyConstraint
         PrimitiveArray pa;
@@ -4658,7 +4838,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(regex) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 139ms, 2012-06-29: 500 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 188ms, 1.7M4700 278ms, 2012-06-29: 1000 ms)");
 
         //string
         pa = factory(String.class, n, "Apple");
@@ -4672,7 +4852,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getString(0), "Nate", "");
         String2.log("time for applyConstraint(String) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 93ms, 2012-06-29: 406 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 176ms, 1.7M4700 186ms, 2012-06-29: 812 ms)");
 
         //float
         pa = factory(float.class, n, "5");
@@ -4686,7 +4866,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(float) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 93ms, 2012-06-29: 140 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 47ms, 1.7M4700 186ms, 2012-06-29: 280 ms)");
 
         //double
         pa = factory(double.class, n, "5");
@@ -4700,7 +4880,21 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(double) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 31ms, 2012-06-29: 125 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 47ms, 1.7M4700 62ms, 2012-06-29: 250 ms)");
+
+        //long
+        pa = factory(long.class, n, "5");
+        pa.addInt(10);
+        pa.addString("");
+        keep = new BitSet();
+        keep.set(0, pa.size());
+        tTime = System.currentTimeMillis();
+        pa.applyConstraint(false, keep, ">=", "9");
+        pa.justKeep(keep);
+        Test.ensureEqual(pa.size(), 1, "");
+        Test.ensureEqual(pa.getDouble(0), 10, "");
+        String2.log("time for applyConstraint(long) n=" + n + ": " + 
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 46ms)");
 
         //int
         pa = factory(int.class, n, "5");
@@ -4714,7 +4908,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(int) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 16ms, 2012-06-29: 141 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.8 31ms, 1.7M4700 32ms, 2012-06-29: 282 ms)");
 
     }
 

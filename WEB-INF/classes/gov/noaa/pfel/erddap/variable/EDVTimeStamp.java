@@ -527,14 +527,23 @@ public class EDVTimeStamp extends EDV {
         //this doesn't support scaleAddOffset
         int size = source.size();
         DoubleArray destPa = source instanceof DoubleArray?
-            (DoubleArray)source :
-            new DoubleArray(size, true);
+            (DoubleArray)source :        //make changes in place
+            new DoubleArray(size, true); //make a new array
         if (sourceTimeIsNumeric) {
             for (int i = 0; i < size; i++)
                 destPa.set(i, sourceTimeToEpochSeconds(source.getDouble(i)));
         } else {
-            for (int i = 0; i < size; i++)
-                destPa.set(i, sourceTimeToEpochSeconds(source.getString(i)));
+            String lastS = "";
+            double lastD = Double.NaN;
+            for (int i = 0; i < size; i++) {
+                //Conversion can be slow. So use previous result if same previous source value.
+                //This commonly happens for audio files when source is string from file name.
+                String s = source.getString(i);
+                if (s.equals(lastS)) 
+                    destPa.set(i, lastD);
+                else
+                    destPa.set(i, lastD = sourceTimeToEpochSeconds(lastS = s));
+            }
         }
         return destPa;
     }
@@ -631,8 +640,8 @@ public class EDVTimeStamp extends EDV {
             boolean isTime = true;        
             double tMin = destinationMin;
             double tMax = destinationMax;
-            if (!Math2.isFinite(tMin)) return null;
-            if (!Math2.isFinite(tMax)) {
+            if (!Double.isFinite(tMin)) return null;
+            if (!Double.isFinite(tMax)) {
                 //next midnight Z
                 GregorianCalendar gc = Calendar2.newGCalendarZulu();
                 Calendar2.clearSmallerFields(gc, Calendar2.DATE);
@@ -673,7 +682,7 @@ public class EDVTimeStamp extends EDV {
         verbose = true;
 
         //***with Z
-        String2.log("\n*** test with Z");
+        String2.log("\n*** EDVTimeStamp.test with Z");
         EDVTimeStamp eta = new EDVTimeStamp("sourceName", "time",
             null, 
             (new Attributes()).add("units", Calendar2.ISO8601TZ_FORMAT).
@@ -694,7 +703,7 @@ public class EDVTimeStamp extends EDV {
 
 
         //***with 3Z
-        String2.log("\n*** test with 3Z");
+        String2.log("\n*** EDVTimeStamp.test with 3Z");
         eta = new EDVTimeStamp("sourceName", "time",
             null, 
             (new Attributes()).add("units", Calendar2.ISO8601T3Z_FORMAT).
@@ -715,7 +724,7 @@ public class EDVTimeStamp extends EDV {
 
 
         //*** no Z
-        String2.log("\n*** test no Z");
+        String2.log("\n*** EDVTimeStamp.test no Z");
         eta = new EDVTimeStamp("sourceName", "myTimeStamp",
             null, (new Attributes()).add("units", Calendar2.ISO8601T_FORMAT).  //without Z
                 add("actual_range", new StringArray(new String[]{
@@ -730,7 +739,7 @@ public class EDVTimeStamp extends EDV {
 
 
         //*** 3, no Z
-        String2.log("\n*** test 3, no Z");
+        String2.log("\n*** EDVTimeStamp.test 3, no Z");
         eta = new EDVTimeStamp("sourceName", "myTimeStamp",
             null, (new Attributes()).add("units", Calendar2.ISO8601T3_FORMAT).  //without Z
                 add("actual_range", new StringArray(new String[]{

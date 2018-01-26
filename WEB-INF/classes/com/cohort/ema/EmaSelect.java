@@ -319,7 +319,7 @@ public class EmaSelect extends EmaAttribute {
                 sb.append(
                     //<span> avoids check box and value being separated by newline when lots of options
                     "        " + (i == 0? "" : br) + 
-                        "<span style=\"white-space: nowrap;\"><input type=\"radio\" name=\"" + name + 
+                        "<span style=\"white-space:nowrap;\"><input type=\"radio\" name=\"" + name + 
                         "\" value=\"" + XML.encodeAsHTML(s) + "\"" + 
                     getOnClickSubmitsFormHTML() + //onChange doesn't work
                     (getOptionTitle(optionTitles.length > 1? i : -1)) + "\n          " +                    
@@ -332,7 +332,7 @@ public class EmaSelect extends EmaAttribute {
         else {
             if (buttonsVisible && options.length > 1) 
                 sb.append(    //td for <select>
-                      "\n        <table width=\"2%\" cellspacing=\"0\" cellpadding=\"0\"><tr><td>");
+                      "\n        <table class=\"erd\" style=\"width:2%;\"><tr><td>"); //padding=0
             sb.append("\n        <select name=\"" + name + 
                 "\" size=\"" + display + "\"" + 
                 getOptionTitle(-1) + 

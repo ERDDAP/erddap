@@ -57,12 +57,12 @@ import dods.util.*;
  * The servlet should be started in the servlet engine with the following
  * initParameters set:
  * <p/>
- * <b>For the old jswdk servlet engine:</b>
+ * <strong>For the old jswdk servlet engine:</strong>
  * <pre>
  * dts.code=dods.servers.test.dts
  * dts.initparams=iniFilePath=/usr/dods/dts,iniFileName=dts.ini
  * </pre>
- * <b>For the tomcat servlet engine:</b>
+ * <strong>For the tomcat servlet engine:</strong>
  * <pre>
  *    &lt;servlet&gt;
  *        &lt;servlet-name&gt;
@@ -1315,13 +1315,13 @@ public abstract class DODSServlet extends HttpServlet {
      * Processes an incoming <code>HttpServletRequest</code> and from it sets the
      * cached values for:
      * <ul>
-     * <li> <b>dataSet</b> The data set name.(Accessible using
+     * <li> <strong>dataSet</strong> The data set name.(Accessible using
      * <code> setDataSet() </code>
      * and <code>getDataSet()</code>)</li>
-     * <li> <b>CE</b> The constraint expression.(Accessible using
+     * <li> <strong>CE</strong> The constraint expression.(Accessible using
      * <code> setCE() </code>
      * and <code>getCE()</code>)</li>
-     * <li> <b>requestSuffix</b> The request suffix, used by DODS to indicate
+     * <li> <strong>requestSuffix</strong> The request suffix, used by DODS to indicate
      * the type of response desired by the client.
      * (Accessible using
      * <code> setRequestSuffix() </code>
@@ -1383,9 +1383,9 @@ public abstract class DODSServlet extends HttpServlet {
      * If the standard behaviour of the servlet (extracting the DODS URL
      * information from the client request, or loading the .ini file) then
      * you should overload <code>processDodsURL</code> and <code>loadIniFile()
-     * </code>. <b> We don't recommend overloading <code>doGet()</code> beacuse
+     * </code>. <strong> We don't recommend overloading <code>doGet()</code> beacuse
      * the logic contained there may change in our core and cause your server
-     * to behave unpredictably when future releases are installed.</b>
+     * to behave unpredictably when future releases are installed.</strong>
      *
      * @param request  The client's <code> HttpServletRequest</code> request
      *                 object.
@@ -1528,16 +1528,16 @@ public abstract class DODSServlet extends HttpServlet {
         pw.println("test dataset) you would appand `.das' to the URL:");
         pw.println("http://dods.gso.uri.edu/cgi-bin/nph-nc/data/fnoc1.nc.das.");
 
-        pw.println("<p><b>Note</b>: Many DODS clients supply these extensions for you so you don't");
+        pw.println("<p><strong>Note</strong>: Many DODS clients supply these extensions for you so you don't");
         pw.println("need to append them (for example when using interfaces supplied by us or");
         pw.println("software re-linked with a DODS client-library). Generally, you only need to");
         pw.println("add these if you are typing a URL directly into a WWW browser.");
-        pw.println("<p><b>Note</b>: If you would like version information for this server but");
+        pw.println("<p><strong>Note</strong>: If you would like version information for this server but");
         pw.println("don't know a specific data file or data set name, use `/version' for the");
         pw.println("filename. For example: http://dods.gso.uri.edu/cgi-bin/nph-nc/version will");
         pw.println("return the version number for the netCDF server used in the first example. ");
 
-        pw.println("<p><b>Suggestion</b>: If you're typing this URL into a WWW browser and");
+        pw.println("<p><strong>Suggestion</strong>: If you're typing this URL into a WWW browser and");
         pw.println("would like information about the dataset, use the `.info' extension.");
 
         pw.println("<p>If you'd like to see a data values, use the `.html' extension and submit a");

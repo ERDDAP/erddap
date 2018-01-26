@@ -78,8 +78,8 @@ public abstract class SDUInt16 extends DUInt16 implements ServerMethods, RelOps,
     * @param print_semi a boolean value indicating whether to print a
     *    semicolon at the end of the declaration.
     * @param constrained a boolean value indicating whether to print
-    *    the declartion dependent on the projection information. <b>This
-    *    is only used by Server side code.</b>
+    *    the declartion dependent on the projection information. <strong>This
+    *    is only used by Server side code.</strong>
     * @see DDS
     */
     public void printDecl(PrintWriter os, String space,
@@ -115,9 +115,9 @@ public abstract class SDUInt16 extends DUInt16 implements ServerMethods, RelOps,
     * This method overrides the BaseType method of the same name and 
     * type signature and it significantly changes the behavior for all versions
     * of <code>printVal()</code> for this type: 
-    * <b><i> All the various versions of printVal() will only
+    * <strong><i> All the various versions of printVal() will only
     * print a value, or a value with declaration, if the variable is
-    * in the projection.</i></b>
+    * in the projection.</i></strong>
     * <br>
     * <br>In other words, if a call to 
     * <code>isProject()</code> for a particular variable returns 

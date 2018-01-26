@@ -405,10 +405,10 @@ public class DigirHelper  {
         request = String2.toSVString(String2.split(request, '\n'),  //split trims each string
             " ", true); //(white)space is necessary to separate schemalocation names and locations
         //        if (reallyVerbose) String2.log("\ncompactRequest=" + request + "\n");
-        String response = SSR.getUrlResponseString(url + "?request=" + 
+        String response = SSR.getUrlResponseStringUnchanged(url + "?request=" + 
             SSR.percentEncode(request));
         if (verbose) String2.log("DigirHelper.getMetadataXml done. TIME=" +
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
         if (reallyVerbose) String2.log(
             "start of response=\n" + response.substring(0, Math.min(response.length(), 3000)));
         return response;
@@ -614,7 +614,7 @@ public class DigirHelper  {
         request = String2.toSVString(String2.split(request, '\n'),  //split trims each string
             " ", true); //(white)space is necessary to separate schemalocation names and locations
         //if (reallyVerbose) String2.log("\ncompactRequest=" + request + "\n");
-        String response = SSR.getUrlResponseString(url + "?request=" + 
+        String response = SSR.getUrlResponseStringUnchanged(url + "?request=" + 
             SSR.percentEncode(request));
 
         //look for error message
@@ -1113,7 +1113,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 request = String2.toSVString(String2.split(request, '\n'),  //split trims each string
                     " ", true); //(white)space is necessary to separate schemalocation names and locations
                 //if (reallyVerbose) String2.log("\ncompactRequest=" + request + "\n");
-                String response = SSR.getUrlResponseString(url + "?request=" + 
+                String response = SSR.getUrlResponseStringUnchanged(url + "?request=" + 
                     SSR.percentEncode(request));
                 //for testing:
                 //String2.writeToFile("c:/temp/SearchDigirResponse" + resource + ".xml", response);
@@ -1202,7 +1202,7 @@ String2.log("inventoryTable:\n" + table.toString());
 
         //done
         if (verbose) String2.log("  DigirHelper.searchDigir done. nColumns=" + resultsTable.nColumns() +
-            " nRows=" + resultsTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "\n");
+            " nRows=" + resultsTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms\n");
 
     }
 

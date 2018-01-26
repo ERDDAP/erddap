@@ -899,9 +899,9 @@ public class Element extends Content implements Parent {
      * a call to one of the {@link #getContent} methods will also change
      * to reflect the new content.  In addition, all content in the supplied
      * collection will have their parentage set to this parent.  If the user
-     * wants to continue working with a <b>"live"</b> list of this parent's
+     * wants to continue working with a <strong>"live"</strong> list of this parent's
      * child, then a call to setContent should be followed by a call to one
-     * of the {@link #getContent} methods to obtain a <b>"live"</b>
+     * of the {@link #getContent} methods to obtain a <strong>"live"</strong>
      * version of the children.
      * <p>
      * Passing a null child clears the existing content.

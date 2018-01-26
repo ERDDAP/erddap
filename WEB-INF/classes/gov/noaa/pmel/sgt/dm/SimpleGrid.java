@@ -248,7 +248,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
   }
   /**
    * Set the associated data grid.
-   * <BR><B>Property Change:</B> <code>associatedDataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>associatedDataModified</code>.
    *
    * @since 2.0
    */
@@ -377,7 +377,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
   }
   /**
    * Set the x coordinate grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setXArray(double[] xloc) {
     xloc_ = xloc;
@@ -389,7 +389,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
   }
   /**
    * Set the y coordinate grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setYArray(double[] yloc) {
     yloc_ = yloc;
@@ -401,7 +401,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
   }
   /**
    * Set the z grid values.
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setZArray(double[] grid) {
     grid_ = grid;
@@ -412,7 +412,7 @@ public class SimpleGrid implements SGTGrid, Cartesian, Cloneable, Serializable {
   }
   /**
    * set the temporal grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setTimeArray(GeoDate[] tloc) {
     setTimeArray(new GeoDateArray(tloc));

@@ -174,11 +174,11 @@ public class MapScreen extends Screen {
         if (showEditOption == editOption) {
             //set a suitable increment (for the min/max/X/Y +- buttons)
             double range = String2.parseDouble(tMaxX) - String2.parseDouble(tMinX);
-            double inc = Math2.isFinite(range)? Math2.suggestDivisions(Math.abs(range))[0] : 1;        
+            double inc = Double.isFinite(range)? Math2.suggestDivisions(Math.abs(range))[0] : 1;        
             minX.setIncrement(inc);
             maxX.setIncrement(inc);
             range = String2.parseDouble(tMaxY) - String2.parseDouble(tMinY);
-            inc = Math2.isFinite(range)? Math2.suggestDivisions(Math.abs(range))[0] : 1;        
+            inc = Double.isFinite(range)? Math2.suggestDivisions(Math.abs(range))[0] : 1;        
             minY.setIncrement(inc);
             maxY.setIncrement(inc);
 
@@ -196,25 +196,25 @@ public class MapScreen extends Screen {
                 //  minX ---- maxX
                 //  ---- minY ----
                 "    " + beginRowTag + "\n" + 
-                "      <td><span style=\"white-space: nowrap;\">&nbsp;&nbsp;&nbsp;&nbsp;<small>(or specify ...)</small>&nbsp;</span></td>\n" +
+                "      <td ><span style=\"white-space:nowrap;\">&nbsp;&nbsp;&nbsp;&nbsp;<small>(or specify ...)</small>&nbsp;</span></td>\n" +
                 "      <td>\n" +
-                "        <table width=\"2%\" cellspacing=\"0\" cellpadding=\"0\">\n" + //'width' solves gap betwen buttons in opera 9
+                "        <table class=\"erd\" style=\"width:2%;\">\n" + //padding=0. 'width' solves gap betwen buttons in opera 9
                 "          <tr>\n" +
                 "            <td> &nbsp; </td>\n" +
-                "            <td align=\"right\">" + maxY.getLabel() + "</td>\n" +
-                "            <td align=\"left\">"  + maxY.getControl(tMaxY) + "</td>\n" +
+                "            <td class=\"R\">" + maxY.getLabel() + "</td>\n" +
+                "            <td>"  + maxY.getControl(tMaxY) + "</td>\n" +
                 "            <td> &nbsp; </td>\n" +
                 "          </tr>\n" +
                 "          <tr>\n" +
                 "            <td>" + minX.getLabel() + "</td>\n" +
                 "            <td>" + minX.getControl(tMinX) + "</td>\n" +
-                "            <td align=\"right\">" + maxX.getLabel() + "</td>\n" +
+                "            <td class=\"R\">" + maxX.getLabel() + "</td>\n" +
                 "            <td>" + maxX.getControl(tMaxX) + "</td>\n" +
                 "          </tr>\n" +
                 "          <tr>\n" +
                 "            <td> &nbsp; </td>\n" +
-                "            <td align=\"right\">" + minY.getLabel() + "</td>\n" +
-                "            <td align=\"left\">"  + minY.getControl(tMinY) + "</td>\n" +
+                "            <td class=\"R\">" + minY.getLabel() + "</td>\n" +
+                "            <td>"  + minY.getControl(tMinY) + "</td>\n" +
                 "            <td> &nbsp; </td>\n" +
                 "          </tr>\n" +
                 "        </table>\n" + 
@@ -223,12 +223,12 @@ public class MapScreen extends Screen {
                 //or use the other buttons
                 "    " + beginRowTag + "\n" +
                 "      <td>&nbsp;&nbsp;&nbsp;&nbsp;<small>(or ...)</small></td>\n" +
-                "      <td><span style=\"white-space: nowrap;\">Zoom: " + zoomIn.getControl(zoomIn.getValue(session)) + "\n" +
+                "      <td class=\"N\">Zoom: " + zoomIn.getControl(zoomIn.getValue(session)) + "\n" +
                 "        " + zoomOut.getControl(zoomOut.getValue(session)) + "</span>\n" +
-                "        <span style=\"white-space: nowrap;\">View the region to the: " + moveNorth.getControl(moveNorth.getValue(session)) + "\n" +
+                "        <br>View the region to the: " + moveNorth.getControl(moveNorth.getValue(session)) + "\n" +
                 "        " + moveSouth.getControl(moveSouth.getValue(session)) + "\n" +
                 "        " + moveWest.getControl(moveWest.getValue(session)) + "\n" +
-                "        " + moveEast.getControl(moveEast.getValue(session)) + "</span></td>\n" +
+                "        " + moveEast.getControl(moveEast.getValue(session)) + "</td>\n" +
                 "    </tr>\n");
         }
 

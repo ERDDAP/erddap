@@ -58,7 +58,7 @@ package org.jdom.filter;
 
 /**
  * Allow two filters to be chained together with a logical
- * <b>and</b> operation.
+ * <strong>and</strong> operation.
  *
  * @author Bradley S. Huffman
  * @version $Revision: 1.3 $, $Date: 2004/02/06 09:28:31 $
@@ -68,17 +68,17 @@ final class AndFilter extends AbstractFilter {
     private static final String CVS_ID = 
       "@(#) $RCSfile: AndFilter.java,v $ $Revision: 1.3 $ $Date: 2004/02/06 09:28:31 $";
 
-    // Filter for left side of logical <b>and</b>.
+    // Filter for left side of logical <strong>and</strong>.
     private Filter left;
 
-    // Filter for right side of logical <b>and</b>.
+    // Filter for right side of logical <strong>and</strong>.
     private Filter right;
 
     /**
      * Match if only both supplied filters match.
      *
-     * @param left left side of logical <b>and</b>
-     * @param right right side of logical <b>and</b>
+     * @param left left side of logical <strong>and</strong>
+     * @param right right side of logical <strong>and</strong>
      * @throws IllegalArgumentException if either supplied filter is null
      */
     public AndFilter(Filter left, Filter right) {

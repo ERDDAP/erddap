@@ -4,6 +4,16 @@ acronym	fullName
 //Sources: https://www.nodc.noaa.gov/General/mhdj_acronyms3.html
 // and http://www.psmsl.org/train_and_info/training/manuals/acronyms.html
 // and http://www.bco-dmo.org/funding/355
+//FUTURE: support ambiguities (1 acronym = multiple definitions)?
+//FUTURE SOURCES:
+//https://ioos.noaa.gov/communications/resources/acronyms/
+//https://earthdata.nasa.gov/user-resources/acronym-list
+//gcmd service providers: https://gcmd.nasa.gov/KeywordSearch/Titles.do?Portal=GCMD&current=ServiceParameters&MetadataType=1#0
+//https://science.msfc.nasa.gov/acronyms
+//https://www.nasa.gov/pdf/632702main_NASA_FY13_Budget-Reference-508.pdf
+//https://www.nap.edu/read/13405/chapter/16
+//https://en.wikipedia.org/wiki/Climate_change_acronyms
+//https://www.ametsoc.org/ams/index.cfm/publications/authors/journal-and-bams-authors/formatting-and-manuscript-components/list-of-acronyms-and-abbreviations/
 AASP	Australian Antarctic Sciences Program
 AATSR	Advanced Along Track Scanning Radiometer
 ABOM	Australia Bureau of Meteorology
@@ -12,8 +22,10 @@ ACECRC	Antarctic Climate and Ecosystems Cooperative Research Centre
 ADCP	Acoustic Doppler Current Profiler
 ADCIRC	ADvanced CIRCulation
 adcirc	ADvanced CIRCulation
+AFSC	Alaska Fisheries Science Center
 AI	Agouron Institute
 AIMS	Australian Institute of Marine Science
+AKRO	Alaska Regional Office
 ALACE	Autonomous Lagrangian Circulation Explorer
 AMIP	Atmosphere Model Intercomparison Project
 AMSR-2	Advanced Microwave Scanning Radiometer on JAXA's GCOM-W1
@@ -174,6 +186,7 @@ FWS	Fish & Wildlife Service
 GAC	Global Area Coverage
 GADR	Global Argo Data Repository
 GAMSSA	Global Australian Multi-Sensor SST Analysis
+GARFO	Greater Atlantic Regional Fisheries Office
 GCOS	Global Climate Observing System
 GCOOS	Gulf of Mexico Coastal Observing System
 GDAC	Global Data Assembly Centres
@@ -216,6 +229,7 @@ GRCTellus	Gravity Recovery and Climate Experiment Tellus
 GRACE	Gravity Recovery and Climate Experiment
 GSFC	Goddard Space Flight Center
 GSHHS	Global Self-consistent, Hierarchical, High-resolution Shorelines
+GSMFC	Gulf States Marine Fisheries Commission
 GTMBA	Global Tropical Moored Buoy Array
 GTOS	Global Terrestrial Observing System
 GTS	Global Telecommunications System
@@ -430,6 +444,7 @@ ODV	Ocean Data View
 //ODYSSEA	a GHRSST dataset from Ifremer/CERSAT
 OEP	Ocean Exploration Program
 OGCM	Oceanic General Circulation Model
+OHC	Office of Habitat Conservation
 OIA	Office of International Affairs
 OISE	Office of International Science and Engineering
 OISST	Optimum Interpolation Sea Surface Temperature
@@ -440,14 +455,17 @@ OOPC	Ocean Observation Panel for Climate
 OOSDP	Ocean Observing System Development Panel
 //OPBG	[sic] for OBPG?
 OPDB	Oceanographic Profile DataBase
+OPR	Office of Protected Resources
 ORNL	Oak Ridge National Laboratory
 OSDPD	Office of Satellite Data Processing and Distribution
+OSF	Office of Sustainable Fisheries
 OSI SAF	Ocean and Sea Ice Satellite Application Facility
 OSISAF	Ocean and Sea Ice Satellite Application Facility
 OSI	Ocean and Sea Ice
 OSMC	Observing System Monitoring Center
 OSO	Office of Satellite Operations
 OSPO	Office of Satellite and Product Operations
+OST	Office of Science and Technology
 OSTI	Office of Science and Technology Infrastructure
 OSTIA	Operational Sea Surface Temperature and Sea Ice Analysis
 OSU	Oregon State University
@@ -466,7 +484,9 @@ PFEL	Pacific Fisheries Environmental Laboratory
 PFRP	Pelagic Fisheries Research Program
 PHOD	Physical Oceanography Division
 PhOD	Physical Oceanography Division
+PIFSC	Pacific Islands Fisheries Science Center
 PIRATA	Pilot Research Moored Array in the Tropical Atlantic
+PIRO	Pacific Islands Regional Office
 PLR	Division of Polar Programs
 PMEL	Pacific Marine Environmental Laboratory
 PODAAC	Physical Oceanography Distributed Active Archive Center
@@ -513,6 +533,7 @@ SEAMAP	Southeast Area Monitoring & Assessment Program
 SeaWiFS	Sea-Wide Field-of-View Sensor
 SECOORA	Southeast Coastal Ocean Observing Regional Association
 SEFSC	Southeast Fisheries Science Center
+SERO	Southeast Regional Office
 SEVIRI	Spinning Enhanced Visible and Infrared Imager
 SFERPM	South Florida Ecosystem Restoration, Prediction, and Modeling Program
 SFSU	San Francisco State University
@@ -591,6 +612,7 @@ VIRS	Visible InfraRed Scanner
 VIRSR	Visible InfraRed Scanning Radiometer
 WCN	West Coast Node
 WCRN	West Coast Regional Node
+WCRO	West Coast Regional Office
 WMC	World Meteorological Center
 WOD	World Ocean Database
 WRF	Weather Research and Forecasting Model

@@ -13,6 +13,7 @@ import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.DataStream;
+import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -68,6 +69,10 @@ import java.util.TimeZone;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -203,6 +208,7 @@ public class Table  {
         "(each of which must be in the list of results variables, but 0 names is okay) plus the " +
         "maximum number of rows for each group (e.g., \"stationID,100\").";
     public static String NOT_FOUND_EOF = " not found before end-of-file.";
+    public static String ELAPSED_TIME = "elapsedTime"; 
 
     /** 
      * Igor Text File File reference: in Bob's /programs/igor/ or 
@@ -300,14 +306,13 @@ public class Table  {
             IgorReservedNames.add(String2.canonical(s));
     }
 
-    //Bob: see identical css in ERDDAP's setup.xml <startHeadHtml>
+    /** A link to erddap2.css. 
+     * HTML allows link or inline. XHTML only allows link (and no close link tag!). 
+     * See
+     * https://en.wikibooks.org/wiki/Cascading_Style_Sheets/Applying_CSS_to_HTML_and_XHTML
+     */
     public static String ERD_TABLE_CSS =
-        "<style type=\"text/CSS\">\n" +
-        "<!--\n" +
-        "  table.erd {border-collapse:collapse; border:1px solid gray; }\n" +
-        "  table.erd th, table.erd td {padding:2px; border:1px solid gray; }\n" +
-        "-->" +
-        "</style>\n"; 
+        "<link href=\"https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css\" rel=\"stylesheet\" type=\"text/css\">";
 
     //this is used to find out if all readNcCF code is tested: cc=code coverage
     //Bits are set to true when chunk of code is tested.
@@ -789,7 +794,7 @@ public class Table  {
         Index1D index = new Index1D(new int[]{n});
         for (int i = 0; i < n; i++)
             d = arrayInt.getDouble(index.set(i));
-        String2.log("ArrayInt.D1 read time=" + (System.currentTimeMillis() - time)); //157
+        String2.log("ArrayInt.D1 read time=" + (System.currentTimeMillis() - time) + "ms"); //157
 
         //test int[]
         oMemory = Math2.getUsingMemory();
@@ -798,14 +803,14 @@ public class Table  {
         time = System.currentTimeMillis();
         for (int i = 0; i < n; i++)
             d = iar[i];
-        String2.log("int[] read time=" + (System.currentTimeMillis() - time)); //32
+        String2.log("int[] read time=" + (System.currentTimeMillis() - time) + "ms"); //32
 
         //test int[] as object
         Object o = iar;
         time = System.currentTimeMillis();
         for (int i = 0; i < n; i++) 
             d = getDouble(o, i);
-        String2.log("(int[])o read time=" + (System.currentTimeMillis() - time)); //172
+        String2.log("(int[])o read time=" + (System.currentTimeMillis() - time) + "ms"); //172
 
         //test Integer[]
         oMemory = Math2.getUsingMemory();
@@ -814,11 +819,11 @@ public class Table  {
         time = System.currentTimeMillis();
         for (int i = 0; i < n; i++)
             nar[i] = new Integer(i);
-        String2.log("Integer[] create time=" + (System.currentTimeMillis() - time)); //2271!
+        String2.log("Integer[] create time=" + (System.currentTimeMillis() - time) + "ms"); //2271!
         time = System.currentTimeMillis();
         for (int i = 0; i < n; i++)
             d = nar[i].doubleValue();
-        String2.log("Integer[] read time=" + (System.currentTimeMillis() - time)); //110
+        String2.log("Integer[] read time=" + (System.currentTimeMillis() - time) + "ms"); //110
 
         Math2.sleep(30000);
 
@@ -926,7 +931,7 @@ public class Table  {
                 double fv = atts.getDouble("_FillValue"); 
                 for (int row = keep.nextClearBit(0); row < tnRows; row = keep.nextClearBit(row+1)) {
                     double t = pa.getDouble(row);
-                    if (Math2.isFinite(t) &&            //think carefully
+                    if (Double.isFinite(t) &&            //think carefully
                         !Math2.almostEqual(9, t, mv) && //if mv=NaN, !M.ae will be true
                         !Math2.almostEqual(9, t, fv)) {
                         keepN++;
@@ -938,7 +943,7 @@ public class Table  {
                 float fv = atts.getFloat("_FillValue"); 
                 for (int row = keep.nextClearBit(0); row < tnRows; row = keep.nextClearBit(row+1)) {
                     float t = pa.getFloat(row);
-                    if (Math2.isFinite(t) &&            //think carefully
+                    if (Double.isFinite(t) &&            //think carefully
                         !Math2.almostEqual(5, t, mv) && //if mv=NaN, !M.ae will be true
                         !Math2.almostEqual(5, t, fv)) {
                         keepN++;
@@ -1014,7 +1019,7 @@ public class Table  {
                 double fv = atts.getDouble("_FillValue"); 
                 for (int row = tnRows - 1; row > lastRowWithData; row--) {
                     double t = pa.getDouble(row);
-                    if (Math2.isFinite(t) &&            //think carefully
+                    if (Double.isFinite(t) &&            //think carefully
                         !Math2.almostEqual(9, t, mv) && //if mv=NaN, !M.ae will be true
                         !Math2.almostEqual(9, t, fv)) {
                         lastRowWithData = row;
@@ -1026,7 +1031,7 @@ public class Table  {
                 float fv = atts.getFloat("_FillValue"); 
                 for (int row = tnRows - 1; row > lastRowWithData; row--) {
                     float t = pa.getFloat(row);
-                    if (Math2.isFinite(t) &&            //think carefully
+                    if (Float.isFinite(t) &&            //think carefully
                         !Math2.almostEqual(5, t, mv) && //if mv=NaN, !M.ae will be true
                         !Math2.almostEqual(5, t, fv)) {
                         lastRowWithData = row;
@@ -1745,7 +1750,7 @@ public class Table  {
                 columnAttributes(col).set("long_name",           timeLongName); 
                 columnAttributes(col).set("standard_name",       "time");
                 //LAS Intermediate files wants time_origin "01-Jan-1970 00:00:00" ;
-                //http://ferret.wrc.noaa.gov/LASdoc/serve/cache/90.html
+                //http://www.ferret.noaa.gov/LASdoc/serve/cache/90.html
                 columnAttributes(col).set("time_origin",         "01-JAN-1970 00:00:00");
                 columnAttributes(col).set("units",               Calendar2.SECONDS_SINCE_1970);
 
@@ -1848,22 +1853,36 @@ public class Table  {
 
     /** 
      * This tests if this object is valid (e.g., each column in 'data' has 
-     * the same number of rows).
-     * This also checks the validity of globalAttribute or columnAttribute.
+     * the same number of rows, and there are no duplicate column names).
+     * This also checks the validity of globalAttribute or columnAttribute. (?)
      *
-     * @throws Exception if table not valid 
+     * @throws a SimpleException if table not valid 
      */
     public void ensureValid() {
 
         //check that all columns have the same size
         int nRows = nRows();  //from column[0]
-        for (int col = 1; col < nColumns(); col++)
+        int nColumns = nColumns();
+        for (int col = 1; col < nColumns; col++)
             if (columns.get(col).size() != nRows)
                 throw new SimpleException(
                     "Invalid Table: " +
                     "column[" + col + "=" + getColumnName(col) + "].size=" + columns.get(col).size() +
                     " != column[0=" + getColumnName(0) + "].size=" + nRows);
+
+        ensureNoDuplicateColumnNames("");
     }
+
+    /** 
+     * This throws a SimpleException if there are duplicate column names.
+     *
+     * @param msg addition message, e.g., "AxisVariable source names: "
+     * @throws a SimpleException if there are duplicate column names.
+     */
+    public void ensureNoDuplicateColumnNames(String msg) {    
+        columnNames.ensureNoDuplicates("Invalid Table: " + msg + "Duplicate column names: ");
+    }
+
 
     /**
      * This adds missingValues (NaN) to columns as needed so all columns have the same number of rows.
@@ -2358,7 +2377,7 @@ public class Table  {
         }
 
         if (verbose) String2.log("  Table.readASCII done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -2698,7 +2717,7 @@ public class Table  {
         }
 
         if (verbose) String2.log("  Table.readStandardTabbedASCII done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -2823,7 +2842,7 @@ public class Table  {
             simplify();
 
         if (verbose) String2.log("  Table.readColumnarASCII done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /** 
@@ -2953,10 +2972,9 @@ public class Table  {
      * @throws Exception if trouble
      */
     public void readNccsv(String fullName, boolean readData) throws Exception {
-        BufferedReader bufferedReader = new BufferedReader(
-            String2.isRemote(fullName)?
-                new InputStreamReader(SSR.getUrlInputStream(fullName), String2.ISO_8859_1) :
-                new FileReader(fullName));      
+        BufferedReader bufferedReader = String2.isRemote(fullName)?
+            SSR.getBufferedUrlReader(fullName) :
+            new BufferedReader(new FileReader(fullName));      
         lowReadNccsv(fullName, readData, bufferedReader);
         bufferedReader.close();
     }
@@ -3139,7 +3157,7 @@ public class Table  {
             ensureColumnsAreSameSize_LastValue();
 
             String2.log("readNccsv(" + fullName + ") finished successfully.  nColumns=" + nColumns() + 
-                " nRows=" + nRows() + " time=" + (System.currentTimeMillis() - time));
+                " nRows=" + nRows() + " time=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
@@ -3189,7 +3207,7 @@ public class Table  {
             saveAsNccsv(catchScalars, writeMetadata, writeDataRows, bw);
             bw.close(); 
             bw = null;
-            File2.rename(fullFileName + randomInt, fullFileName);
+            File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
 
         } catch (Throwable t) {
             if (bw != null) {
@@ -3247,8 +3265,8 @@ public class Table  {
                 //scalar
                 if (isScalar[c]) {
                     writer.write(
-                        String2.toNccsvDataString(getColumnName(c))         + "," + 
-                        String2.NCCSV_SCALAR                            + "," + 
+                        String2.toNccsvDataString(getColumnName(c))       + "," + 
+                        String2.NCCSV_SCALAR                              + "," + 
                         columns.get(c).subset(0, 1, 0).toNccsvAttString() + "\n");
                 } else {
                     writer.write(
@@ -3356,7 +3374,7 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "time,lat,lon,status,testLong,sst\n" +
@@ -3411,7 +3429,7 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,lat,lon,status,testLong,sst\n" +
@@ -3474,7 +3492,7 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,0L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,lat,lon,status,testLong,sst\n" +
@@ -3537,7 +3555,7 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,0L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -3597,7 +3615,7 @@ public class Table  {
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "time,lat,lon,status,testLong,sst\n" +
@@ -3732,7 +3750,7 @@ public class Table  {
             "&east="    + east + "&ee=E";  
         String glue = "?site=null&sbox=null&searchCategory=/AdvancedSearchServlet"; 
         if (verbose) String2.log("url=" + url + glue + userQuery);
-        String response = SSR.getUrlResponseString(url + glue + userQuery);
+        String response = SSR.getUrlResponseStringUnchanged(url + glue + userQuery);
         //String2.log(response);
 
         //in the returned web page, search for .txt link, read into tTable
@@ -3747,7 +3765,7 @@ public class Table  {
         if (verbose) String2.log("url2=" + url2);
 
         //get the .txt file
-        String dataLines[] = SSR.getUrlResponse(url2);
+        String dataLines[] = SSR.getUrlResponseLines(url2);
         int nLines = dataLines.length;
         for (int line = 0; line < nLines; line++) 
             dataLines[line] = String2.replaceAll(dataLines[line], '|', '\t');
@@ -3947,7 +3965,7 @@ public class Table  {
     public static void testIobis() throws Exception {
         verbose = true;
         reallyVerbose = true;
-        String2.log("\n*** testIobis");
+        String2.log("\n*** Table.testIobis");
         String testName = "c:/programs/digir/Macrocyctis.nc";
         Table table = new Table();
         if (true) {
@@ -3971,7 +3989,7 @@ public class Table  {
      * the typical obis "Macrocystis", time 1970+, lat 53.. 54 request.
      */
     public void testObis5354Table() {
-        String2.log("\nTable.testObis5354Table...");
+        String2.log("\n*** Table.testObis5354Table...");
         leftToRightSort(5);
 
         Test.ensureTrue(nRows() >= 30, "nRows=" + nRows());
@@ -4133,13 +4151,14 @@ public class Table  {
 
         if (verbose) String2.log("  Table.readXml done. nColumns=" + nColumns() +
             " nRows=" + nRows() + 
-            " TIME=" + (System.currentTimeMillis() - time));
+            " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
      * This tests readXml.
      */
     public static void testXml() throws Exception {
+        String2.log("\n*** Table.testXml()");
         verbose = true;
         reallyVerbose = true;
         Table table = null;
@@ -4554,7 +4573,7 @@ String stationsXml =
         }
         makeColumnsSameSize();
         if (reallyVerbose) String2.log("readAwsXmlFile finished, nRows=" + nRows() +
-            " time=" + (System.currentTimeMillis() - time));
+            " time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /** Test readAwsXmlFile.   Automatic Weather Station
@@ -4729,7 +4748,7 @@ String stationsXml =
         //diagnostic
         if (verbose)
             String2.log("  Table.saveAsDAS done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -4772,7 +4791,7 @@ Attributes {
      *    Afterwards, it is flushed, not closed.
      * @param sequenceName  e.g., "bottle_data_2002"
      * @param encodeAsHtml if true, characters like &lt; are converted to their 
-     *    character entities and lines wrapped with \n if greater than 78 chars.
+     *    character entities.
      * @throws Exception  if trouble. 
      */
     public void writeDAS(Writer writer, String sequenceName, boolean encodeAsHtml) throws Exception {
@@ -4842,7 +4861,7 @@ Dataset {
 
         if (verbose)
             String2.log("  Table.saveAsDDS done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -4899,7 +4918,7 @@ Dataset {
 
         if (verbose)
             String2.log("  Table.saveAsDodsAscii done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -4942,7 +4961,7 @@ Dataset {
 
         if (verbose)
             String2.log("  Table.saveAsDODS done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -4955,7 +4974,7 @@ Dataset {
     public void saveAsHtml(String fullFileName, 
         String preTableHtml, String postTableHtml, 
         String otherClasses, String bgColor, int border, boolean writeUnits, int timeColumn, 
-        boolean needEncodingAsXml, boolean allowWrap) throws Exception {
+        boolean needEncodingAsHtml, boolean allowWrap) throws Exception {
 
         if (verbose) String2.log("Table.saveAsHtml " + fullFileName); 
         long time = System.currentTimeMillis();
@@ -4974,11 +4993,11 @@ Dataset {
                 File2.getNameNoExtension(fullFileName),
                 preTableHtml, postTableHtml, 
                 otherClasses, bgColor, border, writeUnits, timeColumn, 
-                needEncodingAsXml, allowWrap);
+                needEncodingAsHtml, allowWrap);
             bos.close();
 
             //rename the file to the specified name, instantly replacing the original file
-            File2.rename(fullFileName + randomInt, fullFileName);
+            File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
 
         } catch (Exception e) {
             try {bos.close();
@@ -4993,7 +5012,7 @@ Dataset {
         //diagnostic
         if (verbose)
             String2.log("Table.saveAsHtml done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
 
     }
     
@@ -5010,13 +5029,13 @@ Dataset {
      * @param postTableHtml is html text to be inserted at the end of the 
      *   body of the document, after the table tag
      *   (or "" if none).
-     * @param otherClasses a space separated list of other (HTML style) classes (or null or "")
+     * @param otherClasses a space separated list of other (HTML style) CSS classes (or null or "")
      * @param bgColor the backgroundColor, e.g., BGCOLOR, "#f1ecd8" or null (for none defined)
      * @param border the line width of the cell border lines (e.g., 0, 1, 2)
      * @param writeUnits if true, the table's second row will be units (from columnAttributes "units") 
      * @param timeColumn the column with epoch seconds which should be written
      *    as ISO formatted date times; if <0, this is ignored.
-     * @param needEncodingAsXml if true, the cell contents will be encodedAsXml (i.e., they contain plain text);
+     * @param needEncodingAsHtml if true, the cell contents will be encodedAsHtml (i.e., they contain plain text);
      *    otherwise, they are written as is (i.e., they already contain html-encoded text).
      * @param allowWrap if true, data may be broken into different lines
      *    so the table is only as wide as the screen.
@@ -5025,7 +5044,7 @@ Dataset {
     public void saveAsHtml(OutputStream outputStream, String fileNameNoExt, 
         String preTableHtml, String postTableHtml, 
         String otherClasses, String bgColor, int border, boolean writeUnits, 
-        int timeColumn, boolean needEncodingAsXml, boolean allowWrap) throws Exception {
+        int timeColumn, boolean needEncodingAsHtml, boolean allowWrap) throws Exception {
 
         if (verbose) String2.log("Table.saveAsHtml"); 
         long time = System.currentTimeMillis();
@@ -5034,20 +5053,19 @@ Dataset {
         BufferedWriter writer = new BufferedWriter(
             new OutputStreamWriter(outputStream, String2.UTF_8));
         writer.write(
-            "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n" +
-            "  \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
-            "<html>\n" +
+            "<!DOCTYPE HTML>\n" +
+            "<html lang=\"en-US\">\n" +
             "<head>\n" +
             "  <title>" + fileNameNoExt + "</title>\n" +
-            Table.ERD_TABLE_CSS +
+            "  <meta charset=\"UTF-8\">\n" +
+            "  " + ERD_TABLE_CSS + "\n" +
             "</head>\n" +
-            "<body bgcolor=\"white\" text=\"black\"\n" +
-            "  style=\"font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n");
+            "<body>\n");
 
         writer.write(preTableHtml);
         //write the actual table
         saveAsHtmlTable(writer, otherClasses, bgColor, border, writeUnits, timeColumn, 
-            needEncodingAsXml, allowWrap);
+            needEncodingAsHtml, allowWrap);
 
         //close the document
         writer.write(postTableHtml);
@@ -5060,7 +5078,7 @@ Dataset {
         //diagnostic
         if (verbose)
             String2.log("Table.saveAsHtml done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -5076,47 +5094,70 @@ Dataset {
      * <br>This is an HTML table, not quite a valid XHTML table.
      * 
      * @param writer usually already buffered
-     * @param otherClasses a space separated list of other (HTML style) classes (or null or "")
+     * @param otherClasses a space separated list of other (HTML style) CSS classes (or null or "")
      * @param bgColor the backgroundColor, e.g., BGCOLOR, "#f1ecd8" or null (for none defined)
      * @param border the line width of the cell border lines (e.g., 0, 1, 2)
      * @param writeUnits if true, the table's second row will be units (from columnAttributes "units") 
      * @param timeColumn the column with epoch seconds which should be written
      *    as ISO formatted date times; if <0, this is ignored.
-     * @param needEncodingAsXml if true, the cell contents will be encodedAsXml (i.e., they contain plain text);
+     * @param needEncodingAsHtml if true, the cell contents will be encodedAsHtml (i.e., they contain plain text);
      *    otherwise, they are written as is (i.e., they already contain html-encoded text).
      * @param allowWrap if true, data may be broken into different lines
      *    so the table is only as wide as the screen.
      * @throws Exception  if trouble. But if no data, it makes a simple html file.
      */
     public void saveAsHtmlTable(Writer writer, String otherClasses, String bgColor, int border, 
-        boolean writeUnits, int timeColumn, boolean needEncodingAsXml,
+        boolean writeUnits, int timeColumn, boolean needEncodingAsHtml,
         boolean allowWrap) throws Exception {
 
         if (verbose) String2.log("  Table.saveAsHtmlTable"); 
         long time = System.currentTimeMillis();
+        String s;
 
         //no data?
         if (nRows() == 0) {
             writer.write(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
         } else {
-
+            //this assumes that the class options defined in ERD_TABLE_CSS are available. 
             writer.write(
-                "<table class=\"erd" +
+                "<table class=\"erd" +  //has  empty-cells:show;
+                (allowWrap? "" : " nowrap") +
                 (otherClasses == null || otherClasses.length() == 0? "" : " " + otherClasses) + "\" " +
-                (bgColor == null? "" : "bgcolor=\"" + bgColor + "\" ") +
-                "cellspacing=\"0\">\n"); //css border-spacing is not supported in all browsers
+                (bgColor == null? "" : "style=\"background-color:" + bgColor + ";\" ") +
+                ">\n");
 
             //write the column names   
             writer.write("<tr>\n");
             int nColumns = nColumns();
+            String fileAccessBaseUrl[] = new String[nColumns];
+            String fileAccessSuffix[]  = new String[nColumns];
             if (columnNames != null && columnNames.size() == nColumns) {
+                boolean somethingWritten = false;
                 for (int col = 0; col < nColumns; col++) {
-                    String s = getColumnName(col);
-                    if (needEncodingAsXml) 
+                    s = getColumnName(col);
+                    if (needEncodingAsHtml) 
                         s = XML.encodeAsHTML(s);
+
+                    //ensure something written on each row (else row is very narrow)
+                    if (somethingWritten) {
+                    } else if (s.trim().length() > 0) {
+                        somethingWritten = true;
+                    } else if (col == nColumns - 1) {
+                        s = "&nbsp;";
+                    }
+
                     writer.write("<th>" + s + 
-                        //"</th>" + //HTML doesn't require it, so save bandwidth
+                        //"</th>" //HTML doesn't require it, so save bandwidth
                         "\n");
+
+                    //gather fileAccess attributes 
+                    Attributes catts = columnAttributes(col);
+                    fileAccessBaseUrl[col] = catts.getString("fileAccessBaseUrl"); //null if none
+                    fileAccessSuffix[ col] = catts.getString("fileAccessSuffix");  //null if none
+                    if (!String2.isSomething(fileAccessBaseUrl[col]))
+                        fileAccessBaseUrl[col] = "";
+                    if (!String2.isSomething(fileAccessSuffix[col]))
+                        fileAccessSuffix[col] = "";
                 }
             }
             writer.write("</tr>\n");
@@ -5125,17 +5166,26 @@ Dataset {
             if (writeUnits) {
                 writer.write("<tr>\n");
                 if (columnNames != null && columnNames.size() == nColumns) {
+                    boolean somethingWritten = false;
                     for (int col = 0; col < nColumns; col++) {
                         String tUnits = columnAttributes(col).getString("units");
                         if (col == timeColumn)
                             tUnits = "UTC"; //no longer true: "seconds since 1970-01-01..."
                         if (tUnits == null)
                             tUnits = "";
-                        if (needEncodingAsXml) 
+                        if (needEncodingAsHtml) 
                             tUnits = XML.encodeAsHTML(tUnits);
-                        writer.write("<th>" + 
-                            (tUnits.length() == 0? "&nbsp;" : tUnits) + 
-                            //"</th>" + //HTML doesn't require it, so save bandwidth
+
+                        //ensure something written on each row (else row is very narrow)
+                        if (somethingWritten) {
+                        } else if (tUnits.trim().length() > 0) {
+                            somethingWritten = true;
+                        } else if (col == nColumns - 1) {
+                            tUnits = "&nbsp;";
+                        }
+
+                        writer.write("<th>" + tUnits + 
+                            //"</th>" //HTML doesn't require it, so save bandwidth
                             "\n");
                     }
                 }
@@ -5146,17 +5196,51 @@ Dataset {
             int nRows = nRows();
             for (int row = 0; row < nRows; row++) {
                 writer.write("<tr>\n"); 
+                boolean somethingWritten = false;
                 for (int col = 0; col < nColumns; col++) {
-                    writer.write(allowWrap? "<td>" : "<td nowrap>"); //no 6 spaces to left: make document smaller
+                    writer.write("<td>"); 
                     if (col == timeColumn) {
                         double d = getDoubleData(col, row);
-                        writer.write(Calendar2.safeEpochSecondsToIsoStringTZ(d, "&nbsp;"));
+                        s = Calendar2.safeEpochSecondsToIsoStringTZ(d, "");
                     } else {
-                        String s = getStringData(col, row);
-                        if (needEncodingAsXml) 
+                        s = getStringData(col, row);
+
+                        if (fileAccessBaseUrl[col].length() > 0 ||
+                            fileAccessSuffix[ col].length() > 0) {
+                            //display as a link
+                            String ts = needEncodingAsHtml? s : XML.decodeEntities(s); //now decoded
+                            String url = XML.encodeAsHTMLAttribute(
+                                fileAccessBaseUrl[col] + ts + fileAccessSuffix[col]);
+                            s = "<a href=\"" + url + "\">" +
+                                (needEncodingAsHtml? XML.encodeAsHTML(s) : s) + //just the fileName
+                                "</a>";
+                        } else if (needEncodingAsHtml && String2.isUrl(s)) {
+                            s = "<a href=\"" + 
+                                XML.encodeAsHTMLAttribute(s) + "\">" + 
+                                XML.encodeAsHTML(s) + "</a>";
+                        } else if (!needEncodingAsHtml && String2.isUrl(XML.decodeEntities(s))) {
+                            s = XML.decodeEntities(s);
+                            s = "<a href=\"" + 
+                                XML.encodeAsHTMLAttribute(s) + "\">" + 
+                                XML.encodeAsHTML(s) + "</a>";
+                        } else if (String2.isEmailAddress(s)) {
+                            //to improve security, convert "@" to " at "
+                            s = needEncodingAsHtml? s : XML.decodeEntities(s); //now decoded
+                            s = XML.encodeAsHTML(String2.replaceAll(s, "@", " at "));
+                        } else if (needEncodingAsHtml) {
                             s = XML.encodeAsHTML(s);
-                        writer.write(s.length() == 0? "&nbsp;" : s); 
+                        }
                     }
+
+                    //ensure something written on each row (else row is very narrow)
+                    if (somethingWritten) {
+                    } else if (s.trim().length() > 0) {
+                        somethingWritten = true;
+                    } else if (col == nColumns - 1) {
+                        s = "&nbsp;";
+                    }
+
+                    writer.write(s);
                     writer.write(
                         //"</td>" + //HTML doesn't require it, so save bandwidth
                         "\n");
@@ -5172,7 +5256,7 @@ Dataset {
         //diagnostic
         if (verbose)
             String2.log("    Table.saveAsHtmlTable done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
     }
 
     /** This actually reads the file, then reads the HTML table in the file. */
@@ -5329,7 +5413,7 @@ Dataset {
         if (verbose)
             String2.log("    Table.readHtml done. nRows=" + nRows + 
                 " nCols=" + nCols + " TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -5653,7 +5737,7 @@ Dataset {
         decodeCharsAndStrings();
 
         if (verbose) String2.log("  Table.readFlatNc done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /** 
@@ -5793,7 +5877,7 @@ Dataset {
         decodeCharsAndStrings();
 
         if (verbose) String2.log("  Table.readFlat0Nc done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
     
     /**
@@ -5974,7 +6058,7 @@ Dataset {
         decodeCharsAndStrings();
 
         if (verbose) String2.log("  Table.read4DNc done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -6361,7 +6445,7 @@ Dataset {
             String2.log(MustBe.throwableToString(e));
         }
         if (verbose) String2.log("  readNDNC finished. nRows=" + nRows() + 
-            " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time));
+            " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -6638,7 +6722,7 @@ Dataset {
                                 "Returning an empty table because var=" + varName + 
                                 " failed its constraints, including " + 
                                 conOps.get(con) + conVals.get(con) +
-                                ". time=" + (System.currentTimeMillis() - time));
+                                ". time=" + (System.currentTimeMillis() - time) + "ms");
                             return;
                         }
                     }
@@ -7066,7 +7150,7 @@ Dataset {
         }
         if (debugMode) String2.log(Math2.memoryString());                
         if (verbose) String2.log("  readMultidimNc finished. nRows=" + nRows() + 
-            " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time));
+            " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /** 
@@ -7675,7 +7759,7 @@ Dataset {
         reallyVerbose = true;
         boolean oDebugMode = debugMode;
         debugMode = true;
-        String2.log("\n*** Table.testReadMultidimNc");
+        String2.log("\n*** Table.testReadVlenNc");
         Table table = new Table();
         String fiName = "/erddapTestBig/nccf/vlen/rr2_vlen_test.nc";
         String2.log(NcHelper.dumpString(fiName, false));
@@ -8499,7 +8583,7 @@ Dataset {
                     reorderColumns(loadVariableNames, true); //discard others
                 if (verbose) String2.log("  readNcCF finished (nLevels=0, pointType)." +
                     " nRows=" + nRows() + " nCols=" + nColumns() + 
-                    " time=" + (System.currentTimeMillis() - time));
+                    " time=" + (System.currentTimeMillis() - time) + "ms");
                 if (debugMode) ensureValid();
                 decodeCharsAndStrings();
                 return;
@@ -8799,7 +8883,7 @@ Dataset {
                     else reorderColumns(loadVariableNames, true); //discard others
                     if (verbose) String2.log("  readNcCF finished (nLevels=1, readNDNc)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
                     return;
@@ -8894,7 +8978,7 @@ Dataset {
             if (nLoadOrConVariablesInFile == 0) {
                 if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                     " (no requested vars in the file)" + 
-                    " time=" + (System.currentTimeMillis() - time));
+                    " time=" + (System.currentTimeMillis() - time) + "ms");
                 removeAllColumns();
                 return;
             }
@@ -8948,7 +9032,7 @@ Dataset {
                     if (ncCFcc != null) ncCFcc.set(30);
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (var not in file: " + tConName + tConOp + tConValue + ")" + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     removeAllColumns();
                     return;
                 }
@@ -9033,7 +9117,7 @@ Dataset {
                     if (ncCFcc != null) ncCFcc.set(37);
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (outerNGood=0)" + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     removeAllColumns();
                     return;
                 }
@@ -9059,7 +9143,7 @@ Dataset {
                     else reorderColumns(loadVariableNames, true); //discard others
                     if (verbose) String2.log("  readNcCF finished (nLevels=1, outerTable vars only)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
                     return;
@@ -9293,7 +9377,7 @@ Dataset {
                             if (innerNGood == 0) {
                                 if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                                     " (innerNGood=0)" + 
-                                    " time=" + (System.currentTimeMillis() - time));
+                                    " time=" + (System.currentTimeMillis() - time) + "ms");
                                 removeAllColumns();
                                 return;
                             }
@@ -9340,7 +9424,7 @@ Dataset {
                                     if (verbose) String2.log("  readNcCF finished (nLevels=1, readAs=" + readAs + 
                                         ", just innerTable vars)." + 
                                         " nRows=" + nRows() + " nCols=" + nColumns() + 
-                                        " time=" + (System.currentTimeMillis() - time));
+                                        " time=" + (System.currentTimeMillis() - time) + "ms");
                                     if (debugMode) ensureValid();
                                     decodeCharsAndStrings();
                                     return;
@@ -9393,7 +9477,7 @@ Dataset {
                                 if (verbose) String2.log("  readNcCF finished (nLevels=1, readAs=" + readAs + 
                                     ", just outerTable+innerTable vars)." + 
                                     " nRows=" + nRows() + " nCols=" + nColumns() + 
-                                    " time=" + (System.currentTimeMillis() - time));
+                                    " time=" + (System.currentTimeMillis() - time) + "ms");
                                 if (debugMode) ensureValid();
                                 decodeCharsAndStrings();
                                 return;
@@ -9427,7 +9511,7 @@ Dataset {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                                 " (nLevels=1, readAs=" + readAs + 
                                 ", no match outer+inner constraints)" + 
-                                " time=" + (System.currentTimeMillis() - time));
+                                " time=" + (System.currentTimeMillis() - time) + "ms");
                             removeAllColumns();
                             return;
                         }                               
@@ -9469,7 +9553,7 @@ Dataset {
                         if (nRows() == 0) {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                                 " (nLevels=1, readAs=" + readAs + ", after removeMVRows)"+ 
-                                " time=" + (System.currentTimeMillis() - time));
+                                " time=" + (System.currentTimeMillis() - time) + "ms");
                             removeAllColumns();
                             return;
                         }
@@ -9508,7 +9592,7 @@ Dataset {
                 if (nColumns() == 0) {
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (nLevels=1, readAs=" + readAs + ", nColumns=0)"+ 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     return;
                 }
 
@@ -9520,7 +9604,7 @@ Dataset {
                 else reorderColumns(loadVariableNames, true); //discard others
                 if (verbose) String2.log("  readNcCF finished (nLevels=1, readAs=" + readAs + 
                     ", all). nRows=" + nRows() + " nCols=" + nColumns() +
-                    " time=" + (System.currentTimeMillis() - time));
+                    " time=" + (System.currentTimeMillis() - time) + "ms");
                 if (debugMode) ensureValid();
                 decodeCharsAndStrings();
                 return;
@@ -9606,7 +9690,7 @@ Dataset {
                         if (ncCFcc != null) ncCFcc.set(66);
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                             " (nLevels=2, readAs=" + readAs + ", keepNInner=0)" + 
-                            " time=" + (System.currentTimeMillis() - time));
+                            " time=" + (System.currentTimeMillis() - time) + "ms");
                         removeAllColumns();
                         return;
                     }
@@ -9652,7 +9736,7 @@ Dataset {
                     if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
                         ", just outerTable+innerTable vars)." + 
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
                     return;
@@ -9787,7 +9871,7 @@ Dataset {
                             " (nLevels=2, readAs=" + readAs + 
                             ", no variable[" + outerDimName + "][" + innerDimName + "] " +
                             " or variable[" + innerDimName + "])" + 
-                            " time=" + (System.currentTimeMillis() - time));
+                            " time=" + (System.currentTimeMillis() - time) + "ms");
                         removeAllColumns();
                         return;
                     }
@@ -9818,7 +9902,7 @@ Dataset {
                     if (ncCFcc != null) ncCFcc.set(82);
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (nLevels=2, readAs=" + readAs + ", nInnerGood=0)" + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     removeAllColumns();
                     return;
                 }
@@ -9867,7 +9951,7 @@ Dataset {
                     if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
                         ", just outerTable+innerTable vars)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     if (debugMode) ensureValid();
                     decodeCharsAndStrings();
                     return;
@@ -9906,7 +9990,7 @@ Dataset {
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                             " (nLevels=2, readAs=" + readAs + 
                             ", interiorNKeep=0)" + 
-                            " time=" + (System.currentTimeMillis() - time));
+                            " time=" + (System.currentTimeMillis() - time) + "ms");
                         removeAllColumns();
                         return;
                     }
@@ -9934,7 +10018,7 @@ Dataset {
                         if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
                             ", just interiorTable vars)." +
                             " nRows=" + nRows() + " nCols=" + nColumns() + 
-                            " time=" + (System.currentTimeMillis() - time));
+                            " time=" + (System.currentTimeMillis() - time) + "ms");
                         if (debugMode) ensureValid();
                         decodeCharsAndStrings();
                         return;
@@ -10008,7 +10092,7 @@ Dataset {
                 if (nRows() == 0) {
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
                         " (nLevels=1, readAs=" + readAs + ", after removeMVRows)" + 
-                        " time=" + (System.currentTimeMillis() - time));
+                        " time=" + (System.currentTimeMillis() - time) + "ms");
                     removeAllColumns();
                     return;
                 }
@@ -10062,7 +10146,7 @@ Dataset {
                     if (cardinality == 0) {
                         if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA +  
                             " (nLevels=2, readAs=" + readAs + ", after constraints applied)" + 
-                            " time=" + (System.currentTimeMillis() - time));
+                            " time=" + (System.currentTimeMillis() - time) + "ms");
                         removeAllColumns();
                         return;
                     }
@@ -10111,7 +10195,7 @@ Dataset {
         if (ncCFcc != null) ncCFcc.set(99);
         if (verbose) String2.log("  readNcCF finished (nLevels=2, readAs=" + readAs + 
             "). nRows=" + nRows() + " nCols=" + nColumns() + 
-            " time=" + (System.currentTimeMillis() - time));
+            " time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -14602,7 +14686,7 @@ String2.log(table.dataToString());
             "KYLE WILCOX'S DSG TEST FILE.",
             MustBe.throwableToString(e) + 
             "\nI reported this problem to Kyle 2012-10-03" +
-            "\n2013-10-30 Since Kyle is changed jobs, it is unlikely he will ever fix this.");
+            "\n2013-10-30 Since Kyle changed jobs, it is unlikely he will ever fix this.");
     }
 
         //***************  trajectory single multidimensional --- 
@@ -18111,6 +18195,752 @@ String2.log(table.dataToString());
         debugMode = oDebug;        
     }
 
+    /**
+     * This reads data from an audio file 
+     * (AudioFileFormat.Type: AU, WAVE, SND (not tested), 
+     * and AIFF/AIFF-C (should work but aren't supported)).
+     * See https://docs.oracle.com/javase/tutorial/sound/converters.html
+     * There may be other classes/jars from other groups that support other file types.
+     *
+     * @param readData This method always reads metadata. If readData=true,
+     *   this also reads the data.
+     * @param addElapsedTimeColumn if true, column[0] will be elapsedTime
+     *   with double values in seconds (starting at 0)
+     * @throws Exception if trouble 
+     */
+    public void readAudioFile(String fullName, boolean readData, 
+        boolean addElapsedTimeColumn) throws Exception {
+        //FUTURE: read audio waveform data by using Java methods to convert other formats to PCM
+        //See also https://howlerjs.com/
+
+        int totalFramesRead = 0;
+
+        clear();
+        AudioInputStream audioInputStream = null;
+        DataInputStream dis = null;
+        String errorWhile = String2.ERROR + " while reading audio file=" + fullName + ": ";
+        try {
+            long startTime = System.currentTimeMillis();
+
+            java.io.File audioFile = new java.io.File(fullName);
+            AudioFileFormat aff = AudioSystem.getAudioFileFormat(audioFile);
+            if (debugMode) String2.log("aff.properties()=" + aff.properties().toString());
+           
+            audioInputStream = AudioSystem.getAudioInputStream(audioFile);
+
+            //get the metadata
+            AudioFormat af = audioInputStream.getFormat();
+
+            int bytesPerFrame = af.getFrameSize();
+            if (bytesPerFrame == AudioSystem.NOT_SPECIFIED || bytesPerFrame <= 0) {
+                // some audio formats may have unspecified frame size
+                // in that case we may read any amount of bytes
+                bytesPerFrame = 1;
+            }
+            int nChannels = af.getChannels();
+            int nBits = af.getSampleSizeInBits();
+            //AudioFormat.Encoding: ALAW, PCM_FLOAT, PCM_SIGNED, PCM_UNSIGNED, ULAW
+            String encoding = af.getEncoding().toString();
+            boolean isALAW         = encoding.equals("ALAW");
+            boolean isULAW         = encoding.equals("ULAW");
+            boolean isPcmFloat     = encoding.equals("PCM_FLOAT");  
+            boolean isPcmUnsigned  = encoding.equals("PCM_UNSIGNED");  
+            boolean isPcmSigned    = encoding.equals("PCM_SIGNED");  
+            boolean isBigEndian = af.isBigEndian();
+            boolean is24Bit     = nBits == 24;
+            if (!isALAW && !isULAW && !isPcmFloat && !isPcmUnsigned && !isPcmSigned)
+                new SimpleException(errorWhile + "Unsupported audioSampleSizeInBits=" + nBits + ".");
+
+            int frameSize = af.getFrameSize();
+            globalAttributes.set("audioBigEndian",        "" + isBigEndian);
+            globalAttributes.set("audioChannels",         nChannels);
+            globalAttributes.set("audioEncoding",         encoding);
+            globalAttributes.set("audioFrameRate",        af.getFrameRate()); //may be different than sampleRate if compressed
+            globalAttributes.set("audioFrameSize",        frameSize); //bytes
+            globalAttributes.set("audioSampleRate",       af.getSampleRate());
+            globalAttributes.set("audioSampleSizeInBits", nBits);
+            Map props = af.properties();
+            Iterator it = props.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                //use prefix=audio_ to distinguish these props from method values above
+                //and to avoid clash if same name
+                //but map common properties to CF terms if possible 
+                //(see list in Javadocs for AudioFileFormat)
+                String key = pair.getKey().toString();
+                if      (key.equals("author"))    key = "creator_name";
+                else if (key.equals("comment"))   key = "summary";
+                else if (key.equals("copyright")) key = "license";
+                else if (key.equals("date"))      key = "date_created";
+                else if (key.equals("title"))     key = "title";
+                else                              key = "audio_" + key;
+                globalAttributes.set(key, PrimitiveArray.factory(pair.getValue()));
+            }
+
+            //BUG in java: 
+            //  https://bugs.openjdk.java.net/browse/JDK-8038138
+            //  And this causes incorrect getFrameLength()
+            //  https://bugs.openjdk.java.net/browse/JDK-8038139
+            //  with "/erddapTest/audio/wav/aco_acoustic.20141119_000000.wav"
+            //  file has 24000 samples/sec * 300 sec = 7,200,000 samples and 4 bytes/sample,
+            //  but lNFrames is 28,000,000!  (should be 7,200,000)
+            //so treat it as nBytes but this is TROUBLE!
+            long lNFrames = audioInputStream.getFrameLength();
+            if (lNFrames * frameSize > File2.length(fullName))   //a more emprical test than isPcmFloat
+                lNFrames /= frameSize;
+            if (lNFrames >= Integer.MAX_VALUE)
+                throw new SimpleException(errorWhile + "The file's nFrames=" + lNFrames + 
+                    " is greater than maxAllowed=" + (Integer.MAX_VALUE - 1) + ".");
+            int nFrames = Math2.narrowToInt(lNFrames);
+
+            //make the columns
+            PrimitiveArray pa[] = new PrimitiveArray[nChannels];
+            int tSize = readData? nFrames : 1;
+            for (int c = 0; c < nChannels; c++) {
+                if (isPcmFloat && af.isBigEndian()) {  //java is bigEndian
+                    //if littleEndian, store in integer type (below), then reverseBytes, then convert to float
+                    if      (nBits == 32) pa[c] = new FloatArray( tSize, false);
+                    else if (nBits == 64) pa[c] = new DoubleArray(tSize, false);
+                    else throw new SimpleException(errorWhile + 
+                        "Unsupported audioSampleSizeInBits=" + nBits + ".");
+                } else {
+                    if      (nBits ==  8) pa[c] = new ByteArray( tSize, false);  
+                    //12 is not supported yet because each value is 1.5 bytes -- hard to deal with when >1 channel in a dis
+                    else if (nBits == 16) pa[c] = new ShortArray(tSize, false);
+                    else if (nBits == 24) pa[c] = new IntArray(  tSize, false);
+                    else if (nBits == 32) pa[c] = new IntArray(  tSize, false);
+                    else if (nBits == 64) pa[c] = new LongArray( tSize, false);
+                    else throw new SimpleException(errorWhile + 
+                        "Unsupported audioSampleSizeInBits=" + nBits + ".");
+                }
+                addColumn(c, "channel_" + (c+1), pa[c], 
+                    (new Attributes()).add("long_name", "Channel " + (c+1)));
+            }
+
+            Attributes elapsedTimeAtts = null;
+            if (addElapsedTimeColumn) 
+                elapsedTimeAtts = (new Attributes())
+                    .add("long_name", "Elapsed Time")
+                    .add("units", "seconds");
+
+            //return with just metadata?
+            if (!readData) {
+                audioInputStream.close();
+
+                //make simple versions of changes below
+                for (int c = 0; c < nChannels; c++) {
+                    if (isALAW || isULAW) {
+                        setColumn(c, new ShortArray());
+                    } else if (!af.isBigEndian() && isPcmFloat) {  //24 bit was done when read
+                        if (nBits <= 32) 
+                            setColumn(c, new FloatArray());
+                        else if (nBits <= 64) 
+                            setColumn(c, new DoubleArray());
+                    }
+                }
+                if (addElapsedTimeColumn)
+                    addColumn(0, ELAPSED_TIME, new DoubleArray(), elapsedTimeAtts);
+                return;
+            }
+
+            //get the data 
+            dis = new DataInputStream(new BufferedInputStream(audioInputStream));                       
+            if (is24Bit) {
+                if (nChannels == 1) {
+                    ((IntArray)pa[0]).read24BitDisAudio(dis, nFrames, isBigEndian);
+                } else {
+                    IntArray ia[] = new IntArray[nChannels];
+                    for (int c = 0; c < nChannels; c++) 
+                        ia[c] = (IntArray)pa[c];
+                    for (int f = 0; f < nFrames; f++) 
+                        for (int c = 0; c < nChannels; c++) 
+                            ia[c].read24BitDisAudio(dis, 1, isBigEndian);
+                }
+
+            } else if (nChannels == 1) {
+                pa[0].readDis(dis, nFrames);
+
+            } else {
+                for (int f = 0; f < nFrames; f++) 
+                    for (int c = 0; c < nChannels; c++) 
+                        pa[c].readDis(dis, 1);
+            }
+
+            //clean up the data
+            if (isPcmUnsigned) {
+                //what were read as signed:    0  127 -128  -1
+                //should become   unsigned: -128   -1    0 255
+                for (int c = 0; c < nChannels; c++) 
+                    pa[c].changeSignedToFromUnsigned();
+            }
+
+            if (isALAW) {
+                //convert encoded byte to short
+                //see https://stackoverflow.com/questions/26824663/how-do-i-use-audio-sample-data-from-java-sound
+                //I'M NOT CONVINCED THIS IS EXACTLY RIGHT. IT SOUNDS BETTER DIRECTLY IN BROWSER.
+                //FUTURE: USE JAVA AUDIO STREAMS TO DO THE CONVERSION TO PCM
+                double d0 = 1.0 + Math.log(87.7);
+                double d1 = 1.0 / d0;
+                double d2 = d0 / 87.7;
+                double sm1 = (Short.MAX_VALUE * 16) - 1; // *16 because too small otherwise (???!!!)
+                for (int c = 0; c < nChannels; c++) {
+                    ByteArray ba = (ByteArray)pa[c];
+                    ShortArray sa = new ShortArray(nFrames, true);
+                    short sar[] = sa.array;
+                    setColumn(c, sa);
+                    long lmin = Long.MAX_VALUE;
+                    long lmax = Long.MIN_VALUE;
+                    int min = Integer.MAX_VALUE;
+                    int max = Integer.MIN_VALUE;
+                    for (int f = 0; f < nFrames; f++) {
+                        long tl = (ba.array[f] & 0xffL) ^ 0x55L;
+                        if ((tl & 0x80L) == 0x80L) 
+                            tl = -(tl ^ 0x80L);
+                        lmin = Math.min(lmin, tl);
+                        lmax = Math.max(lmax, tl);
+                        double sample = tl / 255.0;
+                        double signum = Math.signum(sample);
+                        sample = Math.abs(sample);
+                        if (sample < d1) 
+                            sample = sample * d2;
+                        else
+                            sample = Math.exp((sample * d0) - 1.0) / 87.7;
+                        sample = signum * sample;                    
+                        sar[f] = Math2.roundToShort(sm1 * sample);  //sample is +/-1
+                        min = Math.min(min, sar[f]);
+                        max = Math.max(max, sar[f]);
+                    }
+                    String2.log("  col=" + c + " inMin=" + lmin + " inMax=" + lmax + " outMin=" + min + " outMax=" + max);
+                }
+
+
+            } else if (isULAW) {
+                //convert encoded byte to short
+                //see https://stackoverflow.com/questions/26824663/how-do-i-use-audio-sample-data-from-java-sound
+                //I'M NOT CONVINCED THIS IS EXACTLY RIGHT. IT SOUNDS BETTER DIRECTLY IN BROWSER.
+                //FUTURE: USE JAVA AUDIO STREAMS TO DO THE CONVERSION TO PCM
+                double d0 = 1.0 / 255.0;
+                double sm1 = (Short.MAX_VALUE * 16) - 1; // *16 because too small otherwise (???!!!)
+                for (int c = 0; c < nChannels; c++) {
+                    ByteArray ba = (ByteArray)pa[c];
+                    ShortArray sa = new ShortArray(nFrames, true);
+                    short sar[] = sa.array;
+                    setColumn(c, sa);
+                    long lmin = Long.MAX_VALUE;
+                    long lmax = Long.MIN_VALUE;
+                    int min = Integer.MAX_VALUE;
+                    int max = Integer.MIN_VALUE;
+                    for (int f = 0; f < nFrames; f++) {
+                        long tl = (ba.array[f] & 0xffL) ^ 0xffL;
+                        if ((tl & 0x80L) == 0x80L) 
+                            tl = -(tl ^ 0x80L);
+                        lmin = Math.min(lmin, tl);
+                        lmax = Math.max(lmax, tl);
+                        double sample = tl / 255.0;
+                        sample = Math.signum(sample) * d0 * 
+                            (Math.pow(256.0, Math.abs(sample)) - 1.0);
+                        sar[f] = Math2.roundToShort(sm1 * sample);
+                        min = Math.min(min, sar[f]);
+                        max = Math.max(max, sar[f]);
+                    }
+                    String2.log("  col=" + c + " inMin=" + lmin + " inMax=" + lmax + " outMin=" + min + " outMax=" + max);
+                }
+
+
+            } else if (!af.isBigEndian() && !is24Bit) {  //24 bit was done when read
+                //reverse the bytes?
+                for (int c = 0; c < nChannels; c++) {
+                    pa[c].reverseBytes();  //this works because they are only integer-type arrays
+
+                    //if littleEndian and float, convert to float
+                    if (isPcmFloat) {
+                        //if littleEndian, store in integer type, then reverseBytes, then convert to float
+                        if      (nBits <= 32) {
+                            FloatArray fa = new FloatArray(nFrames, true);
+                            float far[] = fa.array;
+                            for (int f = 0; f < nFrames; f++) 
+                                far[f] = Float.intBitsToFloat(pa[c].getInt(f));
+                            pa[c] = fa;
+                            setColumn(c, fa);
+                        } else if (nBits <= 64) {
+                            DoubleArray da = new DoubleArray(nFrames, true);
+                            double dar[] = da.array;
+                            for (int f = 0; f < nFrames; f++) 
+                                dar[f] = Double.longBitsToDouble(pa[c].getLong(f));
+                            pa[c] = da;
+                            setColumn(c, da);
+                        } 
+                    }
+                }
+            }
+
+            //add elapsedTime
+            if (addElapsedTimeColumn) {
+                double sampleRate = af.getSampleRate(); //double so calculations below as double
+                DoubleArray da = new DoubleArray(nFrames, true);
+                double dar[] = da.array;
+                for (int f = 0; f < nFrames; f++) 
+                    dar[f] = f / sampleRate; //that's the most precise way to calculate it
+                addColumn(0, ELAPSED_TIME, da, elapsedTimeAtts);
+            }
+
+            //close dis
+            dis.close();
+            if (verbose) String2.log("readAudioFile(" + fullName + 
+                ") finished successfully.\n  nRows=" + nFrames + 
+                " nChannels=" + nChannels + " encoding=" + encoding + 
+                " isBigEndian=" + isBigEndian + 
+                " nBits=" + nBits + " isPcmFloat=" + isPcmFloat + 
+                " time=" + (System.currentTimeMillis() - startTime) + "ms");
+
+        } catch (Exception e) {
+            try {
+                if (dis != null) {
+                    dis.close(); 
+                    dis = null;
+                    audioInputStream = null;
+                }
+            } catch (Exception e2) { }
+            try {
+                if (audioInputStream != null) 
+                    audioInputStream.close(); 
+            } catch (Exception e2) { }
+
+            //clear()?
+            throw e;
+        }
+    }
+
+    /**
+     * This tests readAudioFile with stereo 16 bit data.
+     * This is a destructive test: it removes the first second of the data.
+     *
+     * @param fullName e.g., "/erddapTest/audio/M1F1-int16-AFsp.wav" or my test re-write of it:
+     * from http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html
+     */
+    public static void testReadShortAudioFile(String fullName) throws Exception {
+        String2.log("* testReadShortAudioFile(" + fullName + ")");
+        Table table = new Table();
+        String results, expected;
+
+        //without elapsed time
+        table.readAudioFile(fullName, true, false); //readData, addElapsedTime
+        results = table.toString(10);
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 23493 ;\n" +
+"variables:\n" +
+"\tshort channel_1(row) ;\n" +
+"\t\tchannel_1:long_name = \"Channel 1\" ;\n" +
+"\tshort channel_2(row) ;\n" +
+"\t\tchannel_2:long_name = \"Channel 2\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:audioBigEndian = \"false\" ;\n" +
+"\t\t:audioChannels = 2 ;\n" +
+"\t\t:audioEncoding = \"PCM_SIGNED\" ;\n" +
+"\t\t:audioFrameRate = 8000.0f ;\n" +
+"\t\t:audioFrameSize = 4 ;\n" +
+"\t\t:audioSampleRate = 8000.0f ;\n" +
+"\t\t:audioSampleSizeInBits = 16 ;\n" +
+"}\n" +
+"channel_1,channel_2\n" +
+"0,0\n" +
+"0,0\n" +
+"1,2\n" +
+"-3,0\n" +
+"0,-4\n" +
+"6,4\n" +
+"-2,1\n" +
+"-2,-2\n" +
+"1,-4\n" +
+"-1,-4\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //get elapsed time
+        table.readAudioFile(fullName, true, true); //readData, addElapsedTime
+        results = table.toString(10);
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 23493 ;\n" +
+"variables:\n" +
+"\tdouble elapsedTime(row) ;\n" +
+"\t\telapsedTime:long_name = \"Elapsed Time\" ;\n" +
+"\t\telapsedTime:units = \"seconds\" ;\n" +
+"\tshort channel_1(row) ;\n" +
+"\t\tchannel_1:long_name = \"Channel 1\" ;\n" +
+"\tshort channel_2(row) ;\n" +
+"\t\tchannel_2:long_name = \"Channel 2\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:audioBigEndian = \"false\" ;\n" +
+"\t\t:audioChannels = 2 ;\n" +
+"\t\t:audioEncoding = \"PCM_SIGNED\" ;\n" +
+"\t\t:audioFrameRate = 8000.0f ;\n" +
+"\t\t:audioFrameSize = 4 ;\n" +
+"\t\t:audioSampleRate = 8000.0f ;\n" +
+"\t\t:audioSampleSizeInBits = 16 ;\n" +
+"}\n" +
+"elapsedTime,channel_1,channel_2\n" +
+"0.0,0,0\n" +
+"1.25E-4,0,0\n" +
+"2.5E-4,1,2\n" +
+"3.75E-4,-3,0\n" +
+"5.0E-4,0,-4\n" +
+"6.25E-4,6,4\n" +
+"7.5E-4,-2,1\n" +
+"8.75E-4,-2,-2\n" +
+"0.001,1,-4\n" +
+"0.001125,-1,-4\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        SSR.displayInBrowser("file://" + fullName);
+        String2.pressEnterToContinue("Close the audio player if file is okay.");
+    }
+
+    /**
+     * This tests reading a wav file with stereo float data.
+     *
+     * @param fullName "/erddapTest/audio/M1F1-float32-AFsp.wav" or my test re-write of it:
+     *   from http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html
+     */
+    public static void testReadFloatAudioFile(String fullName) throws Exception {
+        String2.log("* testReadFloatAudioFile(" + fullName + ")");
+        Table table = new Table();
+        String results, expected;
+
+        table.readAudioFile(fullName, true, false); //readData, addElapsedTime 
+        results = table.toString(10);
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 23493 ;\n" +
+"variables:\n" +
+"\tfloat channel_1(row) ;\n" +
+"\t\tchannel_1:long_name = \"Channel 1\" ;\n" +
+"\tfloat channel_2(row) ;\n" +
+"\t\tchannel_2:long_name = \"Channel 2\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:audioBigEndian = \"false\" ;\n" +
+"\t\t:audioChannels = 2 ;\n" +
+"\t\t:audioEncoding = \"PCM_FLOAT\" ;\n" +
+"\t\t:audioFrameRate = 8000.0f ;\n" +
+"\t\t:audioFrameSize = 8 ;\n" +
+"\t\t:audioSampleRate = 8000.0f ;\n" +
+"\t\t:audioSampleSizeInBits = 32 ;\n" +
+"}\n" +
+"channel_1,channel_2\n" +
+"0.0,0.0\n" +
+"0.0,0.0\n" +
+"3.0517578E-5,6.1035156E-5\n" +
+"-9.1552734E-5,0.0\n" +
+"0.0,-1.2207031E-4\n" +
+"1.8310547E-4,1.2207031E-4\n" +
+"-6.1035156E-5,3.0517578E-5\n" +
+"-6.1035156E-5,-6.1035156E-5\n" +
+"3.0517578E-5,-1.2207031E-4\n" +
+"-3.0517578E-5,-1.2207031E-4\n" +
+"...\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        SSR.displayInBrowser("file://" + fullName);
+        String2.pressEnterToContinue("Close the audio player if file is okay.");
+    }
+
+
+    /**
+     * This writes the data to a PCM_SIGNED (for int types) or PCM_FLOAT (for float types)
+     * WAVE file.
+     * All columns must be of the same type.
+     * This writes to a temporary file, then renames to correct name.
+     * Long data is always written as int's because wav doesn't seem to support it.
+* UNTIL JAVA 9, BECAUSE OF JAVA BUG, this writes float/double data as int's.
+     *
+     * @param fullOutName the dir + name + .wav for the .wav file
+     * @throws Exception if trouble.
+     *    If trouble, this makes an effort not to leave any (partial) file.
+     */
+    public void writeWaveFile(String fullOutName) throws Exception {
+
+        //this method creates file with the data
+        //  and at the end it calls the other writeWaveFile method to create fullOutName
+        long startTime = System.currentTimeMillis();
+        String errorWhile = String2.ERROR + " while writing .wav file=" + fullOutName + ": ";
+        int nCol = nColumns();
+        int nRow = nRows();
+        Test.ensureTrue(nCol > 0 && nRow > 0,
+            errorWhile + "There is no data.");
+        String tClass = getColumn(0).elementClassString();
+        int randomInt = Math2.random(Integer.MAX_VALUE);
+        String fullInName = fullOutName + ".data" + randomInt;
+        File2.delete(fullOutName);
+
+        //gather pa[] and just deal with that (so changes don't affect the table)
+        Test.ensureTrue(!tClass.equals("String") && !tClass.equals("char"), 
+            errorWhile + "All data columns must be numeric.");
+        PrimitiveArray pa[] = new PrimitiveArray[nCol];     
+        for (int c = 0; c < nCol; c++) {
+            pa[c] = columns.get(c);
+            Test.ensureEqual(tClass, pa[c].elementClassString(),
+                errorWhile + "All data columns must be of the same data type.");
+        }
+
+        //TEMPORARY: DEAL WITH JAVA 1.8 BUG: 
+        //Java code can't write PCM_FLOAT: says it is PCM_SIGNED instead
+        //https://bugs.openjdk.java.net/browse/JDK-8064800
+        //This is said to be fixed in Java 9 
+        boolean java8 = System.getProperty("java.version").startsWith("1.8.");
+        if (java8 &&
+            (tClass.equals("long") || tClass.equals("float") || tClass.equals("double"))) {
+
+            //get the range of all columns
+            double min =  Double.MAX_VALUE;
+            double max = -Double.MAX_VALUE; //min_value is close to 0
+            for (int c = 0; c < nCol; c++) {
+                //get range
+                PrimitiveArray da = pa[c];
+                double[] stats = da.calculateStats();
+                min = Math.min(min, stats[PrimitiveArray.STATS_MIN]);
+                max = Math.max(max, stats[PrimitiveArray.STATS_MAX]);
+            }
+            double range = max - min;
+
+            //save as int (scaled into int range)
+            for (int c = 0; c < nCol; c++) {
+                PrimitiveArray da = pa[c];
+                IntArray ia = new IntArray(nRow, false);
+                for (int row = 0; row < nRow; row++) {
+                    double d = da.getDouble(row);
+                    if (Double.isNaN(d)) 
+                        ia.add(0);
+                    else ia.add(Math2.roundToInt(-2000000000.0 + ((d-min)/range) * 4000000000.0));
+                }
+                pa[c] = ia;
+            }
+            tClass = "int";
+        }
+         
+        //write the data to a file (slower, but saving memory is important here)
+        //FUTURE: isn't there a way to open the wav file, write data to it, then close it?
+        //  very low level: https://stackoverflow.com/questions/5810164/how-can-i-write-a-wav-file-from-byte-array-in-java
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new BufferedOutputStream(
+                new FileOutputStream(fullInName)));
+            for (int row = 0; row < nRow; row++)
+                for (int col = 0; col < nCol; col++)
+                    pa[col].writeDos(dos, row);
+            dos.close();
+            dos = null;
+
+        } catch (Exception e) {
+            if (dos != null) {
+                dos.close();
+                File2.delete(fullInName);
+            }
+            throw e;
+        }
+
+        //make the wav file
+        writeWaveFile(fullInName, nCol, nRow, tClass, globalAttributes, 
+            randomInt, fullOutName, startTime); // throws Exception 
+
+        //delete the temp in file
+        File2.delete(fullInName);
+    }
+
+
+    /**
+     * This STATIC method writes the data to a PCM_SIGNED (for integer types) 
+     * or PCM_FLOAT (for float types) WAVE file.
+     * All columns must be of the same type.
+     * This writes to a temporary file, then renames to correct name.
+     * If neither the audioFrameRate or audioSampleRate are in globalAttributes,
+     * a sample rate of 10000Hz will be assumed.
+     *
+     * @param fullInName  the dir + name + ext for the data stream file, 
+     *    ready to go (columns interspersed).
+     * @param nCol
+     * @param nRow
+     * @param tClass a numeric type. 
+     *   UNTIL JAVA 9, BECAUSE OF JAVA BUG, this must be an integer type.
+     * @param globalAtts
+     * @param randomInt
+     * @param fullOutName the dir + name + .wav for the .wav file
+     * @throws Exception if trouble.
+     *    If trouble, this makes an effort not to leave any (partial) file.
+     */
+    public static void writeWaveFile(String fullInName, int nCol, long nRow, 
+        String tClass, Attributes globalAtts, 
+        int randomInt, String fullOutName, long startTime) throws Exception {
+
+        File2.delete(fullOutName);
+        String errorWhile = String2.ERROR + " while writing .wav file=" + fullOutName + ": ";
+        boolean isFloat = tClass.equals("double") || tClass.equals("float");
+        Test.ensureTrue(!tClass.equals("String") && !tClass.equals("char"), 
+            errorWhile + "All data columns must be numeric.");
+
+        //gather info. Ensure all columns are same type.
+
+        //gather required metadata and properties (from globalAtts)
+        float frameRate  = Float.NaN; 
+        float sampleRate = Float.NaN; 
+        String keys[] = globalAtts.getNames();
+        HashMap<String,Object> props = new HashMap();
+        for (int ki = 0; ki < keys.length; ki++) {
+            String k = keys[ki];
+            if      (k.equals("audioBigEndian"))  {} //don't pass through
+            else if (k.equals("audioChannels"))   {} //don't pass through
+            else if (k.equals("audioEncoding"))   {} //don't pass through
+            else if (k.equals("audioFrameRate"))  frameRate  = globalAtts.getFloat(k);
+            else if (k.equals("audioFrameSize"))  {} //don't pass through
+            else if (k.equals("audioSampleRate")) sampleRate = globalAtts.getFloat(k);
+            else if (k.equals("audioSampleSizeInBits")) {} //don't pass through
+            else {
+                String k2 = k;
+                if (k.startsWith("audio_"))
+                    k2 = k.substring(6);
+                PrimitiveArray pa = globalAtts.get(k);
+                Class paClass = pa.elementClass();
+                if      (paClass.equals(byte.class  )) props.put(k2, Math2.narrowToByte( globalAtts.getInt(k)));
+                else if (paClass.equals(short.class )) props.put(k2, Math2.narrowToShort(globalAtts.getInt(k)));
+                else if (paClass.equals(int.class   )) props.put(k2, globalAtts.getInt(k));
+                else if (paClass.equals(long.class  )) props.put(k2, globalAtts.getLong(k));
+                else if (paClass.equals(float.class )) props.put(k2, globalAtts.getFloat(k));
+                else if (paClass.equals(double.class)) props.put(k2, globalAtts.getDouble(k));
+                else                                   props.put(k2, globalAtts.getString(k));
+            }
+        }
+
+        if (frameRate < 0 || !Float.isFinite(frameRate))
+            frameRate = sampleRate;
+        if (sampleRate < 0 || !Float.isFinite(sampleRate))
+            sampleRate = frameRate;
+        if (sampleRate < 0 || !Float.isFinite(sampleRate)) {
+            frameRate = 10000; //a low frame/sampleRate, and a round number
+            sampleRate = 10000;
+        }
+
+        //https://stackoverflow.com/questions/10991391/saving-audio-byte-to-a-wav-file
+        AudioFormat.Encoding encoding = isFloat? 
+            AudioFormat.Encoding.PCM_FLOAT : 
+            AudioFormat.Encoding.PCM_SIGNED;
+        int nBits = PrimitiveArray.elementSize(tClass) * 8; //bits per element
+        AudioFormat af = new AudioFormat(encoding,
+            sampleRate, nBits, nCol, (nCol * nBits) / 8, frameRate, 
+            true, //bigEndian. My data is bigEndian, but I think Java always swaps and writes littleEndian
+            props);
+
+        DataInputStream  dis = null;
+        try {
+
+            //create the .wav
+            dis = new DataInputStream(new FileInputStream(fullInName));
+            AudioInputStream ais = new AudioInputStream(dis, af, nRow);  //nFrames
+            AudioSystem.write(ais, AudioFileFormat.Type.WAVE, 
+                new java.io.File(fullOutName + randomInt));
+            dis.close();
+            dis = null;
+            File2.rename(fullOutName + randomInt, fullOutName); //throws Exception if trouble
+
+            if (verbose) String2.log("writeWaveFile(" + fullOutName + 
+                ") finished successfully.\n  nRows=" + nRow + 
+                " nChannels=" + nCol + " encoding=" + encoding.toString() + 
+                " isBigEndian=true" +
+                " nBits=" + nBits + " isFloat=" + isFloat + 
+                " time=" + (System.currentTimeMillis() - startTime) + "ms");
+
+        } catch (Exception e) {
+            if (dis != null)
+                dis.close();
+            File2.delete(fullOutName + randomInt);
+
+            throw e;
+        }
+    }
+
+    /** 
+     * This tests reading audio files and and writing WAVE files. 
+     * @param stop use a big number will be converted to the max available */
+    public static void testReadAudioWriteWaveFiles(int start, int stop) throws Exception {
+
+        String dir = "/erddapTest/audio/";
+        String names[] = {
+            //sample files from http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html
+            "M1F1-int16-AFsp.wav",   "M1F1-int32-AFsp.wav", 
+            "M1F1-uint8-AFsp.wav",   "M1F1-int24-AFsp.wav", 
+            "M1F1-float32-AFsp.wav", "M1F1-mulaw-AFsp.wav", 
+            "M1F1-Alaw-AFsp.wav",    "M1F1-int12-AFsp.wav",   //12bits is not supported
+            "addf8-Alaw-GW.wav",     "addf8-mulaw-GW.wav",    
+            //sample files from http://www.class-connection.com/8bit-ulaw.htm
+            "Cuckoo_Clock.wav",      "ballgame1.wav",  //[10]
+            //sample files from https://en.wikipedia.org/wiki/WAV
+            "8k8bitpcm.wav",         "8k16bitpcm.wav", //[12]
+            "8kulaw.wav",            "11k8bitpcm.wav",
+            "11k16bitpcm.wav",       "11kulaw.wav",
+            //sample files from http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/AU/Samples.html
+            "M1F1-Alaw-AFsp.au",     "M1F1-mulaw-AFsp.au",   //[18]
+            "M1F1-int8-AFsp.au",     "M1F1-int16-AFsp.au",   
+            "M1F1-int24-AFsp.au",    "M1F1-int32-AFsp.au",   
+            "M1F1-float32-AFsp.au",  "M1F1-float64-AFsp.au",  //float types FAIL: "file is not a supported file type"
+            //sample files from http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/AIFF/Samples.html
+            //CURRENTLY, ALL AIF SAMPLES FAIL
+            "M1F1-AlawC-AFsp.aif",   "M1F1-mulawC-AFsp.aif", //[26]
+            "M1F1-int8-AFsp.aif",    "M1F1-int8C-AFsp.aif",   
+            "M1F1-int12-AFsp.aif",   "M1F1-int12C-AFsp.aif",   //12 bits is not supported
+            "M1F1-int16-AFsp.aif",   "M1F1-int16C-AFsp.aif",   
+            "M1F1-int24-AFsp.aif",   "M1F1-int24C-AFsp.aif",   
+            "M1F1-int32-AFsp.aif",   "M1F1-int32C-AFsp.aif",   
+            "M1F1-float32C-AFsp.aif","M1F1-float64C-AFsp.aif",   
+            "M1F1-int16s-AFsp.aif",  ""};
+
+        stop = Math.min(stop, names.length - 1);
+
+        Table table = new Table();
+        for (int i = start; i <= stop; i++) {
+            try {
+                String name = names[i];
+                if (name.length() == 0)
+                    continue;
+                String2.log("\n* Table.testReadWriteWaveFiles #" + i + "=" + dir + name);
+                String outName = File2.getSystemTempDirectory() + 
+                    "write" + File2.forceExtension(name, ".wav");
+                File2.delete(outName);
+                table.readAudioFile(dir + name, true, false);  //readData, addElapsedTime
+                String2.log(table.dataToString(16));
+
+                table.writeWaveFile(outName);
+                table.readAudioFile(outName, true, false);  //readData, addElapsedTime
+                String2.log(table.dataToString(16));
+                SSR.displayInBrowser("file://" + outName);
+            } catch (Exception e) {
+                String2.log(MustBe.throwableToString(e));
+            }
+            String2.pressEnterToContinue();
+        }
+    }
+
+    /** This tests writing a WAVE file with float stereo data. */
+    public static void testReadWriteFloatWaveFile() throws Exception {
+        String2.log("* testReadWriteFloatWaveFile");
+        String fullName = File2.getSystemTempDirectory() + "testFloat.wav";
+        File2.delete(fullName);
+        Table table = new Table();
+        table.readAudioFile("/erddapTest/audio/M1F1-float32-AFsp.wav", true, false);  //readData, addElapsedTime
+        table.writeWaveFile(fullName);
+
+        //read it  
+        //DEAL WITH JAVA 8 BUG
+        boolean java8 = System.getProperty("java.version").startsWith("1.8.");
+        if (java8)
+            SSR.displayInBrowser("file://" + fullName);
+        else testReadFloatAudioFile(fullName);
+        String2.pressEnterToContinue("Close the audio player if file is okay.");
+    }
 
     /**
      * This is a minimalist readNetcdf which just reads specified rows
@@ -18204,7 +19034,7 @@ String2.log(table.dataToString());
         }
         String2.log("Table.appendNcRows done. nAppendCalls=" + nAppendCalls +
             " nRows=" + nRows() + 
-            " TIME=" + (System.currentTimeMillis() - time));
+            " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -18255,7 +19085,7 @@ String2.log(table.dataToString());
         }
         String2.log("Table.blockAppendNcRows done. nAppendCalls=" + nAppendCalls +
             " nRows=" + nRows() + 
-            " TIME=" + (System.currentTimeMillis() - time));
+            " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -18585,7 +19415,7 @@ String2.log(table.dataToString());
                 " keyCol=#" + keyCol + "=" + getColumnName(keyCol) + 
                 " insertedColumns=" + insertedColumnNames.toString() +
                 ") nMatched=" + nMatched + " nNotMatched=" + (nRows - nMatched) + 
-                " time=" + (System.currentTimeMillis() - time));
+                " time=" + (System.currentTimeMillis() - time) + "ms");
         if (debugMode) {
             if (nRows - nMatched > 0)        
                 String2.log("  Debug: NotMatched tally:\n" + notMatchedTally.toString(50));
@@ -18883,7 +19713,7 @@ String2.log(table.dataToString());
 
         if (verbose)
             String2.log("Table.readNetCDF nColumns=" + nColumns() +
-                " nRows=" + nRows() + " time=" + (System.currentTimeMillis() - time));
+                " nRows=" + nRows() + " time=" + (System.currentTimeMillis() - time) + "ms");
      
     }
 
@@ -18931,7 +19761,7 @@ String2.log(table.dataToString());
             throw e;
         }
         if (verbose) String2.log("  Table.readOpendap done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
     }
     
@@ -18949,7 +19779,7 @@ String2.log(table.dataToString());
     /**
      * This populates the table from an opendap one level or two-level (Dapper-style) sequence response.
      * See Opendap info: https://www.opendap.org/pdf/dap_2_data_model.pdf .
-     * See Dapper Conventions: http://www.epic.noaa.gov/epic/software/dapper/dapperdocs/conventions/ .
+     * See Dapper Conventions: https://www.pmel.noaa.gov/epic/software/dapper/dapperdocs/conventions/ .
      * 2016-12-07: With versions of Tomcat somewhere after 8.0, the url must be stongly percent-encoded.
      *
      * <p>A typical dapper-style two-level nested sequence is:
@@ -19020,7 +19850,7 @@ String2.log(table.dataToString());
         //get the outerSequence information
         DataDDS dataDds = dConnect.getData(null); //null = no statusUI
         if (verbose)
-            String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time));
+            String2.log("  dConnect.getData time=" + (System.currentTimeMillis() - time) + "ms");
         BaseType firstVariable = (BaseType)dataDds.getVariables().nextElement();
         if (!(firstVariable instanceof DSequence)) 
             throw new Exception(errorInMethod + "firstVariable not a DSequence: name=" + 
@@ -19218,7 +20048,7 @@ String2.log(table.dataToString());
         ensureValid(); //throws Exception if not
 
         if (verbose) String2.log("  Table.readOpendapSequence done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TOTAL TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TOTAL TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -19357,7 +20187,7 @@ String2.log(table.dataToString());
             boolean ok = true;
             for (int testCol = 0; testCol < nTestColumns; testCol++) {
                 double d = testColumns[testCol].getDouble(row);
-                if (Math2.isFinite(d) && d >= min[testCol] && d <= max[testCol]) {
+                if (Double.isFinite(d) && d >= min[testCol] && d <= max[testCol]) {
                 } else {
                     ok = false;
                     break;
@@ -19530,6 +20360,7 @@ String2.log(table.dataToString());
      * Make a subset of this data by retaining only the keep(row)==true rows.
      * 
      * @param keep This method won't modify the values in keep.
+     * @return nRows
      */
     public void justKeep(BitSet keep) {
         int nColumns = nColumns();
@@ -19540,7 +20371,7 @@ String2.log(table.dataToString());
 
     /**
      * This returns list of &amp;-separated parts, in their original order, from a percent encoded dapQuery.
-     * This is like split(,'&amp;'), but smarter.
+     * This is like split('&amp;'), but smarter.
      * This accepts:
      * <ul>
      * <li>connecting &amp;'s already visible (within a part, 
@@ -19596,7 +20427,7 @@ String2.log(table.dataToString());
 
     /** This tests getDapQueryParts. */
     public static void testGetDapQueryParts() throws Exception {
-        String2.log("\n*** testGetDapQueryParts");
+        String2.log("\n*** Table.testGetDapQueryParts");
 
         //test Table.getDapQueryParts   
         Test.ensureEqual(getDapQueryParts(null), new String[]{""}, "");
@@ -19621,7 +20452,7 @@ String2.log(table.dataToString());
             "SimpleException: Query error: A closing doublequote is missing.", 
             "error=" + error);
 
-        String2.log("\n*** testGetDapQueryParts succeeded");
+        String2.log("\n*** Table.testGetDapQueryParts succeeded");
     }
 
 
@@ -19862,7 +20693,7 @@ String2.log(table.dataToString());
                         if (debugMode) String2.log(">> TIME CONSTRAINT converted in parseDapQuery: " + 
                             tValue + " -> " + conValueD);
 
-                    } else if (tValue.startsWith("now")) {
+                    } else if (tValue.toLowerCase().startsWith("now")) {
                         if (repair)
                              conValueD = Calendar2.safeNowStringToEpochSeconds(tValue, 
                                  (double)Math2.hiDiv(System.currentTimeMillis(), 1000));
@@ -19874,7 +20705,7 @@ String2.log(table.dataToString());
                         //it must be a number (epochSeconds)
                         //test that value=NaN must use NaN or "", not just an invalidly formatted number
                         conValueD = String2.parseDouble(tValue);
-                        if (!Math2.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
+                        if (!Double.isFinite(conValueD) && !tValue.equals("NaN") && !tValue.equals("")) {
                             if (repair) {
                                 tValue = "NaN";
                                 conValueD = Double.NaN;
@@ -19949,7 +20780,7 @@ String2.log(table.dataToString());
 
                     //test of value=NaN must use "NaN", not somthing just a badly formatted number
                     conValueD = String2.parseDouble(tValue);
-                    if (!Math2.isFinite(conValueD) && !tValue.equals("NaN")) {
+                    if (!Double.isFinite(conValueD) && !tValue.equals("NaN")) {
                         if (repair) {
                             conValueD = Double.NaN;
                             tValue = "NaN";
@@ -21285,8 +22116,8 @@ String2.log(table.dataToString());
         if (numberTimeUnits == null || numberTimeUnits.length != 2)
             throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
                 " (numberTimeUnits.length must be 2)"); 
-        if (!Math2.isFinite(numberTimeUnits[0]) || 
-            !Math2.isFinite(numberTimeUnits[1]))
+        if (!Double.isFinite(numberTimeUnits[0]) || 
+            !Double.isFinite(numberTimeUnits[1]))
             throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
                 " (numberTimeUnits values can't be NaNs)"); 
         if (numberTimeUnits[0] <= 0 || numberTimeUnits[1] <= 0)
@@ -21858,7 +22689,7 @@ String2.log(table.dataToString());
             bos.close();
 
             //rename the file to the specified name, instantly replacing the original file     
-            File2.rename(fullName + randomInt, fullName);
+            File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
 
         } catch (Exception e) {
             //try to close the file
@@ -21882,7 +22713,7 @@ String2.log(table.dataToString());
         //    fullResultName + randomInt + ".mat " + varName); 
 
         if (verbose) String2.log("  Table.saveAsMatlab done. TIME=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -21942,7 +22773,7 @@ String2.log(table.dataToString());
         dos.flush(); //essential
 
         if (verbose) String2.log("  Table.saveAsMatlab done. TIME=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
     }
 */
     /**
@@ -22058,7 +22889,7 @@ String2.log(table.dataToString());
         stream.flush(); //essential
 
         if (verbose) String2.log("  Table.saveAsMatlab done. TIME=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -22192,6 +23023,13 @@ String2.log(table.dataToString());
         if (verbose) String2.log("Table.saveAsFlatNc " + fullName); 
         long time = System.currentTimeMillis();
 
+        //String2.log("saveAsFlatNc first 5 rows:" + toString(5));
+
+        //this method checks validity because it is used as a fundamental part
+        //of EDDGridFromFiles and EDDTableFromFiles fileTable
+        //and because code below throws null pointer exception (not descriptive or helpful)
+        //if 2 vars have same name
+        ensureValid();  
 
         //POLICY: because this procedure may be used in more than one thread,
         //do work on unique temp files names using randomInt, then rename to proper file name.
@@ -22277,6 +23115,9 @@ String2.log(table.dataToString());
 
             //write the data
             for (int col = 0; col < nColumns; col++) {
+                //String2.log("writing col=" + col + " " + getColumnName(col) + 
+                //    " colVars[col]=" + colVars[col] +  
+                //    " size=" + tPA[col].size() + " tPA[col]=" + tPA[col]);
                 nc.write(colVars[col], NcHelper.get1DArray(tPA[col].toObjectArray()));
 
                 //convert back to standard MissingValues
@@ -22288,11 +23129,11 @@ String2.log(table.dataToString());
             nc.close(); //it calls flush() and doesn't like flush called separately
 
             //rename the file to the specified name, instantly replacing the original file
-            File2.rename(fullName + randomInt, fullName);
+            File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
 
             //diagnostic
             if (verbose) String2.log("  Table.saveAsFlatNc done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
             //ncDump("End of Table.saveAsFlatNc", directory + name + ext, false);
 
         } catch (Exception e) {
@@ -22848,13 +23689,13 @@ String2.log(table.dataToString());
             nc.close(); //it calls flush() and doesn't like flush called separately
 
             //rename the file to the specified name, instantly replacing the original file
-            File2.rename(fullName + randomInt, fullName);
+            File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
 
             //diagnostic
             if (verbose)
                 String2.log("  Table.saveAs4DNc done. " + 
                     " make4IndicesTime=" + make4IndicesTime +
-                    " total TIME=" + (System.currentTimeMillis() - time));
+                    " total TIME=" + (System.currentTimeMillis() - time) + "ms");
             //ncDump("End of Table.saveAs4DNc", fullName, false);
 
         } catch (Exception e) {
@@ -22940,7 +23781,7 @@ String2.log(table.dataToString());
         }
 
         if (verbose) String2.log("    Table.readSqlResultSet done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -22976,7 +23817,7 @@ String2.log(table.dataToString());
         statement.close();
 
         if (verbose) String2.log("  Table.readSql done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -23154,13 +23995,13 @@ String2.log(table.dataToString());
                 //check for date, timestamp, time columns before double and String
                 if (isDateCol[col]) {    
                     double d = pa.getDouble(row);
-                    if (Math2.isFinite(d)) {
+                    if (Double.isFinite(d)) {
                         Date date = new Date(Math.round(d * 1000)); //set via UTC millis
                         pStatement.setDate(col + 1, date, cal); //cal specifies the UTC timezone
                     } else pStatement.setDate(col + 1, null);
                 } else if (isTimestampCol[col]) {    
                     double d = pa.getDouble(row);
-                    if (Math2.isFinite(d)) {
+                    if (Double.isFinite(d)) {
                         Timestamp timestamp = new Timestamp(Math.round(d * 1000)); //set via UTC millis
                         pStatement.setTimestamp(col + 1, timestamp, cal); //cal specifies the UTC timezone
                     } else pStatement.setTimestamp(col + 1, null);
@@ -23286,7 +24127,7 @@ String2.log(table.dataToString());
                 "  Table.saveAsSql done. nColumns=" + nColumns() +
                 " nRowsSucceed=" + (nRows - failedRows.size()) + 
                 " nRowsFailed=" + (failedRows.size()) + 
-                " TIME=" + (System.currentTimeMillis() - elapsedTime));
+                " TIME=" + (System.currentTimeMillis() - elapsedTime) + "ms");
         }
     }
 
@@ -23302,7 +24143,7 @@ String2.log(table.dataToString());
         String password) throws Exception {
 
         //from Sareth's answer at
-        //http://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
+        //https://stackoverflow.com/questions/9543722/java-create-msaccess-database-file-mdb-0r-accdb-using-java
         Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");  //included in Java distribution
         return DriverManager.getConnection(
             "jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};" +
@@ -23537,7 +24378,7 @@ String2.log(table.dataToString());
             double d = da.get(row);
 
             //catch missing values
-//            if (!Math2.isFinite(s == null) || s.length() == 0) {
+//            if (!Double.isFinite(s == null) || s.length() == 0) {
 //                sa.array[row] = missingValueString;            
 //                continue;
 //            }
@@ -23561,7 +24402,7 @@ String2.log(table.dataToString());
      * @throws Exception if trouble
      */
     public static void testSql() throws Exception {
-        String2.log("\n*** testSql");
+        String2.log("\n*** Table.testSql");
         verbose = true;
         reallyVerbose = true;
 
@@ -23578,7 +24419,7 @@ String2.log(table.dataToString());
         }
         long tTime = System.currentTimeMillis();
         Connection con = DriverManager.getConnection(url, user, password);
-        String2.log("getConnection time=" + (System.currentTimeMillis() - tTime)); //often 9s !
+        String2.log("getConnection time=" + (System.currentTimeMillis() - tTime) + "ms"); //often 9s !
 
         DatabaseMetaData dm = con.getMetaData();
         String2.log("getMaxRowSize=" + dm.getMaxRowSize());  //1GB
@@ -23766,7 +24607,7 @@ String2.log(table.dataToString());
             os.close();
 
             //rename the file to the specified name, instantly replacing the original file
-            File2.rename(fullFileName + randomInt, fullFileName);
+            File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
 
         } catch (Exception e) {
             os.close();
@@ -23826,7 +24667,7 @@ String2.log(table.dataToString());
             os.close();
 
             //rename the file to the specified name, instantly replacing the original file
-            File2.rename(fullFileName + randomInt, fullFileName);
+            File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
 
         } catch (Exception e) {
             os.close();
@@ -23940,7 +24781,7 @@ String2.log(table.dataToString());
         //diagnostic
         if (verbose)
             String2.log("  Table.saveAsSeparatedASCII done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -24090,7 +24931,7 @@ String2.log(table.dataToString());
         writer.flush(); 
 
         if (verbose) String2.log("Table.saveAsJson done. time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -24277,7 +25118,7 @@ String2.log(table.dataToString());
         //String2.log(" place3 nColumns=" + nColumns() + " nRows=" + nRows() + " nCells=" + (nColumns() * nRows()));
         //String2.log(toString(10));
         if (verbose) String2.log("  Table.readJson done. nColumns=" + nColumns() +
-            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -24353,7 +25194,7 @@ String2.log(table.dataToString());
             for (int row = 0; row < nRows; row++) {
                 //igor stores datetime as seconds since 1/1/1904
                 double d = pa.getDouble(row);
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     d = Calendar2.epochSecondsToUnitsSince(
                         IgorBaseSeconds, IgorFactorToGetSeconds, d);
                     writer.write("" + d);
@@ -24416,7 +25257,7 @@ String2.log(table.dataToString());
      * <br>This is tested by EDDGridFromNcFiles.testIgor() since
      *   EDDGrid.saveAsIgor uses this to save axisVars-only response.
      * 
-     * @param writer
+     * @param writer If all goes well, it is closed at the end.
      * @throws Throwable 
      */
     public void saveAsIgor(Writer writer) throws Throwable {
@@ -24453,9 +25294,10 @@ String2.log(table.dataToString());
 
         //done!
         writer.flush(); //essential
+        writer.close();
 
         if (reallyVerbose) String2.log("  Table.saveAsIgor done. TIME=" + 
-            (System.currentTimeMillis() - time) + "\n");
+            (System.currentTimeMillis() - time) + "ms\n");
     }
 
 
@@ -24482,7 +25324,7 @@ String2.log(table.dataToString());
         //read the json source
         //"columnNames": ["Row Type", "Variable Name", "Attribute Name", "Java Type", "Value"],
         Table infoTable = new Table();
-        infoTable.readJson(url, SSR.getUrlResponseString(url));
+        infoTable.readJson(url, SSR.getUrlResponseStringUnchanged(url));
         String tColNames = " column not found in colNames=" + String2.toCSSVString(infoTable.getColumnNames());
         int nRows = infoTable.nRows();
         int rowTypeCol = infoTable.findColumnNumber("Row Type");
@@ -24517,10 +25359,8 @@ String2.log(table.dataToString());
 
     /**
      * This mimics the a simple directory listing web page created by Apache.
-     * <br>It mimics https://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
-     * stored on Bob's computer as c:/programs/apache/listing.html
-     * The hr's on that page cause HTML warnings, but this sticks with mimicking Apache.
-     *  See also http://www.ndbc.noaa.gov/data/realtime2/?C=N;O=A
+     * <br>It mimics https://www1.ncdc.noaa.gov/pub/data/cmb/ersst/v4/netcdf/
+     * stored on Bob's computer as c:/programs/apache/listing3.html
      * <br>***WARNING*** The URL that got the user to this page MUST be a 
      *   directoryURL ending in '/', or the links don't work (since they are implied
      *   to be relative to the current URL, not explicit)!
@@ -24532,9 +25372,11 @@ String2.log(table.dataToString());
      *    "Size" (long, directories/unknown should have Long.MAX_VALUE), and 
      *    "Description" (String)
      * <br>The displayed Last Modified time will be Zulu timezone.
-     * <br>The displayed size will be some number of bytes, or truncated to some
-     *    number of K (1024), M (1024^2), G (1024^3), or T (1024^4), 
+     * <br>The displayed size will be some number of bytes
+     *    [was: truncated to some number of K (1024), M (1024^2), G (1024^3), or T (1024^4)]     
      *
+     * @param localDir the actual local directory, so this can determine image size
+     *    (or null if not a real dir or you don't want to do that)
      * @param showUrlDir the part of the URL directory name to be displayed (with trailing slash).
      *    This is for display only.
      * @param userQuery  may be null. Still percent encoded.  
@@ -24561,18 +25403,20 @@ String2.log(table.dataToString());
      *   It will be sorted within directoryListing.
      * @param dirDescriptions may be null
      */
-    public String directoryListing(String showUrlDir, String userQuery,
-        String iconUrlDir, boolean addParentDir, 
+    public String directoryListing(String localDir, String showUrlDir, String userQuery,
+        String iconUrlDir, String questionMarkImageUrl, boolean addParentDir, 
         StringArray dirNames, StringArray dirDescriptions) throws Exception {
-
-        int nameSpaces = 51; //with " " after it to ensure separation
-        int dateSpaces = 17; //with " " after it to ensure separation
-        int sizeSpaces = 5; //e.g., 1003, 1003K, 1003M, 1003G, 1003T, with "  "(!) after it
 
         //String2.log("Table.directoryListing("showUrlDir=" + showUrlDir +
         //    "\n  userQuery=" + userQuery + 
         //    "\n  iconUrlDir=" + iconUrlDir +
         //    "\n  nDirNames=" + dirNames.size() + " table.nRows=" + nRows());
+        if (localDir != null) {
+            if (!File2.isDirectory(localDir)) {
+                String2.log("Warning: directoryListing localDir=" + localDir + " isn't a directory.");
+                localDir = null;
+            }
+        }
 
         //en/sure column names are as expected
         String ncssv = getColumnNamesCSSVString();
@@ -24619,22 +25463,25 @@ String2.log(table.dataToString());
         //and sort the table (while lastModified and size are still the raw values) 
         sortIgnoreCase(keyColumns, ascending);
 
-        //convert LastModified to string  (after sorting)
         int tnRows = nRows();
+        /*
+        //convert LastModified to string  (after sorting)
         StringArray newModifiedPA = new StringArray(tnRows, false);
         for (int row = 0; row < tnRows; row++) {
             String newMod = "";
             try {
                 long tl = modifiedPA.getLong(row);
-                newMod = tl == Long.MAX_VALUE? "" : 
-                    Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(tl)).substring(0, dateSpaces); 
+                newMod = tl == Long.MAX_VALUE? "" : //show hh:mm, not more
+                    Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(tl)).substring(0, 17); 
             } catch (Throwable t) {
             }
             newModifiedPA.add(newMod);
         }
         modifiedPA = newModifiedPA;
+        */
 
         //convert sizes
+        /*
         StringArray newSizePA = new StringArray(tnRows, false);
         for (int row = 0; row < tnRows; row++) {
             String newSize = "";
@@ -24654,24 +25501,30 @@ String2.log(table.dataToString());
             newSizePA.add(newSize);
         }
         sizePA = newSizePA;
+        */
 
-//<pre>
-//<img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=D">Name</a>                                                <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/">Parent Directory</a>                                                         -   
-//<img src="/icons/text.gif" alt="[TXT]"> <a href="G01194.xml">G01194.xml</a>                                          05-Aug-2011 15:41   20K  
+//<table><tr><th><img src="/icons/blank.gif" alt="[ICO]"></th>
+  //<th><a href="?C=N;O=D">Name</a></th>
+  //<th><a href="?C=M;O=A">Last modified</a></th>
+  //<th><a href="?C=S;O=A">Size</a></th>
+  //<th><a href="?C=D;O=A">Description</a></th></tr>
+  //<tr><th colspan="5"><hr></th></tr>
+//<tr><td valign="top"><img src="/icons/folder.gif" alt="[DIR]"></td><td><a href="OEDV/">OEDV/</a></td><td align="right">26-Feb-2017 13:22  </td><td align="right">  - </td><td>&nbsp;</td></tr>
 
         //write showUrlDir
         StringBuilder sb = new StringBuilder();
+        sb.append(HtmlWidgets.htmlTooltipScript(File2.getDirectory(questionMarkImageUrl)));
 
-        //write column names
+        //write column names and hr
+        String iconStyle = ""; //" style=\"vertical-align:middle;\"";
         sb.append(
-            "<pre><img src=\"" + iconUrlDir + "blank.gif\" alt=\"Icon \"> " + 
-            "<a href=\"?C=N;O=" + linkAD[0] + "\">Name</a>"          + String2.makeString(' ', nameSpaces - 4)  + " " +
-            "<a href=\"?C=M;O=" + linkAD[1] + "\">Last modified</a>" + String2.makeString(' ', dateSpaces - 13) + "  " +
-            "<a href=\"?C=S;O=" + linkAD[2] + "\">Size</a>"          +                                            "  " +
-            "<a href=\"?C=D;O=" + linkAD[3] + "\">Description</a>"   +
-            "\n" + 
-            "<hr>"); //listings I looked at didn't have \n here
-
+            "<table class=\"compact nowrap\" style=\"border-collapse:separate; border-spacing:12px 0px;\">\n" +
+            "<tr><th><img class=\"B\" src=\"" + iconUrlDir + "blank.gif\" alt=\"[ICO]\"" + iconStyle + "></th>" + 
+                "<th><a href=\"?C=N;O=" + linkAD[0] + "\">Name</a></th>" +
+                "<th><a href=\"?C=M;O=" + linkAD[1] + "\">Last modified</a></th>" +
+                "<th><a href=\"?C=S;O=" + linkAD[2] + "\">Size</a></th>" +
+                "<th><a href=\"?C=D;O=" + linkAD[3] + "\">Description</a></th></tr>\n" +
+            "<tr><th colspan=\"5\"><hr></th></tr>\n");
 
         //display the directories
         //if shown, parentDir always at top
@@ -24700,21 +25553,23 @@ String2.log(table.dataToString());
                 String dirDes = dirDescriptions == null? "" : dirDescriptions.get(row);
                 String showDirName = dirName;
                 String iconFile = "dir.gif"; //default
-                String iconAlt  = "DIR";  //always 3 characters
+                String iconAlt  = "DIR";  
                 if (dirName.equals("..")) {
                     showDirName = "Parent Directory";
                     iconFile    = "back.gif";
                 }
                 sb.append(
-                    "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
-                        "align=\"top\"> " +  
-                    "<a href=\"" + 
-                    XML.encodeAsHTMLAttribute(dirName + (dirName.equals("..")? "" : "/")) + 
-                    "\">" + XML.encodeAsXML(showDirName) + "</a>" +
-                    String2.makeString(' ',  nameSpaces - showDirName.length()) + " " +
-                    String2.left("", dateSpaces) + " " +
-                    String2.right("- ", sizeSpaces) + "  " +
-                    XML.encodeAsXML(dirDes) +"\n"); 
+                    "<tr>" +
+                    "<td><img class=\"B\" src=\"" + iconUrlDir + iconFile + 
+                        "\" alt=\"[" + iconAlt + "]\"" + iconStyle + "></td>" +  
+                    "<td><a href=\"" + 
+                      XML.encodeAsHTMLAttribute(dirName + (dirName.equals("..")? "" : "/")) + 
+                      "\">" + XML.encodeAsXML(showDirName) + "</a></td>" +
+                    "<td class=\"R\">-</td>" +  //lastMod
+                    "<td class=\"R\">-</td>" +  //size
+                    "<td>" + XML.encodeAsXML(dirDes) + "</td>" +
+                    "</tr>\n"); 
+
             } catch (Throwable t) {
                 String2.log(String2.ERROR + " for directoryListing(" +
                     showUrlDir + ")\n" +
@@ -24722,96 +25577,68 @@ String2.log(table.dataToString());
             }
         }
 
-        //define the file types  (should be in messages.xml?)
-        //compressed and image ext from wikipedia
-        //many ext from http://www.fileinfo.com/filetypes/common
-        String binaryExt[] = {".accdb", ".bin", ".cab", ".cer", ".class", ".cpi", ".csr",
-            ".db", ".dbf", ".dll", ".dmp", ".drv", ".dwg", ".dxf", ".fnt", ".fon", 
-            ".ini", ".keychain", ".lnk", ".mat", ".mdb", ".mim", ".nc", 
-            ".otf", ".pdb", ".prf", ".sys", ".ttf"};
-        String compressedExt[] = {".7z", ".a", ".ace", ".afa", ".alz", ".apk", 
-            ".ar", ".arc", ".arj", ".ba", ".bak", ".bh", ".bz2", 
-            ".cab", ".cfs", ".cpio", ".dar", ".dd", ".deb", ".dgc", ".dmg", ".f",
-            ".gca", ".gho", ".gz", 
-            ".gzip", ".ha", ".hki", ".hqx", ".infl", ".iso", 
-            ".j", ".jar", ".kgb", ".kmz", 
-            ".lbr", ".lha", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", 
-            ".mar", ".msi", ".partimg", ".paq6", ".paq7", ".paq8", ".pea", ".pim", ".pit",
-            ".pkg", ".qda", ".rar", ".rk", ".rpm", ".rz", 
-            ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx",
-            ".tar", ".tbz2", ".tgz", ".tlz", ".toast", ".torrent",
-            ".uca", ".uha", ".uue", ".vcd", ".war", ".wim", ".xar", ".xp3", ".xz", ".yz1", 
-            ".z", ".zip", ".zipx", ".zoo"};
-        String imageExt[] = {".ai", ".bmp", ".cgm", ".draw", ".drw", ".gif", 
-            ".ico", ".jfif", ".jpeg", ".jpg", 
-            ".pbm", ".pgm", ".png", ".pnm", ".ppm", ".pspimage", 
-            ".raw", ".svg", ".thm", ".tif", ".tiff", ".webp", ".yuv"};
-        String layoutExt[] = {".doc", ".docx", ".indd", ".key", ".pct",
-            ".pps", ".ppt", ".pptx",
-            ".psd", ".qxd", ".qxp", ".rels", ".rtf", ".wpd", ".wps",
-            ".xlr", ".xls", ".xlsx"};  
-        String movieExt[] = {".3g2", ".3gp", ".asf", ".asx", ".avi", ".fla", ".flv", 
-            ".mov", ".mp4", ".mpg", ".rm", ".swf", ".vob", ".wmv"};
-        String pdfExt[] = {".pdf"};
-        String psExt[] = {".eps", ".ps"};
-        String scriptExt[] = {  //or executable  
-            ".app", ".asp", ".bat", ".cgi", ".com", ".csh", ".exe", ".gadget", ".js", ".jsp", 
-            ".ksh", ".php", ".pif", ".pl", ".py", ".sh", ".tcsh", ".vb", ".wsf"};
-        String soundExt[] = {".aif", ".iff", ".m3u", ".m4a", ".mid", 
-            ".mp3", ".mpa", ".wav", ".wma"};
-        String textExt[] = {".asc", ".c", ".cpp", ".cs", ".csv", ".das", ".dat", ".dds", 
-            ".java", ".json", ".log", ".m", 
-            ".sdf", ".sql", ".tsv", ".txt", ".vcf"};
-        String worldExt[] = {".css", ".htm", ".html", ".xhtml"};
-        String xmlExt[] = {".dtd", ".gpx", ".kml", ".xml", ".rss"};
         
         //display the files
         for (int row = 0; row < tnRows; row++) {
             try {
                 String fileName = namePA.getString(row);
                 String fileNameLC = fileName.toLowerCase();
+                String encodedFileName = XML.encodeAsHTMLAttribute(fileName);
 
-                String iconFile = "generic.gif"; //default
-                String iconAlt  = "UNK";  //always 3 characters  (unknown)
-                String extLC = File2.getExtension(fileName).toLowerCase();
-                if (fileNameLC.equals("index.html") ||
-                    fileNameLC.equals("index.htm")) {            
-                    iconFile = "index.gif"; iconAlt = "IDX";
-                } else if (String2.indexOf(binaryExt, extLC) >= 0) {
-                    iconFile = "binary.gif"; iconAlt = "BIN";
-                } else if (String2.indexOf(compressedExt, extLC) >= 0) {
-                    iconFile = "compressed.gif"; iconAlt = "ZIP";
-                } else if (String2.indexOf(imageExt, extLC) >= 0) {
-                    iconFile = "image2.gif"; iconAlt = "IMG";
-                } else if (String2.indexOf(layoutExt, extLC) >= 0) {
-                    iconFile = "layout.gif"; iconAlt = "DOC";
-                } else if (String2.indexOf(movieExt, extLC) >= 0) {
-                    iconFile = "movie.gif"; iconAlt = "MOV";
-                } else if (String2.indexOf(pdfExt, extLC) >= 0) {
-                    iconFile = "pdf.gif"; iconAlt = "PDF";
-                } else if (String2.indexOf(psExt, extLC) >= 0) {
-                    iconFile = "ps.gif"; iconAlt = "PS ";
-                } else if (String2.indexOf(scriptExt, extLC) >= 0) {
-                    iconFile = "script.gif"; iconAlt = "EXE";
-                } else if (String2.indexOf(soundExt, extLC) >= 0) {
-                    iconFile = "sound.gif"; iconAlt = "SND";
-                } else if (String2.indexOf(textExt, extLC) >= 0) {
-                    iconFile = "text.gif"; iconAlt = "TXT";
-                } else if (String2.indexOf(worldExt, extLC) >= 0) {
-                    iconFile = "world1.gif"; iconAlt = "WWW";
-                } else if (String2.indexOf(xmlExt, extLC) >= 0) {
-                    iconFile = "xml.gif"; iconAlt = "XML";
+                //very similar code in Table.directoryListing and TableWriterHtmlTable.
+                int whichIcon = File2.whichIcon(fileName);
+                String iconFile = File2.ICON_FILENAME[whichIcon];
+                String iconAlt  = File2.ICON_ALT[whichIcon]; //always 3 characters 
+                String extLC = File2.getExtension(fileNameLC);
+
+                //make HTML for a viewer?
+                String viewer = "";
+                String imgStyle = ""; 
+                if (iconAlt.equals("SND")) {
+                    //viewer = HtmlWidgets.htmlAudioControl(encodedFileName);
+                    viewer = HtmlWidgets.cssTooltipAudio(
+                        questionMarkImageUrl, "?", imgStyle,
+                        fileName);
+
+                //} else if (iconAlt.equals("IMG") && localDir != null) {
+                //    //this system has to open the local file to get the image's size
+                //    viewer = HtmlWidgets.imageInTooltip(localDir + fileName,
+                //        encodedFileName, questionMarkImageUrl);
+
+                } else if (iconAlt.equals("IMG")) { 
+                    //this system doesn't need to know the size ahead of time
+                    viewer = HtmlWidgets.cssTooltipImage(
+                        questionMarkImageUrl, "?", imgStyle,
+                        fileName, "img" + row);
+
+                } else if (iconAlt.equals("MOV")) { 
+                    viewer = HtmlWidgets.cssTooltipVideo(
+                        questionMarkImageUrl, "?", imgStyle, fileName); 
                 }
 
-                String encodedFileName = XML.encodeAsHTMLAttribute(fileName);
+                //make DDMonYYYY HH:MM formatted lastModified time
+                String newMod = "";
+                long tl = modifiedPA.getLong(row);
+                try {
+                    newMod = tl == Long.MAX_VALUE? "" : //show hh:mm, not more
+                        Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(tl)).substring(0, 17); 
+                } catch (Throwable t) {
+                    String2.log("Caught throwable while dealing with tl=" + tl + ":\n" +
+                        MustBe.throwableToString(t));
+                }
+
+                String sizePAs = sizePA.getString(row);
                 sb.append(
-                    "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
-                        "align=\"top\"> " +  
-                    "<a href=\"" + encodedFileName + "\">" + encodedFileName + "</a>" +
-                    String2.makeString(' ',  nameSpaces - fileName.length()) + " " +
-                    String2.left(modifiedPA.getString(row), dateSpaces) + " " +
-                    String2.right(sizePA.getString(row), sizeSpaces) + "  " +
-                    XML.encodeAsXML(descriptionPA.getString(row)) + "\n"); 
+                    "<tr>" +
+                    "<td><img class=\"T\" src=\"" + iconUrlDir + iconFile + 
+                        "\" alt=\"[" + iconAlt + "]\"" + iconStyle + ">&nbsp;" + 
+                        (viewer.length() > 0? viewer : "&nbsp;") +
+                        "</td>" +  
+                    "<td><a rel=\"bookmark\" href=\"" + encodedFileName + "\">" + encodedFileName + "</a></td>" +
+                    "<td class=\"R\">" + newMod + "</td>" +
+                    "<td class=\"R\">" + (sizePAs.length() == 0? "-" : sizePAs) + "</td>" +
+                    "<td>" + XML.encodeAsXML(descriptionPA.getString(row)) + "</td>" +
+                    "</tr>\n"); 
             } catch (Throwable t) {
                 String2.log(String2.ERROR + " for directoryListing(" +
                     showUrlDir + ")\n" +
@@ -24820,12 +25647,14 @@ String2.log(table.dataToString());
         }
 
         sb.append(
-            "<hr></pre>\n" +
+            "<tr><th colspan=\"5\"><hr></th></tr>\n" + //<hr>
+            "</table>\n" +
             nDir   + (nDir   == 1? " directory, " : " directories, ") + 
             tnRows + (tnRows == 1? " file "       : " files") + 
             "\n\n");
         return sb.toString();
     } 
+
 
     /**
      * Test saveAsJson and readJson.
@@ -24961,7 +25790,7 @@ String2.log(table.dataToString());
             File2.delete(fullFileName); 
 
             //if all successful, rename to final name
-            File2.rename(fullFileName + ".temp.zip", fullFileName + ".zip");
+            File2.rename(fullFileName + ".temp.zip", fullFileName + ".zip"); //throws Exception if trouble
         }
     }
 
@@ -25718,32 +26547,28 @@ String2.log(table.dataToString());
         //generate some data    
         Table table = getTestTable(true, true);
 
-        //write it to a file
+        //write it to html file
         String fileName = testDir + "tempTable.html";
         table.saveAsHtml(fileName, "preTextHtml\n<br>\n", "postTextHtml\n<br>", 
-            null, BGCOLOR, 1, true, 0, true, false);
+            null, BGCOLOR, 1, true, 0, true, //needEncodingAsHtml
+            false);
         //String2.log(fileName + "=\n" + String2.directReadFromUtf8File(fileName));
         SSR.displayInBrowser("file://" + fileName);
 
         //read it from the file
         String results = String2.directReadFromUtf8File(fileName);
         Test.ensureEqual(results, 
-"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\"\n" +
-"  \"http://www.w3.org/TR/html4/loose.dtd\">\n" +
-"<html>\n" +
+"<!DOCTYPE HTML>\n" +
+"<html lang=\"en-US\">\n" +
 "<head>\n" +
 "  <title>tempTable</title>\n" +
-"<style type=\"text/CSS\">\n" +
-"<!--\n" +
-"  table.erd {border-collapse:collapse; border:1px solid gray; }\n" +
-"  table.erd th, table.erd td {padding:2px; border:1px solid gray; }\n" +
-"--></style>\n" +
+"  <meta charset=\"UTF-8\">\n" +
+"  <link href=\"https://coastwatch.pfeg.noaa.gov/erddap/images/erddap2.css\" rel=\"stylesheet\" type=\"text/css\">\n" +
 "</head>\n" +
-"<body bgcolor=\"white\" text=\"black\"\n" +
-"  style=\"font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"<body>\n" +
 "preTextHtml\n" +
 "<br>\n" +
-"<table class=\"erd\" bgcolor=\"#ffffcc\" cellspacing=\"0\">\n" +
+"<table class=\"erd nowrap\" style=\"background-color:#ffffcc;\" >\n" +
 "<tr>\n" +
 "<th>Time\n" +
 "<th>Longitude\n" +
@@ -25769,52 +26594,52 @@ String2.log(table.dataToString());
 "<th>Strings\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-01T00:00:00Z\n" +
-"<td nowrap>-3\n" +
-"<td nowrap>1.0\n" +
-"<td nowrap>-1.0E300\n" +
-"<td nowrap>-2000000000000000\n" +
-"<td nowrap>-2000000000\n" +
-"<td nowrap>-32000\n" +
-"<td nowrap>-120\n" +
-"<td nowrap>,\n" +
-"<td nowrap>a\n" +
+"<td>1970-01-01T00:00:00Z\n" +
+"<td>-3\n" +
+"<td>1.0\n" +
+"<td>-1.0E300\n" +
+"<td>-2000000000000000\n" +
+"<td>-2000000000\n" +
+"<td>-32000\n" +
+"<td>-120\n" +
+"<td>,\n" +
+"<td>a\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>2005-08-31T16:01:02Z\n" +
-"<td nowrap>-2\n" +
-"<td nowrap>1.5\n" +
-"<td nowrap>3.123\n" +
-"<td nowrap>2\n" +
-"<td nowrap>2\n" +
-"<td nowrap>7\n" +
-"<td nowrap>8\n" +
-"<td nowrap>&quot;\n" +
-"<td nowrap>bb\n" +
+"<td>2005-08-31T16:01:02Z\n" +
+"<td>-2\n" +
+"<td>1.5\n" +
+"<td>3.123\n" +
+"<td>2\n" +
+"<td>2\n" +
+"<td>7\n" +
+"<td>8\n" +
+"<td>&quot;\n" +
+"<td>bb\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>2005-11-02T18:04:09Z\n" +
-"<td nowrap>-1\n" +
-"<td nowrap>2.0\n" +
-"<td nowrap>1.0E300\n" +
-"<td nowrap>2000000000000000\n" +
-"<td nowrap>2000000000\n" +
-"<td nowrap>32000\n" +
-"<td nowrap>120\n" +
-"<td nowrap>&#x20ac;\n" +
-"<td nowrap>ccc\n" +
+"<td>2005-11-02T18:04:09Z\n" +
+"<td>-1\n" +
+"<td>2.0\n" +
+"<td>1.0E300\n" +
+"<td>2000000000000000\n" +
+"<td>2000000000\n" +
+"<td>32000\n" +
+"<td>120\n" +
+"<td>&#x20ac;\n" +
+"<td>ccc\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
-"<td nowrap>&nbsp;\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>\n" +
+"<td>&nbsp;\n" +
 "</tr>\n" +
 "</table>\n" +
 "postTextHtml\n" +
@@ -26998,7 +27823,7 @@ expected =
 
                 String2.log("********** attempt #" + attempt + " Done. cells/ms=" + 
                     (table.nColumns() * table.nRows()/time) + " (usual=2711 Java 1.7M4700, was 648)" +
-                    "\ntime=" + time + " ms (usual=101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
+                    "\ntime=" + time + "ms (usual=101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
                 if (time <= 200)
                     break;
             }
@@ -27045,7 +27870,7 @@ expected =
                 time = System.currentTimeMillis() - time;
                 String2.log("********* Done. cells/ms=" + 
                     (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
-                    "\ntime=" + time + " ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"); 
+                    "\ntime=" + time + "ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"); 
                 if (time <= 400)
                     break;
             }
@@ -27091,7 +27916,7 @@ expected =
                 time = System.currentTimeMillis() - time;
                 String2.log("********** Done. cells/ms=" + 
                     (table.nColumns() * table.nRows()/time) + " (usual=31414 Java 1.7M4700, was 9679)" +
-                    "\ntime=" + time + " ms (usual=226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
+                    "\ntime=" + time + "ms (usual=226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
                 if (time <= 400)
                     break;
             }
@@ -27134,7 +27959,7 @@ expected =
                 time = System.currentTimeMillis() - time;
                 String2.log("********** Done. cells/ms=" + 
                     (table.nColumns() * table.nRows()/time) + " (usual=337 Java 1.7M4700, was 106)" +                
-                    "\ntime=" + time + " ms (usual=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");  
+                    "\ntime=" + time + "ms (usual=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");  
                 if (time <= 900)
                     break;
             }
@@ -27174,7 +27999,7 @@ expected =
                 time = System.currentTimeMillis() - time;
                 String2.log("saveAsCsvASCII attempt#" + attempt + 
                     " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //796
-                    "\ntime=" + time + " ms  (expected=344, was 532 for Java 1.5 Dell)"); 
+                    "\ntime=" + time + "ms  (expected=344, was 532 for Java 1.5 Dell)"); 
                 File2.delete(destName + ".csv");
                 if (time <= 550)
                     break;
@@ -27189,7 +28014,7 @@ expected =
                 time = System.currentTimeMillis() - time;
                 String2.log("saveAsJson attempt#" + attempt + 
                     " done. cells/ms=" + (table.nColumns() * table.nRows() / time) +   //974
-                    "\ntime=" + time + " ms  (expect=281, was 515 for Java 1.5 Dell)"); 
+                    "\ntime=" + time + "ms  (expect=281, was 515 for Java 1.5 Dell)"); 
                 File2.delete(destName + ".json");
                 if (time <= 450)
                     break;
@@ -27204,7 +28029,7 @@ expected =
                 time = System.currentTimeMillis() - time;
                 String2.log("saveAsFlatNc attempt#" + attempt + 
                     " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //2190
-                    "\ntime=" + time + " ms  (expected=125, was 172 for Java 1.5 Dell)"); 
+                    "\ntime=" + time + "ms  (expected=125, was 172 for Java 1.5 Dell)"); 
                 File2.delete(destName + ".nc");
                 if (time <= 200)
                     break;
@@ -27293,7 +28118,7 @@ expected =
      * This tests the little methods.
      */
     public static void testLittleMethods() {
-        String2.log("\n*** testLittleMethods...");
+        String2.log("\n*** Table.testLittleMethods...");
         verbose = true;
         reallyVerbose = true;
 
@@ -27433,7 +28258,7 @@ expected =
     public static void testJoin() {
 
         //*** testJoin 1
-        String2.log("\n*** testJoin 1 column");
+        String2.log("\n*** Table.testJoin 1 column");
         Table table = new Table();
         table.addColumn("zero", PrimitiveArray.csvFactory(String.class, "a,b,c,d,,e"));
         table.addColumn("one",  PrimitiveArray.csvFactory(int.class, "40,10,12,30,,20"));
@@ -27514,7 +28339,7 @@ expected =
 
 
         //*** testJoin 2 columns
-        String2.log("\n*** testJoin 2 columns");
+        String2.log("\n*** Table.testJoin 2 columns");
         table = new Table();
         table.addColumn("zero", PrimitiveArray.csvFactory(String.class, "a,b,c,d,,e"));
         table.addColumn("one",  PrimitiveArray.csvFactory(int.class, "40,10,12,30,,20"));
@@ -27599,7 +28424,7 @@ expected =
     }
 
     public static void testReorderColumns() throws Exception {
-        String2.log("\n*** testReorderColumns");
+        String2.log("\n*** Table.testReorderColumns");
         Table table = new Table();
         table.addColumn("ints", new IntArray());
         table.addColumn("floats", new FloatArray());
@@ -27621,7 +28446,7 @@ expected =
     }
 
     public static void testLastRowWithData() throws Exception {
-        String2.log("\n*** testLastRowWithData");
+        String2.log("\n*** Table.testLastRowWithData");
         boolean oDebug = debugMode;
         debugMode = true;
         Table table = new Table();
@@ -27661,7 +28486,7 @@ expected =
         Test.ensureEqual(table.lastRowWithData(), 0, "");
 
         //***
-        String2.log("\n*** testRemoveRowsWithoutData");
+        String2.log("\n*** Table.testRemoveRowsWithoutData");
         table.clear();
         table.addColumn(0, "i", ia, iAtts);        
         Test.ensureEqual(table.removeRowsWithoutData(), 1, "");
@@ -27714,7 +28539,7 @@ expected =
      *   If false, this reads the file via readMultidimNc
      */
     public static void testReadNcCFMATimeSeriesReversed(boolean readAsNcCF) throws Exception {
-        String2.log("\n*** testReadNcCFMATimeSeriesReversed readAsNcCF=" + readAsNcCF);
+        String2.log("\n*** Table.testReadNcCFMATimeSeriesReversed readAsNcCF=" + readAsNcCF);
         //time is days since 2006-01-01 00:00:00.  file has  2007-10-01T04 through 2013-11-14T17:06
         boolean oDebug = debugMode;
         debugMode = true;
@@ -27738,7 +28563,7 @@ expected =
                 null, null, //read default dimensions
                 true, true, //getMetadata, removeMVRows,
                 StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("3426.69"));
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 //EEK! I don't think they should be different.
@@ -27769,7 +28594,7 @@ expected =
                 null, //dimensions
                 true, true, //getMetadata, removeMVRows,
                 null, null, null);
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 "station,latitude,longitude\n" +
@@ -27807,7 +28632,7 @@ expected =
                 null, //dimensions
                 true, true, //getMetadata, removeMVRows,
                 StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 "station,latitude,longitude\n" +
@@ -27829,7 +28654,7 @@ expected =
                 null, //dimensions
                 true, true, //getMetadata, removeMVRows,
                 StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 "time,discharge\n" +
@@ -27860,7 +28685,7 @@ expected =
                 null, //dimensions
                 true, true, //getMetadata, removeMVRows,
                 StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 //EEK! Again, readMultidimNc has additional rows with discharge=MV.
@@ -27900,7 +28725,7 @@ expected =
                 null, null, //read all dimensions
                 true, true, //getMetadata, removeMVRows,
                 null, null, null);
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString(10);
         expected = 
 readAsNcCF?
@@ -27945,7 +28770,7 @@ readAsNcCF?
                 null, //dimensions
                 true, true, //getMetadata, removeMVRows,
                 StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 "station,latitude,longitude,time,discharge\n" +
@@ -27976,7 +28801,7 @@ readAsNcCF?
                 null, //dimensions
                 true, true, //getMetadata, removeMVRows,
                 StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
-        String2.log("time=" + (System.currentTimeMillis() - time));
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
         results = table.dataToString();
         expected = 
 "station,latitude,longitude,time,discharge\n" +
@@ -28068,6 +28893,7 @@ readAsNcCF?
         testReadOpendapSequenceSpeed();
         testSaveAsSpeed();
         testUpdate();
+        testReadAudioWriteWaveFiles(0, 1000);
 
         try {
 // Needs work. Not active.

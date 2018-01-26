@@ -206,7 +206,7 @@ public class EDDTableFromDapSequence extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -574,7 +574,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromDapSequence " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -733,7 +733,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         //String outerSequenceName, String innerSequenceName, boolean sortColumnsByName) 
         throws Throwable {
 
-        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
+        tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("EDDTableFromDapSequence.generateDatasetsXml" +
             "\ntLocalSourceUrl=" + tLocalSourceUrl +
             "\nreloadEveryNMinutes=" + tReloadEveryNMinutes +
@@ -941,9 +941,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
-"        <att name=\"keywords\">acceleration, anomaly, average, avg_sound_velocity, center, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, geopotential_anomaly, identifier, integrated, latitude, longitude, marine, ocean, oceans,\n" +
-"Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"optical, optical properties, practical, properties, salinity, sea, sea_water_practical_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, time2, vctd, vctd.das, velocity, water</att>\n" +
+"        <att name=\"keywords\">acceleration, anomaly, average, avg_sound_velocity, center, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, fluorescence, geopotential, geopotential_anomaly, identifier, integrated, latitude, longitude, marine, ocean, oceans, optical, optical properties, practical, properties, salinity, science, sea, sea_water_practical_salinity, seawater, sigma, sigma_t, sound, station, technology, temperature, time, time2, vctd, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
@@ -1035,6 +1033,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1194,9 +1193,7 @@ directionsForGenerateDatasetsXml() +
 expected = 
 "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</att>\n" +
 "        <att name=\"institution\">NOAA NMFS SWFSC ERD, NOAA PMEL</att>\n" +
-"        <att name=\"keywords\">center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n" +
+"        <att name=\"keywords\">center, data, demonstration, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">&quot;NCCSV Demonstration&quot; by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .</att>\n" +
 "        <att name=\"Northernmost_Northing\" type=\"double\">28.0003</att>\n" +
@@ -1215,9 +1212,7 @@ expected =
 "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"keywords\">center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testlong, testnccsvscalar, time, trajectory</att>\n" +
+"        <att name=\"keywords\">center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testlong, testnccsvscalar, time, trajectory</att>\n" +
 "        <att name=\"subsetVariables\">ship, time, latitude, longitude, status, testLong, sst</att>\n" +
 "        <att name=\"title\">NCCSV Demonstration (testNccsvScalar)</att>\n" +
 "    </addAttributes>\n" +
@@ -1288,12 +1283,13 @@ expected =
 "        <sourceName>status</sourceName>\n" +
 "        <destinationName>status</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\">?</att>\n" +  //trouble??? should be \t ?
+"            <att name=\"actual_range\">?</att>\n" + //info not transmitted correctly by DAP
 "            <att name=\"comment\">From http://some.url.gov/someProjectDocument , Table C</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Status</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"actual_range\">null</att>\n" + 
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1335,7 +1331,7 @@ expected =
 "            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
 "            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
 "&#39;z&quot;?</att>\n" +
-"            <att name=\"units\">degrees_C</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "        </addAttributes>\n" +
@@ -1399,8 +1395,8 @@ expected =
      */
     public static void testArgo() throws Throwable {
         testVerboseOn();
-        String sourceUrl = "http://dapper.pmel.noaa.gov/dapper/argo/argo_all.cdp";
-        String2.log("\n*** testArgo " + sourceUrl);
+        String sourceUrl = "http://dapper.pmel.noaa.gov/dapper/argo/argo_all.cdp"; //no longer running
+        String2.log("\n*** EDDTableFromDapSequence.testArgo " + sourceUrl);
         DConnect dConnect = new DConnect(sourceUrl, acceptDeflate, 1, 1);
         String2.log("getDAS");
         DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
@@ -1414,7 +1410,7 @@ expected =
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".csv"); 
-        String results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
 //        String expected = 
 //"";
@@ -1437,7 +1433,7 @@ expected =
             EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cimtPsdac");
             String expected = 
     "time,longitude,latitude,depth,station,waterTemperature,salinity\n" +
-    "UTC,degrees_east,degrees_north,m,,degrees_Celsius,Presumed Salinity Units\n" +
+    "UTC,degrees_east,degrees_north,m,,degree_C,Presumed Salinity Units\n" +
     "2002-06-25T14:55:00Z,-121.845,36.692,1.0,T402,12.8887,33.8966\n" +
     "2002-06-25T14:55:00Z,-121.845,36.692,2.0,T402,12.8272,33.8937\n" +
     "2002-06-25T14:55:00Z,-121.845,36.692,3.0,T402,12.8125,33.8898\n" +
@@ -1488,7 +1484,7 @@ expected =
             try {
                 tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
                     tedd.className() + "_psdac", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
                 //String2.log(results);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
@@ -1500,7 +1496,7 @@ expected =
             try {            
                 tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=\"T402\"", 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacNonTime", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1511,7 +1507,7 @@ expected =
             try {            
                 tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station>\"T3\"&station<\"T5\"", 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacGTLT", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1524,7 +1520,7 @@ expected =
             try {              //always =~ (regardless of what source needs) because this is an erddap request
                 tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"T40.\"", 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1538,7 +1534,7 @@ expected =
             try {              //always =~ (regardless of what source needs) because this is an erddap request
                 tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"(T402|t403)\"", 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1549,7 +1545,7 @@ expected =
             try {
                 tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&time=2002-06-25T14:55:00Z", 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacTime", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
                 Test.ensureEqual(results, expected, "results=\n" + results);      
             } catch (Throwable t) {
                 String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1574,7 +1570,7 @@ expected =
         try {
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_newport", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1681,7 +1677,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 try {
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_CalCaltch", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1725,7 +1721,7 @@ try {
 
     /** This tests sourceNeedsExpandedFP_EQ. */
     public static void testSourceNeedsExpandedFP_EQ() throws Throwable {
-        String2.log("\n****************** EDDTableFromDapSequence.testSourceNeedsExpandedFP_EQ\n");
+        String2.log("\n*** EDDTableFromDapSequence.testSourceNeedsExpandedFP_EQ\n");
         testVerboseOn();
         String results, query, tName, expected;
         try {
@@ -1738,7 +1734,7 @@ try {
            
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_FP_EQ", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //pre 2015-12-28 was sorted lexically, now case insensitive. pre 2013-05-28 wasn't sorted
 "longitude,latitude,time,common_name\n" +
 "degrees_east,degrees_north,UTC,\n" +
@@ -1768,7 +1764,7 @@ try {
 
     /** NOT FINISHED.  This tests nosCoopsRWL. */
     public static void testNosCoopsRWL() throws Throwable {
-        String2.log("\n****************** EDDTableFromDapSequence.testNosCoopsRWL\n");
+        String2.log("\n*** EDDTableFromDapSequence.testNosCoopsRWL\n");
         testVerboseOn();
         String results, query, tName, expected;
         String today     = Calendar2.epochSecondsToIsoStringT(Calendar2.backNDays(1, Double.NaN));
@@ -1784,7 +1780,7 @@ try {
 //&WATERLEVEL_6MIN_VFD_PX._BEGIN_DATE="20100825"&WATERLEVEL_6MIN_VFD_PX._END_DATE="20100826"            
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_RWL", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
 //trouble: java.time (was Joda) doesn't like space-padded hour values
 
             expected = 
@@ -1847,8 +1843,8 @@ try {
 
         String tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             edd.className() + "_Entire", ".das"); 
-        String results = String2.annotatedString(new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        String results = String2.annotatedString(String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName));
         String tResults;
         String expected = 
 "Attributes {[10]\n" +
@@ -1964,10 +1960,7 @@ expected =
 "tabledap/nwioosCoral.das\";[10]\n" +
 "    String infoUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.info\";[10]\n" +
 "    String institution \"NOAA NWFSC\";[10]\n" +
-"    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,[10]\n" +
-"Biosphere > Aquatic Ecosystems > Marine Habitat,[10]\n" +
-"Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals,[10]\n" +
-"1980-2005, abbreviation, atmosphere, beginning, coast, code, collected, coral, data, depth, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";[10]\n" +
+"    String keywords \"1980-2005, abbreviation, atmosphere, beginning, coast, code, collected, coral, data, depth, Earth Science > Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals, Earth Science > Biosphere > Aquatic Ecosystems > Coastal Habitat, Earth Science > Biosphere > Aquatic Ecosystems > Marine Habitat, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";[10]\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";[10]\n" +
 "    String license \"The data may be used and redistributed for free but is not intended[10]\n" +
 "for legal use, since it may contain inaccuracies. Neither the data[10]\n" +
@@ -2036,14 +2029,14 @@ expected =
         }
     }
 
-     
+
     /**
      * This tests the methods in this class.
      *
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-        String2.log("\n****************** EDDTableFromDapSequence.test() *****************\n");
+        String2.log("\n*** EDDTableFromDapSequence.test()\n");
         testVerboseOn();
 
 /* for releases, this line should have open/close comment */
@@ -2066,7 +2059,7 @@ expected =
 
         //not done
         //Tests of DAPPER were removed 2012-10-10. DAPPER was shut down recently.
-        //  http://www.epic.noaa.gov/epic/dapper_dchart/unsupported.html
+        //  https://www.pmel.noaa.gov/epic/dapper_dchart/unsupported.html
 
     }
 

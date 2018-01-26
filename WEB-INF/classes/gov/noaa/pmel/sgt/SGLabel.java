@@ -364,7 +364,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
   /**
    * Set the label reference location in physcial coordinates.
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc physical location of label
    **/
@@ -506,7 +506,7 @@ public class SGLabel implements Cloneable, LayerChild, Moveable, Serializable {
   }
   /**
    * Set the label reference location in pixel coordinates.
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc physical location of label
    **/

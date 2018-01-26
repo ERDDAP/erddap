@@ -388,7 +388,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 //Find the time part. Round down to n'th precision. 
                 //e.g., 17 seconds to 5seconds precision is 15 seconds.
                 //(MONTH is 0-based, so that works correctly as is.)
-                if (!Math2.isFinite(timeEpSec)) 
+                if (!Double.isFinite(timeEpSec)) 
                     throw new SimpleException(
                         String2.ERROR + " in directoryStructure part#" + i + 
                         ": time value is NaN!");
@@ -879,7 +879,7 @@ oneAuthorArray.set(0, author);
             "aFloat",    "aDouble",      "aString"};
         String columnUnits[] = {         "",          "days since 1980-01-01", 
             "",          "",             "m",         "days since 1985-01-01", 
-            "degrees_C", EDV.TIME_UNITS, null};
+            "degree_C",  EDV.TIME_UNITS, null};
         String columnTypes[] = {         "String",    "int",               
             "byte",      "char",         "short",     "int", 
             "float",     "double",       "String"}; 
@@ -1723,7 +1723,7 @@ cdmSuggestion() +
         String2.log("\n****************** EDDTableFromHttpGet 1D test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1862,7 +1862,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1888,7 +1888,7 @@ expected =
             "&longitude=-119.05&latitude=33.46666666666&time=2005-07-01T00:00:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1Station", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1909,7 +1909,7 @@ expected =
             "&longitude>-119.06&longitude<=-119.04&latitude=33.46666666666&time=2005-07-01T00:00:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1932,7 +1932,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_eq", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1956,7 +1956,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_NE", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1979,7 +1979,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_gtlt", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1995,7 +1995,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_regex", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude,latitude,depth,time,id,species_name,size\n" +

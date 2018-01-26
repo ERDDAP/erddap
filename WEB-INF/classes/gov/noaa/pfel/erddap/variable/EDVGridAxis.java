@@ -73,6 +73,7 @@ public class EDVGridAxis extends EDV {
             Math.max(tSourceValues.getNiceDouble(0), tSourceValues.getNiceDouble(tSourceValues.size() - 1)));
         
         sourceValues = tSourceValues;
+        setActualRangeFromDestinationMinMax();
 
         //test if ascending
         //Note that e.g., altitude might be flipped, so destination might be descending. That's ok.
@@ -131,11 +132,7 @@ public class EDVGridAxis extends EDV {
 
     /** 
      * This overwrites EDV superclass method to use firstDestinationValue and lastDestinationValue.
-     * "actual_range" is defined in [CDC COARDS] 
-     * http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml 
-     * as "actual data range for variable. Same type as unpacked values."
-     * Later, it says "The range values are used to indicate order of storage 
-     * (e.g., 90,-90 would indicate the latitudes started with 90 and ended with -90)."
+     * This is now defined in CF-1.7, with unpacked values, smallest and largest.
      */
     public void setActualRangeFromDestinationMinMax() {
 
@@ -144,14 +141,10 @@ public class EDVGridAxis extends EDV {
         combinedAttributes.remove("actual_max");
         combinedAttributes.remove("data_min");
         combinedAttributes.remove("data_max");
-        if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) {
-            combinedAttributes.remove("actual_range");
-        } else {
-            PrimitiveArray pa = PrimitiveArray.factory(destinationDataTypeClass(), 2, false);
-            pa.addDouble(firstDestinationValue());
-            pa.addDouble(lastDestinationValue());
-            combinedAttributes.set("actual_range", pa);
-        }
+        PrimitiveArray pa = PrimitiveArray.factory(destinationDataTypeClass(), 2, false);
+        pa.addDouble(Math.min(firstDestinationValue(), lastDestinationValue()));
+        pa.addDouble(Math.max(firstDestinationValue(), lastDestinationValue()));
+        combinedAttributes.set("actual_range", pa);
     }
 
     /**
@@ -282,7 +275,7 @@ public class EDVGridAxis extends EDV {
      * This overwrites the superclass version so that it just presents valid values.
      * 
      * <p>Because there are always numbers for EDVGridAxes, this always returns a valid list.
-     * <b>If the values range from high to low, this returns a high to low list.
+     * <strong>If the values range from high to low, this returns a high to low list.
      */
     public String sliderCsvValues() throws Throwable {
         byte bar[] = sliderCsvValues;  //local pointer to avoid concurrency problems
@@ -346,7 +339,7 @@ public class EDVGridAxis extends EDV {
             String csv = sb.toString();
             //String2.log(">>EDVGridAxis.sliderCsvValues nSourceValues=" + 
             //    nSourceValues + " nSliderValues=" + nValues + 
-            //    " time=" + (System.currentTimeMillis() - eTime));
+            //    " time=" + (System.currentTimeMillis() - eTime) + "ms");
             sliderCsvValues = String2.getUTF8Bytes(csv); //do last
             return csv;
         } catch (Throwable t) {

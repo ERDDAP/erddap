@@ -867,7 +867,7 @@ public abstract class Browser extends HttpServlet {
             //String urlText = "http://www.it.kth.se/~jj/curl.gz"; //always compressed   
             String urlText = "http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/qscat/QNuy103day.nc.ascii?lon";    
             //String urlText = "http://www.webperformance.org/compression/"; //does compress
-            String2.log(String2.getURLResponseString(urlText));
+            String2.log(String2.getURLResponseStringUnchanged(urlText));
             String2.log("EndCompressionTest TIME=" + 
                 (System.currentTimeMillis() - time) + " ms (3923 ms if uncompressed)");
         } catch (Exception e) {
@@ -1113,7 +1113,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             }
         }
         String thankYou = 
-            "<p><b>Thank you for using <a href=\"" + url + "?get\">" + fullUrl + "?get</a> .</b>\n" +
+            "<p><strong>Thank you for using <a href=\"" + url + "?get\">" + fullUrl + "?get</a> .</strong>\n" +
             "<br>This system allows computer programs (or humans with a browser) to use an HTTP GET\n" +
             "request to get space and time-oriented data in various common file formats.\n" +
             "<br>For a human-friendly graphical-user-interface to (mostly) the same data, see\n" +
@@ -1146,21 +1146,21 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             } else {
                 error = 
                     thankYou + 
-                    "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                    "<p><b>Queries must begin with one of these options:</b>\n" + 
-                    "<ul><li><a href=\"" + url + "?get=gridData\"><tt>?get=gridData</tt></a>\n" +
+                    "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                    "<p><strong>Queries must begin with one of these options:</strong>\n" + 
+                    "<ul><li><a href=\"" + url + "?get=gridData\"><kbd>?get=gridData</kbd></a>\n" +
                        " - to download lat lon gridded data (for example, satellite SST data).\n" + 
-                    "<li><a href=\"" + url + "?get=gridTimeSeries\"><tt>?get=gridTimeSeries</tt></a>\n" +
+                    "<li><a href=\"" + url + "?get=gridTimeSeries\"><kbd>?get=gridTimeSeries</kbd></a>\n" +
                        " - to download a time series for one lat lon point from gridded data (for example, satellite SST data).\n" + 
-                    "<li><a href=\"" + url + "?get=gridVectorData\"><tt>?get=gridVectorData</tt></a>\n" +
+                    "<li><a href=\"" + url + "?get=gridVectorData\"><kbd>?get=gridVectorData</kbd></a>\n" +
                        " - to download lat lon gridded vector data (for example, satellite-derived wind data).\n" + 
-                    "<li><a href=\"" + url + "?get=bathymetryData\"><tt>?get=bathymetryData</tt></a>\n" +
+                    "<li><a href=\"" + url + "?get=bathymetryData\"><kbd>?get=bathymetryData</kbd></a>\n" +
                        " - to download lat lon gridded bathymetry data (ETOPO2v2).\n" + 
-                    "<li><a href=\"" + url + "?get=stationData\"><tt>?get=stationData</tt></a>\n" + 
+                    "<li><a href=\"" + url + "?get=stationData\"><kbd>?get=stationData</kbd></a>\n" + 
                        " - to download (averaged) time series data from stations (for example, buoy water temperature data).\n" + 
-                    "<li><a href=\"" + url + "?get=stationVectorData\"><tt>?get=stationVectorData</tt></a>\n" + 
+                    "<li><a href=\"" + url + "?get=stationVectorData\"><kbd>?get=stationVectorData</kbd></a>\n" + 
                        " - to download (averaged) time series vector data from stations (for example, buoy wind data).\n" + 
-                    "<li><a href=\"" + url + "?get=trajectoryData\"><tt>?get=trajectoryData</tt></a>\n" + 
+                    "<li><a href=\"" + url + "?get=trajectoryData\"><kbd>?get=trajectoryData</kbd></a>\n" + 
                        " - to download trajectory data (for example, from tagged animals).\n" + 
                     "</ul>\n"; 
             }
@@ -1480,16 +1480,16 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                         if (TBeginTimeValue.equals("null")) //kludge to show Begin EndDate form below
                             error = "";
                         else if (beginGc == null)  //parse result may be null
-                            error = "<tt>beginTime</tt> is not a properly formatted dateTime.\n<br>";
+                            error = "<kbd>beginTime</kbd> is not a properly formatted dateTime.\n<br>";
                         else if (endGc == null)  //parse result may be null
-                            error = "<tt>endTime</tt> is not a properly formatted dateTime.\n<br>";
+                            error = "<kbd>endTime</kbd> is not a properly formatted dateTime.\n<br>";
                         else if (beginGc.after(endGc))   
-                            error = "<tt>beginTime</tt> must not be after <tt>endTime</tt>.\n<br>";
+                            error = "<kbd>beginTime</kbd> must not be after <kbd>endTime</kbd>.\n<br>";
                         else if (endGc.before(firstTime)) //will find no data
-                            error = "<tt>endTime</tt> must not be before the first available data (" + 
+                            error = "<kbd>endTime</kbd> must not be before the first available data (" + 
                                 Calendar2.formatAsISODateTimeT(firstTime) + ").\n<br>";
                         else if (beginGc.after(lastTime)) //will find no data
-                            error = "<tt>beginTime</tt> must not be after the last available data (" + 
+                            error = "<kbd>beginTime</kbd> must not be after the last available data (" + 
                                 Calendar2.formatAsISODateTimeT(lastTime) + ").\n<br>";
                         
                         if (error == null) {
@@ -1509,7 +1509,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 "  <input type=\"hidden\" name=\"get\" value=\"" + getValue + "\">\n" +
                                 "  <input type=\"hidden\" name=\"dataSet\" value=\"" + dataSetValue + "\">\n" +
                                 "  <input type=\"hidden\" name=\"timePeriod\" value=\"" + timePeriodValue + "\">\n" +
-                                "  <table cellspacing=\"0\" cellpadding=\"0\">\n" +
+                                "  <table class=\"erd\">\n" + //padding=0
                                 "    <tr>\n" +
                                 "      <td>&nbsp;&nbsp;&nbsp;&nbsp;Begin Time: </td>\n" +
                                 "      <td><input type=\"text\" name=\"beginTime\" value=\"" + 
@@ -1617,7 +1617,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 "  <input type=\"hidden\" name=\"timePeriod\" value=\"" + timePeriodValue + "\">\n" +
                                 "  <input type=\"hidden\" name=\"beginTime\" value=\"" + TBeginTimeValue + "\">\n" +
                                 "  <input type=\"hidden\" name=\"endTime\" value=\"" + TEndTimeValue + "\">\n" +
-                                "  <table cellspacing=\"0\" cellpadding=\"0\">\n" +
+                                "  <table class=\"erd\">\n" + //padding=0
                                 "    <tr>\n" +
                                 "      <td>&nbsp;&nbsp;&nbsp;Lon:&nbsp;</td>\n" +
                                 "      <td><input type=\"text\" name=\"lon\" value=\"" + minLon + "\"\n" + 
@@ -1660,7 +1660,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 (getStationData || getStationVectorData? 
                                     "  <input type=\"hidden\" name=\"minDepth\" value=\"null\">\n" : //force getting depth
                                     "") +
-                                "  <table cellspacing=\"0\" cellpadding=\"0\">\n" +
+                                "  <table class=\"erd\">\n" + //padding=0
                                 "    <tr>\n" +
                                 "      <td>&nbsp;</td>\n" +
                                 "      <td>&nbsp;</td>\n" +
@@ -1699,7 +1699,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 "    <tr>\n" +
                                 "      <td>&nbsp;</td>\n" +
                                 "      <td>&nbsp;</td>\n" +
-                                "      <td colspan=\"2\" align=\"center\">\n" +
+                                "      <td colspan=\"2\" style=\"text-align:center;\">\n" +
                                 "        <input type=\"submit\" value=\"Submit\"\n" +
                                 "          title=\"Submit the longitude and latitude information.\"></td>\n" +
                                 "    </tr>\n" +
@@ -1744,7 +1744,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                         minDepthValue = cleanDepths[0];
                     String next = "maxDepth="; 
                     //Any double value is valid.  But if invalid, suggest from depths list.
-                    if (Math2.isFinite(String2.parseDouble(minDepthValue))) 
+                    if (Double.isFinite(String2.parseDouble(minDepthValue))) 
                          cleanQuery += minDepthValue + "&amp;" + next;
                     else error = listError("minDepth", minDepthValue, cleanQuery, true, 
                             cleanDepths, null, next + "null"); //=null forces user to see maxDepth options
@@ -1757,7 +1757,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     int maxDepthIndex = String2.caseInsensitiveIndexOf(cleanDepths, maxDepthValue);
                     next = "fileType";
                     //Any double value is valid.  But if invalid, suggest from depths list.
-                    if (Math2.isFinite(String2.parseDouble(maxDepthValue))) {
+                    if (Double.isFinite(String2.parseDouble(maxDepthValue))) {
                         cleanQuery += maxDepthValue + "&amp;" + next + "=";
                         String2.log("  GET after depth, cleanQuery=" + cleanQuery);
                     } else {
@@ -2299,13 +2299,13 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     String preTableHtml = 
                                         "<img src=\"" + fullUrl + tCleanQuery + "\" alt=\"Time Series Graph\">" +
-                                        //"\n<p><b>Time Series from Lat Lon Gridded Data</b>" +
-                                        //"\n<br><b>Data set:</b> " + 
+                                        //"\n<p><strong>Time Series from Lat Lon Gridded Data</strong>" +
+                                        //"\n<br><strong>Data set:</strong> " + 
                                         //    XML.encodeAsHTML(gridDataSet.internalName + " = " + gridDataSet.boldTitle) + 
-                                        //"\n<br><b>Time period:</b> " + standardTimePeriodValue + 
+                                        //"\n<br><strong>Time period:</strong> " + standardTimePeriodValue + 
                                         //    (TimePeriods.getNHours(standardTimePeriodValue) == 0? "" : " composite") +
                                         //(gridDataSet.courtesy.length() == 0? "" :
-                                        //    "\n<br><b>Data courtesy of:</b> " + 
+                                        //    "\n<br><strong>Data courtesy of:</strong> " + 
                                         //    XML.encodeAsHTML(gridDataSet.courtesy)) + 
                                         "\n<p>";
 
@@ -2768,13 +2768,13 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     String preTableHtml = 
                                         "<img src=\"" + fullUrl + tCleanQuery + "\" alt=\"Station Data Image\">" +
-                                        //"<b>Station Data</b>" +
-                                        //"\n<br><b>Data set:</b> " + 
+                                        //"<strong>Station Data</strong>" +
+                                        //"\n<br><strong>Data set:</strong> " + 
                                         //    XML.encodeAsXML(pointDataSet.internalName + " = " + pointDataSet.boldTitle) + 
-                                        //"\n<br><b>Time period:</b> " + standardTimePeriodValue + 
+                                        //"\n<br><strong>Time period:</strong> " + standardTimePeriodValue + 
                                         //    (TimePeriods.getNHours(standardTimePeriodValue) == 0? "" : " averages") +
                                         //(pointDataSet.courtesy.length() == 0? "" :
-                                        //    "\n<br><b>Data courtesy of:</b> " + 
+                                        //    "\n<br><strong>Data courtesy of:</strong> " + 
                                         //    XML.encodeAsXML(pointDataSet.courtesy)) + 
                                         "\n<p>";
 
@@ -3084,16 +3084,16 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //    tOption = tOption.substring(0, tOption.length() - 1);
                                     String preTableHtml = 
                                         "<img src=\"" + fullUrl + tCleanQuery + "\" alt=\"Station Vector Image\">" +
-                                        //"<b>Station Vector Data</b>" +
-                                        //"\n<br><b>Data set:</b> " + XML.encodeAsHTML(tOption) + 
+                                        //"<strong>Station Vector Data</strong>" +
+                                        //"\n<br><strong>Data set:</strong> " + XML.encodeAsHTML(tOption) + 
                                         //"\n<br>&nbsp; &nbsp; " + 
                                         //    XML.encodeAsHTML(xPointDataSet.internalName + " = " + xPointDataSet.boldTitle) +
                                         //"\n<br>&nbsp; &nbsp; " + 
                                         //    XML.encodeAsHTML(yPointDataSet.internalName + " = " + yPointDataSet.boldTitle) +
-                                        //"\n<br><b>Time period:</b> " + standardTimePeriodValue + 
+                                        //"\n<br><strong>Time period:</strong> " + standardTimePeriodValue + 
                                         //    (TimePeriods.getNHours(standardTimePeriodValue) == 0? "" : " averages") +
                                         //(xPointDataSet.courtesy.length() == 0? "" :
-                                        //    "\n<br><b>Data courtesy of:</b> " + 
+                                        //    "\n<br><strong>Data courtesy of:</strong> " + 
                                         //    XML.encodeAsHTML(xPointDataSet.courtesy)) + 
                                         "\n<p>";
 
@@ -3322,13 +3322,13 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                                     String preTableHtml = 
                                         "<img src=\"" + fullUrl + tCleanQuery + "\" alt=\"Trajectory Data Image\">" +
-                                        //"<b>Station Data</b>" +
-                                        //"\n<br><b>Data set:</b> " + 
+                                        //"<strong>Station Data</strong>" +
+                                        //"\n<br><strong>Data set:</strong> " + 
                                         //    XML.encodeAsHTML(pointDataSet.internalName + " = " + pointDataSet.boldTitle) + 
-                                        //"\n<br><b>Time period:</b> " + standardTimePeriodValue + 
+                                        //"\n<br><strong>Time period:</strong> " + standardTimePeriodValue + 
                                         //    (TimePeriods.getNHours(standardTimePeriodValue) == 0? "" : " averages") +
                                         //(pointDataSet.courtesy.length() == 0? "" :
-                                        //    "\n<br><b>Data courtesy of:</b> " + 
+                                        //    "\n<br><strong>Data courtesy of:</strong> " + 
                                         //    XML.encodeAsHTML(pointDataSet.courtesy)) + 
                                         "\n<p>";
 
@@ -3358,9 +3358,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                         } catch (Exception e) {
                             error = MustBe.throwableToString(e);
                             if (error.indexOf(MustBe.THERE_IS_NO_DATA) >= 0)
-                                error = "<b>" + MustBe.THERE_IS_NO_DATA + "</b>";
+                                error = "<strong>" + MustBe.THERE_IS_NO_DATA + "</strong>";
                             else if (error.indexOf(oneOf.sorryNoFgdcInfo()) >= 0)
-                                error = "<b>" + oneOf.sorryNoFgdcInfo() + "</b>";
+                                error = "<strong>" + oneOf.sorryNoFgdcInfo() + "</strong>";
                             else error = String2.replaceAll(
                                 "Error while creating the file \"" + 
                                     name + fileExtension + "\":\n" + error,
@@ -3535,23 +3535,23 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     null;
 
                 error = thankYou +
-                "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                "<p><b>There was an error in your <tt>get=" + cleanGetValue + "</tt> query:</b>\n" +
+                "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                "<p><strong>There was an error in your <kbd>get=" + cleanGetValue + "</kbd> query:</strong>\n" +
                 "<br>" + error + "\n" +
-                "<p><b>General Information for <tt>get=" + cleanGetValue + "</tt> Queries</b>\n";
+                "<p><strong>General Information for <kbd>get=" + cleanGetValue + "</kbd> Queries</strong>\n";
 
                 error +=
-                    getGridData?           "    <br><tt>get=gridData</tt> queries allow you to download lat lon gridded data (for example, satellite SST data).\n" :
-                    getGridVectorData?     "    <br><tt>get=gridVectorData</tt> queries allow you to download lat lon gridded vector data (for example, satellite-derived wind data).\n" :
+                    getGridData?           "    <br><kbd>get=gridData</kbd> queries allow you to download lat lon gridded data (for example, satellite SST data).\n" :
+                    getGridVectorData?     "    <br><kbd>get=gridVectorData</kbd> queries allow you to download lat lon gridded vector data (for example, satellite-derived wind data).\n" :
                     ""; 
 
 
                 error +=
-                "    <br>The format of a <tt>get=" + cleanGetValue + "</tt> query is<tt>\n" +
+                "    <br>The format of a <kbd>get=" + cleanGetValue + "</kbd> query is<kbd>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;?get=" + cleanGetValue + "&amp;dataSet=<i>dataSetValue</i>&amp;timePeriod=<i>timePeriodValue</i>&amp;centeredTime=<i>centeredTimeValue</i>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;minLon=<i>minLonValue</i>][&amp;maxLon=<i>maxLonValue</i>][&amp;minLat=<i>minLatValue</i>][&amp;maxLat=<i>maxLatValue</i>]\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;nLon=<i>nLonValue</i>][&amp;nLat=<i>nLatValue</i>]\n" +
-                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;fileType=<i>fileTypeValue</i></tt>\n" +
+                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;fileType=<i>fileTypeValue</i></kbd>\n" +
                 "\n" +
                 "<p>Notes:<ul>\n" +
                 "<li>The easiest way to build a correct query url is to start at\n" +
@@ -3560,63 +3560,63 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "<li>Queries must not have any internal spaces.\n"+
                 "<li>Queries are not case sensitive.\n" +
                 "<li>[ ] is notation to denote an optional part of the query.\n" + //sp is needed for CencoosCurrents Browser's font
-                "<li><tt><i>italics</i></tt> is notation to denote a value specific to your query.\n" +
-                "<li><tt><i>dataSetValue</i></tt> is the name of a data set. \n" +
-                "   <br>To see a list of options, use <tt>dataSet=</tt> at the end of a query.\n" +
+                "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
+                "<li><kbd><i>dataSetValue</i></kbd> is the name of a data set. \n" +
+                "   <br>To see a list of options, use <kbd>dataSet=</kbd> at the end of a query.\n" +
                 "   <br>There are two sets of options: the 7 character \"internal\" data set names\n" +
-                "     (for example, <tt>" + dataSet7Example + "</tt>) and the Data Set options in the \n" +
+                "     (for example, <kbd>" + dataSet7Example + "</kbd>) and the Data Set options in the \n" +
                 "     <a href=\"" + url + "?edit=" + (getGridVectorData? "Vector" : "Grid") + "%20Data\">\n" +  //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + GridOrVector + " Data</tt></a> section of the CoastWatch Browser, but with spaces removed\n" +
-                "     (for example, <tt>" + clean(dataSetFullExample) + "</tt>).\n" +
+                "     <kbd>Edit: " + GridOrVector + " Data</kbd></a> section of the CoastWatch Browser, but with spaces removed\n" +
+                "     (for example, <kbd>" + clean(dataSetFullExample) + "</kbd>).\n" +
                 "     The 7 character \"internal\" names are preferred, since they are unlikely to ever change.\n" +
-                "<li><tt><i>timePeriodValue</i></tt> is the name of a time period.\n" +
+                "<li><kbd><i>timePeriodValue</i></kbd> is the name of a time period.\n" +
                 "     For data files which represent composites of several day's worth of data,\n" +
-                "     the <tt>timePeriod</tt> indicates the length of the composite.\n" +
-                "     For example, an <tt>8day</tt> composite has the average of all data observed\n" +
+                "     the <kbd>timePeriod</kbd> indicates the length of the composite.\n" +
+                "     For example, an <kbd>8day</kbd> composite has the average of all data observed\n" +
                 "     in an 8 day time period.\n" +
-                "   <br>To see a list of options, use <tt>timePeriod=</tt> at the end of a query.\n" +
+                "   <br>To see a list of options, use <kbd>timePeriod=</kbd> at the end of a query.\n" +
                 "   <br>The options are the same as the Time Period options specific to a given Data Set in the \n" +
                 "     <a href=\"" + url + "?edit=" + GridOrVector + "%20Data\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + GridOrVector + " Data</tt></a> section of the CoastWatch Browser, but with spaces removed.\n" +
-                "<li><tt><i>centeredTimeValue</i></tt> is the centered date/time for the Time Period, in ISO 8601 format:\n" +
+                "     <kbd>Edit: " + GridOrVector + " Data</kbd></a> section of the CoastWatch Browser, but with spaces removed.\n" +
+                "<li><kbd><i>centeredTimeValue</i></kbd> is the centered date/time for the Time Period, in ISO 8601 format:\n" +
                 "   <i>YYYY-MM-DD</i> or <i>YYYY-MM-DD</i>T<i>hh:mm:ss</i> (note the literal \"T\" between the date and time).\n" +
-                "   For example, <tt>2006-04-11T00:00:00</tt>.\n" +
+                "   For example, <kbd>2006-04-11T00:00:00</kbd>.\n" +
                 "   <br>All times are in the Zulu (also known as UTC or GMT) time zone, not the local time zone.\n" +
-                "   <br>The <tt><i>centeredTimeValue</i></tt> must exactly match the time of one of the options\n" +
+                "   <br>The <kbd><i>centeredTimeValue</i></kbd> must exactly match the time of one of the options\n" +
                 "     for the current DataSet and TimePeriod.\n" +
-                "   <br>To see a list of options, use <tt>centeredTime=</tt> at the end of a query.\n" + 
+                "   <br>To see a list of options, use <kbd>centeredTime=</kbd> at the end of a query.\n" + 
                 "   <br>The options are the same as the Centered Time options specific to a given\n" +
                 "     Data Set and Time Period in the \n" +
                 "     <a href=\"" + url + "?edit=" + GridOrVector + "%20Data\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + GridOrVector + " Data</tt></a> section of the CoastWatch Browser, but with T's instead of spaces.\n" +
-                "   <br>Or, put '~' at the beginning of a <tt><i>centeredTimeValue</i></tt>\n" +
-                "     (for example, <tt>~2006-04-11T01:17:33</tt>) to\n" +
-                "     get the <tt>centeredTime</tt> which is the closest available <tt>centeredTime</tt> to that time.\n" +
+                "     <kbd>Edit: " + GridOrVector + " Data</kbd></a> section of the CoastWatch Browser, but with T's instead of spaces.\n" +
+                "   <br>Or, put '~' at the beginning of a <kbd><i>centeredTimeValue</i></kbd>\n" +
+                "     (for example, <kbd>~2006-04-11T01:17:33</kbd>) to\n" +
+                "     get the <kbd>centeredTime</kbd> which is the closest available <kbd>centeredTime</kbd> to that time.\n" +
                 "     WARNING: the closest available time may be far from what you request.\n" +
-                "   <br>Or, use the special value, <tt>latest</tt>, to get the latest available data.\n" +
-                "   <br>The <tt><i>centeredTimeValue</i></tt> will be part of the name of the file that you download,\n" +
+                "   <br>Or, use the special value, <kbd>latest</kbd>, to get the latest available data.\n" +
+                "   <br>The <kbd><i>centeredTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
-                "   <br>Or, you can use <tt>endDate=<i>endDateValue</i></tt> instead of centeredTime.\n" +
+                "   <br>Or, you can use <kbd>endDate=<i>endDateValue</i></kbd> instead of centeredTime.\n" +
                 "     For time periods of 0, 1, 25, or 33 hours, this is the end second (for example, ending in \":00:00\").\n" +
                 "     For other time periods, this is the last date in the time period (inclusive).\n" +
-                "     The program processes an <tt><i>endDateValue</i></tt> by converting it to a\n" +
-                "     <tt><i>centeredTimeValue</i></tt>.\n" +
-                "     You can put '~' at the beginning of an <tt><i>endDateValue</i></tt>\n" +
-                "     (for example, <tt>~2006-04-11T01:17:33</tt>), to get the closest available data.\n" +
-                "<li><tt><i>minLonValue</i></tt> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>-135.5</tt> represents 135.5°W.\n" +
-                "   <br><tt>minLon=<i>minLonValue</i></tt> doesn't have to be in your query;\n" +
+                "     The program processes an <kbd><i>endDateValue</i></kbd> by converting it to a\n" +
+                "     <kbd><i>centeredTimeValue</i></kbd>.\n" +
+                "     You can put '~' at the beginning of an <kbd><i>endDateValue</i></kbd>\n" +
+                "     (for example, <kbd>~2006-04-11T01:17:33</kbd>), to get the closest available data.\n" +
+                "<li><kbd><i>minLonValue</i></kbd> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   <br><kbd>minLon=<i>minLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum longitude for this program (" + oneOf.regionMinX() + ").\n" +
-                "   <br>You can specify <tt><i>minLonValue</i></tt> and <tt><i>maxLonValue</i></tt>\n" +
+                "   <br>You can specify <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>\n" +
                 "     in the range -180° to 180°, or 0° to 360°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
                 "   <br>The program does the best it can with invalid \n" +
-                "     <tt><i>minLonValue, maxLonValue, minLatValue, maxLatValue</i></tt>\n" +
+                "     <kbd><i>minLonValue, maxLonValue, minLatValue, maxLatValue</i></kbd>\n" +
                 "     requests. For example, if the\n" +
                 "     actual range of the data set is less than you specify, only available data will\n" +
                 "     be returned.\n" +
-                "   <br>If <tt><i>minLonValue, maxLonValue, minLatValue,</i></tt> and/or <tt><i>maxLatValue</i></tt>\n" +
+                "   <br>If <kbd><i>minLonValue, maxLonValue, minLatValue,</i></kbd> and/or <kbd><i>maxLatValue</i></kbd>\n" +
                 "     fall between two grid points, this system rounds to the nearest grid point.\n" +
                 "     Rounding is most appropriate because each grid point represents the center\n" +
                 "     a box. Thus the data for a given x,y point may be from a grid point just\n" +
@@ -3624,84 +3624,84 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     Similarly, if you request the data for one point (minX=maxX, minY=maxY),\n" +
                 "     rounding will return the appropriate grid point (the minX,minY point is in\n" +
                 "     a box; the procedure returns the value for the box).\n" +
-                "   <br>Even though <tt>minLon, maxLon, minLat,</tt> and\n" +
-                "     <tt>maxLat</tt> are optional, their use\n" +
+                "   <br>Even though <kbd>minLon, maxLon, minLat,</kbd> and\n" +
+                "     <kbd>maxLat</kbd> are optional, their use\n" +
                 "     is STRONGLY RECOMMENDED to minimize the download time.\n" +
-                "<li><tt><i>maxLonValue</i></tt> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>127.5</tt> represents 127.5°E. \n" +
-                "   <br><tt>maxLon=<i>maxLonValue</i></tt> doesn't have to be in your query;\n" +
+                "<li><kbd><i>maxLonValue</i></kbd> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>127.5</kbd> represents 127.5°E. \n" +
+                "   <br><kbd>maxLon=<i>maxLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum longitude for this program (" + oneOf.regionMaxX() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>minLatValue</i></tt> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>-22.25</tt> represents 22.25°S. \n" +
-                "   <br><tt>minLat=<i>minLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>minLatValue</i></kbd> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   <br><kbd>minLat=<i>minLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum latitude for this program (" + oneOf.regionMinY() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>maxLatValue</i></tt> is the maximum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>40.75</tt> represents 40.75°N. \n" +
-                "   <br><tt>maxLat=<i>maxLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>maxLatValue</i></kbd> is the maximum desired latitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>40.75</kbd> represents 40.75°N. \n" +
+                "   <br><kbd>maxLat=<i>maxLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum latitude for this program (" + oneOf.regionMaxY() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>nLonValue</i></tt> is the desired number (an integer) of longitude points in the grid.\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>nLonValue</i></kbd> is the desired number (an integer) of longitude points in the grid.\n" +
                 "   <br>This is useful for reducing the amount of data downloaded if, for example,\n" +
                 "     you only need the data to make an image that will be some number of pixels wide.\n" +
-                "     For example, <tt>400</tt>.\n" +
-                "   <br><tt>nLon=<i>nLonValue</i></tt> doesn't have to be in your query;\n" +
+                "     For example, <kbd>400</kbd>.\n" +
+                "   <br><kbd>nLon=<i>nLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum available.\n" +
                 "   <br>If the data set doesn't have as many points as you request, the program\n" +
                 "     will return the maximum available.\n" +
                 "   <br>If the lon range of available data is less than the requested\n" +
-                "     <tt><i>minLonValue</i></tt> and <tt><i>maxLonValue</i></tt>,\n" +
-                "     <tt><i>nLonValue</i></tt> will be reduced proportionally.\n" +
+                "     <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>,\n" +
+                "     <kbd><i>nLonValue</i></kbd> will be reduced proportionally.\n" +
                 "   <br>[Details: Internally, the program uses the largest possible stride value that\n" +
                 "     will return at least the number of data points requested.]\n" +
-                "   <br>Even though <tt><i>nLonValue</i></tt> and <tt><i>nLatValue</i></tt> are optional, their use\n" +
+                "   <br>Even though <kbd><i>nLonValue</i></kbd> and <kbd><i>nLatValue</i></kbd> are optional, their use\n" +
                 "     is STRONGLY RECOMMENDED to minimize the download time.\n" +
-                "   <br>If <tt>fileType</tt> is a .png file, this is ignored.\n" +
-                "<li><tt><i>nLatValue</i></tt> is the desired numer (an integer) of latitude points in the grid.\n" +
-                "   For example, <tt>200</tt>.\n" +
-                "   <br><tt>nLat=<i>nLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>If <kbd>fileType</kbd> is a .png file, this is ignored.\n" +
+                "<li><kbd><i>nLatValue</i></kbd> is the desired numer (an integer) of latitude points in the grid.\n" +
+                "   For example, <kbd>200</kbd>.\n" +
+                "   <br><kbd>nLat=<i>nLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum available.\n" +
-                "   <br>See the comments above for <tt><i>nLonValue</i></tt>.\n" +
-                "<li><tt><i>fileTypeValue</i></tt> is the type of data file that you want to download.\n" +
-                "   <br>To see a list of options, use <tt>fileType=</tt> at the end of a query.\n" +
-                "   <br>The file type <tt>.ncHeader</tt> is the ncdump-style file header showing all the metadata, but no data.\n" +
+                "   <br>See the comments above for <kbd><i>nLonValue</i></kbd>.\n" +
+                "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to download.\n" +
+                "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
+                "   <br>The file type <kbd>.ncHeader</kbd> is the ncdump-style file header showing all the metadata, but no data.\n" +
                 "   <br>If you are using a browser, .ncHeader data will appear as plain text in your browser.\n" +
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "   <br>See <a href=\"" + oneOf.gridFileHelpUrl() + "\">a description of the grid data file types</a>.\n" +
                 "<li>Matlab users can download data from within Matlab. Here is a 3-line example,\n" +
-                "   <br>&nbsp;&nbsp;1) <tt>link='" + fullUrl + "?" +
+                "   <br>&nbsp;&nbsp;1) <kbd>link='" + fullUrl + "?" +
                     "get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-06-10" +
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() + 
-                    "&amp;fileType=.mat';</tt>\n" +
-                "   <br>&nbsp;&nbsp;2) <tt>F=urlwrite(link,'test.m');</tt>\n" +
-                "   <br>&nbsp;&nbsp;3) <tt>load('-MAT',F);</tt>\n" +
+                    "&amp;fileType=.mat';</kbd>\n" +
+                "   <br>&nbsp;&nbsp;2) <kbd>F=urlwrite(link,'test.m');</kbd>\n" +
+                "   <br>&nbsp;&nbsp;3) <kbd>load('-MAT',F);</kbd>\n" +
                 "   <br>The first line of the example is very long and may be displayed as a few lines in your browser.\n" +
                 "</ul>\n" +
                 "\n" +
                 "Examples of valid queries:\n" +
                 "<ul>\n" +
-                "<li>To see a list of <tt>get</tt> options, use\n" +
+                "<li>To see a list of <kbd>get</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get\"><tt>" +
-                  fullUrl + "?get</tt></a>\n" +
-                "<li>To see a list of <tt>dataSet</tt> options, use\n" +
+                  fullUrl + "?get\"><kbd>" +
+                  fullUrl + "?get</kbd></a>\n" +
+                "<li>To see a list of <kbd>dataSet</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=</tt></a>\n" +
-                "<li>To see a list of <tt>timePeriod</tt> options for the \"" + dataSetFullExample + "\" data set, use\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=</kbd></a>\n" +
+                "<li>To see a list of <kbd>timePeriod</kbd> options for the \"" + dataSetFullExample + "\" data set, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=</tt></a>\n" +
-                "<li>To see a list of <tt>centeredTime</tt> options for the \"" + dataSetFullExample + "\" data set, 1 day composites, use\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=</kbd></a>\n" +
+                "<li>To see a list of <kbd>centeredTime</kbd> options for the \"" + dataSetFullExample + "\" data set, 1 day composites, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=</tt></a>\n" +
-                "<li>To see a list of <tt>fileType</tt> options, use\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=</kbd></a>\n" +
+                "<li>To see a list of <kbd>fileType</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=</kbd></a>\n" +
                 "<li>To get a NetCDF file with 1 day composite (for date/time 2006-04-11T12:00:00) \n" +
                 "    of the \"" + dataSetFullExample + "\" data set,\n" +
                 "    for a limited geographic range, and subsetted to just include at least\n" +
@@ -3711,41 +3711,41 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;nLon=100&amp;nLat=125&amp;fileType=.nc" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-04-11T12:00:00" + 
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;nLon=100&amp;nLat=125&amp;fileType=.nc" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>To get an xyz ASCII file with the data for the latest 1 day composite of the \"" + dataSetFullExample + "\" data set\n" +
                 "    for the entire available geographic region, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.xyz\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.xyz</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.xyz\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.xyz</kbd></a>\n" +
                 "<li>By using the default minLon, maxLon, minLat, maxLat, this example is equivalent to the previous example:\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.xyz\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.xyz</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.xyz\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.xyz</kbd></a>\n" +
                 "<li>To get just the ncdump-style header information (metadata) for the data file you have specified:\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.ncHeader\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.ncHeader</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.ncHeader\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=.ncHeader</kbd></a>\n" +
                 "<li>To get the data closest to a single lat lon point, set minLon=maxLon and minLat=maxLat:\n" +
                   "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.95&amp;maxLon=-134.95&amp;minLat=40.1&amp;maxLat=40.1&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.95&amp;maxLon=-134.95&amp;minLat=40.1&amp;maxLat=40.1&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.95&amp;maxLon=-134.95&amp;minLat=40.1&amp;maxLat=40.1&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.95&amp;maxLon=-134.95&amp;minLat=40.1&amp;maxLat=40.1&amp;fileType=.asc</kbd></a>\n" +
                   "<br>That returns the same data as the query for the nearest actual grid point:\n" +
                   "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.925&amp;maxLon=-134.925&amp;minLat=40.125&amp;maxLat=40.125&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.925&amp;maxLon=-134.925&amp;minLat=40.125&amp;maxLat=40.125&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.925&amp;maxLon=-134.925&amp;minLat=40.125&amp;maxLat=40.125&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;minLon=-134.925&amp;maxLon=-134.925&amp;minLat=40.125&amp;maxLat=40.125&amp;fileType=.asc</kbd></a>\n" +
                 "<li>To get the data closest to a specified time, use a ~ before the centeredTime:\n" +
                   "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=~2006-05-02T00:17&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=~2006-05-02T00:17&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=~2006-05-02T00:17&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=~2006-05-02T00:17&amp;fileType=.asc</kbd></a>\n" +
                   "<br>That returns the same data as the query for the nearest actually available centeredTime:\n" +
                   "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=2006-05-02T12:00:00&amp;fileType=.asc</kbd></a>\n" +
 
                 "</ul>\n" +
                 "\n";
@@ -3757,15 +3757,15 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 String lonExample = String2.genEFormat6((oneOf.regionMinX() + oneOf.regionMaxX()) / 2);
                 String latExample = String2.genEFormat6((oneOf.regionMinY() + oneOf.regionMaxY()) / 2);
                 error = thankYou +
-                "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                "<p><b>There was an error in your <tt>get=gridTimeSeries</tt> query:</b>\n" +
+                "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                "<p><strong>There was an error in your <kbd>get=gridTimeSeries</kbd> query:</strong>\n" +
                 "<br>" + error + "\n" +
-                "<p><b>General Information for <tt>get=gridTimeSeries</tt> Queries</b>\n" +
-                "    <br><tt>get=gridTimeSeries</tt> queries allow you to download a time series for one lat lon location\n" +
+                "<p><strong>General Information for <kbd>get=gridTimeSeries</kbd> Queries</strong>\n" +
+                "    <br><kbd>get=gridTimeSeries</kbd> queries allow you to download a time series for one lat lon location\n" +
                 "       from gridded data (for example, satellite data).\n" +
-                "    <br>The format of a <tt>get=gridTimeSeries</tt> query is<tt>\n" +
+                "    <br>The format of a <kbd>get=gridTimeSeries</kbd> query is<kbd>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;?get=gridTimeSeries&amp;dataSet=<i>dataSetValue</i>&amp;timePeriod=<i>timePeriodValue</i>&amp;beginTime=<i>beginTimeValue</i>&amp;endTime=<i>endTimeValue</i>\n" +
-                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;lon=<i>lonValue</i>&amp;lat=<i>latValue</i>&amp;fileType=<i>fileTypeValue</i></tt>\n" +
+                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;lon=<i>lonValue</i>&amp;lat=<i>latValue</i>&amp;fileType=<i>fileTypeValue</i></kbd>\n" +
                 "\n" +
                 "<p>Notes:<ul>\n" +
                 "<li>The easiest way to build a correct query url is to start at\n" +
@@ -3774,105 +3774,105 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "<li>Queries must not have any internal spaces.\n"+
                 "<li>Queries are not case sensitive.\n" +
                 "<li>[ ] is notation to denote an optional part of the query.\n" + //sp is needed for CencoosCurrents Browser's font
-                "<li><tt><i>italics</i></tt> is notation to denote a value specific to your query.\n" +
-                "<li><tt><i>dataSetValue</i></tt> is the name of a data set. \n" +
-                "   <br>To see a list of options, use <tt>dataSet=</tt> at the end of a query.\n" +
+                "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
+                "<li><kbd><i>dataSetValue</i></kbd> is the name of a data set. \n" +
+                "   <br>To see a list of options, use <kbd>dataSet=</kbd> at the end of a query.\n" +
                 "   <br>There are two sets of options: the 7 character \"internal\" data set names\n" +
-                "     (for example, <tt>" + dataSet7Example + "</tt>) and the Data Set options in the \n" +
+                "     (for example, <kbd>" + dataSet7Example + "</kbd>) and the Data Set options in the \n" +
                 "     <a href=\"" + url + "?edit=Grid%20Data\">\n" +  //doesn't work for CencoosCurrents
-                "     <tt>Edit: Grid Data</tt></a> section of the CoastWatch Browser, but with spaces removed\n" +
-                "     (for example, <tt>" + clean(dataSetFullExample) + "</tt>).\n" +
+                "     <kbd>Edit: Grid Data</kbd></a> section of the CoastWatch Browser, but with spaces removed\n" +
+                "     (for example, <kbd>" + clean(dataSetFullExample) + "</kbd>).\n" +
                 "     The 7 character \"internal\" names are preferred, since they are unlikely to ever change.\n" +
-                "<li><tt><i>timePeriodValue</i></tt> is the name of a time period.\n" +
+                "<li><kbd><i>timePeriodValue</i></kbd> is the name of a time period.\n" +
                 "     For data files which represent composites of several day's worth of data,\n" +
-                "     the <tt>timePeriod</tt> indicates the length of the composite.\n" +
-                "     For example, an <tt>3day</tt> composite has the average of all data observed\n" +
+                "     the <kbd>timePeriod</kbd> indicates the length of the composite.\n" +
+                "     For example, an <kbd>3day</kbd> composite has the average of all data observed\n" +
                 "     in an 3 day time period.\n" +
-                "   <br>To see a list of options, use <tt>timePeriod=</tt> at the end of a query.\n" +
+                "   <br>To see a list of options, use <kbd>timePeriod=</kbd> at the end of a query.\n" +
                 "   <br>The options are the same as the Time Period options specific to a given Data Set in the \n" +
                 "     <a href=\"" + url + "?edit=Grid%20Data\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: Grid Data</tt></a> section of the CoastWatch Browser, but with spaces removed.\n" +
-                "<li><tt><i>beginTimeValue</i></tt> is the earliest desired time of the Time Period, in ISO 8601 format:\n" +
+                "     <kbd>Edit: Grid Data</kbd></a> section of the CoastWatch Browser, but with spaces removed.\n" +
+                "<li><kbd><i>beginTimeValue</i></kbd> is the earliest desired time of the Time Period, in ISO 8601 format:\n" +
                 "   <i>YYYY-MM-DD</i> or <i>YYYY-MM-DD</i>T<i>hh:mm:ss</i> (note the literal \"T\" between the date and time).\n" +
-                "   For example, <tt>2006-04-11T00:00:00</tt>.\n" +
+                "   For example, <kbd>2006-04-11T00:00:00</kbd>.\n" +
                 "   <br>All times are in the Zulu (also known as UTC or GMT) time zone, not the local time zone.\n" +
-                "   <br>The <tt><i>beginTimeValue</i></tt> will be part of the name of the file that you download,\n" +
+                "   <br>The <kbd><i>beginTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
                 "   <br>For example, if the time period is \"3days\"\n" +
                 "     and the 3 day composite files are created each day, and the\n" +
-                "     <tt><i>beginTimeValue</i></tt> is <tt>2006-04-11</tt> and the\n" +
-                "     <tt><i>endTimeValue</i></tt> is <tt>2006-04-13</tt>,\n" +
+                "     <kbd><i>beginTimeValue</i></kbd> is <kbd>2006-04-11</kbd> and the\n" +
+                "     <kbd><i>endTimeValue</i></kbd> is <kbd>2006-04-13</kbd>,\n" +
                 "     you will get a time series with 2 points (from the composites with\n" + 
-                "     centered times of <tt>2006-04-11T12:00:00</tt> and <tt>2006-04-12T12:00:00</tt>).\n" +
-                "   <br>If <tt><i>beginTimeValue</i></tt> and <tt><i>endTimeValue</i></tt>\n" +
+                "     centered times of <kbd>2006-04-11T12:00:00</kbd> and <kbd>2006-04-12T12:00:00</kbd>).\n" +
+                "   <br>If <kbd><i>beginTimeValue</i></kbd> and <kbd><i>endTimeValue</i></kbd>\n" +
                 "     are between two adjacent available times,\n" +
                 "     the datum for the single closest time is returned.\n" +
-                "   <br><tt>beginTime</tt> is optional. If you omit it, the beginTime is\n" +
-                "     an appropriate amount of time before the end time (given the <tt><i>timePeriodValue</i></tt>).\n" +
-                "<li><tt><i>endTimeValue</i></tt> is the latest desired time for the Time Period, in ISO 8601 format:\n" +
+                "   <br><kbd>beginTime</kbd> is optional. If you omit it, the beginTime is\n" +
+                "     an appropriate amount of time before the end time (given the <kbd><i>timePeriodValue</i></kbd>).\n" +
+                "<li><kbd><i>endTimeValue</i></kbd> is the latest desired time for the Time Period, in ISO 8601 format:\n" +
                 "   <i>YYYY-MM-DD</i> or <i>YYYY-MM-DD</i>T<i>hh:mm:ss</i> (note the literal \"T\" between the date and time).\n" +
-                "   For example, <tt>2006-04-11T00:00:00</tt>.\n" +
+                "   For example, <kbd>2006-04-11T00:00:00</kbd>.\n" +
                 "   <br>All times are in the Zulu (also known as UTC or GMT) time zone, not the local time zone.\n" +
-                "   <br>The <tt><i>endTimeValue</i></tt> will be part of the name of the file that you download,\n" +
+                "   <br>The <kbd><i>endTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
-                "   <br><tt>endTime</tt> is optional. If you omit it, the endTime is\n" +
+                "   <br><kbd>endTime</kbd> is optional. If you omit it, the endTime is\n" +
                 "     the latest available time for the current dataSet.\n" +
-                "   <br>Or, use the special value, <tt>latest</tt>, to get the latest available data.\n" +
-                "   <br>The <tt><i>endTimeValue</i></tt> will be part of the name of the file that you download,\n" +
+                "   <br>Or, use the special value, <kbd>latest</kbd>, to get the latest available data.\n" +
+                "   <br>The <kbd><i>endTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
-                "<li><tt><i>lonValue</i></tt> is the desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>-135.5</tt> represents 135.5°W.\n" +
-                "   <br>You can specify <tt><i>lonValue</i></tt>\n" +
+                "<li><kbd><i>lonValue</i></kbd> is the desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   <br>You can specify <kbd><i>lonValue</i></kbd>\n" +
                 "     in the range -180° to 180°, or 0° to 360°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
-                "   <br><tt><i>lonValue</i></tt> and <tt><i>latValue</i></tt> must be within the data's range.\n" +
-                "   <br>If <tt><i>lonValue</i></tt> and/or <tt><i>latValue</i></tt>\n" +
+                "   <br><kbd><i>lonValue</i></kbd> and <kbd><i>latValue</i></kbd> must be within the data's range.\n" +
+                "   <br>If <kbd><i>lonValue</i></kbd> and/or <kbd><i>latValue</i></kbd>\n" +
                 "     fall between two grid points, this system rounds to the nearest grid point.\n" +
                 "     Rounding is most appropriate because each grid point represents the center\n" +
                 "     a box. Thus the data for a given x,y point may be from a grid point just\n" +
                 "     outside of the range you request.\n" +
-                "<li><tt><i>latValue</i></tt> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>-22.25</tt> represents 22.25°S. \n" +
-                "<li><tt><i>fileTypeValue</i></tt> is the type of data file that you want to download.\n" +
-                "   <br>To see a list of options, use <tt>fileType=</tt> at the end of a query.\n" +
-                "   <br>The file type <tt>.ncHeader</tt> is the ncdump-style file header showing all the metadata, but no data.\n" +
+                "<li><kbd><i>latValue</i></kbd> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to download.\n" +
+                "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
+                "   <br>The file type <kbd>.ncHeader</kbd> is the ncdump-style file header showing all the metadata, but no data.\n" +
                 "   <br>If you are using a browser, .ncHeader data will appear as plain text in your browser.\n" +
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "   <br>See <a href=\"" + oneOf.pointFileHelpUrl() + "\">a description of the point data file types</a>.\n" +
                 "<li>Matlab users can download data from within Matlab. Here is a 3-line example,\n" +
-                "   <br>&nbsp;&nbsp;1) <tt>link='" + url + "?" +
+                "   <br>&nbsp;&nbsp;1) <kbd>link='" + url + "?" +
                     "get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day" +
                     "&amp;beginTime=2006-06-10T12:00:00&amp;endTime=2006-06-10T12:00:00" +
                     "&amp;lon=" + lonExample + "&amp;lat=" + latExample + 
-                    "&amp;fileType=.mat';</tt>\n" +
-                "   <br>&nbsp;&nbsp;2) <tt>F=urlwrite(link,'test.m');</tt>\n" +
-                "   <br>&nbsp;&nbsp;3) <tt>load('-MAT',F);</tt>\n" +
+                    "&amp;fileType=.mat';</kbd>\n" +
+                "   <br>&nbsp;&nbsp;2) <kbd>F=urlwrite(link,'test.m');</kbd>\n" +
+                "   <br>&nbsp;&nbsp;3) <kbd>load('-MAT',F);</kbd>\n" +
                 "   <br>The first line of the example is very long and may be displayed as a few lines in your browser.\n" +
                 "</ul>\n" +
                 "\n" +
                 "Examples of valid queries:\n" +
                 "<ul>\n" +
-                "<li>To see a list of <tt>get</tt> options, use\n" +
+                "<li>To see a list of <kbd>get</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get\"><tt>" +
-                  fullUrl + "?get</tt></a>\n" +
-                "<li>To see a list of <tt>dataSet</tt> options, use\n" +
+                  fullUrl + "?get\"><kbd>" +
+                  fullUrl + "?get</kbd></a>\n" +
+                "<li>To see a list of <kbd>dataSet</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=\"><tt>" +
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=</tt></a>\n" +
-                "<li>To see a list of <tt>timePeriod</tt> options, use\n" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=\"><kbd>" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=</kbd></a>\n" +
+                "<li>To see a list of <kbd>timePeriod</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=\"><tt>" +
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=</tt></a>\n" +
-                "<li>To see a list of <tt>fileType</tt> options, use\n" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=\"><kbd>" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=</kbd></a>\n" +
+                "<li>To see a list of <kbd>fileType</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=\"><tt>" +
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=</tt></a>\n" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=\"><kbd>" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=</kbd></a>\n" +
                 "<li>To get a NetCDF file, use\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=.nc\"><tt>" +
-                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=.nc</tt></a>\n" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=.nc\"><kbd>" +
+                  fullUrl + "?get=gridTimeSeries&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;beginTime=2006-06-14&amp;endTime=2006-06-16T12:00:00&amp;lon=" + lonExample + "&amp;lat=" + latExample + "&amp;fileType=.nc</kbd></a>\n" +
                 "</ul>\n" +
                 "\n";
             }
@@ -3882,19 +3882,19 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             if (error != null && getBathymetryData) {            
 
                 error = thankYou +
-                "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                "<p><b>There was an error in your <tt>get=bathymetryData</tt> query:</b>\n" +
+                "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                "<p><strong>There was an error in your <kbd>get=bathymetryData</kbd> query:</strong>\n" +
                 "<br>" + error + "\n" +
-                "<p><b>General Information for <tt>get=bathymetryData</tt> Queries</b>\n";
+                "<p><strong>General Information for <kbd>get=bathymetryData</kbd> Queries</strong>\n";
 
-                error += "    <br><tt>get=bathymetryData</tt> queries allow you to download lat lon gridded bathymetry data (ETOPO2v2).\n"; 
+                error += "    <br><kbd>get=bathymetryData</kbd> queries allow you to download lat lon gridded bathymetry data (ETOPO2v2).\n"; 
 
                 error +=
-                "    <br>The format of a <tt>get=bathymetryData</tt> query is<tt>\n" +
+                "    <br>The format of a <kbd>get=bathymetryData</kbd> query is<kbd>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;?get=bathymetryData\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;minLon=<i>minLonValue</i>][&amp;maxLon=<i>maxLonValue</i>][&amp;minLat=<i>minLatValue</i>][&amp;maxLat=<i>maxLatValue</i>]\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;nLon=<i>nLonValue</i>][&amp;nLat=<i>nLatValue</i>]\n" +
-                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;fileType=<i>fileTypeValue</i></tt>\n" +
+                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;fileType=<i>fileTypeValue</i></kbd>\n" +
                 "\n" +
                 "<p>Notes:<ul>\n" +
                 "<li>The easiest way to build a correct query url is to start at\n" +
@@ -3903,58 +3903,58 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "<li>Queries must not have any internal spaces.\n"+
                 "<li>Queries are not case sensitive.\n" +
                 "<li>[ ] is notation to denote an optional part of the query.\n" + //sp is needed for CencoosCurrents Browser's font
-                "<li><tt><i>italics</i></tt> is notation to denote a value specific to your query.\n" +
-                "<li><tt><i>minLonValue</i></tt> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>-135.5</tt> represents 135.5°W.\n" +
-                "   <br><tt>minLon=<i>minLonValue</i></tt> doesn't have to be in your query;\n" +
+                "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
+                "<li><kbd><i>minLonValue</i></kbd> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   <br><kbd>minLon=<i>minLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum longitude for this program (" + oneOf.regionMinX() + ").\n" +
-                "   <br>You can specify <tt><i>minLonValue</i></tt> and <tt><i>maxLonValue</i></tt>\n" +
+                "   <br>You can specify <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>\n" +
                 "     in the range -180° to 180°, or 0° to 360°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
                 "   <br>The resulting grid is created by adjusting the desired min/max lon/lat values and nLon,nLat value\n" +
                 "     to the closest etopo2v2g data points and stride, and then populating the grid. \n" +
-                "   <br>Even though <tt>minLon, maxLon, minLat,</tt> and\n" +
-                "     <tt>maxLat</tt> are optional, their use\n" +
+                "   <br>Even though <kbd>minLon, maxLon, minLat,</kbd> and\n" +
+                "     <kbd>maxLat</kbd> are optional, their use\n" +
                 "     is STRONGLY RECOMMENDED to minimize the download time.\n" +
-                "<li><tt><i>maxLonValue</i></tt> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>127.5</tt> represents 127.5°E. \n" +
-                "   <br><tt>maxLon=<i>maxLonValue</i></tt> doesn't have to be in your query;\n" +
+                "<li><kbd><i>maxLonValue</i></kbd> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>127.5</kbd> represents 127.5°E. \n" +
+                "   <br><kbd>maxLon=<i>maxLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum longitude for this program (" + oneOf.regionMaxX() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>minLatValue</i></tt> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>-22.25</tt> represents 22.25°S. \n" +
-                "   <br><tt>minLat=<i>minLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>minLatValue</i></kbd> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   <br><kbd>minLat=<i>minLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum latitude for this program (" + oneOf.regionMinY() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>maxLatValue</i></tt> is the maximum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>40.75</tt> represents 40.75°N. \n" +
-                "   <br><tt>maxLat=<i>maxLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>maxLatValue</i></kbd> is the maximum desired latitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>40.75</kbd> represents 40.75°N. \n" +
+                "   <br><kbd>maxLat=<i>maxLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum latitude for this program (" + oneOf.regionMaxY() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>nLonValue</i></tt> is the desired number (an integer) of longitude points in the grid.\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>nLonValue</i></kbd> is the desired number (an integer) of longitude points in the grid.\n" +
                 "   <br>This is useful for reducing the amount of data downloaded if, for example,\n" +
                 "     you only need the data to make an image that will be some number of pixels wide.\n" +
-                "     For example, <tt>400</tt>.\n" +
-                "   <br><tt>nLon=<i>nLonValue</i></tt> doesn't have to be in your query;\n" +
+                "     For example, <kbd>400</kbd>.\n" +
+                "   <br><kbd>nLon=<i>nLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum available.\n" +
-                "   <br>Currently, to avoid problems associated with very large requests, <tt><i>nLonValue</i></tt>\n" +
-                "     is limited to 3601 points. <tt><i>nLatValue</i></tt> is limited to 1801 points.\n" +
+                "   <br>Currently, to avoid problems associated with very large requests, <kbd><i>nLonValue</i></kbd>\n" +
+                "     is limited to 3601 points. <kbd><i>nLatValue</i></kbd> is limited to 1801 points.\n" +
                 "     If you need all of the data, please get it from NGDC (see below).\n" +
                 "   <br>If the data set doesn't have as many points as you request, the program\n" +
                 "     will return the maximum available.\n" +
-                "   <br>This procedure finds the lowest stride value which will return at least <tt><i>nLonValue</i></tt> points.\n" +
-                "   <br>Even though <tt><i>nLonValue</i></tt> and <tt><i>nLatValue</i></tt> are optional, their use\n" +
+                "   <br>This procedure finds the lowest stride value which will return at least <kbd><i>nLonValue</i></kbd> points.\n" +
+                "   <br>Even though <kbd><i>nLonValue</i></kbd> and <kbd><i>nLatValue</i></kbd> are optional, their use\n" +
                 "     is STRONGLY RECOMMENDED to minimize the download time.\n" +
-                "   <br>If <tt>fileType</tt> is a .png file, this is ignored.\n" +
-                "<li><tt><i>nLatValue</i></tt> is the desired numer (an integer) of latitude points in the grid.\n" +
-                "   For example, <tt>200</tt>.\n" +
-                "   <br><tt>nLat=<i>nLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>If <kbd>fileType</kbd> is a .png file, this is ignored.\n" +
+                "<li><kbd><i>nLatValue</i></kbd> is the desired numer (an integer) of latitude points in the grid.\n" +
+                "   For example, <kbd>200</kbd>.\n" +
+                "   <br><kbd>nLat=<i>nLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum available.\n" +
-                "   <br>See the comments above for <tt><i>nLonValue</i></tt>.\n" +
-                "<li><tt><i>fileTypeValue</i></tt> is the type of data file that you want to download.\n" +
-                "   <br>To see a list of options, use <tt>fileType=</tt> at the end of a query.\n" +
-                "   <br>The file type <tt>.ncHeader</tt> is the ncdump-style file header showing all the metadata, but no data.\n" +
+                "   <br>See the comments above for <kbd><i>nLonValue</i></kbd>.\n" +
+                "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to download.\n" +
+                "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
+                "   <br>The file type <kbd>.ncHeader</kbd> is the ncdump-style file header showing all the metadata, but no data.\n" +
                 "   <br>If you are using a browser, .ncHeader data will appear as plain text in your browser.\n" +
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "   <br>See <a href=\"" + oneOf.gridFileHelpUrl() + "\">a description of the grid data file types</a>.\n" +
@@ -3964,26 +3964,26 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "    <br>binary, 2 byte int: etopo1_ice_g_i2.zip) data\n" +
                 "      <a href=\"https://www.ngdc.noaa.gov\">NOAA NGDC</a>." +
                 "<li>Matlab users can download data from within Matlab. Here is a 3-line example,\n" +
-                "   <br>&nbsp;&nbsp;1) <tt>link='" + fullUrl + "?" +
+                "   <br>&nbsp;&nbsp;1) <kbd>link='" + fullUrl + "?" +
                     "get=bathymetryData" + 
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() + 
-                    "&amp;fileType=.mat';</tt>\n" +
-                "   <br>&nbsp;&nbsp;2) <tt>F=urlwrite(link,'test.m');</tt>\n" +
-                "   <br>&nbsp;&nbsp;3) <tt>load('-MAT',F);</tt>\n" +
+                    "&amp;fileType=.mat';</kbd>\n" +
+                "   <br>&nbsp;&nbsp;2) <kbd>F=urlwrite(link,'test.m');</kbd>\n" +
+                "   <br>&nbsp;&nbsp;3) <kbd>load('-MAT',F);</kbd>\n" +
                 "   <br>The first line of the example is very long and may be displayed as a few lines in your browser.\n" +
                 "</ul>\n" +
                 "\n" +
                 "Examples of valid queries:\n" +
                 "<ul>\n" +
-                "<li>To see a list of <tt>get</tt> options, use\n" +
+                "<li>To see a list of <kbd>get</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get\"><tt>" +
-                  fullUrl + "?get</tt></a>\n" +
-                "<li>To see a list of <tt>fileType</tt> options, use\n" +
+                  fullUrl + "?get\"><kbd>" +
+                  fullUrl + "?get</kbd></a>\n" +
+                "<li>To see a list of <kbd>fileType</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=bathymetryData&amp;fileType=\"><tt>" +
-                  fullUrl + "?get=bathymetryData&amp;fileType=</tt></a>\n" +
+                  fullUrl + "?get=bathymetryData&amp;fileType=\"><kbd>" +
+                  fullUrl + "?get=bathymetryData&amp;fileType=</kbd></a>\n" +
                 "<li>To get a NetCDF file for a limited geographic range, and subsetted to just include just\n" +
                 "    100 longitude points and 125 latitude points, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
@@ -3991,20 +3991,20 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;nLon=100&amp;nLat=125&amp;fileType=.nc" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   fullUrl + "?get=bathymetryData" +  
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;nLon=100&amp;nLat=125&amp;fileType=.nc" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>To get the data closest to a single lat lon point, set minLon=maxLon and minLat=maxLat:\n" +
                   "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=bathymetryData&amp;minLon=-134.99&amp;maxLon=-134.99&amp;minLat=40.01&amp;maxLat=40.01&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=bathymetryData&amp;minLon=-134.99&amp;maxLon=-134.99&amp;minLat=40.01&amp;maxLat=40.01&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=bathymetryData&amp;minLon=-134.99&amp;maxLon=-134.99&amp;minLat=40.01&amp;maxLat=40.01&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=bathymetryData&amp;minLon=-134.99&amp;maxLon=-134.99&amp;minLat=40.01&amp;maxLat=40.01&amp;fileType=.asc</kbd></a>\n" +
                   "<br>That returns the same data as the query for the nearest actual grid point:\n" +
                   "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=bathymetryData&amp;minLon=-135&amp;maxLon=-135&amp;minLat=40&amp;maxLat=40&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=bathymetryData&amp;minLon=-135&amp;maxLon=-135&amp;minLat=40&amp;maxLat=40&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=bathymetryData&amp;minLon=-135&amp;maxLon=-135&amp;minLat=40&amp;maxLat=40&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=bathymetryData&amp;minLon=-135&amp;maxLon=-135&amp;minLat=40&amp;maxLat=40&amp;fileType=.asc</kbd></a>\n" +
                 "</ul>\n" +
                 "\n";
             }
@@ -4019,18 +4019,18 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 String screen20 = String2.replaceAll(screen, " ", "%20");
 
                 error = thankYou +
-                "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                "<p><b>There was an error in your <tt>get=" + cleanGetValue + "</tt> query:</b>\n" +
+                "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                "<p><strong>There was an error in your <kbd>get=" + cleanGetValue + "</kbd> query:</strong>\n" +
                 "<br>" + error + "\n" +
-                "<p><b>General Information for <tt>get=" + cleanGetValue + "</tt> Queries</b>\n" +
-                "    <br><tt>get=" + cleanGetValue + "</tt> queries allow you to download\n" +
+                "<p><strong>General Information for <kbd>get=" + cleanGetValue + "</kbd> Queries</strong>\n" +
+                "    <br><kbd>get=" + cleanGetValue + "</kbd> queries allow you to download\n" +
                 "    (averaged) time series " + (getStationVectorData? "vector " : "") + 
                     "data from stations (for example, buoys).\n" +
-                "    <br>The format of a <tt>get=" + cleanGetValue + "</tt> query is<tt>\n" +
+                "    <br>The format of a <kbd>get=" + cleanGetValue + "</kbd> query is<kbd>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;?get=" + cleanGetValue + "&amp;dataSet=<i>dataSetValue</i>&amp;timePeriod=<i>timePeriodValue</i>\n" + 
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;beginTime=<i>beginTimeValue</i>&amp;endTime=<i>endTimeValue</i>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;minLon=<i>minLonValue</i>][&amp;maxLon=<i>maxLonValue</i>][&amp;minLat=<i>minLatValue</i>][&amp;maxLat=<i>maxLatValue</i>]\n" +
-                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;minDepth=<i>minDepthValue</i>][&amp;maxDepth=<i>maxDepthValue</i>]&amp;fileType=<i>fileTypeValue</i></tt>\n" +
+                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;[&amp;minDepth=<i>minDepthValue</i>][&amp;maxDepth=<i>maxDepthValue</i>]&amp;fileType=<i>fileTypeValue</i></kbd>\n" +
                 "\n" +
                 "<p>Notes:<ul>\n"+
                 "<li>The easiest way to build a correct query url is to start at\n" +
@@ -4039,128 +4039,128 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "<li>Queries must not have any internal spaces.\n"+
                 "<li>Queries are not case sensitive.\n" +
                 "<li>[ ] is notation to denote an optional part of the query.\n" + //sp is needed for CencoosCurrents Browser's font
-                "<li><tt><i>italics</i></tt> is notation to denote a value specific to your query.\n" +
-                "<li><tt><i>dataSetValue</i></tt> is the name of a data set.\n" +
-                "   <br>To see a list of options, use <tt>dataSet=</tt> at the end of a query.\n" +
+                "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
+                "<li><kbd><i>dataSetValue</i></kbd> is the name of a data set.\n" +
+                "   <br>To see a list of options, use <kbd>dataSet=</kbd> at the end of a query.\n" +
                 "   <br>There are two sets of options: the 7 character \"internal\" data set names\n" +
-                "     (for example, <tt>" + dataSet7Example + "</tt>) and the Data Set options in the \n" +
+                "     (for example, <kbd>" + dataSet7Example + "</kbd>) and the Data Set options in the \n" +
                 "     <a href=\"" + url + "?edit=" + screen20 + "\">\n" +  //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + screen + "</tt></a> section of the CoastWatch Browser, but with spaces removed\n" +
-                "     (for example, <tt>\"" + clean(dataSetFullExample) + "\"</tt>).\n" +
+                "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser, but with spaces removed\n" +
+                "     (for example, <kbd>\"" + clean(dataSetFullExample) + "\"</kbd>).\n" +
                 "     The 7 character \"internal\" names are preferred, since they are unlikely to ever change.\n" +
-                "<li><tt><i>timePeriodValue</i></tt> is the name of a time period.\n" +
+                "<li><kbd><i>timePeriodValue</i></kbd> is the name of a time period.\n" +
                 "     For data files which represent composites of several day's worth of data,\n" +
-                "     the <tt>timePeriod</tt> indicates the length of the composite.\n" +
-                "     For example, an <tt>3day</tt> composite has the average of all data observed\n" +
+                "     the <kbd>timePeriod</kbd> indicates the length of the composite.\n" +
+                "     For example, an <kbd>3day</kbd> composite has the average of all data observed\n" +
                 "     in an 3 day time period.\n" +
-                "   <br>To see a list of options, use <tt>timePeriod=</tt> at the end of a query.\n" +
+                "   <br>To see a list of options, use <kbd>timePeriod=</kbd> at the end of a query.\n" +
                 "   <br>The options are the same as the Time Period options specific to a given Data Set in the \n" +
                 "     <a href=\"" + url + "?edit=" + screen20 + "\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + screen + "</tt></a> section of the CoastWatch Browser, but with spaces removed.\n" +
-                "<li><tt><i>beginTimeValue</i></tt> is the beginning centered date/time in ISO 8601 format:\n" +
+                "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser, but with spaces removed.\n" +
+                "<li><kbd><i>beginTimeValue</i></kbd> is the beginning centered date/time in ISO 8601 format:\n" +
                 "     <i>YYYY-MM-DD</i> or <i>YYYY-MM-DD</i>T<i>hh:mm:ss</i> (note the literal \"T\" between the date and time).\n" +
-                "     For example, <tt>2006-04-11T00:00:00</tt>.\n" +
+                "     For example, <kbd>2006-04-11T00:00:00</kbd>.\n" +
                 "   <br>All times are in the Zulu (also known as UTC or GMT) time zone, not the local time zone.\n" +
-                "   <br>If you specify just a date, for example, <tt>2006-04-11</tt>, it will be\n" +
-                "     interpreted as the start of that day, for example, <tt>2006-04-11T00:00:00</tt>.\n" +
-                "   <br>The <tt><i>beginTimeValue</i></tt> you supply is adjusted to the nearest appropriate centered time,\n" +
-                "      given the specified <tt><i>timePeriodValue</i></tt>.\n" +
-                "   <br><tt>beginTime</tt> is optional. If you omit it, the beginTime is\n" +
-                "     an appropriate amount of time before the end date (given the <tt><i>timePeriodValue</i></tt>).\n" +
-                "   <br>The <tt><i>beginTimeValue</i></tt> will be part of the name of the file that you download,\n" +
+                "   <br>If you specify just a date, for example, <kbd>2006-04-11</kbd>, it will be\n" +
+                "     interpreted as the start of that day, for example, <kbd>2006-04-11T00:00:00</kbd>.\n" +
+                "   <br>The <kbd><i>beginTimeValue</i></kbd> you supply is adjusted to the nearest appropriate centered time,\n" +
+                "      given the specified <kbd><i>timePeriodValue</i></kbd>.\n" +
+                "   <br><kbd>beginTime</kbd> is optional. If you omit it, the beginTime is\n" +
+                "     an appropriate amount of time before the end date (given the <kbd><i>timePeriodValue</i></kbd>).\n" +
+                "   <br>The <kbd><i>beginTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
                 "   <br>If the data's time values are evenly spaced,\n" +
-                "     <tt><i>beginTimeValue</i></tt> and <tt><i>endTimeValue</i></tt>\n" +
+                "     <kbd><i>beginTimeValue</i></kbd> and <kbd><i>endTimeValue</i></kbd>\n" +
                 "     are rounded to be a multiple of the frequency of the data's collection.\n" +
                 "     For example, if the data is hourly, they are rounded to the nearest hour.\n" + 
                 "   <br>Note that data may not be available for the time you specify.\n" +
-                "<li><tt><i>endTimeValue</i></tt> is the end centered date/time in ISO 8601 format:\n" +
+                "<li><kbd><i>endTimeValue</i></kbd> is the end centered date/time in ISO 8601 format:\n" +
                 "     <i>YYYY-MM-DD</i> or <i>YYYY-MM-DD</i>T<i>hh:mm:ss</i> (note the literal \"T\" between the date and time).\n" +
-                "     For example, <tt>2006-04-12T04:00:00</tt>.\n" +
+                "     For example, <kbd>2006-04-12T04:00:00</kbd>.\n" +
                 "   <br>All times are in the Zulu (also known as UTC or GMT) time zone, not the local time zone.\n" +
-                "   <br>If you specify just a date, for example, <tt>2006-04-12</tt>, it will be\n" +
-                "     interpreted as the start of that day, for example, <tt>2006-04-12T00:00:00</tt>.\n" +
-                "   <br>The <tt><i>endTimeValue</i></tt> you supply is adjusted to the nearest appropriate centered time,\n" +
-                "      given the specified <tt><i>timePeriodValue</i></tt>.\n" +
-                "   <br><tt>endTime</tt> is optional. If you omit it, the endTime is\n" +
+                "   <br>If you specify just a date, for example, <kbd>2006-04-12</kbd>, it will be\n" +
+                "     interpreted as the start of that day, for example, <kbd>2006-04-12T00:00:00</kbd>.\n" +
+                "   <br>The <kbd><i>endTimeValue</i></kbd> you supply is adjusted to the nearest appropriate centered time,\n" +
+                "      given the specified <kbd><i>timePeriodValue</i></kbd>.\n" +
+                "   <br><kbd>endTime</kbd> is optional. If you omit it, the endTime is\n" +
                 "     the latest available time for any station in this dataSet.\n" +
                 "     Note that most stations will not yet have data available for the latest time.\n" +
-                "   <br>Or, use the special value, <tt>latest</tt>, to get the latest available data.\n" +
-                "   <br>The <tt><i>endTimeValue</i></tt> will be part of the name of the file that you download,\n" +
+                "   <br>Or, use the special value, <kbd>latest</kbd>, to get the latest available data.\n" +
+                "   <br>The <kbd><i>endTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
-                "<li><tt><i>minLonValue</i></tt> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>-135.5</tt> represents 135.5°W.\n" +
-                "   <br><tt>minLon=<i>minLonValue</i></tt> doesn't have to be in your query;\n" +
+                "<li><kbd><i>minLonValue</i></kbd> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   <br><kbd>minLon=<i>minLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum longitude for this program (" + oneOf.regionMinX() + ").\n" +
-                "   <br>You can specify <tt><i>minLonValue</i></tt> and <tt><i>maxLonValue</i></tt>\n" +
+                "   <br>You can specify <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>\n" +
                 "     in the range -180° to 180°, or 0° to 360°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
-                "   <br>To get the data for a single station, use the station's longitude for <tt>minLon</tt>\n" +
-                "     and <tt>maxLon</tt>, and the station's latitude for <tt>minLat</tt> and <tt>maxLat</tt>.\n" +
-                "     To see a list of stations and their locations, see the <tt>Plot time series for station</tt> options in the\n" +
+                "   <br>To get the data for a single station, use the station's longitude for <kbd>minLon</kbd>\n" +
+                "     and <kbd>maxLon</kbd>, and the station's latitude for <kbd>minLat</kbd> and <kbd>maxLat</kbd>.\n" +
+                "     To see a list of stations and their locations, see the <kbd>Plot time series for station</kbd> options in the\n" +
                 "     <a href=\"" + url + "?edit=" + screen20 + "\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + screen + "</tt></a> section of the CoastWatch Browser.\n" +
-                "<li><tt><i>maxLonValue</i></tt> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <tt>127.5</tt> represents 127.5°E. \n" +
-                "   <br><tt>maxLon=<i>maxLonValue</i></tt> doesn't have to be in your query;\n" +
+                "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser.\n" +
+                "<li><kbd><i>maxLonValue</i></kbd> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
+                "   For example, <kbd>127.5</kbd> represents 127.5°E. \n" +
+                "   <br><kbd>maxLon=<i>maxLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum longitude for this program (" + oneOf.regionMaxX() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>minLatValue</i></tt> is the minimum desired longitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>-22.25</tt> represents 22.25°S. \n" +
-                "   <br><tt>minLat=<i>minLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>minLatValue</i></kbd> is the minimum desired longitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   <br><kbd>minLat=<i>minLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum latitude for this program (" + oneOf.regionMinY() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>maxLatValue</i></tt> is the maximum desired longitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <tt>40.75</tt> represents 40.75°N. \n" +
-                "   <br><tt>maxLat=<i>maxLatValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>maxLatValue</i></kbd> is the maximum desired longitude (y axis) value, in decimal degrees North. \n" +
+                "   For example, <kbd>40.75</kbd> represents 40.75°N. \n" +
+                "   <br><kbd>maxLat=<i>maxLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum latitude for this program (" + oneOf.regionMaxY() + ").\n" +
-                "   <br>See the comments above for <tt><i>minLonValue</i></tt>.\n" +
-                "<li><tt><i>minDepthValue</i></tt> is the minimum desired depth (z axis) value, in meters (positive = down). \n" +
-                "   For example, <tt>-5</tt> represents 5 meters above sea level. \n" +
-                "   <br><tt>minDepth=<i>minDepthValue</i></tt> doesn't have to be in your query;\n" +
+                "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
+                "<li><kbd><i>minDepthValue</i></kbd> is the minimum desired depth (z axis) value, in meters (positive = down). \n" +
+                "   For example, <kbd>-5</kbd> represents 5 meters above sea level. \n" +
+                "   <br><kbd>minDepth=<i>minDepthValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum depth for the selected data set.\n" +
                 "   <br>Any double value is valid.\n" +
-                "<li><tt><i>maxDepthValue</i></tt> is the maximum desired depth (z axis) value, in meters (positive = down). \n" +
-                "   For example, <tt>10</tt> represents 10 meters below sea level. \n" +
-                "   <br><tt>maxDepth=<i>maxDepthValue</i></tt> doesn't have to be in your query;\n" +
+                "<li><kbd><i>maxDepthValue</i></kbd> is the maximum desired depth (z axis) value, in meters (positive = down). \n" +
+                "   For example, <kbd>10</kbd> represents 10 meters below sea level. \n" +
+                "   <br><kbd>maxDepth=<i>maxDepthValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum depth for the selected data set.\n" +
                 "   <br>Any double value is valid.\n" +
-                "<li><tt><i>fileTypeValue</i></tt> is the type of data file that you want to download.\n" +
-                "   <br>To see a list of options, use <tt>fileType=</tt> at the end of a query.\n" +
-                "   <br>The file type <tt>.ncHeader</tt> is the ncdump-style file header showing all the metadata, but no data.\n" +
+                "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to download.\n" +
+                "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
+                "   <br>The file type <kbd>.ncHeader</kbd> is the ncdump-style file header showing all the metadata, but no data.\n" +
                 "   <br>If you are using a browser, .ncHeader data will appear as plain text in your browser.\n" +
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "   <br>See <a href=\"" + oneOf.pointFileHelpUrl() + "\">a description of the point data file types</a>.\n" +
-                "   <br>If <tt><i>fileTypeValue</i></tt> is a .png file and <tt><i>beginTimeValue</i></tt> = <tt><i>endTimeValue</i></tt>,\n" +
+                "   <br>If <kbd><i>fileTypeValue</i></kbd> is a .png file and <kbd><i>beginTimeValue</i></kbd> = <kbd><i>endTimeValue</i></kbd>,\n" +
                 "     this generates a map plotting the various stations.  Otherwise, this plots a\n" +
                 "     time series graph.\n" +
                 "<li>Matlab users can download data from within Matlab. Here is a 3-line example,\n" +
-                "   <br>&nbsp;&nbsp;1) <tt>link='" + url + "?" +
+                "   <br>&nbsp;&nbsp;1) <kbd>link='" + url + "?" +
                     "get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "" +
                     "&amp;beginTime=2006-04-09&amp;endTime=2006-04-12" +
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + "" +
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() + 
-                    "&amp;fileType=.mat';</tt>\n" +
-                "   <br>&nbsp;&nbsp;2) <tt>F=urlwrite(link,'test.m');</tt>\n" +
-                "   <br>&nbsp;&nbsp;3) <tt>load('-MAT',F);</tt>\n" +
+                    "&amp;fileType=.mat';</kbd>\n" +
+                "   <br>&nbsp;&nbsp;2) <kbd>F=urlwrite(link,'test.m');</kbd>\n" +
+                "   <br>&nbsp;&nbsp;3) <kbd>load('-MAT',F);</kbd>\n" +
                 "   <br>The first line of the example is very long and may be displayed as a few lines in your browser.\n" +
                 "</ul>\n" +
                 "\n" +
                 "Examples of valid queries:\n" +
                 "<ul>\n" +
-                "<li>To see a list of <tt>get</tt> options, use\n" +
+                "<li>To see a list of <kbd>get</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get\"><tt>" +
-                  fullUrl + "?get</tt></a>\n" +
-                "<li>To see a list of <tt>dataSet</tt> options, use\n" +
+                  fullUrl + "?get\"><kbd>" +
+                  fullUrl + "?get</kbd></a>\n" +
+                "<li>To see a list of <kbd>dataSet</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=</tt></a>\n" +
-                "<li>To see a list of <tt>fileType</tt> options for one day's \"" + dataSetFullExample + "\" data, use\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=</kbd></a>\n" +
+                "<li>To see a list of <kbd>fileType</kbd> options for one day's \"" + dataSetFullExample + "\" data, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=</kbd></a>\n" +
                 "<li>To get a NetCDF file with the latest 24 hours of \"" + dataSetFullExample + "\" data\n" +
                 "    for stations in a specific geographic range, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
@@ -4168,24 +4168,24 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;fileType=.nc" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation" + 
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;fileType=.nc" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>To get a .asc ASCII file with 3 day's of \"" + dataSetFullExample + "\" data, use\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc</kbd></a>\n" +
                 "<li>By using the default minLon, maxLon, minLat, maxLat, this example is equivalent to the previous example:\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc</kbd></a>\n" +
                 "<li>To get just the ncdump-style header information (metadata) for the data file you have specified:\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader</kbd></a>\n" +
                 "</ul>\n" +
                 "\n";
             }
@@ -4198,16 +4198,16 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 String screen20 = String2.replaceAll(screen, " ", "%20");
 
                 error = thankYou +
-                "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                "<p><b>There was an error in your <tt>get=" + cleanGetValue + "</tt> query:</b>\n" +
+                "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                "<p><strong>There was an error in your <kbd>get=" + cleanGetValue + "</kbd> query:</strong>\n" +
                 "<br>" + error + "\n" +
-                "<p><b>General Information for <tt>get=" + cleanGetValue + "</tt> Queries</b>\n" +
-                "    <br><tt>get=" + cleanGetValue + "</tt> queries allow you to download\n" +
+                "<p><strong>General Information for <kbd>get=" + cleanGetValue + "</kbd> Queries</strong>\n" +
+                "    <br><kbd>get=" + cleanGetValue + "</kbd> queries allow you to download\n" +
                 "    trajectory data (for example, from tagged animals).\n" +
-                "    <br>The format of a <tt>get=" + cleanGetValue + "</tt> query is<tt>\n" +
+                "    <br>The format of a <kbd>get=" + cleanGetValue + "</kbd> query is<kbd>\n" +
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;?get=" + cleanGetValue + "&amp;dataSet=<i>dataSetValue</i>\n" + 
                 "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;individuals=<i>individualsValue</i>[&amp;dataVariables=<i>dataVariablesValue</i>]\n" +
-                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;fileType=<i>fileTypeValue</i></tt>\n" +
+                "    <br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;fileType=<i>fileTypeValue</i></kbd>\n" +
                 "\n" +
                 "<p>Notes:<ul>\n"+
                 "<li>The easiest way to build a correct query url is to start at\n" +
@@ -4216,72 +4216,72 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "<li>Queries must not have any internal spaces.\n"+
                 "<li>Queries are not case sensitive.\n" +
                 "<li>[ ] is notation to denote an optional part of the query.\n" + //sp is needed for CencoosCurrents Browser's font
-                "<li><tt><i>italics</i></tt> is notation to denote a value specific to your query.\n" +
-                "<li><tt><i>dataSetValue</i></tt> is the name of a data set.\n" +
-                "   <br>To see a list of options, use <tt>dataSet=</tt> at the end of a query.\n" +
+                "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
+                "<li><kbd><i>dataSetValue</i></kbd> is the name of a data set.\n" +
+                "   <br>To see a list of options, use <kbd>dataSet=</kbd> at the end of a query.\n" +
                 "   <br>There are two sets of options: the 7 character \"internal\" data set names\n" +
-                //"     (for example, <tt>" + dataSet7Example + "</tt>)\n" +
+                //"     (for example, <kbd>" + dataSet7Example + "</kbd>)\n" +
                 "     and the Data Set options in the \n" +
                 "     <a href=\"" + url + "?edit=" + screen20 + "\">\n" +  //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + screen + "</tt></a> section of the CoastWatch Browser, but with spaces removed.\n" +
-                //"     (for example, <tt>\"" + clean(dataSetFullExample) + "\"</tt>).\n" +
+                "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser, but with spaces removed.\n" +
+                //"     (for example, <kbd>\"" + clean(dataSetFullExample) + "\"</kbd>).\n" +
                 "     The 7 character \"internal\" names are preferred, since they are unlikely to ever change.\n" +
-                "<li><tt><i>individualsValue</i></tt> is a comma-separated-value list of 1 or more individuals\n" +
+                "<li><kbd><i>individualsValue</i></kbd> is a comma-separated-value list of 1 or more individuals\n" +
                 "     of the selected Data Set.\n" +
-                "   <br>To see a list of options, use <tt>individuals=</tt> at the end of a query.\n" +
+                "   <br>To see a list of options, use <kbd>individuals=</kbd> at the end of a query.\n" +
                 "   <br>The options are the same as the Individuals options specific to a given Data Set\n" +
                 "     in the <a href=\"" + url + "?edit=" + screen20 + "\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + screen + "</tt></a> section of the CoastWatch Browser, but with spaces removed.\n" +
-                "<li><tt><i>dataVariablesValue</i></tt> is a comma-separated-value list of 0 or more data variables\n" +
+                "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser, but with spaces removed.\n" +
+                "<li><kbd><i>dataVariablesValue</i></kbd> is a comma-separated-value list of 0 or more data variables\n" +
                 "     of the selected Data Set.\n" +
-                "   <br><tt>dataVariables=</tt> doesn't have to be in your query.\n" +
-                "   <br>If <tt>dataVariables=</tt> isn't in your query, no data variables will be included in the results.\n" +
-                "   <br>If <tt>dataVariables=</tt> is in your query but 0 data variables are specified, all data variables will be included in the results.\n" +
+                "   <br><kbd>dataVariables=</kbd> doesn't have to be in your query.\n" +
+                "   <br>If <kbd>dataVariables=</kbd> isn't in your query, no data variables will be included in the results.\n" +
+                "   <br>If <kbd>dataVariables=</kbd> is in your query but 0 data variables are specified, all data variables will be included in the results.\n" +
                 "   <br>The non-data variables (LON, LAT, DEPTH, TIME, ID) are always included in the results.\n" +
-                "   <br>To see a list of data variable options, use <tt>dataVariables=</tt> at the end of a query.\n" +
+                "   <br>To see a list of data variable options, use <kbd>dataVariables=</kbd> at the end of a query.\n" +
                 "   <br>The options correspond to the different X Axis and Y Axis options (except for the non-data variables)\n" +
                 "     for a given Data Set in the <a href=\"" + url + "?edit=" + screen20 + "\">\n" + //doesn't work for CencoosCurrents
-                "     <tt>Edit: " + screen + "</tt></a> section of the CoastWatch Browser, but with spaces removed.\n" +
+                "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser, but with spaces removed.\n" +
                 "     The difference is: the options here are the variable names that are in the data files,\n" +
                 "     whereas the CoastWatch Browser show you the long names for the variables.\n" + 
-                "<li><tt><i>fileTypeValue</i></tt> is the type of data file that you want to download.\n" +
-                "   <br>To see a list of options, use <tt>fileType=</tt> at the end of a query.\n" +
-                "   <br>The file type <tt>.ncHeader</tt> is the ncdump-style file header showing all the metadata, but no data.\n" +
+                "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to download.\n" +
+                "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
+                "   <br>The file type <kbd>.ncHeader</kbd> is the ncdump-style file header showing all the metadata, but no data.\n" +
                 "   <br>If you are using a browser, .ncHeader data will appear as plain text in your browser.\n" +
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "   <br>See <a href=\"" + oneOf.pointFileHelpUrl() + "\">a description of the point data file types</a>.\n" +
-                "   <br>If <tt><i>fileTypeValue</i></tt> is a .png file and <tt><i>beginTimeValue</i></tt> = <tt><i>endTimeValue</i></tt>,\n" +
+                "   <br>If <kbd><i>fileTypeValue</i></kbd> is a .png file and <kbd><i>beginTimeValue</i></kbd> = <kbd><i>endTimeValue</i></kbd>,\n" +
                 "     this generates a map plotting the various stations.  Otherwise, this plots a\n" +
                 "     time series graph.\n" +
                 /* needs work (and a universally available dataset)
                 "<li>Matlab users can download data from within Matlab. Here is a 3-line example,\n" +
-                "   <br>&nbsp;&nbsp;1) <tt>link='" + url + "?" +
+                "   <br>&nbsp;&nbsp;1) <kbd>link='" + url + "?" +
                     "get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "" +
                     "&amp;beginTime=2006-04-09&amp;endTime=2006-04-12" +
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + "" +
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() + 
-                    "&amp;fileType=.mat';</tt>\n" +
-                "   <br>&nbsp;&nbsp;2) <tt>F=urlwrite(link,'test.m');</tt>\n" +
-                "   <br>&nbsp;&nbsp;3) <tt>load('-MAT',F);</tt>\n" +
+                    "&amp;fileType=.mat';</kbd>\n" +
+                "   <br>&nbsp;&nbsp;2) <kbd>F=urlwrite(link,'test.m');</kbd>\n" +
+                "   <br>&nbsp;&nbsp;3) <kbd>load('-MAT',F);</kbd>\n" +
                 "   <br>The first line of the example is very long and may be displayed as a few lines in your browser.\n" +
                 */
                 "</ul>\n" +
                 "\n" +
                 "Examples of valid queries:\n" +
                 "<ul>\n" +
-                "<li>To see a list of <tt>get</tt> options, use\n" +
+                "<li>To see a list of <kbd>get</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get\"><tt>" +
-                  fullUrl + "?get</tt></a>\n" +
-                "<li>To see a list of <tt>dataSet</tt> options, use\n" +
+                  fullUrl + "?get\"><kbd>" +
+                  fullUrl + "?get</kbd></a>\n" +
+                "<li>To see a list of <kbd>dataSet</kbd> options, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=</kbd></a>\n" +
                 /* needs work  (and a universally available dataset)
-                "<li>To see a list of <tt>fileType</tt> options for one day's \"" + dataSetFullExample + "\" data, use\n" +
+                "<li>To see a list of <kbd>fileType</kbd> options for one day's \"" + dataSetFullExample + "\" data, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-11&amp;endTime=2006-04-12&amp;fileType=</kbd></a>\n" +
                 "<li>To get a NetCDF file with the latest 24 hours of \"" + dataSetFullExample + "\" data\n" +
                 "    for stations in a specific geographic range, use\n" +
                 "  <br><a href=\"" + //don't use \n for the following lines
@@ -4289,24 +4289,24 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;fileType=.nc" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation" + 
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;fileType=.nc" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>To get a .asc ASCII file with 3 day's of \"" + dataSetFullExample + "\" data, use\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.asc</kbd></a>\n" +
                 "<li>By using the default minLon, maxLon, minLat, maxLat, this example is equivalent to the previous example:\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.asc</kbd></a>\n" +
                 "<li>To get just the ncdump-style header information (metadata) for the data file you have specified:\n" +
                 "  <br><a href=\"" +  //don't use \n for the following lines
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader\"><tt>" +
-                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader</tt></a>\n" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader\"><kbd>" +
+                  fullUrl + "?get=" + cleanGetValue + "&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;beginTime=2006-04-09&amp;endTime=2006-04-12&amp;fileType=.ncHeader</kbd></a>\n" +
                 */
                 "</ul>\n" +
                 "\n";
@@ -4338,7 +4338,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     error = listError("url", urlValue, cleanQuery, false, 
                         urlExamples, null, "dimensionName");
                 } else if (!urlValue.startsWith("http://")) {
-                    error = "<tt>urlValue</tt> must begin with <tt>http://</tt> .";
+                    error = "<kbd>urlValue</kbd> must begin with <kbd>http://</kbd> .";
                 } else {
                     cleanQuery += urlValue + "&amp;dimensionName=";
                 }
@@ -4472,62 +4472,62 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             //flesh out the get=opendapSequence error message
             if (error != null) {
                 error = thankYou +
-                "<p><b>Your query was:</b> <tt>?" + XML.encodeAsHTML(query) + "</tt>\n" +
-                "<p><b>There was an error in your <tt>get=opendapSequence</tt> query:</b>\n" +
+                "<p><strong>Your query was:</strong> <kbd>?" + XML.encodeAsHTML(query) + "</kbd>\n" +
+                "<p><strong>There was an error in your <kbd>get=opendapSequence</kbd> query:</strong>\n" +
                 "<br>" + error + "\n" +
-                "<p><b>General Information:</b> <tt>get=opendapSequence</tt> allows you to download a\n" +
+                "<p><strong>General Information:</strong> <kbd>get=opendapSequence</kbd> allows you to download a\n" +
                 "    file with the results from an opendap sequence query.\n" +
-                "    <br>The format of a <tt>get=opendapSequence</tt> query is\n" +
-                "    <br><tt>?get=opendapSequence&url=<i>urlValue</i>[&dimensionName=<i>dimensionNameValue</i>]&fileType=<i>fileTypeValue</i></tt>\n" +
+                "    <br>The format of a <kbd>get=opendapSequence</kbd> query is\n" +
+                "    <br><kbd>?get=opendapSequence&url=<i>urlValue</i>[&dimensionName=<i>dimensionNameValue</i>]&fileType=<i>fileTypeValue</i></kbd>\n" +
                 "\n" +
                 "<p>Notes:\n" +
                 "<ul><li>Queries must not have any internal spaces.\n"+
                 "<li>Queries are not case sensitive.\n" +
                 "<li>[ ] is notation to denote an optional part of the query.\n" +
-                "<li><tt><i>italics</i></tt> is notation to denote a value specific to your query.\n" +
-                "<li><tt><i>urlValue</i></tt> is the opendap url + query for the data you want.\n" +
-                "   In the <tt><i>urlValue</i></tt>, \n" +
-                "   <br>&nbsp;&nbsp;'<tt>&amp;</tt>' must be replaced by '<tt>&amp;amp;</tt>',\n" +
-                "   <br>&nbsp;&nbsp;'<tt>,</tt>' must be replaced by '<tt>&amp;#044;</tt>',\n" +
-                "   <br>&nbsp;&nbsp;'<tt>\"</tt>' must be replaced by '<tt>&amp;quot;</tt>',\n" +
-                "   <br>&nbsp;&nbsp;'<tt>&lt;</tt>' must be replaced by '<tt>&amp;lt;</tt>', and\n" +
-                "   <br>&nbsp;&nbsp;'<tt>&gt;</tt>' must be replaced by '<tt>&amp;gt;</tt>'.\n" +
-                "   <br>The <tt><i>urlValue</i></tt> must start with <tt>http://</tt> .\n" +
-                "   <br>For example, <tt></tt>.\n" +
-                "   <br>To see a list of examples, use <tt>url=</tt> at the end of a query.\n" +
-                "<li><tt><i>dimensionNameValue</i></tt> is the name to be used for the dimension if you create a .nc file.\n" +
+                "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
+                "<li><kbd><i>urlValue</i></kbd> is the opendap url + query for the data you want.\n" +
+                "   In the <kbd><i>urlValue</i></kbd>, \n" +
+                "   <br>&nbsp;&nbsp;'<kbd>&amp;</kbd>' must be replaced by '<kbd>&amp;amp;</kbd>',\n" +
+                "   <br>&nbsp;&nbsp;'<kbd>,</kbd>' must be replaced by '<kbd>&amp;#044;</kbd>',\n" +
+                "   <br>&nbsp;&nbsp;'<kbd>\"</kbd>' must be replaced by '<kbd>&amp;quot;</kbd>',\n" +
+                "   <br>&nbsp;&nbsp;'<kbd>&lt;</kbd>' must be replaced by '<kbd>&amp;lt;</kbd>', and\n" +
+                "   <br>&nbsp;&nbsp;'<kbd>&gt;</kbd>' must be replaced by '<kbd>&amp;gt;</kbd>'.\n" +
+                "   <br>The <kbd><i>urlValue</i></kbd> must start with <kbd>http://</kbd> .\n" +
+                "   <br>For example, <kbd></kbd>.\n" +
+                "   <br>To see a list of examples, use <kbd>url=</kbd> at the end of a query.\n" +
+                "<li><kbd><i>dimensionNameValue</i></kbd> is the name to be used for the dimension if you create a .nc file.\n" +
                 "   <br>This doesn't change the data you will download, just the name used for the dimension.\n" +
-                "   <br>Common names are <tt>observation, row, station,</tt> and <tt>time</tt>.\n" +
-                "   <br>You don't have to specify a dimensionName. The default value is <tt>row</tt>.\n" +
-                "   <br>To see a list of examples, use <tt>timePeriod=</tt> at the end of a query.\n" +
-                "<li><tt><i>fileTypeValue</i></tt> is the type of data file that you want to get.\n" +
-                "   <br>To see a list of options, use <tt>fileType=</tt> at the end of a query.\n" +
+                "   <br>Common names are <kbd>observation, row, station,</kbd> and <kbd>time</kbd>.\n" +
+                "   <br>You don't have to specify a dimensionName. The default value is <kbd>row</kbd>.\n" +
+                "   <br>To see a list of examples, use <kbd>timePeriod=</kbd> at the end of a query.\n" +
+                "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to get.\n" +
+                "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
                 "   <br>If you are using a browser, .ncHeader data will appear as plain text in your browser.\n" +
                 "     Other file types will cause a \"Download File\" dialog box to pop up.\n" +
                 "</ul>\n" +
                 "\n" +
                 "Examples of valid queries:\n" +
                 "<ul>\n" +
-                "<li>To see a list of <tt>get</tt> options, use\n" +
+                "<li>To see a list of <kbd>get</kbd> options, use\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
-                  "?get\"><tt>" +
-                  "?get</tt></a>\n" +
-                "<li>To see a list of <tt>dataSet</tt> options, use\n" +
+                  "?get\"><kbd>" +
+                  "?get</kbd></a>\n" +
+                "<li>To see a list of <kbd>dataSet</kbd> options, use\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
-                  "?get=gridData&amp;dataSet=\"><tt>" +
-                  "?get=gridData&amp;dataSet=</tt></a>\n" +
-                "<li>To see a list of <tt>timePeriod</tt> options for the GOES SST Data Set, use\n" +
+                  "?get=gridData&amp;dataSet=\"><kbd>" +
+                  "?get=gridData&amp;dataSet=</kbd></a>\n" +
+                "<li>To see a list of <kbd>timePeriod</kbd> options for the GOES SST Data Set, use\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
-                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=\"><tt>" +
-                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=</tt></a>\n" +
-                "<li>To see a list of <tt>centeredTime</tt> options for the GOES SST Data Set, 1 day composites, use\n" +
+                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=\"><kbd>" +
+                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=</kbd></a>\n" +
+                "<li>To see a list of <kbd>centeredTime</kbd> options for the GOES SST Data Set, 1 day composites, use\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
-                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=\"><tt>" +
-                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=</tt></a>\n" +
-                "<li>To see a list of <tt>fileType</tt> options, use\n" +
+                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=\"><kbd>" +
+                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=</kbd></a>\n" +
+                "<li>To see a list of <kbd>fileType</kbd> options, use\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
-                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=\"><tt>" +
-                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=</tt></a>\n" +
+                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=\"><kbd>" +
+                  "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1day&amp;centeredTime=latest&amp;fileType=</kbd></a>\n" +
                 "<li>To get a NetCDF file with 1 observation (for date/time 2006-04-11T00:00:00) \n" +
                 "    of GOES SST data\n" +
                 "    for a limited geographic range, and subsetted to just include at least\n" +
@@ -4537,31 +4537,31 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;nLon=100&amp;nLat=125&amp;fileType=.nc" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=1observation&amp;centeredTime=2006-04-11T00:00:00" + 
                     "&amp;minLon=" + oneOf.regionMinX() + "&amp;maxLon=" + oneOf.regionMaxX() + 
                     "&amp;minLat=" + oneOf.regionMinY() + "&amp;maxLat=" + oneOf.regionMaxY() +
                     "&amp;nLon=100&amp;nLat=125&amp;fileType=.nc" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>To get an xyz ASCII file with the data for the latest 8 day composite of GOES SST data\n" +
                 "    for the entire available geographic region, use\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=8day&amp;centeredTime=latest&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.xyz" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=8day&amp;centeredTime=latest&amp;minLon=-180&amp;maxLon=180&amp;minLat=-90&amp;maxLat=90&amp;fileType=.xyz" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>By using the default minLon, maxLon, minLat, maxLat, this example is equivalent to the previous example:\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=8day&amp;centeredTime=latest&amp;fileType=.xyz" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=8day&amp;centeredTime=latest&amp;fileType=.xyz" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "<li>To get just the ncdump-style header information for the data file you have specified:\n" +
                 "  <br><a href=\"" + url + //don't use \n for the following lines
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=8day&amp;centeredTime=latest&amp;fileType=.ncHeader" +
-                  "\"><tt>" +
+                  "\"><kbd>" +
                   "?get=gridData&amp;dataSet=" + dataSet7Example + "&amp;timePeriod=8day&amp;centeredTime=latest&amp;fileType=.ncHeader" +
-                  "</tt></a>\n" +
+                  "</kbd></a>\n" +
                 "</ul>\n" +
                 "\n";
             }
@@ -4616,16 +4616,16 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
         String tbr = longOptions? "" : "<br>";
         if (mustBe)
             sb.append(
-                "The value of <tt>" + attributeName + "</tt> (which was \"<tt>" + attributeValue +
-                "</tt>\") must be one of:"+tbr+"<tt>\n");
+                "The value of <kbd>" + attributeName + "</kbd> (which was \"<kbd>" + attributeValue +
+                "</kbd>\") must be one of:"+tbr+"<kbd>\n");
         else sb.append(
-                "The value of <tt>" + attributeName + "</tt> was not specified. Please specify it.\n" +
-                "For example:"+tbr+"<tt>\n");
+                "The value of <kbd>" + attributeName + "</kbd> was not specified. Please specify it.\n" +
+                "For example:"+tbr+"<kbd>\n");
         sb.append(
             "<!--BeginOptions-->\n");
             //Use a very clean format that would be easy to screen scrape.
             //Be very reluctant to change this format after it is first released.
-        String start = "<span style=\"white-space: nowrap;\"><a href=\"" + oneOf.url() + cleanQuery;
+        String start = "<span style=\"white-space:nowrap;\"><a href=\"" + oneOf.url() + cleanQuery;
         if (longOptions) 
             start = "<br>" + start;
         String middle = nextAttributeName == null? 
@@ -4641,8 +4641,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 sb.append(" or " + start + cleanOptions[i] + middle + cleanOptions2[i] + "</a></span><br>\n"); 
         }
         sb.append("<!--EndOptions-->\n" + //identify the end of the options
-            "</tt><br>(Click on one of the options above to add it to your query and " +
-            (nextAttributeName == null? "<b>download the data</b>.)" : "see subsequent options.)"));
+            "</kbd><br>(Click on one of the options above to add it to your query and " +
+            (nextAttributeName == null? "<strong>download the data</strong>.)" : "see subsequent options.)"));
         return sb.toString();
     }
 
@@ -5380,7 +5380,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
     */
 
     public static void test() throws Exception {
-        String2.log("\n*** testing Browser");
+        String2.log("\n*** Browser.test()");
         String testDir = "c:/temp/browser/";
         
         try {

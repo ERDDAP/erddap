@@ -158,7 +158,7 @@ public class TableWriterAll extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterAll done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
     }
 
     /**

@@ -151,7 +151,7 @@ public class EmaInt extends EmaAttribute {
         //use hard-coded <table>, not the properties version, which may change
         sb.append("\n");
         if (buttonsVisible) {
-            sb.append("        <table width=\"2%\" cellspacing=\"0\" cellpadding=\"0\">\n"); //'width' solves gap betwen buttons in opera 9
+            sb.append("        <table class=\"erd\" style=\"width:2%;\">\n"); //padding=0. 'width' solves gap betwen buttons in opera 9
             sb.append("          <tr>\n");
             sb.append("            <td>\n");
         }

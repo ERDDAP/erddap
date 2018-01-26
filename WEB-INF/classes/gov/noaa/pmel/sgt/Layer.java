@@ -124,7 +124,7 @@ public class Layer extends Component implements Cloneable, LayerControl {
      * @label graph*/
     private Graph graph_;
   /**@shapeType AggregationLink
-  @associates <b>LayerChild</b>
+  @associates <strong>LayerChild</strong>
   @supplierCardinality 0..*
    * @undirected
    * @label children */

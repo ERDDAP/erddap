@@ -204,7 +204,7 @@ public class PseudoRealTimeData implements SGTLine, ActionListener {
 
   /**
    * Handle timer ActionEvents
-   * <BR><B>Property Change:</B> <code>rangeModified</code> and
+   * <BR><strong>Property Change:</strong> <code>rangeModified</code> and
    * <code>DataModified</code>
    */
   public void actionPerformed(ActionEvent e) {

@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -143,7 +144,8 @@ public class EDV {
     /**
      * The start of the url for observedProperty for cf standardNames.
      */
-    public final static String cfObservedPropertyUrl = "http://marinemetadata.org/cf#";
+    public final static String cfObservedPropertyUrl = "http://mmisw.org/ont/cf/parameter/";
+        //was "http://marinemetadata.org/cf#";
     
     /** The valid options for colorBarScale. 
      * A given scale's index may change when new scales are added. */
@@ -214,8 +216,8 @@ public class EDV {
 
     protected boolean isBoolean = false;
     protected boolean scaleAddOffset = false;
-    //used for scaleAddOffset. Only true, if scaleAddOffset is true, too.
-    //Thus 'true' also indicates: And this class is unpacking to to a larger datatype.
+    //used for scaleAddOffset. Only true if scaleAddOffset is true, too.
+    //Thus 'true' also indicates: And this class is unpacking to a larger datatype.
     protected boolean sourceIsUnsigned = false; 
     protected double scaleFactor = 1, addOffset = 0;
 
@@ -318,16 +320,6 @@ public class EDV {
                 sourceDataType + " for sourceName=" + sourceName);
         }
 
-        if (isFixedValue()) {
-            destinationMin = String2.parseDouble(fixedValue); //if String, will be NaN (as it should be)
-            destinationMax = destinationMin;
-        } else if (sourceDataType.equals("float")) {  //destinationDataType not known yet
-            destinationMin = Math2.floatToDouble(tSourceMin);  //unbruise them
-            destinationMax = Math2.floatToDouble(tSourceMax);
-        } else {
-            destinationMin = tSourceMin;  
-            destinationMax = tSourceMax;
-        }
         //String2.pressEnterToContinue("!!!sourceName=" + sourceName + " type=" + sourceDataType + " min=" + destinationMin);
 
         //makeCombinedAttributes
@@ -344,7 +336,18 @@ public class EDV {
 
         //extractScaleAddOffset     It sets destinationDataType and destinationDataTypeClass
         extractScaleAddOffset(); 
-        setDestinationMinMaxFromSource(destinationMin, destinationMax); //ensures order is correct
+
+        if (isFixedValue()) {
+            destinationMin = String2.parseDouble(fixedValue); //if String, will be NaN (as it should be)
+            destinationMax = destinationMin;
+        } else {
+            setDestinationMinMaxFromSource(tSourceMin, tSourceMax);
+            if (sourceDataType.equals("float")) {  //destinationDataType not known yet
+                destinationMin = Math2.floatToDouble(destinationMin);  //unbruise them
+                destinationMax = Math2.floatToDouble(destinationMax);
+            }            
+        }
+
         //after extractScaleAddOffset, get sourceMissingValue and sourceFillValue
         //and convert to destinationDataType (from scaleAddOffset)
         //???eek!!! can there be String missing_value or _FillValue?
@@ -459,10 +462,7 @@ public class EDV {
 
         //min max  from actual_range, actual_min, actual_max, data_min, or data_max
         double mm[] = extractActualRange();  //may be low,high or high,low
-        if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) 
-            setDestinationMinMax(
-                mm[0] * scaleFactor + addOffset,
-                mm[1] * scaleFactor + addOffset); 
+        setDestinationMinMax(mm[0], mm[1]); 
     }
 
 
@@ -482,11 +482,11 @@ public class EDV {
         String tPalette    = combinedAttributes.getString("colorBarPalette");
         String tContinuous = combinedAttributes.getString("colorBarContinuous");
         String tScale      = combinedAttributes.getString("colorBarScale");
-        if (tMinS != null && !Math2.isFinite(tMin))
+        if (tMinS != null && !Double.isFinite(tMin))
             throw new IllegalArgumentException("colorBarMinimum=" + tMin + " must be a valid number.");
-        if (tMaxS != null && !Math2.isFinite(tMax))
+        if (tMaxS != null && !Double.isFinite(tMax))
             throw new IllegalArgumentException("colorBarMaximum=" + tMax + " must be a valid number.");
-        hasColorBarMinMax = Math2.isFinite(tMin) && Math2.isFinite(tMax);  
+        hasColorBarMinMax = Double.isFinite(tMin) && Double.isFinite(tMax);  
         if (hasColorBarMinMax && tMin >= tMax) //this may change if flipped range is allowed
             throw new IllegalArgumentException("colorBarMinimum=" + tMin + 
                " must be less than colorBarMaximum=" + tMax + ".");
@@ -568,29 +568,56 @@ public class EDV {
      */
     protected double[] extractActualRange() {
 
+        //if any are specified, they must be the same data type as destinationClass.
+        Class destClass = destinationDataTypeClass();
+        PrimitiveArray pa;
+        String msg = 
+            String2.ERROR + " for data variable=" + destinationName() +  
+            ": If actual_min, actual_max, data_min, data_max, or actual_range are specified " +
+            "when add_offset!=0.0 or scale_factor!=1.0, " +
+            "they must be the same dataType as the variable's destination dataType " +
+            "or float(s) or double(s). destClass=" +
+            PrimitiveArray.elementClassToString(destClass) + ".";
+        boolean willChange = sourceIsUnsigned || scaleAddOffset;
+
         //always remove
         double amm[] = {combinedAttributes.getNiceDouble("actual_min"),   //NaN if not found
                         combinedAttributes.getNiceDouble("actual_max")};
-        combinedAttributes.remove("actual_min");
-        combinedAttributes.remove("actual_max");
+        pa = combinedAttributes.remove("actual_min");
+        if (pa != null && pa.elementClass() != destClass &&
+            willChange && !pa.isFloatingPointType())
+            throw new RuntimeException(msg); 
+        pa = combinedAttributes.remove("actual_max");
+        if (pa != null && pa.elementClass() != destClass &&
+            willChange && !pa.isFloatingPointType())
+            throw new RuntimeException(msg); 
 
         //always remove
         double dmm[] = {combinedAttributes.getNiceDouble("data_min"),   //NaN if not found
                         combinedAttributes.getNiceDouble("data_max")};
-        combinedAttributes.remove("data_min");
-        combinedAttributes.remove("data_max");
+        pa = combinedAttributes.remove("data_min");
+        if (pa != null && pa.elementClass() != destClass &&
+            willChange && !pa.isFloatingPointType())
+            throw new RuntimeException(msg); 
+        pa = combinedAttributes.remove("data_max");
+        if (pa != null && pa.elementClass() != destClass &&
+            willChange && !pa.isFloatingPointType())
+            throw new RuntimeException(msg); 
 
         //priority to actual_range
-        PrimitiveArray ar = combinedAttributes.remove("actual_range"); //always remove
-        if (ar != null && ar.size() == 2) {
-            if (reallyVerbose) String2.log("  actual_range metadata for " + destinationName + ": " + ar);
-            return new double[] {ar.getNiceDouble(0),
-                                 ar.getNiceDouble(1)};
+        pa = combinedAttributes.remove("actual_range"); //always remove
+        if (pa != null && pa.elementClass() != destClass &&
+            willChange && !pa.isFloatingPointType())
+            throw new RuntimeException(msg); 
+        if (pa != null && pa.size() == 2) {
+            if (reallyVerbose) String2.log("  actual_range metadata for " + destinationName + ": " + pa);
+            return new double[] {pa.getNiceDouble(0),
+                                 pa.getNiceDouble(1)};
         }
 
         //2nd priority to actual_min actual_max
-        if (Math2.isFinite(amm[0]) ||
-            Math2.isFinite(amm[1]))
+        if (Double.isFinite(amm[0]) ||
+            Double.isFinite(amm[1]))
             return amm;
 
         //3rd to data_min data_max
@@ -601,11 +628,7 @@ public class EDV {
      * This sets the actual_range attribute in addAttributes and combinedAttributes
      * based on the destinationMin and destinationMax value.
      * destinationDataTypeClass must be already set correctly.
-     * "actual_range" is defined in [CDC COARDS] 
-     * http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml 
-     * as "actual data range for variable. Same type as unpacked values."
-     * Later, it says "The range values are used to indicate order of storage 
-     * (e.g., 90,-90 would indicate the latitudes started with 90 and ended with -90)."
+     * This is now defined in CF-1.7, with unpacked values, smallest and largest.
      *
      * <p>EDVGridAxis overwrites this to use firstDestinationValue and lastDestinationValue.
      */
@@ -634,12 +657,7 @@ public class EDV {
      */
     public void extractAndSetActualRange() {
         double mm[] = extractActualRange(); 
-        if (Double.isNaN(destinationMin)) 
-            setDestinationMin(mm[0] * scaleFactor + addOffset);
-        if (Double.isNaN(destinationMax)) 
-            setDestinationMax(mm[1] * scaleFactor + addOffset);
-        if (destinationMin > destinationMax) { //in Java, only true if neither if NaN
-            double d = destinationMin; destinationMin = destinationMax; destinationMax = d; }
+        setDestinationMinMax(mm[0], mm[1]);
         setActualRangeFromDestinationMinMax();
     }
 
@@ -692,6 +710,7 @@ public class EDV {
         //Don't test Test.ensureSomethingUnicode(sourceAttributes,    errorInMethod + "sourceAttributes");
         //Admin can't control source and addAttributes may overwrite offending characters.
         Test.ensureSomethingUnicode(addAttributes,       errorInMethod + "addAttributes");
+        EDStatic.updateUrls(null, combinedAttributes);
         Test.ensureSomethingUnicode(combinedAttributes,  
             errorInMethod + "combinedAttributes (but probably caused by the source attributes)");
         if (scaleAddOffset && destinationDataTypeClass == String.class)
@@ -1042,6 +1061,9 @@ public class EDV {
      */
     public double destinationMax() {return destinationMax;}
 
+    /** This is used with the actual (possibly unpacked) source values are known,
+     * e.g., from the data files. 
+     */
     public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
         if (scaleAddOffset) 
             setDestinationMinMax(
@@ -1055,6 +1077,9 @@ public class EDV {
      * If tMin &gt; tMax, this will swap them.
      */
     public void setDestinationMinMax(double tMin, double tMax) {
+        if (!Double.isFinite(tMin) &&
+            !Double.isFinite(tMax))
+            return;
         if (tMin > tMax) { //if either is NaN, result in Java is false
             double d = tMin; tMin = tMax; tMax = d;}
         setDestinationMin(tMin);
@@ -1227,16 +1252,18 @@ public class EDV {
      * this returns null.
      */
     public String sliderCsvValues() throws Throwable {
+        //already exists? return it
         byte scv[] = sliderCsvValues; //local copy avoids concurrency problems
         if (scv != null) 
             return String2.utf8ToString(scv);
 
+        //else make it
         try {
             boolean isTimeStamp = false; //EDVTimeStamp overwrites this method
             double tMin = destinationMin;
             double tMax = destinationMax;
-            if (!Math2.isFinite(tMin)) return null;  //quick rejection is important
-            if (!Math2.isFinite(tMax)) return null;
+            if (!Double.isFinite(tMin)) return null;  //quick rejection is important
+            if (!Double.isFinite(tMax)) return null;
             boolean isFloat = destinationDataTypeClass == float.class;
             double dVal;
             String sVal;
@@ -1296,6 +1323,29 @@ public class EDV {
     }
 
     /**
+     * This is an alternative way to get a slider csv string
+     * for when a list of distinct options is available.
+     *
+     * @param distinct is the list of distinct values ([0] is the non-option ""). 
+     *    Times are ISO 8601 times.  The values in this array won't be changed.
+     * @return CSV string with each value as a JSON String.
+     */
+    public static String getSliderCSVFromDistinctOptions(String[] distinct) {
+        int n = distinct.length;
+        int stride = Math.max(1, (n-1) / SLIDER_MAX_NVALUES);  //-1 because [0] will be removed
+        StringArray dsa = new StringArray(distinct);
+        if (stride == 1) {
+            dsa = (StringArray)(dsa.subset(1, 1, n-1));  //make a copy without array[0]
+        } else {
+            dsa = (StringArray)(dsa.subset(1, stride, n-1)); //a copy, without array[0], with stride
+            //add the last value if not already there
+            if (!dsa.get(dsa.size() - 1).equals(distinct[n-1])) 
+                dsa.add(distinct[n-1]); 
+        }
+        return dsa.toJsonCsvString();
+    }
+     
+    /**
      * This converts a value to the nearest slider position (0 .. EDV.SLIDER_PIXELS-1).
      * Out-of-range values (even far off) are converted to nearest, but NaN -> -1.
      * If only one destination value, this returns 0.
@@ -1310,9 +1360,9 @@ public class EDV {
 
         double tMin = destinationMin;
         double tMax = destinationMax;
-        if (!Math2.isFinite(destinationValue)) return -1;
-        if (!Math2.isFinite(tMin)) return -1;
-        if (!Math2.isFinite(tMax)) {
+        if (!Double.isFinite(destinationValue)) return -1;
+        if (!Double.isFinite(tMin)) return -1;
+        if (!Double.isFinite(tMax)) {
             if (this instanceof EDVTimeStamp) {
                 //next midnight Z
                 GregorianCalendar gc = Calendar2.newGCalendarZulu();

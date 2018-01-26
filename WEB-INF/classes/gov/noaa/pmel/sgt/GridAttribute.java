@@ -124,7 +124,7 @@ public class GridAttribute implements Attribute,
   }
   /**
    * Set the <code>ContourLevels</code>.
-   * <BR><B>Property Change:</B> <code>contourLevels</code>.
+   * <BR><strong>Property Change:</strong> <code>contourLevels</code>.
    *
    * @param clev <code>ContourLevels</code>
    */
@@ -161,7 +161,7 @@ public class GridAttribute implements Attribute,
   }
   /**
    * Set the grid style.
-   * <BR><B>Property Change:</B> <code>style</code>.
+   * <BR><strong>Property Change:</strong> <code>style</code>.
    *
    * @param st grid style
    **/
@@ -220,7 +220,7 @@ public class GridAttribute implements Attribute,
   }
   /**
    * Set the <code>ColorMap</code>.
-   * <BR><B>Property Change:</B> <code>colorMap</code>.
+   * <BR><strong>Property Change:</strong> <code>colorMap</code>.
    *
    * @param cmap the <code>ColorMap</code>
    */

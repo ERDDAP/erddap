@@ -283,10 +283,10 @@ public class CWUser extends User  {
         double tMaxX = mapScreen().maxX.getDouble(session);
         double tMinY = mapScreen().minY.getDouble(session);
         double tMaxY = mapScreen().maxY.getDouble(session);
-        if (!Math2.isFinite(tMinX)) tMinX = String2.parseDouble(mapScreen().minX.getDefaultValue());
-        if (!Math2.isFinite(tMaxX)) tMaxX = String2.parseDouble(mapScreen().maxX.getDefaultValue());
-        if (!Math2.isFinite(tMinY)) tMinY = String2.parseDouble(mapScreen().minY.getDefaultValue());
-        if (!Math2.isFinite(tMaxY)) tMaxY = String2.parseDouble(mapScreen().maxY.getDefaultValue());
+        if (!Double.isFinite(tMinX)) tMinX = String2.parseDouble(mapScreen().minX.getDefaultValue());
+        if (!Double.isFinite(tMaxX)) tMaxX = String2.parseDouble(mapScreen().maxX.getDefaultValue());
+        if (!Double.isFinite(tMinY)) tMinY = String2.parseDouble(mapScreen().minY.getDefaultValue());
+        if (!Double.isFinite(tMaxY)) tMaxY = String2.parseDouble(mapScreen().maxY.getDefaultValue());
         if (lonPM180) {
             tMinX = Math2.looserAnglePM180(tMinX);
             tMaxX = Math2.looserAnglePM180(tMaxX);
@@ -456,9 +456,9 @@ public class CWUser extends User  {
 
                 //the 'edit' row
                 htmlSB.append(
-                    "    <tr align=\"left\" bgcolor=\"#" + oneOf.backgroundColor(0) + "\">\n" + 
+                    "    <tr style=\"background-color:#" + oneOf.backgroundColor(0) + ";\">\n" + 
                     "      <td>" + edit.getLabel() + "&nbsp;</td>\n" +
-                    "      <td width=\"90%\">" + edit.getControl(edit.getValue(session)) + "</td>\n");
+                    "      <td style=\"width:90%;\">" + edit.getControl(edit.getValue(session)) + "</td>\n");
             }
 
             //did user click on the map?    (after 'show' is known)
@@ -506,7 +506,7 @@ public class CWUser extends User  {
             if (show == mapScreen.editOption()) {//map only visible mapScreen because it works on min/max/X/Y HTML components
                 int mapScreenRows = 8; 
                 htmlSB.append(
-                "      <td rowspan=\"" + mapScreenRows + "\" bgcolor=\"#FFFFFF\">\n" +
+                "      <td rowspan=\"" + mapScreenRows + "\" style=\"background-color:#FFFFFF\">\n" +
                 "        <a href=\"" + emaClass.getUrl() + "\"" +
                 //onclick was here
                 ">" + //no \n or space gap before next thing
@@ -578,7 +578,7 @@ public class CWUser extends User  {
                 "            usemap=\"#regionCoordinates\"></a>\n" +
 
                 oneOf.regionCoordinatesMap(emaClass.getFormName()) +
-                "        <br><center><small>" + oneOf.regionsImageLabel() + "</small></center></td>\n");
+                "        <br><div style=\"text-align:center;\"><small>" + oneOf.regionsImageLabel() + "</small></div></td>\n");
                
             }
 
@@ -740,7 +740,7 @@ public class CWUser extends User  {
 
                 //display submitForm button
                 //This isn't beginning of row, just set the color.
-                emaClass().setBeginRow("<tr bgcolor=\"#" + oneOf.backgroundColor(3) + "\">");
+                emaClass().setBeginRow("<tr style=\"background-color:#" + oneOf.backgroundColor(3) + "\">");
                 //old way
                 //but 'noscript' must be between td /td tags to be HTML compliant. 
                 htmlSB.append("    <noscript>\n" + 

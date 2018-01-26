@@ -315,7 +315,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the associated data grid.
-   * <BR><B>Property Change:</B> <code>associatedDataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>associatedDataModified</code>.
    *
    * @since 2.0
    */
@@ -458,7 +458,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the x coordinate grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setXArray(double[] xloc) {
     xloc_ = xloc;
@@ -470,7 +470,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the y coordinate grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setYArray(double[] yloc) {
     yloc_ = yloc;
@@ -482,7 +482,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the z coordinate grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setZArray(double[] zloc) {
     zloc_ = zloc;
@@ -494,7 +494,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the z grid values.
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setValArray(double[] grid) {
     grid_ = grid;
@@ -505,7 +505,7 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
   }
   /**
    * set the temporal grid centers
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setTimeArray(GeoDate[] tloc) {
     tloc_ = tloc;

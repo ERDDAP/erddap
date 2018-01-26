@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -71,23 +72,6 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 
-
-//directy use hdf libraries:
-//import ncsa.hdf.object.*;     // the common object package
-//import ncsa.hdf.object.h4.*;  // the HDF4 implementation
-
-// 2014-08-05 J2SSH DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
-//for sftp
-//import com.sshtools.j2ssh.SshClient;
-//import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
-//import com.sshtools.j2ssh.authentication.PasswordAuthenticationClient;
-//import com.sshtools.j2ssh.io.UnsignedInteger32;
-//import com.sshtools.j2ssh.session.SessionChannelClient;
-//import com.sshtools.j2ssh.sftp.FileAttributes;
-//import com.sshtools.j2ssh.sftp.SftpFile;
-//import com.sshtools.j2ssh.sftp.SftpFileOutputStream;
-//import com.sshtools.j2ssh.SftpClient;
-//import com.sshtools.j2ssh.configuration.ConfigurationLoader;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate 
@@ -277,8 +261,8 @@ public class SSR {
             String s = 
                 "dosShell       cmd: " + commandLine + "\n" +
                 "dosShell exitValue: " + exitValue   + "\n" +
-                "dosShell       err: " + err         + (err.length() > 0? "" : "\n") +
-                "dosShell       out: " + outCatcher.getString();
+                "dosShell       err: " + err         + (err.length() > 0? "" : "\n");
+                //"dosShell       out: " + outCatcher.getString();
             if (exitValue == 0)
                 String2.log(s);
             else 
@@ -378,25 +362,6 @@ public class SSR {
         return exitValue;
     }
 
-    /* *
-     * This is a variant of shell() for calling programs directly.
-     *
-     * @param commandLine the command line to be executed (for example, "myprogram <filename>")
-     * @return an ArrayList of Strings with the output from the program 
-     *   (or null if there is a fatal error)
-     * @throws Exception if exitStatus of cmd is not 0 (or other fatal error) 
-     * @see shell
-     */
-/*    public static ArrayList cShell(String commandLine[]) throws Exception {
-        if (verbose) 
-            String2.log.fine("cShell        in: " + String2.toCSSVString(commandLine));
-        String[] commandLine2 = new String[commandLine.length + 2];
-        commandLine2[0] = "/bin/csh";
-        commandLine2[1] = "-c";
-        System.arraycopy(commandLine, 0, commandLine2, 2, commandLine.length);
-        return shell("cShell", commandLine2);
-    }
-*/
     /**
      * This runs and waits for the specified cShell command line (including 
      * parameters, pipes, and other redirection (e.g., >>).
@@ -569,7 +534,7 @@ public class SSR {
             cShell("zip -j " + zipDirName + " " + String2.toSSVString(dirNames), 
                 timeOutSeconds); 
             if (verbose) String2.log("  zip done. TIME=" + 
-                (System.currentTimeMillis() - tTime) + "\n");
+                (System.currentTimeMillis() - tTime) + "ms\n");
             return;
         }
 
@@ -616,7 +581,7 @@ public class SSR {
         //close the ZIP file
         out.close();
         if (verbose) String2.log("  zip done. TIME=" + 
-            (System.currentTimeMillis() - tTime) + "\n");
+            (System.currentTimeMillis() - tTime) + "ms\n");
     }
     
     /**
@@ -734,7 +699,7 @@ public class SSR {
         //close the GZIP file
         out.close();
         if (verbose) String2.log("  gzip done. TIME=" + 
-            (System.currentTimeMillis() - tTime) + "\n");
+            (System.currentTimeMillis() - tTime) + "ms\n");
     }
     
     /**
@@ -823,7 +788,7 @@ public class SSR {
         in.close();
 
         if (verbose) String2.log("  unzip done. TIME=" + 
-            (System.currentTimeMillis() - tTime) + "\n");
+            (System.currentTimeMillis() - tTime) + "ms\n");
     }
 
     /**
@@ -910,7 +875,7 @@ public class SSR {
             in.close();
         }
         if (verbose) String2.log("  ungzip done. TIME=" + 
-            (System.currentTimeMillis() - tTime) + "\n");
+            (System.currentTimeMillis() - tTime) + "ms\n");
 
     }
 
@@ -1315,48 +1280,32 @@ public class SSR {
     }
 
     /**
-     * This adds compression to the outputStream if Accept-Encoding 
-     * indicates it is supported.
-     * This accepts gzip, x-gzip, and deflate compressed responses
-     * (not compress or x-compress as they seem harder to work with because of 'Entries').
-     * For info on compressed responses, see: 
-     * http://www.websiteoptimization.com/speed/tweak/compress/ 
-     * and the related test site: http://www.webperformance.org/compression/ .
-     *
-     * @param outputStream urlString
-     * @return a (decompressed if necessary) InputStream
+     * This mini/psuedo percent encodes query characters for examples
+     * that work in a browser.
+     * This won't always work (e.g., it won't encode &amp; within parameter value).
+     * 
+     * @param url  the not yet percentEncoded url or query or parameter value 
+     * @return the encoded query string.
+     *    If query is null, this returns "".
+     * @throws Exception if trouble
      */
-/*    public static OutputStream getResponseOutputStream(OutputStream outputStream, ) {
-        try {
-            URL turl = new URL(urlString); 
-            HttpURLConnection conn = (HttpURLConnection)turl.openConnection();
-            conn.setRequestProperty("Accept-Encoding", 
-                "gzip, x-gzip, compress, x-compress, deflate");
-            //log("request: " + String2.toString(conn.getRequestProperties()));
-            conn.connect();      
-            String encoding = conn.getContentEncoding();
-            InputStream is = conn.getInputStream();
-            printError("url = " + urlString + "\n" +  //diagnostic
-                "encoding=" + encoding + "\n" +
-                "BeginContent");
-            if (encoding != null) {
-                encoding = encoding.toLowerCase();
-                //if (encoding.indexOf("compress") >= 0)
-                //    is = new ZipInputStream(is);
-                //else 
-                if (encoding.indexOf("gzip") >= 0)
-                    is = new GZIPInputStream(is);
-                else if (encoding.indexOf("deflate") >= 0)
-                    is = new InflaterInputStream(is);
-            }
-            return is;
-        } catch (Exception e) {
-            String2.log.fine(MustBe.throwableToString(e));
-            return null;
+    public static String psuedoPercentEncode(String url) throws Exception {
+        if (url == null)
+            return "";
+        StringBuilder sb = new StringBuilder();
+        int tLength = url.length();
+        for (int po = 0; po < tLength; po++) {
+            char ch = url.charAt(po);
+            if      (ch < 32)   sb.append("%0" + Integer.toHexString(ch).toUpperCase());
+            else if (ch >= 127 || "[]<>|\"".indexOf(ch) >= 0) sb.append(percentEncode("" + ch)); 
+            else sb.append(ch);
         }
+        return sb.toString();
     }
-*/
 
+
+    
+    
     /**
      * This encodes all characters except A-Za-z0-9_-!.~'()* .
      * Originally, this did a more minimal encoding. Now it does proper encoding.
@@ -1418,8 +1367,8 @@ public class SSR {
 
     /**
      * This encodes an Http GET query by converting special characters to %HH 
-     * (where H is a hexadecimal digit) and by converting ' ' to '+'.
-     * <br>This should be use RARELY. See minimalPercentEncode for most uses.
+     * (where H is a hexadecimal digit) and by converting ' ' to '%20' 
+     * (not '+' since I consider that ambiguous when decoding).
      * <br>This is used on names and values just prior to contacting a url.
      * <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      * <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
@@ -1432,7 +1381,7 @@ public class SSR {
     public static String percentEncode(String query) throws Exception {
         if (query == null)
             return "";
-        return URLEncoder.encode(query, String2.UTF_8);
+        return String2.replaceAll(URLEncoder.encode(query, String2.UTF_8), "+", "%20");
     }
 
     /**
@@ -1448,24 +1397,7 @@ public class SSR {
     public static String percentDecode(String query) throws Exception {
         if (query == null)
             return "";
-        //query = String2.replaceAll(query, "+", " "); //URLDecoder doesn't do this.  2010-10-27 Yes it does.
         return URLDecoder.decode(query, String2.UTF_8);
-
-        /*was StringBuilder sb = new StringBuilder(query);
-        String2.replaceAll(sb, "+", " "); //do first
-        int po = sb.indexOf("%");
-        while (po >= 0) {
-            if (po <= sb.length() - 3 &&
-                String2.isHexDigit(sb.charAt(po + 1)) &&
-                String2.isHexDigit(sb.charAt(po + 2))) {
-                sb.setCharAt(po, (char)Integer.parseInt(sb.substring(po + 1, po + 3), 16));
-                sb.delete(po + 1, po + 3);
-            }
-            po++;
-            po = sb.indexOf("%", po);
-        }
-        return sb.toString();
-        */
     }
 
     /**
@@ -1517,36 +1449,6 @@ public class SSR {
         return conn.getInputStream();        
     } 
 
-    /**
-     * This gets the response from a url.
-     * This is useful for short responses.
-     *
-     * @param urlString The query MUST be already percentEncoded as needed.
-     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
-     *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @param charset default is ISO-8859-1.
-     * @return a String with the response.   Lines will always be separated by \n only.
-     * @throws Exception if error occurs
-     */
-    public static String getUncompressedUrlResponseString(String urlString, String charset) throws Exception {
-        if (!String2.isSomething(charset))
-            charset = String2.ISO_8859_1;
-        try {
-            InputStream is = getUncompressedUrlInputStream(urlString); 
-            BufferedReader in = new BufferedReader(new InputStreamReader(is, charset));
-            StringBuilder sb = new StringBuilder();
-            String s;
-            while ((s = in.readLine()) != null) {
-                sb.append(s);
-                sb.append('\n');
-            }
-            in.close();
-            return sb.toString();
-        } catch (Exception e) {
-            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
-        }
-    } 
-
 
     /**
      * This downloads a file as bytes from a Url and saves it as a temporary file,
@@ -1554,6 +1456,8 @@ public class SSR {
      * If there is a failure, this deletes the parially written file.
      * If the file is zipped, it will stay zipped.
      * Note that you may get a error-404-file-not-found error message stored in the file.
+     *
+     * CHARSET! This writes the bytes as-is, regardless of charset of source URL.
      *
      * @param urlString urlString (or file name) pointing to the information.  
      *   The query MUST be already percentEncoded as needed.
@@ -1627,17 +1531,17 @@ public class SSR {
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @param timeOutMillis the time out for opening a connection in milliseconds  
      *    (use -1 to get high default, currently 10 minutes)
-     * @return Object[2], [0]=UrlConnection, [1]=a (decompressed if necessary) InputStream
+     * @return Object[3], [0]=UrlConnection, [1]=a (decompressed if necessary) InputStream,
+     *   [2]=charset (will be valid)
      * @throws Exception if trouble
      */
     public static Object[] getUrlConnInputStream(String urlString, int timeOutMillis) throws Exception {
-//EEK! this doesn't deal with character encoding; the information (in conn) is lost.
         if (reallyVerbose) 
             String2.log("getUrlConnInputStream " + urlString);  
         URL turl = new URL(urlString); 
         URLConnection conn = turl.openConnection();
         conn.setRequestProperty("Accept-Encoding", 
-            "gzip, x-gzip, deflate"); //compress, x-compress, 
+            "gzip, deflate"); //compress, x-compress, x-gzip
         conn.setRequestProperty("User-Agent", "Mozilla/5.0");
         //String2.log("request: " + String2.toString(conn.getRequestProperties()));
         if (timeOutMillis <= 0)
@@ -1646,6 +1550,7 @@ public class SSR {
         //I think setReadTimeout is any period of inactivity.
         conn.setReadTimeout(10 * Calendar2.SECONDS_PER_MINUTE * 1000); //ten minutes, in ms
         conn.connect();      
+
         String encoding = conn.getContentEncoding();
         InputStream is = conn.getInputStream();
         //String2.log("url = " + urlString + "\n" +  //diagnostic
@@ -1662,11 +1567,44 @@ public class SSR {
             else if (encoding.indexOf("deflate") >= 0)
                 is = new InflaterInputStream(is);
         }
-        return new Object[]{conn, is};
+
+        //typical: Content-Type: text/html; charset=utf-8
+        //default charset="ISO-8859-1"
+        //see https://www.w3.org/International/articles/http-charset/index
+        String charset = String2.ISO_8859_1; 
+        String cType = conn.getContentType();
+        if (String2.isSomething(cType)) {
+            //isolate charset name
+            cType = cType.toUpperCase(); //java names are all upper case
+            int po = cType.indexOf("CHARSET=");
+            if (po >= 0) {
+                cType = cType.substring(po + 8);
+                //is it one of the standard java charsets? (see Charset class)
+                String csar[] = {"US-ASCII", "ISO-8859-1", "UTF-8",
+                    "UTF-16BE", "UTF-16LE", "UTF-16"};
+                String tcType = String2.findPrefix(csar, cType, 0);
+                if (tcType != null) {  //successful match
+                    charset = tcType;  
+                } else {
+                    //is cType supported by Java?
+                    try {
+                        Charset cset = Charset.forName(cType);
+                        charset = cType; //no exception means it's valid
+                    } catch (Exception e) {
+                        //charset remains default
+                        String2.log(String2.ERROR + ": Using ISO-8859-1 since charset=" +
+                            cType + " for " + urlString + " isn't supported by Java.");
+                    }
+                }
+            }            
+        }
+        //String2.log(">>charset=" + charset);
+        return new Object[]{conn, is, charset};
     }
 
     /** For compatibility with older code. It uses a timeout of 120 seconds.
      * This tries to use compression.
+     * IN MOST CASES, it is better to use getUrlReader, since it deals with charset correctly.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
@@ -1674,6 +1612,22 @@ public class SSR {
      */
     public static InputStream getUrlInputStream(String urlString) throws Exception {
         return (InputStream)(getUrlConnInputStream(urlString, 120000)[1]); 
+    }
+
+    /** If you need a reader, this is better than starting with getUrlInputStream
+     * since it properly deals with charset.
+     * This tries to use compression.
+     *
+     * @param urlString The query MUST be already percentEncoded as needed.
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
+     */
+    public static Reader getUrlReader(String urlString) throws Exception {
+        Object[] o3 = getUrlConnInputStream(urlString, 120000);       
+        return new InputStreamReader((InputStream)o3[1], (String)o3[2]); 
+    }
+    public static BufferedReader getBufferedUrlReader(String urlString) throws Exception {
+        return new BufferedReader(getUrlReader(urlString)); 
     }
 
     /**
@@ -1688,13 +1642,12 @@ public class SSR {
      * @return a String[] with the response (one string per line of the file).
      * @throws Exception if error occurs
      */
-    public static String[] getUrlResponse(String urlString) throws Exception {
+    public static String[] getUrlResponseLines(String urlString) throws Exception {
         try {
             if (!String2.isUrl(urlString))
                 return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 2);
 
-            InputStream is = getUrlInputStream(urlString); 
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            BufferedReader in = getBufferedUrlReader(urlString);
             ArrayList<String> al = new ArrayList();
             String s;
             while ((s = in.readLine()) != null) {
@@ -1708,18 +1661,68 @@ public class SSR {
     } 
 
     /**
-     * This gets the response from a url as one newline separated String.
+     * This gets the response from a url as one newline-separated (no cr's) String.
      * This is useful for short responses.
      * This tries to use compression.
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @return a String with the response.
+     * @return a String with the response.  
      * @throws Exception if error occurs
      */
-    public static String getUrlResponseString(String urlString) throws Exception {
-        return new String(getUrlResponseBytes(urlString));  //define charset???!!! 
+    public static String getUrlResponseStringNewline(String urlString) throws Exception {
+        if (String2.isUrl(urlString)) {
+            try {
+                StringBuilder sb = new StringBuilder(4096); 
+                BufferedReader in = getBufferedUrlReader(urlString);
+                String s;
+                while ((s = in.readLine()) != null) {
+                    sb.append(s);
+                    sb.append('\n');
+                }
+                in.close();
+                return sb.toString();
+            } catch (Exception e) {
+                throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+            }
+        }
+
+        //if file -- Trouble! it assumes 8859-1 encoding.  Who uses this?
+        String sar[] = String2.readFromFile(urlString, String2.ISO_8859_1, 2); //uses newline
+        if (sar[0].length() > 0) throw new IOException(sar[0]);
+        return sar[1];
+    }
+
+    /**
+     * This gets the response from a url as a String with unchanged, native line endings.
+     * This is useful for short responses.
+     * This tries to use compression.
+     *
+     * @param urlString   The query MUST be already percentEncoded as needed.
+     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
+     *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
+     * @return a String with the response.  
+     * @throws Exception if error occurs
+     */
+    public static String getUrlResponseStringUnchanged(String urlString) throws Exception {
+        if (String2.isUrl(urlString)) {
+            try {
+                char buffer[] = new char[4096];
+                StringBuilder sb = new StringBuilder(4096); 
+                Reader in = getUrlReader(urlString);
+                int got;
+                while ((got = in.read(buffer)) >= 0)  //-1 if end-of-stream
+                    sb.append(buffer, 0, got);
+                in.close();
+                return sb.toString();
+            } catch (Exception e) {
+                throw new IOException(String2.ERROR + " from url=" + urlString + " : " + e.toString(), e);
+            }
+        }
+
+        //if file -- Trouble! it assumes 8859-1 encoding. Who uses this?
+        return String2.directReadFrom88591File(urlString); //throws exception
     }
 
     /**
@@ -1808,7 +1811,7 @@ public class SSR {
             int tIndex = random.nextInt(nTimePoints);
             int xIndex = random.nextInt(52);
             int yIndex = random.nextInt(52);
-            String ts = getUrlResponseString(  
+            String ts = getUrlResponseStringUnchanged(  
                 baseUrl + "?" + varName +
                 "[" + tIndex + ":1:" + tIndex + "]" +
                 "[0:1:0]" +
@@ -1817,348 +1820,8 @@ public class SSR {
             //if (time == 0) System.out.println(ts);
         }
         System.out.println("SSR.threddsTunnelTest done.  TIME=" + 
-            (System.currentTimeMillis() - elapsedTime) + " ms\n");
+            (System.currentTimeMillis() - elapsedTime) + "ms\n");
     }
-
-    /**
-     * I NEVER GOT THIS WORKING. 
-     * This posts information to a url then captures the response.
-     * From http://javaalmanac.com/egs/java.net/PostSocket.html?l=new
-     * 
-     * @param hostName e.g., hostname.com
-     * @param app e.g., /servlet/SomeServlet
-     * @param data the data to be sent; the keys and values MUST be already percentEncoded as needed.
-     *    e.g., key1=value1&key2=value2
-     *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
-     *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @return a String[] with the response.
-     *   If an error occurs, this will return String[2]{null, error message}.
-     */
-/*    public static String[] postHTMLForm(
-        String host, String app, String[] data) {
-        //String hostName, String app, String[] data) {
-        //String urlString, Object[] parameters) {
-        //String hostName, String app, String data) {
-        try {
-
-            //http://www.informit.com/guides/content.asp?g=java&seqNum=44  
-            //The httpClient attempts require commons-httpclient... and commons-logging.jar
-            //  to be in the /lib directory and in the -cp for jikes and java
-            //;C:\programs\_tomcat\webapps\cwexperimental\WEB-INF\lib\commons-httpclient-2.0.2.jar;C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\commons-logging.jar
-            //The .jar files (and related files) can be downloaded from Apache's Jakarta project.
-            int port = 80;
-            HttpClient client = new HttpClient();
-            PostMethod postMethod = new PostMethod(host + app);
-
-            //Configure the form parameters
-            for (int i = 0; i < data.length/2; i++) 
-                postMethod.addParameter(data[i/2], data[i/2 + 1]);
-
-            //include the cookies   
-            GetMethod getMethod = new GetMethod(host + app);
-            int statusCode = client.executeMethod(getMethod);
-            String2.log("getHTMLForm getStatusText=" + getMethod.getStatusText());            
-            getMethod.releaseConnection();
-            CookieSpec cookieSpec = CookiePolicy.getDefaultSpec();
-            String2.log("n client cookies= " + client.getState().getCookies().length);
-            //Cookie[] cookies = cookieSpec.match(
-            //    host, port, app, false, client.getState().getCookies()); //false for using secure
-            //if (cookies == null) 
-            //    String2.log("no cookies found");
-            //else {
-            //    String2.log(cookies.length + " cookies found");
-            //    for (int i = 0; i < cookies.length; i++)
-            //        client.getState().addCookie(cookies[i]);
-           // }
-
-            //Execute the POST method
-            statusCode = client.executeMethod(postMethod);
-            String2.log("postHTMLForm getStatusText=" + postMethod.getStatusText());
-            if (statusCode == -1) 
-                return new String[]{null, "SSR.postHTMLForm statusCode=-1 status=" + postMethod.getStatusText()};
-            String content = postMethod.getResponseBodyAsString(); //before releaseConnection
-            postMethod.releaseConnection();
-            return String2.splitNoTrim(content, '\n');
-
-/*            //cobbled together from 
-            //http://svn.apache.org/viewcvs.cgi/jakarta/commons/proper/httpclient/trunk/src/examples/FormLoginDemo.java?view=markup        
-            //and http://svn.apache.org/viewcvs.cgi/jakarta/commons/proper/httpclient/trunk/src/examples/TrivialApp.java?view=markup
-            int port = 80;
-            HttpClient client = new HttpClient();
-            client.getHostConfiguration().setHost(hostName, port, "http");
-            client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-            // 'developer.java.sun.com' has cookie compliance problems
-            // Their session cookie's domain attribute is in violation of the RFC2109
-            // We have to resort to using compatibility cookie policy
-
-            //check for cookies 
-            GetMethod authget = new GetMethod(app); //"/servlet/SessionServlet");
-            client.executeMethod(authget);
-            if (verbose) String2.log("Login form get: " + authget.getStatusLine().toString()); 
-            // release any connection resources used by the method
-            authget.releaseConnection();
-            // See if we got any cookies
-            CookieSpec cookiespec = CookiePolicy.getDefaultSpec();
-            Cookie[] initcookies = cookiespec.match(
-                hostName, port, "/", false, client.getState().getCookies());
-            if (verbose) String2.log("Initial set of cookies:");    
-            if (initcookies.length == 0) {
-                if (verbose) String2.log("(None)");    
-            } else {
-                for (int i = 0; i < initcookies.length; i++) {
-                    if (verbose) String2.log("- " + initcookies[i].toString());    
-                }
-            }
-            
-            // Prepare post parameters
-            PostMethod authpost = new PostMethod("/servlet/SessionServlet");
-            NameValuePairs pairs[] = new NameValuePairs[data.length / 2];
-            for (int i = 0; i < data.length/2; i++) 
-                pairs[i] = new NameValuePair(i/2, i/2 + 1);
-            authpost.setRequestBody(pairs);
-            
-            client.executeMethod(authpost);
-            if (verbose) String2.log("form post: " + authpost.getStatusLine().toString()); 
-
-            //execute the method
-            String responseBody = null;
-            client.executeMethod(authPost);
-            responseBody = authPost.getResponseBodyAsString();
-
-            //write out the request headers
-            //String2.log("*** Request ***");
-            //String2.log("Request Path: " + authPost.getPath());
-            //String2.log("Request Query: " + authPost.getQueryString());
-            //Header[] requestHeaders = authPost.getRequestHeaders();
-            //for (int i=0; i<requestHeaders.length; i++){
-            //    System.out.print(requestHeaders[i]);
-            //}
-
-            //write out the response headers
-            //String2.log("*** Response ***");
-            //String2.log("Status Line: " + authPost.getStatusLine());
-            //Header[] responseHeaders = authPost.getResponseHeaders();
-            //for (int i=0; i<responseHeaders.length; i++){
-            //    System.out.print(responseHeaders[i]);
-            //}
-
-            //write out the response body
-            //String2.log("*** Response Body ***");
-            String2.log(responseBody);
-
-            //clean up the connection resources
-            authPost.releaseConnection();
-            // */ 
-    
-
-            /* //from http://www.devx.com/Java/Article/17679/0/page/3
-            InputStream is = com.myjavatools.web.ClientHttpRequest.post(new URL(urlString), parameters);
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
-            ArrayList<String> al = new ArrayList();
-            String s;
-            while ((s = in.readLine()) != null) {
-                al.add(s);
-            }
-            in.close();
-            return al.toArray(new String[0]);
-            // */
-
-            /* //from java almanac
-            // Create a socket to the host
-            int port = 80;
-            InetAddress addr = InetAddress.getByName(hostName);
-            Socket socket = new Socket(addr, port);
-        
-            // Send header
-            BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(
-                socket.getOutputStream(), "UTF8"));
-            wr.write("POST " + app + " HTTP/1.0\r\n");
-            wr.write("Content-Length: " + data + "\r\n");
-            wr.write("Content-Type: application/x-www-form-urlencoded\r\n");
-            wr.write("\r\n");
-        
-            // Send data
-            wr.write(data);
-            wr.flush();
-        
-            // Get response
-            BufferedReader rd = new BufferedReader(new InputStreamReader(
-                socket.getInputStream()));
-            ArrayList<String> al = new ArrayList();
-            String line;
-            while ((line = rd.readLine()) != null) {
-                al.add(line);
-            }
-            wr.close();
-            rd.close();
-            return al.toArray(new String[0]);
-            // */
-/*        } catch (Exception e) {
-            return new String[]{null, MustBe.throwable("SSR.postHTMLForm", e)};
-        }
-    }
-*/
-
-
-    /**
-     * 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
-     * This opens a secure socket shell connection.
-     * When you are done using it, call sshClient.disconnect();
-     * 
-     * <p>This uses code from the J2SSH project.
-     * See the "import com.sshtools.j2ssh...." statements.
-     * Based on c:\programs\j2ssh.examples\SftpConnect.java (License=LGPL)
-     * which is Copyright (C) 2002 Lee David Painter (lee@sshtools.com).
-     * The source code files for the J2SSH project are distributed by  
-     * SSHTools (see http://sourceforge.net/projects/sshtools/ ).
-     * j2ssh needs the com.sshttools... 
-     * (Apache license; I'm using version 0.2.2, which is old (2003) but the most recent available).
-     *
-     * <p>Compiling the j2ssh classes was troublesome. 
-     * Try to compile it. 
-     * You see that you need to do a case sensitive change of "enum" to 
-     * "enumeration" in two classes
-     * and compile it with javac (not jikes), although still tons of warnings.
-     * Also, I changed "com.sshtools.j2ssh.transport.ConsoleKnownHostsKeyVerification.java"
-     * so it doesn't print unknown host info (in onUnknownHost())
-     * and always assumes "yes" for "Do you want to allow this host key?" (in getResponse()).
-     *
-     * <p>J2SSH uses the Apache Jakarta Commons Logging project (Apache license).
-     * The files are in the netcdfAll.jar.
-     * !!!The commons logging system and your logger must be initialized before using this class.
-     * It is usually set by the main program (e.g., NetCheck).
-     * For a simple solution, use String2.setupCommonsLogging(-1); 
-     *
-     * @param hostName
-     * @param userName
-     * @param password
-     * @return SshClient
-     * @throws Exception if trouble
-     *
-    public static SshClient getSshClient(String hostName, String userName, String password)
-         throws Exception {
-
-        //Make a client connection
-        ConfigurationLoader.initialize(false);
-        SshClient ssh = new SshClient();
-        ssh.connect(hostName);
-
-        //Create a password authentication instance
-        PasswordAuthenticationClient pwd = new PasswordAuthenticationClient();
-        pwd.setUsername(userName);
-        pwd.setPassword(password);
-
-        //Try the authentication
-        int result = ssh.authenticate(pwd);
-
-        //Evaluate the result
-        String states[] = {"0=?", "1=READY", "2=FAILED", "3=PARTIAL", "4=COMPLETE", "5=CANCELLED"};
-        Test.ensureEqual(result, AuthenticationProtocolState.COMPLETE, 
-            "Secure Socket Shell authentication failed. host=" + hostName +
-            " user=" + userName + " result=" + result + "=" +
-            (result >= 0 && result < states.length? states[result] : "(?)") + ".");
-
-        //The connection is authenticated; we can now do some real work!
-        return ssh;
-    }
-
-    /**
-     * 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
-     * This sends and/or receives files via secure ftp.
-     * For sending, the values in the parallel arrays 
-     * sendLocalDirs, sendNames, sendRemoteDirs, specify which
-     * localDir+name is sent to removeDir+name.
-     * For receiving, the values in the parallel arrays 
-     * receiveLocalDirs, receiveNames, receiveRemoteDirs, specify which
-     * remoteDir+name is sent to localDir+name.
-     * 
-     * @param hostName the name of the remote computer, e.g., "coastwatch.pfeg.noaa.gov"
-     * @param userName
-     * @param password
-     * @param commands contains a series of commands, separated by
-     *  '\n's. Each command is a String[] with elements: 0=command, 1=param1, 2=param2 (where the number of parameters may be 0 or more). 
-     *  Currently supported commands are:
-     *  <ul>
-     *  <li> "cd [remoteDir]" (changes the remote directory)
-     *  <li> "lcd [localDir]" (changes the local directory)
-     *  <li> "put [fileName]" (puts fileName from the local directory into the remote directory)
-     *  <li> "get [fileName]" (gets fileName from the remote directory and places it in the local directory)
-     *  <li> "mkdir [dirName]" (makes a remote directory; error if the dir already exists)
-     *  <li> "mkdirs [dirName]" (makes a remote directory or directories; no error if the dir already exists)
-     *  <li> "rm [path]" (removes a file or directory on the remote computer; error if path doesn't exist or dir not empty)
-     *  <li> "rms [path]" (removes a file or directory on the remote computer; no error if path doesn't exist)
-     *  <li> "chown [int uid] [path]" (changes ownership of the remote directory or file)
-     *  <li> "chgrp [int gid] [path]" (changes the numeric group id for the new remote group)
-     *  <li> "chmod [int permissions] [path]" (changes who can read, change or execute a file)
-     *  <li> "rename [oldpath] [newpath]" (renames a remote file or directory)
-     *  <li> "symlink [path] [link]" (creates a symbolic link on the remote computer)
-     *  <li> "" (a blank line is ignored)
-     *  </ul>
-     *  Each of the commands throws an Exception if there is trouble.
-     *  Warning: this currently doesn't deal with &gt;1 space between
-     *  items in a command, or with quoted parameters
-     *  (don't use quotes) or with spaces in parameters.
-     *  See com/sshtools/j2ssh/SftpClient for details (including a few methods 
-     *  more complex methods that I didn't implement but that could be implemented).
-     * @throws Exception if trouble
-     *
-    public static void sftp(String hostName, String userName, String password, 
-        String commands) throws Exception {
-
-        //connect (this may throw an exception)
-        SshClient sshClient = getSshClient(hostName, userName, password);
-        SftpClient sftp = null;
-
-        String[] commandAr = String2.splitNoTrim(commands, '\n');
-
-        try {
-            sftp = sshClient.openSftpClient();
-
-            for (int i = 0; i < commandAr.length; i++) {
-                String command = commandAr[i];
-                String parameter1 = "";
-                String parameter2 = "";
-                int po = command.indexOf(' ');
-                if (po > 0) {
-                    parameter1 = command.substring(po + 1);
-                    command = command.substring(0, po);
-                }
-                po = parameter1.indexOf(' ');  
-                if (po > 0) {
-                    parameter2 = parameter1.substring(po + 1);
-                    parameter1 = parameter1.substring(0, po);
-                }
-                if      (command.equals("cd")) sftp.cd(parameter1);
-                else if (command.equals("lcd")) sftp.lcd(parameter1);
-                else if (command.equals("put")) sftp.put(parameter1);
-                else if (command.equals("get")) sftp.get(parameter1);
-                else if (command.equals("mkdir")) sftp.mkdir(parameter1);
-                else if (command.equals("mkdirs")) sftp.mkdirs(parameter1);
-                else if (command.equals("rm")) sftp.rm(parameter1);
-                else if (command.equals("rms")) {
-                    try {
-                        sftp.rm(parameter1);
-                    } catch (Exception e) {} //ignore any errors
-                } else if (command.equals("chown")) sftp.chown(String2.parseInt(parameter1), parameter2);
-                else if (command.equals("chgrp")) sftp.chgrp(String2.parseInt(parameter1), parameter2);
-                else if (command.equals("chmod")) sftp.chmod(String2.parseInt(parameter1), parameter2);
-                else if (command.equals("rename")) sftp.rename(parameter1, parameter2);
-                else if (command.equals("symlink")) sftp.symlink(parameter1, parameter2);
-                else if (command.equals("")) {}
-                else throw new IllegalArgumentException(
-                    String2.ERROR + " in SSR.sftp: unrecognized command #" + 
-                    i + " (" + commandAr[i] + ").");
-            }
-
-        } finally {
-            //close the session
-            if (sftp != null) 
-                sftp.quit();
-            sshClient.disconnect();
-        }
-    }
-    */
 
     /**
      * This returns the directory that is the application's root
@@ -2246,7 +1909,7 @@ public class SSR {
                 cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
                 Process p = Runtime.getRuntime().exec(cmd);
             } else {
-                //http://linux.die.net/man/1/xdg-open
+                //https://linux.die.net/man/1/xdg-open
                 // cmd = 'xdg-open ' + url
                 Process p = Runtime.getRuntime().exec("xdg-open " + 
                     (url.startsWith("file://")? url.substring(7) : url));
@@ -2479,88 +2142,6 @@ public class SSR {
     }
 
     /** 
-     * THIS IS NOT TESTED -- IT MAY NOT WORK.
-     * This wraps the xml in a SOAP envelope, POSTs it to the url, 
-     * and returns the response.
-     * !This doesn't yet support character encodings -- for now, stick to ASCII.
-     * 
-     * Adapted from Bob DuCharme's SOAPClient4XG
-     * (http://www-128.ibm.com/developerworks/xml/library/x-soapcl/ , Listing 1).
-     *
-     * @param urlString where the xml will be sent
-     * @param xml the xml to be sent (without the soap envelope)
-     * @param soapAction use "" for no specific action
-     * @return the raw soap envelope response (as in inputStream)
-     * @throws Exception if trouble
-     */
-/*    public static InputStream getSoapInputStream(String urlString, String xml, 
-        String soapAction) throws Exception {
-
-        //put xml in soap wrapper
-        String soapXml = 
-            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
-            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
-                " xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"" +
-                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" >\n" +
-            "  <soapenv:Body>\n" +
-            xml +
-            "  </soapenv:Body>\n" +
-            "</soapenv:Envelope>\n";
-
-        //create the connection where we're going to send the file
-        URL url = new URL(urlString);
-        URLConnection connection = url.openConnection();
-        HttpURLConnection httpConn = (HttpURLConnection)connection;
-
-        //set the appropriate HTTP parameters
-        httpConn.setRequestProperty("Content-Length", "" + soapXml.length());
-        httpConn.setRequestProperty("Content-Type", "text/xml; charset=utf-8");  //utf-8, not true
-        httpConn.setRequestProperty("SOAPAction", soapAction == null? "" : soapAction);
-        
-        httpConn.setRequestMethod("POST");
-        httpConn.setDoOutput(true);
-        httpConn.setDoInput(true);
-
-        //send the XML
-        OutputStream out = httpConn.getOutputStream();
-        out.write(String2.toByteArray(soapXml));   //!!!should be to encoded to UTF-8
-        out.close();
-
-        //read the response
-        return httpConn.getInputStream();
-    } 
-*/
-    /** 
-     * THIS IS NOT TESTED -- IT MAY NOT WORK.
-     * This wraps the xml in a SOAP envelope, POSTs it to the url, 
-     * and returns the response as a newline separated string.
-     * !This doesn't yet support character encodings -- for now, stick to ASCII.
-     * 
-     * Adapted from Bob DuCharme's SOAPClient4XG
-     * (http://www-128.ibm.com/developerworks/xml/library/x-soapcl/ , Listing 1).
-     *
-     * @param urlString where the xml will be sent
-     * @param xml the xml to be sent (without the soap envelope)
-     * @param soapAction use "" for no specific action
-     * @return the raw soap envelope response (a newline-separated string)
-     * @throws Exception if trouble
-     */
-/*    public static String getSoapString(String urlString, String xml, String soapAction) throws Exception {
-
-        InputStream is = getSoapInputStream(urlString, xml, soapAction);
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        StringBuilder response = new StringBuilder(); 
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-            response.append('\n');
-        }
-        in.close();
-
-        return response.toString();
-    } 
-*/
-    /** 
      * This POSTs the content to the url, and returns the response.
      * 
      * @param urlString where the content will be sent
@@ -2614,34 +2195,18 @@ public class SSR {
         return is;
     } 
 
-    /* A test setup for  getPostInputStream */
-    /*public static void testPost() throws Exception {
-        //see examples at http://demo.transducerml.org:8080/ogc/
-        String url, content;
-        url = "http://demo.transducerml.org:8080/ogc/sos";
-        content = 
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<GetObservation xmlns=\"http://www.opengeospatial.net/sos\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:ows=\"http://www.opengeospatial.net/ows\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengeospatial.net/sos ../sosGetObservation.xsd\" service=\"SOS\" version=\"0.0.31\"> \n" +
-            "<offering>IRIS01_WEATHER</offering> \n" +
-            "<eventTime> \n" +
-            "<ogc:After><gml:TimeInstant><gml:timePosition indeterminatePosition=\"now\"></gml:timePosition></gml:TimeInstant></ogc:After> \n" +
-            "</eventTime> \n" +
-            "<observedProperty>WEATHER_OBSERVABLES</observedProperty> \n" +
-            "<resultFormat>text/xml; subtype=tml/1.0</resultFormat> \n" +
-            "</GetObservation>\n";
-
-        copy(getPostInputStream(url, "text/xml", String2.UTF_8, content), System.out);
-    }*/
-
 
     /**
      * Copy from source to outputStream.
      *
      * @param source May be local fileName or a URL.
      * @param out At the end, out is flushed, but not closed
+     * @param first The first byte to be transferred (0..).
+     * @param last The last byte to be transferred, inclusive.
+     *   Use -1 to transfer from first to the end.
      * @return true if successful
      */
-    public static boolean copy(String source, OutputStream out) {
+    public static boolean copy(String source, OutputStream out, long first, long last) {
         if (source.startsWith("http://") ||
             source.startsWith("https://") ||  //untested.
             source.startsWith("ftp://")) {    //untested. presumably anonymous
@@ -2650,23 +2215,23 @@ public class SSR {
             try {
                 in = (InputStream)(getUrlConnInputStream(source, 
                     120000)[1]); //timeOutMillis. throws Exception
-                copy(in, out);
-                return true;
+                if (first > 0) {
+                    File2.skipFully(in, first);
+                    first = 0;
+                    if (last >= 0) last -= first;
+                }
+                return File2.copy(in, out, 0, last);
             } catch (Exception e) {
                 String2.log(String2.ERROR + " in SSR.copy(source=" + source + ")\n" +
                     MustBe.throwableToString(e));
                 return false;
             } finally {
-                try {
-                    if (in != null)
-                        in.close();
-                } catch (Exception e2) {
-                } 
+                try { if (in != null) in.close(); } catch (Exception e2) {}
             }
 
         } else {
             //presumably a file
-            return File2.copy(source, out);
+            return File2.copy(source, out, first, last);
         }
     }
 
@@ -2675,7 +2240,7 @@ public class SSR {
      * A method to copy the info from an inputStream to an outputStream.
      * Based on E.R. Harold's book "Java I/O".
      *
-     * @param in At the end, in isn't closed.
+     * @param in At the end, in ISN'T closed.
      * @param out At the end, out is flushed, but not closed
      * @throws IOException if trouble
      */

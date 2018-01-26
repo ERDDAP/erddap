@@ -137,7 +137,7 @@ public class PointSubsetFull  {
 
             //set the new values
             double d = pa.getDouble(row);
-            if (Math2.isFinite(d))
+            if (Double.isFinite(d))
                 lastFiniteRow = row;
             out.writeDouble(d);
 
@@ -147,7 +147,7 @@ public class PointSubsetFull  {
 
         //close in and out and rename
         out.close();
-        if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time));
+        if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /** 
@@ -186,7 +186,7 @@ public class PointSubsetFull  {
             for (int row = 0; row < size; row++) {
                 //set the new values
                 double d = pa.getDouble(row);
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     tNFiniteRows = row + 1;
                 } else {
                     d = Double.NaN;
@@ -217,7 +217,7 @@ public class PointSubsetFull  {
             throw e;
         }
 
-        if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time));
+        if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 */
     /**
@@ -363,7 +363,7 @@ public class PointSubsetFull  {
             throw e;
         }
 
-        String2.log("PointSubsetFull time=" + (System.currentTimeMillis() - time));
+        String2.log("PointSubsetFull time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);
         return table;
     }

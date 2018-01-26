@@ -63,11 +63,7 @@ public class EDVDepth extends EDV {
 
         //set destinationMin max  if not set by tSourceMin,Max
         double mm[] = extractActualRange(); //always extract 
-        if (Double.isNaN(destinationMin)) destinationMin = mm[0] * scaleFactor + addOffset;
-        if (Double.isNaN(destinationMax)) destinationMax = mm[1] * scaleFactor + addOffset;
-        if (destinationMin > destinationMax) {
-            double d1 = destinationMin; destinationMin = destinationMax; destinationMax = d1;
-        }
+        setDestinationMinMax(mm[0], mm[1]);
         setActualRangeFromDestinationMinMax();
 
         PrimitiveArray pa = combinedAttributes.get("missing_value"); 

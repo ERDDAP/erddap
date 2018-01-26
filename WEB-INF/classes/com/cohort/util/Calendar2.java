@@ -31,9 +31,9 @@ import java.time.ZoneOffset;
 /**
  * This class has static methods for dealing with dates and times.
  *
- * <p><b>newGCalendar only accounts for daylight savings if 
+ * <p><strong>newGCalendar only accounts for daylight savings if 
  * your computer is correctly 
- * set up.</b> E.g., in Windows, make sure "Start : Control Panel : 
+ * set up.</strong> E.g., in Windows, make sure "Start : Control Panel : 
  * Date and Time : Time Zone : Automatically adjust clock for daylight
  * savings changes" is checked. Otherwise, the TimeZone used by GregorianCalendar
  * will be for standard time (not including daylight savings time, if any).
@@ -127,77 +127,221 @@ public class Calendar2 {
         DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssxxxxx"); //offset always ISO formatted e.g., -07:00
 
     public final static Pattern ISO_DATE_PATTERN = Pattern.compile("-?\\d{4}-\\d{2}.*");
-    public final static Pattern NUMERIC_TIME_PATTERN = Pattern.compile(" *[a-z]+ +since +-?[0-9].+");
+    public final static Pattern NUMERIC_TIME_PATTERN = Pattern.compile(" *[a-z]+ +since +-?[0-9].+"); //base time is purposely loose
 
     /** 
      * This has alternating regex/timeFormat for formats where the first char is a digit.
      * This is used by suggestDateTimeFormat. 
+     * This makes a huge number of formats because they may be used 
+     * for number to String as well as the usual String to number. 
      */
     public final static String digitRegexTimeFormat[] = {
         //* Compact (number-only) formats only support years 0000 - 4999.
         //  That makes it likely that numbers won't be interpreted as compact date times.
-        //check for julian date before ISO 8601 format
-        "-?[0-9]{4}-[0-3][0-9]{2}", "yyyy-DDD",  
-        "[012][0-9]{3}[0-3][0-9]{2}",  "yyyyDDD",  //compact, negative is uncommon and too much like a number
-        //variants of space-separated 1970-01-01 00:00:00.000
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}[+-][0-9].*",
-             "yyyy-MM-dd HH:mm:ss.SSSZ", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}Z",
-             "yyyy-MM-dd HH:mm:ss.SSSZ", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}",
-             "yyyy-MM-dd HH:mm:ss.SSS", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-9].*",
-             "yyyy-MM-dd HH:mm:ssZ", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]",
-             "yyyy-MM-dd HH:mm:ss", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]",
-             "yyyy-MM-dd HH:mm", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]",
-             "yyyy-MM-dd HH", 
-        //all other variants go to T-separated 1970-01-01T00:00:00.000  (for formatting date times)
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}[+-][0-9].*",
-             "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}Z",
-             "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}",
-             "yyyy-MM-dd'T'HH:mm:ss.SSS", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9][+-][0-9].*",
-             "yyyy-MM-dd'T'HH:mm:ssZ", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]:[0-5][0-9]",
-             "yyyy-MM-dd'T'HH:mm:ss", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]:[0-5][0-9]",
-             "yyyy-MM-dd'T'HH:mm", 
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9].[0-2][0-9]",
-             "yyyy-MM-dd'T'HH", 
-        //remaining ISO dates
-        "-?[0-9]{4}-[0-1][0-9]-[0-3][0-9]",                          "yyyy-MM-dd", 
-        "-?[0-9]{4}-[0-1][0-9].*",                                   "yyyy-MM", 
+
+        //yyyy-DDD   check for julian date (3 digit date) before ISO 8601 format
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3} UTC", 
+            "yyyy-DDD'T'HH:mm:ss.SSS 'UTC'",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}Z", 
+            "yyyy-DDD'T'HH:mm:ss.SSSZ",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].[0-9]{1,3}", 
+            "yyyy-DDD'T'HH:mm:ss.SSS",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9] UTC", 
+            "yyyy-DDD'T'HH:mm:ss 'UTC'",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]Z", 
+            "yyyy-DDD'T'HH:mm:ssZ",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]", 
+            "yyyy-DDD'T'HH:mm:ss",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9] UTC", 
+            "yyyy-DDD'T'HH:mm 'UTC'",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]Z", 
+            "yyyy-DDD'T'HH:mmZ",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]:[0-5][0-9]", 
+            "yyyy-DDD'T'HH:mm",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9] UTC", 
+            "yyyy-DDD'T'HH 'UTC'",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]Z", 
+            "yyyy-DDD'T'HHZ",  
+        "-?[0-9]{4}-[0-3][0-9]{2}T[0-2][0-9]", 
+            "yyyy-DDD'T'HH",  
+        "-?[0-9]{4}-[0-3][0-9]{2}", 
+            "yyyy-DDD",  
+
+        //yyyyDDD   check for julian date (3 digit date) before ISO 8601 format
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9][0-5][0-9][0-5][0-9] UTC", 
+            "yyyyDDD'T'HHmmss 'UTC'",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9][0-5][0-9][0-5][0-9]Z", 
+            "yyyyDDD'T'HHmmssZ",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9][0-5][0-9][0-5][0-9]", 
+            "yyyyDDD'T'HHmmss",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9][0-5][0-9] UTC", 
+            "yyyyDDD'T'HHmm 'UTC'",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9][0-5][0-9]Z", 
+            "yyyyDDD'T'HHmmZ",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9][0-5][0-9]", 
+            "yyyyDDD'T'HHmm",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9] UTC", 
+            "yyyyDDD'T'HH 'UTC'",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9]Z", 
+            "yyyyDDD'T'HHZ",  
+        "-?[0-9]{4}[0-3][0-9]{2}T[0-2][0-9]", 
+            "yyyyDDD'T'HH",  
+        "[012][0-9]{3}[0-3][0-9]{2}",  
+            "yyyyDDD",  //compact, negative is uncommon and too much like a number
+
+        //variants of ISO 8601 that will go to my parseIso... for parsing
+        //  because they start with yyyy-MM
+        //order of ISO-like groups is important and optimized to conversion of 
+        //  single string (not StringArray):
+        //    zero pad before flexi [I don't deal with this for round trip] so no groupings for it
+        //    space separator before T
+
+        //flexi digits with space separator
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3}[+-][0-9].*",
+            "yyyy-MM-dd HH:mm:ss.SSSZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3} UTC",
+            "yyyy-MM-dd HH:mm:ss.SSS 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3}Z",
+            "yyyy-MM-dd HH:mm:ss.SSSZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3}",
+            "yyyy-MM-dd HH:mm:ss.SSS", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9][+-][0-9].*",
+            "yyyy-MM-dd HH:mm:ssZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9] UTC",
+            "yyyy-MM-dd HH:mm:ss 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]Z",
+            "yyyy-MM-dd HH:mm:ssZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]",
+            "yyyy-MM-dd HH:mm:ss", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9] UTC",
+            "yyyy-MM-dd HH:mm 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]Z",
+            "yyyy-MM-dd HH:mmZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]:[0-5]?[0-9]",
+            "yyyy-MM-dd HH:mm", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9] UTC",
+            "yyyy-MM-dd HH 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]Z",
+            "yyyy-MM-dd HHZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9] [0-2]?[0-9]",
+            "yyyy-MM-dd HH", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]Z",                      
+            "yyyy-MM-ddZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]",                      
+            "yyyy-MM-dd", 
+        "-?[0-9]{4}-[0-1]?[0-9]",                                  
+            "yyyy-MM", 
+
+        // flexi digits with non-Digit separator (converted to T)
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3}[+-][0-9].*",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3} UTC",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3}Z",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9].[0-9]{1,3}",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9][+-][0-9].*",
+            "yyyy-MM-dd'T'HH:mm:ssZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9] UTC",
+            "yyyy-MM-dd'T'HH:mm:ss 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]Z",
+            "yyyy-MM-dd'T'HH:mm:ssZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]",
+            "yyyy-MM-dd'T'HH:mm:ss", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9] UTC",
+            "yyyy-MM-dd'T'HH:mm 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]Z",
+            "yyyy-MM-dd'T'HH:mmZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]:[0-5]?[0-9]",
+            "yyyy-MM-dd'T'HH:mm", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9] UTC",
+            "yyyy-MM-dd'T'HH 'UTC'", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]Z",
+            "yyyy-MM-dd'T'HHZ", 
+        "-?[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]\\D[0-2]?[0-9]",
+            "yyyy-MM-dd'T'HH", 
+
         //compact ISO
         "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]",          
                                                                    "yyyyMMddHHmmss",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9] UTC",          
+                                                                   "yyyyMMddHHmmss 'UTC'", 
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]Z",          
+                                                                   "yyyyMMddHHmmssZ", //Z is special, like yyyy
         "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]",  
                                                                    "yyyyMMddHHmm",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9] UTC",  
+                                                                   "yyyyMMddHHmm 'UTC'",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]Z",  
+                                                                   "yyyyMMddHHmmZ",
         "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]",  
                                                                    "yyyyMMddHH",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9] UTC",  
+                                                                   "yyyyMMddHH 'UTC'",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]Z",  
+                                                                   "yyyyMMddHHZ",
+
+        //compact ISO with T
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9][0-5][0-9][0-5][0-9]",          
+                                                                   "yyyyMMdd'T'HHmmss",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9][0-5][0-9][0-5][0-9] UTC",          
+                                                                   "yyyyMMdd'T'HHmmss 'UTC'",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9][0-5][0-9][0-5][0-9]Z",          
+                                                                   "yyyyMMdd'T'HHmmssZ",  //Z is special, like yyyy
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9][0-5][0-9]",  
+                                                                   "yyyyMMdd'T'HHmm",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9][0-5][0-9] UTC",  
+                                                                   "yyyyMMdd'T'HHmm 'UTC'",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9][0-5][0-9]Z",  
+                                                                   "yyyyMMdd'T'HHmmZ",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9]",  
+                                                                   "yyyyMMdd'T'HH",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9] UTC",  
+                                                                   "yyyyMMdd'T'HH 'UTC'",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]T[0-2][0-9]Z",  
+                                                                   "yyyyMMdd'T'HHZ",
         "[012][0-9]{3}[0-1][0-9][0-3][0-9]",                       "yyyyMMdd",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9] UTC",                   "yyyyMMdd 'UTC'",
+        "[012][0-9]{3}[0-1][0-9][0-3][0-9]Z",                      "yyyyMMddZ",
         "[12][0-9]{3}[0-1][0-9]",                                  "yyyyMM", //no 0xxx years, avoid misinterpret HHMMSS
+
         //2017-03-23 2 digit year (yy) is no longer supported
-        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "M/d/yyyy H:m:s",    //assume US ordering
-        "[012]?[0-9]-[0123]?[0-9]-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "M-d-yyyy H:m:s",    //assume US ordering
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9] UTC", "M/d/yyyy H:m:s 'UTC'",   //assume US ordering
+        "[012]?[0-9]-[0123]?[0-9]-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9] UTC", "M-d-yyyy H:m:s 'UTC'",   //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9] UTC", "d MMM yyyy H:m:s 'UTC'", //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9] UTC", "d-MMM-yyyy H:m:s 'UTC'", //02-JAN-1985
+
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]Z", "M/d/yyyy H:m:sZ",   //assume US ordering
+        "[012]?[0-9]-[0123]?[0-9]-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]Z", "M-d-yyyy H:m:sZ",   //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]Z", "d MMM yyyy H:m:sZ", //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]Z", "d-MMM-yyyy H:m:sZ", //02-JAN-1985
+
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "M/d/yyyy H:m:s",   //assume US ordering
+        "[012]?[0-9]-[0123]?[0-9]-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "M-d-yyyy H:m:s",   //assume US ordering
         "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "d MMM yyyy H:m:s", //2 Jan 85
         "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]:[0-5]?[0-9]", "d-MMM-yyyy H:m:s", //02-JAN-1985
 
-        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]",  "M/d/yyyy H:m",  //assume US ordering
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9] UTC", "M/d/yyyy H:m 'UTC'",  //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9] UTC", "d MMM yyyy H:m 'UTC'", //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9] UTC", "d-MMM-yyyy H:m 'UTC'", //02-JAN-1985
+
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]Z", "M/d/yyyy H:mZ",  //assume US ordering
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]Z", "d MMM yyyy H:mZ", //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]Z", "d-MMM-yyyy H:mZ", //02-JAN-1985
+
+        "[012]?[0-9]/[0123]?[0-9]/[0-9]{4} [012]?[0-9]:[0-5]?[0-9]", "M/d/yyyy H:m",   //assume US ordering
         "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4} [012]?[0-9]:[0-5]?[0-9]", "d MMM yyyy H:m", //2 Jan 85
         "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4} [012]?[0-9]:[0-5]?[0-9]", "d-MMM-yyyy H:m", //02-JAN-1985
 
         "[012]?[0-9]/[0123]?[0-9]/[0-9]{4}",                        "M/d/yyyy",      //assume US ordering
         "[012]?[0-9]-[0123]?[0-9]-[0-9]{4}",                        "M-d-yyyy",      //assume US ordering
-        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4}",                       "d MMM yyyy",    //2 Jan 85
-        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4}",                       "d-MMM-yyyy",    //02-JAN-1985
+        "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4}",                        "d MMM yyyy",    //2 Jan 85
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4}",                        "d-MMM-yyyy",    //02-JAN-1985
+        "[0-9]{4}[a-zA-Z]{3}[0123]?[0-9]",                          "yyyyMMMd",      //1985JAN02  DOD uses this
 
-        "[0-9]{4}/[012]?[0-9]/[0123]?[0-9]",                        "yyyy/M/d",      //bad iso variant
-        "[0-9]{4}-[012]?[0-9]-[0123]?[0-9]",                        "yyyy-M-d",      //bad iso variant
+        "[0123][0-9]Z[0123]?[0-9][a-zA-Z]{3}[0-9]{4}",             "HZdMMMyyyy",     //00Z29dec2013
+        "[0-9]{4}/[01]?[0-9]/[0123]?[0-9]",                        "yyyy/M/d"      //bad iso variant
     };
 
     /** 
@@ -425,7 +569,7 @@ public class Calendar2 {
     public static double epochSecondsToUnitsSince(double baseSeconds, 
         double factorToGetSeconds, double epochSeconds)  {
         if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {
-            if (!Math2.isFinite(epochSeconds))
+            if (!Double.isFinite(epochSeconds))
                 return Double.NaN;
             GregorianCalendar es = epochSecondsToGc(epochSeconds);
             GregorianCalendar bs = epochSecondsToGc(baseSeconds);
@@ -452,7 +596,8 @@ public class Calendar2 {
      * This is used for part of dealing with udunits-style "minutes since 1970-01-01"-style
      * strings.
      *
-     * @param units
+     * @param units e.g., msec, sec, minutes, hours, days, weeks, months, years ...
+     *   (abbreviated or not) (singular or plural)
      * @return the factor to multiply by 'units' data to get seconds data.
      *    Since there is no exact value for months or years, this returns
      *    special values of 30*SECONDS_PER_DAY and 360*SECONDS_PER_DAY, respectively. 
@@ -473,17 +618,17 @@ public class Calendar2 {
             units.equals("secs") || 
             units.equals("second") || 
             units.equals("seconds")) return 1;                 
-        if (units.equals("m") || 
+        if (units.equals("m") || //lenient
             units.equals("min") || 
             units.equals("mins") || 
             units.equals("minute") || 
             units.equals("minutes")) return SECONDS_PER_MINUTE; 
-        if (units.equals("h") || 
+        if (units.equals("h") || //lenient
             units.equals("hr") || 
             units.equals("hrs") || 
             units.equals("hour") || 
             units.equals("hours")) return SECONDS_PER_HOUR; 
-        if (units.equals("d") || 
+        if (units.equals("d") || //lenient
             units.equals("day") || 
             units.equals("days")) return SECONDS_PER_DAY;   
         if (units.equals("week") || 
@@ -524,49 +669,49 @@ public class Calendar2 {
         return -1; //won't happen, but method needs return statement
     }
 
-        /**
-         * This converts a string with number[timeUnits] into the number 
-         * (with timeUnits applied), e.g., 10.4 or 10 minutes (becomes 600).
-         * If timeUnits are specified, this returns the number of seconds.
-         *
-         * @param ntu optional number + optional timeUnits.
-         *   But one of them must be specified.
-         * @return [0]=the number (1 if not specified),
-         *         [1]=factorToGetSeconds (1 if not specified)
-         * @throws RuntimeException if trouble, e.g, ntu is null or "", or
-         *   number is not a number, or optional timeUnits not valid.
-         */ 
-        public static double[] parseNumberTimeUnits(String ntu) {
-             String errIn = "ERROR in parseNumberTimeUnits: ";
-             if (ntu == null)
-                throw new SimpleException(errIn + "nothing specified."); 
-             ntu = ntu.trim();
-             if (ntu.length() == 0)
-                throw new SimpleException(errIn + "nothing specified."); 
+    /**
+     * This converts a string with number[timeUnits] into the number 
+     * (with timeUnits applied), e.g., 10.4 or 10 minutes (becomes 600).
+     * If timeUnits are specified, this returns the number of seconds.
+     *
+     * @param ntu optional number + optional timeUnits.
+     *   But one of them must be specified.
+     * @return [0]=the number (1 if not specified),
+     *         [1]=factorToGetSeconds (1 if not specified)
+     * @throws RuntimeException if trouble, e.g, ntu is null or "", or
+     *   number is not a number, or optional timeUnits not valid.
+     */ 
+    public static double[] parseNumberTimeUnits(String ntu) {
+        String errIn = "ERROR in parseNumberTimeUnits: ";
+        if (ntu == null)
+            throw new SimpleException(errIn + "nothing specified."); 
+        ntu = ntu.trim();
+        if (ntu.length() == 0)
+            throw new SimpleException(errIn + "nothing specified."); 
 
-             //find last non-letter by walking backward, e.g., '9' in 1.4e9minutes
-             int po = ntu.length() - 1; 
-             while (po >= 0) {
-                if (!Character.isLetter(ntu.charAt(po)))
-                    break;
-                po--;
-            }
+        //find last non-letter by walking backward, e.g., '9' in 1.4e9minutes
+        int po = ntu.length() - 1; 
+        while (po >= 0) {
+            if (!Character.isLetter(ntu.charAt(po)))
+                break;
+            po--;
+        }
 
-            //extract the number
-            double results[] = new double[2];
-            String num = ntu.substring(0, po + 1);
-            results[0] = po == -1? 1 : //1 if not specified
-                String2.parseDouble(num);
-            if (!Math2.isFinite(results[0]))
-                throw new SimpleException(errIn + "invalid number=" + ntu.substring(0, po + 1));
+        //extract the number
+        double results[] = new double[2];
+        String num = ntu.substring(0, po + 1);
+        results[0] = po == -1? 1 : //1 if not specified
+            String2.parseDouble(num);
+        if (!Double.isFinite(results[0]))
+            throw new SimpleException(errIn + "invalid number=" + ntu.substring(0, po + 1));
 
-            //extract the timeUnits
-            String units = ntu.substring(po+1).trim();
-            results[1] = units.length() == 0? 1 : 
-                Calendar2.factorToGetSeconds(units); //throws exception
+        //extract the timeUnits
+        String units = ntu.substring(po+1).trim();
+        results[1] = units.length() == 0? 1 : 
+            factorToGetSeconds(units); //throws exception
 
-            return results;
-         }
+        return results;
+    }
 
 
     /**
@@ -612,9 +757,10 @@ public class Calendar2 {
     /**
      * This converts an EDDTable "now-nUnits" string to epochSeconds.
      * - can also be + or space.
-     * units can be singular or plural.
+     * n is a positive integer
+     * units can be singular or plural or abbreviated.
      *
-     * @param nowString  e.g., now-4days
+     * @param nowString  e.g., now-4days, case insensitive
      * @return epochSeconds  (rounded up to the next second) (or Double.NaN if trouble)
      * @throws SimpleException if trouble
      */
@@ -628,7 +774,10 @@ public class Calendar2 {
             "Query error: Invalid \"now\" constraint: \"" + nowString + "\". " +
             "Timestamp constraints with \"now\" must be in the form " +
             "\"now[+|-positiveInteger[millis|seconds|minutes|hours|days|months|years]]\" (or singular units).";
-        if (nowString == null || !nowString.startsWith("now") || nowString.length() == 4)
+        if (nowString == null)
+            throw new SimpleException(tError);
+        nowString = nowString.toLowerCase();
+        if (!nowString.startsWith("now") || nowString.length() == 4)
             throw new SimpleException(tError);
         if (nowString.length() == 3)
             return gcToEpochSeconds(gc);
@@ -655,31 +804,23 @@ public class Calendar2 {
 
         //find the units, adjust gc
         //test sUnits.equals to ensure no junk at end of constraint
-        String sUnits = nowString.substring(start);  
-        if (     sUnits.equals("milli") || 
-                 sUnits.equals("millis") ||
-                 sUnits.equals("millisecond") ||
-                 sUnits.equals("milliseconds"))
-            gc.add(MILLISECOND, n);
-        else if (sUnits.length() == 0 ||   //default
-                 sUnits.equals("second") || 
-                 sUnits.equals("seconds"))
-            gc.add(SECOND, n);
-        else if (sUnits.equals("minute") || 
-                 sUnits.equals("minutes"))
-            gc.add(MINUTE, n);
-        else if (sUnits.equals("hour") || 
-                 sUnits.equals("hours"))
-            gc.add(HOUR_OF_DAY, n);
-        else if (sUnits.equals("day") || 
-                 sUnits.equals("days"))
-            gc.add(DATE, n);
-        else if (sUnits.equals("month") || 
-                 sUnits.equals("months"))
-            gc.add(MONTH, n);
-        else if (sUnits.equals("year") || 
-                 sUnits.equals("years"))
-            gc.add(YEAR, n);
+        String sUnits = nowString.substring(start).trim();  
+        double factor = 1; //default is seconds
+        if (sUnits.length() > 0) {
+            try { 
+                factor = factorToGetSeconds(sUnits);
+            } catch (Exception e2) {
+                throw new SimpleException(tError);
+            }
+        }
+        if      (factor == 0.001)                 gc.add(MILLISECOND, n);
+        else if (factor == 1)                     gc.add(SECOND, n);
+        else if (factor == SECONDS_PER_MINUTE)    gc.add(MINUTE, n);
+        else if (factor == SECONDS_PER_HOUR)      gc.add(HOUR_OF_DAY, n);
+        else if (factor == SECONDS_PER_DAY)       gc.add(DATE, n);
+        else if (factor == SECONDS_PER_DAY * 7)   gc.add(DATE, n * 7);
+        else if (factor == SECONDS_PER_DAY * 30)  gc.add(MONTH, n);
+        else if (factor == SECONDS_PER_DAY * 360) gc.add(YEAR, n);
         else throw new SimpleException(tError);
  
         return gcToEpochSeconds(gc);
@@ -767,30 +908,22 @@ public class Calendar2 {
             if (n != d)
                 throw new SimpleException(tError);
             GregorianCalendar gc = epochSecondsToGc(mmValue);
- 
-            if (     sUnits.equals("milli") || 
-                     sUnits.equals("millis") ||
-                     sUnits.equals("millisecond") ||
-                     sUnits.equals("milliseconds"))
-                gc.add(MILLISECOND, n);
-            else if (sUnits.equals("second") || 
-                     sUnits.equals("seconds"))
-                gc.add(SECOND, n);
-            else if (sUnits.equals("minute") || 
-                     sUnits.equals("minutes"))
-                gc.add(MINUTE, n);
-            else if (sUnits.equals("hour") || 
-                     sUnits.equals("hours"))
-                gc.add(HOUR_OF_DAY, n);
-            else if (sUnits.equals("day") || 
-                     sUnits.equals("days"))
-                gc.add(DATE, n);
-            else if (sUnits.equals("month") || 
-                     sUnits.equals("months"))
-                gc.add(MONTH, n);
-            else if (sUnits.equals("year") || 
-                     sUnits.equals("years"))
-                gc.add(YEAR, n);
+            double factor = 1; //default is seconds
+            if (sUnits.length() > 0) {
+                try {
+                    factor = factorToGetSeconds(sUnits);
+                } catch (Exception e2) {
+                    throw new SimpleException(tError);
+                }
+            }
+            if      (factor == 0.001)                 gc.add(MILLISECOND, n);
+            else if (factor == 1)                     gc.add(SECOND, n);
+            else if (factor == SECONDS_PER_MINUTE)    gc.add(MINUTE, n);
+            else if (factor == SECONDS_PER_HOUR)      gc.add(HOUR_OF_DAY, n);
+            else if (factor == SECONDS_PER_DAY)       gc.add(DATE, n);
+            else if (factor == SECONDS_PER_DAY * 7)   gc.add(DATE, n * 7);
+            else if (factor == SECONDS_PER_DAY * 30)  gc.add(MONTH, n);
+            else if (factor == SECONDS_PER_DAY * 360) gc.add(YEAR, n);
             else throw new SimpleException(tError);
 
             mmValue = gcToEpochSeconds(gc);
@@ -894,20 +1027,28 @@ public class Calendar2 {
      */
     public static String safeEpochSecondsToIsoStringT(double seconds, String NaNString) {
         long millis = Math2.roundToLong(seconds * 1000);
-        return millis == Long.MAX_VALUE?
-            NaNString :
-            millisToIsoZuluString(millis);
+        if (millis == Long.MAX_VALUE)
+            return NaNString;
+        try {
+            return millisToIsoZuluString(millis);
+        } catch (Exception e) {
+            return NaNString;
+        }
     }
 
     /**
      * This is like epochSecondsToIsoStringT, but add "Z" at end of time,
-     * and returns NaNString if seconds is NaN..
+     * and returns NaNString if seconds is NaN.
      */
     public static String safeEpochSecondsToIsoStringTZ(double seconds, String NaNString) {
         long millis = Math2.roundToLong(seconds * 1000);
-        return millis == Long.MAX_VALUE?
-            NaNString :
-            millisToIsoZuluString(millis) + "Z";
+        if (millis == Long.MAX_VALUE)
+            return NaNString;
+        try {
+            return millisToIsoZuluString(millis) + "Z";
+        } catch (Exception e) {
+            return NaNString;
+        }
     }
 
     /**
@@ -915,9 +1056,13 @@ public class Calendar2 {
      */
     public static String safeEpochSecondsToIsoStringT3(double seconds, String NaNString) {
         long millis = Math2.roundToLong(seconds * 1000);
-        return millis == Long.MAX_VALUE?
-            NaNString : 
-            millisToIso3ZuluString(millis);
+        if (millis == Long.MAX_VALUE)
+            return NaNString;
+        try {
+            return millisToIso3ZuluString(millis);
+        } catch (Exception e) {
+            return NaNString;
+        }
     }
 
     /**
@@ -926,14 +1071,33 @@ public class Calendar2 {
      */
     public static String safeEpochSecondsToIsoStringT3Z(double seconds, String NaNString) {
         long millis = Math2.roundToLong(seconds * 1000);
-        return millis == Long.MAX_VALUE?
-            NaNString :
-            millisToIso3ZuluString(millis) + "Z";
+        if (millis == Long.MAX_VALUE)
+            return NaNString;
+        try {
+            return millisToIso3ZuluString(millis) + "Z";
+        } catch (Exception e) {
+            return NaNString;
+        }
+    }
+
+    /**
+     * This formats as date only, and returns NaNString if seconds is NaN.
+     */
+    public static String safeEpochSecondsToIsoDateString(double seconds, String NaNString) {
+        long millis = Math2.roundToLong(seconds * 1000);
+        if (millis == Long.MAX_VALUE)
+            return NaNString;
+        try {
+            return millisToIsoDateString(millis);
+        } catch (Exception e) {
+            return NaNString;
+        }
     }
 
     /**
      * This is like safeEpochSecondsToIsoStringT3Z, but returns a 
      * limited precision string.
+     * This won't throw an exception.
      *
      * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
      *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision not matched), 
@@ -945,9 +1109,13 @@ public class Calendar2 {
 
         //should be floor(?), but round avoids issues with computer precision
         long millis = Math2.roundToLong(seconds * 1000);
-        return millis == Long.MAX_VALUE?
-            NaNString :
-            limitedFormatAsISODateTimeT(time_precision, newGCalendarZulu(millis)); 
+        if (millis == Long.MAX_VALUE)
+            return NaNString;
+        try {
+            return limitedFormatAsISODateTimeT(time_precision, newGCalendarZulu(millis)); 
+        } catch (Exception e) {
+            return NaNString;
+        }
     }
 
     /**
@@ -1312,8 +1480,10 @@ public class Calendar2 {
      *   or ISO8601T_FORMAT if trouble
      */
     public static String timePrecisionToTimeFormat(String pre) {
-        if (!String2.isSomething(pre) ||
-            !pre.startsWith("1970-01"))
+        if (pre == null) 
+            return ISO8601TZ_FORMAT;
+        pre = pre.trim();
+        if (!pre.startsWith("1970-01"))
             return ISO8601TZ_FORMAT;
         if (pre.endsWith("Z"))
             pre = pre.substring(0, pre.length() - 1);
@@ -1469,6 +1639,54 @@ public class Calendar2 {
         //    return CompactDateTimeFormat.format(gc.getTime());
         //}
     }
+
+    /**
+     * This adds -'s, T, and :'s as needed to a compact datetime (with or without T).
+     */
+    public static String expandCompactDateTime(String cdt) {
+        if (cdt == null)
+            return "";
+        int len = cdt.length();
+        StringBuilder sb = new StringBuilder();
+        if (len < 4 || 
+            !String2.isDigit(cdt.charAt(0)) || 
+            !String2.isDigit(cdt.charAt(1)) || 
+            !String2.isDigit(cdt.charAt(2)) || 
+            !String2.isDigit(cdt.charAt(3)))  
+            return cdt;  //unchanged
+        sb.append(cdt.substring(0, 4));
+        if (len < 6 || 
+            !String2.isDigit(cdt.charAt(4)) || 
+            !String2.isDigit(cdt.charAt(5))) 
+            return sb.toString();
+        sb.append("-" + cdt.substring(4, 6));
+        if (len < 8 || 
+            !String2.isDigit(cdt.charAt(6)) || 
+            !String2.isDigit(cdt.charAt(7)))
+            return sb.toString();
+        sb.append("-" + cdt.substring(6, 8));
+
+        int tLen = len >= 9 && cdt.charAt(8) == 'T'? 1 : 0;
+
+        if (len < 10 + tLen || 
+            !String2.isDigit(cdt.charAt(8 + tLen)) || 
+            !String2.isDigit(cdt.charAt(9 + tLen)))
+            return sb.toString();
+        sb.append("T" + cdt.substring(8 + tLen, 10 + tLen));
+        if (len < 12 + tLen || 
+            !String2.isDigit(cdt.charAt(10 + tLen)) || 
+            !String2.isDigit(cdt.charAt(11 + tLen)))
+            return sb.toString();
+        sb.append(":" + cdt.substring(10 + tLen, 12 + tLen));
+        if (len < 14 + tLen || 
+            !String2.isDigit(cdt.charAt(12 + tLen)) || 
+            !String2.isDigit(cdt.charAt(13 + tLen)))
+            return sb.toString();
+        sb.append(":" + cdt.substring(12 + tLen));  //to the end, e.g., time zone? Z?
+       
+        return sb.toString();
+    }
+
 
     /**
      * This returns a [-]YYYYDDD string e.g., "2004001"
@@ -1734,7 +1952,8 @@ public class Calendar2 {
      * <br>The time zone can be omitted.
      * <br>The parts at the end of the time can be omitted.
      * <br>If there is no time, the end parts of the date can be omitted.  Year is required.
-     * <br>This tries hard to be tolerant of non-valid formats (e.g., "1971-1-2", "1971-01")
+     * <br>This tries hard to be tolerant of non-valid formats (e.g., no lead 0 "1971-1-2", 
+     *    or just year+month "1971-01")
      * <br>As of 11/9/2006, NO LONGER TRUE: If year is 0..49, it is assumed to be 2000..2049.
      * <br>As of 11/9/2006, NO LONGER TRUE: If year is 50..99, it is assumed to be 1950..1999.
      * <br>If the string is too short, the end of "1970-01-01T00:00:00.000Z" will be added (effectively).
@@ -2224,6 +2443,18 @@ public class Calendar2 {
      * This converts millis since 1970-01-01T00:00:00Z to an ISO Zulu DateTime string.
      *
      * @param millis the millis since 1970-01-01T00:00:00Z
+     * @return the ISO Zulu Date string 
+     * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
+     */
+    public static String millisToIsoDateString(long millis) {
+        GregorianCalendar gc = newGCalendarZulu(millis); 
+        return formatAsISODate(gc);
+    }
+
+    /**
+     * This converts millis since 1970-01-01T00:00:00Z to an ISO Zulu DateTime string.
+     *
+     * @param millis the millis since 1970-01-01T00:00:00Z
      * @return the ISO Zulu DateTime string 'T' (without the trailing Z)
      * @throws RuntimeException if trouble (e.g., millis is Long.MAX_VALUE)
      */
@@ -2438,7 +2669,7 @@ public class Calendar2 {
      *  (or "infinite[!]" if trouble, e.g., millis is Double.NaN).
      */
     public static String elapsedTimeString(double millis) {
-        if (!Math2.isFinite(millis))
+        if (!Double.isFinite(millis))
             return "infinity";
 
         long time = Math2.roundToLong(millis);
@@ -2542,7 +2773,7 @@ public class Calendar2 {
      * @throws Exception if trouble
      */
     public static double backNDays(int nDays, double max) throws Exception {
-        GregorianCalendar gc = Math2.isFinite(max)?
+        GregorianCalendar gc = Double.isFinite(max)?
             epochSecondsToGc(max) :
             newGCalendarZulu();
         //round to previous midnight, then go back nDays
@@ -2571,8 +2802,8 @@ public class Calendar2 {
         int maxNValues) {
 
         try {
-            if (!Math2.isFinite(start) || 
-                !Math2.isFinite(stop))
+            if (!Double.isFinite(start) || 
+                !Double.isFinite(stop))
                 return null;
             if (start == stop)
                 return new double[]{start};
@@ -2700,10 +2931,13 @@ public class Calendar2 {
      * @return an appropriate Java/java.time (was Joda) date/time format
      *   or "" if not matched.
      *   If the response starts with "yyyy-MM", parse with Calendar2.parseISODateTimeZulu();
-     *   else parse with Joda. 
+     *   else parse with java.time (was Joda).  
      */
     public static String suggestDateTimeFormat(String sample) {
-        if (sample == null || sample.length() == 0)
+        if (sample == null)
+            return "";
+        sample = sample.trim();
+        if (sample.length() == 0)
             return "";
 
         char ch = Character.toLowerCase(sample.charAt(0));
@@ -2726,6 +2960,7 @@ public class Calendar2 {
         return "";
     }
 
+
     /**
      * This looks for a date time format which is suitable for all elements of sa
      * (other than nulls and ""'s). 
@@ -2744,7 +2979,10 @@ public class Calendar2 {
         Pattern pattern = null;
         for (int row = 0; row < size; row++) {
             String s = sa.get(row);
-            if (s == null || s.length() == 0)
+            if (s == null)
+                continue;
+            s = s.trim();
+            if (s.length() == 0)
                 continue;
             if (pattern == null) {
                 format = suggestDateTimeFormat(s);
@@ -2770,6 +3008,162 @@ public class Calendar2 {
             }
         }
         return format == null? "" : format;
+    }
+
+    /**
+     * This tries to figure out the format of someDateTimeString
+     * then parse the value and convert to epochSeconds.
+     *
+     * @param someDateTimeString
+     * @return epochSeconds (or Double.NaN if trouble);
+     */
+    public static double tryToEpochSeconds(String someDateTimeString) {
+        String format = suggestDateTimeFormat(someDateTimeString);
+        if (format.length() == 0)
+            return Double.NaN;
+        return toEpochSeconds(someDateTimeString, format);
+    }
+
+    /**
+     * This tries to figure out the format of someDateTimeString
+     * then parse the value and convert to epochSeconds.
+     *
+     * @param someDateTimeStrings  all using the same format
+     * @return epochSeconds (or all Double.NaN if trouble);
+     */
+    public static DoubleArray tryToEpochSeconds(StringArray someDateTimeStrings) {
+        String format = suggestDateTimeFormat(someDateTimeStrings);
+        if (format.length() == 0) {
+            DoubleArray da = new DoubleArray();
+            da.addN(someDateTimeStrings.size(), Double.NaN);
+            return da;
+        }
+        return toEpochSeconds(someDateTimeStrings, format);  //NaN if trouble
+    }
+
+    /**
+     * This tries to figure out the format of someDateTimeString
+     * then parse the value and convert to an ISO 8601 string with 'Z' at end.
+     *
+     * @param someDateTimeString
+     * @return an iso8601String with T and Z (or "" if trouble);
+     */
+    public static String tryToIsoString(String someDateTimeString) {
+        if (someDateTimeString == null)
+            return "";
+        someDateTimeString = someDateTimeString.trim();
+        if (someDateTimeString.length() == 0)
+            return "";
+        int spo = someDateTimeString.indexOf(';'); //NGDC often has "2009-05-27; publication"
+        if (spo >= 0) {
+            someDateTimeString = someDateTimeString.substring(0, spo).trim();
+            if (someDateTimeString.length() == 0)
+                return "";
+        }
+        
+        //catch some non-standard formats that aren't caught below
+        if ("01".indexOf(someDateTimeString.charAt(0)) >= 0) { //starts with 0 or 1
+            String ts = someDateTimeString;
+            String append = "";
+            if (ts.endsWith("UTC"))
+                ts = ts.substring(0, ts.length() - 3).trim();
+            if (ts.endsWith("Z"))
+                ts = ts.substring(0, ts.length() - 1).trim();
+            int zeroTimePo = ts.indexOf(" 00");
+            if (zeroTimePo < 0)
+                zeroTimePo = ts.indexOf("T00");
+            if (zeroTimePo > 0 && 
+                ts.substring(zeroTimePo + 3).matches("[:.0]*")) { //ends with e.g., 00:00:0.0 
+                ts = ts.substring(0, zeroTimePo);
+                append = "T00:00:00Z";
+            }
+            //it must start with one of these
+            if (String2.indexOf(new String[]{
+                "01/01/01", "1/1/1", "1-1-1", "01-01-01"}, 
+                ts) >= 0)
+                return "0001-01-01" + append;
+            if (String2.indexOf(new String[]{
+                "01/01/00", "1/1/0", "0-1-1", "00-01-01"}, 
+                ts) >= 0)
+                return "0000-01-01" + append;
+        }
+
+        //formats I'm aware of
+        String format = suggestDateTimeFormat(someDateTimeString);
+        if (format.length() == 0) {
+            String2.log("! Calendar2.tryToIsoString was unable to find a format for " + someDateTimeString);
+            return "";
+        }
+        double sec = toEpochSeconds(someDateTimeString, format); //NaN if trouble
+        //if source format has time, keep time in iso format (even if 00:00:00)
+        return format.indexOf('H') >= 0?
+            safeEpochSecondsToIsoStringTZ(sec, "") :
+            safeEpochSecondsToIsoDateString(sec, ""); //else just date
+    }
+
+    /**
+     * This tries to figure out the format of someDateTimeStrings
+     * then parse the value and convert to an ISO 8601 string with 'Z' at end.
+     *
+     * @param someDateTimeStrings
+     * @return a new StringArray with iso8601Strings with T and Z (or ""'s if trouble);
+     */
+    public static StringArray tryToIsoString(StringArray someDateTimeStrings) {
+        StringArray sa = new StringArray(someDateTimeStrings.size(), false);
+        String format = suggestDateTimeFormat(someDateTimeStrings);
+        if (format.length() == 0) {
+            sa.addN(someDateTimeStrings.size(), "");
+            return sa;
+        }
+        DoubleArray da = toEpochSeconds(someDateTimeStrings, format); //NaN's if trouble
+        int n = da.size();
+        //if source format has time, keep time in iso format (even if 00:00:00)
+        if (format.indexOf('H') >= 0) {
+            for (int i = 0; i < n; i++) 
+                sa.add(safeEpochSecondsToIsoStringTZ(da.get(i), ""));
+        } else {
+            for (int i = 0; i < n; i++)
+                sa.add(safeEpochSecondsToIsoDateString(da.get(i), "")); //else just date
+        }
+        return sa;
+    }
+
+    /**
+     * This cleans up a numeric time units string or throws a SimpleException.
+     * @param tUnits  something like "seconds since 1970-01-01T00:00:00Z",
+     *   but the units can be different and the base time can be in another
+     *   format (if ERDDAP can parse it).
+     * @throws RuntimeException if trouble (e.g., tUnits is invalid)
+     */
+    public static String cleanUpNumericTimeUnits(String tUnits) {
+        String tUnitsLC = tUnits.toLowerCase();
+        int sincePo = tUnitsLC.indexOf(" since ");
+        if (sincePo <= 0) 
+            throw new SimpleException(String2.ERROR + ": units=\"" + tUnits + 
+                "\" doesn't include \" since \".");
+
+        //new units
+        String tu = tUnitsLC.substring(0, sincePo).trim();  
+        String nu = null;
+        double factor = factorToGetSeconds(tu);  //throws exception if trouble
+        if      (factor == 0.001)                 nu = "milliseconds";
+        else if (factor == 1)                     nu = "seconds";
+        else if (factor == SECONDS_PER_MINUTE)    nu = "minutes";
+        else if (factor == SECONDS_PER_HOUR)      nu = "hours";
+        else if (factor == SECONDS_PER_DAY)       nu = "days";
+        else if (factor == 7 * SECONDS_PER_DAY)   nu = "weeks";   
+        else if (factor == 30 * SECONDS_PER_DAY)  nu = "months";   
+        else if (factor == 360 * SECONDS_PER_DAY) nu = "years";   
+        else throw new SimpleException(String2.ERROR + ": invalid units.");
+
+        //new base time
+        String newBase = tryToIsoString(tUnits.substring(sincePo + 7));
+        if (newBase.length() == 0)
+            throw new SimpleException(String2.ERROR + 
+                ": The format of the base time in time units isn't supported.");
+        else if (newBase.length() == 10)
+            newBase += "T00:00:00Z";
+        return nu + " since " + newBase;
     }
 
     /** 
@@ -2814,10 +3208,10 @@ public class Calendar2 {
         
         pattern = String2.replaceAll(pattern, yy.charAt(0), 'u'); 
 
-        //http://stackoverflow.com/questions/34637626/java-datetimeformatter-for-time-zone-with-an-optional-colon-separator
+        //https://stackoverflow.com/questions/34637626/java-datetimeformatter-for-time-zone-with-an-optional-colon-separator
         pattern = String2.replaceAll(pattern, "Z", "[XXX][X]"); //most flexible time offset support
 
-        //http://stackoverflow.com/questions/38307816/datetimeformatterbuilder-with-specified-parsedefaulting-conflicts-for-year-field
+        //https://stackoverflow.com/questions/38307816/datetimeformatterbuilder-with-specified-parsedefaulting-conflicts-for-year-field
         DateTimeFormatter dtf = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()  //needed for supporting e.g., WED in addition to official Wed
             //.parseLenient()   //My test pass without this. It's effect is unclear.
@@ -2836,7 +3230,7 @@ public class Calendar2 {
      */
     public static double toEpochSeconds(String s, DateTimeFormatter dtf) {
         TemporalAccessor ta = dtf.parse(s);
-        //Who designed this?! It's brutally complex.
+        //Who designed the new Java.time?! It's brutally complex.
         //If it's a date, it doesn't have a time zone or a way to get time at start of day.
         //I miss Joda.
 
@@ -2975,7 +3369,10 @@ public class Calendar2 {
     public static String convertToJavaDateTimeFormat(String s) {
         String os = s;
 
-        if (!String2.isSomething(s))
+        if (s == null)
+            return s;
+        s = s.trim();
+        if (s.length() == 0)
             return s;
         String sLC = s.toLowerCase();
 

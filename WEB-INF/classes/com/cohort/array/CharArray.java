@@ -164,7 +164,7 @@ public class CharArray extends PrimitiveArray {
      */
     public int hashCode() {
         //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
-        //and http://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         int code = 0;
         for (int i = 0; i < size; i++)
             code = 31*code + array[i];
@@ -1044,6 +1044,31 @@ public class CharArray extends PrimitiveArray {
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
+    }
+
+    /**
+     * This reverses the order of the bytes in each value,
+     * e.g., if the data was read from a little-endian source.
+     */
+    public void reverseBytes() {
+        for (int i = 0; i < size; i++)
+            array[i] = Character.reverseBytes(array[i]);
+    }
+
+    /**
+     * This writes 'size' elements to a DataOutputStream.
+     *
+     * @param dos the DataOutputStream
+     * @return the number of bytes used per element (for Strings, this is
+     *    the size of one of the strings, not others, and so is useless;
+     *    for other types the value is consistent).
+     *    But if size=0, this returns 0.
+     * @throws Exception if trouble
+     */
+    public int writeDos(DataOutputStream dos) throws Exception {
+        for (int i = 0; i < size; i++)
+            dos.writeChar(array[i]);
+        return size == 0? 0 : 2;
     }
 
     /**

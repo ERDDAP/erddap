@@ -150,7 +150,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set mark height.
-   * <BR><B>Property Change:</B> <code>markHeightP</code>.
+   * <BR><strong>Property Change:</strong> <code>markHeightP</code>.
    *
    * @param markh mark height
    **/
@@ -173,7 +173,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the point <code>Color</code>.
-   * <BR><B>Property Change:</B> <code>color</code>.
+   * <BR><strong>Property Change:</strong> <code>color</code>.
    *
    * @param c point <code>Color</code>
    **/
@@ -188,7 +188,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the Point width in physical units.
-   * <BR><B>Property Change:</B> <code>widthP</code>.
+   * <BR><strong>Property Change:</strong> <code>widthP</code>.
    *
    * @param t Point width
    **/
@@ -219,7 +219,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set plot mark
-   * <BR><B>Property Change:</B> <code>mark</code>.
+   * <BR><strong>Property Change:</strong> <code>mark</code>.
    *
    * @param mark the plot mark
    * @see PlotMark
@@ -244,7 +244,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set label position.
-   * <BR><B>Property Change:</B> <code>labelPosition</code>.
+   * <BR><strong>Property Change:</strong> <code>labelPosition</code>.
    */
   public void setLabelPosition(int pos) {
     if(labelPosition_ != pos) {
@@ -263,7 +263,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set label <code>Color</code>.
-   * <BR><B>Property Change:</B> <code>labelColor</code>.
+   * <BR><strong>Property Change:</strong> <code>labelColor</code>.
    */
   public void setLabelColor(Color col) {
     if(labelColor_ == null || !labelColor_.equals(col)) {
@@ -282,7 +282,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set label <code>Font</code>.
-   * <BR><B>Property Change:</B> <code>labelFont</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFont</code>.
    */
   public void setLabelFont(Font font) {
     if(labelFont_ == null || !labelFont_.equals(font)) {
@@ -301,7 +301,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set label height.
-   * <BR><B>Property Change:</B> <code>labelHeightP</code>.
+   * <BR><strong>Property Change:</strong> <code>labelHeightP</code>.
    */
   public void setLabelHeightP(double h) {
     if(labelHeightP_ != h) {
@@ -320,7 +320,7 @@ public class PointAttribute implements Attribute, Cloneable {
   }
   /**
    * Set label drawing.
-   * <BR><B>Property Change:</B> <code>drawLabel</code>.
+   * <BR><strong>Property Change:</strong> <code>drawLabel</code>.
    */
   public void setDrawLabel(boolean dl) {
     if(drawLabel_ != dl) {

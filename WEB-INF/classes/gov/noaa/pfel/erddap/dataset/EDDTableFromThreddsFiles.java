@@ -361,7 +361,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
             if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks finished." +
                 " nTasksCreated=" + nTasksCreated + 
-                " time=" + (System.currentTimeMillis() - startTime));
+                " time=" + (System.currentTimeMillis() - startTime) + "ms");
 
         } catch (Throwable t) {
             if (verbose)
@@ -562,7 +562,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         if (reallyVerbose) String2.log("\n>>> leaving getThreddsFileInfo" +
             " nFiles=" + fileName.size() + 
             " completelySuccessful=" + completelySuccessful + 
-            " time=" + (System.currentTimeMillis() - time));
+            " time=" + (System.currentTimeMillis() - time) + "ms");
         return completelySuccessful;
     }
 
@@ -626,8 +626,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
         throws Throwable {
 
-        tLocalDirUrl = updateUrls(tLocalDirUrl); //http: to https:
-        oneFileDapUrl = updateUrls(oneFileDapUrl); //http: to https:
+        tLocalDirUrl  = EDStatic.updateUrls(tLocalDirUrl);  //http: to https:
+        oneFileDapUrl = EDStatic.updateUrls(oneFileDapUrl); //http: to https:
         String2.log("\n*** EDDTableFromThreddsFiles.generateDatasetsXml" +
             "\nlocalDirUrl=" + tLocalDirUrl + 
             " fileNameRegex=" + tFileNameRegex + 
@@ -672,20 +672,37 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             true); //getMetadata
 
         Table dataAddTable = new Table();
+        double maxTimeES = Double.NaN;
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            dataAddTable.addColumn(c, colName,
-                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
+            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
+            dataAddTable.addColumn(c, colName, pa,
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
+            String tUnits = sourceAtts.getString("units");
             if (tSortedColumnSourceName.length() == 0 && 
-                EDVTimeStamp.hasTimeUnits(sourceAtts, null))
+                Calendar2.isTimeUnits(tUnits)) 
                 tSortedColumnSourceName = colName;
+
+            if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+                try {
+                    if (Calendar2.isNumericTimeUnits(tUnits)) {
+                        double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+                        maxTimeES = Calendar2.unitsSinceToEpochSeconds(
+                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                    } else { //string time units
+                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                    }
+                } catch (Throwable t) {
+                    String2.log("caught while trying to get maxTimeES: " + 
+                        MustBe.throwableToString(t));
+                }
+            }
         }
 
         if (tFileNameRegex == null || tFileNameRegex.length() == 0) {
@@ -728,6 +745,16 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
                 suggestSubsetVariables(dataSourceTable, dataAddTable, false)); 
+
+        //use maxTimeES
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
+        }
 
         //gather the information
         StringBuilder sb = new StringBuilder();
@@ -779,7 +806,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
 
     /**
-     * testGenerateDatasetsXml
+     * testGenerateDatasetsXml.
+     * This doesn't test suggestTestOutOfDate, except that for old data
+     * it doesn't suggest anything.
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
@@ -827,8 +856,9 @@ directionsForGenerateDatasetsXml() +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"Conventions\">CF-1.4</att>\n" +                                                 //dates below change
-"        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
+"        <att name=\"Conventions\">CF-1.4</att>\n" +                      //dates below change
+//      !2017-12-15 older date!  was 2012/31/11 20:31 CST, now 2010/00/10 03:00 CST         
+"        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL:</att>\n" +
 "        <att name=\"Mooring_ID\">WES001</att>\n" +
 "        <att name=\"Version\">2</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -844,12 +874,10 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.nodc.noaa.gov/</att>\n" +
 "        <att name=\"History\">null</att>\n" +                            //date below changes
-"        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
+"        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
-"        <att name=\"keywords\">center, data, data.nodc.noaa.gov, day, depth, flag, identifier, latitude, longitude, national, ncei, nmsp, noaa, nodc, ocean, oceanographic, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, stationID, status, temperature, Temperature_flag, thredds, time, water, wcos, wes001, year, yearday, yearday_flag</att>\n" +
+"        <att name=\"keywords\">center, data, data.nodc.noaa.gov, day, depth, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, flag, identifier, latitude, longitude, national, ncei, nesdis, nmsp, noaa, nodc, ocean, oceanographic, oceans, quality, science, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, stationID, status, temperature, Temperature_flag, time, water, wcos, wes001, year, yearday, yearday_flag</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
@@ -980,6 +1008,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1048,7 +1077,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n****************** EDDTableFromThreddsFiles testWcosTemp das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1145,9 +1174,9 @@ today;
 //today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "nmspWcosTemp.das\";\n" +
-"    String infoUrl \"https://www.ncddc.noaa.gov/activities/wcos\";\n" +
+"    String infoUrl \"ftp://ftp.nodc.noaa.gov/nodc/archive/arc0006/0002039/1.1/about/WCOS_project_document_phaseI_20060317.pdf\";\n" +
 "    String institution \"NOAA NMSP\";\n" +
-"    String keywords \"Oceans > Ocean Temperature > Water Temperature\";\n" +
+"    String keywords \"Earth Science > Oceans > Ocean Temperature > Water Temperature\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1185,7 +1214,7 @@ expected =
         try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1213,7 +1242,7 @@ expected =
         userDapQuery = "station&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_stationList", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "station\n" +
@@ -1263,7 +1292,7 @@ expected =
         userDapQuery = "&station=\"ANO001\"&time=1122592440";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);   
 //one depth, by hand via DAP form:   (note that depth is already negative!)
 //Lat, 37.13015 Time=1122592440 depth=-12 Lon=-122.361253    
@@ -1344,7 +1373,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         String2.log("\n****************** EDDTableFromThreddsFiles testShipWTEP das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipEntire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         boolean with = false; //2014-01-09 several lines disappeared, 2016-09-16 returned
         expected =      
@@ -1804,7 +1833,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         Test.ensureLinesMatch(results.substring(0, tPo + seek.length()), expected,
             "\nresults=\n" + results);
 
-//+ " http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
+//+ " http://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
 //today + " http://localhost:8080/cwexperimental/tabledap/
 expected = 
 "fsuNoaaShipWTEP.das\";\n" +
@@ -1873,7 +1902,7 @@ expected =
         try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipEntire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1919,7 +1948,7 @@ expected =
         userDapQuery = "cruise_id&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipCruiseList", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "cruise_id\n" +
@@ -1936,7 +1965,7 @@ expected =
         userDapQuery = "time,latitude,longitude,airPressure,airTemperature,flag&time%3E=2012-01-29T19:30:00Z&time%3C=2012-01-29T19:34:00Z";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Ship1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);   
         expected = 
 "time,latitude,longitude,airPressure,airTemperature,flag\n" +
@@ -1968,10 +1997,10 @@ expected =
         StringArray fileName    = new StringArray();
         LongArray   fileLastMod = new LongArray();
 
-        //*** test http://coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/2011/catalog.html
+        //*** test http://tds.coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/2011/catalog.html
         if (true) {
         getThreddsFileInfo(
-            "http://coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
+            "http://tds.coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
             "WTEP_2011082.*\\.nc", true, "", //recursive, pathRegex
             fileDir, fileName, fileLastMod);
         
@@ -1986,15 +2015,15 @@ expected =
 
         results = fileDir.toNewlineString();
         expected = 
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
-"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n";
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = fileName.toNewlineString();
@@ -2065,13 +2094,22 @@ expected =
             sb.append(Calendar2.millisToIsoZuluString(fileLastMod.get(i)) + "\n");
         results = sb.toString();
         expected = 
-"2012-05-18T05:42:56\n" +
-"2012-05-11T01:03:50\n" +
-"2012-05-12T14:37:14\n" +
-"2012-05-14T12:55:06\n" +
-"2012-05-10T07:25:54\n" +
-"2012-05-11T17:41:56\n" +
-"2012-05-14T20:46:04\n";
+//"2012-05-18T05:42:56\n" +
+//"2012-05-11T01:03:50\n" +
+//"2012-05-12T14:37:14\n" +
+//"2012-05-14T12:55:06\n" +
+//"2012-05-10T07:25:54\n" +
+//"2012-05-11T17:41:56\n" +
+//"2012-05-14T20:46:04\n";
+//! changed in odd way 2017-12-15 ! now modified time is older! See
+//https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/2004/catalog.xml
+"2009-09-28T06:45:08\n" +
+"2010-01-05T09:16:32\n" +
+"2010-01-07T21:55:36\n" +
+"2010-01-09T22:13:44\n" +
+"2010-01-10T21:16:10\n" +
+"2010-01-10T21:35:00\n" +
+"2009-10-02T05:01:10\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         }
 
@@ -2095,7 +2133,8 @@ expected =
         testGenerateDatasetsXml();
         testWcosTemp(deleteCachedInfo);  
         testShipWTEP(deleteCachedInfo);
- 
+        /* */
+
         //not usually run
 
     }

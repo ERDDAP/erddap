@@ -44,7 +44,7 @@ var config = new Object();
 
 
 //===================  GLOBAL TOOLTIP CONFIGURATION  =========================//
-var tt_Debug	= true		// false or true - recommended: false once you release your page to the public
+var tt_Debug	= false		// false or true - recommended: false once you release your page to the public
 var tt_Enabled	= true		// Allows to (temporarily) suppress tooltips, e.g. by providing the user with a button that sets this global variable to false
 var TagsToTip	= true		// false or true - if true, HTML elements to be converted to tooltips via TagToTip() are automatically hidden;
 							// if false, you should hide those HTML elements yourself
@@ -56,9 +56,9 @@ var TagsToTip	= true		// false or true - if true, HTML elements to be converted 
 // Example: onmouseover="Tip('Tooltip text', LEFT, true, BGCOLOR, '#FF9900', FADEIN, 400)"
 
 config. Above			= false		// false or true - tooltip above mousepointer
-config. BgColor			= '#E2E7FF'	// Background colour (HTML colour value, in quotes)
+config. BgColor			= '#F8F8F8'	// Background colour (HTML colour value, in quotes). Bob set this. Was #E2E7FF
 config. BgImg			= ''		// Path to background image, none if empty string ''
-config. BorderColor		= '#003099'
+config. BorderColor		= '#777777' // was #9999FF
 config. BorderStyle		= 'solid'	// Any permitted CSS value, but I recommend 'solid', 'dotted' or 'dashed'
 config. BorderWidth		= 1
 config. CenterMouse		= false		// false or true - center the tip horizontally below (or above) the mousepointer
@@ -68,15 +68,15 @@ config. CloseBtn		= false		// false or true - closebutton in titlebar
 config. CloseBtnColors	= ['#990000', '#FFFFFF', '#DD3333', '#FFFFFF']	// [Background, text, hovered background, hovered text] - use empty strings '' to inherit title colours
 config. CloseBtnText	= '&nbsp;X&nbsp;'	// Close button text (may also be an image tag)
 config. CopyContent		= true		// When converting a HTML element to a tooltip, copy only the element's content, rather than converting the element by its own
-config. Delay			= 400		// Time span in ms until tooltip shows up
+config. Delay			= 400		// Time span in ms until tooltip shows up. 
 config. Duration		= 0			// Time span in ms after which the tooltip disappears; 0 for infinite duration, < 0 for delay in ms _after_ the onmouseout until the tooltip disappears
 config. Exclusive		= false		// false or true - no other tooltip can appear until the current one has actively been closed
-config. FadeIn			= 100		// Fade-in duration in ms, e.g. 400; 0 for no animation
-config. FadeOut			= 100
+config. FadeIn			= 0		// Fade-in duration in ms, e.g. 400; 0 for no animation, Bob changed from 100 to 0
+config. FadeOut			= 0
 config. FadeInterval	= 30		// Duration of each fade step in ms (recommended: 30) - shorter is smoother but causes more CPU-load
 config. Fix				= null		// Fixated position, two modes. Mode 1: x- an y-coordinates in brackets, e.g. [210, 480]. Mode 2: Show tooltip at a position related to an HTML element: [ID of HTML element, x-offset, y-offset from HTML element], e.g. ['SomeID', 10, 30]. Value null (default) for no fixated positioning.
-config. FollowMouse		= true		// false or true - tooltip follows the mouse
-config. FontColor		= '#000044'
+config. FollowMouse		= true		// false or true - tooltip follows the mouse;  Bob changed this from true to false.
+config. FontColor		= '#000000' // was #000044
 config. FontFace		= 'Verdana,Geneva,sans-serif'
 config. FontSize		= '10pt'	// E.g. '9pt' or '12px' - unit is mandatory
 config. FontWeight		= 'normal'	// 'normal' or 'bold';

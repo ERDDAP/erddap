@@ -92,7 +92,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
   /**
    * Enable/disable the contour label.
-   * <BR><B>Property Change:</B> <code>labelEnabled</code>.
+   * <BR><strong>Property Change:</strong> <code>labelEnabled</code>.
    */
   public void setLabelEnabled(boolean sle) {
     if(labelEnabled_ != sle) {
@@ -117,7 +117,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the default contour label color
-   * <BR><B>Property Change:</B> <code>labelColor</code>.
+   * <BR><strong>Property Change:</strong> <code>labelColor</code>.
    */
   public void setLabelColor(Color color) {
     if(!labelColor_.equals(color)) {
@@ -142,7 +142,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the default contour label height.
-   * <BR><B>Property Change:</B> <code>labelHeightP</code>.
+   * <BR><strong>Property Change:</strong> <code>labelHeightP</code>.
    */
   public void setLabelHeightP(double height) {
     if(labelHeightP_ != height) {
@@ -167,7 +167,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the default contour label font.
-   * <BR><B>Property Change:</B> <code>labelFont</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFont</code>.
    */
   public void setLabelFont(Font font) {
     if(labelFont_ == null || !labelFont_.equals(font)) {
@@ -192,7 +192,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the number of significant digits for auto labelling.
-   * <BR><B>Property Change:</B> <code>significantDigits</code>.
+   * <BR><strong>Property Change:</strong> <code>significantDigits</code>.
    */
   public void setSignificantDigits(int sig) {
     if(sigDigits_ != sig) {
@@ -211,7 +211,7 @@ public class DefaultContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the default contour label format.
-   * <BR><B>Property Change:</B> <code>labelFormat</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFormat</code>.
    */
   public void setLabelFormat(String format) {
     if(!labelFormat_.equals(format)) {

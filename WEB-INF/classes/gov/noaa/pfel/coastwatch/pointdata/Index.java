@@ -125,7 +125,7 @@ public class Index  {
 
             //set the new values
             double d = pa.getDouble(row);
-            if (Math2.isFinite(d))
+            if (Double.isFinite(d))
                 tLastFiniteRow = row;
             byteBuffer.putDouble(d); //use internal po
         }
@@ -139,7 +139,7 @@ public class Index  {
 
         //close out
         out.close();
-        if (verbose) String2.log("Index.store time=" + (System.currentTimeMillis() - time));
+        if (verbose) String2.log("Index.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -225,7 +225,7 @@ public class Index  {
         for (int index = 0; index < nIndices; index++) 
             in[index].close();
 
-        String2.log("Index.subset time=" + (System.currentTimeMillis() - time));
+        String2.log("Index.subset time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);
         return table;
     }

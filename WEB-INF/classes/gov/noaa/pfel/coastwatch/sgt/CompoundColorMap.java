@@ -643,7 +643,7 @@ public class CompoundColorMap extends ColorMap {
         double maxData, int nSections, boolean continuous, String resultDir) throws Exception {
 
         //validate minData and maxData
-        if (!Math2.isFinite(minData) || !Math2.isFinite(maxData))
+        if (!Double.isFinite(minData) || !Double.isFinite(maxData))
             throw new RuntimeException(String2.ERROR + " in CompoundColorMap.makeCPT: minData (" + 
                 minData + ") and/or maxData (" + maxData + ") is invalid.");
         if (maxData < minData) {
@@ -719,15 +719,19 @@ public class CompoundColorMap extends ColorMap {
                     //e.g. 0..10 in 10 sections is 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
                     //range=18, better 9 sections than 6)
                     //look for 11 and 13 (primes), too
-                    nSections = 10; //default
-                    int sectionOptions[] = {9, 8, 7, 12, 13, 11, 10, 6}; 
-                    for (int i = 0; i < sectionOptions.length; i++) { 
-                        //is the interval just one digit?
-                        //String2.log("nSectionOptions=" + nSectionOptions + " range=" + range + " mantissa=" + Math2.mantissa(range / nSectionOptions));
-                        double interval = Math2.mantissa(Math.abs(range) / sectionOptions[i]); //e.g., 7.0000001 or 6.99999999
-                        if (Math2.almostEqual(9, interval, Math.round(interval))) {
-                            nSections = sectionOptions[i];
-                            break;
+                    if (Math.abs(range) == 360) {
+                        nSections = 8;  //0, 45, 90, ...
+                    } else {
+                        nSections = 10; //default
+                        int sectionOptions[] = {9, 8, 7, 12, 13, 11, 10, 6}; 
+                        for (int i = 0; i < sectionOptions.length; i++) { 
+                            //is the interval just one digit?
+                            //String2.log("nSectionOptions=" + nSectionOptions + " range=" + range + " mantissa=" + Math2.mantissa(range / nSectionOptions));
+                            double interval = Math2.mantissa(Math.abs(range) / sectionOptions[i]); //e.g., 7.0000001 or 6.99999999
+                            if (Math2.almostEqual(9, interval, Math.round(interval))) {
+                                nSections = sectionOptions[i];
+                                break;
+                            }
                         }
                     }
                 }

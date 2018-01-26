@@ -46,7 +46,7 @@ public class wwwSequence extends DSequence implements BrowserForm {
         /*-----------------------------------------------------
         // C++ implementation looks like this...
 
-        os << "<b>Sequence " << name() << "</b><br>\n";
+        os << "<strong>Sequence " << name() << "</strong><br>\n";
         os << "<dl><dd>\n";
 
         for (Pix p = first_var(); p; next_var(p)) {
@@ -59,9 +59,9 @@ public class wwwSequence extends DSequence implements BrowserForm {
         -----------------------------------------------------*/
 
         pw.print(
-            "<b>Sequence " 
+            "<strong>Sequence " 
             + getName() 
-            + "</b><br>\n"
+            + "</strong><br>\n"
             + "<dl><dd>\n"
             );
 

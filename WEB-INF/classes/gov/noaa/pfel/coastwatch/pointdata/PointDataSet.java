@@ -436,7 +436,7 @@ public abstract class PointDataSet implements Comparable {
         //for timePeriodNHours == 0, just return the raw data  (no averaging)
         if (timePeriodNHours == 0) {
             if (verbose) String2.log("\\\\**** PointDataSet.makeAveragedTimeSeries done. nRows=" + 
-                rawTable.nRows() + " TIME=" + (System.currentTimeMillis() - time));
+                rawTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
             return rawTable;
         }
 
@@ -501,7 +501,7 @@ public abstract class PointDataSet implements Comparable {
         double timePeriodCenteredTime[] = tCenteredTime.toArray(); tCenteredTime = null;
         if (nTimePeriods == 0) {
             if (verbose) String2.log("\\\\**** PointDataSet.makeAveragedTimeSeries done. nRows=" + 
-                resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time));
+                resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
             return resultTable;
         }
 
@@ -626,7 +626,7 @@ public abstract class PointDataSet implements Comparable {
         //String2.log("PointDataSet.makeAveragedTS resultsTable=" + resultsTable);
         //String2.log("PointDataSet.makeAveragedTS resultsTable data stats=" + resultsTable.getColumn(5).statsString());
         if (verbose) String2.log("\\\\**** PointDataSet.makeAveragedTimeSeries done. nRows=" + 
-            resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "\n");
+            resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms\n");
         return resultTable;
 
     }

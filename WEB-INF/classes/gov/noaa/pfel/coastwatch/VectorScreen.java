@@ -417,7 +417,7 @@ public class VectorScreen extends Screen {
 
             //file type help link
             hasNoBr = true;
-            htmlSB.append("        <span style=\"white-space: nowrap;\">\n"); 
+            htmlSB.append("        <span style=\"white-space:nowrap;\">\n"); 
             htmlSB.append(oneOf.gridFileHelpLink());
 
             //GETQuery help link

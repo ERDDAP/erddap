@@ -26,15 +26,15 @@ import java.util.*;
  * Systems. This is a handy way of delivering configuration information
  * to software at runtime. The .ini file structure is as follows:
  * <p>
- * <b>[SectionName]</b><br>
- * <b>PropertyName = Property</b><br>
- * <b>NextPropertyName = Property2</b><br>
- * <b>AnotherPropertyName = Property3</b><br>
+ * <strong>[SectionName]</strong><br>
+ * <strong>PropertyName = Property</strong><br>
+ * <strong>NextPropertyName = Property2</strong><br>
+ * <strong>AnotherPropertyName = Property3</strong><br>
  * <p>
- * <b>[AnotherSectionName]</b><br>
- * <b>PropertyName = Property</b><br>
- * <b>NextPropertyName = Property2</b><br>
- * <b>AnotherPropertyName = Property3</b><br>
+ * <strong>[AnotherSectionName]</strong><br>
+ * <strong>PropertyName = Property</strong><br>
+ * <strong>NextPropertyName = Property2</strong><br>
+ * <strong>AnotherPropertyName = Property3</strong><br>
  * <p>
  * This class opens and parses the iniFile it's constructor. If
  * the file isn't accesible or is unparsable then the class will

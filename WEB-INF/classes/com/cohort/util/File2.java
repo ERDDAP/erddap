@@ -18,11 +18,81 @@ import java.io.OutputStream;
  */
 public class File2 {
 
+    //define the file types for the purpose of assigning icon in Table.directoryListing
+    //compressed and image ext from wikipedia
+    //many ext from http://www.fileinfo.com/filetypes/common
+    public static final String BINARY_EXT[] = {
+        ".accdb", ".bin", ".cab", ".cer", ".class", ".cpi", ".csr",
+        ".db", ".dbf", ".dll", ".dmp", ".drv", ".dwg", ".dxf", ".fnt", ".fon", 
+        ".ini", ".keychain", ".lnk", ".mat", ".mdb", ".mim", ".nc", 
+        ".otf", ".pdb", ".prf", ".sys", ".ttf"};
+    public static final String COMPRESSED_EXT[] = {
+        ".7z", ".a", ".ace", ".afa", ".alz", ".apk", 
+        ".ar", ".arc", ".arj", ".ba", ".bak", ".bh", ".bz2", 
+        ".cab", ".cfs", ".cpio", ".dar", ".dd", ".deb", ".dgc", ".dmg", ".f",
+        ".gca", ".gho", ".gz", 
+        ".gzip", ".ha", ".hki", ".hqx", ".infl", ".iso", 
+        ".j", ".jar", ".kgb", ".kmz", 
+        ".lbr", ".lha", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", 
+        ".mar", ".msi", ".partimg", ".paq6", ".paq7", ".paq8", ".pea", ".pim", ".pit",
+        ".pkg", ".qda", ".rar", ".rk", ".rpm", ".rz", 
+        ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx",
+        ".tar", ".tbz2", ".tgz", ".tlz", ".toast", ".torrent",
+        ".uca", ".uha", ".uue", ".vcd", ".war", ".wim", ".xar", ".xp3", ".xz", ".yz1", 
+        ".z", ".zip", ".zipx", ".zoo"};
+    public static final String IMAGE_EXT[] = {
+        ".ai", ".bmp", ".cgm", ".draw", ".drw", ".gif", 
+        ".ico", ".jfif", ".jpeg", ".jpg", 
+        ".pbm", ".pgm", ".png", ".pnm", ".ppm", ".pspimage", 
+        ".raw", ".svg", ".thm", ".tif", ".tiff", ".webp", ".yuv"};
+    public static final String LAYOUT_EXT[] = {
+        ".doc", ".docx", ".indd", ".key", ".pct",
+        ".pps", ".ppt", ".pptx",
+        ".psd", ".qxd", ".qxp", ".rels", ".rtf", ".wpd", ".wps",
+        ".xlr", ".xls", ".xlsx"};  
+    public static final String MOVIE_EXT[] = {
+        ".3g2", ".3gp", ".asf", ".asx", ".avi", ".fla", ".flv", 
+        ".mov", ".mp4", ".mpg", ".ogv", ".rm", ".swf", ".vob", ".wmv", ".webm"};
+    public static final String PDF_EXT[] = {".pdf"};
+    public static final String PS_EXT[] = {".eps", ".ps"};
+    public static final String SCRIPT_EXT[] = {  //or executable  
+        ".app", ".asp", ".bat", ".cgi", ".com", ".csh", ".exe", ".gadget", ".js", ".jsp", 
+        ".ksh", ".php", ".pif", ".pl", ".py", ".sh", ".tcsh", ".vb", ".wsf"};
+    public static final String SOUND_EXT[] = {".aif", ".aiff", ".aifc", ".au",
+        ".flac", ".iff", ".m3u", ".m4a", ".mid", 
+        ".mp3", ".mpa", ".ogg", ".wav", ".wave", ".wma"};
+    public static final String TEXT_EXT[] = {
+        ".asc", ".c", ".cpp", ".cs", ".csv", ".das", ".dat", ".dds", 
+        ".java", ".json", ".log", ".m", 
+        ".sdf", ".sql", ".tsv", ".txt", ".vcf"};
+    public static final String WORLD_EXT[] = {".css", ".htm", ".html", ".xhtml"};
+    public static final String XML_EXT[] = {".dtd", ".gpx", ".kml", ".xml", ".rss"};
+
+    /** The image file names in ERDDAP's /images/ for the different file types.
+     * These may change periodically.
+     * These parallel ICON_ALT. */
+    public static final String ICON_FILENAME[] = {
+        "generic.gif", "index.gif", "binary.gif", "compressed.gif", "image2.gif", 
+        "layout.gif", "movie.gif", "pdf.gif", "ps.gif", "script.gif", 
+        "sound1.gif", "text.gif", "world1.gif", "xml.gif"};
+
+    /** The 3 character string used for <img alt=...> for the different file types.
+     * I hope these won't change (other than adding new types).
+     * These are from Apache directory listings.
+     * These parallel ICON_FILENAME */
+    public static final String ICON_ALT[] = {
+        "UNK", "IDX", "BIN", "ZIP", "IMG", 
+        "DOC", "MOV", "PDF", "PS", "EXE", 
+        "SND", "TXT", "WWW", "XML"};
+
+
+
     /**
      * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
+    public static boolean reallyVerbose = false;
 
     private static String tempDirectory; //lazy creation by getSystemTempDirectory
 
@@ -43,6 +113,36 @@ public class File2 {
             return false;
         }
     }
+
+    /**
+     * This returns an index into ICON_FILENAME and ICON_ALT suitable for the fileName. 
+     * The fallback is "UNK".
+     *
+     * @param fileName
+     * @return an index into ICON_FILENAME and ICON_ALT suitable for the fileName. 
+     */
+    public static int whichIcon(String fileName) {
+        String fileNameLC = fileName.toLowerCase();
+        String extLC = File2.getExtension(fileNameLC);
+
+        if (fileNameLC.equals("index.html") ||
+            fileNameLC.equals("index.htm"))              return String2.indexOf(ICON_ALT, "IDX");
+        if (String2.indexOf(BINARY_EXT,     extLC) >= 0) return String2.indexOf(ICON_ALT, "BIN");
+        if (String2.indexOf(COMPRESSED_EXT, extLC) >= 0) return String2.indexOf(ICON_ALT, "ZIP");
+        if (String2.indexOf(IMAGE_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "IMG");
+        if (String2.indexOf(LAYOUT_EXT,     extLC) >= 0) return String2.indexOf(ICON_ALT, "DOC");
+        if (String2.indexOf(MOVIE_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "MOV");
+        if (String2.indexOf(PDF_EXT,        extLC) >= 0) return String2.indexOf(ICON_ALT, "PDF");
+        if (String2.indexOf(PS_EXT,         extLC) >= 0) return String2.indexOf(ICON_ALT, "PS ");
+        if (String2.indexOf(SCRIPT_EXT,     extLC) >= 0) return String2.indexOf(ICON_ALT, "EXE");
+        if (String2.indexOf(SOUND_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "SND");
+        if (String2.indexOf(TEXT_EXT,       extLC) >= 0) return String2.indexOf(ICON_ALT, "TXT");
+        if (String2.indexOf(WORLD_EXT,      extLC) >= 0) return String2.indexOf(ICON_ALT, "WWW");
+        if (String2.indexOf(XML_EXT,        extLC) >= 0) return String2.indexOf(ICON_ALT, "XML");
+        
+        return String2.indexOf(ICON_ALT, "UNK");
+    }
+
 
     /**
      * For newly created files, this tries a few times to wait for the file
@@ -698,6 +798,11 @@ public class File2 {
         }
     }
     
+    /** A variant that copies the entire source. */
+    public static boolean copy(String source, String destination) {
+        return copy(source, destination, 0, -1);
+    }
+
     /**
      * This makes a copy of a file.
      * !!!If the source might be remote, use SSR.downloadFile(source, dest, false) instead.
@@ -705,10 +810,13 @@ public class File2 {
      * @param source the full file name of the source file
      * @param destination the full file name of the destination file.
      *   If the directory doesn't exist, it will be created.
+     * @param first the first byte to be transferred (0..)
+     * @param last  the last byte to be transferred (inclusive),
+     *    or -1 to transfer to the end.
      * @return true if successful. If not successful, the destination file
      *   won't exist.
      */
-    public static boolean copy(String source, String destination) {
+    public static boolean copy(String source, String destination, long first, long last) {
 
         if (source.equals(destination)) return false;
         FileOutputStream out = null;
@@ -718,7 +826,7 @@ public class File2 {
             if (!dir.isDirectory())
                  dir.mkdirs();
             out = new FileOutputStream(destination);
-            success = copy(source, out);
+            success = copy(source, out, first, last);
         } catch (Exception e) {
             String2.log(String2.ERROR + " in File2.copy source=" + source + "\n" + 
                 e.toString());
@@ -733,55 +841,113 @@ public class File2 {
         return success;
     }
 
+    /** A variant that copies the entire source. */
+    public static boolean copy(String source, OutputStream out) {
+        return copy(source, out, 0, -1);
+    }
+
     /**
      * This makes a copy of a file to an outputStream.
      *
-     * @param source the full file name of the source file
+     * @param source the full file name of the source
      * @param out  which is flushed, but not closed, at the end
-     * @return true if successful. If not successful, the destination file
-     *   won't exist.
+     * @param first the first byte to be transferred (0..)
+     * @param last  the last byte to be transferred (inclusive),
+     *    or -1 to transfer to the end.
+     * @return true if successful. 
      */
-    public static boolean copy(String source, OutputStream out) {
+    public static boolean copy(String source, OutputStream out, long first, long last) {
 
+        InputStream in = null;
         try {
-            File file = new File(source);
-            if (!file.isFile())
+            File file = new File(source);            
+            if (!file.isFile()) {
+                String2.log(String2.ERROR + " in File2.copy: source=" + source +
+                    " doesn't exist.");
                 return false;
-            FileInputStream in  = new FileInputStream(file);
-            return copy(in, out);
+            }
+            if (last < 0) {
+                last = file.length() - 1;
+                if (reallyVerbose)
+                    String2.log("  File2.copy(first=" + first + ", last was=-1 now=" + last + ")");
+            }
+            in  = new FileInputStream(file);
+            return copy(in, out, first, last);
         } catch (Exception e) {
-            String2.log(MustBe.throwable(String2.ERROR + " in File2.copy: ", e));
+            String2.log(MustBe.throwable(String2.ERROR + " in File2.copy.", e));
+            return false;
+        } finally {
+            try {
+                if (in != null) in.close(); 
+            } catch (Exception e2) {}
+        }
+    }
+
+
+    /** A variant that copies the entire source. */
+    public static boolean copy(InputStream in, OutputStream out) {
+        return copy(in, out, 0, -1);
+    }
+
+    /**
+     * This copies a range from an inputStream to an outputStream.
+     *
+     * @param in   At the end, this is NOT closed.
+     * @param out  which is flushed, but not closed, at the end
+     * @param first the first byte to be transferred (0..)
+     * @param last  the last byte to be transferred (inclusive),
+     *    or -1 to transfer to the end.
+     * @return true if successful. 
+     */
+    public static boolean copy(InputStream in, OutputStream out, long first, long last) {
+
+        int bufferSize = 32768;
+        byte buffer[] = new byte[bufferSize];
+        long remain = last < 0? Long.MAX_VALUE : 1 + last - first;
+        try {
+            skipFully(in, first);
+            int nRead;
+            while ((nRead = in.read(buffer, 0, (int)Math.min(remain, bufferSize))) >= 0) {  //0 shouldn't happen. -1=end of file
+                out.write(buffer, 0, nRead);
+                remain -= nRead;
+                //String2.log(">> remain=" + remain);
+                if (remain == 0) 
+                    break;
+            }
+            out.flush(); //always flush
+            if (last >= 0 && nRead == -1)
+                throw new IOException("Unexpected end-of-file.");
+            //String2.log(">> found eof");
+            return true;
+        } catch (Exception e) {
+            String2.log(MustBe.throwable(String2.ERROR + " in File2.copy at first=" + 
+                first + ", last=" + last + ", remain=" + remain + ".", e));
             return false;
         }
     }
 
     /**
-     * This copies from an inputStream to an outputStream.
+     * This fully skips the specified number of bytes from the inputstream
+     * (unlike InputStream.skip, which may not skip all of the bytes).
      *
-     * @param in   When finished, successful or not, this closes 'in'.
-     * @param out  which is flushed, but not closed, at the end
-     * @return true if successful. 
+     * @param inputStream 
+     * @param nToSkip the number of bytes to be read
+     * @throws IOException if trouble
      */
-    public static boolean copy(InputStream in, OutputStream out) {
+    public static void skipFully(InputStream inputStream, long nToSkip) throws IOException {
 
-        int bufferSize = 32768;
-        byte buffer[] = new byte[bufferSize];
-        boolean success = false;
-        try {
-            int nRead;
-            while ((nRead = in.read(buffer)) >= 0)  //0 shouldn't happen. -1=end of file
-                out.write(buffer, 0, nRead);
-            out.flush();
-            success = true;
-        } catch (Exception e) {
-            String2.log(MustBe.throwable(String2.ERROR + " in File2.copy: ", e));
+        long remain = nToSkip;
+        int zeroCount = 0; //consecutive 
+        while (remain > 0) {
+            long skipped = inputStream.skip(remain); //may not skip all requested
+            if (skipped == 0) {
+                if (++zeroCount == 3)
+                    throw new IOException("Unable to skip within the inputStream.");
+            } else {
+                zeroCount = 0;
+                remain -= skipped;
+            }
         }
-        try { 
-            if (in != null) in.close();
-        } catch (Exception e) {
-        }
-
-        return success;
     }
 
     /**
@@ -794,7 +960,7 @@ public class File2 {
      * @param length the number of bytes to be read
      * @throws Exception if trouble
      */
-    public static void read(InputStream inputStream, byte[] byteArray,
+    public static void readFully(InputStream inputStream, byte[] byteArray,
         int offset, int length) throws Exception {
 
         int po = offset;
@@ -813,10 +979,10 @@ public class File2 {
      * @param length the number of bytes to be read
      * @throws Exception if trouble
      */
-    public static byte[] read(InputStream inputStream, int length) throws Exception {
+    public static byte[] readFully(InputStream inputStream, int length) throws Exception {
 
         byte[] byteArray = new byte[length];
-        read(inputStream, byteArray, 0, length);
+        readFully(inputStream, byteArray, 0, length);
         return byteArray;
     }
 

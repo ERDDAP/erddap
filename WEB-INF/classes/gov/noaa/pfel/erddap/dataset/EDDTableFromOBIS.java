@@ -316,7 +316,7 @@ public class EDDTableFromOBIS extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -555,7 +555,7 @@ public class EDDTableFromOBIS extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromOBIS " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -705,7 +705,7 @@ public class EDDTableFromOBIS extends EDDTable{
         Attributes externalAddGlobalAttributes)
         throws Throwable {
 
-        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
+        tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("\n*** EDDTableFromOBIS.generateDatasetsXml" +
             "\nlocalSourceUrl=" + tLocalSourceUrl +
             " tSourceCode=" + tSourceCode + 
@@ -887,8 +887,8 @@ directionsForGenerateDatasetsXml() +
         userDapQuery = "&Genus=\"Macrocystis\""; 
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className(), ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName));
         //String2.log(results);
         expected = 
 "Attributes {[10]\n" +
@@ -1146,7 +1146,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.csv        
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className(), ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //2010-07-20 -132.4223 changed to -132.422 in 3 places
@@ -1179,7 +1179,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude, latitude, time, ID, Genus, Species\n" +
@@ -1213,7 +1213,7 @@ so standardize results table removes all but 1 record.
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         */
@@ -1223,7 +1223,7 @@ so standardize results table removes all but 1 record.
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1232,7 +1232,7 @@ so standardize results table removes all but 1 record.
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1261,7 +1261,7 @@ so standardize results table removes all but 1 record.
         userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
         tName = fishbase.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             fishbase.className() + "FishBaseGraph", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude, latitude, time, ID, Genus, Species, Citation\n" +
@@ -1276,7 +1276,7 @@ so standardize results table removes all but 1 record.
         //data for mapExample
         tName = fishbase.makeNewFileForDapQuery(null, null, "longitude,latitude&Genus=Carcharodon&longitude!=NaN", 
             EDStatic.fullTestCacheDirectory, fishbase.className() + "Map", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude, latitude\n" +
@@ -1404,7 +1404,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
             userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
             tName = dukeSeamap.makeNewFileForDapQuery(null, null, userDapQuery, 
                 EDStatic.fullTestCacheDirectory, dukeSeamap.className() + "duke", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "longitude, latitude, time, ID, Genus, Species, Citation\n" +
@@ -1441,7 +1441,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01"; 
         tName = argos.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             argos.className() + "Argos", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = "";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);

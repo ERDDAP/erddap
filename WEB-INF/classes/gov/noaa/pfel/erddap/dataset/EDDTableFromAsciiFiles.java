@@ -34,6 +34,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.FileInputStream;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -235,6 +236,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "\nsampleFileName=" + sampleFileName +
             "\ncharset=" + charset + " colNamesRow=" + columnNamesRow + 
             " firstDataRow=" + firstDataRow +
+            " columnSeparator=" + String2.annotatedString(columnSeparator) +
             " reloadEveryNMinutes=" + tReloadEveryNMinutes +
             "\nextract pre=" + tPreExtractRegex + " post=" + tPostExtractRegex + 
             " regex=" + tExtractRegex + " colName=" + tColumnNameForExtract +
@@ -282,6 +284,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         boolean dateTimeAlreadyFound = false;
         DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
+        double maxTimeES = Double.NaN;
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
             PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone(); //clone because going into addTable
@@ -300,6 +303,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                     isDateTime = true;
                     addAtts.set("units", dtFormat);
                 }
+
+                if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(dtFormat)) 
+                    maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
             }
 
             //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
@@ -343,6 +349,16 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         //tryToFindLLAT
         tryToFindLLAT(dataSourceTable, dataAddTable);
+
+        //use maxTimeES
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
+        }
 
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
@@ -388,6 +404,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <pathRegex>.*</pathRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <charset>" + charset + "</charset>\n" +
+            "    <columnSeparator>" + XML.encodeAsXML(columnSeparator) + "</columnSeparator>\n" + 
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
             "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
@@ -420,15 +437,17 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
 
+        String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml()");
+
         try {
             Attributes externalAddAttributes = new Attributes();
             externalAddAttributes.add("title", "New Title!");
             String suggDatasetID = suggestDatasetID(
                 EDStatic.unitTestDataDir + "asciiNdbc/.*\\.csv");
             String results = generateDatasetsXml(
-                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",
-                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv", 
-                String2.ISO_8859_1, 1, 3, "", 1440,
+                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",  
+                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv",
+                String2.ISO_8859_1, 1, 3, "", -1,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
@@ -437,9 +456,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromAsciiFiles",
-                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",
-                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv", 
-                String2.ISO_8859_1, "1", "3", "", "1440",
+                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv", 
+                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv",
+                String2.ISO_8859_1, "1", "3", "", "-1",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
@@ -461,6 +480,7 @@ directionsForGenerateDatasetsXml() +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
+"    <columnSeparator></columnSeparator>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>3</firstDataRow>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
@@ -486,10 +506,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
-"        <att name=\"keywords\">altitude, atmosphere,\n" +
-"Atmosphere &gt; Altitude &gt; Station Height,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, atmp, buoy, center, data, direction, height, identifier, latitude, longitude, national, ndbc, newer, noaa, speed, station, stationID, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds, wspd, wtmp</att>\n" +
+"        <att name=\"keywords\">altitude, atmosphere, atmospheric, atmp, buoy, center, data, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, height, identifier, latitude, longitude, national, ndbc, newer, noaa, science, speed, station, stationID, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds, wspd, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
@@ -561,7 +578,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">yyyy-MM</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -658,6 +675,162 @@ directionsForGenerateDatasetsXml() +
     }
 
     /**
+     * testGenerateDatasetsXml2 - notably to test reloadEveryNMinutes and testOutOfDate.
+     */
+    public static void testGenerateDatasetsXml2() throws Throwable {
+        testVerboseOn();
+
+        try {
+            String sourceUrl = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.csv?station%2Ctime%2Catmp%2Cwtmp&station=%2241004%22&time%3E=now-7days";
+            String destDir = File2.getSystemTempDirectory();
+            String destName = "latest41004.csv";
+            String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXml2()\n" +
+                "downloading test file from:\n" + sourceUrl + "\nto: " + destName);        
+            SSR.downloadFile(sourceUrl, destDir + destName, true); //tryToUseCompression
+
+            Attributes externalAddAttributes = new Attributes();
+            externalAddAttributes.add("title", "New Title!");
+            String suggDatasetID = suggestDatasetID(destDir + destName);
+            String results = generateDatasetsXml(
+                destDir, destName, "",
+                String2.ISO_8859_1, 1, 3, "", -1,
+                "", "", "", "",
+                "", "", 
+                "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+                externalAddAttributes) + "\n";
+
+            //GenerateDatasetsXml
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "EDDTableFromAsciiFiles",
+                destDir, destName, "",
+                String2.ISO_8859_1, "1", "3", "", "-1",
+                "", "", "", "",
+                "", "", 
+                "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
+                false); //doIt loop?
+            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+
+String expected = 
+directionsForGenerateDatasetsXml() +
+" * Since the source files don't have any metadata, you must add metadata\n" +
+"   below, notably 'units' for each of the dataVariables.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"Temp_c5d7_d791_02d6\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + destDir + "</fileDir>\n" +
+"    <fileNameRegex>latest41004.csv</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnSeparator></columnSeparator>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>3</firstDataRow>\n" +
+"    <preExtractRegex></preExtractRegex>\n" +
+"    <postExtractRegex></postExtractRegex>\n" +
+"    <extractRegex></extractRegex>\n" +
+"    <columnNameForExtract></columnNameForExtract>\n" +
+"    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">NOAA NDBC</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"institution\">NOAA NDBC</att>\n" +
+"        <att name=\"keywords\">atmp, buoy, center, data, identifier, national, ndbc, newer, noaa, station, temperature, time, title, water, wtmp</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">station</att>\n" +
+"        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
+"        <att name=\"testOutOfDate\">now-1day</att>\n" +
+"        <att name=\"title\">The Newer Title!</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>station</sourceName>\n" +
+"        <destinationName>station</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Station</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>atmp</sourceName>\n" +
+"        <destinationName>atmp</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Atmp</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wtmp</sourceName>\n" +
+"        <destinationName>wtmp</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Water Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+            //    expected, "");
+
+            //ensure it is ready-to-use by making a dataset from it
+            EDD edd = oneFromXmlFragment(null, results);
+            Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
+            Test.ensureEqual(edd.title(), "The Newer Title!", "");
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+                "station, time, atmp, wtmp",
+                "");
+
+        } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+            String2.pressEnterToContinue(msg + 
+                "\nUnexpected error in generateDatasetsXml2."); 
+        }
+
+    }
+
+
+    /**
      * This tests the methods in this class with a 1D dataset.
      *
      * @throws Throwable if trouble
@@ -679,7 +852,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n****************** EDDTableFromAsciiFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -791,7 +964,7 @@ expected =
 "testTableAscii.das\";\n" +
 "    String infoUrl \"The Info Url\";\n" +
 "    String institution \"NDBC\";\n" +
-"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
+"    String keywords \"Earth Science > Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -821,7 +994,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -848,7 +1021,7 @@ expected =
         userDapQuery = "&longitude=-122.88&latitude=37.36&time>=2005-07-01&time<2005-07-01T10";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
@@ -870,7 +1043,7 @@ expected =
         userDapQuery = "&station=\"46012\"&time>=2005-07-01&time<2005-07-01T10";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         //same expected
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -880,7 +1053,7 @@ expected =
         userDapQuery = "&time=2005-07-01";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
@@ -896,7 +1069,7 @@ expected =
         userDapQuery = "&wtmp>32";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_4", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
@@ -910,7 +1083,7 @@ expected =
             "&time=2005-07-01&station=~\"(46012|46026|zztop)\"";  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_5", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,altitude,time,station,atmp,wtmp\n" +
@@ -1072,7 +1245,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
@@ -1094,7 +1267,7 @@ expected =
         String2.log("\nEDDTableFromAsciiFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1191,7 +1364,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1215,7 +1388,7 @@ expected =
         userDapQuery = "fileName,five";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_sv", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         expected = 
 "fileName,five\n" +
 ",\n" +
@@ -1226,7 +1399,7 @@ expected =
         userDapQuery = "anInt,fileName,five,aBoolean&aBoolean=1&five=5";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_conbool", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         expected = 
 "anInt,fileName,five,aBoolean\n" +
 ",,,\n" +
@@ -1243,35 +1416,40 @@ expected =
    
     /** 
      * This generates a chunk of datasets.xml for one or more ERDDAP datasets
-     * from the main (or for each of the children) in an inport.xml file.
+     * from the main entity (or for all of the children) in an inport.xml file.
      * This will not throw an exception.
+     * 2017-08-09 I switched from old /inport/ to new /inport-xml/ .
      *
+     * @param xmlFileName the URL or full file name of an InPort XML file.
+     *   If it's a URL, it will be stored in tInputXmlDir.
+     * @param tInputXmlDir The directory that is/will be used to store the input-xml file.
+     *   If specified and if it doesn't exist, it will be created.
      * @return content for datasets.xml.
      *   Error messages will be included as comments.
      */
     public static String generateDatasetsXmlFromInPort(String xmlFileName, 
-        String typeCodeRegex, String datasetTypeRegex, 
-        String tFileDir) {
+        String tInputXmlDir, String typeRegex) {
 
         String main = null;
         try {
             main = generateDatasetsXmlFromInPort(xmlFileName, 
-                typeCodeRegex, datasetTypeRegex, tFileDir, 0, "") + "\n";
+                tInputXmlDir, typeRegex, 0, "", "") + "\n";
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
-            return "<!-- " + msg + " -->\n\n";
+            return "<!-- " + String2.replaceAll(msg, "--", "- - ") + " -->\n\n";
         }
 
         StringBuilder children = new StringBuilder();
         for (int whichChild = 1; whichChild < 10000; whichChild++) {
             try {
                 children.append(generateDatasetsXmlFromInPort(xmlFileName, 
-                    typeCodeRegex, datasetTypeRegex, tFileDir, whichChild, "") + "\n");
+                    tInputXmlDir, typeRegex, whichChild, "", "") + "\n");
             } catch (Throwable t) {
                 String msg = MustBe.throwableToString(t);
-                if (msg.indexOf("ERROR: This is no childEntity=") >= 0)
+                if (msg.indexOf("ERROR: whichChild=") < 0 ||
+                    msg.indexOf(" not found as ") < 0)
                      msg = "";
-                else msg = "<!-- " + msg + " -->\n\n";
+                else msg = "<!-- " + String2.replaceAll(msg, "--", "- - ") + " -->\n\n";
                 return whichChild > 1?
                     children.toString() + msg :
                     main                + msg;
@@ -1280,60 +1458,85 @@ expected =
         return children.toString();
     }
 
+    public static String convertInportTimeToIso8601(String time) {
+        //Field: start-date-time (just below this:
+        //https://inport.nmfs.noaa.gov/inport/help/xml-loader#time-frames )
+        //Says for time: "The value must be specified in the following format: YYYYMMDDTHHMMSS.FFFZ"
+        //"A time zone component is optional. If no time zone is provided, UTC is assumed."
+        time = Calendar2.expandCompactDateTime(time);
+        //now e.g., 2017-08-23T00:00:00.000  (23 chars)
+        if (time.length() >= 13 && //has hour value
+            time.charAt(10) == 'T' && 
+            time.charAt(time.length() - 1) != 'Z' && //no Z
+            time.substring(11).indexOf('-') < 0 && //no trailing e.g., -05:00 time zone after T
+            time.substring(11).indexOf('+') < 0 && //no trailing e.g., +05:00 time zone after T
+            time.length() <= 23) //not longer than example above
+            time += "Z";
+        return time;
+    }
+
     /** 
      * This generates a chunk of datasets.xml for one ERDDAP dataset
      * from the info for the main info (or one of the children) in an inport.xml file.
-     * InPort Users guide is at
-     *   http://ias.pifsc.noaa.gov/inp/docs/inp_userguide_web.pdf.
+     * 2017: The inport-xml loader documentation (which is related by not identical to inport-xml) is at
+     *   https://inport.nmfs.noaa.gov/inport/help/xml-loader#inport-metadata
      * Because the &lt;downloads&gt;&lt;download&gt;&lt;/download-url&gt;'s 
      *  are unreliable even when present, this just notes the URL in 
      *  &gt;sourceUrl&lt;, but doesn't attempt to download the file.
      *
      * @param xmlFileName the URL or full file name of an InPort XML file.
-     *   If it's a URL, it will be stored in tFileDir.
-     * @param typeCodeRegex e.g., .*, ENT, DS.
-     *   If the &lt;common-information&gt;&lt;/cat-type-code&gt; value in the 
-     *   xml file doesn't match, this will throw an exception.
-     * @param datasetTypeRegex e.g., .*, Database, .*[Ff]ile.*.
-     *   null appears as a "" (a 0-length String).
-     *   If the &lt;data-set&gt; type attribute's value in the 
-     *   xml file doesn't match, this will throw an exception.
-     *   Observed by the Tally system: "": 583, Database: 118, Mixed: 53, 
-     *     Other: 28, Files: 22, SAS files: 2, CSV Files: 1, GIS: 1.
-     * @param tFileDir The directory that is/will be used to store the data file.
+     *   If it's a URL, it will be stored in tInputXmlDir.
+     * @param tInputXmlDir The directory that is/will be used to store the input-xml file.
      *   If specified and if it doesn't exist, it will be created.
+     * @param typeRegex e.g., "(Entity|Data Set)". 
+     *   Other types are rarer and not useful for ERDDAP:
+     *     Document, Procedure, Project.
      * @param whichChild  
      *   If whichChild=0, this will create a dataVariables for columns
      *     described by the high-level data-attributes (if any).
      *   If whichChild is &gt;0, this method will include dataVariable definitions
-     *      from the specified child (1, 2, 3, ...).
+     *      from the specified entity-attribute, distribution, and/or child-item
+     *      (1, 2, 3, ...).
+     *   IF &gt;1 IS USED, THIS ASSUMES THAT THEY ARE DEFINED IN PARALLEL!
      *   If the specified whichChild doesn't exist, this will throw a RuntimeException.
      *   In all cases, the "sourceUrl" will specify the URL from where the data 
      *      can be downloaded (if specified in the XML).
-     * @param tFileName The name.ext of the data file name, if known. 
+     * @param tBaseDataDir the base directory, to which item-id/ will be added.
+     *   It that dir doesn't exist, it will be created.
+     *   The dataFile, if specified, should be in that directory.
+     * @param tDataFileName The name.ext of the data file name for this child, if known. 
+     *   It is okay if there is no entity-attribute info for this child.
      *   
      */
     public static String generateDatasetsXmlFromInPort(String xmlFileName, 
-        String typeCodeRegex, String datasetTypeRegex, 
-        String tFileDir, int whichChild, String tFileName) throws Throwable {
+        String tInputXmlDir, String typeRegex, int whichChild, 
+        String tBaseDataDir, String tDataFileName) throws Throwable {
 
         String2.log("\n*** inPortGenerateDatasetsXml(" + xmlFileName + 
             ", whichChild=" + whichChild + ")");
 
         //check parameters
         Test.ensureTrue(whichChild >= 0, "whichChild must be >=0."); 
+        //whichChild can be found as an entity-attribute, distribution, and/or child-item
+        boolean whichChildFound = false;  
 
-        //make tFileDir
-        if (String2.isSomething(tFileDir)) 
-             File2.makeDirectory(tFileDir);
-        else tFileDir = "";
+        if (String2.isSomething(tBaseDataDir)) {
+            tBaseDataDir = File2.addSlash(File2.forwardSlashDir(tBaseDataDir));
+            File2.makeDirectory(tBaseDataDir);
+        }
+        String tDataDir = null; //it should be set below
+
+        //make tInputXmlDir
+        if (String2.isSomething(tInputXmlDir)) 
+             File2.makeDirectory(tInputXmlDir);
+        else tInputXmlDir = "";
 
         //if xmlFileName is a URL, download it
         if (String2.isRemote(xmlFileName)) {
-            if (tFileDir.equals(""))
+            if (tInputXmlDir.equals(""))
                 throw new RuntimeException(
-                    "Since xmlFileName is a URL, you must specify tFileDir.");
-            String destName = tFileDir + File2.getNameAndExtension(xmlFileName);
+                    "When the xmlFileName is a URL, you must specify the tInputXmlDir to store it in.");
+            String destName = tInputXmlDir + File2.getNameAndExtension(xmlFileName);
             SSR.downloadFile(xmlFileName, destName, true); //tryToUseCompression            
             String2.log("xmlFile saved as " + destName);
             xmlFileName = destName;
@@ -1352,88 +1555,97 @@ expected =
 
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         String catID = File2.getNameNoExtension(xmlFileName);
-        if (!String2.isSomething(tFileDir))
-            tFileDir = "???";
-        if (!String2.isSomething(tFileName))
-            tFileName = "???";
+        if (!String2.isSomething(tInputXmlDir))
+            tInputXmlDir = "???";
+        if (!String2.isSomething(tDataFileName))
+            tDataFileName = "???";
 
         //create tables to hold results
         Table sourceTable = new Table();
         Table addTable    = new Table();
         Attributes sourceAtts = sourceTable.globalAttributes();
-        Attributes addAtts    = addTable.globalAttributes();
-        boolean isFgdcPOC = false;
-        boolean isSupportRoleOriginator = false;
-        String creatorName2 = null, creatorName3 = null;
+        Attributes gAddAtts   = addTable.globalAttributes();
+        boolean isCreator2 = false, isCreator3 = false;
+        String creatorName2 = null,  creatorName3 = null;
         String creatorEmail2 = null, creatorEmail3 = null;
+        String creatorOrg2 = null,   creatorOrg3 = null;
+        String creatorUrl2 = null,   creatorUrl3 = null;;
         String metaCreatedBy = "???";
         String metaCreated = "???";
+        String metaLastModBy = "???";
         String metaLastMod = "???";
-        String dataPublicationDate = "???";
         String acronym = "???";  //institution acronym
-        String tSourceUrl = "???";
         String title = "???";  
         String securityClass = "";
         //accumulate results from some tags
         StringBuilder background = new StringBuilder();
-        int nChildEntities = 0;
-        StringBuilder childEntities = new StringBuilder();
+        int nEntities = 0;
+        String entityID = null;
+        String entityPre = "";
+        int nChildItems = 0;
+        StringBuilder childItems = new StringBuilder();
+        String childItemsPre = "";
         StringBuilder dataQuality = new StringBuilder();
+        String dataQualityPre = "InPort_data_quality_";
         StringBuilder dataset = new StringBuilder();
-        int nDownloads = 0;
-        StringBuilder downloads = new StringBuilder();
+        int nDistributions = 0;
+        StringBuilder distribution = new StringBuilder();
+        String distPre = "";
+        //String distID = null;
+        String distUrl = null;
+        String distName = null;
+        String distType = null;
+        String distStatus = null;
         int nFaqs = 0;
         StringBuilder faqs = new StringBuilder();
+        String faqsPre = "";
         StringBuilder history = new StringBuilder();
         int nIssues = 0;
         StringBuilder issues = new StringBuilder();
+        String issuesPre = "";
         HashSet<String> keywords = new HashSet();
         StringBuilder license = new StringBuilder();
+        int lineageSourceN = 0;
         String lineageStepN = "", lineageName = "", lineageEmail = "", lineageDescription = "";
-        int nRelatedItems = 0;
-        StringBuilder relatedItems = new StringBuilder();
+        String sep = ","; //a common separator between items on a line
+        String tSourceUrl = "(local files)";
         StringBuilder summary = new StringBuilder();
+        int nSupportRoles = 0;
+        String supportRolesPre = "";
         int nUrls = 0;
+        String pendingUrl = "?";
         StringBuilder urls = new StringBuilder();
+        String urlsPre = "";
 
-        HashMap<String,String> typesHM = new HashMap();
-        typesHM.put("LIB", "Library");
-        typesHM.put("PRJ", "Project");
-        typesHM.put("DS",  "Data Set");
-        typesHM.put("ENT", "Data Entity");
-        typesHM.put("DOC", "Document");
-        typesHM.put("PRC", "Procedure");
-        
-        HashMap<String,String> child0RelationHM = new HashMap(); //for whichChild=0
-        child0RelationHM.put("HI", "child");
-        child0RelationHM.put("RI", "other");
+        //HashMap<String,String> child0RelationHM = new HashMap(); //for whichChild=0
+        //child0RelationHM.put("HI", "child");
+        //child0RelationHM.put("RI", "other");
 
-        HashMap<String,String> childNRelationHM = new HashMap(); //for whichChild>0
-        childNRelationHM.put("HI", "sibling");
-        childNRelationHM.put("RI", "other");
+        //HashMap<String,String> childNRelationHM = new HashMap(); //for whichChild>0
+        //childNRelationHM.put("HI", "sibling");
+        //childNRelationHM.put("RI", "other");
 
         //attributes that InPort doesn't help with
         String inportXmlUrl = "https://inport.nmfs.noaa.gov/inport-metadata/" +
             xmlFileName.substring("/u00/data/points/inportXml/".length()); 
-        addAtts.add("cdm_data_type", "Other");
-        addAtts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
-        addAtts.add("infoUrl", inportXmlUrl); 
-        addAtts.add("InPort_XML_URL", inportXmlUrl);
-        addAtts.add("keywords_vocabulary", "GCMD Science Keywords");
-        addAtts.add("standard_name_vocabulary", "CF Standard Name Table v29");
+        gAddAtts.add("cdm_data_type", "Other");
+        gAddAtts.add("Conventions", "COARDS, CF-1.6, ACDD-1.3");
+        gAddAtts.add("infoUrl", inportXmlUrl); 
+        gAddAtts.add("InPort_xml_url", inportXmlUrl);
+        gAddAtts.add("keywords_vocabulary", "GCMD Science Keywords");
+        gAddAtts.add("standard_name_vocabulary", "CF Standard Name Table v29");
 
         //process the inport.xml file 
         SimpleXMLReader xmlReader = new SimpleXMLReader(
             new FileInputStream(xmlFileName));
         xmlReader.nextTag();
         String tags = xmlReader.allTags();
-        String startTag = "<catalog-item>";
+        String startTag = "<inport-metadata>";  //2017-08-09 version 0.9
         Test.ensureEqual(tags, startTag, 
             "Unexpected first tag"); 
         int startTagLength = startTag.length();
 
         //process the tags
-//references?
         while (true) {
             xmlReader.nextTag();
             tags = xmlReader.allTags();
@@ -1442,257 +1654,582 @@ expected =
             if (xmlReader.stackSize() == 1) 
                 break; //the startTag
             String topTag = xmlReader.tag(nTags - 1);
+            String contentLC = content.toLowerCase();
             boolean hasContent = content.length() > 0 && 
-                !content.equals("NA") && 
-                !content.toLowerCase().equals("unknown") ;
+                !contentLC.equals("n/a") && 
+                !contentLC.equals("na") && 
+                !contentLC.startsWith("none") &&   //e.g. None.
+                !contentLC.equals("not applicable") && 
+                !contentLC.equals("other") && 
+                !contentLC.equals("unknown") && 
+                !contentLC.equals("unspecified") ;
             tags = tags.substring(startTagLength);
-            if (debugMode) String2.log(">>  tags=" + tags + (hasContent? "=" + content : ""));
+            if (debugMode) String2.log(">>  tags=" + tags + content);
             String attTags = 
-                tags.startsWith("<data-attributes><attribute>")? 
-                    tags.substring(28) :
-                tags.startsWith("<child-entities><child-entity><data-attributes><attribute>")?
-                    tags.substring(58) :
-                null;
+                tags.startsWith("<entity-attribute-information><entity><data-attributes><data-attribute>")?
+                    tags.substring(71) : null;
  
             //special cases: convert some InPort names to ERDDAP names
             //The order here matches the order in the files.
 
-            //common_information
-            if (tags.equals(       "<common-information></cat-id>")) {                
-                Test.ensureEqual(content, catID, "cat-id != fileName");
-                addAtts.add("InPort_catalog_ID", content);
-            } else if (tags.equals("<common-information></cat-type-code>")) {                
-                //Tally: ENT: 2378 (60%), DS: 1575  (40%)
-                if (!content.matches(typeCodeRegex))
-                    throw new RuntimeException("cat-type-code=" + content + 
-                        " doesn't match typeCodeRegex=" + typeCodeRegex);
-                String tType = typesHM.get(content);                      
-                addAtts.add("InPort_catalog_type", tType == null? content : tType);
-            } else if (tags.equals("<common-information></metadata-workflow-state>") && hasContent) {
-                //Tally: Published / External: 3953  (100%)
-                addAtts.add("metadata_workflow_state", content); 
-            } else if (tags.equals("<common-information></is-do-not-publish>")) {                
-                //Tally: N: 3953 (100%) (probably because I harvested Public records)
-                Test.ensureEqual(content, "N", "Unexpected id-do-not-publish content.");
-            } else if (tags.equals("<common-information></title>") && hasContent) {
-                title = content;
-            } else if (tags.equals("<common-information></abstract>") && hasContent) {
-                String2.ifSomethingConcat(summary, "\n\n", content); 
-            } else if (tags.equals("<common-information></purpose>") && hasContent) {
-                String2.ifSomethingConcat(summary, "\n\n", content); 
-            } else if (tags.equals("<common-information></notes>") && hasContent) {
-                String2.ifSomethingConcat(summary, "\n\n", content); 
-            } else if (tags.equals("<common-information></supplemental-info>") && hasContent) {
-                String2.ifSomethingConcat(summary, "\n\n", content); 
-            } else if (tags.equals("<common-information></data-status>") && hasContent) {
-                //Tally: Complete: 2341  (62%), In Work: 1363  (36%), Planned: 56  (1%)
-                addAtts.add("data_status", content); 
-            //<common-information><notes has info re InPort metadata creation
-            } else if (tags.equals("<common-information></created-by>") && hasContent) {
-                metaCreatedBy = content;
-            } else if (tags.equals("<common-information></record-created>") && hasContent) {
-                metaCreated = content;
-            } else if (tags.equals("<common-information></record-last-modified>") && hasContent) {
-                metaLastMod = content;
-            } else if (tags.equals("<common-information></owner-org-acro>") && hasContent) {
-                //Tally: AFSC: 1240 (31%), NEFSC: 832 (21%), SEFSC: 618 (16%), NWFSC: 316 (8%), PIFSC: 276  (7%)
-                //  OPR, SWFSC, GARFO, PIRO, OST, AKRO, SERO, OHC, WCRO, GSMFC, OSF
-                addAtts.add("institution", 
-                    xmlFileName.indexOf("/NOAA/NMFS/") > 0? "NOAA NMFS " + content: //e.g., SWFSC
-                    xmlFileName.indexOf("/NOAA/")      > 0? "NOAA " + content: 
-                    content); 
-                acronym = content;
+            //item-identification
+            if (tags.startsWith("<item-identification>")) {
+                if (tags.endsWith(       "</catalog-item-id>")) {                
+                    Test.ensureEqual(content, catID, "catalog-item-id != fileName");
+                    gAddAtts.add(           "InPort_item_id", content);
+                    if (String2.isSomething(tBaseDataDir))
+                        tDataDir = tBaseDataDir + content + "/";
 
-            } else if (tags.equals("<common-information></data-set-publication-date>") && hasContent) {
-                addAtts.add("date-created", content); 
-                dataPublicationDate = content;
-            } else if (tags.equals("<common-information></parent-title>") && hasContent) {
-                //parent-title is often better than title
-                title = content + (title.equals("???")? "" : ", " + title);
-            } else if (tags.equals("<common-information></notes>") && hasContent) {
-                addAtts.add("comment", content); 
-            } else if (tags.equals("<common-information></publication-status>") && hasContent) {
-                //Tally:  Public: 3953 (100%)  (probably because I harvest Public records)
-                addAtts.add("publication_status", content); 
-
-            //physical-location  org, city, state-province, country  see 1132
-            //} else if (tags.startsWith("physical-location")) {
-
-            //data-set   see /u00/data/points/inportXml/NOAA/NMFS/AFSC/inport/xml/10657.xml
-            //This info is relevant to the source, not after it's in ERDDAP.
-            //So, don't add to ERDDAP meatadata. 
-            } else if (tags.equals("<data-set>") && xmlReader.attributeValue("type") != null) {
-                //Tally:  : 749 (48%), Database: 177 (11%), Oracle Database: 102 (6%). 
-                //  CSV Files: 77 (5%), Mixed: 75 (5%), MS Excel Spreadsheet: 75 (5%),
-                //  Files: 70 (4%), Other: 46 (3%), MS Access Database: 23  (1%),
-                //  SAS files: 20 (1%), Files (Word, Excel, PDF, etc.): 19  (1%), 
-                //  GIS: 19 (1%), Access Database, spreadsheets: 18 (1%), Binary: 18 (1%), 
-                //  MS Excel : 11 (1%), Excel and SAS Dataset: 10 (1%), Website (url): 8 (1%), ...
-                String dsType = xmlReader.attributeValue("type");
-                if (dsType == null)
-                    dsType = "";
-                if (!dsType.matches(datasetTypeRegex))
-                    throw new RuntimeException("<data-set> type=" + dsType + 
-                        " doesn't match datasetTypeRegex=" + datasetTypeRegex);
-                  background.append("data-set type=" + dsType + "\n");
-            } else if (tags.equals("<data-set></maintenance-frequency>") && hasContent) {
-                 background.append(" data-set maintenance-frequency=" + content + "\n");
-            } else if (tags.equals("<data-set></source-media-type>") && hasContent) {
-                //Tally:  online: 96 (26%), disc: 95 (25%), electronic email system: 56 (15%),
-                //  electronically logged: 46 (12%), computer program: 37 (10%), paper: 28 (7%),
-                //  CD-ROM: 10 (3%), physical model: 3 (1%), chart: 2 (1%), videotape: 2 (1%),
-                //  audiocassette: 1 (0%)
-                 background.append(" data-set source-media=" + content + "\n");
-            } else if (tags.equals("<data-set></entity-attribute-overview>") && hasContent) {
-                //Tally: Modeled in Oracle Designer: 4 (2%), Not available.: 4 (2%), ...,
-                //       Modelled in Oracle Designer: 2  (1%)
-                // 1 MS-Excel spreadsheet with 4 worksheets: 1  (0%)
-                // 1 MS-Excel spreadsheet with 8 worksheets: 1  (0%)
-                // 1 MS-Excel spreadsheet, with 2 worksheets: 1  (0%)
-                 background.append(" data-set overview=" + content + "\n");
-            } else if (tags.equals("<data-set></distribution-liability>") && hasContent) {
-                                license.append("Distribution Liability: " + content + "\n"); 
-            } else if (tags.equals("<data-set></data-set-credit>") && hasContent) {
-                addAtts.add("acknowledgment", content); 
-
-            //keywords see 10657
-            } else if ((tags.equals("<keywords><theme-keywords></keyword-list>") ||
-                        tags.equals("<keywords><spatial-keywords></keyword-list>") ||
-                        tags.equals("<keywords><stratum-keywords></keyword-list>") ||
-                        tags.equals("<keywords><temporal-keywords></keyword-list>")) && hasContent) {
-                chopUpCsvAddAllAndParts(content, keywords);
-
-            //<data-attributes><attribute>   see attTags below
-
-            //support-roles  e.g., see 10657
-            //Use role=Originator as backup for creator_name, creator_email
-            } else if (tags.startsWith("<support-roles>")) {
-                if (tags.equals(       "<support-roles><support-role>")) {
-                    isSupportRoleOriginator = false;
-                } else if (tags.equals("<support-roles><support-role></role>") && hasContent) {
-                    isSupportRoleOriginator = "Originator".equals(content);
-                } else if (tags.equals("<support-roles><support-role><person-contact-info></name>") && hasContent) {
-                    int po = content.indexOf(", ");
-                    creatorName3 = po > 0?    //any role
-                        content.substring(po + 2) + " " + content.substring(0, po) :
-                        content; 
-                    if (isSupportRoleOriginator)
-                        creatorName2 = creatorName3;
-                        
-                } else if (tags.equals("<support-roles><support-role><person-contact-info></email>") && hasContent) {
-                    creatorEmail3 = content;  //any role
-                    if (isSupportRoleOriginator)
-                        creatorEmail2 = creatorEmail3;
+                } else if (tags.endsWith("</title>") && hasContent) {
+                    title = content;
+                //</short-name>
+                } else if (tags.endsWith("</catalog-item-type>") && hasContent) {  
+                    //tally: Entity: 4811, Data Set: 2065, Document: 168, 
+                    //  Procedure: 113, Project: 29
+                    if (!content.matches(typeRegex)) {
+                        String2.log(String2.ERROR + ": Skipping this item because " +
+                            "the catalog-item-type doesn't match the typeRegex.");
+                        return "";
+                    } 
+                    gAddAtts.add(           "InPort_item_type", content);  //e.g., Data Set
+                } else if (tags.endsWith("</metadata-workflow-state>") && hasContent) {
+                    //this may be overwritten by child below
+                    gAddAtts.add(   "InPort_metadata_workflow_state", content); //e.g., Published / External
+                } else if (tags.endsWith("</parent-catalog-item-id>") && hasContent) {
+                    gAddAtts.add(           "InPort_parent_item_id", content);
+                } else if (tags.endsWith("</parent-title>") && hasContent) {
+                    //parent-title is useful as precursor to title
+                    title = content + (title.endsWith("???")? "" : ", " + title);
+                } else if (tags.endsWith("</status>") && hasContent) {
+                    //this may be overwritten by child below
+                    gAddAtts.add(   "InPort_status", content); //e.g., Complete
+                } else if (tags.endsWith("</abstract>") && hasContent) {
+                    String2.ifSomethingConcat(summary, "\n\n", content); 
+                } else if (tags.endsWith("</purpose>") && hasContent) {
+                    String2.ifSomethingConcat(summary, "\n\n", content); 
+                //</notes>  inport editing notes
                 }
 
-            //geog-area
-            } else if (tags.equals("<geog-area></description>") ||  //older xml
-                       tags.equals("<extents><extent><geog-areas><geog-area></description>")) { //newer xml
-                 if (hasContent) 
-                        addAtts.add("geospatial_description", content); 
-            } else if (tags.equals("<geog-area></west-bound>") ||
-                       tags.equals("<extents><extent><geog-areas><geog-area></west-bound>")) {
-                 if (hasContent) 
-                        addAtts.add("geospatial_lon_min", String2.parseDouble(content)); 
-            } else if (tags.equals("<geog-area></east-bound>") ||
-                       tags.equals("<extents><extent><geog-areas><geog-area></east-bound>")) {
-                 if (hasContent) 
-                        addAtts.add("geospatial_lon_max", String2.parseDouble(content)); 
-            } else if (tags.equals("<geog-area></south-bound>") ||
-                       tags.equals("<extents><extent><geog-areas><geog-area></south-bound>")) {
-                 if (hasContent) 
-                        addAtts.add("geospatial_lat_min", String2.parseDouble(content)); 
-            } else if (tags.equals("<geog-area></north-bound>") ||
-                       tags.equals("<extents><extent><geog-areas><geog-area></north-bound>")) {
-                 if (hasContent) 
-                        addAtts.add("geospatial_lat_max", String2.parseDouble(content)); 
+            //keywords see 10657
+            } else if (tags.equals("<keywords><keyword></keyword>") && hasContent) {
+                chopUpCsvAddAllAndParts(content, keywords);
 
-            //time-frame
-            } else if (tags.equals("<time-frames><time-frame></start>") ||
-                       tags.equals("<extents><extent><time-frames><time-frame></start>")) {
-                 if (hasContent) 
-                        addAtts.add("time_coverage_start", content); 
-            } else if (tags.equals("<time-frames><time-frame></end>") ||
-                       tags.equals("<extents><extent><time-frames><time-frame></end>")) {
-                 if (hasContent) 
-                        addAtts.add("time_coverage_end", content); 
+            //physical-location  
+            //   <physical-location>
+            //      <organization>National Marine Mammal Laboratory</organization>
+            //      <city>Seattle</city>
+            //      <state-province>WA</state-province>
+            //      <country>United States</country>
+            //   </physical-location>
+            //???            } else if (tags.equals("<physical-location></organization>") && hasContent) {
+            //   not really useful.  use as institution?!
 
-            //access-info    see AFSC/inport/xml/10657.xml
-            } else if (tags.equals("<access-info></security-class") && hasContent) {
-                license.append("Security class: " + content + "\n"); 
-                addAtts.add("security_class", content);
-                securityClass = content;
-            } else if (tags.equals("<access-info></security-classification-system>") && hasContent) {
-                                   license.append("Security classification system: " + content + "\n"); 
-            } else if (tags.equals("<access-info></data-access-policy>") && hasContent) {
-                                   license.append("Data access policy: " + content + "\n"); 
-            } else if (tags.equals("<access-info></data-access-constraints>") && hasContent) {
-                                   license.append("Data access constraints: " + content + "\n"); 
-            } else if (tags.equals("<access-info></data-access-procedure>") && hasContent) {
-                                   license.append("Data access procedure: " + content + "\n"); 
-            } else if (tags.equals("<access-info></data-use-constraints>") && hasContent) {
-                                   license.append("Data use constraints: " + content + "\n"); 
-            } else if (tags.equals("<access-info></metadata-access-constraints>") && hasContent) {
-                                   license.append("Metadata access constraints: " + content + "\n"); 
-            } else if (tags.equals("<access-info></metadata-use-constraints>") && hasContent) {
-                                   license.append("Metadata use constraints: " + content + "\n"); 
+            //data-set-information  
+            //  see /u00/data/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/17275.xml
+            } else if (tags.startsWith("<data-set-information>")) {
+                if (tags.endsWith("</data-set-type>") && hasContent) {
+                    //Tally: Database: 176, CSV Files: 128, Oracle Database: 98,
+                    //  Mixed: 79, MS Excel Spreadsheet: 76, Files: 73,  Other: 47,
+                    //  GIS: 22, Access Database, spreadsheets: 21, SAS files: 19,
+                    //  Binary: 18, MS Access Database: 18, MS Excel : 15, JPG Files: 12,
+                    //  GIS dataset of raster files: 11, Excel and SAS Dataset: 10,
+                    //  Files (Word, Excel, PDF, etc.): 7, Website (url): 7,
+                    //  Excel, SAS, and Stata data sets: 5, Text files: 5, GIS database: 4,
+                    //  SAS data sets (version 7): 4, SQL Server Database: 4 ...
+                      background.append("> data-set type=" + content + "\n");
+                    gAddAtts.add("InPort_dataset_type", content);
+                } else if (tags.endsWith(      "</maintenance-frequency>") && hasContent) {
+                     background.append("> data-set maintenance-frequency=" + content + "\n");
+                  gAddAtts.add(   "InPort_dataset_maintenance_frequency", content);
+                } else if (tags.endsWith("</data-set-publication-status>") && hasContent) {
+                        background.append("> data-set publication-status=" + content + "\n");
+                    gAddAtts.add(    "InPort_dataset_publication_status", content);
+                } else if (tags.endsWith(      "</publish-date>") && hasContent) {
+                    content = convertInportTimeToIso8601(content);
+                     background.append("> data-set publish-date=" + content + "\n");
+                    gAddAtts.add( "InPort_dataset_publish_date", content);
+                } else if (tags.endsWith( "</data-presentation-form>") && hasContent) {
+                     background.append("> data-set presentation-form=" + content + "\n"); //e.g., Table (digital)           
+                    gAddAtts.add( "InPort_dataset_presentation_form", content);
+                } else if (tags.endsWith(     "</source-media-type>") && hasContent) {
+                    //Tally: online: 146, disc: 101, electronic mail system: 59,
+                    //  electronically logged: 48, computer program: 38, paper: 29,
+                    //  CD-ROM: 11, physical model: 3, chart: 2, videotape: 2, audiocassette: 1
+                    background.append("> data-set source-media-type=" + content + "\n");
+                   gAddAtts.add( "InPort_dataset_source_media_type", content);
+                } else if (tags.endsWith("</distribution-liability>") && hasContent) {
+                            license.append("Distribution Liability: " + content + "\n"); 
+                } else if (tags.endsWith("</data-set-credit>") && hasContent) {
+                    gAddAtts.add("acknowledgment", content); //e.g., BOEM funded this research.
+                } else if (tags.endsWith("</instrument>") && hasContent) {
+                              gAddAtts.add("instrument", content); 
+                } else if (tags.endsWith("</platform>") && hasContent) {
+                              gAddAtts.add("platform", content); 
+                } else if (tags.endsWith("</physical-collection-fishing-gear>") && hasContent) {
+                                           gAddAtts.add("InPort_fishing_gear", content); 
+                }
 
-            //urls   see 10657
+            //entity-attribute-information  
+            //  see /u00/data/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/36615.xml
+            } else if (tags.startsWith("<entity-attribute-information><entity>")) {
+
+                if (tags.equals("<entity-attribute-information><entity>")) {
+                    nEntities++;
+                    if (reallyVerbose)
+                        String2.log("Since whichChild=" + whichChild + 
+                        ", I'm " + 
+                        (whichChild == 0 || nEntities == whichChild? "processing" : "skipping") +
+                        " <entity-attribute-information> for entity #" + nEntities);
+                    if (whichChild == 0) {
+                        entityPre = "InPort_entity_" + nEntities + "_";
+                    } else if (nEntities == whichChild) {
+                        whichChildFound = true;
+                    } else {
+                        //skip this child
+                        xmlReader.skipToStackSize(xmlReader.stackSize());
+                    }
+
+                } else if (attTags != null && whichChild > 0 && nEntities == whichChild) {                    
+                    //atts has tags after
+                    //  <entity-attribute-information><entity><data-attributes><data-attribute>
+                    //String2.log(">>attTags=" + attTags);
+                    int col = addTable.nColumns() - 1;  //0.. for actual columns
+                    Attributes varAddAtts = col >= 0? addTable.columnAttributes(col) : null;
+                    if (attTags.equals("")) {
+                        //the start: add the column
+                        varAddAtts = new Attributes();
+                        col++;  //0..
+                        String tName = "column" + col; //a placeholder
+                        sourceTable.addColumn(col, tName, new StringArray(), new Attributes());
+                        addTable.addColumn(   col, tName, new StringArray(), varAddAtts);
+
+                    } else if (attTags.equals("</name>") && hasContent) {
+                        sourceTable.setColumnName(col, content);                    
+                        content = String2.modifyToBeVariableNameSafe(content);
+                        //if (content.matches("[A-Z0-9_]+"))  //all uppercase
+                        //    content = content.toLowerCase();
+                        addTable.setColumnName(col, content);                        
+
+                    } else if (attTags.equals("</data-storage-type>") && hasContent) {
+                        //not reliable or useful. Use simplify.
+
+                    } else if (attTags.equals("</null-value-meaning>") && hasContent) {
+                        //??? Does this identify the null value (e.g., -999)
+                        //    or describe what is meant if there is no value???
+                        //from Tally:     0: 53, YES: 37, blank: 36, space or 0: 34,
+                        //  blank or 0: 31, null or: 30, Yes: 20, NO: 19, NA: 18,
+                        //  blank or -, space/null: 15, ...
+                        double imv = String2.parseInt(content);
+                        double dmv = String2.parseDouble(content);
+                        //if numeric, only 0 or other numeric values matter
+                        if (content.endsWith(" or 0"))
+                            varAddAtts.set("missing_value", 0);
+                        else if (imv < Integer.MAX_VALUE)
+                            varAddAtts.set("missing_value", imv);
+                        else if (Double.isFinite(dmv))
+                            varAddAtts.set("missing_value", dmv);
+                        //for strings, it doesn't really matter
+                        //else if (content.indexOf("NA")   >= 0) varAddAtts.set("missing_value", "NA");
+                        //else if (content.indexOf("NULL") >= 0) varAddAtts.set("missing_value", "NULL");
+                        //else if (content.indexOf("null") >= 0) varAddAtts.set("missing_value", "null");
+
+                    //} else if (attTags.equals("</scale>") && hasContent) { 
+                    //    //What is this? It isn't scale_factor. 
+                    //    //from Tally: 0, 2, 1, 3, 5, 6, 9, 14, 8, 13, 12, 15, 9, ...
+                    //    varAddAtts.set("scale", content);
+
+                    } else if (attTags.equals("</max-length>") && hasContent) {
+                        //e.g., -1 (?!), 0(?!), 22, 1, 8, 100, 4000 (longest)
+                        int maxLen = String2.parseInt(content);
+                        if (maxLen > 0 && maxLen < 10000)
+                            varAddAtts.add("max_length", "" + maxLen);
+
+                    //} else if (attTags.equals("</is-pkey>") && hasContent) {
+                    //I think this loses its meaning in ERDDAP.
+                    //    varAddAtts.set("isPrimaryKey", content);
+
+                    } else if (attTags.equals("</units>") && hasContent) {
+                        //e.g., Decimal degrees, animal, KM, degrees celcius(sic), AlphaNumeric
+                        //<units>micromoles per kilogram</units>
+                        //These will be fixed up by makeReadyToUseAddVariableAttributes.
+                        varAddAtts.set("units", content);
+
+                    } else if (attTags.equals("</format-mask>") && hasContent) {
+                        //Thankfully, format-mask appears after units, so format-mask has precedence.
+                        //e.g., $999,999.99, MM/DD/YYYY, HH:MM:SS, mm/dd/yyyy, HHMM
+
+                        //if it's a date time format, convertToJavaDateTimeFormat e.g., yyyy-MM-dd'T'HH:mm:ssZ
+                        String newContent = Calendar2.convertToJavaDateTimeFormat(content);
+                        if (!newContent.equals(content) ||  //it was changed, so it is a dateTime format
+                            newContent.indexOf("yyyy") >= 0) {
+
+                            //These will be fixed up by makeReadyToUseAddVariableAttributes.
+                            varAddAtts.set("units", content); 
+
+                            if (newContent.indexOf("yyyy") >= 0 && //has years
+                                newContent.indexOf("M") >= 0 && //has month
+                                newContent.indexOf("d") >= 0 && //has days
+                                newContent.indexOf("H") <  0)   //doesn't have hours
+                                varAddAtts.set("time_precision", "1970-01-01");
+                        } else {
+                            varAddAtts.set("format_mask", content);
+                        }
+
+                    } else if (attTags.equals("</description>") && hasContent) {
+                        //description -> comment
+                        //widely used  (Is <description> used another way?)
+                        if (content.toLowerCase().equals("month/day/year")) {  //date format
+                             varAddAtts.set("units", "M/d/yyyy");
+                             varAddAtts.set("time_precision", "1970-01-01");
+                        } else {
+                            varAddAtts.set("comment", content);
+                        }
+
+                    } else if (attTags.equals("</allowed-values>") && hasContent) {
+                        //e.g., No domain defined., unknown, Free entry text field., text, "1, 2, 3", "False, True"
+                        varAddAtts.set("allowed_values", content);
+
+                    } else if (attTags.equals("</derivation>") && hasContent) {
+                        //there are some
+                        varAddAtts.set("derivation", content);
+
+                    } else if (attTags.equals("</validation-rules>") && hasContent) {
+                        //there are some
+                        varAddAtts.set("validation_rules",  content);
+
+                    }
+
+                //*after* attTags processing, get <entity-attribute-information><entity></...> info
+                } else if (xmlReader.stackSize() == 4) {
+                    if (tags.endsWith(     "</catalog-item-id>") && hasContent) {
+                        if (whichChild == 0) {
+                            gAddAtts.add(entityPre + "item_id", content); 
+                            background.append("> entity #" + nEntities + 
+                                " catalog-item-id=" + content + "\n");
+                        } else if (nEntities == whichChild) {
+                            entityID = content;
+                        }
+
+                    } else if (tags.endsWith(      "</title>") && hasContent) {
+                        if (whichChild == 0)
+                            gAddAtts.add(entityPre + "title", content); 
+                        else if (nEntities == whichChild)
+                             title += ", " + content;
+
+                    } else if (tags.endsWith(      "</metadata-workflow-state>") && hasContent) {
+                        //overwrite parent info
+                        if (whichChild == 0)
+                            gAddAtts.add(entityPre + "metadata_workflow_state", content); 
+                        else if (nEntities == whichChild)
+                             gAddAtts.add(    "InPort_metadata_workflow_state", content); //e.g., Published / External
+
+                    } else if (tags.endsWith(      "</status>") && hasContent) {
+                        //overwrite parent info
+                        if (whichChild == 0)
+                            gAddAtts.add(entityPre + "status", content); 
+                        else if (nEntities == whichChild)
+                             gAddAtts.add(    "InPort_status", content); //e.g., Complete
+
+                    } else if (tags.endsWith(      "</abstract>") && hasContent) {
+                        if (whichChild == 0)
+                            gAddAtts.add(entityPre + "abstract", content); 
+                        else if (nEntities == whichChild)
+                            String2.ifSomethingConcat(summary, "\n\n", 
+                                "This sub-dataset has: " + content);
+
+                    //<notes> is InPort info, e.g., when/how uploaded         
+                    }
+
+
+                }  
+                //skip <entity-information><entity-type>Spreadsheet
+                //skip <entity-information><description>...   same/similar to abstract
+
+
+            //support-roles 
+            //Use role=Originator as backup for creator_name, creator_email
+            } else if (tags.startsWith("<support-roles>")) {
+                if (tags.equals(       "<support-roles>")) { //opening tag
+                    isCreator2 = false;
+                    isCreator3 = false;
+                    nSupportRoles++;
+                    supportRolesPre = "InPort_support_role_" + nSupportRoles + "_";
+                } else if (tags.equals("<support-roles><support-role></support-role-type>") && hasContent) {
+                    isCreator2 = "Originator".equals(content);        //often e.g., organization e.g., AFSC
+                    isCreator3 = "Point of Contact".equals(content);  //often a person
+                    gAddAtts.add(                                supportRolesPre + "type", content);
+                } else if (tags.equals("<support-roles><support-role></person>") && hasContent) {
+                    int po = content.indexOf(", ");  //e.g., Clapham, Phillip
+                    if (po > 0)   
+                        content = content.substring(po + 2) + " " + content.substring(0, po); 
+                    if      (isCreator2) creatorName2 = content;
+                    else if (isCreator3) creatorName3 = content;                        
+                    gAddAtts.add(                   supportRolesPre + "person", content);
+                } else if (tags.equals("<support-roles><support-role></person-email>") && hasContent) {
+                    if      (isCreator2) creatorEmail2 = content;
+                    else if (isCreator3) creatorEmail3 = content;
+                    gAddAtts.add(                   supportRolesPre + "person_email", content);
+                } else if (tags.equals("<support-roles><support-role></organization>") && hasContent) {
+                    if      (isCreator2) creatorOrg2 = content;
+                    else if (isCreator3) creatorOrg3 = content;
+                    gAddAtts.add(                   supportRolesPre + "organization", content);
+                } else if (tags.equals("<support-roles><support-role></organization-url>") && hasContent) {
+                    if      (isCreator2) creatorUrl2 = content;
+                    else if (isCreator3) creatorUrl3 = content;
+                    gAddAtts.add(                   supportRolesPre + "organization_url", content);
+                }
+
+            //extent  geo
+            } else if (tags.startsWith("<extents><extent><geographic-areas><geographic-area>")) {
+                if (tags.endsWith("</west-bound>") && hasContent) 
+                    gAddAtts.add("geospatial_lon_min", String2.parseDouble(content)); 
+                else if (tags.endsWith("</east-bound>") && hasContent) 
+                    gAddAtts.add("geospatial_lon_max", String2.parseDouble(content)); 
+                else if (tags.endsWith("</north-bound>") && hasContent) 
+                    gAddAtts.add("geospatial_lat_max", String2.parseDouble(content)); 
+                else if (tags.endsWith("</south-bound>") && hasContent) 
+                    gAddAtts.add("geospatial_lat_min", String2.parseDouble(content)); 
+
+            //extent time-frame
+            } else if (tags.startsWith("<extents><extent><time-frames><time-frame>")) {
+                if (tags.endsWith("</start-date-time>") && hasContent) {
+                    gAddAtts.add("time_coverage_begin", 
+                        convertInportTimeToIso8601(content));  
+                } else if (tags.endsWith("</end-date-time>") && hasContent) {
+                    gAddAtts.add("time_coverage_end", 
+                        convertInportTimeToIso8601(content)); 
+                }
+
+            //access-information    
+            } else if (tags.startsWith("<access-information>")) {
+                if        (tags.endsWith("</security-class") && hasContent) {
+                            license.append("Security class: " + content + "\n"); 
+                       gAddAtts.add("InPort_security_class", content);
+                                            securityClass = content;
+                } else if (tags.endsWith("</security-classification") && hasContent) {
+                            license.append("Security classification: " + content + "\n"); 
+                       gAddAtts.add("InPort_security_classification", content);
+                } else if (tags.endsWith("</security-handling-description") && hasContent) {
+                            license.append("Security handling description: " + content + "\n"); 
+                } else if (tags.endsWith("</data-access-policy>") && hasContent) {
+                            license.append("Data access policy: " + content + "\n"); 
+                } else if (tags.endsWith("</data-access-procedure>") && hasContent) {
+                            license.append("Data access procedure: " + content + "\n"); 
+                } else if (tags.endsWith("</data-access-constraints>") && hasContent) {
+                            license.append("Data access constraints: " + content + "\n"); 
+                } else if (tags.endsWith("</data-use-constraints>") && hasContent) {
+                            license.append("Data use constraints: " + content + "\n"); 
+                } else if (tags.endsWith("</security-classification-system>") && hasContent) {
+                            license.append("Security classification system: " + content + "\n"); //all kinds of content and e.g., None
+                } else if (tags.endsWith("</metadata-access-constraints>") && hasContent) {
+                            license.append("Metadata access constraints: " + content + "\n"); 
+                } else if (tags.endsWith("</metadata-use-constraints>") && hasContent) {
+                            license.append("Metadata use constraints: " + content + "\n"); 
+                } 
+
+            //distribution-information  
+            //  see /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            } else if (tags.startsWith("<distribution-information>")) {
+                if (tags.endsWith("<distribution>")) {  
+                    //start of a distribution
+                    nDistributions++;
+
+                    if (reallyVerbose)
+                        String2.log("Since whichChild=" + whichChild + 
+                        ", I'm " + 
+                        (whichChild == 0 || nDistributions == whichChild? "processing" : "skipping") +
+                        " <distribution-information> for entity #" + nDistributions);
+                    if (whichChild == 0 || nDistributions == whichChild) {
+                        if (whichChild > 0) whichChildFound = true;
+                        distPre = "InPort_distribution_" + 
+                            (whichChild > 0? "" : nDistributions + "_"); 
+                        //distID = xmlReader.attributeValue("cc-id"); //skip cc-id: it's an internalDB identifier
+                        distUrl = null;
+                        distName = null;
+                        distType = null;
+                        distStatus = null;
+                        //gAddAtts.add(distPre + "cc_id", distID);
+                    } else {
+                        //skip this child
+                        xmlReader.skipToStackSize(xmlReader.stackSize());
+                    }
+                } else if (tags.endsWith("</download-url>") && hasContent) {
+                    distUrl = content;
+                    if (nDistributions == whichChild)
+                        tSourceUrl = content;
+                    gAddAtts.add(distPre + "download_url", content);
+
+                } else if (tags.endsWith("</file-name>") && hasContent) {
+                    distName = content;
+                    gAddAtts.add(distPre + "file_name", content);
+                } else if (tags.endsWith("</file-type>") && hasContent) {
+                    distType = content;
+                    gAddAtts.add(distPre + "file_type", content);
+                //seip fgdc-content-type, file-size (in MB?)
+                } else if (tags.endsWith("</review-status>") && hasContent) {
+                    distStatus = content;
+                    gAddAtts.add(distPre + "review_status", content);
+                } else if (tags.endsWith("</distribution>") && distUrl != null) {  
+                    //end of a distribution
+                    String msg = "Distribution" + // " cc-id=" + distID +
+                        (distName   == null? "": sep + " file-name="     + distName) +
+                        (distType   == null? "": sep + " file-type="     + distType) +
+                        (distStatus == null? "": sep + " review-status=" + distStatus) +
+                                                 sep + " download-url="  + distUrl + "\n";
+                    distribution.append(msg);
+                    background.append("> #" + nDistributions + ": " + msg);
+                }
+
+
+            //urls  
+            //  see /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            //   <urls>
+            //      <url cc-id="223838">
+            //         <url>https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</url>
+            //         <url-type>Online Resource</url-type>
+            //         <description>REST Service</description>
+            //      </url>
+            //   </urls>
             } else if (tags.startsWith("<urls>")) {
                 if        (tags.equals("<urls><url>")) {
                             urls.append("URL #" + ++nUrls);
-                } else if (tags.equals("<urls><url></link>") && hasContent) {
-                    urls.append(": " + content + "\n");
+                    //skip cc-id: it's an internal DB identifier
+                    pendingUrl = "?";
+                    urlsPre = "InPort_url_" + nUrls + "_";
+                } else if (tags.equals("<urls><url></url>") && hasContent) {
+                    pendingUrl = content;
+                    gAddAtts.add(         urlsPre + "url", content);
                 } else if (tags.equals("<urls><url></url-type>") && hasContent) {
-                    String2.addNewlineIfNone(urls).append("Type: " + content + "\n");
+                    urls.append(                 sep + " type=" + content);
+                    gAddAtts.add(             urlsPre + "type", content);
                 } else if (tags.equals("<urls><url></description>") && hasContent) {
-                    String2.addNewlineIfNone(urls).append("Description: " + content + "\n");
+                    urls.append(             sep + " description=" + content);
+                    gAddAtts.add(         urlsPre + "description", content);
                 } else if (tags.equals("<urls></url>")) {
-                    String2.addNewlineIfNone(urls).append("\n");
+                    urls.append(sep + " url=" + pendingUrl + "\n");
                 }
 
-            //activity-log -- just InPort activity
+            //activity-logs  /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            //just inport activity?
 
-            //issues see /u00/data/points/inportXml/NOAA/NMFS/PIFSC/inport/xml/18143.xml
+            //issues see /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            //   <issues>
+            //      <issue cc-id="223840">
+            //         <issue-date>2013</issue-date>
+            //         <author>Lewis, Steve</author>
+            //         <issue>Outlier removal processes</issue>
+            //      </issue>
+            //   </issues>
             } else if (tags.startsWith("<issues><")) {
                 if        (tags.equals("<issues><issue>")) {
-                          issues.append("Issue #" + ++nIssues);
-                } else if (tags.equals("<issues><issue></date>") && hasContent) {
-                                        issues.append(": date=" + content);
+                                  issues.append("Issue #" + ++nIssues);
+                             issuesPre = "InPort_issue_" + nIssues + "_";
+                             //skip cc-id: it's an internal DB identifier
+                } else if (tags.equals("<issues><issue></issue-date>") && hasContent) {
+                    content = convertInportTimeToIso8601(content);
+                    issues.append(                          ": date=" + content);
+                    gAddAtts.add(                 issuesPre + "date", content);
                 } else if (tags.equals("<issues><issue></author>") && hasContent) {
-                                        issues.append(", author=" + content + "\n");
-                } else if (tags.equals("<issues><issue></summary>") && hasContent) {
-                    String2.addNewlineIfNone(issues).append("Summary: " + content + "\n");
+                    int po = content.indexOf(", ");  //e.g., Clapham, Phillip
+                    if (po > 0)   
+                        content = content.substring(po + 2) + " " + content.substring(0, po); 
+                                        issues.append(", author=" + content);
+                    gAddAtts.add(           issuesPre + "author", content);
+                } else if (tags.equals("<issues><issue></issue>") && hasContent) {
+                    issues.append(               sep + " issue=" + content);
+                    gAddAtts.add(           issuesPre + "issue", content);
                 } else if (tags.equals("<issues></issue>")) {
-                    String2.addNewlineIfNone(issues).append("\n");
+                    String2.addNewlineIfNone(issues);
                 }
 
-            //technical-environment  #10657
+            //technical-environment    /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            //   <technical-environment>
+            //      <description>In progress.</description>
+            //   </technical-environment>
             } else if (tags.equals("<technical-environment></description>") && hasContent) {
-                        addAtts.add("technical_environment", content);
+                gAddAtts.add("InPort_technical_environment", content);
 
-            //data-quality #10657
-            } else if (tags.equals("<data-quality></representativeness>") && hasContent) {
-                                dataQuality.append("Representativeness: " + content + "\n");
-            } else if (tags.equals("<data-quality></accuracy>") && hasContent) {
-                                dataQuality.append("Accuracy: " + content + "\n");
+            //data-quality   /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            } else if (tags.startsWith("<data-quality>")) {
+                if        (tags.endsWith(       "</representativeness>") && hasContent) {
+                      dataQuality.append(       "* Representativeness: " + content + "\n");
+                    gAddAtts.add(dataQualityPre + "representativeness", content);
+                } else if (tags.endsWith(       "</accuracy>") && hasContent) {
+                      dataQuality.append(       "* Accuracy: " + content + "\n");
+                    gAddAtts.add(dataQualityPre + "accuracy", content);
+                } else if (tags.endsWith(       "</analytical-accuracy>") && hasContent) {
+                      dataQuality.append(       "* Analytical-accuracy: " + content + "\n");
+                    gAddAtts.add(dataQualityPre + "analytical_accuracy", content);
+                } else if (tags.endsWith(       "</completeness-measure>") && hasContent) {
+                      dataQuality.append(       "* Completeness-measure: " + content + "\n");
+                    gAddAtts.add(dataQualityPre + "completeness_measure", content);
+                } else if (tags.endsWith(       "</field-precision>") && hasContent) {
+                      dataQuality.append(       "* Field-precision: " + content + "\n");
+                    gAddAtts.add(dataQualityPre + "field_precision", content);
+                } else if (tags.endsWith(       "</sensitivity>") && hasContent) {
+                      dataQuality.append(       "* Sensitivity: " + content + "\n");
+                    gAddAtts.add(dataQualityPre + "sensitivity", content);
+                } else if (tags.endsWith(       "</quality-control-procedures>") && hasContent) {
+                      dataQuality.append(       "* Quality-control-procedures: " + content + "\n");
+                    gAddAtts.add(dataQualityPre +         "control_procedures", content);
+                }
 
-            //lineage /u00/data/points/inportXml/NOAA/NMFS/AFSC/inport/xml/17218.xml
-            } else if (tags.startsWith("<lineage><")) {
-                if        (tags.equals("<lineage><lineage-process-step>")) {
+            //data-management /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            } else if (tags.startsWith("<data-management>")) {
+                //there are several other attributes, but none of general interest
+                //  <resources-identified>Yes</resources-identified>
+                //  <resources-budget-percentage>Unknown</resources-budget-percentage>
+                //  <data-access-directive-compliant>Yes</data-access-directive-compliant>
+                //  <data-access-directive-waiver>No</data-access-directive-waiver>
+                //  <hosting-service-needed>No</hosting-service-needed>
+                //  <delay-collection-dissemination>1 year</delay-collection-dissemination>
+                //  <delay-collection-dissemination-explanation>NA</delay-collection-dissemination-explanation>
+                //  <archive-location>Other</archive-location>
+                //  <archive-location-explanation-other>yes</archive-location-explanation-other>
+                //  <delay-collection-archive>NA</delay-collection-archive>
+                //  <data-protection-plan>NA</data-protection-plan>
+                if        (tags.equals("<data-management></archive-location>") && hasContent) {
+                    gAddAtts.add(                         "archive_location", content); 
+                    history.append("archive_location=" + content + "\n");  //e.g. NCEI
+                }            
+
+            //lineage-statement   /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            } else if (tags.startsWith("<lineage></lineage-statement>") && hasContent) {
+                history.append("Lineage Statement: " + content + "\n");
+
+            //lineage-sources, good example: /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/25229.xml
+            } else if (tags.startsWith("<lineage><lineage-sources>")) {
+                if (tags.endsWith("<lineage-source>")) {  //start of 
+                    history.append("Lineage Source #" + ++lineageSourceN);
+                } else if (tags.endsWith("</citation-title>") && hasContent) {
+                    history.append(sep + " title=" + content);
+                } else if (tags.endsWith("</originator-publisher>") && hasContent) {
+                    history.append(sep + " publisher=" + content);
+                } else if (tags.endsWith("</publish-date>") && hasContent) {
+                    history.append(sep + " date published=" + 
+                        convertInportTimeToIso8601(content));
+                } else if (tags.endsWith("</citation>") && hasContent) {
+                    history.append(sep + " citation=" + content);
+                } else if (tags.endsWith("</lineage-source>")) {
+                    history.append("\n");
+                }
+
+            //lineage-process-steps
+            } else if (tags.startsWith("<lineage><lineage-process-steps>")) {
+                if        (tags.endsWith("<lineage-process-step>")) {  //start of step
                     lineageStepN = null; 
                     lineageName = null;
                     lineageEmail = null;
                     lineageDescription = null;
-                } else if (tags.equals("<lineage><lineage-process-step></seq-no>") && hasContent) {
+                } else if (tags.endsWith("</sequence-number>") && hasContent) {
                     lineageStepN = content;
-                } else if (tags.equals("<lineage><lineage-process-step></contact-name>") && hasContent) {
-                    lineageName = content;
-                } else if (tags.equals("<lineage><lineage-process-step></email-address>") && hasContent) {
-                    lineageEmail = content;
-                } else if (tags.equals("<lineage><lineage-process-step></description>") && hasContent) {
+                } else if (tags.endsWith("</description>") && hasContent) {
                     lineageDescription = content;
-                } else if (tags.equals("<lineage></lineage-process-step>") &&
+                } else if (tags.endsWith("</process-contact>") && hasContent) {
+                    lineageName = content;
+                } else if (tags.endsWith("</email-address>") && hasContent) {
+                    lineageEmail = content;
+                } else if (tags.endsWith("</lineage-process-step>") &&  //end of step
                     (lineageName != null || lineageEmail != null || lineageDescription != null)) {
                     history.append("Lineage Step #" + 
                         (lineageStepN == null? "?" : lineageStepN) + 
@@ -1702,335 +2239,112 @@ expected =
                         "\n");
                 }
 
-            //acronyms -- no files have it
+            //child-items  
+            //If whichChild == 0, add this info to childItems.
+            } else if (tags.startsWith("<child-items>") && whichChild == 0) {
+                if        (tags.equals("<child-items><child-item>")) {
+                    //a new child-item
+                    nChildItems++;
+                    if (reallyVerbose)
+                        String2.log("Since whichChild=" + whichChild + 
+                        ", I'm " + 
+                        (whichChild == 0 || nChildItems == whichChild? "processing" : "skipping") +
+                        " <child-item> for entity #" + nChildItems);
+                    if (whichChild == 0 || nChildItems == whichChild) {
+                        if (whichChild > 0) whichChildFound = true;
+                        childItemsPre = "InPort_child_item_" + 
+                            (whichChild > 0? "" : nChildItems + "_");
+                    } else {
+                        //skip this child
+                        xmlReader.skipToStackSize(xmlReader.stackSize());
+                    }
 
-            //glossary-terms -- no files have it
+                } else if (tags.equals("<child-items><child-item></catalog-item-id>")) {
+                    childItems.append("Child Item #" + nChildItems + 
+                        ": item-id=" + (hasContent? content : "?"));
+                    background.append("> child-item #" + nChildItems + 
+                        " catalog-item-id=" + content + "\n");
+                    if (hasContent)
+                        gAddAtts.add(             childItemsPre + "catalog_id", content);
+                } else if (tags.equals("<child-items><child-item></catalog-item-type>") && hasContent) {
+                        childItems.append(                         sep + " item-type=" + content + "\n");  //e.g., Entity                    
+                        gAddAtts.add(                     childItemsPre + "item_type", content);
+                } else if (tags.equals("<child-items><child-item></title>") && hasContent) {
+                        childItems.append(                        "Title: " + content + "\n");
+                        gAddAtts.add(             childItemsPre + "title", content);
+                } else if (tags.equals("<child-items></child-item>")) {
+                        childItems.append('\n');
+                }
 
-            //faqs /u00/data/points/inportXml/NOAA/NMFS/SEFSC/inport/xml/7332.xml
+            //faqs    /u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml
+            //   <faqs>
+            //      <faq cc-id="223844">
+            //         <date>20150922</date>
+            //         <author>Lewis, Steve </author>
+            //         <question>can this dataset be used for navigation.</question>
+            //         <answer>No.</answer>
+            //      </faq>
+            //   </faqs>
             } else if (tags.startsWith("<faqs>")) {
                 if        (tags.equals("<faqs><faq>")) {
                             faqs.append("FAQ #" + ++nFaqs);
-                } else if (tags.equals("<faqs><faq></faq-date>") && hasContent) {
-                                          faqs.append(": date=" + content);
-                } else if (tags.equals("<faqs><faq></faq-author>") && hasContent) {
-                                          faqs.append(", author=" + content + "\n");
+                             faqsPre = "InPort_faq_" + nFaqs + "_";
+                             //skip cc-id: it's an internal DB identifier
+                } else if (tags.equals("<faqs><faq></date>") && hasContent) {
+                    content = convertInportTimeToIso8601(content);
+                    faqs.append(                  ": date=" + content);
+                        gAddAtts.add(     faqsPre + "date", content);
+                } else if (tags.equals("<faqs><faq></author>") && hasContent) {
+                    int po = content.indexOf(", ");  //e.g., Clapham, Phillip
+                    if (po > 0)   
+                        content = content.substring(po + 2) + " " + content.substring(0, po); 
+                                      faqs.append(", author=" + content + "\n");
+                        gAddAtts.add(     faqsPre + "author", content);
                 } else if (tags.equals("<faqs><faq></question>") && hasContent) {
+                    keywords.add("faq");
                     String2.addNewlineIfNone(faqs).append("Question: " + content + "\n");
+                        //insert extra _ so it sorts before "answer"
+                        gAddAtts.add(          faqsPre + "_question", content);
                 } else if (tags.equals("<faqs><faq></answer>") && hasContent) {
                     String2.addNewlineIfNone(faqs).append("Answer: " + content + "\n");
+                        gAddAtts.add(     faqsPre + "answer", content);
                 } else if (tags.equals("<faqs></faq>")) {
                     String2.addNewlineIfNone(faqs).append("\n");
                 }
 
-            //downloads  #10657
-            } else if (tags.startsWith("<downloads>")) {
-                if        (tags.equals("<downloads><download>")) {
-                       downloads.append("Download #" + ++nDownloads);
-                } else if (tags.equals("<downloads><download></file-type>") && hasContent) {
-                                           downloads.append(": file type=" + content + "\n");
-                } else if (tags.equals("<downloads><download></description>") && hasContent) {
-                   String2.addNewlineIfNone(downloads).append("Description: " + content + "\n");
-
-                // *** DOWNLOAD URL!
-                } else if (tags.equals("<downloads><download></download-url>") && hasContent) {
-                    String2.addNewlineIfNone(downloads).append("URL: " + content + "\n");
-                    if (tSourceUrl.equals("???"))
-                        tSourceUrl = updateUrls(content);
-                } else if (tags.equals("<downloads></download>")) {
-                    String2.addNewlineIfNone(downloads).append("\n");
-                }
-
-            //related-items  see 10657
-            } else if (tags.startsWith("<related-items>")) {
-                if        (tags.equals("<related-items><item>")) {
-                      //catch e.g., <item cat-id="10661" cat-type="ENT" relation-type="HI">
-                      String tTypeCode = xmlReader.attributeValue("cat-type");
-                      String tType = typesHM.get(tTypeCode);                    
-                      String tRelationCode = xmlReader.attributeValue("relation-type");
-                      String tRelation = whichChild == 0?
-                          child0RelationHM.get(tRelationCode) :
-                          childNRelationHM.get(tRelationCode);
-                      if (tRelation == null)
-                          tRelation = tRelationCode; //may be null
-                      relatedItems.append("Related Item #" + ++nRelatedItems + 
-                          ": InPort catalog ID=" + xmlReader.attributeValue("cat-id") +
-                          ", catalog type=" + (tType == null? tTypeCode : tType) + 
-                          ", relation=" + tRelation + "\n");
-                } else if (tags.equals("<related-items><item></title>") && hasContent) {
-                                          relatedItems.append("Title: " + content + "\n");
-                } else if (tags.equals("<related-items><item></abstract>") && hasContent) {
-                                          relatedItems.append("Abstract: " + content + "\n");
-                //} else if (tags.equals("<related-items><item><relation-note>")) {
-                //    No, this is inport log info.
-                //         downloads.append("Relation Note: " + content + "\n");
-                } else if (tags.equals("<related-items></item>")) {
-                     relatedItems.append('\n');
-                }
-
-            //fgdc-contacts   See 10657
-            } else if (tags.startsWith("<fgdc-contacts>")) {
-                //multiple fgdc contacts
-                //need to catch role and just keep if "Point of Contact"
-                if (tags.equals("<fgdc-contacts><fgdc-contact>")) {
-                    isFgdcPOC = "Point of Contact".equals(xmlReader.attributeValue("role"));
-                }
-                if (isFgdcPOC) {
-                    if (tags.equals("<fgdc-contacts><fgdc-contact></contact-person-name>") && hasContent) {
-                        int po = content.indexOf(", ");
-                        addAtts.add("creator_name", po > 0? 
-                            content.substring(po + 2) + " " + content.substring(0, po) :
-                            content); 
-                    } else if (tags.equals("<fgdc-contacts><fgdc-contact></email>") && hasContent) {
-                        addAtts.add("creator_email", content);
-                    }
-                }
-
-            //fgdc-time-period   see 10657     same as info above
-
-            //publisher  see 10657
-            } else if (tags.equals("<publisher><person-contact-info></name>") && hasContent &&
-                addAtts.get("publisher_name") == null) {
-                int po = content.indexOf(", ");
-                addAtts.add("publisher_name", po > 0? 
-                    content.substring(po + 2) + " " + content.substring(0, po) :
-                    content); 
-            } else if (tags.equals("<publisher><person-contact-info></email>") && hasContent &&
-                addAtts.get("publisher_email") == null) {
-                addAtts.add("publisher_email", content);
-
-            //*** attTags - This section processes <data-attributes><attribute>
-            //  information for high level <data-attributes> if whichChild = 0 
-            //  or a child if whichChild = this child
-            //Other code uses whichChild to determine if this info should be 
-            //  processed or skipped.
-            } else if (attTags != null) {
-                int col = addTable.nColumns() - 1;
-                Attributes atts = col >= 0? addTable.columnAttributes(col) : null;
-                if (attTags.equals("")) {
-                    String tName = "column" + (col + 1);
-                    sourceTable.addColumn(tName, new StringArray());
-                    addTable.addColumn(   tName, new StringArray());
-                    if (reallyVerbose)
-                        String2.log("Creating column#" + (col+1) + " for tags=" + tags);
-
-                } else if (attTags.equals("</name>") && hasContent) {
-                    sourceTable.setColumnName(col, content);                    
-                    content = String2.modifyToBeVariableNameSafe(content);
-                    if (content.matches("[A-Z0-9_]+"))  //all uppercase
-                        content = content.toLowerCase();
-                    addTable.setColumnName(col, content);                        
-
-                } else if (attTags.equals("</data-storage-type>") && hasContent) {
-                    //vs general-data-type?
-                    //I did tally to see all the options -- clearly not a defined vocabulary
-                    PrimitiveArray pa = null;
-                    String lcContent = content.toLowerCase();
-                    if        (String2.indexOf(new String[]{
-                        "bit", "boolean", "byte", "logical", 
-                        "tinyint", "yes/no"}, lcContent) >= 0) {
-                        pa = new ByteArray();
-                    } else if (String2.indexOf(new String[]{
-                        "smallint"}, lcContent) >= 0) {
-                        pa = new ShortArray();
-                    } else if (String2.indexOf(new String[]{
-                        "autonumber", "autonumber4", "best32", "guid", 
-                        "integer", "int", "oid", 
-                        "raster", "year"}, lcContent) >= 0) {
-                        pa = new IntArray();
-                    //long -> double below
-                    } else if (String2.indexOf(new String[]{
-                        "float"}, lcContent) >= 0) {
-                        pa = new FloatArray();
-                    } else if (String2.indexOf(new String[]{
-                        "currency", "binary_double", "decimal", "double", 
-                        "long integer", "long raw",
-                        "num", "numeric", "number", "number(2)", "numger", 
-                        ""}, lcContent) >= 0) {
-                        pa = new DoubleArray();
-                    } //otherwise, leave as String    
-                    if (pa != null) {
-                        sourceTable.setColumn(col, pa);
-                        addTable.setColumn(   col, pa);
-                    }
-
-                } else if (attTags.equals("</null-repr>") && hasContent) {
-                    //from Tally: YES, NO, Yes, No, N, NA, "Y, N, NULL"   How bizarre!
-                    PrimitiveArray pa = addTable.getColumn(col);
-                    double d = String2.parseDouble(content);
-                    if (pa instanceof ByteArray)
-                        atts.set("missing_value", Math2.roundToByte(d));
-                    else if (pa instanceof ShortArray)
-                        atts.set("missing_value", Math2.roundToShort(d));
-                    else if (pa instanceof IntArray)
-                        atts.set("missing_value", Math2.roundToInt(d));
-                    else if (pa instanceof LongArray)
-                        atts.set("missing_value", String2.parseLong(content));
-                    else if (pa instanceof FloatArray)
-                        atts.set("missing_value", Math2.doubleToFloatNaN(d));
-                    else if (pa instanceof DoubleArray)
-                        atts.set("missing_value", d);
-                    else if (pa instanceof StringArray) {
-                        if      (content.indexOf("NA")   >= 0) atts.set("missing_value", "NA");
-                        else if (content.indexOf("NULL") >= 0) atts.set("missing_value", "NULL");
-                        else if (content.indexOf("null") >= 0) atts.set("missing_value", "null");
-                    }
-
-                } else if (attTags.equals("</scale>") && hasContent) { 
-                    //What is this? It isn't scale_factor. 
-                    //from Tally: 0, 2, 1, 3, 5, 6, 9, 14, 8, 13, 12, 15, 9, ...
-                    atts.set("scale", content);
-
-                } else if (attTags.equals("</max-length>") && hasContent) {
-                    //e.g., -1 (?!), 0(?!), 22, 1, 8, 100, 4000 (longest)
-                    int maxLen = String2.parseInt(content);
-                    if (maxLen > 0 && maxLen < 10000)
-                        atts.add("max_length", "" + maxLen);
-
-                } else if (attTags.equals("</is-pkey>") && hasContent) {
-                    atts.set("isPrimaryKey", content);
-
-                } else if (attTags.equals("</units>") && hasContent) {
-                    //e.g., Decimal degrees, animal, KM, degrees celcius(sic), AlphaNumeric
-                    //a few common fixups:
-                    String contentLC = content.toLowerCase();
-                    content = //if same, it is to change to correct case
-                        contentLC.equals("<![cdata[mm<sup>2</sup>]]>")? "mm^2" :
-                        contentLC.equals("%")? "percent" :
-                        contentLC.equals("alphanumeric")? "" :
-                        contentLC.equals("animal")?  "count" :
-                        contentLC.equals("c")? "degrees_C" :
-                        contentLC.equals("centimeters")? "centimeters" : 
-                        contentLC.equals("crabs")?   "count" :
-                        contentLC.equals("crabs per square meter")?   "count/m^2" :
-                        contentLC.equals("celsius")? "degrees_C" :
-                        contentLC.equals("date")? "" :
-                        contentLC.equals("decimal degrees")? "degrees" :
-                        contentLC.equals("decmal degrees")?  "degrees" :
-                        contentLC.equals("degree celsius days")? "degrees_C days" :
-                        contentLC.equals("degrees celsius")? "degrees_C" :
-                        contentLC.equals("degree relative to true n")? "degrees_true" :
-                        contentLC.equals("g")? "grams" :
-                        contentLC.equals("holding cell number")? "1" :
-                        contentLC.equals("integer")? "count" :
-                        contentLC.equals("microgram/kilogram")? "microgram/kilogram" :
-                        contentLC.equals("milimeters")? "millimeters" :
-                        contentLC.equals("time")? "" :
-                        contentLC.equals("volts")? "volts" :
-                        contentLC.equals("1")? "" :
-                        contentLC.equals("4")? "" :
-                        content;
-                    if (String2.isSomething(content))
-                        atts.set("units", content);
-
-                } else if (attTags.equals("</format-mask>") && hasContent) {
-                    //Thankfully, format-mask appears after units, so format-mask has precedence.
-                    //e.g., $999,999.99, MM/DD/YYYY, HH:MM:SS, mm/dd/yyyy, HHMM
-
-                    //if it's a date time format, convertToJavaDateTimeFormat e.g., yyyy-MM-dd'T'HH:mm:ssZ
-                    String newContent = Calendar2.convertToJavaDateTimeFormat(content);
-                    if (!newContent.equals(content) ||
-                        newContent.indexOf("yyyy") >= 0) {
-
-                        atts.set("units", newContent);
-
-                        if (newContent.indexOf("yyyy") >= 0 && //has years
-                            newContent.indexOf("M") >= 0 && //has month
-                            newContent.indexOf("d") >= 0 && //has days
-                            newContent.indexOf("H") <  0)   //doesn't have hours
-                            atts.set("time_precision", "1970-01-01");
-                    } else {
-                        atts.set("format_mask", content);
-                    }
-
-                } else if (attTags.equals("</description>") && hasContent) {
-                    //description -> comment
-                    //widely used  (Is <description> used another way?)
-                    if (content.toLowerCase().equals("month/day/year")) {  //date format
-                         atts.set("units", "M/d/yyyy");
-                         atts.set("time_precision", "1970-01-01");
-                    } else {
-                        atts.set("comment", content);
-                    }
-
-                } else if (attTags.equals("</null-meaning>") && hasContent) {
-                    //e.g., 1=Yes, The fish length is unknown or was not recorded.
-                    atts.set("null_meaning", content);
-
-                } else if (attTags.equals("</allowed-values>") && hasContent) {
-                    //e.g., No domain defined., unknown, Free entry text field., text, "1, 2, 3", "False, True"
-                    atts.set("allowed_values", content);
-
-                } else if (attTags.equals("</derivation>") && hasContent) {
-                    //no examples
-                    atts.set("derivation", content);
-
-                } else if (attTags.equals("</validation-rules>") && hasContent) {
-                    atts.set("validation_rules",  content);
-
-                } else if (attTags.equals("</version>") && hasContent) {
-                    //no examples
-                    atts.set("version", content);
-
-                }
-
-
-            //data-attributes   see AFSC 17336
-            //This MUST BE AFTER processing of attTags, otherwise they won't be seen
-            } else if (tags.equals("<data-attributes>")) {
-                if (whichChild != 0) {
-                    //skip this info
-                    if (reallyVerbose)
-                        String2.log("Since whichChild=" + whichChild + ", I'm skipping the outer <data-attributes>.");
-                    xmlReader.skipToStackSize(xmlReader.stackSize());
-                } else {
-                    if (reallyVerbose)
-                        String2.log("Since whichChild=" + whichChild + ", I'm processing the outer <data-attributes>.");
-                }
-
-            //child-entities   see AFSC 17336
-            //This MUST BE AFTER processing of attTags, otherwise they won't be seen
-            } else if (tags.startsWith("<child-entities>")) {
-                if        (tags.equals("<child-entities><child-entity>")) {
-                    //the start of a child-entity
-                    ++nChildEntities;
-                    if (whichChild != nChildEntities) {
-                        xmlReader.skipToStackSize(xmlReader.stackSize());
-                        if (reallyVerbose)
-                            String2.log("Since whichChild=" + whichChild + ", I'm skipping child#" + nChildEntities + ".");
-                    } else {
-                        childEntities.append("Child Entity #" + nChildEntities);
-                        if (reallyVerbose)
-                            String2.log("Since whichChild=" + whichChild + ", I'm processing child#" + nChildEntities + ".");
-                    }
-
-                //these are only found if we're processing this child
-                //most of these overwrite the info from main <common-information>
-                } else if (tags.equals("<child-entities><child-entity><common-information></cat-id>") && hasContent) {                       
-                    addAtts.set("InPort_catalog_ID", 
-                        catID = addAtts.getString("InPort_catalog_ID") + "_" + content);
-                } else if (tags.equals("<child-entities><child-entity><common-information></cat-type-code>") && hasContent) {                       
-                    String tType = typesHM.get(content);                      
-                    addAtts.add("InPort_catalog_type", tType == null? content : tType);
-                } else if (tags.equals("<child-entities><child-entity><common-information></metadata-workflow-state>") && hasContent) {
-                    addAtts.add("metadata_workflow_state", content); 
-                } else if (tags.equals("<child-entities><child-entity><common-information></name>") && hasContent &&
-                    "???".equals(tFileName)) {
-                    tFileName = content;
-                } else if (tags.equals("<child-entities><child-entity><common-information></title>") && hasContent) {
-                    title = String2.ifSomethingConcat(title, " - ", content);
-                } else if (tags.equals("<child-entities><child-entity><common-information></abstract>") && hasContent) {
-                    addAtts.set("summary", String2.ifSomethingConcat(
-                        addAtts.getString("summary"), "\n\n", content));
-                } else if (tags.equals("<child-entities><child-entity><common-information></data-status>") && hasContent) {
-                    addAtts.add("data_status", content); 
-                } else if (tags.equals("<child-entities><child-entity><common-information></created-by>") && hasContent) {
-                    metaCreatedBy = content;
-                } else if (tags.equals("<child-entities><child-entity><common-information></record-created>") && hasContent) {
-                    metaCreated = content;
-                } else if (tags.equals("<child-entities><child-entity><common-information></record-last-modified>") && hasContent) {
-                    metaLastMod = content;
-                } else if (tags.equals("<child-entities><child-entity><common-information></publication-status>") && hasContent) {
-                    addAtts.add("publication_status", content); 
+            //catalog-details  
+            } else if (tags.startsWith("<catalog-details>")) {
+          
+                if        (tags.endsWith("</metadata-record-created-by>") && hasContent) {
+                    metaCreatedBy = content;  //e.g., SysAdmin ...  
+                    gAddAtts.add(   "InPort_metadata_record_created_by", content);
+                } else if (tags.endsWith("</metadata-record-created>") && hasContent) {
+                    content = convertInportTimeToIso8601(content); //e.g., 20160518T185232
+                    metaCreated = content;     
+                    gAddAtts.add(   "InPort_metadata_record_created", content);
+                } else if (tags.endsWith("</metadata-record-last-modified-by>") && hasContent) {
+                    metaLastModBy = content;  //e.g., Renold Narita
+                    gAddAtts.add(   "InPort_metadata_record_last_modified_by", content);
+                } else if (tags.endsWith("</metadata-record-last-modified>") && hasContent) {
+                    content = convertInportTimeToIso8601(content); //e.g., 20160518T185232
+                    metaLastMod = content;  
+                    gAddAtts.add(   "InPort_metadata_record_last_modified", content);
+                } else if (tags.endsWith("</owner-organization-acronym>") && hasContent) {
+                    //Tally: AFSC: 382, NWFSC: 295, SEFSC: 292, PIFSC: 275, NEFSC: 120,
+                    //  SWFSC: 109, OST: 43, PIRO: 31, AKRO: 30, GARFO: 23, SERO: 14,
+                    //  WCRO: 11, OHC: 10, GSMFC: 8, OPR: 1, OSF: 1
+                    gAddAtts.add("institution", 
+                        xmlFileName.indexOf("/NOAA/NMFS/") > 0? "NOAA NMFS " + content: //e.g., SWFSC
+                        xmlFileName.indexOf("/NOAA/")      > 0? "NOAA " + content: 
+                        content); 
+                    acronym = content;
+                    gAddAtts.add(   "InPort_owner_organization_acronym", content);
+                } else if (tags.endsWith("</publication-status>")) {                
+                    Test.ensureEqual(content, "Public", "Unexpected <publication-status> content.");
+                    gAddAtts.add(   "InPort_publication_status", content);
+                } else if (tags.endsWith("</is-do-not-publish>")) {                
+                    //Tally: N: 3953 (100%) (probably because I harvested Public records)
+                    Test.ensureEqual(content, "No", "Unexpected <is-do-not-publish> content.");
                 }
 
             } else {
@@ -2041,89 +2355,98 @@ expected =
         }
 
         //desired whichChild not found?
-        if (whichChild > nChildEntities)         
-            throw new RuntimeException("ERROR: This is no childEntity=" + whichChild);
-
-        //cleanup childEntities
-        //DON'T include: either we're processing 1 child entity, or info is already in 
-        //  "related_items"
-        //if (childEntities.length() > 0)
-        //    addAtts.add("child_entities", childEntities.toString());
+        if (whichChild > 0 && !whichChildFound)         
+            throw new RuntimeException("ERROR: whichChild=" + whichChild + 
+                " not found as <entity-attribute-information>, " +
+                "<distribution>, and/or <child-item>.");
 
         //cleanup creator info
         //String2.pressEnterToContinue(
-        //    "creator_name=" + addAtts.get("creator_name") + ", " + creatorName2 + ", " + creatorName3 + "\n" +
-        //    "creator_email=" + addAtts.get("creator_email") + ", " + creatorEmail2 + ", " + creatorEmail3 + "\n");
-        if (addAtts.get("creator_name") == null) {
-            if      (creatorName2 != null) 
-                addAtts.set("creator_name", creatorName2);
-            else if (creatorName3 != null) 
-                addAtts.set("creator_name", creatorName3);
+        //    "creator_name=" + gAddAtts.get("creator_name") + ", " + creatorName2 + ", " + creatorName3 + "\n" +
+        //    "creator_email=" + gAddAtts.get("creator_email") + ", " + creatorEmail2 + ", " + creatorEmail3 + "\n");
+        if (gAddAtts.get("creator_name") == null) {
+            if        (creatorName2 != null) {
+                gAddAtts.set("creator_name", creatorName2);
+                gAddAtts.set("creator_type", "person");
+            } else if (creatorName3 != null) {
+                gAddAtts.set("creator_name", creatorName3);
+                gAddAtts.set("creator_type", "person");
+            } else if (creatorOrg2 != null) {
+                gAddAtts.set("creator_name", creatorOrg2);
+                gAddAtts.set("creator_type", "institution");
+            } else if (creatorOrg3 != null) {
+                gAddAtts.set("creator_name", creatorOrg3);
+                gAddAtts.set("creator_type", "institution");
+            }
         }
 
-        if (addAtts.get("creator_email") == null) {
-            if      (creatorEmail2 != null) 
-                addAtts.set("creator_email", creatorEmail2);
-            else if (creatorEmail3 != null) 
-                addAtts.set("creator_email", creatorEmail3);
+        if (gAddAtts.get("creator_email") == null) {
+            if      (creatorEmail2 != null) gAddAtts.set("creator_email", creatorEmail2);
+            else if (creatorEmail3 != null) gAddAtts.set("creator_email", creatorEmail3);
         }
 
-        if (addAtts.get("creator_url") == null &&
-            !acronym.equals("???")) {
-            String cu = 
-                "AFSC".equals( acronym)? "https://www.afsc.noaa.gov/":
-                "GARFO".equals(acronym)? "https://www.greateratlantic.fisheries.noaa.gov/":
-                "NWFSC".equals(acronym)? "https://www.nwfsc.noaa.gov/":
-                "OSF".equals(  acronym)? "http://www.nmfs.noaa.gov/sfa/":
-                "OST".equals(  acronym)? "https://www.st.nmfs.noaa.gov/":
-                "PIFSC".equals(acronym)? "https://www.pifsc.noaa.gov/":
-                "SEFSC".equals(acronym)? "https://www.sefsc.noaa.gov/":
-                "SERO".equals( acronym)? "http://sero.nmfs.noaa.gov/":
-                "SWFSC".equals(acronym)? "https://swfsc.noaa.gov/": 
-                "";
-            if (!cu.equals(""))
-                addAtts.add("creator_url", cu);
+        if (gAddAtts.get("creator_url") == null) {
+            String cu = null;
+            if        (creatorUrl2 != null) {
+                  cu = creatorUrl2;
+            } else if (creatorUrl3 != null) {
+                  cu = creatorUrl3;
+            } else if (!acronym.equals("???")) {
+                cu = 
+                "AFSC".equals(  acronym)? "https://www.afsc.noaa.gov/":
+                "AKRO".equals(  acronym)? "https://alaskafisheries.noaa.gov/":
+                "GARFO".equals( acronym)? "https://www.greateratlantic.fisheries.noaa.gov/":
+                "GSMFC".equals( acronym)? "http://www.gsmfc.org/":
+                "NEFSC".equals( acronym)? "https://www.nefsc.noaa.gov/":
+                "NWFSC".equals( acronym)? "https://www.nwfsc.noaa.gov/":
+                "OHC".equals(   acronym)? "http://www.habitat.noaa.gov/":
+                "OPR".equals(   acronym)? "http://www.nmfs.noaa.gov/pr/":
+                "OSF".equals(   acronym)? "http://www.nmfs.noaa.gov/sfa/":
+                "OST".equals(   acronym)? "https://www.st.nmfs.noaa.gov/":
+                "PIFSC".equals( acronym)? "https://www.pifsc.noaa.gov/":
+                "PIRO".equals(  acronym)? "http://www.fpir.noaa.gov/":
+                "SEFSC".equals( acronym)? "https://www.sefsc.noaa.gov/":
+                "SERO".equals(  acronym)? "http://sero.nmfs.noaa.gov/":
+                "SWFSC".equals( acronym)? "https://swfsc.noaa.gov/": 
+                "WCRO".equals(  acronym)? "http://www.westcoast.fisheries.noaa.gov/":
+                null;
+            }
+            if (cu != null)
+                gAddAtts.add("creator_url", cu);
         }
 
-        //cleanup dataQuality
-        if (dataQuality.length() > 0)
-            addAtts.add("data_quality", dataQuality.toString().trim());
+        //dataQuality -- now done separately
+        //if (dataQuality.length() > 0) 
+        //    gAddAtts.add("processing_level", dataQuality.toString().trim());  //an ACDD att
 
-        //cleanup downloads
-        if (downloads.length() > 0)
-            addAtts.add("downloads", downloads.toString().trim());
+        //distribution -- now done separately
+        //if (distribution.length() > 0)
+        //    gAddAtts.add("InPort_distribution_information", distribution.toString().trim());
 
-        //cleanup faqs
-        if (faqs.length() > 0)
-            addAtts.add("faqs", faqs.toString().trim());
+        //faqs -- now done separately
+        //if (faqs.length() > 0)
+        //    gAddAtts.add("InPort_faqs", faqs.toString().trim());
 
         //cleanup history (add to lineage info gathered above)
-        if (!metaCreated.equals("???"))
-            history.append(metaCreated +
-                (metaCreatedBy.equals("???")? "" : " " + metaCreatedBy) +
-                " originally created InPort metadata cat-id#" + catID + ".\n");
-        if (!metaLastMod.equals("???"))
-            history.append(metaLastMod +
-                (metaCreatedBy.equals("???")? "" : " " + metaCreatedBy) +
-                " last modified InPort metadata cat-id#" + catID + ".\n");
-        if (history.length() == 0)
-            history.append(
-                (metaCreatedBy.equals("???")? "" : metaCreatedBy + " created ") +
-                "InPort metadata cat-id#" + catID + ".\n");
-        if (!dataPublicationDate.equals("???"))
-            history.append(dataPublicationDate + " data set originally published.\n"); //???really???
+        if (!metaCreatedBy.equals("???"))
+            history.append(metaCreated + " " + metaCreatedBy +
+                " originally created InPort catalog-item-id #" + catID + ".\n");
+        if (!metaLastModBy.equals("???"))
+            history.append(metaLastMod + " " + metaLastModBy +
+                " last modified InPort catalog-item-id #" + catID + ".\n");
         history.append( 
             Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10) +
-            " ERDDAP's GenerateDatasetsXml (contact: bob.simons@noaa.gov) converted " +
-            "InPort metadata from " + inportXmlUrl + " into an ERDDAP dataset description.\n");
-        addAtts.add("history", history.toString().trim());
+            " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + 
+            " (contact: bob.simons@noaa.gov) converted " +
+            "inport-xml metadata from " + inportXmlUrl + " into an ERDDAP dataset description.\n");
+        gAddAtts.add("history", history.toString().trim());
 
-        //cleanup issues
-        if (issues.length() > 0)
-            addAtts.add("issues", issues.toString().trim());
+        //issues -- now done separately
+        //if (issues.length() > 0)
+        //    gAddAtts.add("InPort_issues", issues.toString().trim());
 
         //cleanup keywords
-        addAtts.add("keywords", String2.toCSSVString(keywords));
+        gAddAtts.add("keywords", String2.toCSSVString(keywords));
 
         //cleanup license
         if (license.indexOf("Security class: Unclassified") >= 0 && //if Unclassified
@@ -2133,39 +2456,229 @@ expected =
             license.append("[standard]");
         else if (license.length() == 0)
             license.append("???");
-        addAtts.add("license", license.toString().trim());
+        gAddAtts.add("license", license.toString().trim());
 
-        if (relatedItems.length() > 0)
-            addAtts.add("related_items", relatedItems.toString().trim());
+        //childItems -- now done separately
+        //if (childItems.length() > 0)
+        //    gAddAtts.add("InPort_child_items", childItems.toString().trim());
 
-        addAtts.add("summary", summary.length() == 0? title : summary.toString().trim());
+        gAddAtts.add("sourceUrl", tSourceUrl);
 
-        if (urls.length() > 0)
-            addAtts.add("urls", urls.toString().trim());
+        gAddAtts.add("summary", summary.length() == 0? title : summary.toString().trim());
+
+        //urls -- now done separately
+        //if (urls.length() > 0)
+        //    gAddAtts.add("InPort_urls", urls.toString().trim());
+
+        //*** match to specified file?
+        if (String2.isSomething(tDataDir)) {
+            String msg;
+            try {
+                //ensure dir exists
+                if (File2.isDirectory(tDataDir)) {
+                    msg = "> dataDir     =" + tDataDir + " already exists."; 
+                    String2.log(msg);
+                    background.append(msg + "\n");
+                } else {
+                    msg = "> creating dataDir=" + tDataDir;
+                    String2.log(msg);
+                    background.append(msg + "\n");
+                    File2.makeDirectory(tDataDir);  //throws exception if trouble
+                }
+
+                //if a dataFileName was specified, read it 
+                if (!"???".equals(tDataFileName)) {
+                    msg = "> dataFileName=" + tDataDir + tDataFileName; 
+                    String2.log(msg);
+                    background.append(msg + "\n");
+                    Table fileTable = new Table();
+                    fileTable.readASCII(tDataDir + tDataFileName, 0, 1, 
+                        null, null, null, null, null, false);  //simplify?
+                    msg = "> dataFileTable columnNames=" + fileTable.getColumnNamesCSSVString(); 
+                    String2.log(msg);
+                    background.append(msg + "\n");
+                    
+                    if (sourceTable.nColumns() == 0) {
+                        //inport-xml had no entity-attributes, so just use the file as is
+                        for (int fcol = 0; fcol < fileTable.nColumns(); fcol++) {
+                            String colName    = fileTable.getColumnName(fcol);
+                            Attributes atts   = fileTable.columnAttributes(fcol);
+                            PrimitiveArray pa = fileTable.getColumn(fcol);
+                            sourceTable.addColumn(fcol, colName, 
+                                (PrimitiveArray)(pa.clone()),
+                                (Attributes)(atts.clone()));
+                            addTable.addColumn(fcol, colName, 
+                                (PrimitiveArray)(pa.clone()),
+                                (Attributes)(atts.clone()));
+                        }
+                        
+                    } else {
+                        //inport-xml had entity-attributes, try to match to names in ascii file
+                        BitSet matched = new BitSet();
+                        for (int icol = 0; icol < sourceTable.nColumns(); icol++) {
+                            String colName = sourceTable.getColumnName(icol);
+                            for (int fcol = 0; fcol < fileTable.nColumns(); fcol++) {
+                                String tryName = fileTable.getColumnName(fcol);
+                                if (String2.looselyEquals(colName, tryName)) {
+                                    matched.set(icol);
+                                    sourceTable.setColumn(icol, fileTable.getColumn(fcol));
+                                       addTable.setColumn(icol, (PrimitiveArray)(fileTable.getColumn(fcol).clone()));
+                                    if (!colName.equals(tryName)) {
+                                        msg = "> I changed InPort entity attribute colName=" + colName +
+                                            " into ascii file colName=" + tryName;
+                                        String2.log(msg);
+                                        background.append(msg + "\n");
+                                        sourceTable.setColumnName(icol, tryName);
+                                           addTable.setColumnName(icol, tryName);
+                                    }
+                                    fileTable.removeColumn(fcol);
+                                    break;
+                                }
+                            }
+                        }
+                        if (sourceTable.nColumns() > 0 &&
+                            matched.nextClearBit(0) == sourceTable.nColumns()) {
+                            msg = "> Very Good! All InPort columnNames matched columnNames in the fileTable.";
+                            String2.log(msg);
+                            background.append(msg + "\n");
+                        }
+
+                        //for colNames not matched, get admin to try to make a match
+                        for (int icol = 0; icol < sourceTable.nColumns(); icol++) {
+                            if (!matched.get(icol)) {
+                                String colName = sourceTable.getColumnName(icol);
+                                String actual = String2.getStringFromSystemIn(
+                                    "Column name #" + icol + "=" + colName + " isn't in the ASCII file.\n" +
+                                    "Enter one of these names:\n" +
+                                    fileTable.getColumnNamesCSSVString() + "\n" +
+                                    "or press Enter to append '?' to the column name to signify it is unmatched.");
+                                if (actual.length() == 0) {
+                                    sourceTable.setColumnName(icol, colName + "?");
+                                } else {
+                                    int fcol = fileTable.findColumnNumber(actual);
+                                    if (fcol >= 0) {
+                                        fileTable.removeColumn(fcol);
+                                        sourceTable.setColumn(icol, fileTable.getColumn(fcol));
+                                           addTable.setColumn(icol, (PrimitiveArray)(fileTable.getColumn(fcol).clone()));
+                                    }
+                                    sourceTable.setColumnName(icol, actual);
+                                       addTable.setColumnName(icol, actual);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                String2.pressEnterToContinue(String2.ERROR + " while working with " + 
+                    tDataDir + tDataFileName + ":\n" +
+                    MustBe.throwableToString(t));
+            }
+
+            //ensure all column have same number of values
+            //they won't be same size if not all columns matched above
+            sourceTable.makeColumnsSameSize();
+               addTable.makeColumnsSameSize();
+        }
+
+        //*** end stuff
+        boolean dateTimeAlreadyFound = false;
+        String tSortedColumnSourceName = "";
+        String tSortFilesBySourceNames = "";
+        String tColumnNameForExtract   = "";
+
+        DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
+        for (int col = 0; col < addTable.nColumns(); col++) {
+            String colName = addTable.getColumnName(col);
+            PrimitiveArray pa = (PrimitiveArray)addTable.getColumn(col); 
+            pa.switchFromTo("null", "");  
+            pa.switchFromTo("NULL", ""); 
+            pa.switchFromTo("na", "");    
+            pa.switchFromTo("NA", ""); 
+            pa.switchFromTo("n/a", ""); 
+            pa.switchFromTo("N/A", ""); 
+            pa.switchFromTo(".", ""); 
+            pa.switchFromTo("-", ""); 
+            pa = pa.simplify();
+            sourceTable.setColumn(col, pa);
+            addTable.setColumn(col, (PrimitiveArray)(pa.clone()));
+
+            //look for date columns
+            String tUnits = addTable.columnAttributes(col).getString("units");
+            if (tUnits == null) tUnits = "";
+            if (tUnits.toLowerCase().indexOf("yy") >= 0 &&
+                pa.elementClass() != String.class) 
+                //convert e.g., yyyyMMdd columns from int to String
+                addTable.setColumn(col, new StringArray(pa));                       
+            if (pa.elementClass() == String.class) {
+                tUnits = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                if (tUnits.length() > 0)
+                    addTable.columnAttributes(col).set("units", tUnits);
+                //??? and if tUnits = "", set to ""???
+            }
+            boolean isDateTime = Calendar2.isTimeUnits(tUnits);
+
+            Attributes addColAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                gAddAtts, sourceTable.columnAttributes(col), addTable.columnAttributes(col), 
+                colName, true, true); //addColorBarMinMax, tryToFindLLAT
+
+            //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
+            //  even if StringArray
+            double stats[] = pa.calculateStats();
+            int whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MIN]);
+            if (whichMv9 < 0)
+                whichMv9 = mv9.indexOf(stats[PrimitiveArray.STATS_MAX]);
+            if (whichMv9 >= 0) {
+                addColAtts.add("missing_value", 
+                    PrimitiveArray.factory(pa.elementClass(), 1, 
+                        "" + mv9.getInt(whichMv9)));
+                String2.log("\nADDED missing_value=" + mv9.getInt(whichMv9) +
+                    " to col=" + colName);
+            }
+ 
+            //files are likely sorted by first date time variable
+            //and no harm if files aren't sorted that way
+            if (tSortedColumnSourceName.length() == 0 && 
+                isDateTime && !dateTimeAlreadyFound) {
+                dateTimeAlreadyFound = true;
+                tSortedColumnSourceName = colName;
+            }
+        }
 
         //tryToFindLLAT
         tryToFindLLAT(sourceTable, addTable);
 
         //*** makeReadyToUseGlobalAtts
-        addAtts.set(makeReadyToUseAddGlobalAttributesForDatasetsXml(
+        gAddAtts.set(makeReadyToUseAddGlobalAttributesForDatasetsXml(
             sourceAtts, 
             hasLonLatTime(addTable)? "Point" : "Other",
             "(local files)", //???
-            addAtts, 
+            gAddAtts, 
             suggestKeywords(sourceTable, addTable)));
 
         //subsetVariables
         if (sourceTable.globalAttributes().getString("subsetVariables") == null &&
                addTable.globalAttributes().getString("subsetVariables") == null) 
-            addAtts.add("subsetVariables",
-                suggestSubsetVariables(sourceTable, addTable, false)); 
+            gAddAtts.add("subsetVariables",
+                suggestSubsetVariables(sourceTable, addTable, true)); //1file/dataset?
+
+        StringBuilder defaultDataQuery = new StringBuilder();
+        StringBuilder defaultGraphQuery = new StringBuilder();
+        if (addTable.findColumnNumber(EDV.TIME_NAME) >= 0) {
+            defaultDataQuery.append( "&amp;time&gt;=min(time)&amp;time&lt;=max(time)");
+            defaultGraphQuery.append("&amp;time&gt;=min(time)&amp;time&lt;=max(time)");
+        }
+        defaultGraphQuery.append("&amp;.marker=1|5");
 
         //use original title, with InPort # added
-        addAtts.add("title", title + " (InPort #" + catID + ")"); //catID ensures it is unique
+        gAddAtts.add("title", title + " (InPort #" + catID + 
+            (whichChild == 0?  "" : 
+             entityID != null? "ce" + entityID :
+                               "c" + whichChild) +
+            ")"); //catID ensures it is unique
 
         //fgdc and iso19115
-        String fgdcFile     = String2.replaceAll(xmlFileName, "/inport/", "/fgdc/");
-        String iso19115File = String2.replaceAll(xmlFileName, "/inport/", "/iso19115/");
+        String fgdcFile     = String2.replaceAll(xmlFileName, "/inport-xml/", "/fgdc/");
+        String iso19115File = String2.replaceAll(xmlFileName, "/inport-xml/", "/iso19115/");
         if (!File2.isFile(fgdcFile))
             fgdcFile     = ""; //if so, don't serve an fgdc file
         if (!File2.isFile(iso19115File))
@@ -2173,10 +2686,10 @@ expected =
 
         //write datasets.xml
         StringBuilder results = new StringBuilder();
-        tFileDir  = File2.addSlash(tFileDir);
-        tFileDir  = String2.replaceAll(tFileDir, "\\", "/");
-        tFileDir  = String2.replaceAll(tFileDir,  ".", "\\.");
-        tFileName = String2.replaceAll(tFileName, ".", "\\.");
+        tDataDir      = File2.addSlash(tDataDir);
+        tDataDir      = String2.replaceAll(tDataDir,      "\\", "/");
+        tDataDir      = String2.replaceAll(tDataDir,      ".",  "\\.");
+        tDataFileName = String2.replaceAll(tDataFileName, ".",  "\\.");
 
         if (addTable.nColumns() == 0) {
             Attributes tAddAtts = new Attributes();
@@ -2189,23 +2702,32 @@ expected =
 
         results.append(
             "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + 
-                acronym.toLowerCase() + "InPort" + catID + "\" active=\"true\">\n" +
-            "    <sourceUrl>" + XML.encodeAsXML(tSourceUrl) + "</sourceUrl>\n" +
-            "    <fileDir>" + XML.encodeAsXML(tFileDir) + "</fileDir>\n" +
-            "    <fileNameRegex>" + XML.encodeAsXML(tFileName) + "</fileNameRegex>\n" + 
+                acronym.toLowerCase() + "InPort" + catID + 
+                (whichChild == 0?  "" : 
+                 entityID != null? "ce" + entityID :
+                                   "c" + whichChild) +
+                "\" active=\"true\">\n" +
+            (defaultDataQuery.length() > 0? 
+            "    <defaultDataQuery>" + defaultDataQuery + "</defaultDataQuery>\n" : "") +
+            (defaultGraphQuery.length() > 0? 
+            "    <defaultGraphQuery>" + defaultGraphQuery + "</defaultGraphQuery>\n" : "") +
+            "    <fileDir>" + XML.encodeAsXML(tDataDir) + "</fileDir>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tDataFileName) + "</fileNameRegex>\n" + 
             "    <charset>ISO-8859-1</charset>\n" +
             "    <columnNamesRow>1</columnNamesRow>\n" +
             "    <firstDataRow>2</firstDataRow>\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +
+            "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
             "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
             "    <fgdcFile>" + fgdcFile + "</fgdcFile>\n" +
             "    <iso19115File>" + iso19115File + "</iso19115File>\n");
         results.append(writeAttsForDatasetsXml(false, sourceTable.globalAttributes(), "    "));
+        results.append(cdmSuggestion());
         results.append(writeAttsForDatasetsXml(true,  addTable.globalAttributes(),    "    "));
-
-        //last 2 params: includeDataType, questionDestinationName
+        
         results.append(writeVariablesForDatasetsXml(sourceTable, addTable, 
-            "dataVariable", true, false));
+            "dataVariable", 
+            true, false)); //includeDataType, questionDestinationName
         results.append(
             "</dataset>\n" +
             "\n");        
@@ -2213,10 +2735,16 @@ expected =
         //background
         String2.log("\n-----");
         if (background.length() > 0)
-            String2.log("Background for ERDDAP: " + background.toString().trim());
+            String2.log("Background for ERDDAP:\n" + background.toString());
+        if (whichChild == 0) 
+            String2.log( 
+                "> nChildItems (with little info)=" + nChildItems + 
+                ", nDistributions=" + nDistributions +
+                ", nEntities (with attribute info)=" + nEntities +
+                ", nUrls=" + nUrls);
         if (!"Unclassified".equals(securityClass))
-            String2.log("WARNING! Security_class = " + securityClass);
-        String2.log("generateDatasetsXml finished successfully.\n-----");
+            String2.log("> WARNING! <security-class>=" + securityClass);
+        String2.log("\n* generateDatasetsXml finished successfully.\n-----\n");
         return results.toString();
     }
 
@@ -2284,7 +2812,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_tz_all", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -2323,7 +2851,7 @@ expected =
 "http://localhost:8080/cwexperimental/tabledap/testTimeZone.das\";\n" +
 "    String infoUrl \"https://www.pfeg.noaa.gov\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
-"    String keywords \"many, keywords\";\n" +
+"    String keywords \"keywords, many\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -2346,7 +2874,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_tz_all", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "time,timestamp_utc,m\n" +
@@ -2388,7 +2916,7 @@ expected =
         userDapQuery = "&time>=2004-12-03T15:55";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,a,b\n" +
@@ -2437,7 +2965,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_3", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -2467,10 +2995,17 @@ expected =
         expected = 
 //2016-09-19T22:37:33Z
 "http://localhost:8080/cwexperimental/tabledap/testTimeMV.das\";\n" +
-"    String infoUrl \"http://www.pfel.noaa.gov\";\n" +
+"    String infoUrl \"https://www.pfeg.noaa.gov\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
-"    String keywords \"lots, of, keywords\";\n" +
+"    String keywords \"keywords, lots, of\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"testTimeMV\";\n" +
@@ -2487,7 +3022,7 @@ expected =
         userDapQuery = "&a>\"b\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2506,7 +3041,7 @@ expected =
         userDapQuery = "&a<\"k\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2527,7 +3062,7 @@ expected =
         userDapQuery = "&a<\"j\"&a!=\"\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv2b", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2544,7 +3079,7 @@ expected =
         userDapQuery = "&a=\"\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2558,7 +3093,7 @@ expected =
         userDapQuery = "&a!=\"\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv3b", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2577,7 +3112,7 @@ expected =
         userDapQuery = "&time>=2010-12-07T20";  //request in UTC
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2589,7 +3124,7 @@ expected =
         userDapQuery = "&time=NaN";  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4aa", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2605,7 +3140,7 @@ expected =
         userDapQuery = "&m>=11";  //request in UTC
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4b", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2617,7 +3152,7 @@ expected =
         userDapQuery = "&m<=1";  //request in UTC
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4c", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2629,7 +3164,7 @@ expected =
         userDapQuery = "&m=NaN";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv5", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "a,time,m\n" +
@@ -2644,155 +3179,565 @@ expected =
     }
 
     /**
-     * This tests GenerateDatasetsXml with EDDTableFromInPort when there are  
-     * data variables. 
+     * This tests GenerateDatasetsXml with EDDTableFromInPort whichChild=0
+     * and tests if datasets.xml can be generated from csv file even if no child-entity info. 
+     * 2017-08-09 I switched from old /inport/ to new /inport-xml/ .
      */
     public static void testGenerateDatasetsXmlFromInPort() throws Throwable {
-        String2.log("\n*** testGenerateDatasetsXmlFromInPort()\n");
+        String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort()\n");
         testVerboseOn();
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
         try {
-            String xmlFile = "/u00/data/points/inportXml/NOAA/NMFS/AFSC/inport/xml/17336.xml";
-            String dataDir = "/u00/data/points/inportData/afsc/";
+            String xmlDir  = "/u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/";
+            String xmlFile = xmlDir + "27377.xml";
+            int whichChild = 0;
+            String dataDir = "/u00/data/points/inportData/";
+
 
             String results = generateDatasetsXmlFromInPort(
-                xmlFile, ".*", ".*", dataDir) + "\n";
+                xmlFile, xmlDir, ".*", whichChild, dataDir, "") + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromInPort",
-                xmlFile, dataDir},
+                xmlFile, xmlDir, "" + whichChild, dataDir, ""},
                 false); //doIt loop?
 
 String expected = 
-"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort17336_25511\" active=\"true\">\n" +
-"    <sourceUrl>https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425</sourceUrl>\n" +
-"    <fileDir>/u00/data/points/inportData/afsc/</fileDir>\n" +
-"    <fileNameRegex>Comments</fileNameRegex>\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"akroInPort27377\" active=\"true\">\n" +
+"    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
+"    <fileDir>/u00/data/points/inportData/27377/</fileDir>\n" +
+"    <fileNameRegex>???</fileNameRegex>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
-"    <fgdcFile>/u00/data/points/inportXml/NOAA/NMFS/AFSC/fgdc/xml/17336.xml</fgdcFile>\n" +
-"    <iso19115File>/u00/data/points/inportXml/NOAA/NMFS/AFSC/iso19115/xml/17336.xml</iso19115File>\n" +
+"    <fgdcFile>/u00/data/points/inportXml/NOAA/NMFS/AKRO/fgdc/xml/27377.xml</fgdcFile>\n" +
+"    <iso19115File>/u00/data/points/inportXml/NOAA/NMFS/AKRO/iso19115/xml/27377.xml</iso19115File>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"acknowledgment\">BOEM funded this research.</att>\n" +
+"        <att name=\"acknowledgment\">Steve Lewis, Jarvis Shultz</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
-"        <att name=\"creator_email\">phillip.clapham@noaa.gov</att>\n" +
-"        <att name=\"creator_name\">Phillip Clapham</att>\n" +
+"        <att name=\"creator_email\">steve.lewis@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">Steve Lewis</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
-"        <att name=\"creator_url\">https://www.afsc.noaa.gov/</att>\n" +
-"        <att name=\"data_status\">Complete</att>\n" +
-"        <att name=\"date-created\">2015</att>\n" +
-"        <att name=\"downloads\">Download #1\n" +
-"URL: https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425</att>\n" +
-"        <att name=\"geospatial_description\">Chukchi and Beaufort Seas off Barrow, AK.</att>\n" +
-"        <att name=\"geospatial_lat_max\" type=\"double\">72.0</att>\n" +
-"        <att name=\"geospatial_lat_min\" type=\"double\">70.0</att>\n" +
-"        <att name=\"geospatial_lon_max\" type=\"double\">-151.0</att>\n" +
-"        <att name=\"geospatial_lon_min\" type=\"double\">-158.0</att>\n" +
-"        <att name=\"history\">2015-06-17T17:51:02 Janice Waite originally created InPort metadata cat-id#17336_25511.\n" +
-"2016-05-18T18:52:32 Janice Waite last modified InPort metadata cat-id#17336_25511.\n" +
-"2015 data set originally published.\n" +
-today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) converted InPort metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport/xml/17336.xml into an ERDDAP dataset description.</att>\n" +
-"        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport/xml/17336.xml</att>\n" +
-"        <att name=\"InPort_catalog_ID\">17336_25511</att>\n" +
-"        <att name=\"InPort_catalog_type\">Data Entity</att>\n" +
-"        <att name=\"InPort_XML_URL\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport/xml/17336.xml</att>\n" +
-"        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
-"        <att name=\"keywords\">aerial, afsc, agreement, beaufort, beaufort sea, between, biota, boem, bowfest, bowhead, bureau, chukchi, chukchi sea, comments, data, ecology, energy, feeding, fisheries, hole, identification, initiated, institution, interagency, management, marine, national, nmfs, noaa, ocean, oceanographic, oceans, oregon, osu, photo, photo-identification, sea, service, state, study, summer, through, time, time2, university, whale, whoi, woods</att>\n" +
+"        <att name=\"creator_url\">http://alaskafisheries.noaa.gov/</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">88.0</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">40.0</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">170.0</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-133.0</att>\n" +
+"        <att name=\"history\">Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
+"Further MB from NCEIis downloaded as 43,000 individual tracklines in XYZ or MB58 format and processed using ArcPY and MB software.\n" +
+"There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
+"2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
+"2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+"        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
+"        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
+"\n" +
+"Other integrated datasets with resolutiomd far less, such as the 500 meter ETOPO2 dataset.  \n" +
+"\n" +
+"80,000+ trracklines were extracted and processed at full resolution, often less than 1 meter resolution.</att>\n" +
+"        <att name=\"InPort_data_quality_analytical_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
+"\n" +
+"Other integrated datasets with resolutiomd far less, such as the 500 meter ETOPO2 dataset.  \n" +
+"\n" +
+"42,300 MB trracklines were extracted and processed at full resolution, often less than 1 meter resolution.</att>\n" +
+"        <att name=\"InPort_data_quality_completeness_measure\">Multibeam tracks are often prone to conal outliers. However, these outliers and investigated both using various GIS analytical tools</att>\n" +
+"        <att name=\"InPort_data_quality_control_procedures\">Used K-natural neighbors, Percentiles, and ArcGIS slope tools to location and remove outliers.</att>\n" +
+"        <att name=\"InPort_data_quality_field_precision\">1/10 of a meter.</att>\n" +
+"        <att name=\"InPort_data_quality_representativeness\">Data was compiled from downloaded NetCDF GRD files and include trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF,  XYZ files, and MB-58 multi-beam. These data consist of approximately 18.6 billion depth data points \n" +
+"\n" +
+"Data was extracted, parsed, and groomed by each of the individual 84,009+ tracklines using statistical analysis and visual inspection with some imputation\n" +
+"\n" +
+"42,300 MB tracklines were extracted and processed at full resolution, often less than 1 meter resolution\n" +
+"\n" +
+"We are currently downloading a multi-national bathymetric data with another 160,000 surveys (April, 2017)</att>\n" +
+"        <att name=\"InPort_data_quality_sensitivity\">Multibeam tracks are often prone with conal outliers.</att>\n" +
+"        <att name=\"InPort_dataset_maintenance_frequency\">Quarterly</att>\n" +
+"        <att name=\"InPort_dataset_presentation_form\">Map (digital)</att>\n" +
+"        <att name=\"InPort_dataset_publication_status\">Published</att>\n" +
+"        <att name=\"InPort_dataset_publish_date\">2017</att>\n" +
+"        <att name=\"InPort_dataset_source_media_type\">computer program</att>\n" +
+"        <att name=\"InPort_dataset_type\">GIS dataset  Point, Terrain, Raster</att>\n" +
+"        <att name=\"InPort_distribution_1_download_url\">http://alaskafisheries.noaa.gov/arcgis/rest/services</att>\n" +
+"        <att name=\"InPort_distribution_1_file_name\">ShoreZoneFlex</att>\n" +
+"        <att name=\"InPort_distribution_1_file_type\">ESRI REST</att>\n" +
+"        <att name=\"InPort_distribution_1_review_status\">Chked MD</att>\n" +
+"        <att name=\"InPort_distribution_2_download_url\">http://alaskafisheries.noaa.gov/arcgis/rest/services</att>\n" +
+"        <att name=\"InPort_distribution_2_file_name\">ALaskaBathy_SE</att>\n" +
+"        <att name=\"InPort_distribution_2_file_type\">ESRI REST</att>\n" +
+"        <att name=\"InPort_distribution_2_review_status\">Chked MD</att>\n" +
+"        <att name=\"InPort_distribution_3_download_url\">https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
+"        <att name=\"InPort_distribution_3_file_name\">ALaskaBathy</att>\n" +
+"        <att name=\"InPort_distribution_3_review_status\">Chked MD</att>\n" +
+"        <att name=\"InPort_distribution_4_download_url\">https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
+"        <att name=\"InPort_distribution_4_file_name\">ALaskaBathy</att>\n" +
+"        <att name=\"InPort_distribution_4_file_type\">ESRI REST</att>\n" +
+"        <att name=\"InPort_distribution_4_review_status\">Chked MD</att>\n" +
+"        <att name=\"InPort_faq_1__question\">can this dataset be used for navigation.</att>\n" +
+"        <att name=\"InPort_faq_1_answer\">No.</att>\n" +
+"        <att name=\"InPort_faq_1_author\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_faq_1_date\">2015-09-22</att>\n" +
+"        <att name=\"InPort_fishing_gear\">Soundings, multibeam</att>\n" +
+"        <att name=\"InPort_issue_1_author\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_issue_1_date\">2013</att>\n" +
+"        <att name=\"InPort_issue_1_issue\">Outlier removal processes</att>\n" +
+"        <att name=\"InPort_item_id\">27377</att>\n" +
+"        <att name=\"InPort_item_type\">Data Set</att>\n" +
+"        <att name=\"InPort_metadata_record_created\">2015-09-22T22:56:00Z</att>\n" +
+"        <att name=\"InPort_metadata_record_created_by\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified\">2017-07-06T21:18:53Z</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified_by\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_metadata_workflow_state\">Published / External</att>\n" +
+"        <att name=\"InPort_owner_organization_acronym\">AKRO</att>\n" +
+"        <att name=\"InPort_parent_item_id\">26657</att>\n" +
+"        <att name=\"InPort_publication_status\">Public</att>\n" +
+"        <att name=\"InPort_status\">In Work</att>\n" +
+"        <att name=\"InPort_support_role_1_organization\">Alaska Regional Office</att>\n" +
+"        <att name=\"InPort_support_role_1_organization_url\">http://alaskafisheries.noaa.gov/</att>\n" +
+"        <att name=\"InPort_support_role_1_person\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_support_role_1_person_email\">steve.lewis@noaa.gov</att>\n" +
+"        <att name=\"InPort_support_role_1_type\">Point of Contact</att>\n" +
+"        <att name=\"InPort_technical_environment\">In progress.</att>\n" +
+"        <att name=\"InPort_url_1_description\">REST Service</att>\n" +
+"        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
+"        <att name=\"InPort_url_1_url\">https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
+"        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
+"        <att name=\"institution\">NOAA NMFS AKRO</att>\n" +
+"        <att name=\"instrument\">ArcGIS</att>\n" +
+"        <att name=\"keywords\">akro, alaska, analytical, analytical purposes only, bathy, bathymetry, centers, century, consists, data, dataset, depth, environmental, faq, fisheries, geographic, imported, inform, information, into, marine, national, ncei, nesdis, nmfs, noaa, numerous, ocean, office, only, point, processed, purposes, regional, se alaska, service, southeast, surveys, taken</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
-"        <att name=\"license\">Distribution Liability: The user is responsible for the results of any application of this data for other than its intended purpose. NOAA denies liability if the data are misused.\n" +
-"Data access constraints: There are no legal restrictions on access to the data.  They reside in public domain and can be freely distributed.\n" +
-"Data access procedure: Data is available at https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0131425\n" +
-"Data use constraints: User must read and fully comprehend the metadata prior to use.  Applications or inferences derived from the data should be carefully considered for accuracy.  Acknowledgement\n" +
-"of NOAA/NMFS/AFSC, as the source from which these data were obtained in any publications and/or other representations of these, data is suggested.</att>\n" +
-"        <att name=\"metadata_workflow_state\">Published / External</att>\n" +
-"        <att name=\"publication_status\">Public</att>\n" +
-"        <att name=\"publisher_email\">ren.narita@noaa.gov</att>\n" +
-"        <att name=\"publisher_name\">Renold E Narita</att>\n" +
-"        <att name=\"publisher_type\">person</att>\n" +
-"        <att name=\"related_items\">Related Item #1: InPort catalog ID=25511, catalog type=Data Entity, relation=sibling\n" +
-"Title: Comments\n" +
-"\n" +
-"Related Item #2: InPort catalog ID=25512, catalog type=Data Entity, relation=sibling\n" +
-"Title: GPS\n" +
-"\n" +
-"Related Item #3: InPort catalog ID=25513, catalog type=Data Entity, relation=sibling\n" +
-"Title: GrpPassMark\n" +
-"\n" +
-"Related Item #4: InPort catalog ID=25514, catalog type=Data Entity, relation=sibling\n" +
-"Title: Positions\n" +
-"\n" +
-"Related Item #5: InPort catalog ID=25515, catalog type=Data Entity, relation=sibling\n" +
-"Title: Sightings\n" +
-"\n" +
-"Related Item #6: InPort catalog ID=25516, catalog type=Data Entity, relation=sibling\n" +
-"Title: Weather</att>\n" +
+"        <att name=\"license\">Distribution Liability: for analytical purposes only.  NOT FOR NAVIGATION\n" +
+"Data access policy: Not for Navigation\n" +
+"Data access procedure: https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer\n" +
+"Data access constraints: via REST Services.  Not for navigation.  Analysis only.\n" +
+"Metadata access constraints: https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
+"        <att name=\"platform\">Windows</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">The Bowhead Whale Feeding Ecology Study (BOWFEST) was initiated in May 2007 through an Interagency Agreement between the Bureau of Ocean Energy Management (BOEM) (formerly Minerals Management Service (MMS)) and the National Marine Mammal Laboratory (NMML). This was a multi-disciplinary study involving oceanography, acoustics, tagging, stomach sampling and aerial surveys and included scientists from a wide range of institutions (Woods Hole Oceanographic Institution (WHOI), University of Rhode Island (URI), University of Alaska Fairbanks (UAF), University of Washington (UW), Oregon State University (OSU), North Slope Borough (NSB), and NMML).  The data described and presented here are only from the aerial survey component of this larger study.  The focus of the aerial survey was to document patterns and variability in the timing and locations of bowhead whales. Using a NOAA Twin Otter, scientists from NMML conducted aerial surveys from mid-August to mid-September during this five year study between years 2007-2011.  Surveys were conducted in the BOWFEST study area (continental shelf waters between 157 degree W and 152 degree W and from the coastline to 72 degree N, with most of the effort concentrated between 157 degree W and 154 degree W and between the coastline and 71 degree 44&#39;N).\n" +
+"        <att name=\"summary\">This dataset is consists of point data taken from numerous depth surveys from the last century.  These data were processed and imported into a geographic information system (GIS) platform to form a bathymetric map of the ocean floor.  Approximately 18.6 billion depth data points were synthesized from various data sources that have been collected and archived since 1901 and includes lead line surveys, trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF files, XYZ files, and MB-58 multi-beam files.  Bathymetric soundings from these datasets span almost all areas of the Arctic and includes Alaska and the surrounding international waters.  Most of the bathymetry data used for this effort is archived and maintained at the National Center for Environmental Information (National Centers for Environmental Information (NCEI)) https://www.ncei.noaa.gov.\n" +
 "\n" +
-"Document patterns and variability in the timing and locations of bowhead whales relative to oceanography and prey densities to learn about bowhead whale feeding ecology during late summer in the vicinity of Barrow, AK.\n" +
-"\n" +
-"Loaded by FGDC Metadata Uploader, batch 6250, 06-17-2015 17:51\n" +
-"\n" +
-"The following FGDC sections are not currently supported in InPort, but were preserved and will be included in the FGDC export:\n" +
-"-  Taxonomy (FGDC:taxonomy)</att>\n" +
-"        <att name=\"time_coverage_end\">2011</att>\n" +
-"        <att name=\"time_coverage_start\">2007</att>\n" +
-"        <att name=\"title\">Cetacean Assessment and Ecology Program, AFSC/NMML: Bowhead Whale Feeding Ecology Study (BOWFEST): Aerial Survey in Chukchi and Beaufort Seas, 2007-2011 - Comments (InPort #17336_25511)</att>\n" +
+"The purpose of our effort is to develop a high resolution bathymetry dataset for the entire Alaska Exclusive Economic Zone (AEEZ) and surrounding waters by combining and assimilating multiple sets of existing data from historical and recent ocean depth mapping surveys.</att>\n" +
+"        <att name=\"time_coverage_begin\">2013</att>\n" +
+"        <att name=\"title\">AKRO Analytical Team Metadata Portfolio, Bathymetry (Alaska and surrounding waters) (InPort #27377)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>COMMENTS</sourceName>\n" +
-"        <destinationName>comments</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"comment\">Any pertinent data that is not recorded elsewhere</att>\n" +
-"            <att name=\"isPrimaryKey\">N</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>TIME</sourceName>\n" +
-"        <destinationName>time2</destinationName>\n" +
+"        <sourceName>noVariablesDefinedInInPort</sourceName>\n" +
+"        <destinationName>sampleDataVariable</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"allowed_values\">931 - 2145</att>\n" +
-"            <att name=\"comment\">Alaksa Standard Time (-8 GMT)</att>\n" +
-"            <att name=\"isPrimaryKey\">N</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"missing_value\">???</att>\n" +
+"            <att name=\"units\">???</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n\n\n";
+
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
+
+        } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+                String2.pressEnterToContinue(msg + 
+                    "\nUnexpected error using generateDatasetsXmlFromInPort."); 
+        }
+
+
+        try {
+            String xmlDir  = "/u00/data/points/inportXml/NOAA/NMFS/AKRO/inport-xml/xml/";
+            String xmlFile = xmlDir + "27377.xml";
+            int whichChild = 1;
+            String dataDir = "/u00/data/points/inportData/";
+            //This file isn't from this dataset.
+            //This shows that there needn't be any entity-attribute info in the xmlFile .
+            String dataFile = "dummy.csv";  
+
+            String results = generateDatasetsXmlFromInPort(
+                xmlFile, xmlDir, ".*", whichChild, dataDir, dataFile) + "\n";
+
+            //GenerateDatasetsXml
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "EDDTableFromInPort",
+                xmlFile, xmlDir, "" + whichChild, dataDir, dataFile},
+                false); //doIt loop?
+
+String expected = 
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"akroInPort27377c1\" active=\"true\">\n" +
+"    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
+"    <fileDir>/u00/data/points/inportData/27377/</fileDir>\n" +
+"    <fileNameRegex>dummy\\.csv</fileNameRegex>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>2</firstDataRow>\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <accessibleViaFiles>true</accessibleViaFiles>\n" +
+"    <fgdcFile>/u00/data/points/inportXml/NOAA/NMFS/AKRO/fgdc/xml/27377.xml</fgdcFile>\n" +
+"    <iso19115File>/u00/data/points/inportXml/NOAA/NMFS/AKRO/iso19115/xml/27377.xml</iso19115File>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"acknowledgment\">Steve Lewis, Jarvis Shultz</att>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">steve.lewis@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">Steve Lewis</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
+"        <att name=\"creator_url\">http://alaskafisheries.noaa.gov/</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">88.0</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">40.0</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">170.0</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-133.0</att>\n" +
+"        <att name=\"history\">Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
+"Further MB from NCEIis downloaded as 43,000 individual tracklines in XYZ or MB58 format and processed using ArcPY and MB software.\n" +
+"There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
+"2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
+"2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+"        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
+"        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
+"\n" +
+"Other integrated datasets with resolutiomd far less, such as the 500 meter ETOPO2 dataset.  \n" +
+"\n" +
+"80,000+ trracklines were extracted and processed at full resolution, often less than 1 meter resolution.</att>\n" +
+"        <att name=\"InPort_data_quality_analytical_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
+"\n" +
+"Other integrated datasets with resolutiomd far less, such as the 500 meter ETOPO2 dataset.  \n" +
+"\n" +
+"42,300 MB trracklines were extracted and processed at full resolution, often less than 1 meter resolution.</att>\n" +
+"        <att name=\"InPort_data_quality_completeness_measure\">Multibeam tracks are often prone to conal outliers. However, these outliers and investigated both using various GIS analytical tools</att>\n" +
+"        <att name=\"InPort_data_quality_control_procedures\">Used K-natural neighbors, Percentiles, and ArcGIS slope tools to location and remove outliers.</att>\n" +
+"        <att name=\"InPort_data_quality_field_precision\">1/10 of a meter.</att>\n" +
+"        <att name=\"InPort_data_quality_representativeness\">Data was compiled from downloaded NetCDF GRD files and include trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF,  XYZ files, and MB-58 multi-beam. These data consist of approximately 18.6 billion depth data points \n" +
+"\n" +
+"Data was extracted, parsed, and groomed by each of the individual 84,009+ tracklines using statistical analysis and visual inspection with some imputation\n" +
+"\n" +
+"42,300 MB tracklines were extracted and processed at full resolution, often less than 1 meter resolution\n" +
+"\n" +
+"We are currently downloading a multi-national bathymetric data with another 160,000 surveys (April, 2017)</att>\n" +
+"        <att name=\"InPort_data_quality_sensitivity\">Multibeam tracks are often prone with conal outliers.</att>\n" +
+"        <att name=\"InPort_dataset_maintenance_frequency\">Quarterly</att>\n" +
+"        <att name=\"InPort_dataset_presentation_form\">Map (digital)</att>\n" +
+"        <att name=\"InPort_dataset_publication_status\">Published</att>\n" +
+"        <att name=\"InPort_dataset_publish_date\">2017</att>\n" +
+"        <att name=\"InPort_dataset_source_media_type\">computer program</att>\n" +
+"        <att name=\"InPort_dataset_type\">GIS dataset  Point, Terrain, Raster</att>\n" +
+"        <att name=\"InPort_distribution_download_url\">http://alaskafisheries.noaa.gov/arcgis/rest/services</att>\n" +
+"        <att name=\"InPort_distribution_file_name\">ShoreZoneFlex</att>\n" +
+"        <att name=\"InPort_distribution_file_type\">ESRI REST</att>\n" +
+"        <att name=\"InPort_distribution_review_status\">Chked MD</att>\n" +
+"        <att name=\"InPort_faq_1__question\">can this dataset be used for navigation.</att>\n" +
+"        <att name=\"InPort_faq_1_answer\">No.</att>\n" +
+"        <att name=\"InPort_faq_1_author\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_faq_1_date\">2015-09-22</att>\n" +
+"        <att name=\"InPort_fishing_gear\">Soundings, multibeam</att>\n" +
+"        <att name=\"InPort_issue_1_author\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_issue_1_date\">2013</att>\n" +
+"        <att name=\"InPort_issue_1_issue\">Outlier removal processes</att>\n" +
+"        <att name=\"InPort_item_id\">27377</att>\n" +
+"        <att name=\"InPort_item_type\">Data Set</att>\n" +
+"        <att name=\"InPort_metadata_record_created\">2015-09-22T22:56:00Z</att>\n" +
+"        <att name=\"InPort_metadata_record_created_by\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified\">2017-07-06T21:18:53Z</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified_by\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_metadata_workflow_state\">Published / External</att>\n" +
+"        <att name=\"InPort_owner_organization_acronym\">AKRO</att>\n" +
+"        <att name=\"InPort_parent_item_id\">26657</att>\n" +
+"        <att name=\"InPort_publication_status\">Public</att>\n" +
+"        <att name=\"InPort_status\">In Work</att>\n" +
+"        <att name=\"InPort_support_role_1_organization\">Alaska Regional Office</att>\n" +
+"        <att name=\"InPort_support_role_1_organization_url\">http://alaskafisheries.noaa.gov/</att>\n" +
+"        <att name=\"InPort_support_role_1_person\">Steve Lewis</att>\n" +
+"        <att name=\"InPort_support_role_1_person_email\">steve.lewis@noaa.gov</att>\n" +
+"        <att name=\"InPort_support_role_1_type\">Point of Contact</att>\n" +
+"        <att name=\"InPort_technical_environment\">In progress.</att>\n" +
+"        <att name=\"InPort_url_1_description\">REST Service</att>\n" +
+"        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
+"        <att name=\"InPort_url_1_url\">https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
+"        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
+"        <att name=\"institution\">NOAA NMFS AKRO</att>\n" +
+"        <att name=\"instrument\">ArcGIS</att>\n" +
+"        <att name=\"keywords\">akro, alaska, analytical, analytical purposes only, area, ave, AVE_LAT, AVE_LONG, average, avg_depth, avg_temp, bathy, bathymetry, centers, century, consists, core, cpue, CPUE_km2, CPUE_km3, cpue_tow2, cpue_tow3, data, dataset, depth, description, effort, Effort_Area_km_2, Effort_Volume_km_3, environmental, faq, fisheries, geographic, identifier, imported, inform, information, into, km2, km3, km^2, km^3, long, marine, max, min, national, ncei, nesdis, nmfs, noaa, numerous, ocean, office, only, pcod140, Pcod140_n, point, present, processed, purposes, region, regional, se alaska, service, southeast, station, Station_ID, statistics, surveys, taken, temperature, time, tow2, tow3, trawl, Trawl_Type, type, units, variable, volume, year</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">Distribution Liability: for analytical purposes only.  NOT FOR NAVIGATION\n" +
+"Data access policy: Not for Navigation\n" +
+"Data access procedure: https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer\n" +
+"Data access constraints: via REST Services.  Not for navigation.  Analysis only.\n" +
+"Metadata access constraints: https://alaskafisheries.noaa.gov/arcgis/rest/services/bathy_40m/MapServer</att>\n" +
+"        <att name=\"platform\">Windows</att>\n" +
+"        <att name=\"sourceUrl\">http://alaskafisheries.noaa.gov/arcgis/rest/services</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">Year, region, core, Trawl_Type, Pcod140_n, present, Variable, Description, Units</att>\n" +
+"        <att name=\"summary\">This dataset is consists of point data taken from numerous depth surveys from the last century.  These data were processed and imported into a geographic information system (GIS) platform to form a bathymetric map of the ocean floor.  Approximately 18.6 billion depth data points were synthesized from various data sources that have been collected and archived since 1901 and includes lead line surveys, trackline geophysics, hydrographic surveys, gridded multi-beam NET CDF files, XYZ files, and MB-58 multi-beam files.  Bathymetric soundings from these datasets span almost all areas of the Arctic and includes Alaska and the surrounding international waters.  Most of the bathymetry data used for this effort is archived and maintained at the National Center for Environmental Information (National Centers for Environmental Information (NCEI)) https://www.ncei.noaa.gov.\n" +
+"\n" +
+"The purpose of our effort is to develop a high resolution bathymetry dataset for the entire Alaska Exclusive Economic Zone (AEEZ) and surrounding waters by combining and assimilating multiple sets of existing data from historical and recent ocean depth mapping surveys.</att>\n" +
+"        <att name=\"time_coverage_begin\">2013</att>\n" +
+"        <att name=\"title\">AKRO Analytical Team Metadata Portfolio, Bathymetry (Alaska and surrounding waters) (InPort #27377c1)</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Station_ID</sourceName>\n" +
+"        <destinationName>Station_ID</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Station ID</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
-"        <sourceName>DATE</sourceName>\n" +
-"        <destinationName>time</destinationName>\n" +
+"        <sourceName>Year</sourceName>\n" +
+"        <destinationName>Year</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Year</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>region</sourceName>\n" +
+"        <destinationName>region</destinationName>\n" +
 "        <dataType>String</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"allowed_values\">200708230000 - 201109160000</att>\n" +
-"            <att name=\"isPrimaryKey\">N</att>\n" +
-"            <att name=\"source_name\">DATE</att>\n" +
-"            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"time_precision\">1970-01-01</att>\n" +
-"            <att name=\"units\">M/d/yyyy</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Region</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
-"</dataset>\n" +
-"\n\n";
+"    <dataVariable>\n" +
+"        <sourceName>AVE_LAT</sourceName>\n" +
+"        <destinationName>AVE_LAT</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">AVE LAT</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>AVE_LONG</sourceName>\n" +
+"        <destinationName>AVE_LONG</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">AVE LONG</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>avg depth</sourceName>\n" +
+"        <destinationName>avg_depth</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Avg Depth</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>avg temp</sourceName>\n" +
+"        <destinationName>avg_temp</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Avg Temp</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>core</sourceName>\n" +
+"        <destinationName>core</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Core</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Effort_Area_km^2</sourceName>\n" +
+"        <destinationName>Effort_Area_km_2</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Effort Area Km^2</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Effort_Volume_km^3</sourceName>\n" +
+"        <destinationName>Effort_Volume_km_3</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Effort Volume Km^3</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Trawl_Type</sourceName>\n" +
+"        <destinationName>Trawl_Type</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Trawl Type</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Pcod140_n</sourceName>\n" +
+"        <destinationName>Pcod140_n</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"long_name\">Pcod140 N</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>present</sourceName>\n" +
+"        <destinationName>present</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Present</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>CPUE km2</sourceName>\n" +
+"        <destinationName>CPUE_km2</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">CPUE Km2</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>CPUE km3</sourceName>\n" +
+"        <destinationName>CPUE_km3</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">CPUE Km3</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cpue_tow2</sourceName>\n" +
+"        <destinationName>cpue_tow2</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cpue Tow2</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cpue_tow3</sourceName>\n" +
+"        <destinationName>cpue_tow3</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cpue Tow3</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Variable</sourceName>\n" +
+"        <destinationName>Variable</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Variable</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Description</sourceName>\n" +
+"        <destinationName>Description</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Description</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Units</sourceName>\n" +
+"        <destinationName>Units</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Units</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>min</sourceName>\n" +
+"        <destinationName>min</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Min</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>max</sourceName>\n" +
+"        <destinationName>max</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Max</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n\n\n";
 
-            String tResults = results.substring(0, expected.length());
-            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-            tResults = gdxResults.substring(0, expected.length());
-            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
 
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
@@ -2803,73 +3748,124 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
     }
 
     /**
-     * This tests GenerateDatasetsXml with EDDTableFromInPort when there are no 
-     * data variables. 
+     * This tests GenerateDatasetsXml with EDDTableFromInPort when there are child entities. 
+     * This is the dataset Nazila requested (well, she requested 12866 and this=26938, but
+     * 12866 has no data).
      */
     public static void testGenerateDatasetsXmlFromInPort2() throws Throwable {
-        String2.log("\n*** testGenerateDatasetsXmlFromInPort2()\n");
+        String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromInPort2()\n");
         testVerboseOn();
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String xmlFile = "/u00/data/points/inportXml/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml";
+        String dataDir = "/u00/data/points/inportData/";
 
         try {
-            String xmlFile = "/u00/data/points/inportXml/NOAA/NMFS/OST/inport/xml/25048.xml";
-            String dataDir = "/u00/data/points/inportData/ost/";
+            String fileName = "";
+            int whichChild = 0;
 
             String results = generateDatasetsXmlFromInPort(
-                xmlFile, ".*", ".*", dataDir) + "\n";
+                xmlFile, "", ".*", whichChild, dataDir, fileName) + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromInPort",
-                xmlFile, dataDir},
+                xmlFile, "", "" + whichChild, dataDir, fileName},
                 false); //doIt loop?
 
 String expected = 
-"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"ostInPort25048\" active=\"true\">\n" +
-"    <sourceUrl>ftp://ftp.nodc.noaa.gov/nodc/archive/</sourceUrl>\n" +
-"    <fileDir>/u00/data/points/inportData/ost/</fileDir>\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort26938\" active=\"true\">\n" +
+"    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
+"    <fileDir>/u00/data/points/inportData/26938/</fileDir>\n" +
 "    <fileNameRegex>???</fileNameRegex>\n" +
 "    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>2</firstDataRow>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
-"    <fgdcFile>/u00/data/points/inportXml/NOAA/NMFS/OST/fgdc/xml/25048.xml</fgdcFile>\n" +
-"    <iso19115File>/u00/data/points/inportXml/NOAA/NMFS/OST/iso19115/xml/25048.xml</iso19115File>\n" +
+"    <fgdcFile>/u00/data/points/inportXml/NOAA/NMFS/AFSC/fgdc/xml/26938.xml</fgdcFile>\n" +
+"    <iso19115File>/u00/data/points/inportXml/NOAA/NMFS/AFSC/iso19115/xml/26938.xml</iso19115File>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"acknowledgment\">Field collection of data was conducted as part of the Bering-Aleutian Salmon International Survey and was supported in part by the Bering Sea Fishermen&#39;s Association, The Arctic Yukon Kuskokwim Sustainable Salmon Initiative, and the Bering Sea Integrated Ecosystem Research Program. Data analysis was supported in part by a grant from the North Pacific Research Board (#R0816) and published in publication #325.</att>\n" +
+"        <att name=\"archive_location\">NCEI-MD</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
-"        <att name=\"creator_email\">rob.andrews@noaa.gov</att>\n" +
-"        <att name=\"creator_name\">William R Andrews</att>\n" +
+"        <att name=\"creator_email\">thomas.hurst@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">Thomas Hurst</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
-"        <att name=\"creator_url\">https://www.st.nmfs.noaa.gov/</att>\n" +
-"        <att name=\"data_status\">In Work</att>\n" +
-"        <att name=\"downloads\">Download #1\n" +
-"URL: ftp://ftp.nodc.noaa.gov/nodc/archive/</att>\n" +
-"        <att name=\"geospatial_description\">atlantic and gulf coast states</att>\n" +
-"        <att name=\"history\">2015-05-19T10:25:24 Lauren Dolinger Few originally created InPort metadata cat-id#25048.\n" +
-"2016-02-10T12:35:20 Lauren Dolinger Few last modified InPort metadata cat-id#25048.\n" +
-today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) converted InPort metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/OST/inport/xml/25048.xml into an ERDDAP dataset description.</att>\n" +
-"        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/OST/inport/xml/25048.xml</att>\n" +
-"        <att name=\"InPort_catalog_ID\">25048</att>\n" +
-"        <att name=\"InPort_catalog_type\">Data Set</att>\n" +
-"        <att name=\"InPort_XML_URL\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/OST/inport/xml/25048.xml</att>\n" +
-"        <att name=\"institution\">NOAA NMFS OST</att>\n" +
-"        <att name=\"keywords\">activity, asked, cleaned, data, effort, fisheries, fishing, including, marine, national, nmfs, noaa, ost, out, outdoor, qcd, questions, service, survey, trips, used, weather</att>\n" +
+"        <att name=\"creator_url\">https://www.afsc.noaa.gov</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">70.05075</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">54.4715</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">-158.97892</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-174.08267</att>\n" +
+"        <att name=\"history\">archive_location=NCEI-MD\n" +
+"Lineage Statement: The late summer distribution of age-0 Pacific cod in the eastern Bering Sea was described for six cohorts (2004-2009), based on trawl catches in the Bering-Aleutian Salmon International Survey (BASIS).\n" +
+"Lineage Source #1, title=Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions, publisher=ICES Journal of Marine Science\n" +
+"Lineage Step #1: Trawl survey\n" +
+"Lineage Step #2: Cohort strength estimates\n" +
+"Lineage Step #3: Thermal regime description\n" +
+"Lineage Step #4: Analysis of distribution\n" +
+"2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
+"2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+"        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
+"        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
+"        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
+"        <att name=\"InPort_child_item_1_title\">Pacific cod distribution</att>\n" +
+"        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
+"        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
+"        <att name=\"InPort_dataset_presentation_form\">Table (digital)</att>\n" +
+"        <att name=\"InPort_dataset_publication_status\">Published</att>\n" +
+"        <att name=\"InPort_dataset_publish_date\">2012</att>\n" +
+"        <att name=\"InPort_dataset_type\">MS Excel Spreadsheet</att>\n" +
+"        <att name=\"InPort_distribution_1_download_url\">https://noaa-fisheries-afsc.data.socrata.com/Ecosystem-Science/AFSC-RACE-FBEP-Hurst-Distributional-patterns-of-0-/e7r7-2x38</att>\n" +
+"        <att name=\"InPort_entity_1_abstract\">Distribution data for age-0 Pacific cod in the eastern Bering Sea, based on catches in the Bering-Aleutian Salmon International Survey (BASIS)</att>\n" +
+"        <att name=\"InPort_entity_1_item_id\">26939</att>\n" +
+"        <att name=\"InPort_entity_1_metadata_workflow_state\">Published / External</att>\n" +
+"        <att name=\"InPort_entity_1_status\">Complete</att>\n" +
+"        <att name=\"InPort_entity_1_title\">Pacific cod distribution</att>\n" +
+"        <att name=\"InPort_fishing_gear\">Midwater trawl</att>\n" +
+"        <att name=\"InPort_item_id\">26938</att>\n" +
+"        <att name=\"InPort_item_type\">Data Set</att>\n" +
+"        <att name=\"InPort_metadata_record_created\">2015-09-10T12:44:50Z</att>\n" +
+"        <att name=\"InPort_metadata_record_created_by\">Nancy Roberson</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified\">2017-03-01T12:53:25Z</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified_by\">Jeremy Mays</att>\n" +
+"        <att name=\"InPort_metadata_workflow_state\">Published / External</att>\n" +
+"        <att name=\"InPort_owner_organization_acronym\">AFSC</att>\n" +
+"        <att name=\"InPort_parent_item_id\">22355</att>\n" +
+"        <att name=\"InPort_publication_status\">Public</att>\n" +
+"        <att name=\"InPort_status\">Complete</att>\n" +
+"        <att name=\"InPort_support_role_1_organization\">Alaska Fisheries Science Center</att>\n" +
+"        <att name=\"InPort_support_role_1_organization_url\">https://www.afsc.noaa.gov</att>\n" +
+"        <att name=\"InPort_support_role_1_person\">Thomas Hurst</att>\n" +
+"        <att name=\"InPort_support_role_1_person_email\">thomas.hurst@noaa.gov</att>\n" +
+"        <att name=\"InPort_support_role_1_type\">Point of Contact</att>\n" +
+"        <att name=\"InPort_technical_environment\">Datasets were created using Microsoft Excel.</att>\n" +
+"        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
+"        <att name=\"InPort_url_1_url\">https://academic.oup.com/icesjms/content/69/2/163.full</att>\n" +
+"        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
+"        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
+"        <att name=\"instrument\">CTD</att>\n" +
+"        <att name=\"keywords\">2004-2009, afsc, alaska, analyzed, based, bering, bering sea, center, cod, cohorts, data, dataset, density, density-dependence, dependence, distribution, eastern, fisheries, habitat, juvenile, late, marine, national, nmfs, noaa, ocean, oceans, pacific, pacific cod, science, sea, service, study, summer, temperature</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
-"        <att name=\"license\">Data access constraints: none.\n" +
-"Data access procedure: download from website</att>\n" +
-"        <att name=\"metadata_workflow_state\">Published / External</att>\n" +
-"        <att name=\"publication_status\">Public</att>\n" +
-"        <att name=\"publisher_email\">nathan.wilson@noaa.gov</att>\n" +
-"        <att name=\"publisher_name\">Nathan Wilson</att>\n" +
-"        <att name=\"publisher_type\">person</att>\n" +
+"        <att name=\"license\">Data access constraints: No restriction for accessing this dataset\n" +
+"Data use constraints: Must cite originator if used in publications, reports, presentations, etc., and must understand metadata prior to use.</att>\n" +
+"        <att name=\"platform\">Fishing vessel</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
-"        <att name=\"summary\">Cleaned and QCd data for the Fishing Effort Survey. Questions on fishing and other out are asked on weather and outdoor activity, including fishing trips. Used for estimation of recreational fishing effort for shore and private/rental boats.</att>\n" +
-"        <att name=\"time_coverage_start\">2015</att>\n" +
-"        <att name=\"title\">Fishing Effort Survey (FES), Survey Data (InPort #25048)</att>\n" +
+"        <att name=\"summary\">This dataset is from a study that analyzed the late summer distribution of juvenile Pacific cod in the eastern Bering Sea for 6 cohorts (2004-2009), based on catches in the Bering-Aleutian Salmon International Survey (BASIS).\n" +
+"\n" +
+"The purpose of this study was to examine distributional patterns of juvenile Pacific cod during a period of sginificant variation in cohort strength and thermal regime in the Bering Sea, which allowed the consideration of potential density-dependent effects and climate-induced changes in distribution at the northern limit of the species&#39; range, and evaluation of local scale habitat selection in relation to fish density and water temperature.</att>\n" +
+"        <att name=\"time_coverage_begin\">2004</att>\n" +
+"        <att name=\"time_coverage_end\">2009</att>\n" +
+"        <att name=\"title\">Fisheries Behavioral Ecology Program, AFSC/RACE/FBEP/Hurst: Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions (InPort #26938)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>noVariablesDefinedInInPort</sourceName>\n" +
@@ -2886,11 +3882,377 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
 "</dataset>\n" +
 "\n\n";
 
-            String tResults = results.substring(0, expected.length());
-            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-            tResults = gdxResults.substring(0, expected.length());
-            Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
+            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
+
+        } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+                String2.pressEnterToContinue(msg + 
+                    "\nUnexpected error using generateDatasetsXmlFromInPort2."); 
+        }
+
+        try {
+            String fileName = "AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions.csv";
+            int whichChild = 1;
+
+            String results = generateDatasetsXmlFromInPort(
+                xmlFile, "", ".*", whichChild, dataDir, fileName) + "\n";
+
+            //GenerateDatasetsXml
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "EDDTableFromInPort",
+                xmlFile, "", "" + whichChild, dataDir, fileName},
+                false); //doIt loop?
+
+String expected = 
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"afscInPort26938ce26939\" active=\"true\">\n" +
+"    <defaultGraphQuery>&amp;.marker=1|5</defaultGraphQuery>\n" +
+"    <fileDir>/u00/data/points/inportData/26938/</fileDir>\n" +
+"    <fileNameRegex>AFSC_RACE_FBEP_Hurst__Distributional_patterns_of_0-group_Pacific_cod__Gadus_macrocephalus__in_the_eastern_Bering_Sea_under_variable_recruitment_and_thermal_conditions\\.csv</fileNameRegex>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>2</firstDataRow>\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>-1</updateEveryNMillis>\n" +
+"    <accessibleViaFiles>true</accessibleViaFiles>\n" +
+"    <fgdcFile>/u00/data/points/inportXml/NOAA/NMFS/AFSC/fgdc/xml/26938.xml</fgdcFile>\n" +
+"    <iso19115File>/u00/data/points/inportXml/NOAA/NMFS/AFSC/iso19115/xml/26938.xml</iso19115File>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"acknowledgment\">Field collection of data was conducted as part of the Bering-Aleutian Salmon International Survey and was supported in part by the Bering Sea Fishermen&#39;s Association, The Arctic Yukon Kuskokwim Sustainable Salmon Initiative, and the Bering Sea Integrated Ecosystem Research Program. Data analysis was supported in part by a grant from the North Pacific Research Board (#R0816) and published in publication #325.</att>\n" +
+"        <att name=\"archive_location\">NCEI-MD</att>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">thomas.hurst@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">Thomas Hurst</att>\n" +
+"        <att name=\"creator_type\">person</att>\n" +
+"        <att name=\"creator_url\">https://www.afsc.noaa.gov</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">70.05075</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">54.4715</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">-158.97892</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">-174.08267</att>\n" +
+"        <att name=\"history\">archive_location=NCEI-MD\n" +
+"Lineage Statement: The late summer distribution of age-0 Pacific cod in the eastern Bering Sea was described for six cohorts (2004-2009), based on trawl catches in the Bering-Aleutian Salmon International Survey (BASIS).\n" +
+"Lineage Source #1, title=Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions, publisher=ICES Journal of Marine Science\n" +
+"Lineage Step #1: Trawl survey\n" +
+"Lineage Step #2: Cohort strength estimates\n" +
+"Lineage Step #3: Thermal regime description\n" +
+"Lineage Step #4: Analysis of distribution\n" +
+"2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
+"2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
+today + " GenerateDatasetsXml in ERDDAP v1.81 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+"        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
+"        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
+"        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +
+"        <att name=\"InPort_dataset_presentation_form\">Table (digital)</att>\n" +
+"        <att name=\"InPort_dataset_publication_status\">Published</att>\n" +
+"        <att name=\"InPort_dataset_publish_date\">2012</att>\n" +
+"        <att name=\"InPort_dataset_type\">MS Excel Spreadsheet</att>\n" +
+"        <att name=\"InPort_distribution_download_url\">https://noaa-fisheries-afsc.data.socrata.com/Ecosystem-Science/AFSC-RACE-FBEP-Hurst-Distributional-patterns-of-0-/e7r7-2x38</att>\n" +
+"        <att name=\"InPort_fishing_gear\">Midwater trawl</att>\n" +
+"        <att name=\"InPort_item_id\">26938</att>\n" +
+"        <att name=\"InPort_item_type\">Data Set</att>\n" +
+"        <att name=\"InPort_metadata_record_created\">2015-09-10T12:44:50Z</att>\n" +
+"        <att name=\"InPort_metadata_record_created_by\">Nancy Roberson</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified\">2017-03-01T12:53:25Z</att>\n" +
+"        <att name=\"InPort_metadata_record_last_modified_by\">Jeremy Mays</att>\n" +
+"        <att name=\"InPort_metadata_workflow_state\">Published / External</att>\n" +
+"        <att name=\"InPort_owner_organization_acronym\">AFSC</att>\n" +
+"        <att name=\"InPort_parent_item_id\">22355</att>\n" +
+"        <att name=\"InPort_publication_status\">Public</att>\n" +
+"        <att name=\"InPort_status\">Complete</att>\n" +
+"        <att name=\"InPort_support_role_1_organization\">Alaska Fisheries Science Center</att>\n" +
+"        <att name=\"InPort_support_role_1_organization_url\">https://www.afsc.noaa.gov</att>\n" +
+"        <att name=\"InPort_support_role_1_person\">Thomas Hurst</att>\n" +
+"        <att name=\"InPort_support_role_1_person_email\">thomas.hurst@noaa.gov</att>\n" +
+"        <att name=\"InPort_support_role_1_type\">Point of Contact</att>\n" +
+"        <att name=\"InPort_technical_environment\">Datasets were created using Microsoft Excel.</att>\n" +
+"        <att name=\"InPort_url_1_type\">Online Resource</att>\n" +
+"        <att name=\"InPort_url_1_url\">https://academic.oup.com/icesjms/content/69/2/163.full</att>\n" +
+"        <att name=\"InPort_xml_url\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
+"        <att name=\"institution\">NOAA NMFS AFSC</att>\n" +
+"        <att name=\"instrument\">CTD</att>\n" +
+"        <att name=\"keywords\">2004-2009, afsc, alaska, analyzed, area, ave, AVE_LAT, AVE_LONG, average, avg_temp, based, bering, bering sea, center, cod, cohorts, core, cpue, CPUE_km2, CPUE_km3, cpue_tow2, cpue_tow3, data, dataset, density, density-dependence, dependence, depth, distribution, eastern, effort, Effort_Area_km_2, Effort_Volume_km_3, fisheries, habitat, identifier, juvenile, km2, km3, late, long, marine, national, nmfs, noaa, ocean, oceans, pacific, pacific cod, pcod140, Pcod140_n, present, region, science, sea, service, station, Station_ID, statistics, study, summer, temperature, time, tow2, tow3, trawl, Trawl_Type, type, volume, year</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">Data access constraints: No restriction for accessing this dataset\n" +
+"Data use constraints: Must cite originator if used in publications, reports, presentations, etc., and must understand metadata prior to use.</att>\n" +
+"        <att name=\"platform\">Fishing vessel</att>\n" +
+"        <att name=\"sourceUrl\">https://noaa-fisheries-afsc.data.socrata.com/Ecosystem-Science/AFSC-RACE-FBEP-Hurst-Distributional-patterns-of-0-/e7r7-2x38</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
+"        <att name=\"subsetVariables\">Year, region, core, Trawl_Type, Pcod140_n, present</att>\n" +
+"        <att name=\"summary\">This dataset is from a study that analyzed the late summer distribution of juvenile Pacific cod in the eastern Bering Sea for 6 cohorts (2004-2009), based on catches in the Bering-Aleutian Salmon International Survey (BASIS).\n" +
+"\n" +
+"The purpose of this study was to examine distributional patterns of juvenile Pacific cod during a period of sginificant variation in cohort strength and thermal regime in the Bering Sea, which allowed the consideration of potential density-dependent effects and climate-induced changes in distribution at the northern limit of the species&#39; range, and evaluation of local scale habitat selection in relation to fish density and water temperature.\n" +
+"\n" +
+"This sub-dataset has: Distribution data for age-0 Pacific cod in the eastern Bering Sea, based on catches in the Bering-Aleutian Salmon International Survey (BASIS)</att>\n" +
+"        <att name=\"time_coverage_begin\">2004</att>\n" +
+"        <att name=\"time_coverage_end\">2009</att>\n" +
+"        <att name=\"title\">Fisheries Behavioral Ecology Program, AFSC/RACE/FBEP/Hurst: Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions, Pacific cod distribution (InPort #26938ce26939)</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Station_ID</sourceName>\n" +
+"        <destinationName>Station_ID</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">20041001 - 20095052</att>\n" +
+"            <att name=\"comment\">Unique identifier for each trawl station</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Station ID</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Year</sourceName>\n" +
+"        <destinationName>Year</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">2004 - 2009</att>\n" +
+"            <att name=\"comment\">Survey year</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Year</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>region</sourceName>\n" +
+"        <destinationName>region</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">North = North, NM = North-Middle, SM = South-Middle, Slope = Outer shelf, Kusk = Kuskokwim, Bristol = Bristol Bay</att>\n" +
+"            <att name=\"comment\">Code for geographic zone</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Region</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>AVE_LAT</sourceName>\n" +
+"        <destinationName>AVE_LAT</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">54.4715 - 70.05075</att>\n" +
+"            <att name=\"comment\">Latitude of mid-point of trawl</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">AVE LAT</att>\n" +
+"            <att name=\"units\">degrees</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>AVE_LONG</sourceName>\n" +
+"        <destinationName>AVE_LONG</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">-174.083 - -158.979</att>\n" +
+"            <att name=\"comment\">Longitude of mid-point of trawl</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">AVE LONG</att>\n" +
+"            <att name=\"units\">degrees</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>avg depth</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">14 - 1285</att>\n" +
+"            <att name=\"comment\">Average of water depths at starting and ending positions</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Avg Depth</att>\n" +
+"            <att name=\"source_name\">avg depth</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>avg temp</sourceName>\n" +
+"        <destinationName>avg_temp</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">3 - 16.62</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"comment\">Average of surface temperatures at beginning and ending positions</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Avg Temp</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>core</sourceName>\n" +
+"        <destinationName>core</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 4</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">4</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Code for frequency of sampling specific grid point</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Core</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Effort_Area_km^2</sourceName>\n" +
+"        <destinationName>Effort_Area_km_2</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0.126399 - 0.349701</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">0.4</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Area fished by trawl: length of trawl x net spread</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Effort Area Km 2</att>\n" +
+"            <att name=\"units\">square kilometers</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Effort_Volume_km^3</sourceName>\n" +
+"        <destinationName>Effort_Volume_km_3</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0.0014 - 0.00574</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">0.006</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Area fished by trawl: length of trawl x net spread x vertical opening</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Effort Volume Km 3</att>\n" +
+"            <att name=\"units\">cubic kilometers</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Trawl_Type</sourceName>\n" +
+"        <destinationName>Trawl_Type</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">Surface = net towed at surface</att>\n" +
+"            <att name=\"comment\">Position of net in water column</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Trawl Type</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Pcod140_n</sourceName>\n" +
+"        <destinationName>Pcod140_n</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 8438</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">9000</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Count of Pacific cod less than 140 mm FL</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
+"            <att name=\"long_name\">Pcod140 N</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>present</sourceName>\n" +
+"        <destinationName>present</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 1</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">1</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Code for positive capture of Pacific cod less than 140 mm FL: 0 = not present, 1 = present</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Present</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>CPUE km2</sourceName>\n" +
+"        <destinationName>CPUE_km2</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 36817.42</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">40000</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Catch of Pacific cod per square kilometer</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">CPUE Km2</att>\n" +
+"            <att name=\"units\">fish per square kilometer</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>CPUE km3</sourceName>\n" +
+"        <destinationName>CPUE_km3</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 2045412</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">2000000</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Catch of Pacific cod per cubic kilometer</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">CPUE Km3</att>\n" +
+"            <att name=\"units\">fish per cubic kilometer</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cpue_tow2</sourceName>\n" +
+"        <destinationName>cpue_tow2</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 9057.085</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">10000</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Catch of Pacific cod corrected to standard tow of 0.246 square kilometers</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cpue Tow2</att>\n" +
+"            <att name=\"units\">fish per tow</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>cpue_tow3</sourceName>\n" +
+"        <destinationName>cpue_tow3</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"allowed_values\">0 - 7322.575</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">10000</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0</att>\n" +
+"            <att name=\"comment\">Catch of Pacific cod corrected to standard tow of 0.00358 cubic kilometers</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Cpue Tow3</att>\n" +
+"            <att name=\"units\">fish per tow</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+
+            Test.ensureEqual(gdxResults, expected, "gdxResults=\n" + gdxResults);
 
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
@@ -2905,7 +4267,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
      * accessible values for non-iso string time values. */
     public static void testTimeRange() throws Throwable {
 
-        String2.log("\n****************** EDDTableFromAsciiFiles.testTimeRange() *****************\n");
+        String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange()\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -2954,7 +4316,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
      * accessible values for iso string time values. */
     public static void testTimeRange2() throws Throwable {
 
-        String2.log("\n****************** EDDTableFromAsciiFiles.testTimeRange2() *****************\n");
+        String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange2()\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -3676,7 +5038,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
                     "<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"bcodmo" + 
                         dsNumber + compactVersionDate + //Adam says this is a unique combination
                         "\" active=\"true\">\n" +
-"    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +
+                    "    <!--  <accessibleTo>bcodmo</accessibleTo>  -->\n" +
                     "    <reloadEveryNMinutes>10000</reloadEveryNMinutes>\n" +  
                     "    <updateEveryNMillis>-1</updateEveryNMillis>\n" +  
                     (defaultDataQuery.length() > 0? 
@@ -3727,7 +5089,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
         }
         //String2.log(charTally.toString());
         String2.log(">> noTime: " + noTime);
-        String2.log("\n*** generateDatasetsXmlFromBCODMO finished in " +
+        String2.log("\n*** EDDTableFromAsciiFiles.generateDatasetsXmlFromBCODMO finished in " +
             ((System.currentTimeMillis() - time)/1000) + " seconds\n" +
             "nDatasets: total=" + datasetsArray.length() + 
             " matching=" + nMatching + 
@@ -3740,7 +5102,7 @@ today + " ERDDAP&#39;s GenerateDatasetsXml (contact: bob.simons@noaa.gov) conver
      * data variables. 
      */
     public static void testGenerateDatasetsXmlFromBCODMO() throws Throwable {
-        String2.log("\n*** testGenerateDatasetsXmlFromBCODMO()\n");
+        String2.log("\n*** EDDTableFromAsciiFiles.testGenerateDatasetsXmlFromBCODMO()\n");
         testVerboseOn();
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
 
@@ -3794,7 +5156,7 @@ String expected =
 "        <att name=\"creator_email\">info@bco-dmo.org</att>\n" +
 "        <att name=\"creator_name\">Dr Benjamin Twining</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
-"        <att name=\"creator_url\">http://www.bco-dmo.org/person/51087</att>\n" +
+"        <att name=\"creator_url\">https://www.bco-dmo.org/person/51087</att>\n" +
 "        <att name=\"current_state\">Final no updates expected</att>\n" +
 "        <att name=\"dataset_name\">GT10-11 - cellular element quotas</att>\n" +
 "        <att name=\"date_created\">2015-02-17</att>\n" +
@@ -3808,14 +5170,14 @@ String expected =
 "Hydrography, CTD and nutrient measurements will be supported by the Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography and funded through NSF Facilities. They will be providing an additional CTD rosette system along with nephelometer and LADCP. A trace metal clean Go-Flo Rosette and winch will be provided by the group at Old Dominion University (G. Cutter) along with a towed underway pumping system.\n" +
 "List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
 "Cruise track: [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/KN199-04_crtrk.jpg ] JPEG image (from Woods Hole Oceanographic Institution, vessel operator)\n" +
-"Additional information may still be available from the vessel operator: [ http://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
+"Additional information may still be available from the vessel operator: [ https://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
 "Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN199-04 ] NSF R2R data catalog.\n" +
-"ADCP data are available from the Currents ADCP group at the University of Hawaii: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04 ADCP</att>\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04 ADCP</att>\n" +
 "        <att name=\"deployment_1_end_date\">2010-11-04</att>\n" +
 "        <att name=\"deployment_1_location\">Subtropical northern Atlantic Ocean</att>\n" +
 "        <att name=\"deployment_1_start_date\">2010-10-15</att>\n" +
 "        <att name=\"deployment_1_title\">KN199-04</att>\n" +
-"        <att name=\"deployment_1_webpage\">http://www.bco-dmo.org/deployment/58066</att>\n" +
+"        <att name=\"deployment_1_webpage\">https://www.bco-dmo.org/deployment/58066</att>\n" +
 "        <att name=\"deployment_2_description\">KN199-05 is the completion of the US GEOTRACES Zonal North Atlantic Survey Section cruise originally planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\n" +
 "4 November 2010 update: Due to engine failure, the science activities scehduled for the KN199-04 cruise were canceled on 2 November 2010. On 4 November the R/V KNORR put in at Porto Grande, Cape Verde (ending KN199 leg 4) and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University.&#xa0; The objective of KN199 leg 5 (KN199-05) is to carry the vessel in transit to Charleston, SC while conducting abbreviated science activities originally planned for KN199-04. The vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\n" +
 "Planned scientific activities and operations area during the KN199 leg 5 (KN199-05)  transit will be as follows: the ship&#39;s track will cross from the highly productive region off West Africa into the oligotrophic central subtropical gyre waters, then across the western boundary current (Gulf Stream), and into the productive coastal waters of North America. During this transit, underway surface sampling will be done using the towed fish for trace metals, nanomolar nutrients, and arsenic speciation. In addition, a port-side high volume pumping system will be used to acquire samples for radium isotopes. Finally, routine aerosol and rain sampling will be done for trace elements. This section will provide important information regarding atmospheric deposition, surface transport, and transformations of many trace elements.\n" +
@@ -3824,52 +5186,50 @@ String expected =
 "Hydrography, CTD and nutrient measurements will be supported by the  Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography  and funded through NSF Facilities. They will be providing an additional  CTD rosette system along with nephelometer and LADCP. A trace metal  clean Go-Flo Rosette and winch will be provided by the group at Old  Dominion University (G. Cutter) along with a towed underway pumping  system.\n" +
 "List of cruise participants: [ [ http://data.bcodmo.org/US_GEOTRACES/AtlanticSection/GNAT_2010_cruiseParticipants.pdf ] PDF ]\n" +
 "[ http://data.bcodmo.org/GEOTRACES/cruises/Atlantic_2010/KN199-04_crtrk.jpg ] JPEG image (from Woods Hole Oceanographic Institution, vessel operator) --&gt;funding: NSF OCE award 0926423\n" +
-"[ http://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
+"[ https://www.whoi.edu/cruiseplanning/synopsis.do?id=581 ] WHOI cruise planning synopsis\n" +
 "Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN199-05 ] NSF R2R data catalog.\n" +
-"ADCP data are available from the Currents ADCP group at the University of Hawaii: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05 ADCP</att>\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05 ADCP</att>\n" +
 "        <att name=\"deployment_2_end_date\">2010-11-26</att>\n" +
 "        <att name=\"deployment_2_location\">Subtropical northern Atlantic Ocean</att>\n" +
 "        <att name=\"deployment_2_start_date\">2010-11-08</att>\n" +
 "        <att name=\"deployment_2_title\">KN199-05</att>\n" +
-"        <att name=\"deployment_2_webpage\">http://www.bco-dmo.org/deployment/58142</att>\n" +
+"        <att name=\"deployment_2_webpage\">https://www.bco-dmo.org/deployment/58142</att>\n" +
 "        <att name=\"deployment_3_description\">The US GEOTRACES North Atlantic cruise aboard the R/V Knorr completed the section between Lisbon and Woods Hole that began in October 2010 but was rescheduled for November-December 2011. The R/V Knorr made a brief stop in Bermuda to exchange samples and personnel before continuing across the basin. Scientists disembarked in Praia, Cape Verde, on 11 December. The cruise was identified as KN204-01A (first part before Bermuda) and KN204-01B (after the Bermuda stop). However, the official deployment name for this cruise is KN204-01 and includes both part A and B.\n" +
 "Science activities included: ODF 30 liter rosette CTD casts, ODU Trace metal rosette CTD casts, McLane particulate pump casts, underway sampling with towed fish and sampling from the shipboard &quot;uncontaminated&quot; flow-through system.\n" +
 "Full depth stations are shown in the accompanying figure (see below). Additional stations to sample for selected trace metals to a depth of 1000 m are not shown. Standard stations are shown in red (as are the ports) and &quot;super&quot; stations, with extra casts to provide large-volume samples for selected parameters, are shown in green.\n" +
 "[ http://data.bco-dmo.org/GEOTRACES/cruises/KN204-01_GEOTRACES_Station_Plan.jpg ] \n" +
 "Station spacing is concentrated along the western margin to evaluate the transport of trace elements and isotopes by western boundary currents. Stations across the gyre will allow scientists to examine trace element supply by Saharan dust, while also contrasting trace element and isotope distributions in the oligotrophic gyre with conditions near biologically productive ocean margins, both in the west, to be sampled now, and within the eastern boundary upwelling system off Mauritania, sampled last year.\n" +
 "The cruise was funded by NSF OCE awards 0926204, 0926433 and 0926659.\n" +
-"Additional information may be available from the vessel operator site, URL: [ http://www.whoi.edu/cruiseplanning/synopsis.do?id=1662 ] http://www.whoi.edu/cruiseplanning/synopsis.do?id=1662.\n" +
+"Additional information may be available from the vessel operator site, URL: [ https://www.whoi.edu/cruiseplanning/synopsis.do?id=1662 ] https://www.whoi.edu/cruiseplanning/synopsis.do?id=1662.\n" +
 "Cruise information and original data are available from the [ http://www.rvdata.us/catalog/KN204-01 ] NSF R2R data catalog.\n" +
-"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
 "        <att name=\"deployment_3_end_date\">2011-12-11</att>\n" +
 "        <att name=\"deployment_3_location\">Subtropical northern Atlantic Ocean</att>\n" +
 "        <att name=\"deployment_3_start_date\">2011-11-06</att>\n" +
 "        <att name=\"deployment_3_title\">KN204-01</att>\n" +
-"        <att name=\"deployment_3_webpage\">http://www.bco-dmo.org/deployment/58786</att>\n" +
+"        <att name=\"deployment_3_webpage\">https://www.bco-dmo.org/deployment/58786</att>\n" +
 "        <att name=\"doi\">10.1575/1912/bco-dmo.641155</att>\n" +
 "        <att name=\"id\">10.1575/1912/bco-dmo.641155</att>\n" +
-"        <att name=\"infoUrl\">http://www.bco-dmo.org/dataset/549122</att>\n" +
+"        <att name=\"infoUrl\">https://www.bco-dmo.org/dataset/549122</att>\n" +
 "        <att name=\"institution\">BCO-DMO</att>\n" +
 "        <att name=\"instrument_1_type_description\">GO-FLO bottle cast used to collect water samples for pigment, nutrient, plankton, etc. The GO-FLO sampling bottle is specially designed to avoid sample contamination at the surface, internal spring contamination, loss of sample on deck (internal seals), and exchange of water from different depths.</att>\n" +
 "        <att name=\"instrument_1_type_name\">GO-FLO Bottle</att>\n" +
-"        <att name=\"instrument_1_webpage\">http://www.bco-dmo.org/dataset-instrument/643392</att>\n" +
+"        <att name=\"instrument_1_webpage\">https://www.bco-dmo.org/dataset-instrument/643392</att>\n" +
 "        <att name=\"instrument_2_type_description\">The GeoFish towed sampler is a custom designed near surface (&lt;2m) sampling system for the collection of trace metal clean seawater. It consists of a PVC encapsulated lead weighted torpedo and separate PVC depressor vane supporting the intake utilizing all PFA Teflon tubing connected to a deck mounted, air-driven, PFA Teflon dual-diaphragm pump which provides trace-metal clean seawater at up to 3.7L/min. The GeoFish is towed at up to 13kts off to the side of the vessel outside of the ship&#39;s wake to avoid possible contamination from the ship&#39;s hull. It was developed by Geoffrey Smith and Ken Bruland (University of California, Santa Cruz).</att>\n" +
 "        <att name=\"instrument_2_type_name\">GeoFish Towed near-Surface Sampler</att>\n" +
-"        <att name=\"instrument_2_webpage\">http://www.bco-dmo.org/dataset-instrument/643393</att>\n" +
+"        <att name=\"instrument_2_webpage\">https://www.bco-dmo.org/dataset-instrument/643393</att>\n" +
 "        <att name=\"instrument_3_type_description\">Instruments that generate enlarged images of samples using the phenomena of reflection and absorption of visible light. Includes conventional and inverted instruments. Also called a &quot;light microscope&quot;.</att>\n" +
 "        <att name=\"instrument_3_type_name\">Microscope-Optical</att>\n" +
-"        <att name=\"instrument_3_webpage\">http://www.bco-dmo.org/dataset-instrument/643394</att>\n" +
+"        <att name=\"instrument_3_webpage\">https://www.bco-dmo.org/dataset-instrument/643394</att>\n" +
 "        <att name=\"instrument_4_description\">SXRF analysis was performed on the 2-ID-E beamline at the Advanced Photon source (Argonne National Laboratory). The synchetron consists of a storage ring which produces high energy electromagnetic radiation. X-rays diverted to the 2-ID-E beamline are used for x-ray fluorescence mapping of biological samples. X-rays were tuned to an energy of 10 keV to enable the excition of K-alpha fluorescence for the elements reported. The beam is focused using Fresnel zoneplates to achieve high spatial resolution; for our application a focused spot size of 0.5um was used. A single element germanium energy dispersive detector is used to record the X-ray fluorescence spectrum.</att>\n" +
 "        <att name=\"instrument_4_type_description\">Instruments that identify and quantify the elemental constituents of a sample from the spectrum of electromagnetic radiation emitted by the atoms in the sample when excited by X-ray radiation.</att>\n" +
 "        <att name=\"instrument_4_type_name\">X-ray fluorescence analyser</att>\n" +
-"        <att name=\"instrument_4_webpage\">http://www.bco-dmo.org/dataset-instrument/648912</att>\n" +
-"        <att name=\"keywords\">atlantic, bco, bco-dmo, biological, bottle, bottle_GEOTRC, btl, cast, cast_GEOTRC, cell, cell_C, cell_Co, cell_Cu, cell_Fe, cell_Mn, cell_Ni, cell_P, cell_S, cell_Si, cell_type, cell_vol, cell_Zn, cells, cellular, chemical, chemistry, chl, chl_image_filename, chlorophyll, collected, concentration, content, cruise, cruise_id, cruises, data, date, depth, depth_GEOTRC_CTD_round, dissolved, dissolved nutrients, dmo, during, eastern, elemental, event, event_GEOTRC, filename, foundation, geotraces, geotrc, grid, grid_num, grid_type, identifier, image, individual, iso, latitude, light, light_image_filename, longitude, management, map, mda, mda_id, mole, mole_concentration_of_silicate_in_sea_water, national, north, nsf, num, nutrients, ocean, oceanography, oceans,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Silicate,\n" +
-"office, phytoplankton, project, run, sample, sample_bottle_GEOTRC, sample_GEOTRC, science, sea, seawater, silicate, spectrum, sta, sta_PI, station, station_GEOTRC, subtropical, sxrf, SXRF_map_filename, SXRF_run, SXRF_spectrum_filename, time, transect, type, US, v20150217, vol, water, western</att>\n" +
+"        <att name=\"instrument_4_webpage\">https://www.bco-dmo.org/dataset-instrument/648912</att>\n" +
+"        <att name=\"keywords\">atlantic, bco, bco-dmo, biological, bottle, bottle_GEOTRC, btl, cast, cast_GEOTRC, cell, cell_C, cell_Co, cell_Cu, cell_Fe, cell_Mn, cell_Ni, cell_P, cell_S, cell_Si, cell_type, cell_vol, cell_Zn, cells, cellular, chemical, chemistry, chl, chl_image_filename, chlorophyll, collected, concentration, content, cruise, cruise_id, cruises, data, date, depth, depth_GEOTRC_CTD_round, dissolved, dissolved nutrients, dmo, during, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Silicate, eastern, elemental, event, event_GEOTRC, filename, foundation, geotraces, geotrc, grid, grid_num, grid_type, identifier, image, individual, iso, latitude, light, light_image_filename, longitude, management, map, mda, mda_id, mole, mole_concentration_of_silicate_in_sea_water, national, north, nsf, num, nutrients, ocean, oceanography, oceans, office, phytoplankton, project, run, sample, sample_bottle_GEOTRC, sample_GEOTRC, science, sea, seawater, silicate, spectrum, sta, sta_PI, station, station_GEOTRC, subtropical, sxrf, SXRF_map_filename, SXRF_run, SXRF_spectrum_filename, time, transect, type, US, v20150217, vol, water, western</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
-"        <att name=\"license\">http://creativecommons.org/licenses/by/4.0/\n" +
+"        <att name=\"license\">https://creativecommons.org/licenses/by/4.0/\n" +
 "This data set is freely available as long as one follows the\n" +
-"terms of use (http://www.bco-dmo.org/terms-use), including\n" +
+"terms of use (https://www.bco-dmo.org/terms-use), including\n" +
 "the understanding that any such use will properly acknowledge\n" +
 "the originating Investigator. It is highly recommended that\n" +
 "anyone wishing to use portions of this data should contact\n" +
@@ -3878,11 +5238,11 @@ String expected =
 "        <att name=\"person_1_institution_name\">Bigelow Laboratory for Ocean Sciences (Bigelow)</att>\n" +
 "        <att name=\"person_1_name\">Dr Benjamin Twining</att>\n" +
 "        <att name=\"person_1_role\">Principal Investigator</att>\n" +
-"        <att name=\"person_1_webpage\">http://www.bco-dmo.org/person/51087</att>\n" +
+"        <att name=\"person_1_webpage\">https://www.bco-dmo.org/person/51087</att>\n" +
 "        <att name=\"person_2_institution_name\">Woods Hole Oceanographic Institution (WHOI BCO-DMO)</att>\n" +
 "        <att name=\"person_2_name\">Nancy Copley</att>\n" +
 "        <att name=\"person_2_role\">BCO-DMO Data Manager</att>\n" +
-"        <att name=\"person_2_webpage\">http://www.bco-dmo.org/person/50396</att>\n" +
+"        <att name=\"person_2_webpage\">https://www.bco-dmo.org/person/50396</att>\n" +
 "        <att name=\"processing_description\">Data were processed as described in Twining et al. (2015)\n" +
 "Between 9 and 20 cells were analyzed from the shallowest bottle and deep chlorophyll maximum at the subset of stations. The elemental content of each cell has been corrected for elements contained in the carbon substrate. Trace element concentrations are presented as mmol/mol P. Geometric mean concentrations (+/- standard error of the mean) are presented, along with the number of cells analyzed.\n" +
 "BCO-DMO Processing:\n" +
@@ -3910,13 +5270,13 @@ String expected =
 "[ http://bcodata.whoi.edu//US_GEOTRACES/AtlanticSection/Submitted_Preliminary_Cruise_Report_for_Knorr_204-01.pdf ] KN204-01A,B Cruise Report (PDF)\n" +
 "Figure 3. Station locations occupied on the US Geotraces North Atlantic Transect on the R/V Knorr in November 2011.&#xa0;  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/KN204-01_Stations.png ] \n" +
 "Data from the North Atlantic Transect cruises are available under the Datasets heading below, and consensus values for the SAFe and North Atlantic GEOTRACES Reference Seawater Samples are available from the GEOTRACES Program Office: [ http://www.geotraces.org/science/intercalibration/322-standards-and-reference-materials?acm=455_215 ] Standards and Reference Materials\n" +
-"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04&#xa0;&#xa0; (leg 1 of 2010 cruise; Lisbon to Cape Verde) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05&#xa0;&#xa0; (leg 2 of 2010 cruise; Cape Verde to Charleston, NC) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ http://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04&#xa0;&#xa0; (leg 1 of 2010 cruise; Lisbon to Cape Verde) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05&#xa0;&#xa0; (leg 2 of 2010 cruise; Cape Verde to Charleston, NC) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
 "        <att name=\"project_1_title\">U.S. GEOTRACES North Atlantic Transect</att>\n" +
-"        <att name=\"project_1_webpage\">http://www.bco-dmo.org/project/2066</att>\n" +
+"        <att name=\"project_1_webpage\">https://www.bco-dmo.org/project/2066</att>\n" +
 "        <att name=\"publisher_email\">info@bco-dmo.org</att>\n" +
 "        <att name=\"publisher_name\">BCO-DMO</att>\n" +
 "        <att name=\"publisher_type\">institution</att>\n" +
-"        <att name=\"publisher_url\">http://www.bco-dmo.org/</att>\n" +
+"        <att name=\"publisher_url\">https://www.bco-dmo.org/</att>\n" +
 "        <att name=\"restricted\">false</att>\n" +
 "        <att name=\"sourceUrl\">http://darchive.mblwhoilibrary.org/bitstream/handle/1912/7908/1/GT10_11_cellular_element_quotas.tsv</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
@@ -3941,7 +5301,7 @@ String expected =
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Cruise Id</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550520</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550520</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3955,7 +5315,7 @@ String expected =
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Project</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550531</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550531</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3969,7 +5329,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Station GEOTRC</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550521</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550521</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3983,7 +5343,7 @@ String expected =
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Sta PI</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/564854</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/564854</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4000,7 +5360,7 @@ String expected =
 "            <att name=\"long_name\">Latitude</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
 "            <att name=\"units\">degrees_north</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550522</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550522</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4017,7 +5377,7 @@ String expected =
 "            <att name=\"long_name\">Longitude</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
 "            <att name=\"units\">degrees_east</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550523</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550523</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4031,7 +5391,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cast GEOTRC</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550524</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550524</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4045,7 +5405,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Event GEOTRC</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550525</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550525</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4064,7 +5424,7 @@ String expected =
 "            <att name=\"source_name\">depth_GEOTRC_CTD</att>\n" +
 "            <att name=\"standard_name\">depth</att>\n" +
 "            <att name=\"units\">m</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550526</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550526</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4082,7 +5442,7 @@ String expected =
 "            <att name=\"long_name\">Depth</att>\n" +
 "            <att name=\"standard_name\">depth</att>\n" +
 "            <att name=\"units\">meters</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550527</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550527</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4096,7 +5456,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Sample GEOTRC</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550528</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550528</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4110,7 +5470,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Sample Bottle GEOTRC</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550529</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550529</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4124,7 +5484,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Bottle GEOTRC</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550530</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550530</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4138,7 +5498,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Grid Type</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550532</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550532</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4152,7 +5512,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Grid Num</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550533</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550533</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4166,7 +5526,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">SXRF Run</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550534</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550534</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4180,7 +5540,7 @@ String expected =
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Mda Id</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550535</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550535</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4194,7 +5554,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Type</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550536</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550536</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4208,7 +5568,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Vol</att>\n" +
 "            <att name=\"units\">um^3</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550537</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550537</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4222,7 +5582,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell C</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550538</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550538</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4239,7 +5599,7 @@ String expected =
 "            <att name=\"long_name\">Mole Concentration Of Silicate In Sea Water</att>\n" +
 "            <att name=\"standard_name\">mole_concentration_of_silicate_in_sea_water</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550539</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550539</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4253,7 +5613,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell P</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550540</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550540</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4267,7 +5627,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell S</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550541</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550541</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4281,7 +5641,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Mn</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550542</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550542</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4295,7 +5655,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Fe</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550543</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550543</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4309,7 +5669,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Co</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550544</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550544</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4323,7 +5683,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Ni</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550545</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550545</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4337,7 +5697,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Cu</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550546</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550546</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4351,7 +5711,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cell Zn</att>\n" +
 "            <att name=\"units\">mol/cell</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550547</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550547</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4365,7 +5725,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Light Image Filename</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550548</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550548</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4379,7 +5739,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Chl Image Filename</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550549</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550549</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4393,7 +5753,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">SXRF Map Filename</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550550</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550550</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4407,7 +5767,7 @@ String expected =
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">SXRF Spectrum Filename</att>\n" +
 "            <att name=\"units\">null</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550551</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550551</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -4424,16 +5784,16 @@ String expected =
 "            <att name=\"standard_name\">time</att>\n" +
 "            <att name=\"time_precision\">1970-01-01T00:00:00.000Z</att>\n" +
 "            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSSZ</att>\n" +
-"            <att name=\"webpage\">http://www.bco-dmo.org/dataset-parameter/550552</att>\n" +
+"            <att name=\"webpage\">https://www.bco-dmo.org/dataset-parameter/550552</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
 
-            String tResults = results.substring(0, expected.length());
+            String tResults = results.substring(0, Math.min(results.length(), expected.length()));
             Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
 
-            tResults = gdxResults.substring(0, expected.length());
+            tResults = gdxResults.substring(0, Math.min(results.length(), expected.length()));
             Test.ensureEqual(tResults, expected, "tResults=\n" + tResults);
 
         } catch (Throwable t) {
@@ -4445,6 +5805,64 @@ String expected =
     }
 
     /**
+     * This tests that a dataset can be quick restarted, 
+     */
+    public static void testQuickRestart() throws Throwable {
+        String2.log("\n*** EDDTableFromAsciiFiles.testQuickRestart\n");
+        String datasetID = "testTableAscii";
+        String fullName = EDStatic.unitTestDataDir + "asciiNdbc/46012_2005.csv";
+        long timestamp = File2.getLastModified(fullName); //orig 2009-08-05T08:49 local
+        try {
+            //restart local erddap
+            String2.pressEnterToContinue(
+                "Restart the local erddap with quickRestart=true and with datasetID=" +
+                datasetID + " .\n" +
+                "Wait until all datasets are loaded.");
+
+            //change the file's timestamp
+            File2.setLastModified(fullName, timestamp - 60000); //1 minute earlier
+            Math2.sleep(1000);
+
+            //request info from that dataset
+            //.csv    for one lat,lon,time
+            //46012 -122.879997    37.360001
+            String userDapQuery = 
+                "&longitude=-122.88&latitude=37.36&time%3E=2005-07-01&time%3C2005-07-01T10";
+            String results = SSR.getUrlResponseStringUnchanged(
+                EDStatic.erddapUrl + "/tabledap/" + datasetID + ".csv?" + userDapQuery);
+            //String2.log(results);
+            String expected = 
+"longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
+"degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n" +
+"-122.88,37.36,0,2005-07-01T00:00:00Z,46012,294,2.6,12.7,13.4\n" +
+"-122.88,37.36,0,2005-07-01T01:00:00Z,46012,297,3.5,12.6,13.0\n" +
+"-122.88,37.36,0,2005-07-01T02:00:00Z,46012,315,4.0,12.2,12.9\n" +
+"-122.88,37.36,0,2005-07-01T03:00:00Z,46012,325,4.2,11.9,12.8\n" +
+"-122.88,37.36,0,2005-07-01T04:00:00Z,46012,330,4.1,11.8,12.8\n" +
+"-122.88,37.36,0,2005-07-01T05:00:00Z,46012,321,4.9,11.8,12.8\n" +
+"-122.88,37.36,0,2005-07-01T06:00:00Z,46012,320,4.4,12.1,12.8\n" +
+"-122.88,37.36,0,2005-07-01T07:00:00Z,46012,325,3.8,12.4,12.8\n" +
+"-122.88,37.36,0,2005-07-01T08:00:00Z,46012,298,4.0,12.5,12.8\n" +
+"-122.88,37.36,0,2005-07-01T09:00:00Z,46012,325,4.0,12.5,12.8\n";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+            //request status.html
+            SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
+            Math2.sleep(1000);
+            SSR.displayInBrowser("file://" + EDStatic.bigParentDirectory + "logs/log.txt");
+
+            String2.pressEnterToContinue(
+                "Look at log.txt to see if update was run and successfully "+
+                "noticed the changed file.");
+
+        } finally {
+            //change timestamp back to original
+            File2.setLastModified(fullName, timestamp);
+        }
+    }
+
+
+    /**
      * This tests the methods in this class.
      *
      * @throws Throwable if trouble
@@ -4454,6 +5872,7 @@ String expected =
 /* for releases, this line should have open/close comment */
         testBasic(deleteCachedDatasetInfo);
         testGenerateDatasetsXml();
+        testGenerateDatasetsXml2();
         testFixedValue();
         testBasic2();
         testTimeZone();
@@ -4468,6 +5887,7 @@ String expected =
         /* */
 
         //not usually run
+        //testQuickRestart();
     }
 
 

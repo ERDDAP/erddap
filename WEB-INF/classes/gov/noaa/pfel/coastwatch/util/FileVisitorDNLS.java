@@ -79,6 +79,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     //FileVisitorSubdir also uses this.
     public final static String  HTTP_REGEX       = "https?://.+";
     public final static Pattern HTTP_PATTERN     = Pattern.compile(HTTP_REGEX);
+    //not that . doesn't match line terminator characters!
+    public final static String  TT_REGEX         = "<tt>.*</tt>";
 
     /**
      * Set this to true (by calling verbose=true in your program, 
@@ -468,7 +470,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         fv.table.leftToRightSortIgnoreCase(2);
         if (verbose) String2.log("FileVisitorDNLS.oneStep(local) finished successfully. n=" + 
             fv.directoryPA.size() + " time=" +
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
         return fv.table;
     }
 
@@ -745,7 +747,6 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         boolean completelySuccessful = true;  //but any child can set it to false
         if (pathRegex == null || pathRegex.length() == 0)
             pathRegex = ".*";
-        InputStream is = null; 
         BufferedReader in = null;
         try {
             if (reallyVerbose) String2.log("\naddToWAFUrlList nNames=" + names.size() + 
@@ -755,8 +756,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             //for html, any charset should be fine. 
             //All non-ASCII chars should be entities.
             //But use common Linux to be consistent.
-            is = SSR.getUrlInputStream(url); 
-            in = new BufferedReader(new InputStreamReader(is, String2.ISO_8859_1));
+            in = SSR.getBufferedUrlReader(url);
             String s;
 
             //look for header line
@@ -851,9 +851,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
         } finally {
             try {
                 if (in != null)
-                    in.close();  //'in' will close 'is'.
-                else if (is != null)
-                    is.close();
+                    in.close();  
             } catch (Throwable t) {
             }
         }
@@ -1042,12 +1040,12 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/,,,\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/,,,\n" +
 "https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,,,\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1499387820000,309248\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1499387880000,309248\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1499387880000,307200\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1499387880000,309248\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1499387880000,311296\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1499387940000,313344\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22560.xml,1510670100000,319488\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22561.xml,1510670160000,319488\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22562.xml,1510670160000,317440\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22563.xml,1510670160000,319488\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22564.xml,1510670220000,321536\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/,22565.xml,1510670220000,323584\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //* Test ncei WAF        
@@ -1157,7 +1155,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             if (url.endsWith("/contents.html"))
                 url = File2.getDirectory(url);
             else url = File2.addSlash(url); //otherwise, assume url is missing final slash
-            response = SSR.getUrlResponseString(url + "contents.html");
+            response = SSR.getUrlResponseStringUnchanged(url + "contents.html");
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return false;
@@ -1200,7 +1198,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             //EXAMPLE https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M07
             //(reformatted: look for tags, not formatting
             /*   <tr>
-                   <td align="left"><b><a href="month_19870701_v11l35flk.nc.gz.html">month_19870701_v11l35flk.nc.gz</a></b></td>
+                   <td align="left"><strong><a href="month_19870701_v11l35flk.nc.gz.html">month_19870701_v11l35flk.nc.gz</a></strong></td>
                    <td align="center" nowrap="nowrap">2007-04-04T07:00:00</td>
                    <td align="right">4807310</td>
                    <td align="center">
@@ -1505,7 +1503,6 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
       } catch (Throwable t) {
           String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-              "\n2016-02-29 results=\"\" because HTTP 503, Server Not Available." +
               "\nUnexpected error."); 
       }
     }
@@ -1550,7 +1547,7 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
             if (url.endsWith("/catalog.html") || url.endsWith("/catalog.xml"))
                 url = File2.getDirectory(url);
             else url = File2.addSlash(url); //otherwise, assume url is missing final slash
-            response = SSR.getUrlResponseString(url + "catalog.html");
+            response = SSR.getUrlResponseStringUnchanged(url + "catalog.html");
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return false;
@@ -1581,7 +1578,9 @@ http://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 
         //go through file,dir listings
         boolean diagnosticMode = false;
+        int row = 0;
         while (true) {
+            row++;
 
 /* EXAMPLE from TDS 4.2.10 at
 https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5day/FullRes/1981/catalog.html
@@ -1655,20 +1654,22 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
             }
 
             //look for <tt>content</tt> in the 3 <td>'s
-            String content1 = String2.extractRegex(td1, "<tt>.*</tt>", 0);
+            //note that String2.extractCaptureGroup fails if the string has line terminators
+            String content1 = String2.extractRegex(td1, TT_REGEX, 0);
             String content2 = String2.extractRegex(
-                thisRow.substring(td2Po, td3Po), "<tt>.*</tt>", 0);
+                thisRow.substring(td2Po, td3Po), TT_REGEX, 0);
             String content3 = String2.extractRegex(
-                thisRow.substring(td3Po, thisRow.length()), "<tt>.*</tt>", 0);
-            content1 = content1 == null? "" : content1.substring(4, content1.length() - 5);
-            content2 = content2 == null? "" : content2.substring(4, content2.length() - 5);
-            content3 = content3 == null? "" : content3.substring(4, content3.length() - 5);
+                thisRow.substring(td3Po, thisRow.length()), TT_REGEX, 0);
             if (diagnosticMode) 
                 String2.log("=== <td><tt> content #1=" + content1 + " #2=" + content2 + 
                                                 " #3=" + content3);
+            content1 = content1 == null? "" : content1.substring(4, content1.length() - 5);
+            content2 = content2 == null? "" : content2.substring(4, content2.length() - 5);
+            content3 = content3 == null? "" : content3.substring(4, content3.length() - 5);
             if (content1.length() == 0) { 
                 if (reallyVerbose) 
-                    String2.log("WARNING: No <tt>content</tt> in first <td>...</td>.");
+                    String2.log("WARNING: No <tt>content</tt> in first <td>...</td>" + 
+                        (row < 3? ":" + String2.annotatedString(td1) : ""));
                 completelySuccessful = false;
                 po = nextRow;
                 continue;
@@ -1678,7 +1679,8 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
             if (!content1.matches(fileNameRegex)) {
                 po = nextRow;
                 if (diagnosticMode) 
-                    String2.log("=== skip this row: content1=" + content1 + " doesn't match fileNameRegex=" + fileNameRegex);
+                    String2.log("=== skip this row: content1=" + content1 + 
+                        " doesn't match fileNameRegex=" + fileNameRegex);
                 continue;
             }
 
@@ -1716,7 +1718,7 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
      * This tests THREDDS-related methods.
      */
     public static void testThredds() throws Throwable {
-        String2.log("\n*** testThredds");
+        String2.log("\n*** FileVisitorDNLS.testThredds");
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = true;
 
@@ -1729,6 +1731,11 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         StringArray childUrls = new StringArray();
         DoubleArray lastModified = new DoubleArray();
         LongArray fSize = new LongArray();
+
+        //test TT_REGEX
+        //note that String2.extractCaptureGroup fails if the string has line terminators
+        Test.ensureEqual(String2.extractRegex("q\r\na<tt>b</tt>c\r\nz", TT_REGEX, 0),
+            "<tt>b</tt>", "");
 
         //test error via addToThreddsUrlList  
         //(yes, logged message includes directory name)
@@ -1939,7 +1946,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
                     time = System.currentTimeMillis() - time;
                     //2014-11-25 98436 files in 410ms
                     StringArray directoryPA = (StringArray)table.getColumn(DIRECTORY);
-                    String2.log("forward test: n=" + directoryPA.size() + " time=" + time);
+                    String2.log("forward test: n=" + directoryPA.size() + " time=" + time + "ms");
                     if (directoryPA.size() < 1000) {
                         String2.log(directoryPA.size() + " files. Not a good test.");
                     } else {
@@ -1964,7 +1971,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
                     time = System.currentTimeMillis() - time;
                     //2014-11-25 98436 files in 300ms
                     StringArray directoryPA = (StringArray)table.getColumn(DIRECTORY);
-                    String2.log("backward test: n=" + directoryPA.size() + " time=" + time);
+                    String2.log("backward test: n=" + directoryPA.size() + " time=" + time + "ms");
                     if (directoryPA.size() < 1000) {
                         String2.log(directoryPA.size() + " files. Not a good test.");
                     } else {
@@ -2264,8 +2271,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
             String expected = //the lastModified values change periodically
 //these are the files which were downloaded
 "remote,local,lastModified\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1499387820000\n" +
-"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1501308000000\n";
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22560.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22560.xml,1510670100000\n" +
+"https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/NEFSC/inport/xml/22563.xml," + String2.unitTestDataDir + "sync/NMFS/NEFSC/inport/xml/22563.xml,1510670160000\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //no changes, do the sync again
@@ -2297,7 +2304,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
      */
     public static String findFileWith(String tDir, String tFileNameRegex, 
         boolean tRecursive, String tPathRegex, String lineRegex, 
-        int tallyWhich, int interactiveNLines) throws Throwable {
+        int tallyWhich, int interactiveNLines, int showTopN) throws Throwable {
         String2.log("\n*** findFileWith(\"" + lineRegex + "\")");
         Table table = oneStep(tDir, tFileNameRegex, tRecursive,
             tPathRegex, false);
@@ -2316,7 +2323,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
                     " nLinesMatched=" + nLinesMatched);
             try {
                 String fullName = dirs.get(filei) + names.get(filei);
-                String lines[] = SSR.getUrlResponse(fullName);
+                String lines[] = SSR.getUrlResponseLines(fullName);
                 for (int linei = 0; linei < lines.length; linei++) {
                     Matcher matcher = linePattern.matcher(lines[linei]);
                     if (matcher.matches()) {
@@ -2350,7 +2357,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066930
         String2.log("\nfindFileWhich finished successfully. nFiles=" + nFiles +
             " nFilesMatched=" + nFilesMatched + " nLinesMatched=" + nLinesMatched);
         if (tallyWhich >= 0)
-            String2.log(tally.toString(100)); //most common n will be shown
+            String2.log(tally.toString(showTopN)); //most common n will be shown
         return firstFullName;
     }
 

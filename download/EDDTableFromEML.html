@@ -1,56 +1,53 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-  "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="en-US">
 <head>
 <title>The EDDTableFromEML and EDDTableFromEMLBatch Options in GenerateDatasetsXml</title>
+<meta charset="UTF-8">
 <link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
-<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+<link href="../images/erddap2.css" rel="stylesheet" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body> 
-<table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
+<table class="compact nowrap" style="width:100%; background-color:#128CB5;"> 
   <tr> 
-    <td align="center" style="width:100px;"> &nbsp;
-      <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;
+    <td style="text-align:center; width:80px;"><a rel="bookmark"
+      href="http://www.noaa.gov/"><img 
+      title="National Oceanic and Atmospheric Administration" 
+      src="../images/noaab.png" alt="NOAA"
+      style="vertical-align:middle;"></a></td> 
+    <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
+      <strong>ERDDAP</strong>
+      <br><small><small><small>Easier access to scientific data</small></small></small>
       </td> 
-    <td align="left">
-      <font color="#FFFFFF">
-      <font size="+2"><b>ERDDAP</b></font>
-      <br>Easier access to scientific data</font>
-      </td> 
-    <td align="right"><font size="-1"> 
-      <br>Brought to you by 
-      <a title="National Oceanic and Atmospheric Administration" 
-      rel="bookmark" href="http://www.noaa.gov">NOAA</a>
-      <a title="National Marine Fisheries Service"               
-      rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a> 
-      <a title="Southwest Fisheries Science Center"              
-      rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>
-      <a title="Environmental Research Division" 
-      rel="bookmark" href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>
+    <td style="text-align:right; font-size:small;"> 
       &nbsp; &nbsp;
-      </font></td> 
+      <br>Brought to you by 
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
+      href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service" rel="bookmark"
+      href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark"
+      href="https://swfsc.noaa.gov">SWFSC</a> 
+      <a title="Environmental Research Division" rel="bookmark"
+      href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      &nbsp; &nbsp;
+      </td> 
   </tr> 
 </table>
 
-<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
-  cellspacing="0"> 
-<tr>
-<td>
+<div class="standard_width"> 
 
 &nbsp;
-<form action="">
-<input type="button" value="Back" onClick="history.go(-1);return true;">
-</form>
 
-<h1 align="center">The EDDTableFromEML and EDDTableFromEMLBatch Options in GenerateDatasetsXml</h1>
+<h1 style="text-align:center">The EDDTableFromEML and EDDTableFromEMLBatch Options in GenerateDatasetsXml</h1>
 
 
 [This web page will only be of interest to ERDDAP administrators who work
 with EML files.]
 
 <p><a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"><b>ERDDAP</b></a>
+href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"><strong>ERDDAP</strong></a>
 is a data server that gives users a simple, consistent way to download 
 subsets of gridded and tabular scientific datasets in common file formats 
 and make graphs and maps. ERDDAP works with a given dataset as either
@@ -73,17 +70,17 @@ Although it is possible to generate the chunk of XML for datasets.xml entirely
 by hand, ERDDAP comes with a tool called
 <a rel="help" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#Tools"
-><b>GenerateDatasetsXml</b></a> which can generate the rough draft of the chunk
+><strong>GenerateDatasetsXml</strong></a> which can generate the rough draft of the chunk
 of XML needed for a given dataset based on some source of information about the dataset.
 
 <p>The first thing GenerateDatasetsXml asks is what type of dataset you want to create.
-GenerateDatasetsXml has a special option, <b>EDDTableFromEML</b>,
+GenerateDatasetsXml has a special option, <strong>EDDTableFromEML</strong>,
 which uses the information in an 
 <a rel="help"
   href="https://knb.ecoinformatics.org/#external//emlparser/docs/index.html"
   >Ecological Metadata Language (EML)<img 
-  src="../images/external.png" align="bottom" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."/></a>
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."></a>
 XML file to generate the chunk of XML for datasets.xml 
 to create an 
 <a rel="help"
@@ -102,7 +99,7 @@ EML as a case study for XML schema that are clear, to the point,
 not excessively deep (i.e., too many levels), 
 and easy for humans and computers to work with.)
 
-<h2><a name="questions">Questions</a></h2>
+<h2><a class="selfLink" id="questions" href="#questions" rel="bookmark">Questions</a></h2>
 Here are all the questions GenerateDatasetsXml will ask,
 with comments about how you should answer if you want to process just one EML file
 or a batch of EML files:
@@ -140,8 +137,8 @@ or a batch of EML files:
     <a rel="help"
         href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
         >TZ column list of time zone names<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.  
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>.  
   <br>Note all of the easy-to-use "US/..." names at the end of the list.
   <br>If you later find that to be incorrect, you can change the time_zone
     in the chunk of datasets.xml.
@@ -153,14 +150,14 @@ give users more direct access to the wealth of
 <a rel="help"
   href="https://knb.ecoinformatics.org/"
   >Knowledge Network for Biocomplexity (KNB)<img 
-  src="../images/external.png" align="bottom" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."/></a> 
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."></a> 
 and 
 <a rel="help"
   href="https://lternet.edu/"
   >Long Term Ecological Research (LTER)<img 
-  src="../images/external.png" align="bottom" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."/></a>
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."></a>
 data and help those projects meet the US government's 
 <a rel="help" 
   href="https://www.whitehouse.gov/blog/2013/02/22/expanding-public-access-results-federally-funded-research"
@@ -170,11 +167,11 @@ Also, EML plus ERDDAP seems like a great bridge between scientists in
 the academic / NSF-funded realm and scientists in the federal agency (NOAA, NASA, USGS) realm.
 
 <p>If you have questions, comments, suggestions, or need help, please send an email to 
-  <tt>bob dot simons at noaa dot gov</tt> .
+  <kbd>bob dot simons at noaa dot gov</kbd> .
 <br>&nbsp;
 
 <!-- *********************** -->
-<h2><a name="designDetails">Design Details</a></h2>
+<h2><a class="selfLink" id="designDetails" href="#designDetails" rel="bookmark">Design Details</a></h2>
 
 Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml.
 <br>Some are related to differences in how EML and ERDDAP do things and how the 
@@ -182,7 +179,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
 <br>If one of these was a problem, it is now mostly dealt with/solved.
 
 <ul>
-<li><a name="oneDataTable">One dataTable = One ERDDAP Dataset</a>
+<li><a class="selfLink" id="oneDataTable" href="#oneDataTable" rel="bookmark">One dataTable = One ERDDAP Dataset</a>
   <br>One EML file may have multiple &lt;dataTable&gt;s. ERDDAP makes
   one ERDDAP dataset per EML dataTable. The datasetID for the dataset is 
   EMLName_t[tableNumber] (e.g., for SBC where EMLname isn't just a number) or
@@ -191,17 +188,17 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   becomes ERDDAP datasetID=knb_lter_sbc_28_t1,
   <br>&nbsp;
 
-<li><a name="emlVsCfAcdd">EML vs CF+ACDD</a>
+<li><a class="selfLink" id="emlVsCfAcdd" href="#emlVsCfAcdd" rel="bookmark">EML vs CF+ACDD</a>
   <br>Almost all of the metadata in the EML files gets into ERDDAP,
   but in a different format. ERDDAP uses the  
   <a rel="help"
-  href="http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html">CF<img 
-  src="../images/external.png" align="bottom" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."/></a>)
+  href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html">CF<img 
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."></a>)
   and
   <a rel="help" href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3">ACDD<img 
-  src="../images/external.png" align="bottom" alt=" (external link)" 
-  title="This link to an external web site does not constitute an endorsement."/></a>
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."></a>
   metadata standards. They are complementary metadata systems that
   use key=value pairs for global metadata and for
   each variable's metadata. 
@@ -212,7 +209,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   OPeNDAP/CF/ACDD world.
   <br>&nbsp;
 
-<li><a name="smallChanges">Small Changes</a>
+<li><a class="selfLink" id="smallChanges" href="#smallChanges" rel="bookmark">Small Changes</a>
   <br>ERDDAP makes a lot small changes. For example, ERDDAP uses the 
   EML non-DOI alternateIdentifier plus a dataTable number as the 
   ERDDAP datasetID, but slightly changes alternateIdentifier to make 
@@ -220,7 +217,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   e.g., knb-lter-sbc.33 dataTable #1 becomes knb_lter_sbc_33_t1.
   <br>&nbsp;
 
-<li><a name="docBook">DocBook</a>
+<li><a class="selfLink" id="docBook" href="#docBook" rel="bookmark">DocBook</a>
   <br>EML uses DocBook's markup system to provide structure to blocks of text.
   CF and ACDD assume plain text. So GenerateDatasetsXml converts the marked up
   text into plain text that looks like the formatted version of the text.
@@ -228,7 +225,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   and left in the plain text.
   <br>&nbsp;
 
-<li><a name="dataFiles">Data Files</a>
+<li><a class="selfLink" id="dataFiles" href="#dataFiles" rel="bookmark">Data Files</a>
   <br>Since the EML dataTable includes the URL of the actual data file,
   GenerateDatasetsXml will:
   <ol>
@@ -243,7 +240,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
     <br>&nbsp;
   </ol>
 
-<li><a name="zipDataFiles">.zip'd Data Files</a>
+<li><a class="selfLink" id="zipDataFiles" href="#zipDataFiles" rel="bookmark">.zip'd Data Files</a>
   <br>If the referenced data file is a .zip file, it must contain just
   one file. That file will be used for the ERDDAP dataset.
   If there is more than 1 file. ERDDAP will reject that dataset.
@@ -251,17 +248,17 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   (In practice, all SBC LTER zip files have just one data file.)
   <br>&nbsp;
 
-<li><a name="storageType">StorageType</a>
+<li><a class="selfLink" id="storageType" href="#storageType" rel="bookmark">StorageType</a>
   <br>If a column's storageType isn't specified, ERDDAP uses its best guess
   based on the data in the data file. This works pretty well.
   <br>&nbsp;
 
-<li><a name="units">Units</a>
+<li><a class="selfLink" id="units" href="#units" rel="bookmark">Units</a>
   <br>ERDDAP uses 
   <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/"
   >UDUNITS formatting for units<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>.
   GenerateDatasetsXml is able to convert EML units to UDUNITS cleanly about
   95% of the time. The remaining 5% results in a readable description 
   of the units, e.g., 
@@ -277,7 +274,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
 
 
 <!-- ********************************************** -->
-<h2><a name="issues">Issues with the EML Files</a></h2>
+<h2><a class="selfLink" id="issues" href="#issues" rel="bookmark">Issues with the EML Files</a></h2>
 
 Here are some issues/problems with the EML files that cause problems
   when a software client (such as the EDDTableFromEML option in GenerateDatasetsXML)
@@ -298,7 +295,7 @@ Here are some issues/problems with the EML files that cause problems
 Here are the issues:
 
 <ul>
-<li><a name="separateDateAndTimeColumns">Separate Date and Time Columns</a>
+<li><a class="selfLink" id="separateDateAndTimeColumns" href="#separateDateAndTimeColumns" rel="bookmark">Separate Date and Time Columns</a>
 <br>Some data files have separate columns for date and for time, but no
 date+time column. 
 Since it is an important part of ERDDAP that the time column
@@ -307,7 +304,7 @@ display the unified date+time, ERDDAP currently rejects these datasets.
 where the date and time columns are merged into one column.
 <br>&nbsp;
 
-<li><a name="inconsistentColumnNames">Inconsistent Column Names</a>
+<li><a class="selfLink" id="inconsistentColumnNames" href="#inconsistentColumnNames" rel="bookmark">Inconsistent Column Names</a>
 <br>The EML files list the data file's columns and their names.
 Unfortunately, they are often different from the column names
 in the actual data file. 
@@ -323,7 +320,7 @@ and go on to the next table.
 to match the column names in the data file.
 <br>&nbsp;
 
-<li><a name="differentColumnOrder">Different Column Order</a>
+<li><a class="selfLink" id="differentColumnOrder" href="#differentColumnOrder" rel="bookmark">Different Column Order</a>
 <br>There are several cases where the EML specified the columns in 
   a different order than they exist in the data file.
   GenerateDatasetsXml will stop and ask the operator if the 
@@ -346,7 +343,7 @@ to match the column names in the data file.
   the columns and column order in the source file match
   the columns and column order in the EML file.
 
-<li><a name="incorrectNumHeaderLines">Incorrect numHeaderLines</a>
+<li><a class="selfLink" id="incorrectNumHeaderLines" href="#incorrectNumHeaderLines" rel="bookmark">Incorrect numHeaderLines</a>
 <br>Several dataTables incorrectly state numHeaderLines=1, e.g., ...sbc.4011. 
   This causes ERDDAP to read the first line of data as the column names.
   I tried to manually SKIP all of these dataTables.
@@ -369,7 +366,7 @@ to match the column names in the data file.
 
   <p>It would be nice if the EML checker checked the numHeaderLines value.
 
-<li><a name="numHeaderLines0">numHeaderLines = 0</a>
+<li><a class="selfLink" id="numHeaderLines0" href="#numHeaderLines0" rel="bookmark">numHeaderLines = 0</a>
 <br>Some source files don't have column names. ERDDAP accepts that
   if the EML describes the same number of columns. 
 
@@ -377,7 +374,7 @@ to match the column names in the data file.
   in a different order or with different units (see below) 
   and there is no way to catch those problems.
 
-<li><a name="dateTimeFormatStrings">DateTime Format Strings</a>
+<li><a class="selfLink" id="dateTimeFormatStrings" href="#dateTimeFormatStrings" rel="bookmark">DateTime Format Strings</a>
 <br>EML has a standard way to describe date time formats. 
   but there is considerable variation in its use in EML files.
   (I was previously wrong about this. I see the EML documentation 
@@ -385,8 +382,8 @@ to match the column names in the data file.
   <a rel="help"
     href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html"
     >Java DateTimeFormatter specification<img 
-    src="../images/external.png" align="bottom" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."/></a>,
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."></a>,
   but which lacks the important guidelines about its use,
   with the result that formatString is often/usually improperly used.)
   There are several instances with incorrect case,
@@ -401,7 +398,7 @@ to match the column names in the data file.
   specification and verified that date time values in the data table
   could be parsed correctly with the specified format.
 
-<li><a name="noTimeZone">DateTime But No Time Zone</a>
+<li><a class="selfLink" id="noTimeZone" href="#noTimeZone" rel="bookmark">DateTime But No Time Zone</a>
 <br>GenerateDatasetsXml looks for a column with dateTime and a specified
   time zone (either 
     Zulu: from time units ending in 'Z' or a column name 
@@ -445,8 +442,8 @@ to match the column names in the data file.
   <a rel="help"
     href="http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html"
     >Java/Joda time format<img 
-    src="../images/external.png" align="bottom" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."/></a>)
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."></a>)
     for specifying the dataTime format:
     <br>If there is a col with numeric time values (e.g., Matlab times) and
       Zulu timezone (or just dates, with no time columns), 
@@ -461,11 +458,11 @@ to match the column names in the data file.
       by adding a combined dateTime column (preferrably, Zulu time zone) to the datafile 
       and adding its description in the EML file.
   <br>EXAMPLE from SBC LTER: 
-  <a rel="background"
+  <a rel="help"
     href="http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10"
     >http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10<img 
-    src="../images/external.png" align="bottom" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."/></a>
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."></a>
     dataTable #2.
 
   <p>It would be nice if EML/LTER required the inclusion of a column with
@@ -475,10 +472,10 @@ to match the column names in the data file.
       <a rel="help"
         href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
         >TZ column<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>).
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>).
   
-<li><a name="missingMissingValue">Missing missing_value</a>
+<li><a class="selfLink" id="missingMissingValue" href="#missingMissingValue" rel="bookmark">Missing missing_value</a>
   <br>Some columns use a missing_value 
   but don't list it in the EML metadata, e.g., precipitation_mm in 
   knb-lter-sbc.5011 uses -999. 
@@ -489,7 +486,7 @@ to match the column names in the data file.
 
   <p>It would be nice if the EML checker looked for missing missing_values.
 
-<li><a name="smallProblems">Small Problems</a>
+<li><a class="selfLink" id="smallProblems" href="#smallProblems" rel="bookmark">Small Problems</a>
   <br>There are a lot of small problems (spelling, punctuation)
   which will probably only be found by a human inspecting each dataset. 
 
@@ -497,7 +494,7 @@ to match the column names in the data file.
   This is a difficult problem because words in science are often
   flagged by spell checkers. Human editing is probably needed.
 
-<li><a name="invalidUnicodeCharacters">Invalid Unicode Characters</a>
+<li><a class="selfLink" id="invalidUnicodeCharacters" href="#invalidUnicodeCharacters" rel="bookmark">Invalid Unicode Characters</a>
 <br>Some of the EML content contains invalid Unicode characters.
   These are probably characters from the Windows charset that
   were incorrectly copied and pasted into the UTF-8 EML files.
@@ -507,7 +504,7 @@ to match the column names in the data file.
   <p>It would be nice if the EML checker checked for this.
   It is easy to find and easy to fix.
 
-<li><a name="differentColumnUnits">Different Column Units</a>
+<li><a class="selfLink" id="differentColumnUnits" href="#differentColumnUnits" rel="bookmark">Different Column Units</a>
 <br>Some EML dataTables define columns that are inconsistent
   with the columns in the data file, notably because they
   have different units.
@@ -535,7 +532,7 @@ to match the column names in the data file.
   and the EML column name. How many other dataTables
   have this problem but are undetectable?
 
-<li><a name="differentVersionsOfEML">Different Versions of EML</a>
+<li><a class="selfLink" id="differentVersionsOfEML" href="#differentVersionsOfEML" rel="bookmark">Different Versions of EML</a>
   <br>GenerateDatasetsXml is designed to work with EML 2.1.1.
   Other versions of EML will work the extent that they
   match 2.1.1 or that GenerateDatasetsXml has special code to deal with it.
@@ -545,7 +542,7 @@ to match the column names in the data file.
   changes to GenerateDatasetsXml to deal with the differences.
   <br>&nbsp;
 
-<li><a name="troubleParsingTheDataFile">Trouble Parsing the Data File</a>
+<li><a class="selfLink" id="troubleParsingTheDataFile" href="#troubleParsingTheDataFile" rel="bookmark">Trouble Parsing the Data File</a>
   <br>Rarely, a dataTable may be rejected with the error
   "unexpected number of items on line #120 (observed=52, expected=50)"
   An error message like this means that a line in the datafile 
@@ -553,11 +550,11 @@ to match the column names in the data file.
   It may be a problem in ERDDAP (e.g., not parsing the file correctly)
   or in the file. 
   EXAMPLE from SBC LTER:   
-  <a rel="help"
+  <br><a rel="help"
     href="http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10 "
     >http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.10 <img 
-    src="../images/external.png" align="bottom" alt=" (external link)" 
-    title="This link to an external web site does not constitute an endorsement."/></a>
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."></a>
   dataTable #3, see
   datafile=LTER_monthly_bottledata_registered_stations_20140429.txt
   <br>&nbsp;
@@ -566,47 +563,16 @@ to match the column names in the data file.
 
 <br>&nbsp;
 <hr>
-<h2><a name="contact">Contact</a></h2> 
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2> 
 Questions, comments, suggestions?  Please send an email to 
-  <tt>bob dot simons at noaa dot gov</tt> .
+  <kbd>bob dot simons at noaa dot gov</kbd> .
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.80
+<p>ERDDAP, Version 1.82
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
-<p>&nbsp;
 
-</td>
-</tr>
-</table>
+</div>
 </body>
 </html>

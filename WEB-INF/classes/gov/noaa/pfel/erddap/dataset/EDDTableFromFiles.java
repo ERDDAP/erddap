@@ -299,6 +299,21 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
                 tAccessibleViaFiles, tRemoveMVRows);
 
+        } else if (tType.equals("EDDTableFromAudioFiles")) { 
+            return new EDDTableFromAudioFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo,
+                tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
+                tDefaultDataQuery, tDefaultGraphQuery,  
+                tGlobalAttributes,
+                ttDataVariables,
+                tReloadEveryNMinutes, tUpdateEveryNMillis, 
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow, tColumnSeparator,
+                tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
+                tSortedColumnSourceName, tSortFilesBySourceNames, 
+                tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
+                tAccessibleViaFiles, tRemoveMVRows);
+
         } else if (tType.equals("EDDTableFromAwsXmlFiles")) {
             return new EDDTableFromAwsXmlFiles(tDatasetID, 
                 tAccessibleTo, tGraphsAccessibleTo,
@@ -591,7 +606,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -752,10 +767,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         columnNamesRow = tColumnNamesRow;
         firstDataRow = tFirstDataRow;
         columnSeparator = tColumnSeparator;
+
         preExtractRegex = tPreExtractRegex;
         postExtractRegex = tPostExtractRegex;
         extractRegex = tExtractRegex;
         columnNameForExtract = tColumnNameForExtract;
+
         sortedColumnSourceName = tSortedColumnSourceName;
         int ndv = tDataVariables.length;
 
@@ -1026,7 +1043,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             msg = "\nQuickRestart";
 
             //make the expected arrays based on info from a file
-            makeExpected(dirList, ftDirIndex, ftFileList, ftLastMod, ftSize);
+            makeExpected(tDataVariables, dirList, ftDirIndex, ftFileList, ftLastMod, ftSize);
 
         } else {
             //!doQuickRestart
@@ -1160,26 +1177,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             }
 
             //make the expected arrays based on info from a file
-            makeExpected(dirList, ftDirIndex, ftFileList, ftLastMod, ftSize);
+            makeExpected(tDataVariables, dirList, ftDirIndex, ftFileList, ftLastMod, ftSize);
 
-            //make arrays to hold addAttributes fillValue, missingValue 
-            // (so fake mv can be converted to NaN, so source min and max can be 
-            //  determined exclusive of missingValue)
-            //may be NaN
-            addAttFillValueNEC    = new double[sourceDataNamesNEC.size()]; //filled with 0's!
-            addAttMissingValueNEC = new double[sourceDataNamesNEC.size()];
-            Arrays.fill(addAttFillValueNEC, Double.NaN); //2014-07-21 now filled with NaN's  
-            Arrays.fill(addAttMissingValueNEC, Double.NaN);
-            for (int dvNec = 0; dvNec < sourceDataNamesNEC.size(); dvNec++) {
-                int dv = sourceDataNames.indexOf(sourceDataNamesNEC.get(dvNec));
-                Attributes tAddAtt = (Attributes)tDataVariables[dv][2];
-                //if ("depth".equals(sourceDataNamesNEC.get(dvNec)))
-                //    String2.log("depth addAtt=" + tAddAtt);
-                if (tAddAtt != null) {
-                    addAttFillValueNEC[   dvNec] = tAddAtt.getDouble("_FillValue");    //may be NaN
-                    addAttMissingValueNEC[dvNec] = tAddAtt.getDouble("missing_value"); //may be NaN
-                }
-            }
 
             //update fileTable  by processing tFileNamePA
             int fileListPo = 0;  //next one to look at
@@ -1680,7 +1679,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromFiles " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
 
     /** 
@@ -1688,8 +1687,29 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *
      * @return true if successful
      */
-    private boolean makeExpected(StringArray dirList, ShortArray ftDirIndex, 
+    private boolean makeExpected(Object[][] tDataVariables, 
+        StringArray dirList, ShortArray ftDirIndex, 
         StringArray ftFileList, LongArray ftLastMod, LongArray ftSize) {
+
+        //make arrays to hold addAttributes fillValue, missingValue 
+        // (so fake mv can be converted to NaN, so source min and max can be 
+        //  determined exclusive of missingValue)
+        //may be NaN
+        addAttFillValueNEC    = new double[sourceDataNamesNEC.size()]; //filled with 0's!
+        addAttMissingValueNEC = new double[sourceDataNamesNEC.size()];
+        Arrays.fill(addAttFillValueNEC, Double.NaN); //2014-07-21 now filled with NaN's  
+        Arrays.fill(addAttMissingValueNEC, Double.NaN);
+        for (int dvNec = 0; dvNec < sourceDataNamesNEC.size(); dvNec++) {
+            int dv = sourceDataNames.indexOf(sourceDataNamesNEC.get(dvNec));
+            Attributes tAddAtt = (Attributes)tDataVariables[dv][2];
+            //if ("depth".equals(sourceDataNamesNEC.get(dvNec)))
+            //    String2.log("depth addAtt=" + tAddAtt);
+            if (tAddAtt != null) {
+                addAttFillValueNEC[   dvNec] = tAddAtt.getDouble("_FillValue");    //may be NaN
+                addAttMissingValueNEC[dvNec] = tAddAtt.getDouble("missing_value"); //may be NaN
+            }
+        }            
+
         //make arrays to hold expected source add_offset, fillValue, missingValue, scale_factor, units
         expectedAddOffsetNEC    = new double[sourceDataNamesNEC.size()]; 
         expectedFillValueNEC    = new double[sourceDataNamesNEC.size()]; 
@@ -2309,7 +2329,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     }
                 } else { //minMaxPa is numeric 
                     edv.setDestinationMinMaxFromSource(
-                        minMaxPa.getDouble(0), minMaxPa.getDouble(1));
+                        minMaxPa.getDouble(0), 
+                        minMaxPa.getDouble(1));
                     edv.setActualRangeFromDestinationMinMax();
                 }
 
@@ -2790,12 +2811,14 @@ public abstract class EDDTableFromFiles extends EDDTable{
         for (int con = 0; con < nCon; con++) {
             int dv = cdvi[con];
             EDV edv = dataVariables[dv];
+            boolean isTimeStamp = edv instanceof EDVTimeStamp;
+            Class conEdvSourceClass = edv.sourceDataTypeClass();
             String tOp = conOps.get(con);
             //tValue initially: usually a source val, but time is epochSeconds
             String tValue = conValues.get(con);  
 
             //it EDVTimeStamp, convert tValue epochSeconds into source time string
-            if ((edv instanceof EDVTimeStamp) && !tOp.equals(PrimitiveArray.REGEX_OP)) {
+            if (isTimeStamp && !tOp.equals(PrimitiveArray.REGEX_OP)) {
                 double epSec = conValuesD[con];
 
                 //when testing whole dataset, ignore any constraints for today+/-2 days
@@ -2811,8 +2834,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             if (tOp.equals(PrimitiveArray.REGEX_OP)) {
                 //don't check regex vs minMaxTable. too simplistic.
-            } else if (edv.sourceDataTypeClass() == String.class) {
-                if (edv instanceof EDVTimeStamp &&
+            } else if (conEdvSourceClass == String.class) {
+                if (isTimeStamp &&
                     (!((EDVTimeStamp)edv).sourceTimeFormat().toLowerCase().startsWith("yyyy") ||
                      tValue.equals(edv.safeStringMissingValue()))) {
                     //don't check 
@@ -2840,10 +2863,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 double dsMax    = minMaxTable.getDoubleData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
                 double conValD = String2.parseDouble(conValues.get(con)); //if time, conValD is epochSeconds
-                double tValueD = edv.sourceDataTypeClass() == char.class?
+                double tValueD = conEdvSourceClass == char.class?
                     (tValue.length() == 0? Double.NaN : (double)tValue.charAt(0)) :
                     String2.parseDouble(tValue);             //if time, tValueD is a numeric source time
-                if (!isOK(dsMin, dsMax, dsHasNaN, tOp, tValueD)) {
+                if (!isOK(isTimeStamp? long.class : conEdvSourceClass, 
+                      dsMin, dsMax, dsHasNaN, tOp, tValueD)) {
                     reasonNotOk = 
                         "No data matches " +
                         edv.destinationName() + tOp + 
@@ -2868,7 +2892,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 keepCon = sourceCanConstrainStringRegex.length() > 0 &&
                           edv.destValuesEqualSourceValues();
 
-            } else if (edv instanceof EDVTimeStamp) {
+            } else if (isTimeStamp) {
                 keepCon = ((EDVTimeStamp)edv).sourceTimeIsNumeric(); //just keep numeric time constraints
                     
             } else {
@@ -2939,11 +2963,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 String op = conOps.get(con);
                 int dv = cdvi[con];
                 EDV edv = dataVariables[dv];
+                Class conEdvSourceClass = edv.sourceDataTypeClass();
                 if (op.equals(PrimitiveArray.REGEX_OP)) {
                     //only reject a file based on regex_op if file has just one String value
                     //(since numbers may be further processed)
-                    if (edv.sourceDataTypeClass() == char.class ||
-                        edv.sourceDataTypeClass() == String.class) {
+                    if (conEdvSourceClass == char.class ||
+                        conEdvSourceClass == String.class) {
                         String tMin = tFileTable.getStringData(dv0 + dv*3 + 0, f);
                         String tMax = tFileTable.getStringData(dv0 + dv*3 + 1, f);
                         int    tNaN = tFileTable.getIntData(   dv0 + dv*3 + 2, f); 
@@ -2965,7 +2990,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 } else if (edv instanceof EDVTimeStamp) {
                     //conValue is epochSeconds (not source time units), so convert fMin,fMax to epSeconds
                     EDVTimeStamp tdv = (EDVTimeStamp)edv;
-                    if (tdv.sourceDataTypeClass() == String.class &&
+                    if (conEdvSourceClass == String.class &&
                         (!tdv.sourceTimeFormat().toLowerCase().startsWith("yyyy") ||
                          Double.isNaN(conValuesD[con]))) {
                         //strings are sorted incorrectly by e.g., MM/dd/yyyy
@@ -2974,11 +2999,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         //so test all files
 
                     } else {
-                        //numeric timestamp, or yyyy-MM-dd String timestamp
+                        //numeric timestamp, or yyyy... String timestamp
                         double fMin = tdv.sourceTimeToEpochSeconds(tFileTable.getStringData(dv0 + dv*3 + 0, f));
                         double fMax = tdv.sourceTimeToEpochSeconds(tFileTable.getStringData(dv0 + dv*3 + 1, f));
                         int    fNaN = tFileTable.getIntData(dv0 + dv*3 + 2, f);
-                        //in min/max String times are invalid, act as if far in past/future
+                        //if min/max String times are invalid, act as if far in past/future
                         if (Double.isNaN(fMin))  
                             fMin = -1e100;
                         if (Double.isNaN(fMax))
@@ -2996,7 +3021,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
                             fMax = secondsNowP4;
                         }
 
-                        if (!isOK(fMin, fMax, fNaN, op, conValuesD[con])) { //test w epochSeconds
+                        //String2.log(">> test file=" + f + " fMin=" + fMin + " fMax=" + fMax + " op='" + op + "' conValuesD[con]=" + conValuesD[con]);
+                        if (!isOK(String.class, //test all times with full precision
+                            fMin, fMax, fNaN, op, conValuesD[con])) { //test w epochSeconds
                             if (reallyVerbose) 
                                 String2.log("file " + f + 
                                     " rejected because failed time test " +
@@ -3009,8 +3036,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         }                  
                     }
 
-                } else if (edv.sourceDataTypeClass() == char.class ||
-                           edv.sourceDataTypeClass() == String.class) {
+                } else if (conEdvSourceClass == char.class ||
+                           conEdvSourceClass == String.class) {
                     //String variables
                     String fMin = tFileTable.getStringData(dv0 + dv*3 + 0, f);
                     String fMax = tFileTable.getStringData(dv0 + dv*3 + 1, f);
@@ -3032,7 +3059,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     double fMin = tFileTable.getDoubleData(dv0 + dv*3 + 0, f); 
                     double fMax = tFileTable.getDoubleData(dv0 + dv*3 + 1, f); 
                     int    fNaN = tFileTable.getIntData(   dv0 + dv*3 + 2, f);
-                    if (!isOK(fMin, fMax, fNaN, op, conValuesD[con])) {
+                    if (!isOK(conEdvSourceClass, fMin, fMax, fNaN, op, conValuesD[con])) {
                         if (reallyVerbose) 
                             String2.log("file " + f + 
                                 " rejected because failed numeric test " +
@@ -3137,6 +3164,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     EDStatic.caughtInterrupted);
         
             if (reallyVerbose) String2.log("#" + f + " get data from " + tDir + tName);
+
+            //FUTURE: I think file access could be parallelized for use on parallel file systems.
+            //It is likely "easy" with a CompletableFuture option. See
+            //http://www.nurkiewicz.com/2013/05/java-8-definitive-guide-to.html
+            //http://www.vogella.com/tutorials/JavaConcurrency/article.html#threads-pools-with-the-executor-framework
             try {
                 //file may be unavailable while being updated
                 table = getSourceDataFromFile(tDir, tName,
@@ -3314,13 +3346,16 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * given a min and a max value for a given file (or the whole dataset),
      * this returns true if the file may have data matching opIndex,opValue.
      *
+     * @param tClass tClass is only used as in indicator of precision.
+     *   If you want the full precision, use long.class. 
      * @param min if no valid values, this should be NaN
      * @param max if no valid values, this should be NaN
      * @param hasNaN 0=false 1=true
      * @param conOp    Must *not* be PrimitiveArray.REGEX_OP  
      * @param conValue the constaintValue
      */
-    public static boolean isOK(double min, double max, int hasNaN, String conOp, double conValue) {
+    public static boolean isOK(Class tClass, double min, double max, int hasNaN, 
+        String conOp, double conValue) {
         //THE SPECIAL TESTS REQUIRE LOTS OF THOUGHT!!!
         //String2.log(">> isOK file min=" + min + " max=" + max + " op=" + conOp + " conVal=" + conValue);
 
@@ -3342,11 +3377,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }
 
         //0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"};         
-        //this does strict comparisons (hard to use AlmostEqual, GAE, LAE)
-        //precision=5 significant figures
-        //not very precise so works with floats and doubles; for time, this is ~28 hours
-        //but that's okay, better to say okay here (and fail later)
-        int p = 5;
+        //precision=5, 9, or 18 (full) significant figures
+        int p = tClass == float.class? 5 :
+                tClass == double.class? 9 : 18;  //18 (full) for integer types, char and String (dates)
         if (conOp.equals("!=")) {
             if (min == max && min == conValue) return false;    //be strict to reject
         //PrimitiveArray.REGEX_OP is handled by String isOK
@@ -3402,34 +3435,84 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
 
         //simple tests  numeric       
-        Test.ensureEqual(isOK(2, 4, 0,  "=", 3), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "=", 0), false, ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "!=", 3), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "!=", 0), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", 6), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", 3), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", 2), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", 1.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", 0), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "<", 6), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "<", 3), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "<", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "<", 2), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "<", 1.9999999999), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  "<", 0), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, ">=", 6), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, ">=", 4.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, ">=", 4), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, ">=", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, ">=", 3), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, ">=", 0), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  ">", 6), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  ">", 4.0000000001), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  ">", 4), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  ">", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  ">", 3), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0,  ">", 0), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "=", 3), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "=", 0), false, ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "=", 1.99999), false,  "");  //important
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "=", 1.999999), true,  "");  //important
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "!=", 3), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "!=", 0), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 6), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 3), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 2), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 1.99999), false,  "");  //important
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 1.999999), true,  "");  //important
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", 0), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", 6), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", 3), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", 2), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", 0), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 6), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 4.0001), false,  ""); //important
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 4.00001), true,  ""); //important
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 4), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 3), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", 0), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", 6), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", 4), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", 3), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", 0), true,  ""); 
+
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  "=", 1.99999999), false,  "");  //important
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  "=", 1.999999999), true,  "");  //important
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, "<=", 2), true,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, "<=", 1.99999999), false,  ""); //important
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, "<=", 1.999999999), true,  ""); //important
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  "<", 2), false,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, ">=", 4.00000001), false,  ""); //important
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, ">=", 4.000000001), true,  ""); //important
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, ">=", 4), true,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  ">", 4), false,  ""); 
+        Test.ensureEqual(isOK(double.class, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
+        
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  "=", 1.9999999999999), false,  "");  //important
+        Test.ensureEqual(isOK(int.class, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0, "<=", 2), true,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0, "<=", 1.9999999999999), false,  ""); //important
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  "<", 2), false,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0, ">=", 4.0000000000001), false,  ""); //important
+        Test.ensureEqual(isOK(int.class, 2, 4, 0, ">=", 4), true,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  ">", 4), false,  ""); 
+        Test.ensureEqual(isOK(int.class, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
+        
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  "=", 1.9999999999999), false,  "");  //important
+        Test.ensureEqual(isOK(String.class, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0, "<=", 2), true,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0, "<=", 1.9999999999999), false,  ""); //important
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  "<", 2), false,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0, ">=", 4.0000000000001), false,  ""); //important
+        Test.ensureEqual(isOK(String.class, 2, 4, 0, ">=", 4), true,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  ">", 4), false,  ""); 
+        Test.ensureEqual(isOK(String.class, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
+        
         Test.ensureEqual(isOK("2", "4", 0,  ROP, "(5)"), true,  ""); 
         Test.ensureEqual(isOK("2", "2", 0,  ROP, "(2)"), true,   ""); //only really tests if min=max
         Test.ensureEqual(isOK("2", "2", 0,  ROP, "(5)"), false,  ""); //only really tests if min=max
@@ -3445,12 +3528,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Test.ensureEqual(isOK("a", "a", 0,  ROP, ""), false,  ""); //only really tests if min=max
 
         //value=NaN tests  numeric    hasNaN=0=false   
-        Test.ensureEqual(isOK(2, 4, 0,  "=", Double.NaN), false,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "!=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 0, "<=", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(2, 4, 0,  "<", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(2, 4, 0, ">=", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(2, 4, 0,  ">", Double.NaN), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "=", Double.NaN), false,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "!=", Double.NaN), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, "<=", Double.NaN), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  "<", Double.NaN), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, 2, 4, 0, ">=", Double.NaN), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, 2, 4, 0,  ">", Double.NaN), false,  ""); //NaN tests other than = != return false
         Test.ensureEqual(isOK("2", "4", 0,  ROP, ""), true,  ""); 
         Test.ensureEqual(isOK("2", "2", 0,  ROP, ""), false,   ""); //only really tests if min=max
 
@@ -3465,12 +3548,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Test.ensureEqual(isOK("a", "a", 1,  ROP, ""), true,  ""); //only really tests if min=max
 
         //value=NaN tests  numeric    hasNaN=1=true
-        Test.ensureEqual(isOK(2, 4, 1,  "=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 1, "!=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(2, 4, 1, "<=", Double.NaN), true,  ""); // =
-        Test.ensureEqual(isOK(2, 4, 1,  "<", Double.NaN), false, ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(2, 4, 1, ">=", Double.NaN), true,  ""); // =
-        Test.ensureEqual(isOK(2, 4, 1,  ">", Double.NaN), false, ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, 2, 4, 1,  "=", Double.NaN), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 1, "!=", Double.NaN), true,  ""); 
+        Test.ensureEqual(isOK(float.class, 2, 4, 1, "<=", Double.NaN), true,  ""); // =
+        Test.ensureEqual(isOK(float.class, 2, 4, 1,  "<", Double.NaN), false, ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, 2, 4, 1, ">=", Double.NaN), true,  ""); // =
+        Test.ensureEqual(isOK(float.class, 2, 4, 1,  ">", Double.NaN), false, ""); //NaN tests other than = != return false
         Test.ensureEqual(isOK("2", "4", 1,  ROP, ""), true,  ""); 
         Test.ensureEqual(isOK("2", "2", 1,  ROP, ""), true,   ""); //only really tests if min=max
 
@@ -3486,12 +3569,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Test.ensureEqual(isOK("", "", 1,  ROP, "(c)"), false,  ""); //only really tests if min=max
 
         //DATA IS ALL ""   value=5 tests  numeric    
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1,  "=", 5), false,  ""); 
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1, "!=", 5), true,  ""); 
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1, "<=", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1,  "<", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1, ">=", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1,  ">", 5), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1,  "=", 5), false,  ""); 
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1, "!=", 5), true,  ""); 
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1, "<=", 5), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1,  "<", 5), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1, ">=", 5), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1,  ">", 5), false,  ""); //NaN tests other than = != return false
         Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,  ""); 
         Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,   ""); //only really tests if min=max
 
@@ -3505,12 +3588,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,  ""); //only really tests if min=max
 
         //DATA IS ALL ""   value=NaN tests  numeric    hasNaN=1=true
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1,  "=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1, "!=", Double.NaN), false,  ""); 
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1, "<=", Double.NaN), true,   ""); // =
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1,  "<", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1, ">=", Double.NaN), true,   ""); // =
-        Test.ensureEqual(isOK(Double.NaN, Double.NaN, 1,  ">", Double.NaN), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1,  "=", Double.NaN), true,  ""); 
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1, "!=", Double.NaN), false,  ""); 
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1, "<=", Double.NaN), true,   ""); // =
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1,  "<", Double.NaN), false,  ""); //NaN tests other than = != return false
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1, ">=", Double.NaN), true,   ""); // =
+        Test.ensureEqual(isOK(float.class, Double.NaN, Double.NaN, 1,  ">", Double.NaN), false,  ""); //NaN tests other than = != return false
         Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,   ""); //only really tests if min=max
 
     }

@@ -56,17 +56,20 @@ public class TestSSR {
         */
 
         //percentDecode(String query) 
-        Test.ensureEqual(SSR.minimalPercentEncode("+ :q*~?=&%"), 
-            "%2B%20%3Aq*~%3F%3D%26%25", "");
-        Test.ensureEqual(SSR.percentEncode(       "+ :q*~?=&%"), 
-            "%2B+%3Aq*%7E%3F%3D%26%25", ""); //I don't like +    It encodes ~
+        String s = "~`!@#$%^&*()_-+=|\\{[}]:;\"'<,>.?/ a\nA°1"; //after A is degree #176/B0
+        Test.ensureEqual(SSR.percentEncode(s),                  //it is utf-8'd then % encoded
+            //note that I modified Java code so ' ' becomes %20, not +
+            "%7E%60%21%40%23%24%25%5E%26*%28%29_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01",
+            ""); //It encodes ~!*()' 
+        Test.ensureEqual(SSR.minimalPercentEncode(s),//                                        
+            "~%60!%40%23%24%25%5E%26*()_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22'%3C%2C%3E.%3F%2F%20a%0AA%C2%B01", "");
         Test.ensureEqual(SSR.percentDecode("%2B%20%3Aq*~%3F%3D%26%25"), "+ :q*~?=&%", "");
 
-        String s = "AZaZ09 \t\r\n`";
+        s = "AZaZ09 \t\r\n`";
         Test.ensureEqual(SSR.minimalPercentEncode(s), 
             "AZaZ09%20%09%0D%0A%60", "");
         Test.ensureEqual(SSR.percentEncode(s), 
-            "AZaZ09+%09%0D%0A%60", ""); //I don't like +
+            "AZaZ09%20%09%0D%0A%60", ""); 
         Test.ensureEqual(SSR.percentDecode("AZaZ09%20%09%0D%0A%60"), s, "");
 
         s = "~!@#$%^&*()";
@@ -190,7 +193,7 @@ public class TestSSR {
         String[] results = String2.readFromFile(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");
-        String2.log("zip+unzip time=" + (time1 + time2) + "  (Java 1.7M4700 967ms, 1.6 4000-11000ms)");
+        String2.log("zip+unzip time=" + (time1 + time2) + "ms  (Java 1.7M4700 967ms, 1.6 4000-11000ms)");
         File2.delete(zipDir + zipName);
         File2.delete(zipDir + fileName);
 
@@ -214,7 +217,7 @@ public class TestSSR {
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");  
         String2.log("zip+unzip (w directory info) time=" + (time1 + time2) + 
-            "  (Java 1.7M4700 937, 1.6 ~4000-11000ms)");
+            "ms  (Java 1.7M4700 937, 1.6 ~4000-11000ms)");
         File2.delete(zipDir + zipName);
         File2.delete(zipDir + fileName);
 
@@ -243,7 +246,7 @@ public class TestSSR {
             Test.ensureEqual(results[0], "", "SSR.gz b");
             Test.ensureEqual(results[1], longText, "SSR.z c");
             String2.log("gzip+ungzip time=" + (time1 + time2) + 
-                "  (Java 1.7M4700 780-880ms, 1.6 ~4000-11000ms)"); 
+                "ms  (Java 1.7M4700 780-880ms, 1.6 ~4000-11000ms)"); 
             File2.delete(gzipDir + gzipName);
             File2.delete(gzipDir + fileName);
         }
@@ -254,7 +257,7 @@ public class TestSSR {
         //future: test various compressed url's
         String2.log("test getURLResponse");
         try {
-            sar = SSR.getUrlResponse("https://www.pfeg.noaa.gov/"); //"http://www.cohort.com");
+            sar = SSR.getUrlResponseLines("https://www.pfeg.noaa.gov/"); //"http://www.cohort.com");
             Test.ensureEqual(
                 String2.lineContaining(sar, "Disclaimer and Privacy Policy") == -1, //"A free RPN scientific calculator applet") == -1,
                 false, "Response=" + String2.toNewlineString(sar));
@@ -266,10 +269,10 @@ public class TestSSR {
         //test non-existent file
         long rTime = System.currentTimeMillis();
         try {
-            sar = SSR.getUrlResponse("http://coastwatch.pfeg.noaa.gov/zzz.html");
+            sar = SSR.getUrlResponseLines("http://coastwatch.pfeg.noaa.gov/zzz.html");
             throw new Throwable("shouldn't get here.");
         } catch (Exception e) { //not throwable
-            String2.log("SSR.getUrlResponse for non existent url time=" + (System.currentTimeMillis() - rTime));
+            String2.log("SSR.getUrlResponse for non existent url time=" + (System.currentTimeMillis() - rTime) + "ms");
             //String2.pressEnterToContinue();
         } catch (Throwable t) {
             Test.error(t.toString()); //converts it to Exception and stops the testing
@@ -279,7 +282,7 @@ public class TestSSR {
         //but you can put as many params on one line as needed (from any screen)
         //and put edit=... to determine which screen gets returned
         try {
-            sar = SSR.getUrlResponse("http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
+            sar = SSR.getUrlResponseLines("http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp?edit=Grid+Data");
             String2.log("****beginResponse\n" + String2.toNewlineString(sar) + "\n****endResponse");
             Test.ensureNotEqual(String2.lineContaining(sar, "Download the grid data:"), -1, "e");
         } catch (Exception e) {

@@ -1,45 +1,46 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-  "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="en-US">
 <head>
 <title>ERDDAP - Heavy Loads, Grids, Clusters, Federations, and Cloud Computing</title>
+<meta charset="UTF-8">
 <link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
-<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+<link href="../images/erddap2.css" rel="stylesheet" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body> 
-<table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
+<table class="compact nowrap" style="width:100%; background-color:#128CB5;"> 
   <tr> 
-    <td align="center" style="width:100px;"> &nbsp;
-      <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
+    <td style="text-align:center; width:80px;"><a rel="bookmark"
+      href="http://www.noaa.gov/"><img 
+      title="National Oceanic and Atmospheric Administration" 
+      src="../images/noaab.png" alt="NOAA"
+      style="vertical-align:middle;"></a></td> 
+    <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
+      <strong>ERDDAP</strong>
+      <br><small><small><small>Easier access to scientific data</small></small></small>
       </td> 
-    <td align="left">
-      <font color="#FFFFFF">
-      <font size="+2"><b>ERDDAP</b></font>
-      <br>Easier access to scientific data</font>
-      </td> 
-    <td align="right"><font size="-1"> 
-      <br>Brought to you by 
-      <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
-      <a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
-      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>  
-      <a title="Environmental Research Division" rel="bookmark" href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+    <td style="text-align:right; font-size:small;"> 
       &nbsp; &nbsp;
-      </font></td> 
+      <br>Brought to you by 
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
+      href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service" rel="bookmark"
+      href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark"
+      href="https://swfsc.noaa.gov">SWFSC</a> 
+      <a title="Environmental Research Division" rel="bookmark"
+      href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      &nbsp; &nbsp;
+      </td> 
   </tr> 
 </table>
 
-<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
-  cellspacing="0"> 
-<tr>
-<td>
+<div class="standard_width"> 
 
 &nbsp;
-<form action="">
-<input type="button" value="Back" onClick="history.go(-1);return true;">
-</form>
 
-<h1 align="center">ERDDAP: 
+<h1 style="text-align:center">ERDDAP: 
 <br>
 <a href="#heavyLoads">Heavy Loads</a>, 
 <a href="#grids">Grids, Clusters, Federations</a>, 
@@ -57,19 +58,19 @@ This web page discusses issues related to heavy ERDDAP usage loads
 and explores possibilities for dealing with extremely heavy loads 
 via grids, clusters, federations, and cloud computing.
 
-<p><a name="disclaimer"><b>DISCLAIMER</b></a> - 
+<p><a class="selfLink" id="disclaimer" href="#disclaimer" rel="bookmark"><strong>DISCLAIMER</strong></a> - 
 The contents of this web page are my (Bob Simons) personal opinions and
 do not necessarily reflect any position of the
 Government or the National Oceanic and Atmospheric Administration.
 The calculations are simplistic, but I think the conclusions are correct.
 Did I use faulty logic or make a mistake in my calculations? 
 If so, the fault is mine alone. 
-Please send an email with the correction to <tt>bob dot simons at noaa dot gov</tt>.
+Please send an email with the correction to <kbd>bob dot simons at noaa dot gov</kbd>.
 The original version was written in June 2009. There have been no significant 
 changes. This was last updated 2015-06-25.
 
 <!-- ******* -->
-<h2><a name="heavyLoads">Heavy Loads / Constraints</a></h2> 
+<h2><a class="selfLink" id="heavyLoads" href="#heavyLoads" rel="bookmark">Heavy Loads / Constraints</a></h2> 
 With heavy use, a standalone ERDDAP will be constrained (from most to least likely) by:
   <ol>
   <li>A remote data source's bandwidth - 
@@ -85,7 +86,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     connection, ERDDAP's responses will be constrained by how fast ERDDAP can get data from
     the data sources and how fast ERDDAP can return data to the clients. The only solution
     is to get a faster Internet connection.
-  <li><a name="memory">Memory</a> - 
+  <li><a class="selfLink" id="memory" href="#memory" rel="bookmark">Memory</a> - 
      If there are many simultaneous requests, ERDDAP can run out of memory 
      and temporarily refuse new requests. 
      (ERDDAP has a couple of mechanisms to avoid this and to minimize the 
@@ -100,7 +101,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      for ERDDAP/Tomcat.     
      An ERDDAP getting heavy usage on a computer with a 64-bit server
      with 8GB of memory and -Xmx set to 4000M is rarely, if ever, constrained by memory.
-  <li><a name="hardDriveBandwidth">Hard drive bandwidth</a> - 
+  <li><a class="selfLink" id="hardDriveBandwidth" href="#hardDriveBandwidth" rel="bookmark">Hard drive bandwidth</a> - 
      Accessing data stored on the server's hard drive 
      is vastly faster than 
      accessing remote data. Even so, if the ERDDAP server has a very high 
@@ -111,17 +112,18 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      or SSD drives (if it makes
      sense cost-wise). Another solution is to store different datasets
      on different drives, so that the cumulative hard drive bandwidth is much higher.
-  <li><a name="tooManyFiles">Too many files</a>
+  <li><a class="selfLink" id="tooManyFiles" href="#tooManyFiles" rel="bookmark">Too many files</a>
     in a <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory - 
      ERDDAP caches all images, but only caches the 
      data for certain types of data requests. It is possible for the cache directory for a 
      dataset to have a large number of files temporarily. This will slow down requests to see 
-     if a file is in the cache (really!). <tt>&lt;cacheMinutes&gt;</tt> in 
+     if a file is in the cache (really!). <kbd>&lt;cacheMinutes&gt;</kbd> in 
        <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
        lets you set how 
      long a file can be in the cache before it is deleted. Setting a smaller 
      number would minimize this problem.
-  <li><a name="CPU">CPU</a> - Only two things take a lot of CPU time:
+  <li><a class="selfLink" id="CPU" href="#CPU" rel="bookmark">CPU</a> - 
+    Only two things take a lot of CPU time:
     <ul>
     <li>NetCDF 4 and HDF 5 now support internal compression of data.
       Decompressing a large compressed NetCDF 4 / HDF 5 data file can take 10 
@@ -139,7 +141,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   </ol>
 
 
-<h2><a name="grids"><b>Grids, Clusters, and Federations</b></a></h2> 
+<h2><a class="selfLink" id="grids" href="#grids" rel="bookmark"><strong>Grids, Clusters, and Federations</strong></a></h2> 
   Under very heavy use, a single standalone ERDDAP will run into one or more of the 
     <a href="#heavyLoads">constraints</a> listed 
   above and even the suggested solutions will be insufficient.  For such situations, 
@@ -149,12 +151,12 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
 
   <p>I'm using 
     <a href="https://en.wikipedia.org/wiki/Grid_computing">grid<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>
   as a general term to indicate a type of  
     <a href="https://en.wikipedia.org/wiki/Computer_cluster">computer cluster<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>
   where all of the
   parts may or may not be physically located in one facility and may or may not be centrally 
   administered. An advantage of co-located, centrally owned and administered grids (clusters) 
@@ -171,16 +173,16 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     part of the system linearly (efficiency of scaling). The system isn't scalable unless
     there is a scalable solution for every bottleneck.  
     <a href="https://en.wikipedia.org/wiki/Scalability">Scalability<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a> 
     is different from efficiency (how quickly a task can be done -- efficiency    
     of the parts).  Scalability allows the system to grow to handle any level of demand.
-    <b>Efficiency</b> (of scaling and of the parts) determines how may servers, etc., will be needed
+    <strong>Efficiency</strong> (of scaling and of the parts) determines how may servers, etc., will be needed
     to meet a given level of demand. Efficiency is very important, but always has limits.
-    Scalability is the only practical solution to building a system that can handle <b>very</b>
+    Scalability is the only practical solution to building a system that can handle <strong>very</strong>
     heavy use. Ideally, the system will be scalable and efficient.
 
-  <p><a name="goals">The goals of this design are:</a>
+  <p><a class="selfLink" id="goals" href="#goals" rel="bookmark">The goals of this design are:</a>
   <ul>
   <li>To make a scalable architecture 
     (one that is easily extensible by replicating any part that
@@ -202,11 +204,11 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     or other external services (because it doesn't need them).
   </ul>  
 
-  <p><a name="recommendations">Our recommendations are:</a>
-    <br><img src="https://coastwatch.pfeg.noaa.gov/erddap/download/cluster.png" alt="grid/cluster diagram" align="middle">
+  <p><a class="selfLink" id="recommendations" href="#recommendations" rel="bookmark">Our recommendations are:</a>
+    <br><img src="https://coastwatch.pfeg.noaa.gov/erddap/download/cluster.png" alt="grid/cluster diagram" style="vertical-align:middle">
   <ul>
   <li>Basically, I suggest setting up a Composite ERDDAP 
-    (<b>D</b> in the diagram), which is a
+    (<strong>D</strong> in the diagram), which is a
     regular ERDDAP except that it just serves data from other ERDDAPs. 
     The grid's architecture
     is designed to shift as much work as possible
@@ -221,8 +223,8 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   <li>When the composite ERDDAP receives a request for data or images from 
     these datasets, the composite ERDDAP 
     <a href="https://en.wikipedia.org/wiki/URL_redirection">redirects<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>
        the data request to the other ERDDAP server. The result is:
     <ul>
     <li>This is very efficient (CPU, memory, and bandwidth), because otherwise 
@@ -243,9 +245,9 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     </ul>
   </ul>
 
-  <p><a name="gridParts">The parts of the grid are:</a>
+  <p><a class="selfLink" id="gridParts" href="#gridParts" rel="bookmark">The parts of the grid are:</a>
   
-  <p><b><font color="#0000FF">A</font></b>) For every remote data source that 
+  <p><strong><span style="color:#0000FF;">A</span></strong>) For every remote data source that 
     has a high-bandwidth OPeNDAP server, you can connect directly 
     to the remote server. 
     If the remote server is an ERDDAP, use EDDGridFromErddap or
@@ -253,7 +255,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     If the remote server is some other type of DAP server, 
       e.g., THREDDS, Hyrax, or GrADS, use EDDGridFromDap. 
 
-  <p><b><font color="#0000FF">B</font></b>) For every ERDDAP-able data source 
+  <p><strong><span style="color:#0000FF;">B</span></strong>) For every ERDDAP-able data source 
     (a data source from which ERDDAP
     can read data) that has a high-bandwidth server, set up another ERDDAP in 
     the grid which
@@ -269,16 +271,16 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
        source (which is self-defeating) and also prevent other users 
        from accessing the remote data source (which isn't nice). 
        In such a case, consider setting up another ERDDAP to serve that
-       one dataset and copy the dataset on that ERDDAP's hard drive (see <b>C</b>), 
+       one dataset and copy the dataset on that ERDDAP's hard drive (see <strong>C</strong>), 
        perhaps with 
        
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
-     <li><b>B</b> servers must be publicly accessible.
+     <li><strong>B</strong> servers must be publicly accessible.
      </ul>
 
-  <p><b><font color="#0000FF">C</font></b>) For every ERDDAP-able data source 
+  <p><strong><span style="color:#0000FF;">C</span></strong>) For every ERDDAP-able data source 
     that has a low-bandwidth server
     (or is a slow service for other reasons), 
     consider setting up another ERDDAP and storing a copy of the dataset
@@ -288,9 +290,9 @@ and/or
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
      If several such ERDDAPs
     aren't getting many requests for data, you can consolidate them into one ERDDAP. 
-    <br><b>C</b> servers must be publicly accessible.
+    <br><strong>C</strong> servers must be publicly accessible.
 
-  <p><b><font color="#0000FF">D</font></b>) The composite ERDDAP is a regular 
+  <p><strong><span style="color:#0000FF;">D</span></strong>) The composite ERDDAP is a regular 
   ERDDAP except that it just serves data from other ERDDAPs. 
     <ul>
     <li>Because the composite ERDDAP has information in memory about all of the 
@@ -326,16 +328,16 @@ and/or
     <li>[For a fascinating design of a high performance system running on one server, 
         see
       <a href="http://www.pbs.org/cringely/pulpit/2008/pulpit_20080728_005308.html">Cringely's overview<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>
       or the <a href="http://mailinator.blogspot.com/2007/01/architecture-of-mailinator.html">detailed description of Mailinator<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>.]
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>.]
     </ul>
 
-  <p><a name="copy">Datasets In Very High Demand</a> - 
+  <p><a class="selfLink" id="copy" href="#copy" rel="bookmark">Datasets In Very High Demand</a> - 
     In the really unusual case that one of the 
-    <b>A</b>, <b>B</b>, or <b>C</b> ERDDAPs 
+    <strong>A</strong>, <strong>B</strong>, or <strong>C</strong> ERDDAPs 
       can't keep up with the requests because of bandwidth or hard drive limitations, 
       it makes sense to copy the data (again) on to another server+hardDrive+ERDDAP,
       perhaps with
@@ -351,28 +353,28 @@ and/or
       appear as separate datasets in the composite ERDDAP.  
       Users are used to seeing lists of
       <a href="https://en.wikipedia.org/wiki/Website#mirror_site">mirror sites<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>
       at popular file download sites, so this shouldn't surprise or disappoint them.
       Because of bandwidth limitations at a given site, it may make sense to have the mirror
       located at another site. If the mirror copy is at a different data center, accessed just
       by that data center's composite ERDDAP, the different titles (e.g., "mirror #1) aren't
       necessary.
 
-  <p><a name="hardDrives">RAIDs vs. Regular Hard Drives</a> - 
+  <p><a class="selfLink" id="hardDrives" href="#hardDrives" rel="bookmark">RAIDs vs. Regular Hard Drives</a> - 
     If a large dataset or a group of datasets are not heavily used,
     it may make sense to store the data on a RAID since it offers fault tolerance and since
     you don't need the processing power or bandwidth of another server. But if a dataset is
     heavily used, it may make more sense to copy the data on another server + ERDDAP + hard
     drive (similar to 
     <a href="http://storagemojo.com/2007/02/19/googles-disk-failure-experience/">what Google does<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>)
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>)
     rather than to use one server and a RAID to store
     multiple datasets since you get to use both server+hardDrive+ERDDAPs in the grid until
     one of them fails.
 
-  <p><a name="failures">Failures</a> - What happens if...
+  <p><a class="selfLink" id="failures" href="#failures" rel="bookmark">Failures</a> - What happens if...
   <ul>
   <li>There is a burst of requests for one dataset (e.g., all students in a class
     simultaneously request similar data)? 
@@ -381,7 +383,7 @@ and/or
     affected. Since the limiting factor for a given dataset within the system is the hard
     drive with the data (not ERDDAP), the only solution (not immediate) is to make a copy
     of the dataset on a different server+hardDrive+ERDDAP.
-  <li>An <b>A</b>, <b>B</b>, or <b>C</b> ERDDAP fails (e.g., hard drive failure)? 
+  <li>An <strong>A</strong>, <strong>B</strong>, or <strong>C</strong> ERDDAP fails (e.g., hard drive failure)? 
       <br>Only the dataset(s) served by that ERDDAP are affected. 
       If the dataset(s) is mirrored on another server+hardDrive+ERDDAP, the effect is minimal.
       If the problem is a hard drive failure in a level 5 or 6 RAID, you just replace the
@@ -389,17 +391,17 @@ and/or
   <li>The composite ERDDAP fails?
       <br>If you want to make a system with very 
       <a href="https://en.wikipedia.org/wiki/High_availability">high availability<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>, 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>, 
       you can set up multiple composite ERDDAPs, 
       using something like
       <a href="https://www.nginx.com/">NGINX<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>
       or
       <a href="https://traefik.io/">Traefik<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>
       to handle load balancing.
       Note that a given composite ERDDAP can handle a large number of requests
       from a large number of users, because 
@@ -408,14 +410,16 @@ and/or
       <br>requests for data (which may be large) are redirected to the child ERDDAPs.  
   </ul>
 
-  <p><a name="simple">Simple,</a> <a name="scalable">Scalable</a>
+  <p><a class="selfLink" id="simple" href="#simple" rel="bookmark">Simple,</a> 
+     <a class="selfLink" id="scalable" href="#scalable" rel="bookmark">Scalable</a>
     - This system is easy to set up and administer, 
     and easily extensible when
     any part of it becomes over-burdened. The only real limitation for a given data center
     is the data center's bandwidth.
 
-  <p><a name="bandwidth">Bandwidth</a> - Note the approximate bandwidth of commonly used components of the system: 
-    <table class="erd" bgcolor="#FFFFCC" cellspacing="0">
+  <p><a class="selfLink" id="bandwidth" href="#bandwidth" rel="bookmark">Bandwidth</a> - 
+    Note the approximate bandwidth of commonly used components of the system: 
+    <table class="erd" style="background-color=#FFFFCC;">
       <tr><th>Component</th><th>Approximate Bandwidth (GBytes/s)</th></tr>
       <tr><td>DDR memory</td><td>2.5</td></tr>
       <tr><td>SSD drive</td><td>1</td></tr>
@@ -434,8 +438,8 @@ and/or
       (Yes, these calculations are based on pushing the system to its limits, 
       which is not good because it leads to very sluggish responses. 
       But these calculations are useful for planning and for balancing parts of the system.)
-      <b>Clearly, a suitably fast Internet connection for your data center is 
-      by far the most expensive part of the system.</b>
+      <strong>Clearly, a suitably fast Internet connection for your data center is 
+      by far the most expensive part of the system.</strong>
       You can easily and relatively cheaply build a grid with a dozen servers 
       running a dozen ERDDAPs 
       which is capable of pumping out lots of data quickly, 
@@ -463,12 +467,12 @@ and/or
     offer all the Internet bandwidth
     you need, but don't solve the price problem.
 
-<p><a name="Nygard">For</a> general information on designing scalable,
-  high capacity, fault-tolerant systems, 
+<p><a class="selfLink" id="Nygard" href="#Nygard" rel="bookmark">For general information on designing scalable,
+  high capacity, fault-tolerant systems,</a> 
   see Michael T. Nygard's book 
       <a href="http://www.amazon.com/Release-Production-Ready-Software-Pragmatic-Programmers/dp/0978739213">Release It<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>.
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."></a>.
 
 <p>[These are my opinions. 
 Yes, the calculations are simplistic, but I think the conclusions are correct.
@@ -478,18 +482,18 @@ Please send an email with the correction to bob dot simons at noaa dot gov.]
 
 
 <!-- ******* -->
-<h2><a name="cloudComputing"><b>Cloud Computing</b></a></h2> 
+<h2><a class="selfLink" id="cloudComputing" href="#cloudComputing" rel="bookmark"><strong>Cloud Computing</strong></a></h2> 
 Several companies offer cloud computing services 
     (e.g., <a href="http://aws.amazon.com/">Amazon Web Services<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>
       and
       <a href="https://cloud.google.com/">Google Cloud Platform<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>).
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>).
       <a href="https://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a> 
       have offered simpler services since the mid-1990's,
       but the "cloud" services have greatly expanded the flexibility 
       of the systems and the range of services offered. 
@@ -519,8 +523,8 @@ Several companies offer cloud computing services
       (in absolute terms; not that it isn't a good value). 
       The prices listed here are for 
       <a href="http://aws.amazon.com/ec2/pricing">Amazon EC2<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>.
       These prices (as of June 2015) will come down. 
       <br>In the past, prices were higher,
         but data files and the number of requests were smaller.
@@ -554,7 +558,7 @@ Several companies offer cloud computing services
         it is that we are using and buying a lot of the service.)
         <br>&nbsp;
       </ul>
-    <li><a name="subsetting">The subsetting problem:</a>
+    <li><a class="selfLink" id="subsetting" href="#subsetting" rel="bookmark">The subsetting problem:</a>
       The only way to efficiently distribute data from data files 
       is to have the program which is distributing the data (e.g., ERDDAP) running on
       a server which has the data stored on a local hard drive 
@@ -573,31 +577,30 @@ Several companies offer cloud computing services
     </ul>  
 
 
-<p><b>Thanks</b> - 
+<p><strong>Thanks</strong> - 
   Many thanks to Matthew Arrott and his group in the original OOI effort 
   for their work on putting ERDDAP in
   the cloud and the resulting discussions.
 
 <!-- ******* -->
-<hr><h2><a name="contact">Contact</a></h2>
+<hr><h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
 The contents of this web page are my (Bob Simons) personal opinions and
 do not necessarily reflect any position of the
 Government or the National Oceanic and Atmospheric Administration.
 The calculations are simplistic, but I think the conclusions are correct.
 Did I use faulty logic or make a mistake in my calculations? If so, the fault is mine alone. 
-Please send an email with the correction to <tt>bob dot simons at noaa dot gov</tt>.
+Please send an email with the correction to <kbd>bob dot simons at noaa dot gov</kbd>.
 
 <p>Questions, comments, suggestions?  Please send an email to 
-  <tt>bob dot simons at noaa dot gov</tt>
+  <kbd>bob dot simons at noaa dot gov</kbd>
 and include the ERDDAP URL directly related to your question or comment.
+
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.80
+<p>ERDDAP, Version 1.82
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
-</td>
-</tr>
-</table>
+</div>
 </body>
 </html>

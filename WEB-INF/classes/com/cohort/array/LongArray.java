@@ -112,7 +112,7 @@ public class LongArray extends PrimitiveArray {
      */
     public int hashCode() {
         //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
-        //and http://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         //and java docs for Long.hashCode()
         int code = 0;
         for (int i = 0; i < size; i++) 
@@ -926,6 +926,31 @@ public class LongArray extends PrimitiveArray {
     }
 
     /**
+     * This reverses the order of the bytes in each value,
+     * e.g., if the data was read from a little-endian source.
+     */
+    public void reverseBytes() {
+        for (int i = 0; i < size; i++)
+            array[i] = Long.reverseBytes(array[i]);
+    }
+
+    /**
+     * This writes 'size' elements to a DataOutputStream.
+     *
+     * @param dos the DataOutputStream
+     * @return the number of bytes used per element (for Strings, this is
+     *    the size of one of the strings, not others, and so is useless;
+     *    for other types the value is consistent).
+     *    But if size=0, this returns 0.
+     * @throws Exception if trouble
+     */
+    public int writeDos(DataOutputStream dos) throws Exception {
+        for (int i = 0; i < size; i++)
+            dos.writeLong(array[i]);
+        return size == 0? 0 : 8;
+    }
+
+    /**
      * This writes one element to a DataOutputStream.
      *
      * @param dos the DataOutputStream
@@ -1259,6 +1284,21 @@ public class LongArray extends PrimitiveArray {
         }
         //String2.log(">> LongArray.getNMinMaxIndex size=" + size + " n=" + n + " min=" + tmin + " max=" + tmax);
         return new int[]{n, tmini, tmaxi};
+    }
+
+    /**
+     * For integer types, this fixes unsigned bytes that were incorrectly read as signed
+     * so that they have the correct ordering of values (0 to 255 becomes -128 to 127).
+     * <br>What were read as signed:    0  127 -128  -1
+     * <br>should become   unsigned: -128   -1    0 255
+     * <br>This also does the reverse.
+     * <br>For non-integer types, this does nothing.
+     */
+    public void changeSignedToFromUnsigned() {
+        for (int i = 0; i < size; i++) {
+            long i2 = array[i];
+            array[i] = i2 < 0? i2 + Long.MAX_VALUE : i2 - Long.MAX_VALUE;
+        }
     }
 
     /**

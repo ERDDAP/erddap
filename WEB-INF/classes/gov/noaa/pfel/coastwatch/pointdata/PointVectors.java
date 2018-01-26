@@ -115,7 +115,7 @@ public class PointVectors {
         ttTime = System.currentTimeMillis();
         uTable.sort(new int[]{4, 0, 1, 2, 3}, new boolean[]{true, true, true, true, true});
         vTable.sort(new int[]{4, 0, 1, 2, 3}, new boolean[]{true, true, true, true, true});
-        //if (verbose) String2.log("  sort time=" + (System.currentTimeMillis() - ttTime));
+        //if (verbose) String2.log("  sort time=" + (System.currentTimeMillis() - ttTime) + "ms");
 
         //remove rows from either table which don't have comparable row in other table
         //they should be identical
@@ -147,7 +147,7 @@ public class PointVectors {
         if (uTable.nRows() > nGood) uTable.removeRows(nGood, uTable.nRows());
         if (vTable.nRows() > nGood) vTable.removeRows(nGood, vTable.nRows());
         //if (verbose) String2.log("  post remove  u nRows=" + uTable.nRows() + " v nRows=" + vTable.nRows() + " nGood=" + nGood);
-        //if (verbose) String2.log("  makeIdentical time=" + (System.currentTimeMillis() - ttTime));
+        //if (verbose) String2.log("  makeIdentical time=" + (System.currentTimeMillis() - ttTime) + "ms");
 
         //move the v data column into the u table  
         //so table has 7 columns (x,y,z,t,id,uData,vData).
@@ -157,7 +157,7 @@ public class PointVectors {
         //String2.log("PointVectorScreen average table=" + averageTable);
         if (verbose) String2.log(
             "\\\\\\\\******** PointVectors.makeAveragedTimeSeries done. nRows=" + uTable.nRows() +
-            " TOTAL TIME=" + (System.currentTimeMillis() - tTime) + "\n");
+            " TOTAL TIME=" + (System.currentTimeMillis() - tTime) + "ms\n");
         return uTable;
     }
 

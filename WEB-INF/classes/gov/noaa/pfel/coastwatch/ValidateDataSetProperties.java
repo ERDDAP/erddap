@@ -67,7 +67,7 @@ public class ValidateDataSetProperties {
             fnu.ensureValidDataSetProperties(seven, excessivelyStrict);
             String infoUrl = dataSetRB2.getString(seven + "InfoUrl", null);
             Test.ensureNotNull(infoUrl, seven + "InfoUrl is null.");
-            SSR.getUrlResponse(infoUrlBaseUrl + infoUrl);  //on all computers except coastwatch, all are accessible as urls
+            SSR.getUrlResponseLines(infoUrlBaseUrl + infoUrl);  //on all computers except coastwatch, all are accessible as urls
         }
         String2.log("  ValidatDataSetProperties successfully tested n=" + nDataSets + 
             " last=" + tDataSetList[nDataSets - 1]);

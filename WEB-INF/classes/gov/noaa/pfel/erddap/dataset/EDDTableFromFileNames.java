@@ -191,7 +191,7 @@ public class EDDTableFromFileNames extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -475,7 +475,7 @@ public class EDDTableFromFileNames extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromFileNames " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -1083,7 +1083,7 @@ directionsForGenerateDatasetsXml() +
         //.dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1102,7 +1102,7 @@ directionsForGenerateDatasetsXml() +
         //.das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -1154,6 +1154,13 @@ directionsForGenerateDatasetsXml() +
 "    String infoUrl \"https://www.pfeg.noaa.gov/\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"file, images, jpl, modified, mur, name, nasa, size, sst, time, URL\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"\\(local files\\)\";\n" +
 "    String subsetVariables \"fileType\";\n" +
 "    String summary \"Images from JPL MUR SST Daily.\";\n" +
@@ -1165,7 +1172,7 @@ directionsForGenerateDatasetsXml() +
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "five,url,name,time,day,lastModified,size,fileType\n" +
 "m,,,UTC,,UTC,bytes,\n" +
@@ -1194,7 +1201,7 @@ directionsForGenerateDatasetsXml() +
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(null, null, "name,day,size&day=4", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "name,day,size\n" +
 ",,bytes\n" +
@@ -1223,7 +1230,7 @@ directionsForGenerateDatasetsXml() +
         //.dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1242,7 +1249,7 @@ directionsForGenerateDatasetsXml() +
         //.das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -1307,7 +1314,7 @@ directionsForGenerateDatasetsXml() +
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "five,url,name,startMonth,endMonth,lastModified,size,fileType\n" +
 "m,,,UTC,UTC,UTC,bytes,\n" +
@@ -1336,7 +1343,7 @@ directionsForGenerateDatasetsXml() +
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(null, null, "name,startMonth,size&size=1098815646", dir, 
             tedd.className() + "_subset", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "name,startMonth,size\n" +
 ",UTC,bytes\n" +

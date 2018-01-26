@@ -77,7 +77,7 @@ public class HdfLibraryVersion extends HdfTag {
         majorVersion = stream.readInt();
         minorVersion = stream.readInt();
         releaseNumber = stream.readInt();
-        info = new String(File2.read(stream, length - 3 * 4));
+        info = new String(File2.readFully(stream, length - 3 * 4));
     }
 
     /**

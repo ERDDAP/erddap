@@ -161,7 +161,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -260,7 +260,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridFromBinaryFile " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 */
     }
 
@@ -441,7 +441,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         raf.close();
         if (verbose) 
             String2.log("Grid.readBinary TIME=" + 
-                (System.currentTimeMillis() - time) + "\n"); 
+                (System.currentTimeMillis() - time) + "ms\n"); 
 */
         return results;
     }
@@ -482,7 +482,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDGridFromBinaryFile test entire dataset\n");
         tName = gridDataset.makeNewFileForDapQuery(null, "", dir, baseName + "_Entire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 //"Attributes {\n" +
@@ -521,7 +521,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         //.csv
         String2.log("\n*** EDDGridFromDap test get .CSV axis data\n");
         tName = gridDataset.makeNewFileForDapQuery(null, "time[0:100:1000]", dir, baseName + "_Axis", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         //SSR.displayInBrowser("file://" + dir + tName);
         expected = 

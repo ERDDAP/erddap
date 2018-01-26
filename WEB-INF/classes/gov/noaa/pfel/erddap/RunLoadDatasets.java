@@ -186,9 +186,16 @@ public class RunLoadDatasets extends Thread {
 
                             for (int hs = 0; hs < 2; hs++) {
 
-                                String[] listAr = new File(fDir[hs]).list();
-                                //if (listAr.length() > 0) String2.log(fDirName[hs] + " files found: " + String2.toCSSVString(listAr));
-                                StringArray tFlagNames = new StringArray(listAr);
+                                StringArray tFlagNames = new StringArray(); 
+                                try {                                    
+                                    if (File2.isDirectory(fDir[hs])) {
+                                        tFlagNames = new StringArray(new File(fDir[hs]).list());
+                                    } else {
+                                        File2.makeDirectory(fDir[hs]); //throws exception
+                                    }
+                                } catch (Exception et) {
+                                    String2.log(MustBe.throwableToString(et));
+                                }
 
                                 //check flag names
                                 for (int i = tFlagNames.size() - 1; i >= 0; i--) { //work backwards since deleting some from list

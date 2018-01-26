@@ -211,7 +211,7 @@ public class EDDTableFromNOS extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -492,7 +492,7 @@ public class EDDTableFromNOS extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromNOS " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -926,7 +926,7 @@ String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request,
         String2.log("\n****************** EDDTableFromNOS.test das dds for entire dataset\n");
         tName = wind.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(
+        results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = //see OpendapHelper.EOL for comments
@@ -1062,7 +1062,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //*** test getting dds for entire dataset
         tName = wind.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Entire", ".dds"); 
-        results = String2.annotatedString(new String((new ByteArray(
+        results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
@@ -1094,7 +1094,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude=" + tLon + "&latitude=" + tLat; 
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_station1", ".asc"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1116,7 +1116,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&station_name" + PrimitiveArray.REGEX_OP + "\"P.*e.*\""; 
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_station2", ".asc"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected =   
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1175,7 +1175,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.asc    test 1 lon,lat point
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Data", ".asc"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1211,7 +1211,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&latitude=" + tLat + "&time>=" + beginDate + "&time<=" + endDate;
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Num", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "longitude, latitude, time, station_id, station_name, wind_from_direction\n" +
 "degrees_east, degrees_north, UTC, , , degrees_true\n" +
@@ -1224,7 +1224,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&time>=" + beginDate + "&time<=" + endDate;
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_name", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "longitude, latitude, time, station_id, station_name, wind_speed, wind_from_direction\n" +
 "degrees_east, degrees_north, UTC, , , m s-1, degrees_true\n" +
@@ -1240,7 +1240,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&time>=" + beginDate + "&time<=" + endDate;
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_id", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "longitude, latitude, time, station_id, station_name, wind_speed, wind_from_direction\n" +
 "degrees_east, degrees_north, UTC, , , m s-1, degrees_true\n" +
@@ -1273,7 +1273,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //"&stationID=9411340&time=1993-09-09"; //fails: no data
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {[10]\n" +
@@ -1303,7 +1303,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude>-125&longitude<-115&latitude>30&latitude<35&time=2006-01-01";
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {[10]\n" +
@@ -1333,7 +1333,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "&longitude=" + tLon + "&latitude=" + tLat + "&time>=" + beginDate + "&time<=2007-05-01"; //>366 days (their limit)
             tName = wind.makeNewFileForDapQuery(null, null, tUserDapQuery, EDStatic.fullTestCacheDirectory, 
                 wind.className() + "_DataTime", ".asc"); 
-            results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+            results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
             expected = 
 "Dataset {[10]\n" +
 "  Sequence {[10]\n" +

@@ -31,7 +31,7 @@ import java.awt.Rectangle;
 /**
  * Abstract base class for axes whose user coordinates are double values.
  * The following is an example of using a {@link PlainAxis}.
- * <A NAME="example"><!-- --></A>
+ * 
  * <pre>
  * import gov.noaa.pmel.sgt.PlainAxis;
  * import gov.noaa.pmel.sgt.LinearTransform;

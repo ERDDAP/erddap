@@ -36,6 +36,8 @@ public class XML {
     /** For each character 0 - 255, these indicate how the character
      * should appear in HTML content. 
      * See HTML &amp; XHTML book, Appendix F.
+     * XML is same as HTML for 0-127 (see 
+     * https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Predefined_entities_in_XML )
      * &quot; and &#39; are encoded to be safe (see encodeAsXML comments)
      * and consistent with encodeAsXML.
      */
@@ -164,10 +166,11 @@ public class XML {
     }
 
     /**
-     * For security reasons, for text that will be used as an HTML attribute, 
+     * For security reasons, for text that will be used as an HTML or XML attribute, 
      * this replaces non-alphanumeric characters with HTML Entity &amp;#xHHHH; format.
      * See HTML Attribute Encoding at
      * https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet#Output_Encoding_Rules_Summary
+     * On the need to escape HTML attributes: http://wonko.com/post/html-escaping
      *
      * @param plainText the string to be encoded.
      *    If null, this throws exception.
@@ -193,7 +196,9 @@ public class XML {
      * "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#39;" so plainText can be safely
      * stored as a quoted string within XML.
      *
-     * <p>See "XML in a Nutshell" book, pg 20 for info on these 5 character encodings
+     * <p>XML is same as HTML for 0-127 (see 
+     * https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Predefined_entities_in_XML )
+     * And see "XML in a Nutshell" book, pg 20 for info on these 5 character encodings
      * (and no others).
      *
      * <p>char 0 - 127 and &gt;=256 are encoded same as encodeAsHTML.
@@ -290,7 +295,7 @@ public class XML {
     }
 
     /**
-     * This is like encodeAsHTML but treats plainText as &lt;pre&gt; text.
+     * This is like encodeAsHTML but adds specific line breaks (&lt;br&gt;).
      *
      * @param plainText
      * @param maxLineLength  if lines are longer, they are broken
@@ -303,13 +308,26 @@ public class XML {
         return s;
     }
 
+    /**
+     * This is like encodeAsHTML but adds specific line breaks (&lt;br&gt;).
+     * This variant doesn't call noLongLinesAtSpace
+     *
+     * @param plainText
+     */
+    public static String encodeAsPreHTML(String plainText) {
+        String s = encodeAsHTML(plainText);  
+        s = String2.replaceAll(s, "\r", "");
+        s = String2.replaceAll(s, "\n", "<br>");  //after encodeAsHTML; 
+        return s;
+    }
+
 
     /**
      * This replaces HTML character entities (and the XML subset)
      * (e.g., "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", etc.) in the string
      * with characters (e.g., '&amp;', '&lt;', '&gt;', '"', etc.) 
      * so the original string can be recovered.
-     * "&amp;nbsp;" is decoded to regular ' '.
+     * Before 2017-10-04 (version 1.82) "&amp;nbsp;" was decoded to regular ' '; now left intact.
      * Unrecognized/invalid entities are left intact so appear as e.g., &amp;#A;.
      *
      * @param s the string to be decoded
@@ -336,7 +354,6 @@ public class XML {
                         }
                         int v = String2.parseInt(num);  //this relies on leading 0's being ignored -> decimal (not octal)
                         output.append(
-                            v == 160? " " :  //nbsp
                             v < Character.MAX_VALUE? "" + (char)v : 
                             entity); //show intact original entity as plain text
                     } else {
@@ -835,7 +852,7 @@ public class XML {
         //test removeHTMLTags
         String2.log("test removeHTMLTags");
         Test.ensureEqual(removeHTMLTags(
-            "Hi, <b>bob.simons&amp;</b>! <a href=\"http://someUrl\">Click here!</a>"), 
+            "Hi, <strong>bob.simons&amp;</strong>! <a href=\"http://someUrl\">Click here!</a>"), 
             "Hi, bob.simons&! [ http://someUrl ] Click here!", "a");
 
         //test encodeAsXML

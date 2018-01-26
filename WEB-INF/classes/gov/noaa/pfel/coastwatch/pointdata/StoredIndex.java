@@ -60,7 +60,7 @@ public class StoredIndex  {
 
         //find nFinite value
         int lastFinite = nValues - 1;
-        while (lastFinite >= 0 && !Math2.isFinite(indexPA.getDouble(lastFinite)))
+        while (lastFinite >= 0 && !Double.isFinite(indexPA.getDouble(lastFinite)))
             lastFinite--;
         nFinite = lastFinite + 1;
         lowestValue = indexPA.getDouble(0);
@@ -72,7 +72,7 @@ public class StoredIndex  {
         indexPA.writeDos(dos);
         dos.close();
 
-        String2.log("StoredIndex time=" + (System.currentTimeMillis() - time));
+        String2.log("StoredIndex time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -120,7 +120,7 @@ public class StoredIndex  {
         raf.close();
 
         if (verbose) String2.log("  first=" + results[0] + " last=" + results[1] +
-            " time=" + (System.currentTimeMillis() - time));
+            " time=" + (System.currentTimeMillis() - time) + "ms");
         return results;
     }
 

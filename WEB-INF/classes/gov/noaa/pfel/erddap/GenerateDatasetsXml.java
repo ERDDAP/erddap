@@ -147,6 +147,7 @@ public class GenerateDatasetsXml {
         Table.reallyVerbose = reallyVerbose;
         String eddTypes[] = {
             "EDDGridAggregateExistingDimension",
+            "EDDGridFromAudioFiles",
             "EDDGridFromDap",
             "EDDGridFromEDDTable",
             "EDDGridFromErddap",
@@ -156,6 +157,7 @@ public class GenerateDatasetsXml {
             "EDDGridFromThreddsCatalog",
             "EDDGridLonPM180FromErddapCatalog",
             "EDDTableFromAsciiFiles",
+            "EDDTableFromAudioFiles",
             "EDDTableFromAwsXmlFiles",
             "EDDTableFromBCODMO",
             "EDDTableFromCassandra",
@@ -225,6 +227,20 @@ public class GenerateDatasetsXml {
                         s1, s2, s3, 
                         String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES)));
 
+                } else if (eddType.equals("EDDGridFromAudioFiles")) {
+                    s1  = get(args,  1,  s1, "Parent directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.wav\")");
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                  
+                    s4  = get(args,  4,  s4, "extractFileNameRegex (e.g., \".*([0-9]{14})\\.wav\")");
+                    s5  = get(args,  5,  s5, "extractDataType (e.g., int, \"timeFormat=yyyyMMddHHmmss\")");
+                    s6  = get(args,  6,  s6, "extractColumnName (e.g., time)");
+                    s7  = get(args,  7,  s7, reloadEveryNMinutesMessage);
+                    String2.log("working...");
+                    printToBoth(EDDGridFromAudioFiles.generateDatasetsXml(s1, 
+                        s2.length() == 0? ".*\\.wav" : s2, 
+                        s3, s4, s5, s6, 
+                        String2.parseInt(s7, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
+
                 } else if (eddType.equals("EDDGridFromDap")) {
                     s1  = get(args,  1,  s1, "URL (without trailing .dds or .html)");         
                     s2  = get(args,  2,  s2, "ReloadEveryNMinutes (e.g., " + 
@@ -280,16 +296,18 @@ public class GenerateDatasetsXml {
 
                 } else if (eddType.equals("EDDGridFromThreddsCatalog")) {
                     s1  = get(args,  1,  s1, "URL (usually ending in \"/catalog.xml\")");         
-                    s2  = get(args,  2,  s2, "Dataset name regex (e.g., \".*\")");  //for now, always .*
-                    s3  = get(args,  3,  s3, "ReloadEveryNMinutes (e.g., " + 
+                    s2  = get(args,  2,  s2, "Dataset name regex (e.g., \".*\")");  
+                    s3  = get(args,  3,  s3, "Path regex (e.g., \".*\")");  
+                    s4  = get(args,  4,  s4, "Negative path regex (e.g., \"\" or \".*(IDontWantYou).*\")"); 
+                    s5  = get(args,  5,  s5, "ReloadEveryNMinutes (e.g., " + 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ", recommended: -1 generates suggested values)");
                     String2.log("working...");
                     String tempDir = SSR.getTempDirectory();
                     File2.makeDirectory(tempDir);
                     String resultsFileName = tempDir + "EDDGridFromThreddsCatalog.xml";
                     EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(
-                        resultsFileName, s1, s2, 
-                        String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES));
+                        resultsFileName, s1, s2, s3, s4, 
+                        String2.parseInt(s5, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES));
                     printToBoth(String2.readFromFile(resultsFileName)[1]);
 
                 } else if (eddType.equals("EDDGridLonPM180FromErddapCatalog")) {
@@ -324,6 +342,28 @@ public class GenerateDatasetsXml {
                         s1, s2, s3, s4, String2.parseInt(s5, 1), String2.parseInt(s6, 2), s7,
                         String2.parseInt(s8, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, null));
+
+                 } else if (eddType.equals("EDDTableFromAudioFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.csv\")");
+                    s3  = get(args,  3,  s3, sampleFileNamePrompt);                       
+                    s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
+                    s5  = get(args,  5,  s5, "PreExtractRegex");
+                    s6  = get(args,  6,  s6, "PostExtractRegex");
+                    s7  = get(args,  7,  s7, "ExtractRegex");
+                    s8  = get(args,  8,  s8, "Column name for extract");
+                    s9  = get(args,  9,  s9, "Extract units (e.g., yyyyMMdd'_'HHmmss)");
+                    s10 = get(args, 10, s10, "Sort files by sourceNames");
+                    s11 = get(args, 11, s11, "infoUrl");
+                    s12 = get(args, 12, s12, "institution");
+                    s13 = get(args, 13, s13, "summary");
+                    s14 = get(args, 14, s14, "title");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromAudioFiles.generateDatasetsXml(
+                        s1, s2, s3, 
+                        String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        s5, s6, s7, s8, s9, 
+                        s10, s11, s12, s13, s14, null));
 
                 } else if (eddType.equals("EDDTableFromAwsXmlFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
@@ -474,11 +514,14 @@ public class GenerateDatasetsXml {
                 //INACTIVE: "EDDTableFromHyraxFiles"
 
                 } else if (eddType.equals("EDDTableFromInPort")) {
-                    s1  = get(args,  1,  s1, "URL or fullFileName for InPort xml file");
-                    s2  = get(args,  2,  s2, "Data file directory (needn't have the file(s))");
+                    s1  = get(args,  1,  s1, "URL or fullFileName of InPort xml file");
+                    s2  = get(args,  2,  s2, "Directory in which to store the InPort xml file (if URL above)");
+                    s3  = get(args,  3,  s3, "Which child (0=info for all, or 1, 2, ...)");
+                    s4  = get(args,  4,  s4, "Data file directory (needn't have the file(s))");
+                    s5  = get(args,  5,  s5, "Data file name.ext (or \"\" if not known or available)");
                     String2.log("working...");
                     printToBoth(EDDTableFromAsciiFiles.generateDatasetsXmlFromInPort(
-                        s1, ".*", ".*", s2));
+                        s1, s2, ".*", String2.parseInt(s3), s4, s5));
 
                 } else if (eddType.equals("EDDTableFromMultidimNcFiles")) {
                     s1  = get(args,  1,  s1, "Starting directory");
@@ -606,7 +649,7 @@ public class GenerateDatasetsXml {
                         String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s5, s6, s7, s8, s9, s10, null));
 
-                } else if (eddType.equals("EDDTableFromWFSFiles")) {
+               } else if (eddType.equals("EDDTableFromWFSFiles")) {
                     s1  = get(args,  1,  s1, "Percent-encoded sourceUrl");
                     s2  = get(args,  2,  s2, "rowElementXPath (space=default)");
                     s3  = get(args,  3,  s3, reloadEveryNMinutesMessage);

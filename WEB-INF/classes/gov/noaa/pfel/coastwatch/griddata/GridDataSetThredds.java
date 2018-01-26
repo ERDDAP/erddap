@@ -186,9 +186,8 @@ J1ugeo has just one level: <dataset>   *** So look for <dataset> with urlPath at
 
         //open the thredds catalog xml file
         //String2.log("getUrlString for " + baseUrl + "catalog.xml");
-        //String2.log(XML.encodeAsXML(SSR.getUrlResponseString(baseUrl + "catalog.xml")));
-        Document document = XML.parseXml(new BufferedReader(new InputStreamReader(
-            SSR.getUrlInputStream(baseUrl + "catalog.xml"))), false);
+        //String2.log(XML.encodeAsXML(SSR.getURLResponseStringUnchanged(baseUrl + "catalog.xml")));
+        Document document = XML.parseXml(SSR.getBufferedUrlReader(baseUrl + "catalog.xml"), false);
         XPath xPath = XML.getXPath();
 
         //get the opendapServiceBase, e.g., "/thredds/dodsC/"
@@ -1035,7 +1034,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
 
 //       String baseUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/";
 //       String2.log("getUrlString for " + baseUrl + "catalog.xml");
-//       String2.log(SSR.getUrlResponseString(baseUrl + "catalog.xml"));
+//       String2.log(SSR.getURLResponseStringUnchanged(baseUrl + "catalog.xml"));
 
 //       Opendap opendap = new Opendap(
 //           //"https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 

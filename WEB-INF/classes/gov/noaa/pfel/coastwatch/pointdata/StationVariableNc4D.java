@@ -266,7 +266,7 @@ public class StationVariableNc4D extends GroupVariableWithDepthLevels {
                     lastTimeRow  = NcHelper.binaryFindClosest(timeVariable, 0, timeDimensionLength - 1, maxT);
                 }
                 //String2.log("  binarySearch to find first,lastTimeRow, time=" + 
-                //    (System.currentTimeMillis() - tTime));  // ~4 ms
+                //    (System.currentTimeMillis() - tTime) + "ms");  // ~4 ms
             } else {
                 //evenly spaced data
                 firstTimeRow = Math2.roundToInt((minT - this.minT) / timeIncrementInSeconds);

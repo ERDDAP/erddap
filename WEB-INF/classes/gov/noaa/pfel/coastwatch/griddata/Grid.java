@@ -1890,7 +1890,7 @@ switch to finally clause
      * This doesn't set minData, maxData, or nValidPoints; 
      * use calculateStats to get these values.
      * This is intended to work with COARDS compatible files. 
-     * [COARDS] refers to http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html
+     * [COARDS] refers to http://www.ferret.noaa.gov/noaa_coop/coop_cdf_profile.html
      *
      * <p>The file must have a variable with attribute "units"="degrees_north" 
      *   (or a variation) to identify the latitude variable. See [COARDS] "Latitude Dimension".
@@ -4262,7 +4262,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 }
             }
             //order of dimensions is specified by the
-            //coards standard (http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html)
+            //coards standard (http://www.ferret.noaa.gov/noaa_coop/coop_cdf_profile.html)
             //see the topics "Number of dimensions" and "Order of dimensions"
             Variable dataVar = nc.addVariable(rootGroup, dataName, DataType.FLOAT, 
                 Arrays.asList(timeDimension, altitudeDimension, latDimension, lonDimension)); 
@@ -5044,7 +5044,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      */
     public static void testSaveAs() throws Exception { 
 
-        String2.log("\n*** testSaveAs");
+        String2.log("\n*** Grid.testSaveAs");
         String errorIn = String2.ERROR + " in Grid.testSaveAs: ";
         File2.verbose = true;
         String cwName = testName;
@@ -5373,7 +5373,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      */
 /*    public static void testConvertGrdToFromNetCDF() throws Exception { 
 
-        String2.log("\n*** testConvertGrdToNc");
+        String2.log("\n*** Grid.testConvertGrdToNc");
         String errorIn = String2.ERROR + " in Grid.testConvertGrdToNc: ";
 
         //copy the .grd file to a Dave-style name
@@ -5429,7 +5429,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * This tests the little static methods.
      */
     public static void testLittleMethods() {
-        String2.log("\n*** testLittleMethods...");
+        String2.log("\n*** Grid.testLittleMethods...");
 
         //generateContourLevels(String contourString, double minData, double maxData) {
         Test.ensureEqual( //single value in string

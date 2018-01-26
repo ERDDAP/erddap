@@ -35,7 +35,7 @@ public class Touch  {
         String base = "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/";
         String find = "Dataset {";
         String2.log("  touching " + base + urlEnd);
-        String response = SSR.getUrlResponseString(base + urlEnd);
+        String response = SSR.getURLResponseStringUnchanged(base + urlEnd);
         Test.ensureTrue(response.indexOf(find) >= 0, 
             String2.ERROR + " in Touch.thredds while reading " + base + urlEnd + 
             ":\nfind=\"" + find + "\" not found in response=\n" + response);
@@ -223,7 +223,7 @@ public class Touch  {
         tThredds("PISCO/temp/2006_WES001_29m.html");
 
         String2.log("Touch.thredds done. TIME=" + 
-            Calendar2.elapsedTimeString(System.currentTimeMillis() - time));
+            Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -232,7 +232,7 @@ public class Touch  {
      */
     public static void getPiscoUrls() throws Exception {
         //get the main catlog
-        String cat = SSR.getUrlResponseString("https://oceanwatch.pfeg.noaa.gov/thredds/catalog.html");
+        String cat = SSR.getURLResponseStringUnchanged("https://oceanwatch.pfeg.noaa.gov/thredds/catalog.html");
         //String2.log(cat);
 
         //extract all pisco urls
@@ -246,7 +246,7 @@ public class Touch  {
             //String2.log("s=" + s);
 
             //print all ...urls
-            cat = SSR.getUrlResponseString(second[i]);
+            cat = SSR.getURLResponseStringUnchanged(second[i]);
             //String2.log(cat);
 
             String third[] = String2.extractAllRegexes(cat, "ID=\".+?\"");

@@ -218,7 +218,7 @@ public class Boundaries  {
         int thisKB = sgtLine.getXArray().length / 64;  //*16/1024  //16 because x,y, both doubles
         if (reallyVerbose) String2.log(
             "    Boundaries.getSgtLine " + id + " notInCache done thisKB=" + thisKB + 
-                    " time=" + (System.currentTimeMillis() - time) + "\n" +
+                    " time=" + (System.currentTimeMillis() - time) + "ms\n" +
             "      nCoarse=" + nCoarse + tCoarse +
                 " nSuccesses=" + nSuccesses + tSuccess +
                 " nTossed=" + nTossed + tTossed);
@@ -636,18 +636,18 @@ public class Boundaries  {
         //force creation of new file
         long time = System.currentTimeMillis();
         sgtLine = nationalBoundaries.getSgtLine(2, -135, -105, 22, 50);
-        String2.log("create time=" + (System.currentTimeMillis() - time) + " (was 62)");
+        String2.log("create time=" + (System.currentTimeMillis() - time) + "ms (was 62)");
 
         //read cached version
         time = System.currentTimeMillis();
         sgtLine = nationalBoundaries.getSgtLine(2, -135, -105, 22, 50);
         time = System.currentTimeMillis() - time;
-        String2.log("cache time=" + time);
+        String2.log("cache time=" + time + "ms");
 
         //is it the same  (is SGTLine.equals a deep test? probably not)
 
         //test speed
-        Test.ensureTrue(time < 20, "time=" + time); 
+        Test.ensureTrue(time < 20, "time=" + time + "ms"); 
 
 
         //*** state

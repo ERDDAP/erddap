@@ -9,6 +9,7 @@ import com.cohort.array.CharArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -16,8 +17,8 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.util.EDStatic;
-import gov.noaa.pfel.erddap.util.HtmlWidgets;
 import gov.noaa.pfel.erddap.variable.EDV;
 
 import java.io.BufferedWriter;
@@ -50,17 +51,19 @@ public class TableWriterHtmlTable extends TableWriter {
 
     //set by constructor
     protected String loggedInAs, fileNameNoExt, preTableHtml, postTableHtml, 
-        tErddapUrl, externalLinkHtml;
+        tErddapUrl, externalLinkHtml, questionMarkImageUrl;
     protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
     protected int totalRows = 0, rowsShown = 0;
     protected int showFirstNRows;  //perhaps modified by htmlTableMaxMB in "do firstTime stuff"
     protected String noWrap;
+
 
     //set firstTime
     protected boolean isCharOrString[];
     protected boolean isTimeStamp[];
     protected String time_precision[];
     protected String fileAccessBaseUrl[];
+    protected String fileAccessSuffix[];
     protected BufferedWriter writer;
 
     //set later
@@ -98,7 +101,8 @@ public class TableWriterHtmlTable extends TableWriter {
         OutputStreamSource tOutputStreamSource,        
         boolean tWriteHeadAndBodyTags, String tFileNameNoExt, boolean tXhtmlMode,         
         String tPreTableHtml, String tPostTableHtml,
-        boolean tEncode, boolean tWriteUnits, int tShowFirstNRows) {
+        boolean tEncode, boolean tWriteUnits, int tShowFirstNRows,
+        String tQuestionMarkImageUrl) {
 
         super(tEdd, tNewHistory, tOutputStreamSource);
         loggedInAs = tLoggedInAs;
@@ -110,9 +114,9 @@ public class TableWriterHtmlTable extends TableWriter {
         encode = tEncode;
         writeUnits = tWriteUnits;
         showFirstNRows = tShowFirstNRows >= 0? tShowFirstNRows : Integer.MAX_VALUE;
-        noWrap = xhtmlMode? " nowrap=\"nowrap\"" : " nowrap"; 
         tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         externalLinkHtml = EDStatic.externalLinkHtml(tErddapUrl);
+        questionMarkImageUrl = tQuestionMarkImageUrl;
     }
 
     /** This encodes s as XML or HTML */
@@ -162,10 +166,7 @@ public class TableWriterHtmlTable extends TableWriter {
 
         //ensure the table's structure is the same as before
         boolean firstTime = columnNames == null;
-        //xhtml: safari objects to &nbsp;   
-        //   ie doesn't show cells with "" or space.
-        //most html ignore cells with ""; "&nbsp;" is common and universally ok
-        String emptyCell = xhtmlMode? "" : "&nbsp;"; 
+        boolean somethingWritten;
         ensureCompatible(table);
 
         int nColumns = table.nColumns();
@@ -178,11 +179,17 @@ public class TableWriterHtmlTable extends TableWriter {
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
             fileAccessBaseUrl = new String[nColumns];
+            fileAccessSuffix = new String[nColumns];
             int bytesPerRow = (xhtmlMode? 10 : 5) +  //e.g., <tr> </tr> \n
                 nColumns * (xhtmlMode? 9 : 4) ;      //e.g., <td> </td>
             for (int col = 0; col < nColumns; col++) {
                 Attributes catts = table.columnAttributes(col);
                 fileAccessBaseUrl[col] = catts.getString("fileAccessBaseUrl"); //null if none
+                fileAccessSuffix[ col] = catts.getString("fileAccessSuffix");  //null if none
+                if (!String2.isSomething(fileAccessBaseUrl[col]))
+                    fileAccessBaseUrl[col] = "";
+                if (!String2.isSomething(fileAccessSuffix[col]))
+                    fileAccessSuffix[col] = "";
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
@@ -195,13 +202,13 @@ public class TableWriterHtmlTable extends TableWriter {
                 }
 
                 if (isTimeStamp[col]) {
-                    bytesPerRow += 20 + noWrap.length();
+                    bytesPerRow += 20;
                 } else {
                     if (colPA[col] instanceof StringArray) {
-                        bytesPerRow += noWrap.length() +
+                        bytesPerRow += 10 +
                             Math.max(10, ((StringArray)colPA[col]).maxStringLength());
                     } else {
-                        bytesPerRow += (3 * colPA[col].elementSize()) / 2 + 14;  //1.5*nBytes->~nChar.  14: align="right"
+                        bytesPerRow += (3 * colPA[col].elementSize()) / 2 + 14;  //1.5*nBytes->~nChar.  14: text-align:right
                     }
                 }
             }
@@ -227,33 +234,43 @@ public class TableWriterHtmlTable extends TableWriter {
                     writer.write(
                         HtmlWidgets.DOCTYPE_XHTML_TRANSITIONAL + //specifies UTF-8
                         "  <title>" + XML.encodeAsXML(fileNameNoExt) + "</title>\n" +
+                        "  <link rel=\"stylesheet\" type=\"text/css\" href=\"" +
+                            EDStatic.imageDirUrl(loggedInAs) + "erddap2.css\" />\n" + //xhtml has closing /
                         "</head>\n" +
-                        "<body style=\"color:black; background:white; " + HtmlWidgets.SANS_SERIF_STYLE + "\">\n");
+                        "<body>\n");
                 else {
                     writer.write(EDStatic.startHeadHtml(tErddapUrl, fileNameNoExt));
                     writer.write("\n</head>\n");
                     writer.write(EDStatic.startBodyHtml(loggedInAs));
-                    writer.write("\n" +
-                        "&nbsp;\n" + //necessary for the blank line before form (not <p>)
-                        HtmlWidgets.BACK_BUTTON);
+                    //writer.write(HtmlWidgets.BACK_BUTTON);
+                    writer.write("&nbsp;<br>");
                 }
             }
 
             writer.write(preTableHtml);
             writer.write("\n&nbsp;\n"); //necessary for the blank line before table (not <p>)
-            writer.write(xhtmlMode?
+            writer.write(
                 //Opera doesn't seem to use class/style info in xhtml  (see xhtmlMode use above, too)
                 //keep XHTML plain (no style, no bgcolor), since admin can't set text color (above)
-                "<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" : 
-                "<table class=\"erd commonBGColor\" cellspacing=\"0\">\n");
+                "<table class=\"erd commonBGColor nowrap\">\n");
 
             //write the column names   and gather isCharOrString 
             isCharOrString = new boolean[nColumns];
             writer.write("<tr>\n");
+            somethingWritten = false;
             for (int col = 0; col < nColumns; col++) {
                 String s = table.getColumnName(col);
-                writer.write("<th>" +                     
-                    (encode? encode(s) : s) + 
+                if (encode) 
+                    s = encode(s);
+
+                if (somethingWritten) {
+                } else if (s.trim().length() > 0) {
+                    somethingWritten = true;
+                } else if (col == nColumns - 1) {
+                    s = xhtmlMode? "&#160;" : "&nbsp;";
+                }
+
+                writer.write("<th>" + s +
                     (xhtmlMode? "</th>" : "") + //HTML doesn't require it, so save bandwidth
                     "\n");
                 isCharOrString[col] = colPA[col] instanceof CharArray ||
@@ -264,13 +281,20 @@ public class TableWriterHtmlTable extends TableWriter {
             //write the units   
             if (writeUnits) {
                 writer.write("<tr>\n");
+                somethingWritten = false;
                 for (int col = 0; col < nColumns; col++) {
                     String tUnits = table.columnAttributes(col).getString("units");
                     if (isTimeStamp[col])  tUnits = "UTC"; //no longer true: "seconds since 1970-01-01..."
                     if (tUnits == null)    tUnits = "";
                     if (encode)            tUnits = encode(tUnits);
-                    writer.write("<th>" + 
-                        (tUnits.length() == 0? emptyCell : tUnits) + 
+
+                    if (somethingWritten) {
+                    } else if (tUnits.trim().length() > 0) {
+                        somethingWritten = true;
+                    } else if (col == nColumns - 1) {
+                        tUnits = xhtmlMode? "&#160;" : "&nbsp;";
+                    }
+                    writer.write("<th>" + tUnits + 
                         (xhtmlMode? "</th>" : "") + //HTML doesn't require it, so save bandwidth
                         "\n");
                 }
@@ -292,59 +316,105 @@ public class TableWriterHtmlTable extends TableWriter {
         }
 
         //write the data
+        boolean baseHttpsUrlIsSomething = String2.isSomething(EDStatic.baseHttpsUrl);
         for (int row = 0; row < showNRows; row++) {
             writer.write("<tr>\n");
+            somethingWritten = false;
             for (int col = 0; col < nColumns; col++) {
+                String s;
                 if (isTimeStamp[col]) {
                     double d = colPA[col].getDouble(row);
-                    if (Double.isNaN(d))
-                         writer.write("<td>" + emptyCell);
-                    else  
-                        writer.write("<td" + noWrap + ">" + 
-                            Calendar2.epochSecondsToLimitedIsoStringT(
-                                time_precision[col], d, ""));
+                    writer.write("<td>");
+                    if (Double.isNaN(d)) 
+                         s = ""; 
+                    else s = Calendar2.epochSecondsToLimitedIsoStringT(
+                        time_precision[col], d, "");
+                    writer.write(s);
                 } else {
-                    String s = colPA[col].getString(row);
+                    s = colPA[col].getString(row);
                     if (s.length() == 0) {
-                         writer.write("<td>" + emptyCell); 
+                        writer.write("<td>");
+
                     } else if (isCharOrString[col]) {
                         if (encode) {
                             if (xhtmlMode) {
                                 s = encode(s);
                             } else {
                                 //if html, display urls and email addresses as links
-                                if (fileAccessBaseUrl[col] != null) {
+                                String url = null;
+                                if (fileAccessBaseUrl[col].length() > 0 ||
+                                    fileAccessSuffix[ col].length() > 0) {
                                     //display as a link
-                                    boolean isLocal = fileAccessBaseUrl[col].startsWith(EDStatic.baseUrl);
+                                    url = fileAccessBaseUrl[col] + s + fileAccessSuffix[col];
+                                    boolean isLocal = 
+                                        url.startsWith(EDStatic.baseUrl) ||
+                                        (baseHttpsUrlIsSomething &&
+                                         url.startsWith(EDStatic.baseHttpsUrl));
                                     s = "<a href=\"" + 
-                                        XML.encodeAsHTMLAttribute(fileAccessBaseUrl[col] + s) + 
-                                        "\">" + XML.encodeAsHTMLAttribute(s) + //just the fileName
+                                        XML.encodeAsHTMLAttribute(url) + "\">" + 
+                                        encode(s) + //just the fileName
                                        (isLocal? "" : externalLinkHtml) + "</a>";
                                 } else if (String2.isUrl(s)) {
                                     //display as a link
-                                    boolean isLocal = s.startsWith(EDStatic.baseUrl);
-                                    s = XML.encodeAsHTMLAttribute(s);
-                                    s = "<a href=\"" + s + "\">" + s + 
+                                    url = s;
+                                    boolean isLocal = 
+                                        url.startsWith(EDStatic.baseUrl) ||
+                                        (baseHttpsUrlIsSomething &&
+                                         url.startsWith(EDStatic.baseHttpsUrl));
+                                    s = "<a href=\"" + 
+                                        XML.encodeAsHTMLAttribute(url) + "\">" + 
+                                        encode(s) + 
                                        (isLocal? "" : externalLinkHtml) + "</a>";
-                                } else if (String2.isEmailAddress(s)) {
-                                    //display as a mailTo link
-                                    s = XML.encodeAsHTMLAttribute(s);
-                                    s = "<a href=\"mailto:" + s + "\">" + s + "</a>";
+                                } else if (String2.isEmailAddress(s)) {                                    
+                                    //to improve security, convert "@" to " at "
+                                    s = XML.encodeAsHTMLAttribute(String2.replaceAll(s, "@", " at "));
                                 } else {
                                     s = encode(s);
                                 }
+
+                                if (url != null) {
+                                    //if media url, show '?' with viewer
+                                    //very similar code in Table.directoryListing and TableWriterHtmlTable.
+                                    int whichIcon = File2.whichIcon(url);
+                                    String iconAlt  = File2.ICON_ALT[whichIcon]; //always 3 characters 
+
+                                    //make HTML for a viewer?
+                                    String viewer = "";
+                                    if (iconAlt.equals("SND")) {
+                                        viewer = HtmlWidgets.cssTooltipAudio(
+                                            questionMarkImageUrl, "?", "",
+                                            url); 
+
+                                    } else if (iconAlt.equals("IMG")) { 
+                                        //this system doesn't need to know the size ahead of time
+                                        viewer = HtmlWidgets.cssTooltipImage(
+                                            questionMarkImageUrl, "?", "",
+                                            url, "img" + (totalRows + row)); 
+
+                                    } else if (iconAlt.equals("MOV")) { 
+                                        viewer = HtmlWidgets.cssTooltipVideo(
+                                            questionMarkImageUrl, "?", "", url);
+                                    }
+                                    if (viewer.length() > 0)
+                                        s = viewer + "&nbsp;" + s;
+                                }
                             }
                         }
-                        writer.write("<td" + noWrap + ">" + s); 
-                    } else if (s.indexOf('-') >= 0) { //it's a numeric column  //nowrap because can break at minus sign
-                        writer.write("<td" + noWrap + " align=\"right\">" + s); 
-                    } else {
-                        writer.write("<td align=\"right\">" + s); 
+                        writer.write("<td>" + s); 
+                    } else { //a non-MV number
+                        writer.write("<td class=\"R\">" + s); 
                     }
                 }
-                writer.write(
-                    (xhtmlMode? "</td>" : "") + //HTML doesn't require it, so save bandwidth
-                    "\n");
+                //ensure something written on each row (else row is very narrow)
+                if (somethingWritten) {
+                } else if (s.trim().length() > 0) {
+                    somethingWritten = true;
+                } else if (col == nColumns - 1) {
+                    writer.write(xhtmlMode? "&#160;" : "&nbsp;");
+                }
+                if (xhtmlMode)
+                    writer.write("</td>"); //HTML doesn't require it, so save bandwidth
+                writer.write("\n");
             }
             writer.write("</tr>\n");
             rowsShown++;
@@ -377,8 +447,8 @@ public class TableWriterHtmlTable extends TableWriter {
 
         //  isMBLimited and !allDataDisplayed
         if (isMBLimited &&  !allDataDisplayed) 
-            writer.write("<font class=\"warningColor\">" + 
-                EDStatic.htmlTableMaxMessage + "</font>" +
+            writer.write("<span class=\"warningColor\">" + 
+                EDStatic.htmlTableMaxMessage + "</span>" +
                 (xhtmlMode? "<br />" : "<br>") +
                 "\n");  
 
@@ -398,7 +468,7 @@ public class TableWriterHtmlTable extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterHtmlTable done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
 
     }
 
@@ -424,7 +494,8 @@ public class TableWriterHtmlTable extends TableWriter {
         TableWriterHtmlTable tw = new TableWriterHtmlTable(tEdd, tNewHistory, 
             loggedInAs, outputStreamSource,  
             writeHeadAndBodyTags, fileNameNoExt, xhtmlMode, preTableHtml, postTableHtml, 
-            encode, writeUnits, tShowFirstNRows);
+            encode, writeUnits, tShowFirstNRows,
+            EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile);
         tw.writeAllAndFinish(table);
     }
 

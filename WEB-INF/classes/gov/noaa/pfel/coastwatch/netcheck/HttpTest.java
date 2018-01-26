@@ -169,12 +169,12 @@ public class HttpTest extends NetCheckTest {
         try {
             //get the response
             long time = System.currentTimeMillis();
-            String response = SSR.getUrlResponseString(url);
+            String response = SSR.getUrlResponseStringUnchanged(url);
             time = System.currentTimeMillis() - time;
 
             //check mustRespondWithinSeconds
             StringBuilder errorSB = new StringBuilder();
-            if (Math2.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
+            if (Double.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
                 errorSB.append("  " + String2.ERROR + ": response time (" + (time/1000.0) + 
                     " s) was too slow (mustRespondWithinSeconds = " + 
                     mustRespondWithinSeconds + ").\n");
@@ -236,7 +236,7 @@ public class HttpTest extends NetCheckTest {
         String error = httpTest.test();
         Test.ensureEqual(error, "", String2.ERROR + " in HttpTest.unitTest:\n" + error);
         String2.log("netcheck.HttpTest finished successfully   time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
     }
 
     

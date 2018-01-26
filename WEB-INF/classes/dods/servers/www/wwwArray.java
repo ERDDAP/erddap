@@ -63,7 +63,7 @@ public class wwwArray extends DArray implements BrowserForm {
            << "// -->\n"
            << "</script>\n";
 
-        os << "<b>" 
+        os << "<strong>" 
            << "<input type=\"checkbox\" name=\"get_" 
            << name_for_js_code(name())
            << "\"\n"
@@ -72,12 +72,12 @@ public class wwwArray extends DArray implements BrowserForm {
            << ".handle_projection_change(get_"
            << name_for_js_code(name()) 
            << ")\">\n" 
-           << "<font size=\"+1\">" 
+           << "<span style=\"font-size:large;\">" 
            << name() 
-           << "</font>"
+           << "</span>"
            << ": " 
            << fancy_typename(this) 
-           << "</b><br>\n\n";
+           << "</strong><br>\n\n";
 
         Pix p = first_dim();
         for (int i = 0; p; ++i, next_dim(p)) {
@@ -108,7 +108,7 @@ public class wwwArray extends DArray implements BrowserForm {
 
 
         pw.print(
-            "<script type=\"text/javascript\">\n"
+            "<script>\n"
             + "<!--\n"
             + wwwOutPut.nameForJsCode(getName()) 
             + " = new dods_var(\"" 
@@ -124,7 +124,7 @@ public class wwwArray extends DArray implements BrowserForm {
             );
 
         pw.print(
-          "<b>" 
+          "<strong>" 
            + "<input type=\"checkbox\" name=\"get_" 
 	   + wwwOutPut.nameForJsCode(getName()) 
 	   + "\"\n"
@@ -133,12 +133,12 @@ public class wwwArray extends DArray implements BrowserForm {
 	   + ".handle_projection_change(get_"
            + wwwOutPut.nameForJsCode(getName()) 
 	   + ")\">\n" 
-           + "<font size=\"+1\">" 
+           + "<span style=\"font-size:large;\">" 
 	   + getName() 
-	   + "</font>"
+	   + "</span>"
            + ": " 
 	   + dasTools.fancyTypeName(this) 
-	   + "</b><br>\n\n"
+	   + "</strong><br>\n\n"
 	   );
 
         int dims = numDimensions();
@@ -163,7 +163,7 @@ public class wwwArray extends DArray implements BrowserForm {
                 );
 
             pw.print(
-                "<script type=\"text/javascript\">\n"
+                "<script>\n"
                 + "<!--\n"
                 + wwwOutPut.nameForJsCode(getName())
                 + ".add_dim(" 

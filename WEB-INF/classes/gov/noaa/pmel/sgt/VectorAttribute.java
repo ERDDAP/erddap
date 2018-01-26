@@ -20,9 +20,9 @@ import java.beans.PropertyChangeSupport;
  * Sets the rendering style for line data.
  * <code>Color</code>, width, and dash characteristics are
  * <code>VectorAttribute</code> properties.
- * <BR><FONT color="#FF0000">Warning: The SGT implementation of
+ * <BR>Warning: The SGT implementation of
  * Vectors requires Java2D. To use Vectors you must be using jdk1.2 or
- * newer.</FONT>
+ * newer.
  *
  * @author Donald Denbo
  * @version $Revision: 1.12 $, $Date: 2003/09/17 20:32:10 $
@@ -135,7 +135,7 @@ public class VectorAttribute
   /**
    * Change the head style.  Options include <code>NO_HEAD</code>,
    * <code>HEAD</code>, and <code>SCALED_HEAD</code>.
-   * <BR><B>Property Change:</B> <code>vectorStyle</code>.
+   * <BR><strong>Property Change:</strong> <code>vectorStyle</code>.
    *
    * @see #setVectorColor(java.awt.Color)
    * @see #setVectorMaxSize(double)
@@ -158,7 +158,7 @@ public class VectorAttribute
   }
   /**
    * Change the vector color.
-   * <BR><B>Property Change:</B> <code>vectorColor</code>.
+   * <BR><strong>Property Change:</strong> <code>vectorColor</code>.
    *
    */
   public void setVectorColor(Color color) {
@@ -179,7 +179,7 @@ public class VectorAttribute
    * by the data value times the vector scale.  The
    * vector length is bounded by the maximum allowed
    * vector length.
-   * <BR><B>Property Change:</B> <code>vectorScale</code>.
+   * <BR><strong>Property Change:</strong> <code>vectorScale</code>.
    *
    * @see #setVectorMaxSize(double)
    *
@@ -199,7 +199,7 @@ public class VectorAttribute
   }
   /**
    * Set the maximum size for a vector.
-   * <BR><B>Property Change:</B> <code>vectorMaxSize</code>.
+   * <BR><strong>Property Change:</strong> <code>vectorMaxSize</code>.
    *
    */
   public void setVectorMaxSize(double size) {
@@ -217,7 +217,7 @@ public class VectorAttribute
   }
   /**
    * Set the angle (clockwize positive) to rotate the vector.
-   * <BR><B>Property Change:</B> <code>offsetAngle</code>.
+   * <BR><strong>Property Change:</strong> <code>offsetAngle</code>.
    * @param angle in degrees
    */
   public void setOffsetAngle(double angle) {
@@ -238,7 +238,7 @@ public class VectorAttribute
    * by the length of the vector times the vector head scale.  The
    * vector head size is bounded by the minimum and maximum allowed
    * head size.
-   * <BR><B>Property Change:</B> <code>headScale</code>.
+   * <BR><strong>Property Change:</strong> <code>headScale</code>.
    *
    * @see #setHeadMinSize(double)
    * @see #setHeadMaxSize(double)
@@ -259,7 +259,7 @@ public class VectorAttribute
   }
   /**
    * Set the maximum size for a scaled vector head.
-   * <BR><B>Property Change:</B> <code>headMaxSize</code>.
+   * <BR><strong>Property Change:</strong> <code>headMaxSize</code>.
    *
    */
   public void setHeadMaxSize(double size) {
@@ -277,7 +277,7 @@ public class VectorAttribute
   }
   /**
    * Set the minimum size for a scaled vector head.
-   * <BR><B>Property Change:</B> <code>headMinSize</code>.
+   * <BR><strong>Property Change:</strong> <code>headMinSize</code>.
    *
    */
   public void setHeadMinSize(double size) {
@@ -295,7 +295,7 @@ public class VectorAttribute
   }
   /**
    * Set the fixed size for a unscaled vector head.
-   * <BR><B>Property Change:</B> <code>headFixedSize</code>.
+   * <BR><strong>Property Change:</strong> <code>headFixedSize</code>.
    *
    */
   public void setHeadFixedSize(double size) {
@@ -314,7 +314,7 @@ public class VectorAttribute
   /**
    * Set the vector origin style.  Options are <code>NO_MARK</code>
    * and <code>MARK</code>.
-   * <BR><B>Property Change:</B> <code>originStyle</code>.
+   * <BR><strong>Property Change:</strong> <code>originStyle</code>.
    *
    * @see #setMarkColor(java.awt.Color)
    * @see #setMark(int)
@@ -335,7 +335,7 @@ public class VectorAttribute
   }
   /**
    * Set the color for the origin mark.
-   * <BR><B>Property Change:</B> <code>markColor</code>.
+   * <BR><strong>Property Change:</strong> <code>markColor</code>.
    */
   public void setMarkColor(Color color) {
     if(!markColor_.equals(color)) {
@@ -352,7 +352,7 @@ public class VectorAttribute
   }
   /**
    * Set the mark for the origin.
-   * <BR><B>Property Change:</B> <code>mark</code>.
+   * <BR><strong>Property Change:</strong> <code>mark</code>.
    *
    * @param mark the plot mark
    * @see PlotMark
@@ -378,7 +378,7 @@ public class VectorAttribute
   }
   /**
    * Set mark height for the origin.
-   * <BR><B>Property Change:</B> <code>markHeightP</code>.
+   * <BR><strong>Property Change:</strong> <code>markHeightP</code>.
    *
    * @param markh mark height
    **/
@@ -401,7 +401,7 @@ public class VectorAttribute
   }
   /**
    * Set the line width in physical units.
-   * <BR><B>Property Change:</B> <code>width</code>.
+   * <BR><strong>Property Change:</strong> <code>width</code>.
    *
    * @param t line width
    **/
@@ -427,7 +427,7 @@ public class VectorAttribute
    * <code>LineAttribute.CAP_BUTT</code>,
    * <code>LineAttribute.CAP_ROUND</code>, and
    * <code>LineAttribute.CAP_SQUARE</code>.
-   * <BR><B>Property Change:</B> <code>capStyle</code>.
+   * <BR><strong>Property Change:</strong> <code>capStyle</code>.
    *
    * @see LineAttribute#CAP_BUTT
    * @see LineAttribute#CAP_ROUND
@@ -451,7 +451,7 @@ public class VectorAttribute
    * <code>LineAttribute.JOIN_BEVEL</code>,
    * <code>LineAttribute.JOIN_MITER</code>, and
    * <code>LineAttribute.JOIN_ROUND</code>.
-   * <BR><B>Property Change:</B> <code>miterStyle</code>.
+   * <BR><strong>Property Change:</strong> <code>miterStyle</code>.
    *
    * @see LineAttribute#JOIN_BEVEL
    * @see LineAttribute#JOIN_MITER
@@ -473,7 +473,7 @@ public class VectorAttribute
   }
   /**
    * Set the line miter limit.
-   * <BR><B>Property Change:</B> <code>miterLimit</code>.
+   * <BR><strong>Property Change:</strong> <code>miterLimit</code>.
    */
   public void setMiterLimit(float limit) {
     if(miterLimit_ != limit) {

@@ -1,26 +1,25 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-  "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html lang="en-US">
 <head>
 <title>NCCSV</title>
+<meta charset="UTF-8">
 <link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
-<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+<link href="../images/erddap2.css" rel="stylesheet" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body> 
 
-<table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
-  cellspacing="0"> 
-<tr><td>
-<h1 align="center">NCCSV -
+<div class="standard_width"> 
+<h1 style="text-align:center">NCCSV -
 <br>A NetCDF-Compatible ASCII CSV File Specification,
 <br>Version 1.00</h1>
 
-<center>Bob Simons &lt;bob.simons at noaa.gov&gt; and Steve Hankin
+<span style="text-align:center;">Bob Simons &lt;bob.simons at noaa.gov&gt; and Steve Hankin
 <br>"NCCSV" by Bob Simons and Steve Hankin is licensed under 
 <a rel="bookmark" href="https://creativecommons.org/licenses/by/4.0/"
->CC BY 4.0</a></center>
+>CC BY 4.0</a></span>
 
-<h2><a name="Contents">Contents</a></h2>
+<h2><a class="selfLink" id="Contents" href="#Contents" rel="bookmark">Contents</a></h2>
 <ul>
 <li><a rel="bookmark" href="#Introduction">Introduction</a>
 <li><a rel="bookmark" href="#FileStructure">File Structure</a>
@@ -35,7 +34,7 @@
 
 <p>&nbsp;
 
-<h2><a name="Introduction">Introduction</a></h2>
+<h2><a class="selfLink" id="Introduction" href="#Introduction" rel="bookmark">Introduction</a></h2>
 
 This document specifies an ASCII CSV text file format that can contain 
 all of the information (metadata and data) that can be found in a NetCDF .nc
@@ -73,7 +72,7 @@ files which follow these conventions are:
 <p>See the <a rel="bookmark" href="#Spreadsheets">Spreadsheet</a>
   section below for more information.
 
-<p><a name="Streamable"><b>Streamable</b></a> - 
+<p><a class="selfLink" id="Streamable" href="#Streamable" rel="bookmark"><strong>Streamable</strong></a> - 
 Like CSV files in general, NCCSV files are streamable. 
 Thus, if an NCSV is generated on-the-fly by a data server such as 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
@@ -82,7 +81,7 @@ the server can start to stream data to the requester before all of the data
 has been gathered. This is a useful and desireable feature. NetCDF files,
 by contrast, are not streamable.
 
-<p><a name="ERDDAP"><b>ERDDAP</b></a> - 
+<p><a class="selfLink" id="ERDDAP" href="#ERDDAP" rel="bookmark"><strong>ERDDAP</strong></a> - 
 This specification is designed so that NCCSV files and the .nc files
 that can be created from them can be used by an 
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/index.html"
@@ -102,7 +101,7 @@ and variable attributes, mostly based on CF and ACDD attributes (see
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes"
 >https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes</a>).
 
-<p><a name="Balance"><b>Balance</b></a> - 
+<p><a class="selfLink" id="Balance" href="#Balance" rel="bookmark"><strong>Balance</strong></a> - 
 The design of the NCCSV format is a balance of several requirements:
 
 <ul>
@@ -116,7 +115,7 @@ spreadsheet with no loss of information.
 If some requirement in this document seems odd or picky,
 it is probably needed to meet one of these requirements.
 
-<p><a name="OtherSpecifications"><b>Other Specifications</b></a> -
+<p><a class="selfLink" id="OtherSpecifications" href="#OtherSpecifications" rel="bookmark"><strong>Other Specifications</strong></a> -
 This specification refers to several other specifications and libraries 
 that it is designed to work with, but this specification is not a part of 
 any of those other specifications, nor does it need any changes to them, 
@@ -129,42 +128,42 @@ see the related specification. Notably, this includes:
 <br><a rel="bookmark"
 href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3"
 >http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery_1-3<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> .
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a> .
 <li>The Climate and Forecast (CF) metadata standard: 
 <br><a rel="bookmark"
-href="http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html"
->http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> .
+href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html"
+>http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a> .
 <li>The NetCDF User Guide (NUG):
 <br><a rel="bookmark" 
 href="http://www.unidata.ucar.edu/software/netcdf/docs/user_guide.html"
 >http://www.unidata.ucar.edu/software/netcdf/docs/user_guide.html<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> .
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a> .
 <li>The NetCDF software libraries like NetCDF-java and NetCDF-c: 
 <br><a rel="bookmark" 
 href="https://www.unidata.ucar.edu/software/netcdf/"
 >https://www.unidata.ucar.edu/software/netcdf/<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> .
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a> .
 These libraries cannot read NCCSV files, 
 but they can read .nc files created from NCCSV files. 
 <li>JSON: 
 <a rel="bookmark" href="http://www.json.org/"
 >http://www.json.org/<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>
 </ul>
 
-<p><a name="Notation"><b>Notation</b></a> -
+<p><a class="selfLink" id="Notation" href="#Notation" rel="bookmark"><strong>Notation</strong></a> -
 In this specification, brackets, [ ], denote optional items.
 
 
 <p>&nbsp;
 
-<h2><a name="FileStructure">File Structure</a></h2>
+<h2><a class="selfLink" id="FileStructure" href="#FileStructure" rel="bookmark">File Structure</a></h2>
 A complete NCCSV file consists of two sections: the metadata section, 
 followed by the data section.
 
@@ -179,40 +178,40 @@ ERDDAP reads and writes NCCSV files with the ISO-8859-1 charset.
 or carriageReturn plus newline (\r\n) (which is common on Windows computers)
 as end-of-line markers, but not both.
 
-<p><a name="nccsvMetadata">.nccsvMetadata</a> - 
+<p><a class="selfLink" id="nccsvMetadata" href="#nccsvMetadata" rel="bookmark">.nccsvMetadata</a> - 
 When both the creator and the reader are expecting it, 
 it is also possible and sometimes useful to make a variant of an NCCSV file
-which contains just the metadata section (including the <tt>*END_METADATA*</tt> line).
+which contains just the metadata section (including the <kbd>*END_METADATA*</kbd> line).
 The result provides a complete description of the file's attributes,
 variable names, and data types, 
 thus serving the same purpose as the .das plus .dds responses
 from an OPeNDAP server. ERDDAP will return this variation
-if you request <tt>fileType=.nccsvMetadata</tt> from an ERDDAP dataset.
+if you request <kbd>fileType=.nccsvMetadata</kbd> from an ERDDAP dataset.
 
 
 <p>&nbsp;
 
-<h2><a name="TheMetadataSection">The Metadata Section</a></h2>
+<h2><a class="selfLink" id="TheMetadataSection" href="#TheMetadataSection" rel="bookmark">The Metadata Section</a></h2>
 
 In an NCCSV file, each line of the metadata section 
 uses the format
-<br><tt><a rel="help" href="#variableName">variableName</a>,<a rel="help" href="#attributeName">attributeName</a>,<a rel="help" href="#value">value1</a>[,value2][,value3][,value4][...]</tt>
+<br><kbd><a rel="help" href="#variableName">variableName</a>,<a rel="help" href="#attributeName">attributeName</a>,<a rel="help" href="#value">value1</a>[,value2][,value3][,value4][...]</kbd>
 <br>Spaces before or after items are not allowed because they cause problems 
 when importing the file into spreadsheet programs. 
 
-<p><a name="Conventions">The</a> 
-first line of an NCCSV file is the first line of the metadata section and
-must have a <a rel="help" href="#GLOBAL"><tt>*GLOBAL*</tt></a>
-<tt>Conventions</tt> attribute listing all of the 
+<p><a class="selfLink" id="Conventions" href="#Conventions" rel="bookmark">Conventions</a> -
+The first line of an NCCSV file is the first line of the metadata section and
+must have a <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a>
+<kbd>Conventions</kbd> attribute listing all of the 
 conventions used in the file as a String containing a CSV list, for example:
-<br><tt>*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0"</tt>
-<br>One of the conventions listed must be <tt>NCCSV-1.0</tt>, 
+<br><kbd>*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0"</kbd>
+<br>One of the conventions listed must be <kbd>NCCSV-1.0</kbd>, 
 which refers to the current version of this specification.
 
-<p><a name="END_METADATA">The</a> 
-end of the metadata section of an NCCSV file must be denoted by a 
+<p><a class="selfLink" id="END_METADATA" href="#END_METADATA" rel="bookmark">*END_METADATA*</a> -
+The end of the metadata section of an NCCSV file must be denoted by a 
 line with only
-<br><tt>*END_METADATA*</tt>
+<br><kbd>*END_METADATA*</kbd>
 
 <p>It is recommended but not required that all of the attributes for a 
 given variable appear on adjacent lines of the metadata section. 
@@ -222,9 +221,9 @@ the variables in the NetCDF file.
 
 <p>Optional blank lines are allowed in the metadata section after the required 
 first line with 
-<tt><a rel="help" href="#GLOBAL">*GLOBAL*</a> <a rel="help" href="#Conventions">Conventions</a></tt> 
+<kbd><a rel="help" href="#GLOBAL">*GLOBAL*</a> <a rel="help" href="#Conventions">Conventions</a></kbd> 
 information (see below)
-and before the required last line with <tt>*END_METADATA*</tt>. 
+and before the required last line with <kbd>*END_METADATA*</kbd>. 
 
 <p>If a spreadsheet is created from an NCCSV file, 
 the metadata data section will appear with variable names in column A, 
@@ -236,74 +235,74 @@ section. The software that converts NCCSV files into .nc files will ignore
 the extra commas.
 
 
-<h3><a name="variableName">variableName</a></h3>
+<h3><a class="selfLink" id="variableName" href="#variableName" rel="bookmark">variableName</a></h3>
 <i>variableName</i> is the case-sensitive name of a variable in the data file.
 All variable names must begin with a 7-bit ASCII letter or underscore and
 be composed of 7-bit ASCII letters, underscores, and 7-bit ASCII digits. 
 The special variableName 
-<a name="GLOBAL"><tt>*GLOBAL*</tt></a> is used to denote global metadata.
+<a class="selfLink" id="GLOBAL" href="#GLOBAL" rel="bookmark"><kbd>*GLOBAL*</kbd></a> is used to denote global metadata.
 
 
-<h3><a name="attributeName">attributeName</a></h3>
+<h3><a class="selfLink" id="attributeName" href="#attributeName" rel="bookmark">attributeName</a></h3>
 <i>attributeName</i> is the case-sensitive name of an attribute
-associated with a variable or <a rel="help" href="#GLOBAL"><tt>*GLOBAL*</tt></a>. 
+associated with a variable or <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a>. 
 All attribute names must begin with a 7-bit ASCII letter or 
 underscore and be composed of 7-bit ASCII letters, underscores,
 and 7-bit ASCII digits. 
 
-<p><a name="SCALAR"><tt><b>*SCALAR*</b></tt></a> - 
-The special attributeName <tt>*SCALAR*</tt>
+<p><a class="selfLink" id="SCALAR" href="#SCALAR" rel="bookmark"><kbd><strong>*SCALAR*</strong></kbd></a> - 
+The special attributeName <kbd>*SCALAR*</kbd>
 can be used to create a
 scalar data variable and define its value. 
-The data type of the <tt>*SCALAR*</tt> defines the data type 
+The data type of the <kbd>*SCALAR*</kbd> defines the data type 
 for the variable, 
-so do not specify a <tt>*DATA_TYPE*</tt> attribute for scalar variables. 
+so do not specify a <kbd>*DATA_TYPE*</kbd> attribute for scalar variables. 
 Note that there must not be data for the scalar variable in the Data Section
 of the NCCSV file. 
 
 <p>For example, to create a scalar variable named "ship" 
-with the value "Okeanos Explorer" and a <tt>cf_role</tt> attribute, use: 
-<br><tt>ship,*SCALAR*,"Okeanos Explorer"
-<br>ship,cf_role,trajectory_id</tt>
+with the value "Okeanos Explorer" and a <kbd>cf_role</kbd> attribute, use: 
+<br><kbd>ship,*SCALAR*,"Okeanos Explorer"
+<br>ship,cf_role,trajectory_id</kbd>
 <br>When a scalar data variable is read into ERDDAP, 
 the scalar value is converted into a column in the data table with the 
 same value on every row.
 
 
-<h3><a name="value">value</a></h3>
+<h3><a class="selfLink" id="value" href="#value" rel="bookmark">value</a></h3>
 <p><i>value</i> is the value of the metadata attribute
 and must be an array with one or more of either a 
-<tt>byte, short, int, long, float, double, String,</tt> or <tt>char</tt>. 
+<kbd>byte, short, int, long, float, double, String,</kbd> or <kbd>char</kbd>. 
 No other data types are supported. Attributes with no value will be ignored. 
 If there is more than one sub-value, the sub-values must all be of the 
 same data type and separated by commas, for example:
-<br><tt>sst,actual_range,0.17f,23.58f</tt>
+<br><kbd>sst,actual_range,0.17f,23.58f</kbd>
 <br>If there are multiple String values, use a single String with 
-<tt>\n</tt> (newline) characters separating the substrings.
+<kbd>\n</kbd> (newline) characters separating the substrings.
 
 <p>The definitions of the attribute data types are:
 
 <ul>
-<li><a name="byte"><tt><b>byte</b></tt></a>
+<li><a class="selfLink" id="byte" href="#byte" rel="bookmark"><kbd><strong>byte</strong></kbd></a>
   attribute values (8-bit, signed) must be written with the 
   suffix 'b', e.g., -7b, 0b, 7b . The range of valid byte values is -128 to 127.
   A number that looks like a byte but is invalid (e.g., 128b) 
   will generate an error message. 
   <br>&nbsp;
-<li><a name="short"><tt><b>short</b></tt></a>
+<li><a class="selfLink" id="short" href="#short" rel="bookmark"><kbd><strong>short</strong></kbd></a>
   attribute values (16-bit, signed) must be written with the
   suffix 's', e.g., -30000s, 0s, 30000s. The range of valid short values is 
   -32768 to 32767. A number that looks like a short but is invalid 
   (e.g., 21768s) will generate an error message. 
   <br>&nbsp;
-<li><a name="int"><tt><b>int</b></tt></a>
+<li><a class="selfLink" id="int" href="#int" rel="bookmark"><kbd><strong>int</strong></kbd></a>
   attribute values (32-bit, signed) must be written as JSON ints
   without a decimal point or exponent, but with the suffix 'i', 
   e.g., -12067978i, 0i, 12067978i. The range of valid int values is 
   -2147483648 to 2147483647. A number that looks like an int but is invalid 
   (e.g., 2147483648i) will generate an error message. 
   <br>&nbsp;
-<li><a name="long"><tt><b>long</b></tt></a>
+<li><a class="selfLink" id="long" href="#long" rel="bookmark"><kbd><strong>long</strong></kbd></a>
   attribute values (64-bit, signed, currently supported by 
   NUG and ERDDAP but not yet supported by CF) must be written without 
   a decimal point and with the suffix 'L',
@@ -314,34 +313,34 @@ same data type and separated by commas, for example:
   A number that looks like a long but is invalid (e.g., 9223372036854775808L)
   will generate an error message. 
   <br>&nbsp;
-<li><a name="float"><tt><b>float</b></tt></a>
+<li><a class="selfLink" id="float" href="#float" rel="bookmark"><kbd><strong>float</strong></kbd></a>
   attribute values (32-bit) must be written with the suffix 'f'
   and may have a decimal point and/or an exponent, 
   e.g., 0f, 1f, 12.34f, 1e12f, 1.23e+12f, 1.23e12f, 1.87E-7f. 
-  Use <tt>NaNf</tt> for a float NaN (missing) value. 
+  Use <kbd>NaNf</kbd> for a float NaN (missing) value. 
   The range of floats is approximately 
   +/-3.40282347E+38f (~7 significant decimal digits). 
   A number that looks like a float but is invalid (e.g., 1.0e39f) 
   will generate an error message.
   <br>&nbsp;
-<li><a name="double"><tt><b>double</b></tt></a>
+<li><a class="selfLink" id="double" href="#double" rel="bookmark"><kbd><strong>double</strong></kbd></a>
   attribute values (64-bit) must be written
   with the suffix 'd' and may have a decimal point and/or an exponent, 
   e.g., 0d, 1d, 12.34d, 1e12d, 1.23e+12d, 1.23e12d, 1.87E-7d. 
-  Use <tt>NaNd</tt> for a double NaN (missing) value. 
+  Use <kbd>NaNd</kbd> for a double NaN (missing) value. 
   The range of doubles is approximately +/-1.79769313486231570E+308d
   (~15 significant decimal digits). 
   A number that looks like a double but is invalid (e.g., 1.0e309d) 
   will generate an error message. 
   <br>&nbsp;
-<li><a name="String"><tt><b>String</b></tt></a>
+<li><a class="selfLink" id="String" href="#String" rel="bookmark"><kbd><strong>String</strong></kbd></a>
   attribute values are a sequence of UCS-2 characters 
   (i.e., 2-byte Unicode characters, as in Java), 
   which must be written as 7-bit ASCII, JSON-like strings 
   so that non-ASCII characters can be specified. 
   <ul>
   <li>Double quotes (") must be encoded as two double 
-    quotes (<tt>""</tt>). That's what spreadsheet programs require when 
+    quotes (<kbd>""</kbd>). That's what spreadsheet programs require when 
     reading .csv files. That's what spreadsheet programs write when 
     you save a spreadsheet as a .csv file.
   <li>The special JSON backslash-encoded characters must be encoded as 
@@ -350,20 +349,20 @@ same data type and separated by commas, for example:
     <a rel="help" href="#uhhhh">\u<i>hhhh</i></a> syntax. In a spreadsheet, 
     don't use Alt Enter to specify a new line within a text cell; 
     instead, use \n (2 characters: backslash and 'n') to indicate a new line.
-  <li><a name="uhhhh">\u<i>hhhh</i></a> -
+  <li><a class="selfLink" id="uhhhh" href="#uhhhh" rel="bookmark">\u<i>hhhh</i></a> -
     All characters less than character #32 or greater than character #126,
     and not otherwise encoded, must be encoded with the syntax
-    <tt>\u<i>hhhh</i></tt>, where hhhh is the 4-digit hexadecimal
-    number of the character, e.g., the Euro sign is <tt>\u20AC</tt>.
+    <kbd>\u<i>hhhh</i></kbd>, where hhhh is the 4-digit hexadecimal
+    number of the character, e.g., the Euro sign is <kbd>\u20AC</kbd>.
     See the code pages referenced at 
     <a rel="bookmark"
     href="https://en.wikipedia.org/wiki/Unicode"
     >https://en.wikipedia.org/wiki/Unicode<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a> 
     to find the hexadecimal numbers associated with specific Unicode characters,
     or use a software library.
-  <li>If the String has a space at the beginning or end, or includes <tt>"</tt>
+  <li>If the String has a space at the beginning or end, or includes <kbd>"</kbd>
     (double quote) or a comma, or contains values that would otherwise be 
     interpreted as some other data type (e.g., an int), or is the word "null", 
     the entire String must
@@ -380,17 +379,17 @@ same data type and separated by commas, for example:
     This will probably change.
     <br>&nbsp;
   </ul>
-<li><a name="char"><tt><b>char</b></tt></a>
+<li><a class="selfLink" id="char" href="#char" rel="bookmark"><kbd><strong>char</strong></kbd></a>
   attribute values are a single UCS-2 character
   (i.e., 2-byte Unicode characters, as in Java), which must be written
   as 7-bit ASCII, JSON-like characters so that other characters can be specified
-  (see the <tt>String</tt> definition above for encoding of special characters,
+  (see the <kbd>String</kbd> definition above for encoding of special characters,
   with the addition of encoding a single quote as \'). 
   Char attribute values must be enclosed in single quotes (the inner quotes)
-  and double quotes (the outer quotes), e.g., <tt>"'a'", "'""'"</tt> 
+  and double quotes (the outer quotes), e.g., <kbd>"'a'", "'""'"</kbd> 
   (a double quote character), 
-  <tt>"'\''"</tt> (a single quote character), <tt>"'\t'"</tt> (a tab), 
-  <tt>"'\u20AC'"</tt> (a Euro character). This system of using 
+  <kbd>"'\''"</kbd> (a single quote character), <kbd>"'\t'"</kbd> (a tab), 
+  <kbd>"'\u20AC'"</kbd> (a Euro character). This system of using 
   single and double quotes is odd and cumbersome, but it is a way to 
   distinguish char values from Strings in a way that works with spreadsheets. 
   A value that looks like a char but is invalid will generate an error message. 
@@ -398,57 +397,57 @@ same data type and separated by commas, for example:
   is currently discouraged. 
 </ul>
 
-<p><a name="Suffix"><b>Suffix</b></a> - 
+<p><a class="selfLink" id="Suffix" href="#Suffix" rel="bookmark"><strong>Suffix</strong></a> - 
 Note that in the attributes section of an NCCSV file, 
 all numeric attribute values must have a suffix letter (e.g., 'b')
 to identify the numeric data type (e.g., byte). 
 But in the data section of an NCCSV file,
 numeric data values must never have these suffix letters 
 (with the exception of 'L' for long integers) -- 
-the data type is specified by the <tt>*DATA_TYPE*</tt> attribute for the variable.
+the data type is specified by the <kbd>*DATA_TYPE*</kbd> attribute for the variable.
 
 
-<p><a name="DATA_TYPE"><b>*DATA_TYPE*</b></a> -
+<p><a class="selfLink" id="DATA_TYPE" href="#DATA_TYPE" rel="bookmark"><strong>*DATA_TYPE*</strong></a> -
 The data type for each non-<a rel="help" href="#SCALAR">scalar</a> 
 variable must be specified by a 
-<tt>*DATA_TYPE*</tt> attribute which can have a value of 
-<tt>byte, short, int, long, float, double, String,</tt> or <tt>char</tt> 
+<kbd>*DATA_TYPE*</kbd> attribute which can have a value of 
+<kbd>byte, short, int, long, float, double, String,</kbd> or <kbd>char</kbd> 
 (case insensitive). For example,
-<br><tt>qc_flag,*DATA_TYPE*,byte</tt>
-<br>WARNING: Specifying the correct <tt>*DATA_TYPE*</tt> is your responsibility.
-Specifying the wrong data type (e.g., <tt>int</tt> when you should have 
-specified <tt>float</tt>) will not generate an error message and may cause 
+<br><kbd>qc_flag,*DATA_TYPE*,byte</kbd>
+<br>WARNING: Specifying the correct <kbd>*DATA_TYPE*</kbd> is your responsibility.
+Specifying the wrong data type (e.g., <kbd>int</kbd> when you should have 
+specified <kbd>float</kbd>) will not generate an error message and may cause 
 information to be lost (e.g., float values will be rounded to ints) 
 when the NCCSV file is read by ERDDAP or converted into a NetCDF file. 
 
 
-<p><a name="charDiscouraged"><tt>char</tt> Discouraged</a> -
-The use of <tt>char</tt> data values is discouraged because they are not widely
-supported in other file types. <tt>char</tt> values may be written in the
+<p><a class="selfLink" id="charDiscouraged" href="#charDiscouraged" rel="bookmark"><kbd>char</kbd> Discouraged</a> -
+The use of <kbd>char</kbd> data values is discouraged because they are not widely
+supported in other file types. <kbd>char</kbd> values may be written in the
 data section as single characters or as Strings (notably, if you need to
 write a special character). If a String is found, the first character of the 
 String will be used as the char's value. Zero length Strings and missing values
 will be converted to character \uFFFF. Note that NetCDF files only support
 single byte chars, so any chars greater than char #255 will be converted to 
-'?' when writing NetCDF files. Unless a <tt>charset</tt> attribute is used
+'?' when writing NetCDF files. Unless a <kbd>charset</kbd> attribute is used
 to specify a different charset for a char variable, the ISO-8859-1 charset
 will be used.
 
-<p><a name="longDiscouraged"><tt>long</tt> Discouraged</a> -
+<p><a class="selfLink" id="longDiscouraged" href="#longDiscouraged" rel="bookmark"><kbd>long</kbd> Discouraged</a> -
 Although many file types (e.g., NetCDF-4 and json) and ERDDAP support
-<tt>long</tt> data values, the use of <tt>long</tt> data values in 
+<kbd>long</kbd> data values, the use of <kbd>long</kbd> data values in 
 NCCSV files is currently discouraged because they are currently
 not supported by Excel, CF and NetCDF-3 files. 
-If you want to specify <tt>long</tt> data values in an NCCSV file 
+If you want to specify <kbd>long</kbd> data values in an NCCSV file 
 (or in the corresponding Excel spreadsheet),
 you must use the suffix 'L' so that Excel doesn't treat the numbers as
 floating point numbers with lower precision. 
 Currently, if an NCCSV files is converted into a NetCDF-3 .nc file, 
-<tt>long</tt> data values will be converted into <tt>double</tt> values,
+<kbd>long</kbd> data values will be converted into <kbd>double</kbd> values,
 causing a loss of precision for very large values
 (less than -2^53 or greater than 2^53). 
 
-<p><a name="ERDDAP_Metadata"><b>CF, ACDD, and ERDDAP Metadata</b></a> -
+<p><a class="selfLink" id="ERDDAP_Metadata" href="#ERDDAP_Metadata" rel="bookmark"><strong>CF, ACDD, and ERDDAP Metadata</strong></a> -
 Since it is envisioned that most NCCSV files, or the .nc files
 created from them, will be read into ERDDAP,
 it is strongly recommended that NCCSV files include the metadata attributes
@@ -459,9 +458,9 @@ The attributes are almost all from the CF and ACDD metadata standards and
 serve to properly describe the dataset (who, what, when, where, why, how)
 to someone who otherwise knows
 nothing about the dataset. Of particular importance, 
-almost all numeric variables should have a <tt>units</tt> 
+almost all numeric variables should have a <kbd>units</kbd> 
 attribute with a UDUNITS-compatible value, e.g., 
-<br><tt>sst,units,degrees_C</tt>
+<br><kbd>sst,units,degree_C</kbd>
 
 <p>It is fine to include additional attributes which are not from the 
 CF or ACDD standards or from ERDDAP.
@@ -469,14 +468,14 @@ CF or ACDD standards or from ERDDAP.
 
 <p>&nbsp;
 
-<h2><a name="TheDataSection">The Data Section</a></h2>
+<h2><a class="selfLink" id="TheDataSection" href="#TheDataSection" rel="bookmark">The Data Section</a></h2>
 
-<h3><a name="Structure">Structure</a></h3>
+<h3><a class="selfLink" id="Structure" href="#Structure" rel="bookmark">Structure</a></h3>
 The first line of the data section must have a case-sensitive, 
 comma-separated list of variable names. 
 All of the variables in this list must be described in the metadata section, 
-and vice versa (other than <a rel="help" href="#GLOBAL"><tt>*GLOBAL*</tt></a> attributes 
-and <a rel="help" href="#SCALAR"><tt>*SCALAR*</tt></a> variables).
+and vice versa (other than <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a> attributes 
+and <a rel="help" href="#SCALAR"><kbd>*SCALAR*</kbd></a> variables).
 
 <p>The second through the penultimate lines of the data section must
 have a comma-separated list of values. 
@@ -484,8 +483,8 @@ Each row of data must have the same number of values as the comma-separated
 list of variable names. 
 Spaces before or after values are not allowed because they cause problems 
 when importing the file into spreadsheet programs.
-Each column in this section must contain only values of the <tt>*DATA_TYPE*</tt>
-specified for that variable by the <tt>*DATA_TYPE*</tt>
+Each column in this section must contain only values of the <kbd>*DATA_TYPE*</kbd>
+specified for that variable by the <kbd>*DATA_TYPE*</kbd>
 attribute for that variable.
 Unlike in the attributes section, numeric values in the data section 
 must not have suffix letters to denote the data type. 
@@ -498,12 +497,12 @@ about 2 billion rows.
 In general, it is recommended that you split large datasets into
 multiple NCCSV data files with fewer than 1 million rows each.
 
-<p><a name="END_DATA"><tt>*END_DATA*</tt></a> -
+<p><a class="selfLink" id="END_DATA" href="#END_DATA" rel="bookmark"><kbd>*END_DATA*</kbd></a> -
 The end of the data section must be denoted by a line with only
-<br><tt>*END_DATA*</tt>
+<br><kbd>*END_DATA*</kbd>
 
 <p>If there is additional content in the NCCSV file after the
-<tt>*END_DATA*</tt> line, it will be ignored when the NCCSV file is
+<kbd>*END_DATA*</kbd> line, it will be ignored when the NCCSV file is
 converted into an .nc file. Such content is therefore discouraged.
 
 <p>In a spreadsheet following these conventions, 
@@ -511,34 +510,34 @@ the variable names and data values will be in multiple columns.
 See the example below.
 
 
-<h3><a name="MissingValues">Missing Values</a></h3>
+<h3><a class="selfLink" id="MissingValues" href="#MissingValues" rel="bookmark">Missing Values</a></h3>
 
 <p>Numeric missing values may be written as a numeric value identified by a 
-<tt>missing_value</tt> or <tt>_FillValue</tt> attribute for that variable.
+<kbd>missing_value</kbd> or <kbd>_FillValue</kbd> attribute for that variable.
 For example, see the second value on this data row:
-<br><tt>Bell M. Shimada,99,123.4</tt>
+<br><kbd>Bell M. Shimada,99,123.4</kbd>
 <br>This is the recommended way to handle missing values for
 byte, short, int, and long variables.
 
-<p>float or double NaN values may be written as <tt>NaN</tt>. 
+<p>float or double NaN values may be written as <kbd>NaN</kbd>. 
 For example, see the second value on this data row:
-<br><tt>Bell M. Shimada,NaN,123.4</tt>
+<br><kbd>Bell M. Shimada,NaN,123.4</kbd>
 
 <p>String and numeric missing values may be indicated by an empty field. 
 For example, see the second value on this data row:
-<br><tt>Bell M. Shimada,,123.4</tt>
+<br><kbd>Bell M. Shimada,,123.4</kbd>
 
 <p>For byte, short, int, and long variables,
 the NCCSV converter utility and ERDDAP will convert an empty field 
 into the maximum allowed value for that data type (e.g., 127 for bytes).
-If you do this, be sure to add a <tt>missing_value</tt> or 
-<tt>_FillValue</tt> attribute for that variable to identify this value, 
+If you do this, be sure to add a <kbd>missing_value</kbd> or 
+<kbd>_FillValue</kbd> attribute for that variable to identify this value, 
 e.g.,
-<br><tt><i>variableName</i>,_FillValue,127b</tt>
+<br><kbd><i>variableName</i>,_FillValue,127b</kbd>
 <br>For float and double variables, an empty field will be converted to NaN.
 
 
-<h3><a name="DateTimeValues">DateTime Values</a></h3>
+<h3><a class="selfLink" id="DateTimeValues" href="#DateTimeValues" rel="bookmark">DateTime Values</a></h3>
 DateTime values (including date values that don't have a time component)
 may be represented as numbers or as Strings in NCCSV files.
 A given dateTime variable may only have String values or only numeric values,
@@ -547,22 +546,22 @@ dateTime values when creating .nc files (as required by CF).
 String dateTime values have the advantage of being easily readable by humans.
 
 <p>DateTime values represented as numeric values must have a
-<tt>units</tt> attribute which specifies the "<i>units</i> since <i>dateTime</i>" 
+<kbd>units</kbd> attribute which specifies the "<i>units</i> since <i>dateTime</i>" 
 as required by CF and specified by UDUNITS, e.g., 
-<br><tt>time,units,seconds since 1970-01-01T00:00:00Z</tt>
+<br><kbd>time,units,seconds since 1970-01-01T00:00:00Z</kbd>
 
 <p>DateTime values represented as String values must have a
-String <tt>*DATA_TYPE*</tt> attribute and a <tt>units</tt> attribute
+String <kbd>*DATA_TYPE*</kbd> attribute and a <kbd>units</kbd> attribute
 which specifies a dateTime pattern as specified by the 
 Java DateTimeFormatter class 
 <br>(<a rel="bookmark"
 href="https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html"
      >https://docs.oracle.com/javase/8/docs/api/index.html?java/time/DateTimeFomatter.html<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>). For example, 
-<br><tt>time,units,yyyy-MM-dd'T'HH:mm:ssZ</tt>
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>). For example, 
+<br><kbd>time,units,yyyy-MM-dd'T'HH:mm:ssZ</kbd>
 <br>All dateTime values for a given data variable must use the same format.
-<br>In most cases, the dateTime pattern you need for the <tt>units</tt> 
+<br>In most cases, the dateTime pattern you need for the <kbd>units</kbd> 
 attribute will be a variation of one of these formats:
 
 <ul>
@@ -583,28 +582,28 @@ this is sometimes erroneously called the Julian date).
 You may need a shortened version of this, e.g., yyyyDDD .
 </ul>
 
-<p><a name="Precision">Precision</a> - 
+<p><a class="selfLink" id="Precision" href="#Precision" rel="bookmark">Precision</a> - 
 When a software library converts an .nc file into an NCCSV file,
 all dateTime values will be written as Strings with the
 ISO 8601:2004(E) dateTime format, e.g., 1970-01-01T00:00:00Z . 
 You can control the precision with the ERDDAP-specific attribute
-<tt>time_precision</tt>. See 
+<kbd>time_precision</kbd>. See 
 <br><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision"
 >https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision</a>.
 
-<p><a name="TimeZone">Time Zone</a> - 
+<p><a class="selfLink" id="TimeZone" href="#TimeZone" rel="bookmark">Time Zone</a> - 
 The default time zone for dateTime values is the Zulu (or GMT) 
 time zone, which has no daylight savings time periods. 
 If a dateTime variable has dateTime values from a different time zone,
-you must specify this with the ERDDAP-specific attribute <tt>time_zone</tt>.
+you must specify this with the ERDDAP-specific attribute <kbd>time_zone</kbd>.
 This is a requirement for ERDDAP (see 
 <br><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_zone"
 >https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_zone</a>).
 
 
-<h3><a name="DegreeValues">Degree Values</a></h3>
+<h3><a class="selfLink" id="DegreeValues" href="#DegreeValues" rel="bookmark">Degree Values</a></h3>
 As required by CF, all degree values (e.g., for longitude and latitude) 
 must be specified as decimal-degree double values, 
 not as a degree&deg;min'sec" String or as separate variables for 
@@ -615,21 +614,21 @@ Use negative values for West longitudes and for South latitudes.
 
 <p>&nbsp;
 
-<h2><a name="DSGFeatureTypes">DSG Feature Types</a></h2>
+<h2><a class="selfLink" id="DSGFeatureTypes" href="#DSGFeatureTypes" rel="bookmark">DSG Feature Types</a></h2>
 An NCCSV file may contain CF Discrete Sampling Geometry 
-<br>(<a rel="bookmark" href="http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#discrete-sampling-geometries"
->http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#discrete-sampling-geometries<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>) data. It is the attributes that make this work:
+<br>(<a rel="bookmark" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries"
+>http://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#discrete-sampling-geometries<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>) data. It is the attributes that make this work:
 
 <ol>
 <li>As required by CF, the NCCSV file must include a line in the 
-  metadata section identifying the <a rel="help" href="#GLOBAL"><tt>*GLOBAL*</tt></a>
+  metadata section identifying the <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a>
   featureType attribute, e.g., 
-  <br><tt>*GLOBAL*,featureType,trajectory</tt>
+  <br><kbd>*GLOBAL*,featureType,trajectory</kbd>
 <li>For use in ERDDAP, the NCCSV file must include a line or lines 
-  in the metadata section identifying the <tt>cf_role=..._id</tt> variables, e.g.,
-  <br><tt>ship,cf_role,trajectory_id</tt>
+  in the metadata section identifying the <kbd>cf_role=..._id</kbd> variables, e.g.,
+  <br><kbd>ship,cf_role,trajectory_id</kbd>
   <br>This is optional for CF, but required in NCCSV.
 <li>For use in ERDDAP, the NCCSV file must include a line or lines
   in the metadata section identifying which variables are associated 
@@ -637,14 +636,14 @@ An NCCSV file may contain CF Discrete Sampling Geometry
 <br><a rel="bookmark"
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type"
 >https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</a>), e.g.,
-  <br><tt>*GLOBAL*,cdm_trajectory_variables,"ship"</tt>
+  <br><kbd>*GLOBAL*,cdm_trajectory_variables,"ship"</kbd>
   <br>or
-  <br><tt>*GLOBAL*,cdm_timeseries_variables,"station_id,lat,lon"</tt>
+  <br><kbd>*GLOBAL*,cdm_timeseries_variables,"station_id,lat,lon"</kbd>
 </ol>
 
 <p>&nbsp;
 
-<h2><a name="SampleFile">Sample File</a></h2>
+<h2><a class="selfLink" id="SampleFile" href="#SampleFile" rel="bookmark">Sample File</a></h2>
 
 Here is a sample file which demonstrates many of the features of an NCCSV file:
 <pre>
@@ -680,7 +679,7 @@ testLong,units,1
 sst,*DATA_TYPE*,float
 sst,standard_name,sea_surface_temperature
 sst,actual_range,0.17f,23.58f
-sst,units,degrees_C
+sst,units,degree_C
 sst,missing_value,99f
 sst,testBytes,-128b,0b,127b
 sst,testShorts,-32768s,0s,32767s
@@ -703,23 +702,23 @@ Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,,NaN
 
 <p>Notes:
 <ul>
-<li>This sample file includes many difficult cases (e.g., <tt>char</tt> and 
-  <tt>long</tt> variables and difficult String values). 
+<li>This sample file includes many difficult cases (e.g., <kbd>char</kbd> and 
+  <kbd>long</kbd> variables and difficult String values). 
   Most NCCSV files will be much simpler.
-<li>The <tt>license</tt> line is broken into two lines here, but is just
+<li>The <kbd>license</kbd> line is broken into two lines here, but is just
   one line in the sample file.
 <li>\u20AC is the encoding of the Euro character and
   \u00FC is the encoding of &uuml;.
 <li>Many Strings in the example are enclosed by double quotes 
   even though they don't have to be,
-  e.g., many global attributes including the title, the <tt>lon units</tt>
+  e.g., many global attributes including the title, the <kbd>lon units</kbd>
   attribute, and the 3rd line of data.)
 <li>It would be clearer and better if the units attribute 
   for the testLong variable were written in double quotes indicating
-  it is a String value. But the current representation (<tt>1</tt>,
+  it is a String value. But the current representation (<kbd>1</kbd>,
   without quotes) will be interpreted correctly as a String, 
   not an integer, because there is no 'i' suffix.
-<li>Unlike other numeric data types, the <tt>long</tt> values 
+<li>Unlike other numeric data types, the <kbd>long</kbd> values 
   in the data section have the suffix ('L') that identifies
   their numeric data type.
   This is required to prevent spreadsheets from interpreting the 
@@ -729,7 +728,7 @@ Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,,NaN
 
 <p>&nbsp;
 
-<h2><a name="Spreadsheets">Spreadsheets</a></h2>
+<h2><a class="selfLink" id="Spreadsheets" href="#Spreadsheets" rel="bookmark">Spreadsheets</a></h2>
 
 In a spreadsheet, as in an NCCSV file:
 <ul>
@@ -737,11 +736,11 @@ In a spreadsheet, as in an NCCSV file:
 (e.g., with a suffix letter, e.g., 'f', to identify attribute's data type).
 <li>In Strings, write all characters less than ASCII character #32 or 
 greater than character #126 as either a JSON-like backslashed character
-(e.g., <tt>\n</tt> for newline) or as the hexadecimal Unicode character number
+(e.g., <kbd>\n</kbd> for newline) or as the hexadecimal Unicode character number
 (case insensitive) with the syntax 
-<a rel="help" href="#uhhhh"><tt>\u<i>hhhh</i></tt></a> 
-(e.g., <tt>\u20AC</tt> for the Euro sign). 
-Use <tt>\n</tt> (2 characters: backslash and 'n') 
+<a rel="help" href="#uhhhh"><kbd>\u<i>hhhh</i></kbd></a> 
+(e.g., <kbd>\u20AC</kbd> for the Euro sign). 
+Use <kbd>\n</kbd> (2 characters: backslash and 'n') 
 to indicate a new line, not Alt Enter.
 </ul>
 
@@ -762,21 +761,21 @@ there will often be extra commas at the end of many of the lines.
 The software that converts NCCSV files into .nc files will ignore the extra commas.
 
 
-<h3><a name="Excel">Excel</a></h3>
+<h3><a class="selfLink" id="Excel" href="#Excel" rel="bookmark">Excel</a></h3>
 <p>To import an NCCSV file into Excel:
 <ol>
-<li>Choose <tt>File : Open</tt> .
-<li>Change the file type to <tt>Text Files (*.prn; *.txt; *.csv)</tt> .
+<li>Choose <kbd>File : Open</kbd> .
+<li>Change the file type to <kbd>Text Files (*.prn; *.txt; *.csv)</kbd> .
 <li>Search the directories and click on the NCCSV .csv file.
-<li>Click <tt>Open</tt> .
+<li>Click <kbd>Open</kbd> .
 </ol>
 
 <p>To create an NCCSV file from an Excel spreadsheet:
 
 <ol>
-<li>Choose <tt>File : Save As</tt> .
-<li>Change the <tt>Save as type:</tt> to be <tt>CSV (Comma delimited) (*.csv)</tt> .
-<li>In response to the compatibility warning, click <tt>Yes</tt> .
+<li>Choose <kbd>File : Save As</kbd> .
+<li>Change the <kbd>Save as type:</kbd> to be <kbd>CSV (Comma delimited) (*.csv)</kbd> .
+<li>In response to the compatibility warning, click <kbd>Yes</kbd> .
 <li>The resulting .csv file will have extra commas at the end 
   of all the rows other than the CSV rows. You can ignore them.
 </ol>
@@ -787,27 +786,27 @@ The software that converts NCCSV files into .nc files will ignore the extra comm
 <img alt="sampleExcel.png" src="sampleExcel.png" title="">
 
 
-<h3><a name="GoogleSheets">Google Sheets</a></h3>
+<h3><a class="selfLink" id="GoogleSheets" href="#GoogleSheets" rel="bookmark">Google Sheets</a></h3>
 
 To import an NCCSV file into Google Sheets:
 
 <ol>
-<li>Choose <tt>File : Open</tt> .
-<li>Choose to <tt>Upload</tt> a file and click on 
-  <tt>Upload a file from your computer</tt> . 
-  Select the file, then click <tt>Open</tt> .
+<li>Choose <kbd>File : Open</kbd> .
+<li>Choose to <kbd>Upload</kbd> a file and click on 
+  <kbd>Upload a file from your computer</kbd> . 
+  Select the file, then click <kbd>Open</kbd> .
   <br>
-  <br>Or, choose <tt>My Drive</tt> and change the file type drop down 
-    selection to <tt>All file types</tt> . 
-    Select the file, then click <tt>Open</tt> .
+  <br>Or, choose <kbd>My Drive</kbd> and change the file type drop down 
+    selection to <kbd>All file types</kbd> . 
+    Select the file, then click <kbd>Open</kbd> .
 </ol>
 
 <p>To create an NCCSV file from a Google Sheets spreadsheet:
 
 <ol>
-<li>Choose <tt>File : Save As</tt> .
-<li>Change the <tt>Save as type:</tt> to be <tt>CSV (Comma delimited) (*.csv)</tt> .
-<li>In response to the compatibility warning, click <tt>Yes</tt> .
+<li>Choose <kbd>File : Save As</kbd> .
+<li>Change the <kbd>Save as type:</kbd> to be <kbd>CSV (Comma delimited) (*.csv)</kbd> .
+<li>In response to the compatibility warning, click <kbd>Yes</kbd> .
 <li>The resulting .csv file will have extra commas at the end of all the rows
   other than the CSV rows. Ignore them. 
 </ol>
@@ -815,7 +814,7 @@ To import an NCCSV file into Google Sheets:
 
 <p>&nbsp;
 
-<h2><a name="Problems">Problems/Warnings</a></h2>
+<h2><a class="selfLink" id="Problems" href="#Problems" rel="bookmark">Problems/Warnings</a></h2>
 <ul>
 <li>If you create an NCCSV file with a text editor or if you create an
   analogous spreadsheet in a spreadsheet program, the text editor
@@ -844,14 +843,13 @@ To import an NCCSV file into Google Sheets:
   <li>Print the contents of the .nc file with ncdump 
   (<a  href="http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1/netcdf/ncdump.html"
      >http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1/netcdf/ncdump.html<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."></a>
      ).
   <li>View the contents of the data in ERDDAP.
   </ul>
 </ul>
 
-</td></tr></table>
-
+</div>
 </body>
 </html>

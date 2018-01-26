@@ -168,17 +168,17 @@ public class HdfVDataDescription extends HdfTag {
             offset_n[i] = stream.readShort(); //Offset of the nth field within the Vdata (16-bit integer)
             order_n[i]  = stream.readShort(); //Order of the nth field of the Vdata (16-bit integer)
             length      = stream.readShort(); //Length of the nth field name string (16-bit integer)
-            fldnm_n[i]  = new String(File2.read(stream, length)); //Non-null terminated ASCII string (length given by corresponding fldnmlen_n)
+            fldnm_n[i]  = new String(File2.readFully(stream, length)); //Non-null terminated ASCII string (length given by corresponding fldnmlen_n)
         }
         length          = stream.readShort(); //Length of the name field (16-bit integer)
-        name            = new String(File2.read(stream, length)); //Non-null terminated ASCII string (length given by namelen)
+        name            = new String(File2.readFully(stream, length)); //Non-null terminated ASCII string (length given by namelen)
         length          = stream.readShort(); //Length of the class field (16-bit integer)
-        className       = new String(File2.read(stream, length)); //Non-null terminated ASCII string (length given by classlen)
+        className       = new String(File2.readFully(stream, length)); //Non-null terminated ASCII string (length given by classlen)
         extag           = stream.readShort(); //Extension tag (16-bit integer)
         exref           = stream.readShort(); //Extension reference number (16-bit integer)
         version         = stream.readShort(); //Version number of DFTAG_VH information (16-bit integer)
         unused          = stream.readShort(); //more Unused (2 zero bytes)
-        junk            = File2.read(stream, 5);  // 5 undocumented bytes: 0 3 0 0 0
+        junk            = File2.readFully(stream, 5);  // 5 undocumented bytes: 0 3 0 0 0
     }
 
     /**

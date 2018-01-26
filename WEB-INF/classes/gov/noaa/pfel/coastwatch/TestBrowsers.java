@@ -221,7 +221,7 @@ public class TestBrowsers  {
         File2.delete(ncName);
 
         //HTTP GET an .asc bath file
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10.01&maxLon=-9.01&minLat=-80.01&maxLat=-79.01&nLon=2&nLat=2&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -256,7 +256,7 @@ public class TestBrowsers  {
         File2.delete(testName + ".grd");
 
         //test of HTTP GET an .hdf bath file    (readHDF doesn't work on my files)
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.hdf");
         response = String2.annotatedString(response.substring(0, 100));
         error = "response=" + response;
@@ -268,7 +268,7 @@ public class TestBrowsers  {
         //Test.ensureEqual(response, reference, error);     //not a good test
           
         //test of  HTTP GET an .mat bath file (there is no read mat)
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.mat");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -276,7 +276,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response.substring(0, reference.length()), reference, error); 
 
         //HTTP GET an .ncHeader of a thredds bath file
-        String responseArray[] = SSR.getUrlResponse(
+        String responseArray[] = SSR.getUrlResponseLines(
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&nLon=2&nLat=2&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;            //reference data from public browser
@@ -360,7 +360,7 @@ public class TestBrowsers  {
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"Bathymetry, ETOPO2v2, 0.033333 degrees, Global\";") > 0, "response=" + response);
 
         //test of HTTP GET an .tif bath file    (there is no readTif())
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             //!!!there was trouble with nLon=2 and nLat=2  but more dense file seems fine
             url + "?get=bathymetryData&minLon=-10&maxLon=-9&minLat=-80&maxLat=-79&fileType=.tif");
         error = "response=" + response;
@@ -375,7 +375,7 @@ public class TestBrowsers  {
         
 
         //HTTP GET an .xyz bath file
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=bathymetryData&minLon=-10.01&maxLon=-9.01&minLat=-80.01&maxLat=-79.01&nLon=2&nLat=2&fileType=.xyz");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -400,7 +400,7 @@ public class TestBrowsers  {
         String reference, response, error, find;
 
         //HTTP GET an .asc grid file
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -414,7 +414,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response.substring(0, reference.length()), reference, error); 
 
         //HTTP GET an .asc grid file    for approximate centeredTime
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=~2006-11-21T11:12:13&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -429,7 +429,7 @@ public class TestBrowsers  {
 
         //HTTP GET an .asc grid file   same as above but with equivalent "endDate" instead of "centeredTime"!
         //note that end date is (beginning of) last date
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&endDate=2006-11-21&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference = //reference data from public browser
@@ -443,7 +443,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response.substring(0, reference.length()), reference, error); 
 
         //HTTP GET the same .asc grid file using the oldStyle ~endDate instead of centeredTime
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&endDate=~2006-11-21T02:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.asc");
         error = "response=" + response;
         reference =    //reference data from public browser
@@ -476,7 +476,7 @@ public class TestBrowsers  {
         Test.ensureEqual((float)grid.getData(7, 0), -6.12819f, "");
         
         //test of HTTP GET an .hdf grid file    (readHDF doesn't work on my files)
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.hdf");
         response = String2.annotatedString(response.substring(0, 100));
         error = "response=" + response;
@@ -488,7 +488,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response, reference, error); 
           
         //test of  HTTP GET an .mat grid file (there is no read mat)
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-18T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.mat");
         error = "response=" + response.substring(0, 100);
         reference =    //reference data from public browser
@@ -512,7 +512,7 @@ public class TestBrowsers  {
         Test.ensureEqual((float)grid.getData(7, 0), -6.12819f, "");      
 
         //HTTP GET an .ncHeader of a thredds grid file
-        String responseArray[] = SSR.getUrlResponse(
+        String responseArray[] = SSR.getUrlResponseLines(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;            //reference data from public browser
@@ -597,7 +597,7 @@ public class TestBrowsers  {
         Test.ensureTrue(String2.indexOf(responseArray, " :title = \"Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Near Real Time, Zonal\";") > 0, "response=" + response);
 
         //test of HTTP GET an .tif grid file    (there is no readTif())
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.tif");
         response = String2.annotatedString(response.substring(0, 100));
         error = "response=" + response;
@@ -606,7 +606,7 @@ public class TestBrowsers  {
         Test.ensureEqual(response, reference, error);          
 
         //HTTP GET an .xyz grid file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.xyz");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -627,7 +627,7 @@ public class TestBrowsers  {
 "-132\t22\t-5.59507"), error); 
 
         //HTTP GET FGDC for a grid file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=fgdc");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response + "\nnot found: ";
@@ -663,7 +663,7 @@ public class TestBrowsers  {
 
 
         //HTTP GET an .ncHeader of a local grid file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridData&dataSet=TATssta&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-130.0&minLat=22.0&maxLat=27.0&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;            //reference data from public browser
@@ -798,7 +798,7 @@ public class TestBrowsers  {
         //climatology source file is 0..360
         //CMCchlaSmday_00010516120000_x_X_y_Y_nx_ny.grd
         try {
-            responseArray = SSR.getUrlResponse(
+            responseArray = SSR.getUrlResponseLines(
                 url + "?get=gridData&dataSet=CMCchla&timePeriod=monthly&centeredTime=0001-05-16T12:00:00&minLon=-130.0&maxLon=-129.0&minLat=24.0&maxLat=26.0&nLon=2&nLat=3&fileType=.asc");
             response = String2.toNewlineString(responseArray);
             error = "response=" + response;
@@ -823,7 +823,7 @@ public class TestBrowsers  {
 
         //**** TIME SERIES 
         //HTTP GET an .asc grid time series file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&lon=-127.26&lat=46.65&fileType=.asc");
         response = String2.toNewlineString(responseArray);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
@@ -866,7 +866,7 @@ public class TestBrowsers  {
             String2.ERROR + " getting .asc"); 
 
         //HTTP GET an .ncHeader of a grid time series file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&lon=-127.26&lat=46.65&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1005,7 +1005,7 @@ public class TestBrowsers  {
         String response, error, find;
 
         //HTTP GET an .xyz vector file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.xyz");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1023,7 +1023,7 @@ public class TestBrowsers  {
 "-132.75\t22\t-7.33952\t-3.07656"), error); 
 
         //HTTP GET an .xyz vector file    same as above but with equivalent "endDate" instead of "centeredTime"!
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day&endDate=2006-11-21&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.xyz");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1041,7 +1041,7 @@ public class TestBrowsers  {
 "-132.75\t22\t-7.33952\t-3.07656"), error); 
 
         //HTTP GET an .ncHeader of a vector file   
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day&centeredTime=2006-11-21T12:00:00&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1206,7 +1206,7 @@ public class TestBrowsers  {
         String response, reference, error, find;
 
         //HTTP GET an .asc station vector file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1223,7 +1223,7 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
 
 
         //HTTP GET an .ncHeader of a station vector file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1641104E9), "2006-11-21T12:00:00", "");
@@ -1344,7 +1344,7 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
 
         //**** TIME SERIES 
         //HTTP GET an .asc time series station vector file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
@@ -1387,7 +1387,7 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
 String2.ERROR + " getting .asc"); 
 
         //HTTP GET an .ncHeader of a time series station vector file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.161432E9),  "2006-10-21T12:00:00", "");
@@ -1513,7 +1513,7 @@ String2.ERROR + " getting .asc");
         String response, error, find;
 
         //HTTP GET an .asc station file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1532,7 +1532,7 @@ String2.ERROR + " getting .asc");
 
 
         //HTTP GET an .ncHeader of a station file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
         error = "response=" + response;
@@ -1645,7 +1645,7 @@ String2.ERROR + " getting .asc");
 
         //**** TIME SERIES 
         //HTTP GET an .asc time series station file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
 //            url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36101&maxLon=-130.359&minLat=42.579002&maxLat=42.581&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.asc");
         response = String2.toNewlineString(responseArray);
@@ -1689,7 +1689,7 @@ String2.ERROR + " getting .asc");
             String2.ERROR + " getting .asc"); 
 
         //HTTP GET an .ncHeader of a time series station file
-        responseArray = SSR.getUrlResponse(
+        responseArray = SSR.getUrlResponseLines(
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36&maxLon=-130.36&minLat=42.58&maxLat=42.58&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
 //            url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-130.36101&maxLon=-130.359&minLat=42.579002&maxLat=42.581&minDepth=0&maxDepth=0&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=.ncHeader");
         response = String2.toNewlineString(responseArray);
@@ -1885,7 +1885,7 @@ String2.ERROR + " getting .asc");
         //*** these are tests of images shown to user in browser
         if (true) {
             //get an img of grid screen with time series
-            responseArray = SSR.getUrlResponse(
+            responseArray = SSR.getUrlResponseLines(
                 url + "?edit=Grid Data&gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
                 "gridTimeSeriesLon=-124.81&gridTimeSeriesLat=38.69");
@@ -1899,7 +1899,7 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of contour screen with time series
-            response = SSR.getUrlResponseString(
+            response = SSR.getURLResponseStringUnchanged(
                 url + "?" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1914,7 +1914,7 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of vector screen with time series
-            response = SSR.getUrlResponseString(
+            response = SSR.getURLResponseStringUnchanged(
                 url + "?" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1934,7 +1934,7 @@ String2.ERROR + " getting .asc");
 //get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&
 //minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0&
 //beginTime=2006-11-27T23&endTime=2006-11-27T23&fileType=.ncHeader
-            response = SSR.getUrlResponseString(
+            response = SSR.getURLResponseStringUnchanged(
                 url + "?edit=Station Vector Data&" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1950,7 +1950,7 @@ String2.ERROR + " getting .asc");
 
         if (true) {
             //get an img of station screen with time series
-            response = SSR.getUrlResponseString(
+            response = SSR.getURLResponseStringUnchanged(
                 url + "?edit=Station+Data+1&" +
                 "gridDataSet=TQNux10&" +
                 "gridTimePeriod=1+day&gridCenteredTime=2006-11-21+12:00:00&" +
@@ -1980,7 +1980,7 @@ String2.ERROR + " getting .asc");
         String responseArray[], response, error, reference;
 
         //HTTP GET an .ncHeader of a grid file,    centeredTime
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=latest" +
                 "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         error = "response=" + response;            //reference data from public browser
@@ -1994,7 +1994,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a grid file,  endTime
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&endDate=latest" +
                 "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=.ncHeader");
         error = "response=" + response;            //reference data from public browser
@@ -2008,7 +2008,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a grid time series file
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day&beginTime=latest" +
                 "&endTime=latest&lon=-127.26&lat=46.65&fileType=.ncHeader");
         error = "response=" + response;
@@ -2025,7 +2025,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a vector file   
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day" +
                 "&centeredTime=latest&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0" +
                 "&fileType=.ncHeader");
@@ -2039,7 +2039,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a station vector file
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=stationVectorData&dataSet=PVPNBwsp&timePeriod=1day&minLon=-135.0" +
                 "&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
                 "&beginTime=latest&endTime=latest&fileType=.ncHeader");
@@ -2053,7 +2053,7 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(reference) > 0, error);
 
         //HTTP GET an .ncHeader of a station file
-        response = SSR.getUrlResponseString(
+        response = SSR.getURLResponseStringUnchanged(
             url + "?get=stationData&dataSet=PNBwtmp&timePeriod=1day&minLon=-135.0" +
                 "&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
                 "&beginTime=latest&endTime=latest&fileType=.ncHeader");

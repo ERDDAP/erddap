@@ -51,13 +51,13 @@ public class OpendapDump {
         DConnect dConnect = null;
         long time = System.currentTimeMillis();
         dConnect = new DConnect(urlName, acceptDeflate, 1, 1);
-        String2.log("DConnect time=" + (System.currentTimeMillis() - time));
+        String2.log("DConnect time=" + (System.currentTimeMillis() - time) + "ms");
 
         //getDas
         if (getDas) {
             time = System.currentTimeMillis();
             DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-            String2.log("getDAS time=" + (System.currentTimeMillis() - time));
+            String2.log("getDAS time=" + (System.currentTimeMillis() - time) + "ms");
             String2.log("DAS:");
             //das.print(System.out); 
             indent = 2;
@@ -86,7 +86,7 @@ public class OpendapDump {
         if (getDds) {
             time = System.currentTimeMillis();
             DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-            String2.log("getDDS time=" + (System.currentTimeMillis() - time));
+            String2.log("getDDS time=" + (System.currentTimeMillis() - time) + "ms");
             String2.log("BEGIN DDS:");
             //dds.print(System.out);
             Enumeration e = dds.getVariables();
@@ -105,7 +105,7 @@ public class OpendapDump {
                 try {
                     time = System.currentTimeMillis();
                     DataDDS dds = dConnect.getData(expr, null);
-                    String2.log("getData time=" + (System.currentTimeMillis() - time));
+                    String2.log("getData time=" + (System.currentTimeMillis() - time) + "ms");
                     //if (dumpData) 
                     //    dds.externalize(System.out, compress, true);
                     //else 

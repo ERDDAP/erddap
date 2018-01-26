@@ -35,7 +35,8 @@ import java.util.List;
 /** 
  * This class represents a table of data from a collection of AWS 
  * (Automatic Weather Station) XML data files (namespace http://www.aws.com/aws).
- * http://developer.weatherbug.com/docs/read/WeatherBug_Rest_XML_API
+ * http://developer.weatherbug.com/docs/read/WeatherBug_Rest_XML_API   
+ * 2017-12-08 weatherbug.com is INACTIVE
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2012-11-05
  */
@@ -388,15 +389,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"infoUrl\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"institution\">exploratorium</att>\n" +
-"        <att name=\"keywords\">air, altitude, atmosphere,\n" +
-"Atmosphere &gt; Altitude &gt; Station Height,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
-"Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, aux, aux-temp, aux-temp-rate, aux_temp, aux_temp_rate, bulb, city, city-state, city-state-zip, city_state, city_state_zip, currents, data, date, dew, dew point, dew_point, dew_point_temperature, direction, exploratorium, feels, feels-like, feels_like, file, fileName, gust, gust-direction, gust-time, gust_direction, gust_speed, gust_time, height, high, humidity, humidity-rate, humidity_high, humidity_low, humidity_rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, indoor_temp, indoor_temp_rate, light, light-rate, light_rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, moon_phase, moon_phase_moon_phase_img, name, newer, ob-date, phase, point, precipitation, pressure, pressure-high, pressure-low, pressure-rate, pressure_high, pressure_low, pressure_rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, rainfall, rate, relative, relative_humidity, site, site-url, site_url, speed, state, station, station-id, station_id, sunrise, sunset, surface, temp-high, temp-low, temp-rate, temp_high, temp_low, temp_rate, temperature, time, title, today, vapor, water, wet, wet_bulb, wet_bulb_temperature, wind, wind_direction, wind_direction_avg, wind_from_direction, wind_speed, wind_speed_avg, wind_speed_of_gust, winds, year, zip</att>\n" +
+"        <att name=\"keywords\">air, altitude, atmosphere, atmospheric, aux, aux-temp, aux-temp-rate, aux_temp, aux_temp_rate, bulb, city, city-state, city-state-zip, city_state, city_state_zip, currents, data, date, dew, dew point, dew_point, dew_point_temperature, direction, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, exploratorium, feels, feels-like, feels_like, file, fileName, gust, gust-direction, gust-time, gust_direction, gust_speed, gust_time, height, high, humidity, humidity-rate, humidity_high, humidity_low, humidity_rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, indoor_temp, indoor_temp_rate, light, light-rate, light_rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, moon_phase, moon_phase_moon_phase_img, name, newer, ob-date, phase, point, precipitation, pressure, pressure-high, pressure-low, pressure-rate, pressure_high, pressure_low, pressure_rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, rainfall, rate, relative, relative_humidity, science, site, site-url, site_url, speed, state, station, station-id, station_id, sunrise, sunset, surface, temp-high, temp-low, temp-rate, temp_high, temp_low, temp_rate, temperature, time, title, today, vapor, water, wet, wet_bulb, wet_bulb_temperature, wind, wind_direction, wind_direction_avg, wind_from_direction, wind_speed, wind_speed_avg, wind_speed_of_gust, winds, year, zip</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
@@ -1033,7 +1026,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n****************** EDDTableFromAwsXmlFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1364,10 +1357,7 @@ directionsForGenerateDatasetsXml() +
 String expected2 = 
 "    String infoUrl \"http://www.exploratorium.edu\";\n" +
 "    String institution \"exploratorium\";\n" +
-"    String keywords \"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"atmosphere, atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, dew point, dew_point_temperature, direction, elevation, exploratorium, feels, feels-like, file, from, gust, high, humidity, humidity-high, humidity-low, humidity-rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, url, vapor, water, wet, wet-bulb, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip\";\n" +
+"    String keywords \"atmosphere, atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, dew point, dew_point_temperature, direction, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, elevation, exploratorium, feels, feels-like, file, from, gust, high, humidity, humidity-high, humidity-low, humidity-rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, url, vapor, water, wet, wet-bulb, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1396,7 +1386,7 @@ String expected2 =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1459,7 +1449,7 @@ String expected2 =
         userDapQuery = "&fileName=~\"SNFLS|zztop\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "fileName,station_id,station,city_state_zip,city_state,site_url,altitude,time,aux_temp,aux_temp_rate,dew_point,feels_like,gust_time,gust_direction,gust_speed,humidity,humidity_high,humidity_low,humidity_rate,indoor_temp,indoor_temp_rate,light,light_rate,moon_phase_moon_phase_img,moon_phase,pressure,pressure_high,pressure_low,pressure_rate,rain_month,rain_rate,rain_rate_max,rain_today,rain_year,temp,temp_high,temp_low,temp_rate,sunrise,sunset,wet_bulb,wind_speed,wind_speed_avg,wind_direction,wind_direction_avg\n" +

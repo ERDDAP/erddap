@@ -345,7 +345,7 @@ public class PointCollectionKey implements Cloneable,
   }
   /**
    * Set location of key
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc key location
    */
@@ -629,7 +629,7 @@ public class PointCollectionKey implements Cloneable,
   }
   /**
    * Set the bounds, in pixels, of the <code>PointCollectionKey</code>
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    */
   public void setBounds(int x, int y, int width, int height) {
     switch(halign_) {
