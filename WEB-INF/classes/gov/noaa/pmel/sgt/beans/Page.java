@@ -51,7 +51,7 @@ import java.awt.print.Printable;
  * will create a graphic.
  *
  * <p> Some classes have been omitted for display purposes.
- * <P ALIGN="CENTER"><IMG SRC="images/RunTimeSimple.png" ALIGN="BOTTOM" BORDER="0">
+ * <p style="text-align:center;"><img src="images/RunTimeSimple.png" style="vertical-align:bottom; border:0;">
  *
  * @author Donald Denbo
  * @version $Revision: 1.12 $, $Date: 2003/09/18 21:01:14 $

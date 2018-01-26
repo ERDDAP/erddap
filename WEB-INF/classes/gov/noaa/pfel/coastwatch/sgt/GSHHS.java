@@ -446,7 +446,7 @@ public class GSHHS  {
         dis.close();
         if (reallyVerbose) String2.log("  GSHHS.getPathInfo done. res=" + resolution +
             " level=" + (desiredLevel==1? "land" : desiredLevel==2? "lake" : "" + desiredLevel) + 
-            " TIME=" + (System.currentTimeMillis() - time));
+            " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**

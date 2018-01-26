@@ -60,7 +60,7 @@ public class DASParser implements DASParserConstants {
         break;
       default:
         jj_la1[1] = jj_gen;
-        error(noDASMsg);
+        error(noDASMsg + " (" + jj_ntk + ", " + ((jj_ntk==-1)?jj_ntk():jj_ntk) + ")");
       }
     } catch (TokenMgrError e) {
         error("Error parsing the Attribute object:\n"
@@ -390,9 +390,11 @@ public class DASParser implements DASParserConstants {
             }
       jj_consume_token(22);
     } catch (NoSuchAttributeException e) {
-        error("Error: The attribute " + attr + " does not exist.");
+        error("Error: The attribute " + attr + " does not exist. (" + 
+                                   e.toString() + ")"); //bob added 
     } catch (AttributeExistsException e) {
-        error("Error: The alias " + alias + " already exists in this DAS.");
+        error("Error: The alias " + alias + " already exists in this DAS. (" + 
+                                   e.toString() + ")"); //bob added 
     }
   }
 
@@ -481,7 +483,8 @@ public class DASParser implements DASParserConstants {
     catch (AttributeBadValueException e) {
         // System.err.println("Caught an AttributeBadValueException");
         String msg = "`" + value + "' is not " + aOrAn(getTypeName(type))
-            + " " + getTypeName(type) + " value.";
+            + " " + getTypeName(type) + " value. (" + 
+                                   e.toString() + ")"; //bob added 
         addBadAttribute(topOfStack().getName(), type, name, value, msg);
     }
   }

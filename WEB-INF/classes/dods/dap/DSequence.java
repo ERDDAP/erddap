@@ -202,7 +202,7 @@ public class DSequence extends DConstructor implements ClientIO {
     }
 
     /**
-    * Returns the named variable.  <b>Note:</b> In <code>DSequence</code>,
+    * Returns the named variable.  <strong>Note:</strong> In <code>DSequence</code>,
     * this method returns the template variable, which holds no data.  If you
     * need to get a variable containing data, use <code>getRow</code> or the
     * <code>getVariable</code> method which takes a row number parameter.

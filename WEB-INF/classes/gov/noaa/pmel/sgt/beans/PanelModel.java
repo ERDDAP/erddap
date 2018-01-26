@@ -44,7 +44,7 @@ import java.awt.event.ComponentListener;
  * in arbitrary positions.  Currently the <code>Panel</code>s are positioned in
  * absolution location.
  * <p> Some classes have been omitted for display purposes.
- * <P ALIGN="CENTER"><IMG SRC="images/PanelModelSimple.png" ALIGN="BOTTOM" BORDER="0">
+ * <p style="text-align:center;"><img src="images/PanelModelSimple.png" style="vertical-align:bottom; border:0;">
  *
  * @author Donald Denbo
  * @version $Revision: 1.8 $, $Date: 2003/09/18 21:01:14 $

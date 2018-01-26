@@ -120,7 +120,7 @@ public abstract class GridDataSet {
 
     /** 
      * altUdUnits is the alternate units for this data 
-     * set (e.g., degrees_F). 
+     * set (e.g., degree_F). 
      * Set by the constructor.
      * Set this to "" if not used.
      */
@@ -244,7 +244,7 @@ public abstract class GridDataSet {
 
     /** 
      * The udUnits for the legend,
-     * e.g., degrees_C. 
+     * e.g., degree_C. 
      * Set by the constructor.
      */
     public String udUnits = null; 

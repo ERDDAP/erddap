@@ -207,7 +207,7 @@ public class NdbcMetStation  {
      * and near real time data (less quality controlled).
      * This changes every month when I get the latest historical data.
      */
-    public static String firstNearRealTimeData = "2017-07-01T00:00:00";
+    public static String firstNearRealTimeData = "2018-01-01T00:00:00";
     /** Change current year ~Feb 28 when Jan historical files become available. */
     public static String HISTORICAL_FILES_CURRENT_YEAR = "2017";  
 
@@ -412,7 +412,7 @@ public class NdbcMetStation  {
      */
     public static Table readStationTxtUrl(String url, String stationID, 
             float lon, float lat) throws Exception {
-        return readStationTxt(url, SSR.getUrlResponse(url), stationID, lon, lat);
+        return readStationTxt(url, SSR.getUrlResponseLines(url), stationID, lon, lat);
     }
 
     /**
@@ -929,7 +929,7 @@ public class NdbcMetStation  {
      * @return a sorted StringArray with no duplicates
      */
     public static StringArray getFileList(String url, String regex) throws Exception {
-        String[] sar = SSR.getUrlResponse(url);
+        String[] sar = SSR.getUrlResponseLines(url);
         int nLines = sar.length;
         StringArray sa = new StringArray();
 
@@ -1292,15 +1292,15 @@ public class NdbcMetStation  {
         //get information about the station
         //http://www.ndbc.noaa.gov/station_page.php?station=<stationName>
         //  a section of the html is:
-        //<P><b>Owned and maintained by National Data Station Center</b><br>   //my 'ownedLine'
-        //<b>C-MAN station</b><br>
-        //<b>VEEP payload</b><br>
-        //<b>60.84 N 146.88 W (60&#176;50'24" N 146&#176;52'48" W)</b><br>
+        //<P><strong>Owned and maintained by National Data Station Center</strong><br>   //my 'ownedLine'
+        //<strong>C-MAN station</strong><br>
+        //<strong>VEEP payload</strong><br>
+        //<strong>60.84 N 146.88 W (60&#176;50'24" N 146&#176;52'48" W)</strong><br>
         //<br>
-        //<b>Site elevation:</b> 0.0 m above mean sea level<br>
-        //<b>Air temp height:</b> 21.3 m above site elevation<br>
-        //<b>Anemometer height:</b> 21.6 m above site elevation<br>
-        //<b>Barometer elevation:</b> 16.5 m above mean sea level<br>
+        //<strong>Site elevation:</strong> 0.0 m above mean sea level<br>
+        //<strong>Air temp height:</strong> 21.3 m above site elevation<br>
+        //<strong>Anemometer height:</strong> 21.6 m above site elevation<br>
+        //<strong>Barometer elevation:</strong> 16.5 m above mean sea level<br>
         //</P>
         String officialStationName = stationName.endsWith("_")?
             stationName.substring(0, 4) : stationName;
@@ -1318,7 +1318,7 @@ public class NdbcMetStation  {
         if (File2.isFile(htmlFileName)) {
             lines = String2.readLinesFromFile(htmlFileName, null, 2);
         } else {
-            lines = SSR.getUrlResponse(stationUrl);
+            lines = SSR.getUrlResponseLines(stationUrl);
             Test.ensureEqual(String2.writeToFile(htmlFileName, String2.toNewlineString(lines)), "", "");
         }
         if (verbose) 
@@ -1355,9 +1355,9 @@ public class NdbcMetStation  {
         if (lines[ownerLine + 1].indexOf("Funding") >= 0)
             ownerLine++;
                                      
-        //get the station type   (e.g., "C-MAN station" extracted from <b>C-MAN station</b><br>)
+        //get the station type   (e.g., "C-MAN station" extracted from <strong>C-MAN station</strong><br>)
         //sometimes "Developed and maintained by <...".
-        String locationRegex = "<b>[-]?[0-9]+\\.[0-9]+ [SN]\\s+[-]?[0-9]+\\.[0-9]+ [WE] \\(.*"; //tested in Test
+        String locationRegex = "<strong>[-]?[0-9]+\\.[0-9]+ [SN]\\s+[-]?[0-9]+\\.[0-9]+ [WE] \\(.*"; //tested in Test
         String stationType;
         if (lcOfficialStationName.equals("eb52")) {
             stationType = "GE"; //no stationType, but deduce it from eb61
@@ -1419,8 +1419,8 @@ public class NdbcMetStation  {
                                  "  payload=" + payload);
 
         //get the lat and lon
-        //text in the form"<b>9.9 S 105.2 W ("
-        //   or sometimes "<b>18.0 S 85.1 W</b><br>"
+        //text in the form"<strong>9.9 S 105.2 W ("
+        //   or sometimes "<strong>18.0 S 85.1 W</strong><br>"
         double lat = Double.NaN;
         double lon = Double.NaN;
         String location = lines[ownerLine + 3];
@@ -1820,9 +1820,11 @@ public class NdbcMetStation  {
                     lcStationName.equals("4h902") ||
                     lcStationName.equals("51wh1") || 
                     lcStationName.equals("51wh2") ||
+                    lcStationName.equals("a025w") ||
                     lcStationName.equals("b040z") ||
                     lcStationName.equals("misma") ||
                     lcStationName.equals("plsfa") ||
+                    lcStationName.equals("q004w") ||
                     lcStationName.equals("mnmm4")) { //bad info in some files
                     //no station information, so no lat lon, so skip these
                 } else if (testMode &&   
@@ -1873,7 +1875,7 @@ public class NdbcMetStation  {
         //  and keep                "venf1h1992.txt"
         if (true) {
             String ndbcDirectoryUrl = "http://www.ndbc.noaa.gov/data/historical/stdmet/";
-            String[] lines = SSR.getUrlResponse(ndbcDirectoryUrl);
+            String[] lines = SSR.getUrlResponseLines(ndbcDirectoryUrl);
             StringArray fileNames = new StringArray();
             for (int i = 0; i < lines.length; i++) {
                 String extract = String2.extractRegex(lines[i], 
@@ -1923,7 +1925,7 @@ public class NdbcMetStation  {
             //  and keep e.g.,          "venf1"
             String ndbcDirectoryUrl = "http://www.ndbc.noaa.gov/data/stdmet/" + 
                 Calendar2.getMonthName3(month) + "/";
-            String[] lines = SSR.getUrlResponse(ndbcDirectoryUrl);
+            String[] lines = SSR.getUrlResponseLines(ndbcDirectoryUrl);
             StringArray fileNames = new StringArray();
             for (int i = 0; i < lines.length; i++) {
                 String extract = String2.extractRegex(lines[i], 
@@ -1983,7 +1985,7 @@ public class NdbcMetStation  {
 
         //get the names of the available real time standard meteorological files
         //search for e.g., "<a href="42OTP.txt">"
-        String[] lines = SSR.getUrlResponse(ndbcDirectoryUrl);
+        String[] lines = SSR.getUrlResponseLines(ndbcDirectoryUrl);
         StringArray stationNames = new StringArray();
         for (int i = 0; i < lines.length; i++) {
             String extract = String2.extractRegex(lines[i], "<a href=\".{5}\\.txt\">", 0); //all current stations have 5 character ID
@@ -2443,27 +2445,27 @@ public class NdbcMetStation  {
         //  http://www.ndbc.noaa.gov/data/realtime2/46088.txt    //45 day   //top line has precedence
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-        //2017 07 01 01 20 260 10.0 12.0   1.0     4   3.8 286 1013.8  11.9  11.4  11.1   MM   MM    MM
-        //2017 07 01 00 50 250  8.0 10.0   0.8     5   3.8 279 1014.2  12.0  11.3  11.2   MM -1.7    MM
-        seconds = Calendar2.isoStringToEpochSeconds("2017-07-01T01"); //50 min rounds to next hour; usually test 01T01
+        //2018 01 01 01 20  20  6.0  7.0   0.2    MM   2.6  MM 1024.9   3.8   7.9  -0.6   MM   MM    MM
+        //2018 01 01 00 50  20  6.0  7.0   0.2    MM   2.5  MM 1025.0   3.9   7.9   0.1   MM +0.0    MM
+        seconds = Calendar2.isoStringToEpochSeconds("2018-01-01T01"); //50 min rounds to next hour; usually test 01T01
         row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
         Test.ensureEqual(table.getStringData(idIndex, row), "46088", "");
         Test.ensureEqual(table.getFloatData(latIndex, row), 48.333f, "");
         Test.ensureEqual(table.getFloatData(lonIndex, row), -123.167f, "");
         Test.ensureEqual(table.getDoubleData(depthIndex, row), 0, "");
-        Test.ensureEqual(table.getDoubleData(wdIndex, row), 260, "");
-        Test.ensureEqual(table.getFloatData(wspdIndex, row), 10f, "");
-        Test.ensureEqual(table.getFloatData(gstIndex, row), 12f, "");    
-        Test.ensureEqual(table.getFloatData(wvhtIndex, row), 1f, ""); 
-        Test.ensureEqual(table.getFloatData(dpdIndex, row), 4, ""); 
-        Test.ensureEqual(table.getFloatData(apdIndex, row), 3.8f, "");
-        Test.ensureEqual(table.getFloatData(mwdIndex, row), 286, "");  
-        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1013.8f, "");
-        Test.ensureEqual(table.getFloatData(atmpIndex, row), 11.9f, "");
-        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 11.4f, "");
-        Test.ensureEqual(table.getFloatData(dewpIndex, row), 11.1f, "");
+        Test.ensureEqual(table.getDoubleData(wdIndex, row), 20, "");
+        Test.ensureEqual(table.getFloatData(wspdIndex, row), 6f, "");
+        Test.ensureEqual(table.getFloatData(gstIndex, row), 7f, "");    
+        Test.ensureEqual(table.getFloatData(wvhtIndex, row), .2f, ""); 
+        Test.ensureEqual(table.getFloatData(dpdIndex, row), Float.NaN, ""); 
+        Test.ensureEqual(table.getFloatData(apdIndex, row), 2.6f, "");
+        Test.ensureEqual(table.getFloatData(mwdIndex, row), Float.NaN, "");  
+        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1024.9f, "");
+        Test.ensureEqual(table.getFloatData(atmpIndex, row), 3.8f, "");
+        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 7.9f, "");
+        Test.ensureEqual(table.getFloatData(dewpIndex, row), -.6f, "");
         Test.ensureEqual(table.getFloatData(visIndex, row), Float.NaN, ""); //(float)Math2.roundTo(18.5 * Math2.kmPerMile, decimalDigits[visIndex]), "");
-        Test.ensureEqual(table.getFloatData(ptdyIndex, row), -1.7f, "");
+        Test.ensureEqual(table.getFloatData(ptdyIndex, row), 0.0f, "");
         Test.ensureEqual(table.getFloatData(tideIndex, row), Float.NaN, ""); //(float)Math2.roundTo(3.0 * Math2.meterPerFoot, decimalDigits[tideIndex]), "");
 
         String2.log("test46088 was successful");
@@ -2493,33 +2495,33 @@ public class NdbcMetStation  {
 
         //!!!***SPECIAL UPDATE EACH MONTH --after separateFiles made (later dated record has priority - encountered first)
         //tests are from (downloaded by hand) 
-        //  http://www.ndbc.noaa.gov/data/realtime2/46088.txt    //45 day   //upper line has precedence
+        //  http://www.ndbc.noaa.gov/data/realtime2/46088.txt    //45 day   //?lower line has precedence
         //a time point in the 5 day file AFTER the last 45 day time
         //top row has precedence, but not if file already had lower row of data
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-        //2017 07 26 01 20 250 10.0 11.0   0.4     3   2.8 286 1014.5  13.0  11.4  11.5   MM   MM    MM
-        //2017 07 26 00 50 240 10.0 12.0   0.4     3   2.8 274 1014.5  13.0  11.0  11.5   MM -1.6    MM
-        double seconds = Calendar2.isoStringToEpochSeconds("2017-07-26T01"); //rounded
+        //2018 01 26 14 20 260  1.0  2.0   0.3     3   3.2 287 1015.5   5.8   8.0   2.5   MM   MM    MM
+        //2018 01 26 13 50 290  1.0  1.0   0.3     3   3.1 280 1015.3   5.7   8.0   2.3   MM +1.3    MM
+        double seconds = Calendar2.isoStringToEpochSeconds("2018-01-26T14"); //rounded
         int row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
         Test.ensureTrue(row >= 0, "row=" + row);
         Test.ensureEqual(table.getStringData(idIndex, row), "46088", "");
         Test.ensureEqual(table.getFloatData(latIndex, row), 48.333f, "");
         Test.ensureEqual(table.getFloatData(lonIndex, row), -123.167f, "");
         Test.ensureEqual(table.getDoubleData(depthIndex, row), 0, "");
-        Test.ensureEqual(table.getFloatData(wdIndex, row), 250, "");
-        Test.ensureEqual(table.getFloatData(wspdIndex, row), 10f, "");
-        Test.ensureEqual(table.getFloatData(gstIndex, row), 11f, "");
-        Test.ensureEqual(table.getFloatData(wvhtIndex, row), 0.4f, "");
+        Test.ensureEqual(table.getFloatData(wdIndex, row), 260, "");
+        Test.ensureEqual(table.getFloatData(wspdIndex, row), 1f, "");
+        Test.ensureEqual(table.getFloatData(gstIndex, row), 2f, "");
+        Test.ensureEqual(table.getFloatData(wvhtIndex, row), .3f, "");
         Test.ensureEqual(table.getFloatData(dpdIndex, row), 3f, "");
-        Test.ensureEqual(table.getFloatData(apdIndex, row), 2.8f, "");
-        Test.ensureEqual(table.getFloatData(mwdIndex, row), 286f, "");
-        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1014.5f, "");
-        Test.ensureEqual(table.getFloatData(atmpIndex, row), 13f, "");
-        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 11.4f, "");
-        Test.ensureEqual(table.getFloatData(dewpIndex, row), 11.5f, "");
+        Test.ensureEqual(table.getFloatData(apdIndex, row), 3.2f, "");
+        Test.ensureEqual(table.getFloatData(mwdIndex, row), 287f, "");
+        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1015.5f, "");
+        Test.ensureEqual(table.getFloatData(atmpIndex, row), 5.8f, "");
+        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 8f, "");
+        Test.ensureEqual(table.getFloatData(dewpIndex, row), 2.5f, "");
         Test.ensureEqual(table.getFloatData(visIndex, row), Float.NaN, ""); //(float)Math2.roundTo(18.5 * Math2.kmPerMile, decimalDigits[visIndex]), "");
-        Test.ensureEqual(table.getFloatData(ptdyIndex, row), -1.6f, "");
+        Test.ensureEqual(table.getFloatData(ptdyIndex, row), 1.3f, "");
         Test.ensureEqual(table.getFloatData(tideIndex, row), Float.NaN, "");//(float)Math2.roundTo(3.0 * Math2.meterPerFoot, decimalDigits[tideIndex]), "");
 
         String2.log("test46088AddLastNDays was successful");
@@ -2773,7 +2775,8 @@ public class NdbcMetStation  {
 
         // 2) *** get new historical files
         //historical yearly files are from: http://www.ndbc.noaa.gov/data/historical/stdmet/
-        //  (Once a year ~March 1, the new yearly files appear. 
+        //monthly dirs: http://www.ndbc.noaa.gov/data/stdmet/
+        //  (Once a year ~Feb 20, the new yearly files appear. 
         //   copy last year's monthly files
         //     cd \data\ndbc
         //     md ndbcMetHistoricalTxt2016  (last year)
@@ -2787,11 +2790,11 @@ public class NdbcMetStation  {
         //historical monthly files are from: http://www.ndbc.noaa.gov/data/stdmet/<month3Letter>/  e.g., Jan
         //!!!!**** Windows GUI My Computer doesn't show all the files in the directory! 
         //  Use DOS window "dir" or Linux ls instead of the GUI.
-        //downloadNewHistoricalTxtFiles(ndbcHistoricalTxtDir); //time varies, last done 2017-07-25
+        //downloadNewHistoricalTxtFiles(ndbcHistoricalTxtDir); //time varies, last done 2018-01-25
 
         // 3) *** get latest 45 day files
         //DON'T download45DayTextFiles after 45 days after last historicalTxt date.
-        //download45DayTxtFiles(ndbc45DayTxtDir);  //15-30 minutes, last done 2017-07-25
+        //download45DayTxtFiles(ndbc45DayTxtDir);  //15-30 minutes, last done 2018-01-25
 
         // 4) *** Make the nc files
         //!!!!**** EACH MONTH, SOME TESTS NEED UPDATING: SEE "UPDATE_EACH_MONTH"
@@ -2800,7 +2803,7 @@ public class NdbcMetStation  {
         boolean testMode = false;  //I used to always run 'true' then run 'false', but not usually now    
         String ignoreStationsBefore = " "; //use " " to process all stations   or lowercase characters to start in middle
         //makeSeparateNcFiles(ndbcStationHtmlDir, ndbcHistoricalTxtDir, ndbc45DayTxtDir, 
-        //    ndbcNcDir, ignoreStationsBefore, testMode); //M4700 ~2 hrs, was ~3 hrs  //last done 2017-07-25
+        //    ndbcNcDir, ignoreStationsBefore, testMode); //M4700 ~2 hrs, was ~3 hrs  //last done 2018-01-25
         test31201Nc(ndbcNcDir);
         test41009Nc(ndbcNcDir);
         test41015Nc(ndbcNcDir);

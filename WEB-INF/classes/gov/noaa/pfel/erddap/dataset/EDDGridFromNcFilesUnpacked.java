@@ -248,6 +248,8 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 
         expected = 
 directionsForGenerateDatasetsXml() +
+"!!! The source for nc_5633_008e_cd85 has nGridVariables=4,\n" +
+"but this dataset will only serve 1 because the others use different dimensions.\n" +
 "-->\n" +
 "\n" +
 "<dataset type=\"EDDGridFromNcFilesUnpacked\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
@@ -298,9 +300,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"easternmost_longitude\">null</att>\n" +
 "        <att name=\"History\">null</att>\n" +
 "        <att name=\"infoUrl\">https://podaac.jpl.nasa.gov/</att>\n" +
-"        <att name=\"keywords\">analysed, analysed_sst, daily, data, day, earth, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"product, propulsion, real, records, research, resolution, scale, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use</att>\n" +
+"        <att name=\"keywords\">analysed, analysed_sst, daily, data, day, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans, product, propulsion, real, records, research, resolution, scale, science, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"netcdf_version_id\">null</att>\n" +
@@ -385,7 +385,8 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-        Test.ensureEqual(results, expected, results.length() + " " + expected.length() + 
+        Test.ensureEqual(results, expected, 
+            "results.length=" + results.length() + " expected.length=" + expected.length() + 
             "\nresults=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
@@ -404,7 +405,7 @@ directionsForGenerateDatasetsXml() +
      * @throws Throwable if trouble
      */
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n****************** EDDGridFromNcFilesUnpacked.testBasic() *****************\n");
+        String2.log("\n*** EDDGridFromNcFilesUnpacked.testBasic()\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -422,7 +423,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** test das dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -472,7 +473,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Grid\";\n" +
-"    String comment \"Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\\"Multi-scale Ultra-high Reolution\\\"; produced under NASA MEaSUREs program.\";\n" +
+"    String comment \"Interim-MUR(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\\"Multi-scale Ultra-high Resolution\\\"; produced under NASA MEaSUREs program.\";\n" +
 "    String contact \"ghrsst@podaac.jpl.nasa.gov\";\n" +
 "    String Conventions \"CF-1.6, COARDS, ACDD-1.3\";\n" +
 "    String creation_date \"2015-10-06\";\n" +
@@ -502,9 +503,7 @@ expected =
 "http://localhost:8080/cwexperimental/griddap/testEDDGridFromNcFilesUnpacked.das\";\n" +
 "    String infoUrl \"https://podaac.jpl.nasa.gov/\";\n" +
 "    String institution \"Jet Propulsion Laboratory\";\n" +
-"    String keywords \"analysed, analysed_sst, daily, data, day, earth, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"product, propulsion, real, records, research, resolution, scale, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use\";\n" +
+"    String keywords \"analysed, analysed_sst, daily, data, day, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans, product, propulsion, real, records, research, resolution, scale, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -522,7 +521,7 @@ expected =
 "    Float64 Southernmost_Northing 20.0006;\n" +
 "    String spatial_resolution \"0.011 degrees\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
-"    String summary \"Interim-Multi-scale Ultra-high Resolution (MUR)(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\\"Multi-scale Ultra-high Reolution\\\"; produced under NASA Making Earth System Data Records for Use in Research Environments (MEaSUREs) program.\";\n" +
+"    String summary \"Interim-Multi-scale Ultra-high Resolution (MUR)(nrt) will be replaced by MUR-Final in about 3 days; MUR = \\\"Multi-scale Ultra-high Resolution\\\"; produced under NASA Making Earth System Data Records for Use in Research Environments (MEaSUREs) program.\";\n" +
 "    String time_coverage_end \"2015-10-06T09:00:00Z\";\n" +
 "    String time_coverage_start \"2015-10-05T09:00:00Z\";\n" +
 "    String title \"Daily MUR SST, Interim near-real-time (nrt) product\";\n" +
@@ -537,7 +536,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -561,7 +560,7 @@ expected =
         userDapQuery = "analysed_sst[0][0:2:6][0:2:6]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,analysed_sst\n" +
@@ -598,7 +597,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testUInt16File() throws Throwable {
-        String2.log("\n*** testUInt16File");
+        String2.log("\n*** EDDGridFromNcFilesUnpacked.testUInt16File");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
@@ -761,7 +760,7 @@ NcHelper.debugMode = true;
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range 89.95834, -89.95834;\n" +
+"    Float32 actual_range -89.95834, 89.95834;\n" + //a test of descending lat axis
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -817,9 +816,7 @@ expected =
 "    String Input_Files \"A20092652009272.L3b_8D_SST.main\";\n" +
 "    String Input_Parameters \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
 "    String institution \"???\";\n" +
-"    String keywords \"aqua, data, image, imaging, L3, l3m_data, l3m_qual, mapped, moderate, modis, modis a, ocean, oceans,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"quality, resolution, sea, sea_surface_temperature, smi, spectroradiometer, standard, surface, temperature, time\";\n" +
+"    String keywords \"aqua, data, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, image, imaging, L3, l3m_data, l3m_qual, mapped, moderate, modis, modis a, ocean, oceans, quality, resolution, sea, sea_surface_temperature, smi, spectroradiometer, standard, surface, temperature, time\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String L2_Flag_Names \"LAND,HISOLZ\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
@@ -862,8 +859,8 @@ expected =
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
 "Dataset {\n" +
 "  Float64 time[time = 1];\n" +
@@ -892,8 +889,8 @@ expected =
         userDapQuery = "sst[0][0:100:2159][(-134.95833513)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
 "time,latitude,longitude,sst\n" +
@@ -939,7 +936,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testMissingValue() throws Throwable {
-        String2.log("\n*** testMissingValue");
+        String2.log("\n*** EDDGridFromNcFilesUnpacked.testMissingValue");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
@@ -1312,7 +1309,7 @@ NcHelper.debugMode = true;
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float32 _FillValue NaN;\n" +
-"    Float32 actual_range 89.97916, -89.97918;\n" +
+"    Float32 actual_range -89.97918, 89.97916;\n" + //a test of descending lat axis
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -1352,7 +1349,7 @@ NcHelper.debugMode = true;
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
 "    String creator_type \"group\";\n" +
 "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-"    String date_created \"2016-08-30T07:47:52.000Z\";\n" +
+"    String date_created \"2016-08-30T07:47:52Z\";\n" +
 "    Float64 Easternmost_Easting 179.9792;\n" +
 "    Float64 geospatial_lat_max 89.97916;\n" +
 "    Float64 geospatial_lat_min -89.97918;\n" +
@@ -1362,7 +1359,7 @@ NcHelper.debugMode = true;
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String grid_mapping_name \"latitude_longitude\";\n" +
 "    String history \"Datafiles are downloaded ASAP from https://oceandata.sci.gsfc.nasa.gov/MODIS-Aqua/L3SMI to NOAA NMFS SWFSC ERD.\n" +
-"NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add a time variable and slightly modify the metadata.\n" +
+"NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add time, latitude, and longitude variables and slightly modify the metadata.\n" +
 "Direct read of HDF4 file through CDM library.\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -1371,13 +1368,11 @@ expected =
 //"2015-10-30T18:17:10Z (local files)
 //2015-10-30T18:17:10Z http://localhost:8080/cwexperimental/griddap/testUInt16File.das";
 "    String identifier_product_doi \"10.5067/AQUA/MODIS_OC.2014.0\";\n" +
-"    String identifier_product_doi_authority \"http://dx.doi.org\";\n" +
+"    String identifier_product_doi_authority \"https://dx.doi.org\";\n" +
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/MPOC_las.html\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
 "    String instrument \"MODIS\";\n" +
-"    String keywords \"443/555, biology, carbon, center, chemistry, chlorophyll, color, concentration, data, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, moderate, modis, mole, mole_concentration_of_particulate_organic_carbon_in_sea_water, nasa, ocean, ocean color, oceans,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll; Oceans > Ocean Optics > Ocean Color,\n" +
-"optics, organic, particulate, poc, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, stramski, time, version, water\";\n" +
+"    String keywords \"443/555, biology, carbon, center, chemistry, chlorophyll, color, concentration, data, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Optics > Ocean Color, ecology, flight, goddard, group, gsfc, image, imaging, L3, laboratory, level, level-3, mapped, moderate, modis, mole, mole_concentration_of_particulate_organic_carbon_in_sea_water, nasa, ocean, ocean color, oceans, optics, organic, particulate, poc, processing, resolution, sea, seawater, smi, space, spectroradiometer, standard, stramski, time, version, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String l2_flag_names \"ATMFAIL,LAND,HILT,HISATZEN,STRAYLIGHT,CLDICE,COCCOLITH,LOWLW,CHLWARN,CHLFAIL,NAVWARN,MAXAERITER,ATMWARN,HISOLZEN,NAVFAIL,FILTER,HIGLINT\";\n" +
 "    String license \"https://science.nasa.gov/earth-science/earth-science-data/data-information-policy/\n" +
@@ -1390,7 +1385,7 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String map_projection \"Equidistant Cylindrical\";\n" +
 "    String measure \"Mean\";\n" +
-"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.97916;\n" +
 "    String platform \"Aqua\";\n" +
 "    String processing_control_input_parameters_apply_pal \"yes\";\n" +
@@ -1434,6 +1429,7 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v29\";\n" +
 "    String summary \"MODIS Aqua, Level-3 Standard Mapped Image (SMI), Global, 4km, Particulate Organic Carbon (POC) (1 Day Composite)\";\n" +
 "    String temporal_range \"day\";\n" +
+"    String testOutOfDate \"now-4days\";\n" +
 "    String time_coverage_end \"2016-08-29T12:00:00Z\";\n" +
 "    String time_coverage_start \"2003-01-01T12:00:00Z\";\n" +
 "    String title \"MODIS Aqua, Level-3 SMI, Global, 4km, Particulate Organic Carbon, 2003-present (1 Day Composite)\";\n" +
@@ -1450,8 +1446,8 @@ expected =
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 time[time = 4];\n" +   //2 unpacked files + 2 packed files
@@ -1472,8 +1468,8 @@ expected =
         userDapQuery = "time"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "time", ".csv"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = 
 "time\n" +
@@ -1488,8 +1484,8 @@ expected =
         userDapQuery = "poc[(2003-01-01T12:00:00Z)][0:1000:4000][0:1000:8000]"; //match direct read above
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc1", ".csv"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = 
 "time,latitude,longitude,poc\n" +
@@ -1545,8 +1541,8 @@ expected =
         userDapQuery = "poc[(2016-08-28T12:00:00Z)][70:1000:4100][70:1000:8100]"; //match direct read above
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc2", ".csv"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = 
 "time,latitude,longitude,poc\n" +

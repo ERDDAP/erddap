@@ -190,7 +190,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -246,7 +246,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             else if (tSUServerType.toLowerCase().equals("waf"))
                 tsa.add(FileVisitorDNLS.getUrlsFromWAF(tSU, tSURegex, tSURecursive, tSUPathRegex));
             else if (tSUServerType.toLowerCase().equals("thredds"))
-                tsa.add(EDDGridFromDap.getUrlsFromThreddsCatalog(tSU, tSURegex, tSURecursive, tSUPathRegex));
+                tsa.add(EDDGridFromDap.getUrlsFromThreddsCatalog(tSU, tSURegex, tSUPathRegex, null).toStringArray());
             else if (tSUServerType.toLowerCase().equals("dodsindex"))
                 getDodsIndexUrls(tSU, tSURegex, tSURecursive, tSUPathRegex, tsa);
             else throw new RuntimeException(errorInMethod + 
@@ -331,7 +331,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridAggregateExistingDimension " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -369,7 +369,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * This gets a list of URLs from the sourceUrl, perhaps recursively.
      *
      * @param startUrl is the first URL to look at.
-     *   E.g., http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/
+     *   E.g., was http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/
+     *    noiw http://dods.marine.usf.edu/dods-bin/nph-dods/modis/  //but it has no files
      *   It MUST end with a / or a file name (e.g., catalog.html).
      * @param regex The regex is used to test file names, not directory names.
      *   E.g. .*\.nc to catch all .nc files, or use .* to catch all files.
@@ -389,7 +390,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String regexHtml = regex + "\\.html"; //link href will have .html at end
         String lines[] = null;
         try {
-            lines = SSR.getUrlResponse(startUrl);
+            lines = SSR.getUrlResponseLines(startUrl);
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return;
@@ -568,7 +569,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     public static String generateDatasetsXml(String serverType, String startUrl, 
         String fileNameRegex, int tReloadEveryNMinutes) throws Throwable {
 
-        startUrl = updateUrls(startUrl); //http: to https:
+        startUrl = EDStatic.updateUrls(startUrl); //http: to https:
         String2.log("\n*** EDDGridAggregateExistingDimension.generateDatasetsXml" +
             "\nserverType=" + serverType + " startUrl=" + startUrl + 
             "\nfileNameRegex=" + fileNameRegex + 
@@ -589,7 +590,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             Test.ensureTrue(startUrl.endsWith("/catalog.xml"),
                 "startUrl must end with '/catalog.xml'.");
             sa = EDDGridFromDap.getUrlsFromThreddsCatalog(
-                startUrl, fileNameRegex, recursive, pathRegex);
+                startUrl, fileNameRegex, pathRegex, null).toStringArray();
         } else if ("waf".equals(serverType)) {
             sa = FileVisitorDNLS.getUrlsFromWAF(
                 startUrl, fileNameRegex, recursive, pathRegex);
@@ -635,7 +636,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             "\n");
 
         String2.log("\n\n*** generateDatasetsXml finished successfully; time=" +
-            (System.currentTimeMillis() - time) + "\n\n");
+            (System.currentTimeMillis() - time) + "ms\n\n");
         return sb.toString();
     }
 
@@ -681,10 +682,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 " * You can change the order of the dataVariables or remove any of them.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"noaa_pfeg_8d37_4596_befd\" active=\"true\">\n" +
+"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"noaa_pfeg_56a4_10ee_2221\" active=\"true\">\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_adfb_8ff5_678c\" active=\"true\">\n" +
-"    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_077f_0be4_21d3\" active=\"true\">\n" +
+"    <sourceUrl>https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
@@ -753,25 +754,28 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"cols\">null</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">null</att>\n" +
+"        <att name=\"date_created\">2013-04-18</att>\n" + //changes
+"        <att name=\"date_issued\">2013-04-18</att>\n" +  //changes
 "        <att name=\"et_affine\">null</att>\n" +
 "        <att name=\"gctp_datum\">null</att>\n" +
 "        <att name=\"gctp_parm\">null</att>\n" +
 "        <att name=\"gctp_sys\">null</att>\n" +
 "        <att name=\"gctp_zone\">null</att>\n" +
-"        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
+"        <att name=\"infoUrl\">https://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">1day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, daily, data, day, degrees, global, imaging, latitude, longitude, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
-"orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
+"        <att name=\"keywords\">1day, altitude, aqua, chemistry, chla, chlorophyll, chlorophyll-a, coast, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, daily, data, day, degrees, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll, global, imaging, latitude, longitude, MHchla, moderate, modis, national, noaa, node, npp, ocean, ocean color, oceans, orbiting, partnership, polar, polar-orbiting, quality, resolution, science, science quality, sea, seawater, spectroradiometer, time, water, wcn, west</att>\n" +
+"        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" +
 "        <att name=\"pass_date\">null</att>\n" +
 "        <att name=\"polygon_latitude\">null</att>\n" +
 "        <att name=\"polygon_longitude\">null</att>\n" +
-"        <att name=\"references\">Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
+"        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" +
+"        <att name=\"references\">Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: https://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
 "        <att name=\"rows\">null</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
-"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1day)</att>\n" +
+"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1day), 2003-2013</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -872,7 +876,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<sourceUrls serverType=\"thredds\" regex=\".*\" recursive=\"true\" pathRegex=\".*\">http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml</sourceUrls>\n" +
+"<sourceUrls serverType=\"thredds\" regex=\".*\" recursive=\"true\" pathRegex=\".*\">https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml</sourceUrls>\n" +
 "\n" +
 "</dataset>\n" +
 "\n";
@@ -939,18 +943,15 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
-"        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
+"        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
 "        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</att>\n" +
 "        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
-"        <att name=\"keywords\">atlas, atmosphere,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
+"        <att name=\"keywords\">atlas, atmosphere, atmospheric, center, component, data, derived, downward, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, month, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, science, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, v11l35flk, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
-"        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk)</att>\n" +
+"        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk), 0.25&#xb0;</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -965,6 +966,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">hours since 1987-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
@@ -1130,7 +1132,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         try {
         StringArray sourceUrls = new StringArray();
-        String dir = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/";
+        String dir = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/"; //now requires authorization
+            //"http://dods.marine.usf.edu/dods-bin/nph-dods/modis/";  //but it has no files
         getDodsIndexUrls(dir, "[0-9]{8}\\.bodas_ts\\.nc", true, "", sourceUrls);
 
         Test.ensureEqual(sourceUrls.get(0),   dir + "19921014.bodas_ts.nc", "");
@@ -1139,7 +1142,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String2.log("EDDGridAggregateExistingDimension.testGetDodsIndexUrls finished successfully.");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
-                "\nUnexpected error."); 
+                "\nKnown problem: CSIRO bodas now requires authorization. No known examples now."); 
         }
     }
 
@@ -1169,7 +1172,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String ndbcDapQuery = "wind_speed[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className(), ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_speed\n" +
@@ -1302,7 +1305,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         ndbcDapQuery = "wind_direction[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_direction\n" +
@@ -1317,7 +1320,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         ndbcDapQuery = "wind_speed[1:5][0][0],wind_direction[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_speed, wind_direction\n" +
@@ -1332,7 +1335,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         ndbcDapQuery = "wind_direction[1:5][0][0],wind_speed[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "4", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_direction, wind_speed\n" +
@@ -1400,7 +1403,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         ndbcDapQuery = "wind_direction[22232:22239][0][0],wind_speed[22232:22239][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "5", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_direction, wind_speed\n" +
@@ -1419,7 +1422,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         ndbcDapQuery = "wind_direction[22232:2:22239][0][0],wind_speed[22232:2:22239][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "6", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_direction, wind_speed\n" +
@@ -1436,7 +1439,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
                            "wind_speed[(2007-12-31T22:40:00):1:(2007-12-31T22:55:00)][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "7", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time, latitude, longitude, wind_direction, wind_speed\n" +
@@ -1466,7 +1469,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         tName = eddGrid.makeNewFileForDapQuery(null, null, 
             "time", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_rtofs", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "time\n" +
 "UTC\n" +

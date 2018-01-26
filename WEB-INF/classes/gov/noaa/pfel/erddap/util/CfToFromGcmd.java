@@ -221,15 +221,15 @@ public class CfToFromGcmd {
         //second
         Test.ensureEqual(
             String2.toCSSVString(cfToGcmd("aerosol_angstrom_exponent")),
-            "Atmosphere > Aerosols > Aerosol Optical Depth/Thickness > Angstrom Exponent, " +
-            "Atmosphere > Aerosols > Aerosol Particle Properties, " +
-            "Atmosphere > Aerosols > Particulate Matter",
+            "Earth Science > Atmosphere > Aerosols > Aerosol Optical Depth/Thickness > Angstrom Exponent, " +
+            "Earth Science > Atmosphere > Aerosols > Aerosol Particle Properties, " +
+            "Earth Science > Atmosphere > Aerosols > Particulate Matter",
             "test3");
 
         //in middle  (with lead/trail spaces)
         Test.ensureEqual(
             String2.toCSSVString(cfToGcmd("  sea_water_temperature  ")),
-            "Oceans > Ocean Temperature > Water Temperature",
+            "Earth Science > Oceans > Ocean Temperature > Water Temperature",
             "test4");
 
         //no translation
@@ -238,9 +238,9 @@ public class CfToFromGcmd {
         //last
         Test.ensureEqual(
             String2.toCSSVString(cfToGcmd("zenith_angle")),
-            "Atmosphere > Atmospheric Radiation > Incoming Solar Radiation, " +
-            "Atmosphere > Atmospheric Radiation > Solar Irradiance, " +
-            "Atmosphere > Atmospheric Radiation > Solar Radiation",
+            "Earth Science > Atmosphere > Atmospheric Radiation > Incoming Solar Radiation, " +
+            "Earth Science > Atmosphere > Atmospheric Radiation > Solar Irradiance, " +
+            "Earth Science > Atmosphere > Atmospheric Radiation > Solar Radiation",
             "test6");
 
     
@@ -266,7 +266,7 @@ public class CfToFromGcmd {
         // (with lead/trail spaces)
         Test.ensureEqual(
 String2.toCSSVString(gcmdToCf(
-  "  Atmosphere > Atmospheric Chemistry > Carbon and Hydrocarbon Compounds > Carbon Dioxide  ")),
+  "  Earth Science > Atmosphere > Atmospheric Chemistry > Carbon and Hydrocarbon Compounds > Carbon Dioxide  ")),
 "atmosphere_mass_content_of_carbon_dioxide, " +
 "atmosphere_mass_of_carbon_dioxide, " +
 "atmosphere_moles_of_carbon_dioxide, " +

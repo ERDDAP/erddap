@@ -99,7 +99,7 @@ public class PointIndex  {
         int firstRow = 0;
         int nFinite = 0;
         double lastD, d = index0PA.getDouble(0);
-        boolean lastDFinite, dFinite = Math2.isFinite(d);
+        boolean lastDFinite, dFinite = Double.isFinite(d);
         if (dFinite) nFinite++;
         double min = d;
         double max = min;
@@ -110,7 +110,7 @@ public class PointIndex  {
             lastD = d;
             lastDFinite = dFinite;
             d = index0PA.getDouble(row);
-            dFinite = Math2.isFinite(d);
+            dFinite = Double.isFinite(d);
             if (!dFinite) {
                 //go to next row
             } else if (!lastDFinite || d < lastD) {
@@ -170,7 +170,7 @@ public class PointIndex  {
 
         //10,000,000 takes 6.7s to write, 22.6s total
         String2.log("PointIndex nGroups=" + nGroups + " dosWriteTime=" + (System.currentTimeMillis() - tTime) +
-            " time=" + (System.currentTimeMillis() - time));
+            "ms time=" + (System.currentTimeMillis() - time) + "ms");
 
     }
 
@@ -213,7 +213,7 @@ public class PointIndex  {
             double max = -Double.MAX_VALUE;
             for (int row = firstRow; row < lastRow; row++) {
                 double d = pa.getDouble(row);
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     min = Math.min(min, d);
                     max = Math.max(max, d);
                 }
@@ -221,7 +221,7 @@ public class PointIndex  {
             minArray.add(min);
             maxArray.add(max);
         }
-        String2.log("addIndex time=" + (System.currentTimeMillis() - time));
+        String2.log("addIndex time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -284,7 +284,7 @@ public class PointIndex  {
         boolean fewTimesOk = (lastIndex0 - firstIndex0) < nDataRows / 2;
         String2.log("raf lookup firstIndex0=" + firstIndex0 +
             " lastIndex0=" + lastIndex0 + " fewTimesOk=" + fewTimesOk + 
-            " time=" + (System.currentTimeMillis() - tTime) );
+            " time=" + (System.currentTimeMillis() - tTime) + "ms");
 
         //2 ways to set rowOk; to minimize lookups in indexFile 
         DataInputStream dis = new DataInputStream(new BufferedInputStream(
@@ -332,7 +332,7 @@ public class PointIndex  {
         }
         dis.close();
 
-        String2.log("PointIndex.subset time=" + (System.currentTimeMillis() - time));
+        String2.log("PointIndex.subset time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);
         return rowOk;
     }

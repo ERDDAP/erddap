@@ -173,7 +173,7 @@ public class SgtUtil  {
         for (int i = 0; i < n; i++)
             legendTextY = drawHtmlText(g2, legendTextX, legendTextY, 
                 0, fontFamily, labelHeightPixels, false, 
-                "<b>" + encodeAsHtml(shortBoldLines.get(i)) + "</b>");
+                "<strong>" + encodeAsHtml(shortBoldLines.get(i)) + "</strong>");
 
         //draw the shortLines
         n = shortLines.size();
@@ -278,8 +278,8 @@ public class SgtUtil  {
     /**
      * drawHtmlText draws simple HTML text to g2d.
      * drawHtmlText benefits greatly from setting non-text antialising ON:
-     * <TT>g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-     *         RenderingHints.VALUE_ANTIALIAS_ON); </TT>
+     * <tt>g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+     *         RenderingHints.VALUE_ANTIALIAS_ON); </tt>
      *
      * @param g2d
      * @param x the base x for the text  (in pixels)
@@ -429,7 +429,7 @@ public class SgtUtil  {
         if (verbose) String2.log("SgtUtil.saveAsGif"); 
         ImageIO.write(bi, "bmp", new File(fullGifName + randomInt + ".bmp"));
         if (verbose) String2.log("  make .bmp done. time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
 
         //"convert" to .gif 
         SSR.dosOrCShell("convert " + 
@@ -447,7 +447,7 @@ public class SgtUtil  {
         File2.rename(fullGifName + randomInt + ".gif", fullGifName + ".gif");
 
         if (verbose) String2.log("SgtUtil.saveAsGif done. TOTAL TIME=" + 
-            (System.currentTimeMillis() - time) + "\n");
+            (System.currentTimeMillis() - time) + "ms\n");
     }
 
     /**
@@ -500,7 +500,7 @@ public class SgtUtil  {
         File2.rename(fullGifName + randomInt + ".gif", fullGifName + ".gif");
 
         if (verbose) String2.log("SgtUtil.saveAsTransparentGif TIME=" + 
-            (System.currentTimeMillis() - time) + "\n");
+            (System.currentTimeMillis() - time) + "ms\n");
     }
 
     /**
@@ -589,7 +589,7 @@ public class SgtUtil  {
         outputStream.flush();
 
         if (verbose) String2.log("SgtUtil.saveAsPng TIME=" + 
-            (System.currentTimeMillis() - time) + "\n");
+            (System.currentTimeMillis() - time) + "ms\n");
     }
 
     /**
@@ -1099,7 +1099,7 @@ public class SgtUtil  {
         BufferedImage bi = ImageIO.read(new File(String2.unitTestDataDir + "graphs/erdBAssta5day.png"));
         long time = System.currentTimeMillis();
         Test.ensureEqual(findGraph(bi), new int[]{24, 334, 150, 21}, "");
-        String2.log("findGraph time=" + (System.currentTimeMillis() - time));
+        String2.log("findGraph time=" + (System.currentTimeMillis() - time) + "ms");
     } 
 
 

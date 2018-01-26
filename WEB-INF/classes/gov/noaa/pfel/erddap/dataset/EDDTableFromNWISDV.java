@@ -302,7 +302,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -538,7 +538,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromNWISDV " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -2147,7 +2147,7 @@ directionsForGenerateDatasetsXml() +
                 //http://waterdata.usgs.gov/nwis/inventory/?site_no=02289050&agency_cd=FL005&amp;
                 String siteInfoUrl = siteInfoService + "?site_no=" + site + "&agency_cd=" + agency + "&amp;";
                 String2.log("  siteInfoUrl=" + siteInfoUrl);
-                String siteInfo = SSR.getUncompressedUrlResponseString(siteInfoUrl, String2.ISO_8859_1); //correct charset?
+                String siteInfo = SSR.getUrlResponseStringUnchanged(siteInfoUrl);
                 int po1, po2;
 
                 //fallback, get city and country from siteName    <h2>...</h2>
@@ -2377,7 +2377,7 @@ directionsForGenerateDatasetsXml() +
                 //http://waterdata.usgs.gov/nwis/inventory/?site_no=02289050&agency_cd=FL005&amp;
                 String siteInfoUrl = siteInfoService + "?site_no=" + site + "&agency_cd=" + agency + "&amp;";
                 //String2.log("  siteInfoUrl=" + siteInfoUrl);
-                String siteInfo = SSR.getUncompressedUrlResponseString(siteInfoUrl, String2.ISO_8859_1); //correct charset?
+                String siteInfo = SSR.getUrlResponseStringUnchanged(siteInfoUrl);
                 int po1, po2;
 
                 //<h2>...</h2>

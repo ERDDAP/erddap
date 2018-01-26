@@ -96,7 +96,7 @@ public class LandMask  {
         dis.close();
 
         //if (verbose) 
-            String2.log("LandMask constructor time=" + (System.currentTimeMillis() - time)); 
+            String2.log("LandMask constructor time=" + (System.currentTimeMillis() - time) + "ms"); 
      
     }
 

@@ -57,7 +57,7 @@
 package org.jdom.filter;
 
 /**
- * Filter that is the logical <b>negation</b> operation of another filter.
+ * Filter that is the logical <strong>negation</strong> operation of another filter.
  *
  *
  * @author Bradley S. Huffman
@@ -72,7 +72,7 @@ final class NegateFilter extends AbstractFilter {
     private Filter filter;
 
     /**
-     * Match if the supplied filter <b>does not</b> match.
+     * Match if the supplied filter <strong>does not</strong> match.
      *
      * @param filter filter to use.
      */

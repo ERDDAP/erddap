@@ -140,7 +140,7 @@ class DescendantIterator implements Iterator {
 
     /**
      * Detaches the last {@link org.jdom.Content} returned by the last call to
-     * next from it's parent.  <b>Note</b>: this <b>does not</b> affect
+     * next from it's parent.  <strong>Note</strong>: this <strong>does not</strong> affect
      * iteration and all children, siblings, and any node following the
      * removed node (in document order) will be visited.
      */

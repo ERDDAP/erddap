@@ -1218,14 +1218,36 @@ public class NcHelper  {
                 " valid_range="   + sAtts.get("valid_range"));
 
         //attributes are never unsigned
-        sAtts.set("actual_max",    unpackPA(var, sAtts.get("actual_max"),    false, false)); 
-        sAtts.set("actual_min",    unpackPA(var, sAtts.get("actual_min"),    false, false)); 
-        sAtts.set("actual_range",  unpackPA(var, sAtts.get("actual_range"),  false, false)); 
-        sAtts.set("data_max",      unpackPA(var, sAtts.get("data_max"),      false, false)); 
-        sAtts.set("data_min",      unpackPA(var, sAtts.get("data_min"),      false, false));
-        sAtts.set("valid_max",     unpackPA(var, sAtts.get("valid_max"),     false, false)); 
-        sAtts.set("valid_min",     unpackPA(var, sAtts.get("valid_min"),     false, false));
-        sAtts.set("valid_range",   unpackPA(var, sAtts.get("valid_range"),   false, false)); 
+
+        //before erddap v1.82, ERDDAP said actual_range had packed values.
+        //but CF 1.7 says actual_range is unpacked. 
+        //So look at data types and guess which to do, with preference to believing they're already unpacked
+        //Note that at this point in this method, we're dealing with a packed data variable
+        if (destClass != null && (destClass == float.class || destClass == double.class)) {
+            PrimitiveArray pa;
+            pa = sAtts.get("actual_max");
+            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
+                sAtts.set("actual_max",   unpackPA(var, pa, false, false)); 
+
+            pa = sAtts.get("actual_min");
+            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
+                sAtts.set("actual_min",   unpackPA(var, pa, false, false)); 
+
+            pa = sAtts.get("actual_range");
+            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
+                sAtts.set("actual_range", unpackPA(var, pa, false, false)); 
+
+            pa = sAtts.get("data_min");
+            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
+                sAtts.set("data_min",     unpackPA(var, pa, false, false)); 
+
+            pa = sAtts.get("data_max");
+            if (pa != null && !(pa instanceof FloatArray) && !(pa instanceof DoubleArray))
+                sAtts.set("data_max",     unpackPA(var, pa, false, false)); 
+        }
+        sAtts.set("valid_max",        unpackPA(var, sAtts.get("valid_max"),   false, false)); 
+        sAtts.set("valid_min",        unpackPA(var, sAtts.get("valid_min"),   false, false));
+        sAtts.set("valid_range",      unpackPA(var, sAtts.get("valid_range"), false, false)); 
 
         if (debugMode) 
             String2.log(">  after  unpack " + var.getFullName() + 
@@ -2110,7 +2132,7 @@ public class NcHelper  {
 
             //diagnostic
             if (reallyVerbose) String2.log("  NcHelper.savePAsInNc done. TIME=" + 
-                (System.currentTimeMillis() - time));
+                (System.currentTimeMillis() - time) + "ms");
             //ncDump("End of Table.saveAsFlatNc", directory + name + ext, false);
 
         } catch (Exception e) {
@@ -2222,7 +2244,7 @@ public class NcHelper  {
         for (int i = 0; i < pasSize; i++)
             paar[i] = (PrimitiveArray)pas.get(i);
         if (reallyVerbose) String2.log("  NcHelper.readPAsInNc done. nPAs=" + pasSize + 
-            " TIME=" + (System.currentTimeMillis() - time));
+            " TIME=" + (System.currentTimeMillis() - time) + "ms");
         return paar;
     }
 
@@ -2831,7 +2853,7 @@ String2.log(pas13.toString());
     public static void test() throws Throwable {
         String2.log("\n*** NcHelper.test...");
 
-        /* */
+/* for releases, this line should have open/close comment */
         testBasic();
         testFindAllVariablesWithDims();
         testUnlimited();        

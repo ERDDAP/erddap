@@ -443,7 +443,7 @@ public class OpendapHelper  {
         DArray da = (DArray)bt; 
         if (verbose)
             String2.log("    OpendapHelper.getPrimitiveVector(" + query + 
-                ") done. TIME=" + (System.currentTimeMillis() - time));
+                ") done. TIME=" + (System.currentTimeMillis() - time) + "ms");
         return da.getPrimitiveVector();
     }
 
@@ -468,7 +468,7 @@ public class OpendapHelper  {
         DataDDS dataDds = dConnect.getData(query, null);
         if (verbose)
             String2.log("    OpendapHelper.getPrimitiveArrays done. TIME=" + 
-                (System.currentTimeMillis() - time));      
+                (System.currentTimeMillis() - time) + "ms");      
         BaseType bt = (BaseType)dataDds.getVariables().nextElement(); //first element is always main array
         try {
             return getPrimitiveArrays(bt);
@@ -551,7 +551,7 @@ public class OpendapHelper  {
         if (verbose)
             String2.log("    OpendapHelper.getAxisValues done. TIME=" + 
                 (System.currentTimeMillis() - time) +
-                "\n      query=" + query);      
+                "ms\n      query=" + query);      
         PrimitiveArray pa[] = new PrimitiveArray[names.length];
         for (int i = 0; i < names.length; i++) {               
             DArray da = (DArray)dataDds.getVariable(names[i]); 
@@ -747,7 +747,7 @@ public class OpendapHelper  {
      * @param varName the variable's name
      * @param attributes
      * @param encodeAsHTML if true, characters like &lt; are converted to their 
-     *    character entities and lines wrapped with \n if greater than 78 chars.
+     *    character entities.
      * @throws Exception if trouble
      */
     public static StringBuilder dasToStringBuilder(String varName, Attributes attributes,
@@ -767,7 +767,7 @@ public class OpendapHelper  {
                 //enquote, and replace internal quotes with \"
                 String ts = String2.toSVString(pa.toStringArray(), "\n", false);
                 if (encodeAsHTML) {
-                    ts = String2.noLongLinesAtSpace(ts, 78, "");
+                    //was ts = String2.noLongLinesAtSpace(ts, 78, "");
                     if (ts.indexOf('\n') >= 0)
                         sb.append('\n'); //start on new line, so first line isn't super long
                 }
@@ -1073,7 +1073,7 @@ public class OpendapHelper  {
 
 
         //test of DArray DAP dataset
-        String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        String dArrayUrl = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + dArrayUrl);
         try {
         dConnect = new DConnect(dArrayUrl, true, 1, 1);
@@ -1084,14 +1084,13 @@ public class OpendapHelper  {
         Test.ensureEqual(results, expected, "results=" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(
-                "\nUnexpected error (server timed out 2013-10-24):\n" +
                 MustBe.throwableToString(t)); 
         }
 
 
         //***** test of DGrid DAP dataset
         String2.log("\n*** test of DGrid DAP dataset");
-        String dGridUrl = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
+        String dGridUrl = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
         dConnect = new DConnect(dGridUrl, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
@@ -1100,7 +1099,7 @@ public class OpendapHelper  {
 
 
         /* */
-        String2.log("\n*** OpendapHelper.findVarsWithSharedDimensions finished.");
+        String2.log("\n*** OpendapHelper.testFindVarsWithSharedDimensions finished.");
 
     }
 
@@ -1152,7 +1151,7 @@ public class OpendapHelper  {
 
     /** This tests findAllVars. */
     public static void testFindAllScalarOrMultiDimVars() throws Throwable {
-        String2.log("\n\n*** OpendapHelper.findAllScalarOrMultiDimVars");
+        String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
         String expected, results;      
         DConnect dConnect;
         DDS dds;
@@ -1172,7 +1171,7 @@ public class OpendapHelper  {
 
 
         //test of DArray DAP dataset
-        url = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        url = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + url);
         try {
             dConnect = new DConnect(url, true, 1, 1);
@@ -1222,7 +1221,7 @@ public class OpendapHelper  {
 
 
         /* */
-        String2.log("\n*** OpendapHelper.findAllScalarOrMultiDimVars finished.");
+        String2.log("\n*** OpendapHelper.testFindAllScalarOrMultiDimVars finished.");
 
     }
 
@@ -1259,7 +1258,7 @@ public class OpendapHelper  {
                 t.getMessage(), t);
         }
         try {
-            if (debug) String2.log(String2.annotatedString(SSR.getUrlResponseString(dapUrl + ".dds")));
+            if (debug) String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(dapUrl + ".dds")));
             dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
         } catch (Throwable t) {
             throw new SimpleException("Error while getting DDS from " + dapUrl + ".dds .\n" +
@@ -2118,7 +2117,8 @@ public class OpendapHelper  {
 
     /** This tests getting attibutes, notably the DODS_strlen attribute. */
     public static void testGetAttributes() throws Throwable {
-        String url = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        //https almost works, but java objects to invalid certificate
+        String url = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n* OpendapHelper.testGetAttributes\n" + url);
         try {
         DConnect dConnect = new DConnect(url, true, 1, 1);
@@ -2172,7 +2172,7 @@ public class OpendapHelper  {
         String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
         fileName = SSR.getTempDirectory() + "testDapToNcDArray.nc";
-        String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        String dArrayUrl = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         try {
             dapToNc(dArrayUrl, 
                 //note that request for zztop is ignored (because not found)
@@ -2311,7 +2311,7 @@ public class OpendapHelper  {
         try {
             String2.log("\n* testDapToNcDArray Subset");
             fileName = SSR.getTempDirectory() + "testDapToNcDArraySubset.nc";
-            String dArraySubsetUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+            String dArraySubsetUrl = "http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
             dapToNc(dArraySubsetUrl, 
                 new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, "[0:10:99]", //projection
                 fileName, false); //jplMode
@@ -2401,7 +2401,7 @@ public class OpendapHelper  {
 "  {75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.11}\n" +
 "}\n";
 /* from
-http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc.ascii?time[0:10:99],lat[0:10:99],lon[0:10:99],PL_HD[0:10:99]
+http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc.ascii?time[0:10:99],lat[0:10:99],lon[0:10:99],PL_HD[0:10:99]
 time[10]  16870896, 16870906, 16870916, 16870926, 16870936, 16870946, 16870956, 16870966, 16870976, 16870986
 lat[10]   44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.61
 lon[10]   235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.91
@@ -2446,7 +2446,7 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
             results = t.toString();
 expected = 
 "java.lang.RuntimeException: ERROR in OpendapHelper.dapToNc\n" +
-"  url=http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc\n" +
+"  url=http://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc\n" +
 "  varNames=zztop,time,lat,lon,PL_HD,history  projection=null\n" +
 "  file=C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
 "var=history has different dimensions than previous vars.";
@@ -2564,8 +2564,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2010-07-02Z\";\n" +
-"  :date_issued = \"2010-07-02Z\";\n" +
+"  :date_created = \"2010-07-02\";\n" +
+"  :date_issued = \"2010-07-02\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
 "  :Easternmost_Easting = 360.0; // double\n" +
 "  :geospatial_lat_max = 75.0; // double\n" +
@@ -2587,11 +2587,7 @@ today + "T";  // + time " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satelli
 String expected2 = 
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"altitude, atmosphere,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"atmospheric, coast, coastwatch, data, degrees, global, noaa, node, ocean, oceans,\n" +
-"Oceans > Ocean Winds > Surface Winds,\n" +
-"QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n" +
+"  :keywords = \"altitude, atmosphere, atmospheric, coast, coastwatch, data, degrees, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Winds > Surface Winds, global, noaa, node, ocean, oceans, QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2600,11 +2596,11 @@ String expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 75.0; // double\n" +
 "  :origin = \"Remote Sensing Systems, Inc.\";\n" +
 "  :processing_level = \"3\";\n" +
-"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :project = \"CoastWatch (https://coastwatch.noaa.gov/)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
@@ -2783,8 +2779,8 @@ y_wind.y_wind[1][1][7][15]
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2010-07-02Z\";\n" +
-"  :date_issued = \"2010-07-02Z\";\n" +
+"  :date_created = \"2010-07-02\";\n" +
+"  :date_issued = \"2010-07-02\";\n" +
 "  :defaultGraphQuery = \"&.draw=vectors\";\n" +
 "  :Easternmost_Easting = 360.0; // double\n" +
 "  :geospatial_lat_max = 75.0; // double\n" +
@@ -2806,11 +2802,7 @@ today + "T"; //time https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/
 expected2 = 
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"altitude, atmosphere,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"atmospheric, coast, coastwatch, data, degrees, global, noaa, node, ocean, oceans,\n" +
-"Oceans > Ocean Winds > Surface Winds,\n" +
-"QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n" +
+"  :keywords = \"altitude, atmosphere, atmospheric, coast, coastwatch, data, degrees, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Winds > Surface Winds, global, noaa, node, ocean, oceans, QSux10, quality, quikscat, science, science quality, seawinds, surface, time, wcn, west, wind, winds, x_wind, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2819,11 +2811,11 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 75.0; // double\n" +
 "  :origin = \"Remote Sensing Systems, Inc.\";\n" +
 "  :processing_level = \"3\";\n" +
-"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :project = \"CoastWatch (https://coastwatch.noaa.gov/)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
@@ -2958,9 +2950,9 @@ expected2 =
      * This tests the methods in this class.
      */
     public static void test() throws Throwable{
-        String2.log("\n*** OpendapHelper.test...");
+        String2.log("\n*** OpendapHelper.test()");
 
-/* */
+/* for releases, this line should have open/close comment */
         testGetAttributes();
         testParseStartStrideStop();
         testFindVarsWithSharedDimensions();

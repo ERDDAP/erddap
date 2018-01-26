@@ -21,7 +21,7 @@ import java.io.OutputStreamWriter;
 
 /**
  * TableWriterJsonl provides a way to write a table 
- * to JSON (http://www.json.org/) file
+ * to JSON (https://www.json.org/) file
  * in a JSON Lines (http://jsonlines.org/) format
  * in chunks so that the whole table doesn't have to be in memory 
  * at one time.
@@ -146,7 +146,7 @@ public class TableWriterJsonl extends TableWriter {
                 if (col > 0) writer.write(", "); 
                 if (writeKVP) {
                     writer.write(String2.toJson(table.getColumnName(col)));
-                    writer.write('=');
+                    writer.write(':');
                 }
                 if (isTimeStamp[col]) {
                     double d = pas[col].getDouble(row);
@@ -195,7 +195,7 @@ public class TableWriterJsonl extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterJsonl done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
 
     }
 

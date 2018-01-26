@@ -335,6 +335,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
         boolean dateTimeAlreadyFound = false;
         DoubleArray mv9 = new DoubleArray(Math2.COMMON_MV9);
+        double maxTimeES = Double.NaN;
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
             PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone(); //clone because going into addTable
@@ -355,6 +356,9 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                     isDateTime = true;
                     addAtts.set("units", dtFormat);
                 }
+
+                if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(dtFormat)) 
+                    maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
             }
 
             //look for missing_value = -99, -999, -9999, -99999, -999999, -9999999 
@@ -396,6 +400,16 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
         //tryToFindLLAT
         tryToFindLLAT(dataSourceTable, dataAddTable);
+
+        //use maxTimeES
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
+        }
 
         //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
@@ -765,7 +779,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                         datasetID = xmlReader.content(); 
 
                         //just a number?
-                        if (Math2.isFinite(String2.parseDouble(datasetID))) {
+                        if (Double.isFinite(String2.parseDouble(datasetID))) {
                             if (String2.isSomething(system)) 
                                 datasetID = system + "_" + datasetID;
                             else datasetID = File2.getNameNoExtension(
@@ -874,42 +888,42 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
                     } else if (tags.endsWith("</westBoundingCoordinate>")) {
                         double d = String2.parseDouble(xmlReader.content());
-                        if (Math2.isFinite(d)) {
+                        if (Double.isFinite(d)) {
                             String2.ifSomethingConcat(boundingCoordinates, ", ", 
                                 "westLongitude=" + xmlReader.content());
                             westernmost = Math.min(westernmost, d);
                         }
                     } else if (tags.endsWith("</eastBoundingCoordinate>")) {
                         double d = String2.parseDouble(xmlReader.content());
-                        if (Math2.isFinite(d)) {
+                        if (Double.isFinite(d)) {
                             String2.ifSomethingConcat(boundingCoordinates, ", ", 
                                 "eastLongitude=" + xmlReader.content());
                             easternmost = Math.max(easternmost, d);
                         }
                     } else if (tags.endsWith("</southBoundingCoordinate>")) {
                         double d = String2.parseDouble(xmlReader.content());
-                        if (Math2.isFinite(d)) {
+                        if (Double.isFinite(d)) {
                             String2.ifSomethingConcat(boundingCoordinates, ", ", 
                                 "southLatitude=" + xmlReader.content());
                             southernmost = Math.min(southernmost, d);
                         }
                     } else if (tags.endsWith("</northBoundingCoordinate>")) {
                         double d = String2.parseDouble(xmlReader.content());
-                        if (Math2.isFinite(d)) {
+                        if (Double.isFinite(d)) {
                             String2.ifSomethingConcat(boundingCoordinates, ", ", 
                                 "northLatitude=" + xmlReader.content());
                             northernmost = Math.max(northernmost, d);
                         }
                     } else if (tags.endsWith("<altitudeMinimum>")) {
                         double d = String2.parseDouble(xmlReader.content());
-                        if (Math2.isFinite(d)) {
+                        if (Double.isFinite(d)) {
                             String2.ifSomethingConcat(boundingCoordinates, ", ", 
                                 "altitudeMinimum=" + xmlReader.content());
                             minAltitude = Math.min(minAltitude, d);
                         }
                     } else if (tags.endsWith("<altitudeMaximum>")) {
                         double d = String2.parseDouble(xmlReader.content());
-                        if (Math2.isFinite(d)) {
+                        if (Double.isFinite(d)) {
                             String2.ifSomethingConcat(boundingCoordinates, ", ", 
                                 "altitudeMaximum=" + xmlReader.content());
                             maxAltitude = Math.max(maxAltitude, d);
@@ -2261,7 +2275,9 @@ boolean columnar = false;  // are there any? how detect?
 
 
     /**
-     * testGenerateDatasetsXmlFromEML
+     * testGenerateDatasetsXmlFromEML.
+     * This is not a good test of suggestTestOutOfDate, except that
+     * it tests that a dataset with old data doesn't get a recommended value.
      */
     public static void testGenerateDatasetsXmlFromEML() throws Throwable {
         testVerboseOn();
@@ -2357,11 +2373,7 @@ String expected =
 "        <att name=\"id\">knb_lter_sbc_6_t1</att>\n" +
 "        <att name=\"infoUrl\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
 "        <att name=\"institution\">Santa Barbara Coastal LTER</att>\n" +
-"        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, nutrients, ocean, oceans,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Ammonia,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Nitrate,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Phosphate,\n" +
-"ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
+"        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, nutrients, ocean, oceans, ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, science, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"language\">english</att>\n" +
 "        <att name=\"license\">Metadata Access Rights:\n" +
@@ -2741,11 +2753,7 @@ String expected =
 "        <att name=\"id\">knb_lter_sbc_6_t2</att>\n" +
 "        <att name=\"infoUrl\">http://sbc.lternet.edu/data/eml/files/knb-lter-sbc.6</att>\n" +
 "        <att name=\"institution\">Santa Barbara Coastal LTER</att>\n" +
-"        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, non, non-registered, nutrients, ocean, oceans,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Ammonia,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Nitrate,\n" +
-"Oceans &gt; Ocean Chemistry &gt; Phosphate,\n" +
-"ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
+"        <att name=\"keywords\">all, ammonia, ammonium, area, barbara, carbon, chemistry, coastal, code, concentration, cond, data, dissolved, dissolved nutrients, drainage, earth, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Ammonia, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Nitrate, Earth Science &gt; Oceans &gt; Ocean Chemistry &gt; Phosphate, land, lter, micromolesperliter, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_phosphate_in_sea_water, n02, nh4, NH4_uM, nitrate, nitrogen, no3, NO3_uM, non, non-registered, nutrients, ocean, oceans, ongoing, particulate, phosphate, phosphorus, po4, PO4_uM, registered, santa, sbc, science, sea, seawater, since, site_code, solids, spec, Spec_Cond_uS_per_cm, stations, stream, suspended, TDN_uM, TDP_uM, time, total, TPC_uM, TPN_uM, tpp, TPP_uM, TSS_mg_per_L, us/cm, water, waypoint, years</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"language\">english</att>\n" +
 "        <att name=\"license\">Metadata Access Rights:\n" +
@@ -3058,7 +3066,7 @@ String expected =
         String userDapQuery = "";
         String tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, edd.className() + "_eml_1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "site_code,time,NH4_uM,NO3_uM,PO4_uM,TDN_uM,TDP_uM,TPC_uM,TPN_uM,TPP_uM,TSS_mg_per_L,Spec_Cond_uS_per_cm\n" +
 ",UTC,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,milligram per liter,siemens per centimeter\n" +
@@ -3292,7 +3300,7 @@ directionsForGenerateDatasetsXml() +
         String userDapQuery = "";
         String tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, edd.className() + "_1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 ",,,,,,,,\n" +
@@ -3332,7 +3340,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\nEDDTableFromColumnarAsciiFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -3429,7 +3437,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -3457,7 +3465,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
@@ -3479,7 +3487,7 @@ expected =
         userDapQuery = "fileName,five";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_sv", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         expected = 
 "fileName,five\n" +       
 ",\n" +
@@ -3499,7 +3507,7 @@ expected =
         userDapQuery = "anInt,fileName,five,aBoolean&aBoolean=1&five=5";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_conbool", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         expected = 
 "anInt,fileName,five,aBoolean\n" +
 ",,,\n" +
@@ -3569,7 +3577,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "time,Superior,Michigan,Huron,Erie,Ontario,St_Clair\n" +
@@ -3609,7 +3617,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "time,Superior,Michigan,Huron,Erie,Ontario,St_Clair,GL_Total\n" +
@@ -3665,7 +3673,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "lake,dayOfYear,temperature\n" +
@@ -3694,7 +3702,7 @@ expected =
         testGlerl();
         testGlerl2();
         testGenerateDatasetsXmlFromEML();
-
+        /* */
         //not usually run
     }
 

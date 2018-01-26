@@ -246,7 +246,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
                 (Color)markerInteriorColors.get(nMarkerXs1), lineColor);
             if (reallyVerbose) 
                 String2.log("  draw markers time=" + 
-                    (System.currentTimeMillis() - markerTime));
+                    (System.currentTimeMillis() - markerTime) + "ms");
         }
 
         //restore the original transform
@@ -254,7 +254,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
         g2.setClip(originalClip);
 
         String2.log("  FilledMarkerRenderer.draw done. time=" + 
-            (System.currentTimeMillis() - time));
+            (System.currentTimeMillis() - time) + "ms");
     }
 
     /**

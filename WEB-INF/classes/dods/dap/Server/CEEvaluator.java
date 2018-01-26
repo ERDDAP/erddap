@@ -36,12 +36,12 @@ import dods.util.Debug;
  * and the output of data values so that the server can return data using a
  * single method call.<p>
  * <p/>
- * <b>Custom parsing</b>
+ * <strong>Custom parsing</strong>
  * The CEEvaluator parses constraint expressions into Clause objects
  * using a ClauseFactory. Customized behavior during parsing can be
  * achieved by passing a customized ClauseFactory into the CEEvaluator.<p>
  * <p/>
- * <b>Support for server side functions</b>
+ * <strong>Support for server side functions</strong>
  * Server side functions are supported via the FunctionLibrary class.
  * Custom server side function support is achieved by using
  * a customized ClauseFactory which in turn contains a customized
@@ -191,7 +191,7 @@ public class CEEvaluator {
      * the constraint expression. This is done be reference, so if
      * the passed Clause object is NOT already in the constraint
      * expression then nothing happens. And, if it should appear
-     * more than once (which I <b>don't</b> think is possible) only
+     * more than once (which I <strong>don't</strong> think is possible) only
      * the first occurence will be removed.
      *
      * @param c The Clause to append.

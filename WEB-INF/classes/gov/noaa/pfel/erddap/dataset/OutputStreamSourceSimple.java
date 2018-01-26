@@ -33,7 +33,6 @@ public class OutputStreamSourceSimple implements OutputStreamSource {
 
         
     /**
-    /**
      * This returns an OutputStream.
      * If called repeatedly, this returns the same outputStream.
      *
@@ -49,6 +48,24 @@ public class OutputStreamSourceSimple implements OutputStreamSource {
 
         return outputStream;
     }
+
+    /** 
+     * After ouputStream() has been called, this indicates the encoding (compression)
+     * being used for an OutputStreamFromHttpResponse (gzip, deflate) 
+     * or "identity" if no compression.
+     * !!! OutputStreamSourceSimple always returns "identity", which may not be correct!!!
+     */
+    public String usingCompression() {
+        return "identity";
+    }
+
+    /**
+     * This returns the outputStream if it has already been created (else null).
+     */
+    public OutputStream existingOutputStream() {
+        return outputStream;
+    }
+
 
 }
 

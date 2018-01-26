@@ -52,7 +52,8 @@ public class Subscriptions {
     public final static int emailColumn = 4;          //String 120
     public final static int actionColumn = 5;         //String 4000
 
-    public final static int DATASETID_LENGTH = 80;
+    //max lengths -- changing these will change/damage(?) the persistentTable -- see below
+    public final static int DATASETID_LENGTH = 80;  
     public final static int EMAIL_LENGTH = 120;
     public final static int ACTION_LENGTH = 4000;
 
@@ -73,7 +74,7 @@ public class Subscriptions {
     //*** things set by constructor 
     /** Has subscription info. */
     protected int maxMinutesPending;
-    protected String erddapUrl; //the non-https url
+    protected String preferredErddapUrl; //preferrably the https url
     protected PersistentTable persistentTable;
     protected HashSet<String> emailBlacklist = new HashSet();
 
@@ -102,10 +103,10 @@ public class Subscriptions {
      * @param fullFileName the full file name for the subscriptions
      * @param maxHoursPending the maximum number of hours before 
      *    a pending subscription can be deleted (e.g., 48).
-     * @param erddapUrl the non-https url for erddap.
+     * @param tPreferredErddapUrl the https (best) or the http (next best) url for erddap.
      */
     public Subscriptions(String fullFileName, int maxHoursPending, 
-        String erddapUrl) throws IOException {
+        String tPreferredErddapUrl) throws IOException {
 
         persistentTable = new PersistentTable(fullFileName, "rw",
             new int[]{
@@ -116,7 +117,7 @@ public class Subscriptions {
                 EMAIL_LENGTH,
                 ACTION_LENGTH});
         maxMinutesPending = 60 * Math.max(1, maxHoursPending);
-        this.erddapUrl = erddapUrl;
+        preferredErddapUrl = tPreferredErddapUrl;
 
         //setup subscription hashmaps
         //constructor is only called in one thread -- no need to synchronize
@@ -136,6 +137,13 @@ public class Subscriptions {
         }
         removeOldPending();
         if (verbose) String2.log("Subscriptions loaded successfully. nValid=" + nValid);
+    }
+
+    /**
+     * This returns this ERDDAP's preferred baseUrl.
+     */
+    public String preferredErddapUrl() {
+        return preferredErddapUrl;
     }
 
     /**
@@ -179,10 +187,27 @@ public class Subscriptions {
         int nRemoved = 0;
         try { 
             //set up new blacklist
-            String sa[] = StringArray.arrayFromCSV(blacklistCsv);
+            StringArray sa = StringArray.fromCSV(blacklistCsv);
+            //append common disposable email addresses
+            sa.add(new String[]{
+                //from https://www.guerrillamail.com/
+                "*@sharklasers.com", "*@grr.la", "*@guerrillamail.biz",
+                "*@guerrillamail.com", "*@guerrillamail.de", "*@guerrillamail.net",
+                "*@guerrillamail.org", "*@guerrillamailblock.com", "*@pokemail.net",
+                "*@spam4.me",
+                //from https://temp-mail.org/en/
+                "*@geronra.com",  //I suspect it changes often
+                //from https://getnada.com/
+                "*@getnada.com",
+                //from https://www.mailinator.com/
+                "*@mailinator.com",
+                //from https://app.inboxbear.com/login
+                "*@inboxbear.com"});
+                //Unfortunately there are several services that obviously frequently
+                //change the domain of the email addresses, so no way to block them.
             emailBlacklist = new HashSet();        
-            for (int i = 0; i < sa.length; i++) {
-                String email = sa[i];
+            for (int i = 0; i < sa.size(); i++) {
+                String email = sa.get(i).toLowerCase(); //to do case insensitive test if on blacklist
                 if (String2.isSomething(email) && email.indexOf('@') >= 0)   //very loose test
                     emailBlacklist.add(email);
             }
@@ -334,7 +359,7 @@ public class Subscriptions {
     public String messageToRequestList(String email) {
         return 
             "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-            erddapUrl + "/" + LIST_HTML + "?email=" + email + "\n"; 
+            preferredErddapUrl + "/" + LIST_HTML + "?email=" + email + "\n"; 
     }
 
     /** This tests that an email address is valid.
@@ -351,6 +376,7 @@ public class Subscriptions {
         int atPo = email.indexOf('@');
         //String2.log(">>email=" + email + "\n>>emailBlacklist=" + emailBlacklist.toString());
         //if (atPo > 0) String2.log(">>email2=*" + email.substring(atPo));
+        email = email.toLowerCase(); //for testing purposes
         if (emailBlacklist.contains(email) || 
             (atPo > 0 && emailBlacklist.contains("*" + email.substring(atPo))))  //e.g., *@example.com
             return String2.ERROR + ": \"" + email + "\" is on the email blacklist.";
@@ -399,12 +425,6 @@ public class Subscriptions {
     }
 
 
-//            if (!action.equals("mailto:" + email)) {
-//                throw new Exception(String2.ERROR + ": For mailto actions (e.g., " + action + 
-//                    "), the mailto address must match the subscription email address (" + 
-//                    email + ").");
-//            }
-
     /**
      * This adds a subscription (pending, not yet validated) and returns the row number.
      * Any existing, identical, pending subscription is refreshed (perhaps user lost invitation email).
@@ -414,7 +434,7 @@ public class Subscriptions {
      *
      * @param datasetID  The caller should have checked that the dataset exists. This doesn't check.
      * @param email  The email address of the subsriber.
-     * @param action  This should be either a url (starting with "http://" or "mailto:").
+     * @param action  This should be either a url (starting with "http://", "https://" or "mailto:").
      *     This does not check that a mailto address matches the email address.     
      * @return the row number of the subscription (it may be old pending, new pending, or already valid)
      * @throws Throwable if trouble (e.g., invalid datasetID, email address, or action).
@@ -435,11 +455,12 @@ public class Subscriptions {
         if (action == null || action.length() == 0) 
             action = "mailto:" + email;
         //be strict now; open to other actions case-by-case
-        if        (action.startsWith("mailto:") && action.length() > "mailto:".length()) {
-        } else if (action.startsWith("http://") && action.length() > "http://".length()) {
+        if        (action.startsWith("mailto:")  && action.length() > "mailto:".length()) {
+        } else if (action.startsWith("http://")  && action.length() > "http://".length()) {
+        } else if (action.startsWith("https://") && action.length() > "https://".length()) {
         } else {
             throw new Exception(String2.ERROR + ": action=" + action + 
-                " must begin with \"http://\" or \"mailto://\".");
+                " must begin with \"http://\", \"https://\" or \"mailto://\".");
         } 
         if (action.length() > ACTION_LENGTH) 
             throw new Exception(String2.ERROR + ": action=" + action + " has more than " + 
@@ -521,13 +542,13 @@ public class Subscriptions {
                     "\nSo if you don't want the subscription, you don't have to do anything." +
                     "\n" +
                     "\nTo validate the subscription, visit" +
-                    "\n" + erddapUrl + "/" + VALIDATE_HTML + "?subscriptionID=" + row + "&key=" + readKey(row) + 
+                    "\n" + preferredErddapUrl + "/" + VALIDATE_HTML + "?subscriptionID=" + row + "&key=" + readKey(row) + 
                     "\n");
 
                 sb.append(
                     "\n\n*****" +
                     "\nNow or in the future, you can delete that subscription (unsubscribe) with" +
-                    "\n" + erddapUrl + "/" + REMOVE_HTML + "?subscriptionID=" + row + "&key=" + readKey(row) + 
+                    "\n" + preferredErddapUrl + "/" + REMOVE_HTML + "?subscriptionID=" + row + "&key=" + readKey(row) + 
                     "\n" +
                     "\n");
                 sb.append(messageToRequestList(readEmail(row)));
@@ -715,9 +736,9 @@ public class Subscriptions {
                 "\naction:         " + readAction(row) +
                 "\nstatus:         " + (status == STATUS_VALID? "valid" : "pending"));
             if (status == STATUS_VALID) sb.append(
-                "\nto unsubscribe: " + erddapUrl + "/" + REMOVE_HTML   + "?subscriptionID=" + row + "&key=" + readKey(row));
+                "\nto unsubscribe: " + preferredErddapUrl + "/" + REMOVE_HTML   + "?subscriptionID=" + row + "&key=" + readKey(row));
             else sb.append(
-                "\nto validate:    " + erddapUrl + "/" + VALIDATE_HTML + "?subscriptionID=" + row + "&key=" + readKey(row));
+                "\nto validate:    " + preferredErddapUrl + "/" + VALIDATE_HTML + "?subscriptionID=" + row + "&key=" + readKey(row));
         }                
         sb.append("\n\nNote that pending subscriptions that aren't validated soon will be deleted.\n" +
             "\n\n*****\n" +
@@ -760,7 +781,7 @@ public class Subscriptions {
                     String2.left(readDatasetID(row), 20) +
                     (status == STATUS_VALID? " valid   " : " pending ") +
                     String2.left(readAction(row), 35) + " " +
-                    erddapUrl + "/" + REMOVE_HTML   + "?subscriptionID=" + row + "&key=" + readKey(row) + "\n");
+                    preferredErddapUrl + "/" + REMOVE_HTML   + "?subscriptionID=" + row + "&key=" + readKey(row) + "\n");
             }          
             sb.append('\n');
         }
@@ -801,7 +822,7 @@ public class Subscriptions {
         //test empty system
         String ffName = EDStatic.fullTestCacheDirectory + "subscriptionsV1.txt";
         File2.delete(ffName);
-        Subscriptions sub = new Subscriptions(ffName, 72, EDStatic.erddapUrl);
+        Subscriptions sub = new Subscriptions(ffName, 72, EDStatic.erddapHttpsUrl);
         Test.ensureEqual(sub.persistentTable.nRows(), 0, "");
         Test.ensureEqual(sub.datasetSubscriptions.size(), 0, "");
         Test.ensureEqual(sub.emailSubscriptions.size(), 0, "");
@@ -830,7 +851,7 @@ public class Subscriptions {
             results = t.getMessage();
         }
         Test.ensureEqual(results, 
-            String2.ERROR + ": action=nonsense must begin with \"http://\" or \"mailto://\".",
+            String2.ERROR + ": action=nonsense must begin with \"http://\", \"https://\" or \"mailto://\".",
             "results=\n" + results);
 
         //add a subscription (twice -- no change)
@@ -851,15 +872,15 @@ public class Subscriptions {
 "So if you don't want the subscription, you don't have to do anything.\n" +
 "\n" +
 "To validate the subscription, visit\n" +
-"http://localhost:8080/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
+"https://localhost:8443/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "Now or in the future, you can delete that subscription (unsubscribe) with\n" +
-"http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
+"https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n";              
+"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n";              
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             Test.ensureEqual(sub.persistentTable.nRows(), 1, "");
@@ -877,14 +898,14 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         pending\n" +
-"to validate:    http://localhost:8080/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
+"to validate:    https://localhost:8443/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
+"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
                 "results=\n" + results);
         }
 
@@ -909,14 +930,14 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
+"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
+"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
                 "results=\n" + results);
         }
 
@@ -967,13 +988,13 @@ public class Subscriptions {
 "(nEmailAddress=2, nPendingSubscriptions=5, nValidSubscriptions=0)\n" +
 "\n" +
 "jane.smith@company.com\n" +
-"rPmelTao             pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
+"rPmelTao             pending http://www.yahoo.com                https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
 "\n" +
 "john.smith@company.com\n" +
-"pmelTao              pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
-"pmelTao              pending http://www.google.com               http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
-"rPmelTao             pending mailto:john.smith@company.com       http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
-"rPmelTao             pending http://www.yahoo.com                http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"pmelTao              pending mailto:john.smith@company.com       https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"pmelTao              pending http://www.google.com               https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"rPmelTao             pending mailto:john.smith@company.com       https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"rPmelTao             pending http://www.yahoo.com                https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n",
             "results=\n" + results);
 
@@ -1000,29 +1021,29 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
 "\n" +
 "datasetID:      pmelTao\n" +
 "action:         http://www.google.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
 "\n" +
 "datasetID:      rPmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
 "\n" +
 "datasetID:      rPmelTao\n" +
 "action:         http://www.yahoo.com\n" +
 "status:         valid\n" +
-"to unsubscribe: http://localhost:8080/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"http://localhost:8080/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n",
+"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n",
             "results=\n" + results);
 
         //remove 

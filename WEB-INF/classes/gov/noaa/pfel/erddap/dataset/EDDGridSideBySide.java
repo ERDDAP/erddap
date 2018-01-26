@@ -197,7 +197,7 @@ public class EDDGridSideBySide extends EDDGrid {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -361,7 +361,7 @@ public class EDDGridSideBySide extends EDDGrid {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridSideBySide " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -578,7 +578,7 @@ public class EDDGridSideBySide extends EDDGrid {
      */
     public static void testQSWind(boolean doGraphicsTests) throws Throwable {
 
-        String2.log("\n*** testQSWind");
+        String2.log("\n*** EDDGridSideBySide.testQSWind");
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
         String dapQuery;
@@ -598,7 +598,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "x_wind[4:8][0][(-20)][(80)],y_wind[4:8][0][(-20)][(80)]";
         tName = qsWind8.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsWind8.className() + "1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 /* pre 2010-07-19 was
@@ -629,7 +629,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "x_wind[4:8][0][(-20)][(80)]";
         tName = qsWind8.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsWind8.className() + "2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 /* pre 2010-10-26 was 
@@ -652,7 +652,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "y_wind[4:8][0][(-20)][(80)]";
         tName = qsWind8.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsWind8.className() + "3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 /* pre 2010-10-26 was
@@ -674,7 +674,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
         if (doGraphicsTests) {
             //graphics requests with no .specs 
-            String2.log("\n****************** EDDGridSideBySide test get vector map\n");
+            String2.log("\n*** EDDGridSideBySide test get vector map\n");
             String vecDapQuery =  //minimal settings
                 "x_wind[2][][(29):(50)][(225):(247)],y_wind[2][][(29):(50)][(225):(247)]"; 
             tName = qsWind8.makeNewFileForDapQuery(null, null, vecDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -743,6 +743,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 "&.draw=vectors&.vars=longitude|latitude|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_vectors", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        /* */
         }
     }
 
@@ -753,7 +754,7 @@ public class EDDGridSideBySide extends EDDGrid {
      * @throws Throwable if trouble
      */
     public static void testQSStress() throws Throwable {
-        String2.log("\n*** testQSWind");
+        String2.log("\n*** EDDGridSideBySide.testQSWind");
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
         String dapQuery;
@@ -763,7 +764,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[0:11][0][(-20)][(40)],tauy[0:11][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -785,7 +786,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[0:2:10][0][(-20)][(40)],tauy[0:2:10][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2a", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -801,7 +802,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[1:2:11][0][(-20)][(40)],tauy[1:2:11][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2b", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -818,7 +819,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[0:2:6][0][(-20)][(40):(40.5)],tauy[0:2:6][0][(-20)][(40):(40.5)]";
         tName = qs1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2c", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -866,7 +867,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
         tName = qsx1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsz1.className() + "sbsx", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux\n" +
@@ -885,7 +886,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "tauy[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
         tName = qsy1.makeNewFileForDapQuery(null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsy1.className() + "sbsy", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "results=time,altitude,latitude,longitude,tauy\n" +
@@ -944,7 +945,7 @@ public class EDDGridSideBySide extends EDDGrid {
     /** This test making transparentPngs.
      */
     public static void testTransparentPng() throws Throwable {
-        String2.log("\n*** testTransparentPng");
+        String2.log("\n*** EDDGridSideBySide.testTransparentPng");
         testVerboseOn();
         String dir = EDStatic.fullTestCacheDirectory;
         String name, tName, userDapQuery, results, expected, error;
@@ -1020,7 +1021,7 @@ public class EDDGridSideBySide extends EDDGrid {
      */
     public static void test(boolean doGraphicsTests) throws Throwable {
 
-        String2.log("\n****************** EDDGridSideBySide.test() *****************\n");
+        String2.log("\n*** EDDGridSideBySide.test()\n");
 /* for releases, this line should have open/close comment */
         //usually done
         testQSWind(doGraphicsTests); 
@@ -1029,6 +1030,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
         //usually not done
         //testOneTime();
+        /* */
 
 
         String2.log("\n*** EDDGridSideBySide.test finished.");

@@ -26,6 +26,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
+import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.Tally;
@@ -255,8 +256,6 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             tColumnNameForExtract.trim() : "";
         tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
             tSortedColumnSourceName.trim() : "";
-        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
-            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
         if (!String2.isSomething(sampleFileName)) 
             String2.log("Found/using sampleFileName=" +
                 (sampleFileName = FileVisitorDNLS.getSampleFileName(
@@ -273,6 +272,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
 
         //new way
         StringArray varNames = new StringArray();
+        double maxTimeES = Double.NaN;
         if (useDimensions.length > 0) {
             //find the varNames
             NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
@@ -316,17 +316,33 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            dataAddTable.addColumn(c, colName,
-                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
+            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
+            dataAddTable.addColumn(c, colName, pa, 
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
+            String tUnits = sourceAtts.getString("units");
             if (tSortedColumnSourceName.length() == 0 && 
-                EDVTimeStamp.hasTimeUnits(sourceAtts, null))
+                Calendar2.isTimeUnits(tUnits)) 
                 tSortedColumnSourceName = colName;
+
+            if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+                try {
+                    if (Calendar2.isNumericTimeUnits(tUnits)) {
+                        double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+                        maxTimeES = Calendar2.unitsSinceToEpochSeconds(
+                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                    } else { //string time units
+                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                    }
+                } catch (Throwable t) {
+                    String2.log("caught while trying to get maxTimeES: " + 
+                        MustBe.throwableToString(t));
+                }
+            }
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
         //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -368,6 +384,19 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             //no units or standard_name
             dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
+        }
+
+        //useMaxTimeES
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440;  //1440 works well with suggestedUpdateEveryNMillis 
+
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
         }
 
         //write the information
@@ -430,12 +459,17 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
 
+        String2.log("\n*** EDDTableFromNcFiles.testGenerateDatasetsXml");
+        String2.pressEnterToContinue("\nDownload NDBC_41004_met.nc from coastwatch\n" +
+            "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/ \n" +
+            "to /u00/data/points/ndbcMet/ .");
+
         try {
             String results = generateDatasetsXml(
                 "C:/u00/data/points/ndbcMet", "",
                 "C:/u00/data/points/ndbcMet/NDBC_41004_met.nc",
                 "",
-                1440,
+                -1,
                 "^.{5}", ".{7}$", ".*", "stationID", //just for test purposes; station is already a column in the file
                 "TIME", "stationID TIME", 
                 "", "", "", "", null) + "\n";
@@ -446,7 +480,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 "C:/u00/data/points/ndbcMet", "",
                 "C:/u00/data/points/ndbcMet/NDBC_41004_met.nc",
                 "",
-                "1440",
+                "-1",
                 "^.{5}", ".{7}$", ".*", "stationID", //just for test purposes; station is already a column in the file
                 "TIME", "stationID TIME", 
                 "", "", "", ""},
@@ -483,8 +517,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2015-07-20Z</att>\n" + //changes
-"        <att name=\"date_issued\">2015-07-20Z</att>\n" +  //changes
+"        <att name=\"date_created\">2018-01-24Z</att>\n" + //changes
+"        <att name=\"date_issued\">2018-01-24Z</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -513,7 +547,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
 "\n" + //changes 2 places...  date is old, but this is what's in the file
 "This dataset has both historical data (quality controlled, before 2011-05-01T00:00:00) and near real time data (less quality controlled, from 2011-05-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2015-07-20T15:00:00Z</att>\n" + //changes
+"        <att name=\"time_coverage_end\">2018-01-24T18:00:00Z</att>\n" + //changes
 "        <att name=\"time_coverage_resolution\">P1H</att>\n" +
 "        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
 "        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
@@ -526,31 +560,17 @@ cdmSuggestion() +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, Unidata Observation Dataset v1.0</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
+"        <att name=\"date_created\">2018-01-24</att>\n" + //changes
+"        <att name=\"date_issued\">2018-01-24</att>\n" +  //changes
 "        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov</att>\n" +
 "        <att name=\"institution\">NOAA NDBC and Participators in Data Assembly Center.</att>\n" +
-"        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere,\n" +
-"Atmosphere &gt; Air Quality &gt; Visibility,\n" +
-"Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure,\n" +
-"Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, eastward, eastward_wind, GST, gust, height, identifier, latitude, layer, level, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" +
-"Oceans &gt; Ocean Waves &gt; Swells,\n" +
-"Oceans &gt; Ocean Waves &gt; Wave Period,\n" +
-"participators, period, planetary, point, pressure, PTDY, quality, real, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, swh, temperature, tendency, tendency_of_air_pressure, TIDE, time, vapor, VIS, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPU, WSPV, WTMP, WVHT, zonal</att>\n" +
+"        <att name=\"keywords\">air, air_pressure_at_sea_level, air_temperature, altitude, APD, assembly, atmosphere, atmospheric, ATMP, average, BAR, boundary, buoy, center, control, data, depth, dew, dew point, dew_point_temperature, DEWP, dewpoint, direction, dominant, DPD, earth, Earth Science &gt; Atmosphere &gt; Air Quality &gt; Visibility, Earth Science &gt; Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Oceans, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Significant Wave Height, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Swells, Earth Science &gt; Oceans &gt; Ocean Waves &gt; Wave Period, eastward, eastward_wind, GST, gust, height, identifier, latitude, layer, level, longitude, measurements, meridional, meteorological, meteorology, MWD, national, ndbc, near, noaa, northward, northward_wind, nrt, ocean, oceans, participators, period, planetary, point, pressure, PTDY, quality, real, science, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, swh, temperature, tendency, tendency_of_air_pressure, TIDE, time, vapor, VIS, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, WSPD, WSPU, WSPV, WTMP, WVHT, zonal</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"Metadata_Conventions\">null</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v29</att>\n" +
 "        <att name=\"subsetVariables\">depth, latitude, longitude, TIDE, ID</att>\n" +
+"        <att name=\"testOutOfDate\">now-1day</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>stationID</sourceName>\n" +
@@ -569,7 +589,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.4374044E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.5168168E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -579,7 +599,7 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.5E9</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">2.0E9</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "        </addAttributes>\n" +
@@ -821,7 +841,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-6.1 32.2</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-6.1 32.6</att>\n" +
 "            <att name=\"comment\">Sea surface temperature (Celsius). For sensor depth, see Hull Description.</att>\n" +
 "            <att name=\"long_name\">SST</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -878,7 +898,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-3.1 3.8</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-4.9 4.7</att>\n" +
 "            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
 "            <att name=\"long_name\">Pressure Tendency</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -915,7 +935,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-17.9 21.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-19.9 21.2</att>\n" +
 "            <att name=\"comment\">The zonal wind speed (m/s) indicates the u component of where the wind is going, derived from Wind Direction and Wind Speed.</att>\n" +
 "            <att name=\"long_name\">Wind Speed, Zonal</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -934,7 +954,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-25.0 20.9</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-25.0 23.5</att>\n" +
 "            <att name=\"comment\">The meridional wind speed (m/s) indicates the v component of where the wind is going, derived from Wind Direction and Wind Speed.</att>\n" +
 "            <att name=\"long_name\">Wind Speed, Meridional</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -1134,7 +1154,7 @@ cdmSuggestion() +
         String2.log("\n****************** EDDTableFromNcFiles 1D test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1216,7 +1236,7 @@ cdmSuggestion() +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"Roy.Mendelssohn@noaa.gov\";\n" +
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
-"    String creator_url \"http://www.pfel.noaa.gov\";\n" +
+"    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String date_created \"2008-06-11T21:43:28Z\";\n" +
 "    String date_issued \"2008-06-11T21:43:28Z\";\n" +
 "    Float64 Easternmost_Easting -118.4;\n" +
@@ -1243,15 +1263,13 @@ expected =
 "/tabledap/erdCinpKfmSFNH.das\";\n" +
 "    String infoUrl \"http://www.nps.gov/chis/naturescience/index.htm\";\n" +
 "    String institution \"CINP\";\n" +
-"    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
-"Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
-"aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n" +
+"    String keywords \"aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, depth, Earth Science > Biosphere > Aquatic Ecosystems > Coastal Habitat, Earth Science > Biosphere > Aquatic Ecosystems > Marine Habitat, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.  National Park Service Disclaimer: The National Park Service shall not be held liable for improper or incorrect use of the data described and/or contained herein. These data and related graphics are not legal documents and are not intended to be used as such. The information contained in these data is dynamic and may change over time. The data are not better than the original sources from which they were derived. It is the responsibility of the data user to use the data appropriately and consistent within the limitation of geospatial data in general and these data in particular. The related graphics are intended to aid the data user in acquiring relevant data; it is not appropriate to use the related graphics as data. The National Park Service gives no warranty, expressed or implied, as to the accuracy, reliability, or completeness of these data. It is strongly recommended that these data are directly acquired from an NPS server and not indirectly through other sources which may have changed the data in some way. Although these data have been processed successfully on computer systems at the National Park Service, no warranty expressed or implied is made regarding the utility of the data on other systems for general or scientific purposes, nor shall the act of distribution constitute any such warranty. This disclaimer applies both to individual use of the data and aggregate use with other data.\";\n" +
-"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 34.05;\n" +
 "    String observationDimension \"row\";\n" + //2012-07-27 this should disappear soon
-"    String project \"NOAA NMFS SWFSC ERD (http://www.pfel.noaa.gov/)\";\n" +
+"    String project \"NOAA NMFS SWFSC ERD (https://www.pfeg.noaa.gov/)\";\n" +
 "    String references \"Channel Islands National Parks Inventory and Monitoring information: http://nature.nps.gov/im/units/medn . Kelp Forest Monitoring Protocols: http://www.nature.nps.gov/im/units/chis/Reports_PDF/Marine/KFM-HandbookVol1.pdf .\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing 32.8;\n" +
@@ -1273,7 +1291,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1299,7 +1317,7 @@ expected =
             "&longitude=-119.05&latitude=33.46666666666&time=2005-07-01T00:00:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1Station", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1320,7 +1338,7 @@ expected =
             "&longitude>-119.06&longitude<=-119.04&latitude=33.46666666666&time=2005-07-01T00:00:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1343,7 +1361,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_eq", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1367,7 +1385,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_NE", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1390,7 +1408,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_gtlt", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1406,7 +1424,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_regex", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,depth,time,id,species_name,size\n" +
@@ -1450,7 +1468,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles 2D test das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "  time {[10]\n" +
@@ -1487,7 +1505,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1533,7 +1551,7 @@ expected =
             "&latitude=-27.7&time=2005-04-19T00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1547,7 +1565,7 @@ expected =
             "&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = "latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -1565,7 +1583,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1593,7 +1611,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,station,wvht,dpd,wtmp,dewp\n" +
@@ -1622,7 +1640,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,wtmp\n" +
@@ -1683,7 +1701,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles test3D das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "  time {[10]\n" +
@@ -1720,7 +1738,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1767,7 +1785,7 @@ expected =
             "&longitude=-48.13&latitude=-27.7&time=2005-04-19T00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1781,7 +1799,7 @@ expected =
             "&longitude=-48.13&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -1799,7 +1817,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1821,7 +1839,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,station,wvht,dpd,wtmp,dewp\n" +
@@ -1844,7 +1862,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,wtmp\n" +
@@ -2047,7 +2065,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles test4D das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 
         expected = 
@@ -2068,7 +2086,7 @@ expected =
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Wave Height\";\n" +
 "    Float32 missing_value -9999999.0;\n" +
-"    String standard_name \"sea_surface_swell_wave_significant_height\";\n" +
+"    String standard_name \"sea_surface_wave_significant_height\";\n" +
 "    String units \"m\";\n" +
 "  }\n";
         tPo = results.indexOf(expected.substring(0,10));
@@ -2100,7 +2118,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -2149,7 +2167,7 @@ expected =
             "&longitude=-48.134&latitude=-27.705&time=2005-04-19T00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -2163,7 +2181,7 @@ expected =
             "&longitude=-48.134&latitude=-27.705&time>=2005-04-01&time<=2005-04-26";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -2181,7 +2199,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2212,7 +2230,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2244,7 +2262,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2321,7 +2339,7 @@ expected =
         userDapQuery = "longitude,latitude,time,station,wd,wtmp&time%3E=2009-03-12T20"; 
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_24hours", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
 
         //in log output, look at end of constructor for "maxTime is within last 24hrs, so setting maxTime to NaN (i.e., Now)."
@@ -2347,7 +2365,7 @@ expected =
         userDapQuery = "longitude,latitude,station&station=~\"5.*\"&time>=2008-03-11&time<2008-03-12&distinct()"; 
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_distincts", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //2011-04-12 changed with reprocessing. Mostly 2 to mostly 3 decimal digits
 "longitude,latitude,station\n" +
@@ -2376,10 +2394,10 @@ expected =
            //2014-08-07 small changes
 "netcdf EDDTableFromNcFiles_distincts2.nc {\n" +
 "  dimensions:\n" +
-"    row = 26;\n" +
+"    row = 29;\n" +
 "    station_strlen = 5;\n" +
 "  variables:\n" +
-"    float longitude(row=26);\n" +
+"    float longitude(row=29);\n" +
 "      :_CoordinateAxisType = \"Lon\";\n" +
 "      :actual_range = -170.493f, 171.395f; // float\n" +
 "      :axis = \"X\";\n" +
@@ -2389,7 +2407,7 @@ expected =
 "      :standard_name = \"longitude\";\n" +
 "      :units = \"degrees_east\";\n" +
 "\n" +
-"    float latitude(row=26);\n" +
+"    float latitude(row=29);\n" +
 "      :_CoordinateAxisType = \"Lat\";\n" +
 "      :actual_range = -14.265f, 24.321f; // float\n" +
 "      :axis = \"Y\";\n" +
@@ -2399,7 +2417,7 @@ expected =
 "      :standard_name = \"latitude\";\n" +
 "      :units = \"degrees_north\";\n" +
 "\n" +
-"    char station(row=26, station_strlen=5);\n" +
+"    char station(row=29, station_strlen=5);\n" +
 "      :_Encoding = \"ISO-8859-1\";\n" +
 "      :cf_role = \"timeseries_id\";\n" +
 "      :ioos_category = \"Identifier\";\n" +
@@ -2439,21 +2457,7 @@ expected =
 "  :id = \"EDDTableFromNcFiles_distincts2\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
-"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
-"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
-"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
-"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
-"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"Oceans > Ocean Waves > Significant Wave Height,\n" +
-"Oceans > Ocean Waves > Swells,\n" +
-"Oceans > Ocean Waves > Wave Period,\n" +
-"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+"  :keywords = \"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, Earth Science > Atmosphere > Air Quality > Visibility, Earth Science > Atmosphere > Altitude > Planetary Boundary Layer Height, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Pressure Tendency, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2474,7 +2478,7 @@ expected =
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :Southernmost_Northing = -14.265f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"station, longitude, latitude\";\n" +
 "  :summary = \"The National Data Buoy Center \\(NDBC\\) distributes meteorological data from\n" +
 "moored buoys maintained by NDBC and others. Moored buoys are the weather\n" +
@@ -2493,15 +2497,16 @@ expected =
 "This dataset has both historical data \\(quality controlled, before\n" +
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
 "20.{8}T00:00:00Z on\\).\";\n" +  //changes   
+"  :testOutOfDate = \"now-1day\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -170.493f; // float\n" +
 " data:\n" +
 "longitude =\n" +
-"  \\{-170.493, -162.279, -162.058, -160.66, -159.575, -158.303, -158.124, -158.116, -157.808, -157.753, -157.668, -157.1, -157.01, -156.93, -156.427, -156.1, -154.97, -154.056, -153.913, -153.9, -152.382, -144.668, 144.789, 144.812, 145.662, 171.395\\}\n" +
+"  \\{-170.493, -162.279, -162.058, -160.66, -159.575, -158.303, -158.124, -158.116, -157.959, -157.808, -157.756, -157.753, -157.668, -157.1, -157.01, -156.93, -156.427, -156.1, -154.97, -154.056, -153.913, -153.9, -152.382, -144.668, 134.669, 144.789, 144.812, 145.662, 171.395\\}\n" +
 "latitude =\n" +
-"  \\{-14.265, 23.445, 24.321, 19.087, 22.286, 21.096, 21.281, 21.673, 17.094, 21.477, 21.417, 20.4, 20.788, 21.35, 21.019, 20.4, 19.78, 23.546, 0.0, 23.558, 17.525, 13.729, 13.354, 13.683, 15.267, 7.092\\}\n" +
-"station =\"51209\", \"51001\", \"51101\", \"51003\", \"51208\", \"51200\", \"51204\", \"51201\", \"51002\", \"51207\", \"51202\", \"51027\", \"51203\", \"51026\", \"51205\", \"51005\", \"51206\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52200\", \"52202\", \"52211\", \"52201\"\n" +
+"  \\{-14.265, 23.445, 24.321, 19.087, 22.286, 21.096, 21.281, 21.673, 21.297, 17.094, 21.477, 21.477, 21.417, 20.4, 20.788, 21.35, 21.019, 20.4, 19.78, 23.546, 0.0, 23.558, 17.525, 13.729, 7.629, 13.354, 13.683, 15.267, 7.092\\}\n" +
+"station =\"51209\", \"51001\", \"51101\", \"51003\", \"51208\", \"51200\", \"51204\", \"51201\", \"51211\", \"51002\", \"51210\", \"51207\", \"51202\", \"51027\", \"51203\", \"51026\", \"51205\", \"51005\", \"51206\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52212\", \"52200\", \"52202\", \"52211\", \"52201\"\n" +
 "\\}\n";
         int tPo = results.indexOf(expected.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -2561,21 +2566,7 @@ expected =
 "  :id = \"EDDTableFromNcFiles_distincts3\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
-"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
-"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
-"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
-"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
-"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"Oceans > Ocean Waves > Significant Wave Height,\n" +
-"Oceans > Ocean Waves > Swells,\n" +
-"Oceans > Ocean Waves > Wave Period,\n" +
-"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+"  :keywords = \"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, Earth Science > Atmosphere > Air Quality > Visibility, Earth Science > Atmosphere > Altitude > Planetary Boundary Layer Height, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Pressure Tendency, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -2594,7 +2585,7 @@ expected =
 "  :quality = \"Automated QC checks with periodic manual QC\";\n" +
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"station, longitude, latitude\";\n" +
 "  :summary = \"The National Data Buoy Center \\(NDBC\\) distributes meteorological data from\n" +
 "moored buoys maintained by NDBC and others. Moored buoys are the weather\n" +
@@ -2613,6 +2604,7 @@ expected =
 "This dataset has both historical data \\(quality controlled, before\n" +
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
 "20.{8}T00:00:00Z on\\).\";\n" +    //changes
+"  :testOutOfDate = \"now-1day\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -153.913f; // float\n" +
@@ -2640,7 +2632,7 @@ expected =
         userDapQuery = "station&station>\"5\"&station<\"6\""; 
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_id", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "station\n" +
 "\n" +
@@ -2665,11 +2657,14 @@ expected =
 "51207\n" + //added 2014-08-07
 "51208\n" + //added 2014-08-07
 "51209\n" + //added 2015-07-31
+"51210\n" + //added 2017-01-08
+"51211\n" + //added 2017-01-08
 "52009\n" +
 "52200\n" +
 "52201\n" +
 "52202\n" + //added 2014-08-07
-"52211\n";  //added 2014-08-07
+"52211\n" + //added 2014-08-07
+"52212\n"; //added 2017-01-08
         Test.ensureEqual(results, expected, "results=\n" + results);
     }
      
@@ -2696,7 +2691,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderBy(\"station,time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_ob", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2734,7 +2729,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderBy(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_ob2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2769,7 +2764,7 @@ expected =
             "&time=2005-04-19T23:00:00Z&orderBy(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_ob3", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
 ",degrees_east,degrees_north,UTC,degrees_true,m s-1,m s-1,m,s,s,degrees_true,hPa,degree_C,degree_C,degree_C,km,hPa,m,m s-1,m s-1\n" +
@@ -2842,7 +2837,7 @@ expected =
             "&time>=2000-01-01&time<2000-01-02&orderByCount(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obc1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,wtmp,atmp\n" +
 ",count,count,count,count\n" +
@@ -2864,7 +2859,7 @@ expected =
             "&time>=2000-01-01&time<2000-01-02&orderByCount(\"\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obc2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,wd,wtmp,atmp\n" +
 "count,count,count,count\n" +
@@ -2876,7 +2871,7 @@ expected =
             "&time>=2000-01-01&time<2000-01-02&orderByCount(\"\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obc2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,wtmp,atmp\n" +
 "count,count,count,count,count\n" +
@@ -2908,7 +2903,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"station,time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2927,7 +2922,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2939,7 +2934,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax3", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2999,7 +2994,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"station,time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -3018,7 +3013,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -3030,7 +3025,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin3", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -3089,7 +3084,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"station,time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -3116,7 +3111,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -3129,7 +3124,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax3", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -3191,7 +3186,7 @@ expected =
             "&orderByClosest(%22station,time,1 day%22)";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obc1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -3219,7 +3214,7 @@ expected =
             "&orderByClosest(%22time,1 day%22)";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obc2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -3306,7 +3301,7 @@ expected =
             "&orderByLimit(%22station,3%22)";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obl1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -3333,7 +3328,7 @@ expected =
             "&orderByLimit(%223%22)";  //3
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_obl2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -3420,7 +3415,7 @@ expected =
         userDapQuery = "station,longitude,latitude&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_sll", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "station,longitude,latitude\n" +
 ",degrees_east,degrees_north\n" +
@@ -3459,7 +3454,7 @@ expected =
         Test.ensureEqual(edv.destinationMax(), -106.1167, "");
 
         tName = csub.makeNewFileForDapQuery(null, null, csubDapQuery, dir, baseName, ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "ID,line_station,line,station,longitude,latitude,time,depth,chlorophyll,dark,light_percent,NH3,NO2,NO3,oxygen,PO4,pressure,primprod,salinity,silicate,temperature\n" +
@@ -4599,10 +4594,8 @@ expected =
     try {
 
         //*** .das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
-            "gtspp", ".das"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, "gtspp", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -4714,7 +4707,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 29293972;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 30919155;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4759,7 +4752,7 @@ expected =
 "  \\}\n" +
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.811229e\\+8, 1.4984832e\\+9;\n" + //2nd value changes   use \\+
+"    Float64 actual_range 4.811229e\\+8, 1.5137694e\\+9;\n" + //2nd value changes   use \\+
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4821,7 +4814,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2017-07-14 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2018-01-12 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4830,8 +4823,8 @@ expected =
 "    String creator_email \"nodc.gtspp@noaa.gov\";\n" +
 "    String creator_name \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "    String creator_url \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
-"    String crs \"EPSG:4326\";\n" +                  //2 changes below:
-"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2017-06-24&time%3C=2017-07-01&.draw=markers&.marker=1\\|5\";\n" +
+"    String crs \"EPSG:4326\";\n" +                 
+"    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=1\\|5\";\n" +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -4849,9 +4842,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2017-07-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2018-01-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(https://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2017-07-14 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2018-01-12 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4864,13 +4857,11 @@ expected =
 "    String id \"erdGtsppBest\";\n" +
 "    String infoUrl \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String institution \"NOAA NODC\";\n" +
-"    String keywords \"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"cruise, data, density, depth, global, gtspp, identifier, noaa, nodc, observation, ocean, oceans, organization, profile, program, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, station, temperature, temperature-salinity, time, type, water\";\n" +
+"    String keywords \"cruise, data, density, depth, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, global, gtspp, identifier, noaa, nodc, observation, ocean, oceans, organization, profile, program, salinity, sea, sea_water_practical_salinity, sea_water_temperature, seawater, station, temperature, temperature-salinity, time, type, water\";\n" +
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2017-07-14 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2018-01-12 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4895,7 +4886,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the June 2017 data\\) but is a subset of the " + //month changes
+    "up to and including the December 2017 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4907,7 +4898,8 @@ expected =
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2017-06-26T13:20:00Z\";\n" + //changes
+"    String testOutOfDate \"now-45days\";\n" +
+"    String time_coverage_end \"2017-12-20T11:30:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-03-31T13:15:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -4927,7 +4919,7 @@ expected =
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             "gtspp", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -4957,7 +4949,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&station_id=1254666", 
             dir, "gtspp1254666", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -4985,8 +4977,9 @@ expected =
                 long eTime = System.currentTimeMillis();
                 tName = tedd.makeNewFileForDapQuery(null, null, tests[test], 
                     dir, "gtspp" + test, ".csv"); 
-                String2.log("\n*** finished testing " + tests[test] + " time=" + (System.currentTimeMillis() - eTime));
-                results = new String((new ByteArray(dir + tName)).toArray());
+                String2.log("\n*** finished testing " + tests[test] + 
+                    " time=" + (System.currentTimeMillis() - eTime) + "ms");
+                results = String2.directReadFrom88591File(dir + tName);
             } catch (Throwable t) {
                 error = MustBe.throwableToString(t);
             }
@@ -5004,7 +4997,7 @@ expected =
         //should succeed quickly (except for println statements here)
         tName = tedd.makeNewFileForDapQuery(null, null, "&latitude=-78.579002", 
             dir, "gtspp77", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -5022,7 +5015,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&time>2000-01-01T02:59:59Z&time<2000-01-01T03:00:01Z&orderBy(\"station_id,depth\")", 
             dir, "gtsppLL", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -5037,7 +5030,7 @@ expected =
 "ME_BA_33TT_22001 00,ME,BA,33TT,22001 00,1254716,126.3,28.1667,2000-01-01T03:00:00Z,50.0,21.3,NaN\n" +
 "ME_BA_33TT_22001 00,ME,BA,33TT,22001 00,1254716,126.3,28.1667,2000-01-01T03:00:00Z,100.0,19.8,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime));
+        String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime) + "ms");
         //String2.pressEnterToContinue();
 
     } catch (Throwable t) {
@@ -5191,7 +5184,7 @@ expected =
     /** This test making transparentPngs.
      */
     public static void testTransparentPng() throws Throwable {
-        String2.log("\n*** testTransparentPng");
+        String2.log("\n*** EDDTableFromNcFiles.testTransparentPng");
         //testVerboseOn();
         reallyVerbose = false;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -5280,7 +5273,7 @@ expected =
     /** This tests a long time graph.
      */
     public static void testTimeAxis() throws Throwable {
-        String2.log("\n*** testTimeAxis");
+        String2.log("\n*** EDDTableFromNcFiles.testTimeAxis");
         testVerboseOn();
         reallyVerbose = true;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -5337,7 +5330,7 @@ expected =
      * and units="years since 0000-07-01" (to again make the times all at July 1).
      */
     public static void testModTime() throws Throwable {
-        String2.log("\n*** testModTime");
+        String2.log("\n*** EDDTableFromNcFiles.testModTime");
         testVerboseOn();
         reallyVerbose = true;
         boolean oDebugMode = debugMode;
@@ -5358,7 +5351,7 @@ expected =
         dapQuery = "time,irradiance&time=\"2011-07-01\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
             dir, eddTable.className() + "_ModTime2",  ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         debugMode = oDebugMode;    
@@ -5370,81 +5363,97 @@ expected =
      * so it has reliable access speed.
      * This gets a pretty big chunk of data.
      *
-     * @param whichTest -1 for all, or 0..
+     * @param firstTest 0..
+     * @param lastTest (inclusive) Any number greater than last available is 
+     *   interpreted as last available.
      */
-    public static void testSpeed(int whichTest) throws Throwable {
+    public static void testSpeed(int firstTest, int lastTest) throws Throwable {
         String2.log("\n*** EDDTableFromNcFiles.testSpeed\n" + 
+            "THIS REQUIRES THE cwwcNDBCMet DATASET TO BE IN LOCALHOST ERDDAP!!!\n" +
             SgtUtil.isBufferedImageAccelerated() + "\n");
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = false;
-        String tName;
-        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+        String outName;
+        //2017-10-13 I switched from getFile to curl
+        //  The advantage is: curl will detect if outputstream isn't being closed.
+        String baseRequest = "curl http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet"; 
         //userDapQuery will make time series graphs
         //not just a 121000 points at the same location on a map
-        String userDapQuery = "time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,dewp,vis,ptdy,tide,wspu,wspv&station=\"41006\""; 
-        String dir = EDStatic.fullTestCacheDirectory;
+        String userDapQuery = "?" + SSR.minimalPercentEncode(
+            "time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd," +
+            "bar,atmp,dewp,vis,ptdy,tide,wspu,wspv&station=\"41006\"" +
+            "&time>0."); //random integer will be appended to avoid cached response
+        String baseOut = EDStatic.fullTestCacheDirectory + "EDDTableFromNcFilesTestSpeed";
+        ArrayList al;
+        int timeOutSeconds = 120;
         String extensions[] = new String[] {  //.help not available at this level            
             ".asc", ".csv", ".csvp", ".csv0", 
             ".das", ".dds", ".dods", 
             ".esriCsv", ".geoJson", ".graph", ".html", 
             ".htmlTable", ".json", ".jsonlCSV", ".jsonlKVP",
             ".mat", ".nc", ".ncHeader", 
-            ".nccsv", ".nccsvMetadata",
+            ".nccsv", ".nccsvMetadata", ".ncoJson",
             ".odvTxt", ".subset", ".tsv", ".tsvp", ".tsv0", 
-            ".xhtml", //21?
+            ".xhtml", //26?
             ".kml", ".smallPdf", ".pdf", ".largePdf", 
             ".smallPng", ".png", ".largePng"};  
         int expectedMs[] = new int[] { 
+            //2017-10-13 I added 200 ms with change from getFile to curl
             //now Java 1.7 M4700      //was Java 1.6                   //was Java 1.5
             //graphics tests changed a little 1.5 -> 1.6, so not perfectly comparable
-            619, 672, 515, 515,       //3125, 2625, 2687, ?,           //4469, 4125, 4094, ?, 
-            8, 4, 176,                //2014-09 .dods slower 176->508 why? // 16, 31, 687 //16, 32, 1782, 
-            763, 1126, 60, 72,        //3531, 5219, 47, 31,            //5156, 6922, 125, 100, 
-            534, 523, 559, 951,       //1672, 2719, ., .,              //4109, 4921, ., .,
-            469, 535, 665,            //1531, 1922, 1797,              //4921, 4921, 4610, 
-            507, 31,
-            896, 65, 485, 482, 480,   //4266, 32, 2562, 2531, ?,       //8359, 31, 3969, 3921, ?, 
+            819, 872, 715, 715,       //3125, 2625, 2687, ?,           //4469, 4125, 4094, ?, 
+            208, 204, 576,            //2014-09 .dods slower 176->508 why? // 16, 31, 687 //16, 32, 1782, 
+            963, 1326, 260, 212,      //3531, 5219, 47, 31,            //5156, 6922, 125, 100, 
+            534, 723, 759, 1151,      //1672, 2719, ., .,              //4109, 4921, ., .,
+            669, 735, 700,            //1531, 1922, 1797,              //4921, 4921, 4610, 
+            707, 231, 882,
+            1096, 265, 685, 682, 680, //4266, 32, 2562, 2531, ?,       //8359, 31, 3969, 3921, ?, 
             1200,  //but really slow if hard drive is busy!   //4266   //6531,               
-            967, 763, 686, 740,       //2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
-            924, 904, 1022};          //2984, 3125, 3391               //5421, 5204, 5343};         
+            600, 963, 886, 940,       //2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
+            964, 974, 1022};          //2984, 3125, 3391               //5421, 5204, 5343};         
         int bytes[]    = new int[] {
             18989646, 13058166, 13058203, 13057934, 
             14544, 394, 11703093, 
             16391423, 55007762, 142273, 178477, 
-            13606792, 17827554, 16973594, 34527626,
+            10104341, 17827554, 16973594, 34527626,
             10485696, 9887104, 14886, 
-            17690818, 13125,
+            17690818, 13125, 20935200,
             10698295, 24007, 13058166, 13058203, 13057934, 
-            59642150, 
-            4790, 82780, 135305, 161613, 
-            7482, 11367, 23684};
+            46999993, 
+            4790, 72241, 117227, 137710, 
+            7082, 10367, 20684};
 
         //warm up
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-            dir, eddTable.className() + "_testSpeedw", ".pdf"); 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-            dir, eddTable.className() + "_testSpeedw", ".png"); 
+        outName = baseOut + "Warmup.pdf.pdf";
+        al = SSR.dosShell(baseRequest + ".pdf" + userDapQuery + Math2.random(10000) +
+            " -o " + outName, timeOutSeconds);
+        String2.log(String2.toNewlineString(al.toArray()));
+
+        outName = baseOut + "Warmup.png.png";
+        al = SSR.dosShell(baseRequest + ".png" + userDapQuery + Math2.random(10000) +
+            " -o " + outName, timeOutSeconds);
         
-        int firstExt = whichTest < 0? 0 : whichTest;
-        int lastExt  = whichTest < 0? extensions.length - 1 : whichTest;
-        for (int ext = firstExt; ext <= lastExt; ext++) {
+        lastTest = Math.min(lastTest, extensions.length - 1);
+        for (int ext = firstTest; ext <= lastTest; ext++) {
+            String dotExt = extensions[ext];
             try { 
                 String2.log("\n*** EDDTableFromNcFiles.testSpeed test#" + ext + ": " + 
-                    extensions[ext] + " speed\n");
+                    dotExt + " speed\n");
                 long time = 0, cLength = 0;
                 for (int chance = 0; chance < 3; chance++) {
                     Math2.gcAndWait(); //in a test
                     time = System.currentTimeMillis();
-                    tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
-                        dir, eddTable.className() + 
-                        "_testSpeed" + chance + extensions[ext].substring(1) + ext, 
-                        extensions[ext]); 
+                    outName = baseOut + chance + dotExt;
+                    al = SSR.dosShell(baseRequest + dotExt + userDapQuery + 
+                        Math2.random(10000) +
+                        " -o " + outName, timeOutSeconds);
+
                     time = System.currentTimeMillis() - time;
-                    cLength = File2.length(dir + tName);
+                    cLength = File2.length(outName);
                     String2.log("\n*** EDDTableFromNcFiles.testSpeed test#" + ext +
-                        " chance#" + chance + ": " + extensions[ext] + " done.\n  " + 
+                        " chance#" + chance + ": " + dotExt + " done.\n  " + 
                         cLength + " bytes (expected=" + bytes[ext] + ").  time=" + 
-                        time + " ms (expected=" + expectedMs[ext] + ")\n"); Math2.sleep(3000);
+                        time + "ms (expected=" + expectedMs[ext] + ")\n"); Math2.sleep(3000);
 
                     //if not too slow or too fast, break
                     if (time > 1.5 * Math.max(100, expectedMs[ext]) ||
@@ -5456,8 +5465,8 @@ expected =
                 }
 
                 //display?
-                if (false && String2.indexOf(imageFileTypeNames, extensions[ext]) >= 0) {
-                    SSR.displayInBrowser("file://" + dir + tName);
+                if (false && String2.indexOf(imageFileTypeNames, dotExt) >= 0) {
+                    SSR.displayInBrowser("file://" + outName);
                     Math2.gc(5000); //in a test, pause for image display
                 }
 
@@ -5465,11 +5474,11 @@ expected =
                 Test.ensureTrue(cLength > 0.9 * bytes[ext], 
                     "File shorter than expected.  observed=" + 
                     cLength + " expected=~" + bytes[ext] +
-                    "\n" + dir + tName);
+                    "\n" + outName);
                 Test.ensureTrue(cLength < 1.1 * bytes[ext], 
                     "File longer than expected.  observed=" + 
                     cLength + " expected=~" + bytes[ext] +
-                    "\n" + dir + tName);
+                    "\n" + outName);
 
                 //time test
                 if (time > 1.5 * Math.max(100, expectedMs[ext]))
@@ -5481,14 +5490,20 @@ expected =
                         "Faster than expected! observed=" + time + 
                         " expected=~" + expectedMs[ext] + " ms.");
 
+                //display last image
+                if (ext == extensions.length - 1) {
+                    File2.rename(outName, outName + ".png");
+                    SSR.displayInBrowser( outName + ".png");
+                }
+
                 //data test for .nc (especially string column)
                 //This is important test of EDDTable.saveAsFlatNc for nRows > partialRequestMaxCells
                 //(especially since changes on 2010-09-07).
-                if (extensions[ext].equals(".nc")) {
+                if (dotExt.equals(".nc")) {
                     Table table = new Table();
-                    table.readFlatNc(dir + tName, null, 1);
+                    table.readFlatNc(outName, null, 1);
                     int nRows = table.nRows();
-                    String2.log(".nc fileName=" + dir + tName + "\n" +
+                    String2.log(".nc fileName=" + outName + "\n" +
                         "nRows=" + nRows);
                     String results = table.dataToString(2);
                     String expected = 
@@ -5508,7 +5523,7 @@ expected =
             } catch (Exception e) {
                 String2.pressEnterToContinue(
                     MustBe.throwableToString(e) +
-                    "\nUnexpected ERROR for Test#" + ext + ": " + extensions[ext] + "."); 
+                    "\nUnexpected ERROR for Test#" + ext + ": " + dotExt + "."); 
             }
         }
         reallyVerbose = oReallyVerbose;
@@ -5857,7 +5872,7 @@ float z(z) ;
      */
     public static void getAllSourceVariableNames(String dir, String fileNameRegex) {
         HashSet hashset = new HashSet();
-        String2.log("\n*** getAllsourceVariableNames from " + dir + " " + fileNameRegex);
+        String2.log("\n*** EDDTableFromNcFiles.getAllsourceVariableNames from " + dir + " " + fileNameRegex);
         Table.verbose = false;
         Table.reallyVerbose = false;
         String sourceFiles[] = RegexFilenameFilter.recursiveFullNameList(
@@ -5972,12 +5987,12 @@ landings.time_series[12]
             char SL = i==0? 'S' : 'L';
 
             //*** monthly
-            String2.log("\n**** test erdCAMarCat" + SL + "M");
+            String2.log("\n*** test erdCAMarCat" + SL + "M");
             eddTable = (EDDTable)oneFromDatasetsXml(null, "erdCAMarCat" + SL + "M"); 
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&port=\"Los Angeles\"&fish=\"Barracuda, California\"&year=1929", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -5999,7 +6014,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&year>=1976&year<=1977", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = SL == 'S'?
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -6059,7 +6074,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&time>=1976-01-01&time<=1977-12-31", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
 
@@ -6069,7 +6084,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&port=\"Los Angeles\"&fish=\"Barracuda, California\"&year=1929", 
                 dir, eddTable.className() + "_" + SL + "Y", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -6080,7 +6095,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&year>=1971&year<=1980", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = SL == 'S'?
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -6112,12 +6127,12 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&time>=1971-01-01&time<=1980-12-31", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
         
         }
-        String2.log("\n**** test erdCAMarCat finished successfully");
+        String2.log("\n**** test EDDTableFromNcFiles.testErdCAMarCat finished successfully");
     }
 
 
@@ -6169,7 +6184,7 @@ landings.landings[12][1][1]
 
         //ensure the dataset is loaded in local ERDDAP 
         //and initial time range is correct
-        results = SSR.getUrlResponseString(query);
+        results = SSR.getUrlResponseStringUnchanged(query);
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         //"touch" the file back 
@@ -6179,7 +6194,7 @@ landings.landings[12][1][1]
         Math2.sleep(1000);
 
         //look at allDatasets time range
-        results = SSR.getUrlResponseString(query);
+        results = SSR.getUrlResponseStringUnchanged(query);
         Test.ensureEqual(results, expected, "results=\n" + results);
     }
 
@@ -6303,10 +6318,7 @@ expected =
 "  :id = \"ncCF\";\n" +
 "  :infoUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.info\";\n" +
 "  :institution = \"NOAA NWFSC\";\n" +
-"  :keywords = \"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
-"Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
-"Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals,\n" +
-"1980-2005, abbreviation, atmosphere, beginning, coast, code, collected, coral, data, depth, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";\n" +
+"  :keywords = \"1980-2005, abbreviation, atmosphere, beginning, coast, code, collected, coral, data, depth, Earth Science > Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals, Earth Science > Biosphere > Aquatic Ecosystems > Coastal Habitat, Earth Science > Biosphere > Aquatic Ecosystems > Marine Habitat, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6516,21 +6528,7 @@ String expected2 =
 "  :id = \"ncCF1a\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
-"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
-"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
-"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
-"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
-"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"Oceans > Ocean Waves > Significant Wave Height,\n" +
-"Oceans > Ocean Waves > Swells,\n" +
-"Oceans > Ocean Waves > Wave Period,\n" +
-"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+"  :keywords = \"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, Earth Science > Atmosphere > Air Quality > Visibility, Earth Science > Atmosphere > Altitude > Planetary Boundary Layer Height, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Pressure Tendency, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6551,7 +6549,7 @@ String expected2 =
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :Southernmost_Northing = 37.363f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"station, longitude, latitude\";\n" +
 "  :summary = \"The National Data Buoy Center \\(NDBC\\) distributes meteorological data from\n" +
 "moored buoys maintained by NDBC and others. Moored buoys are the weather\n" +
@@ -6569,7 +6567,8 @@ String expected2 =
 "\n" +
 "This dataset has both historical data \\(quality controlled, before\n" +
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" + //changes
-"20.{8}T00:00:00Z on\\).\";\n" +                                                 //changes
+"20.{8}T00:00:00Z on\\).\";\n" +                                                   //changes
+"  :testOutOfDate = \"now-1day\";\n" +
 "  :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -6737,21 +6736,7 @@ expected =
 "  :id = \"ncCFMA1a\";\n" +
 "  :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :institution = \"NOAA NDBC, NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
-"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
-"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
-"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
-"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
-"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"Oceans > Ocean Waves > Significant Wave Height,\n" +
-"Oceans > Ocean Waves > Swells,\n" +
-"Oceans > Ocean Waves > Wave Period,\n" +
-"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+"  :keywords = \"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, Earth Science > Atmosphere > Air Quality > Visibility, Earth Science > Atmosphere > Altitude > Planetary Boundary Layer Height, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Pressure Tendency, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6772,7 +6757,7 @@ expected =
 "  :source = \"station observation\";\n" +
 "  :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 "  :Southernmost_Northing = 37.363f; // float\n" +
-"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :standard_name_vocabulary = \"CF Standard Name Table v29\";\n" +
 "  :subsetVariables = \"station, longitude, latitude\";\n" +
 "  :summary = \"The National Data Buoy Center \\(NDBC\\) distributes meteorological data from\n" +
 "moored buoys maintained by NDBC and others. Moored buoys are the weather\n" +
@@ -6791,6 +6776,7 @@ expected =
 "This dataset has both historical data \\(quality controlled, before\n" +
 "20.{8}T00:00:00Z\\) and near real time data \\(less quality controlled, from\n" +
 "20.{8}T00:00:00Z on\\).\";\n" +
+"  :testOutOfDate = \"now-1day\";\n" +
 "  :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 "  :time_coverage_resolution = \"P1H\";\n" +
 "  :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -6950,6 +6936,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 38.8782f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 36.5567f; // float\n" +
@@ -7303,6 +7290,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 38.8782f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 36.5567f; // float\n" +
@@ -7702,21 +7690,7 @@ expected =
 "  :id = \"ncCF2a\";\n" +
 "  :infoUrl = \"http://www.globec.org/\";\n" +
 "  :institution = \"GLOBEC\";\n" +
-"  :keywords = \"10um,\n" +
-"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
-"Oceans > Ocean Chemistry > Ammonia,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"Oceans > Ocean Chemistry > Nitrate,\n" +
-"Oceans > Ocean Chemistry > Nitrite,\n" +
-"Oceans > Ocean Chemistry > Nitrogen,\n" +
-"Oceans > Ocean Chemistry > Oxygen,\n" +
-"Oceans > Ocean Chemistry > Phosphate,\n" +
-"Oceans > Ocean Chemistry > Pigments,\n" +
-"Oceans > Ocean Chemistry > Silicate,\n" +
-"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"  :keywords = \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7725,6 +7699,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 44.65f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 44.65f; // float\n" +
@@ -7927,21 +7902,7 @@ expected =
 "  :id = \"ncCFMA2a\";\n" +
 "  :infoUrl = \"http://www.globec.org/\";\n" +
 "  :institution = \"GLOBEC\";\n" +
-"  :keywords = \"10um,\n" +
-"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
-"Oceans > Ocean Chemistry > Ammonia,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"Oceans > Ocean Chemistry > Nitrate,\n" +
-"Oceans > Ocean Chemistry > Nitrite,\n" +
-"Oceans > Ocean Chemistry > Nitrogen,\n" +
-"Oceans > Ocean Chemistry > Oxygen,\n" +
-"Oceans > Ocean Chemistry > Phosphate,\n" +
-"Oceans > Ocean Chemistry > Pigments,\n" +
-"Oceans > Ocean Chemistry > Silicate,\n" +
-"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"  :keywords = \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7950,6 +7911,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 44.65f; // float\n" +
 "  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 "  :Southernmost_Northing = 44.65f; // float\n" +
@@ -8302,7 +8264,7 @@ expected =
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
-"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=20.{8}&time%3C=20.{8}&.draw=markers&.marker=1\\|5\";\n" +
+"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=1\\|5\";\n" +
 "  :Easternmost_Easting = 176.64f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :file_source = \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -8732,7 +8694,7 @@ expected =
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
-"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=20.{8}&time%3C=20.{8}&.draw=markers&.marker=1\\|5\";\n" +
+"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=1\\|5\";\n" +
 "  :Easternmost_Easting = 176.64f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :file_source = \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -9454,7 +9416,7 @@ String expected3 = expected2 +
 
             tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
                 dir, baseName, ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             String2.log(results);
             expected = "Shouldn't get here!";  
             Test.ensureEqual(results, expected, "");
@@ -9505,7 +9467,7 @@ String expected3 = expected2 +
      */
     public static void testGlobec() throws Throwable {
         testVerboseOn();
-        String2.log("\n***EDDTableFromFiles.testGlobec");
+        String2.log("\n*** EDDTableFromNcFiles.testGlobec");
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
@@ -9536,7 +9498,7 @@ String expected3 = expected2 +
         //if (true) System.exit(1);
 
         //*** test valid queries
-        String2.log("\n****************** EDDTableFromNcFiles.test valid queries \n");
+        String2.log("\n*** EDDTableFromNcFiles.test valid queries \n");
         globecBottle.parseUserDapQuery("longitude,NO3", rv, cv, co, cv2, false);  
         Test.ensureEqual(rv.toString(), "longitude, NO3", "");
         Test.ensureEqual(cv.toString(), "", "");
@@ -9830,8 +9792,12 @@ String expected3 = expected2 +
             "SimpleException: Query error: Numeric tests of NaN must use \"NaN\", " +
             "not value=\"0|longitude>-180\".", "error=" + error);
 
+        results  = Calendar2.epochSecondsToIsoStringT(Calendar2.nowStringToEpochSeconds("now-1 day")).substring(0, 16);
+        expected = Calendar2.epochSecondsToIsoStringT(Calendar2.nowStringToEpochSeconds("now-1day" )).substring(0, 16);
+        Test.ensureEqual(results, expected, ""); 
+
         error = "";
-        String nowQ[] = {"nowa", "now-1 day", "now-", "now-5.5days", "now-5date", "now-9dayss"};
+        String nowQ[] = {"nowa", "now-", "now-5.5days", "now-5date", "now-9dayss"};
         for (int i = 0; i < nowQ.length; i++) {
             try {
                 globecBottle.getSourceQueryFromDapQuery("time&time=" + nowQ[i], 
@@ -9992,11 +9958,10 @@ String expected3 = expected2 +
 
 
         //*** test getting das for entire dataset
-        String2.log("\n****************** EDDTableFromNcFiles.test das dds for entire dataset\n");
+        String2.log("\n*** EDDTableFromNcFiles.test das dds for entire dataset\n");
         tName = globecBottle.makeNewFileForDapQuery(null, null, "", dir, 
             globecBottle.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         String expectedDas1 = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
@@ -10090,21 +10055,7 @@ String expected3 = expected2 +
    "String id \"Globec_bottle_data_2002\";\n" +
 "    String infoUrl \"http://www.globec.org/\";\n" +
 "    String institution \"GLOBEC\";\n" +
-"    String keywords \"10um,\n" +
-"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
-"Oceans > Ocean Chemistry > Ammonia,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"Oceans > Ocean Chemistry > Nitrate,\n" +
-"Oceans > Ocean Chemistry > Nitrite,\n" +
-"Oceans > Ocean Chemistry > Nitrogen,\n" +
-"Oceans > Ocean Chemistry > Oxygen,\n" +
-"Oceans > Ocean Chemistry > Phosphate,\n" +
-"Oceans > Ocean Chemistry > Pigments,\n" +
-"Oceans > Ocean Chemistry > Silicate,\n" +
-"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"    String keywords \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -10159,7 +10110,7 @@ String expected3 = expected2 +
         //*** test getting dds for entire dataset
         tName = globecBottle.makeNewFileForDapQuery(null, null, "", dir, 
             globecBottle.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -10201,12 +10152,12 @@ String expected3 = expected2 +
  
 
         //*** test make data files
-        String2.log("\n****************** EDDTableFromNcFiles.test make DATA FILES\n");       
+        String2.log("\n*** EDDTableFromNcFiles.test make DATA FILES\n");       
 
         //.asc
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".asc"); 
-        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -10229,7 +10180,7 @@ String expected3 = expected2 +
         //.csv
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
             dir, globecBottle.className() + "_Data", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -10247,7 +10198,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery + "&units(\"UCUM\")", 
             dir, 
             globecBottle.className() + "_Data", ".csvp"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude (deg{east}),NO3 (umol.L-1),time (UTC),ship\n" +
@@ -10264,7 +10215,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, 
             dir, 
             globecBottle.className() + "_Data", ".csv0"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
@@ -10281,7 +10232,7 @@ String expected3 = expected2 +
             "&s.latitude>0&altitude>-5&s.time>=2002-08-03";
         tName = globecBottle.makeNewFileForDapQuery(null, null, dotDapQuery, dir, 
             globecBottle.className() + "_DotNotation", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,altitude,NO3,time,ship\n" +
@@ -10297,7 +10248,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(null, null, regexDapQuery, dir, 
             globecBottle.className() + "_NumRegex", ".csv"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -10329,7 +10280,7 @@ String expected3 = expected2 +
             tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
                 globecBottle.className() + "_StrEq", ".csv"); 
             //SSR.displayInBrowser("file://" + dir + tName);
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -10366,7 +10317,7 @@ String expected3 = expected2 +
             tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
                 globecBottle.className() + "_GTLT", ".csv"); 
             //SSR.displayInBrowser("file://" + dir + tName);
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -10413,7 +10364,7 @@ String expected3 = expected2 +
                 //"&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\"";       //source works with this
             tName = globecBottle.makeNewFileForDapQuery(null, null, tDapQuery, dir, 
                 globecBottle.className() + "_regex", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -10447,7 +10398,7 @@ String expected3 = expected2 +
         //.das     das isn't affected by userDapQuery
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         Test.ensureEqual(
             results.substring(0, expectedDas1.length()), expectedDas1, "results=\n" + results);
@@ -10458,7 +10409,7 @@ String expected3 = expected2 +
         //.dds 
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".dds"); 
-        results = String2.annotatedString(new String((new ByteArray(dir + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -10481,10 +10432,10 @@ String expected3 = expected2 +
             String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + globecBottle.datasetID;
             //for diagnosing during development:
-            //String2.log(String2.annotatedString(SSR.getUrlResponseString(
+            //String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(
             //    "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
-            //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseString(tUrl + ".das?" + userDapQuery));
-            //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseString(tUrl + ".dods?" + userDapQuery)));
+            //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseStringUnchanged(tUrl + ".das?" + userDapQuery));
+            //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseStringUnchanged(tUrl + ".dods?" + userDapQuery)));
 
             //test if table.readOpendapSequence works with Erddap opendap server
             //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
@@ -10511,7 +10462,7 @@ String expected3 = expected2 +
             "&time>=2002-08-03", 
             dir, 
             "testEsri5", ".esriCsv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "cruise_id,ship,cast,X,Y,altitude,date,time,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n" +
@@ -10527,7 +10478,7 @@ String expected3 = expected2 +
         //.geoJson    mapDapQuery so lon and lat are in query
         tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, dir, 
             globecBottle.className() + "_DataGJ", ".geoJson"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\n" +
@@ -10573,7 +10524,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03",
             dir, globecBottle.className() + "_DataGJLL", ".geoJson"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\n" +
@@ -10597,7 +10548,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03" + "&.jsonp=" + SSR.percentEncode(jsonp),
             dir, globecBottle.className() + "_DataGJLL", ".geoJson"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(" +
 "{\n" +
@@ -10622,19 +10573,15 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".htmlTable"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 EDStatic.startHeadHtml(EDStatic.erddapUrl((String)null), "EDDTableFromNcFiles_Data") + "\n" +
 "</head>\n" +
-EDStatic.startBodyHtml(null) + "\n" +
+EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
+//HtmlWidgets.BACK_BUTTON +
 "&nbsp;\n" +
-"<form action=\"\">\n" +
-"<input type=\"button\" value=\"Back\" onClick=\"history.go(-1);return true;\">\n" +
-"</form>\n" +
-"\n" +
-"&nbsp;\n" +
-"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>longitude\n" +
 "<th>NO3\n" +
@@ -10645,22 +10592,22 @@ EDStatic.startBodyHtml(null) + "\n" +
 "<th>degrees_east\n" +
 "<th>micromoles L-1\n" +
 "<th>UTC\n" +
-"<th>&nbsp;\n" + //note &nbsp;
+"<th>\n" + 
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap align=\"right\">-124.4\n" +
-"<td align=\"right\">35.7\n" +
-"<td nowrap>2002-08-03T01:29:00Z\n" +
-"<td nowrap>New_Horizon\n" +
+"<td class=\"R\">-124.4\n" +
+"<td class=\"R\">35.7\n" +
+"<td>2002-08-03T01:29:00Z\n" +
+"<td>New_Horizon\n" +
 "</tr>\n";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected,  "\ntResults=\n" + tResults);
         expected =  //row with missing value  has "&nbsp;" missing value
 "<tr>\n" +
-"<td nowrap align=\"right\">-124.1\n" +
-"<td align=\"right\">24.45\n" +
-"<td nowrap>2002-08-19T20:18:00Z\n" +
-"<td nowrap>New_Horizon\n" +
+"<td class=\"R\">-124.1\n" +
+"<td class=\"R\">24.45\n" +
+"<td>2002-08-19T20:18:00Z\n" +
+"<td>New_Horizon\n" +
 "</tr>\n" +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
@@ -10671,7 +10618,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //.json
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".json"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\n" +
@@ -10698,7 +10645,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
             dir, 
             globecBottle.className() + "_Data", ".json"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(" +
 "{\n" +
@@ -10722,7 +10669,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //.jsonlCSV
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".jsonlCSV"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
@@ -10740,7 +10687,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
             dir, 
             globecBottle.className() + "_Data", ".jsonlCSV"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(\n" +
 "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
@@ -10756,17 +10703,17 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //.jsonlKVP
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".jsonlKVP"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
-"{\"longitude\"=-124.4, \"NO3\"=35.7, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n" +
-"{\"longitude\"=-124.4, \"NO3\"=35.48, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n";
+"{\"longitude\":-124.4, \"NO3\":35.7, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n" +
+"{\"longitude\":-124.4, \"NO3\":35.48, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = 
-"{\"longitude\"=-125.0, \"NO3\"=null, \"time\"=\"2002-08-18T13:03:00Z\", \"ship\"=\"New_Horizon\"}\n"; //row with missing value  has "null"
+"{\"longitude\":-125.0, \"NO3\":null, \"time\":\"2002-08-18T13:03:00Z\", \"ship\":\"New_Horizon\"}\n"; //row with missing value  has "null"
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
         expected = 
-"{\"longitude\"=-124.1, \"NO3\"=24.45, \"time\"=\"2002-08-19T20:18:00Z\", \"ship\"=\"New_Horizon\"}\n";
+"{\"longitude\":-124.1, \"NO3\":24.45, \"time\":\"2002-08-19T20:18:00Z\", \"ship\":\"New_Horizon\"}\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
 
         //.jsonlKVP  with jsonp query
@@ -10774,14 +10721,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
             dir, 
             globecBottle.className() + "_Data", ".jsonlKVP"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(\n" +
-"{\"longitude\"=-124.4, \"NO3\"=35.7, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n" +
-"{\"longitude\"=-124.4, \"NO3\"=35.48, \"time\"=\"2002-08-03T01:29:00Z\", \"ship\"=\"New_Horizon\"}\n";
+"{\"longitude\":-124.4, \"NO3\":35.7, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n" +
+"{\"longitude\":-124.4, \"NO3\":35.48, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = 
-"{\"longitude\"=-124.1, \"NO3\"=24.45, \"time\"=\"2002-08-19T20:18:00Z\", \"ship\"=\"New_Horizon\"}\n" +
+"{\"longitude\":-124.1, \"NO3\":24.45, \"time\":\"2002-08-19T20:18:00Z\", \"ship\":\"New_Horizon\"}\n" +
 ")";
         Test.ensureEqual(results.substring(results.length() - expected.length()), 
             expected, "\nresults=\n" + results);
@@ -10952,21 +10899,7 @@ String tHeader2 =
 "  :id = \"Globec_bottle_data_2002\";\n" +
 "  :infoUrl = \"http://www.globec.org/\";\n" +
 "  :institution = \"GLOBEC\";\n" +
-"  :keywords = \"10um,\n" +
-"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
-"Oceans > Ocean Chemistry > Ammonia,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"Oceans > Ocean Chemistry > Nitrate,\n" +
-"Oceans > Ocean Chemistry > Nitrite,\n" +
-"Oceans > Ocean Chemistry > Nitrogen,\n" +
-"Oceans > Ocean Chemistry > Oxygen,\n" +
-"Oceans > Ocean Chemistry > Phosphate,\n" +
-"Oceans > Ocean Chemistry > Pigments,\n" +
-"Oceans > Ocean Chemistry > Silicate,\n" +
-"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"  :keywords = \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_practical_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -11035,7 +10968,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".ncHeader"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
 
         tResults = results.substring(0, tHeader1.length());
@@ -11055,7 +10988,7 @@ expected =
                 "&latitude>0&time>=2002-08-03", 
                 dir, globecBottle.className() + "_ODV", ".odvTxt"); 
             String2.log("ODV fileName=" + dir + tName);
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             //String2.log(results);
             expected = 
     "//<Creator>http://www.globec.org/</Creator>\n" +
@@ -11090,7 +11023,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude\tNO3\ttime\tship\n" +
@@ -11106,7 +11039,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsvp"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude (degrees_east)\tNO3 (micromoles L-1)\ttime (UTC)\tship\n" +
@@ -11121,7 +11054,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv0"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
@@ -11135,7 +11068,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".xhtml"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -11145,11 +11078,12 @@ expected =
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>EDDTableFromNcFiles_Data</title>\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
-"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"<body>\n" +
 "\n" +
 "&nbsp;\n" +
-"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>longitude</th>\n" +
 "<th>NO3</th>\n" +
@@ -11163,18 +11097,18 @@ expected =
 "<th></th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-124.4</td>\n" +
-"<td align=\"right\">35.7</td>\n" +
-"<td nowrap=\"nowrap\">2002-08-03T01:29:00Z</td>\n" +
-"<td nowrap=\"nowrap\">New_Horizon</td>\n" +
+"<td class=\"R\">-124.4</td>\n" +
+"<td class=\"R\">35.7</td>\n" +
+"<td>2002-08-03T01:29:00Z</td>\n" +
+"<td>New_Horizon</td>\n" +
 "</tr>\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected =  //row with missing value  has "" missing value
 "<tr>\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-124.1</td>\n" +
-"<td align=\"right\">24.45</td>\n" +
-"<td nowrap=\"nowrap\">2002-08-19T20:18:00Z</td>\n" +
-"<td nowrap=\"nowrap\">New_Horizon</td>\n" +
+"<td class=\"R\">-124.1</td>\n" +
+"<td class=\"R\">24.45</td>\n" +
+"<td>2002-08-19T20:18:00Z</td>\n" +
+"<td>New_Horizon</td>\n" +
 "</tr>\n" +
 "</table>\n" +
 "</body>\n" +
@@ -11187,7 +11121,7 @@ expected =
             "longitude,latitude&time>=2002-08-03&time<=2002-08-04", 
             dir, 
             globecBottle.className() + "Map", ".csv");
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude\n" +
@@ -11252,7 +11186,7 @@ expected =
             tName = eddTable2.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
                 eddTable2.className() + "_Itself", ".xhtml"); 
             //SSR.displayInBrowser("file://" + dir + tName);
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFromUtf8File(dir + tName);
             //String2.log(results);
             expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -11262,11 +11196,12 @@ expected =
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>EDDTableFromDapSequence_Itself</title>\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
-"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"<body>\n" +
 "\n" +
 "&nbsp;\n" +
-"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>longitude</th>\n" +
 "<th>NO3</th>\n" +
@@ -11280,10 +11215,10 @@ expected =
 "<th></th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-124.4</td>\n" +
-"<td align=\"right\">35.7</td>\n" +
-"<td nowrap=\"nowrap\">2002-08-03T01:29:00Z</td>\n" +
-"<td nowrap=\"nowrap\">New_Horizon</td>\n" +
+"<td class=\"R\">-124.4</td>\n" +
+"<td class=\"R\">35.7</td>\n" +
+"<td>2002-08-03T01:29:00Z</td>\n" +
+"<td>New_Horizon</td>\n" +
 "</tr>\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         } catch (Throwable t) {
@@ -11304,7 +11239,7 @@ expected =
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
         String dir = EDStatic.fullTestCacheDirectory;
 
-        String2.log("\n****************** EDDTableFromNcFiles.testKml\n");
+        String2.log("\n*** EDDTableFromNcFiles.testKml\n");
         EDDTable globecBottle = (EDDTable)oneFromDatasetsXml(null, "testGlobecBottle"); //should work
 
         //kml
@@ -11324,7 +11259,7 @@ expected =
         userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
         String dir = EDStatic.fullTestCacheDirectory;
 
-        String2.log("\n****************** EDDTableFromNcFiles.testGraphics\n");
+        String2.log("\n*** EDDTableFromNcFiles.testGraphics\n");
         EDDTable globecBottle = (EDDTable)oneFromDatasetsXml(null, "testGlobecBottle"); //should work
 
             //kml
@@ -11374,7 +11309,7 @@ expected =
 
 
             //*** test make MAP
-            String2.log("\n******************* EDDTableFromNcFiles.test make MAP\n");
+            String2.log("\n*** EDDTableFromNcFiles.test make MAP\n");
             tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapS", ".smallPng"); 
             SSR.displayInBrowser("file://" + dir + tName);
@@ -11510,7 +11445,7 @@ expected =
         //    dir, globecBottle.className() + "_Data", ".dods"); 
         //SSR.displayInBrowser("file://" + dir + tName);
         try {
-            String2.log("\n*** do netcdf-java opendap test");
+            String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
             //!!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
             //!!!THIS IS NOT JUST A READ-FROM-FILE TEST!!!
             NetcdfFile nc = NetcdfDataset.openFile(tUrl, null);
@@ -11653,7 +11588,7 @@ expected =
             //an easy query
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, dir, 
                 tedd.className() + "_bird1", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
@@ -11675,7 +11610,7 @@ expected =
             //unscaled flight_dir values are 0..36 so see if >=40 is properly handled 
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&flight_dir>=40", 
                 dir, tedd.className() + "_bird2", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
@@ -11728,7 +11663,7 @@ expected =
 
         /** This tests lat lon requests. */
     public static void testLatLon() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testLatLon\n");
+        String2.log("\n*** EDDTableFromNcFiles.testLatLon\n");
         testVerboseOn();
         String results, query, tName, expected;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -11742,7 +11677,7 @@ expected =
            
             tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
                 edd.className() + "_LL", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "cruise_id,station_id,longitude,latitude\n" +
 ",,degrees_east,degrees_north\n" +
@@ -11806,8 +11741,7 @@ expected =
         EDDTableFromNcFiles tableDataset = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "erdCalcofiBio");         
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
             dir, tableDataset.className() + "testTableWithAltitude", ".das"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         po = results.indexOf("depth {");
         Test.ensureTrue(po > 0, "results=\n" + results);
         expected = 
@@ -11831,8 +11765,7 @@ expected =
         //ISO 19115 should deal with altitude correctly
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
             dir, tableDataset.className() + "testTableWithAltitude", ".iso19115"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
 
         po = results.indexOf(
 "codeListValue=\"vertical\">");
@@ -11876,8 +11809,7 @@ expected =
         EDDTableFromNcFiles tableDataset = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "testTableWithDepth");         
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
             dir, tableDataset.className() + "testTableWithDepth", ".das"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         po = results.indexOf("depth {");
         Test.ensureTrue(po > 0, "results=\n" + results);
         expected = 
@@ -11907,8 +11839,7 @@ expected =
                           " destinationMax=" + timeEdv.destinationMax() + "=" + timeEdv.destinationMaxString());
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
             dir, tableDataset.className() + "testTableWithDepth", ".iso19115"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        results = String2.directReadFromUtf8File(dir + tName);
 
         expected = 
         "<gmd:EX_Extent>\n" +
@@ -12013,8 +11944,8 @@ expected =
      *
      * @throws Throwable if trouble
      */
-    public static void testBigRequest() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testBigRequest() *****************\n");
+    public static void testBigRequest(int firstTest) throws Throwable {
+        String2.log("\n*** EDDTableFromNcFiles.testBigRequest()\n");
         Table.verbose = false;
         testVerboseOff();
         boolean oReallyVerbose = reallyVerbose;
@@ -12041,18 +11972,18 @@ expected =
         long bytes[]    = new long[] { //these will change as buoys get added (monthly)
             699049662, 1286009013, 1286009015, 734862352, 1362557418,    
             3247007700L, 18789440, 1959632896, 489908488, 489913680,     //.htmlTable is size-limited
-            5417, 796336246, 1286009013, 1286009015, 3490596462L,
-            280755, 489518, 2017546, 4589852, 24655, //I think redundant markers are not drawn
-            48537, 179343};
+            5417, 796336246, 1286009013, 1286009015, 2793605900L,
+            280755, 489518, 2017546, 4589852, 34144, //I think redundant markers are not drawn
+            71236, 277607};
         //2015-02-25 I give up doing timings. Timings vary greatly on different days.
         //  I think McAfee AV slows it down a lot. Its settings are not under my control.
         int expectedMs[] = new int[] { 
             //Java 1.7 M4700
             16941, 61839, 58656, 10686, 141881,    
             145004, 1352, 165740, 24779, 26390, 
-            12752, 44120, 61769, 61620, 89530,
-            15604, 16732, 14489, 41531, 15000, //2014-09-22 changed kml and smallPdf to be much faster
-            17600, 17600};  //2014-09-02 both changed to be much faster
+            12752, 44120, 61769, 61620, 178000,
+            15604, 16732, 14489, 41531, 40000, //2014-09-22 changed kml and smallPdf to be much faster
+            46265, 20891};  //2014-09-02 both changed to be much faster
 
         //warm up
         tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -12060,7 +11991,7 @@ expected =
             dir, baseName, ".nc");
         File2.delete(dir + tName);
 
-        for (int i = 0; i < extensions.length; i++) {
+        for (int i = firstTest; i < extensions.length; i++) {
             if (extensions[i].equals(".ncHeader"))
                 File2.delete(dir + baseName + ".nc");
 
@@ -12083,7 +12014,7 @@ expected =
                     "\n*** fileName=" + dir + tName + "\n" +
                     "ext#" + i + " chance#" + chance + ": " + extensions[i] + 
                     ", length=" + resultLength + " expected=" + bytes[i] + ", " +
-                    "time=" + time + " expected=" + expectedMs[i]);
+                    "time=" + time + "ms expected=" + expectedMs[i] + "ms");
 
                 //if not too slow or too fast, break
                 //if (time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
@@ -12120,10 +12051,8 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
 
         //*** .das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
-            "testAirt", ".das"); 
-        results = new String((new ByteArray(
-            dir + tName)).toArray());
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, "testAirt", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   //2013-01-04 several changes related to new array and wmo_platform_code
 "Attributes \\{\n" +
@@ -12266,7 +12195,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2017-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2018-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -12277,9 +12206,7 @@ expected =
 "tabledap/pmelTaoDyAirt.das\";\n" +
 "    String infoUrl \"https://www.pmel.noaa.gov/gtmba/mission\";\n" +
 "    String institution \"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\";\n" +
-"    String keywords \"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Surface Air Temperature,\n" +
-"air, air_temperature, atmosphere, atmospheric, buoys, centered, daily, depth, identifier, noaa, pirata, pmel, quality, rama, source, station, surface, tao, temperature, time, triton\";\n" +
+"    String keywords \"air, air_temperature, atmosphere, atmospheric, buoys, centered, daily, depth, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Surface Air Temperature, identifier, noaa, pirata, pmel, quality, rama, source, station, surface, tao, temperature, time, triton\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\n" +
 "\n" +
@@ -12314,6 +12241,7 @@ expected =
     "at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more " +
     "information, see\n" +
 "https://www.pmel.noaa.gov/gtmba/mission .\";\n" +
+"    String testOutOfDate \"now-3days\";\n" +
 "    String time_coverage_end \"20.{8}T12:00:00Z\";\n" +  //changes daily
 "    String time_coverage_start \"1977-11-06T12:00:00Z\";\n" + //before 2012-03-20 was 1980-03-07T12:00:00
 "    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Air Temperature\";\n" +
@@ -12328,7 +12256,7 @@ expected =
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             "testAirt", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -12355,7 +12283,7 @@ expected =
         //  (It is unfortunate that this is hard-coded.)
         tName = tedd.makeNewFileForDapQuery(null, null, "station&distinct()", 
             dir, "testAirtStations", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         //good test of salinity values: I hand checked this from 1989427.nc in gtspp_at199505.zip
         expected = 
@@ -12379,7 +12307,6 @@ So the changes seem good. */
 "0n147e\n" +
 "0n152w\n" +
 "0n154e\n" +
-"0n155e\n" +
 "0n155w\n" +
 "0n156e\n" +
 "0n158e\n" +
@@ -12548,7 +12475,7 @@ So the changes seem good. */
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&station=\"2s180w\"&time>2011-07-14&time<2011-07-25", 
             dir, "testAirtData", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "array,station,wmo_platform_code,longitude,latitude,time,depth,AT_21,QAT_5021,SAT_6021\n" +
@@ -12688,7 +12615,7 @@ So the changes seem good. */
             "&pressure<max(pressure)&pressure<max(pressure)-1.5" +
             "&pressure>min(pressure)&pressure>min(pressure)+2.5" +
             "&time<max(time)&time<max(time)-1.5&time<max(time)-2minutes" +
-            "&time>min(time)&time>min(time)+2.5&time>min(time) 3milli",
+            "&time>min(time)&time>min(time)+2.5&time>min(time) 3millis",
             rv, cv, co, cv2, false); //repair?  
         Test.ensureEqual(EDDTable.formatAsDapQuery(rv, cv, co, cv2), 
             "pressure" +
@@ -12757,7 +12684,7 @@ So the changes seem good. */
      * @throws Throwable if trouble
      */
     public static void testTimePrecisionMillis() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testTimePrecisionMillis() *****************\n");
+        String2.log("\n*** EDDTableFromNcFiles.testTimePrecisionMillis()\n");
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "testTimePrecisionMillisTable"); 
         String tDir = EDStatic.fullTestCacheDirectory;
         String userDapQuery = "time,ECEF_X,IB_time" +
@@ -12770,7 +12697,7 @@ So the changes seem good. */
         //.asc  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".asc"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -12790,7 +12717,7 @@ So the changes seem good. */
         //.csv  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,ECEF_X,IB_time\n" +
 "UTC,m,UTC\n" +
@@ -12805,9 +12732,9 @@ So the changes seem good. */
         //.htmlTable
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
-"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>time\n" +
 "<th>ECEF_X\n" +
@@ -12819,34 +12746,34 @@ So the changes seem good. */
 "<th>UTC\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1984-02-01T12:00:59.101Z\n" +
-"<td align=\"right\">9.96921E36\n" +
-"<td nowrap>1994-01-31T12:00:59.100Z\n" +
+"<td>1984-02-01T12:00:59.101Z\n" +
+"<td class=\"R\">9.96921E36\n" +
+"<td>1994-01-31T12:00:59.100Z\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1984-02-01T12:00:59.201Z\n" +
-"<td align=\"right\">9.96921E36\n" +
-"<td nowrap>1994-01-31T12:00:59.200Z\n" +
+"<td>1984-02-01T12:00:59.201Z\n" +
+"<td class=\"R\">9.96921E36\n" +
+"<td>1994-01-31T12:00:59.200Z\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1984-02-01T12:00:59.301Z\n" +
-"<td align=\"right\">9.96921E36\n" +
-"<td nowrap>1994-01-31T12:00:59.300Z\n" +
+"<td>1984-02-01T12:00:59.301Z\n" +
+"<td class=\"R\">9.96921E36\n" +
+"<td>1994-01-31T12:00:59.300Z\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1984-02-01T12:00:59.401Z\n" +
-"<td align=\"right\">9.96921E36\n" +
-"<td nowrap>1994-01-31T12:00:59.400Z\n" +
+"<td>1984-02-01T12:00:59.401Z\n" +
+"<td class=\"R\">9.96921E36\n" +
+"<td>1994-01-31T12:00:59.400Z\n" +
 "</tr>\n" +
 "</table>\n";
-        po = results.indexOf("<table class");
+        po = results.indexOf("<table class=\"erd");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
         //.json  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".json"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"table\": {\n" +
@@ -12928,7 +12855,7 @@ So the changes seem good. */
         /* can't test because it needs lon lat values
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "zztop\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -12937,9 +12864,9 @@ So the changes seem good. */
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
-"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>time</th>\n" +
 "<th>ECEF_X</th>\n" +
@@ -12951,24 +12878,24 @@ So the changes seem good. */
 "<th>UTC</th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1984-02-01T12:00:59.101Z</td>\n" +
-"<td align=\"right\">9.96921E36</td>\n" +
-"<td nowrap=\"nowrap\">1994-01-31T12:00:59.100Z</td>\n" +
+"<td>1984-02-01T12:00:59.101Z</td>\n" +
+"<td class=\"R\">9.96921E36</td>\n" +
+"<td>1994-01-31T12:00:59.100Z</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1984-02-01T12:00:59.201Z</td>\n" +
-"<td align=\"right\">9.96921E36</td>\n" +
-"<td nowrap=\"nowrap\">1994-01-31T12:00:59.200Z</td>\n" +
+"<td>1984-02-01T12:00:59.201Z</td>\n" +
+"<td class=\"R\">9.96921E36</td>\n" +
+"<td>1994-01-31T12:00:59.200Z</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1984-02-01T12:00:59.301Z</td>\n" +
-"<td align=\"right\">9.96921E36</td>\n" +
-"<td nowrap=\"nowrap\">1994-01-31T12:00:59.300Z</td>\n" +
+"<td>1984-02-01T12:00:59.301Z</td>\n" +
+"<td class=\"R\">9.96921E36</td>\n" +
+"<td>1994-01-31T12:00:59.300Z</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1984-02-01T12:00:59.401Z</td>\n" +
-"<td align=\"right\">9.96921E36</td>\n" +
-"<td nowrap=\"nowrap\">1994-01-31T12:00:59.400Z</td>\n" +
+"<td>1984-02-01T12:00:59.401Z</td>\n" +
+"<td class=\"R\">9.96921E36</td>\n" +
+"<td>1994-01-31T12:00:59.400Z</td>\n" +
 "</tr>\n" +
 "</table>\n";
         po = results.indexOf("<table ");
@@ -12984,7 +12911,7 @@ So the changes seem good. */
      * @throws Throwable if trouble
      */
     public static void testSimpleTestNcTable() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testSimpleTestNcTable() *****************\n");
+        String2.log("\n*** EDDTableFromNcFiles.testSimpleTestNcTable()\n");
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "testSimpleTestNcTable"); 
         String tDir = EDStatic.fullTestCacheDirectory;
         String userDapQuery = "time,hours,minutes,seconds,millis,latitude," +
@@ -13000,7 +12927,7 @@ So the changes seem good. */
         //all  
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             fName, ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings\n" +
 "UTC,UTC,UTC,UTC,UTC,degrees_north,degrees_east,,,,\n" +
@@ -13013,7 +12940,7 @@ So the changes seem good. */
         //.asc  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".asc"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -13040,7 +12967,7 @@ So the changes seem good. */
         //.csv  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings\n" +
 "UTC,UTC,UTC,UTC,UTC,degrees_north,degrees_east,,,,\n" +
@@ -13054,7 +12981,7 @@ So the changes seem good. */
         //.geoJson  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".geoJson"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"type\": \"FeatureCollection\",\n" +
@@ -13114,9 +13041,9 @@ So the changes seem good. */
         //.htmlTable
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
-"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>time\n" +
 "<th>hours\n" +
@@ -13138,59 +13065,59 @@ So the changes seem good. */
 "<th>UTC\n" +
 "<th>degrees_north\n" +
 "<th>degrees_east\n" +
-"<th>&nbsp;\n" +
-"<th>&nbsp;\n" +
-"<th>&nbsp;\n" +
-"<th>&nbsp;\n" +
+"<th>\n" +
+"<th>\n" +
+"<th>\n" +
+"<th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-02\n" +
-"<td nowrap>1980-01-01T05Z\n" +
-"<td nowrap>1990-01-01T00:09Z\n" +
-"<td nowrap>2000-01-01T00:00:20Z\n" +
-"<td nowrap>2010-01-01T00:00:00.030Z\n" +
-"<td align=\"right\">40\n" +
-"<td align=\"right\">10000\n" +
-"<td align=\"right\">1000000\n" +
-"<td align=\"right\">0.0\n" +
-"<td align=\"right\">1.0E12\n" +
-"<td nowrap>0\n" +
+"<td>1970-01-02\n" +
+"<td>1980-01-01T05Z\n" +
+"<td>1990-01-01T00:09Z\n" +
+"<td>2000-01-01T00:00:20Z\n" +
+"<td>2010-01-01T00:00:00.030Z\n" +
+"<td class=\"R\">40\n" +
+"<td class=\"R\">10000\n" +
+"<td class=\"R\">1000000\n" +
+"<td class=\"R\">0.0\n" +
+"<td class=\"R\">1.0E12\n" +
+"<td>0\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-03\n" +
-"<td nowrap>1980-01-01T06Z\n" +
-"<td nowrap>1990-01-01T00:10Z\n" +
-"<td nowrap>2000-01-01T00:00:21Z\n" +
-"<td nowrap>2010-01-01T00:00:00.031Z\n" +
-"<td align=\"right\">41\n" +
-"<td align=\"right\">10001\n" +
-"<td align=\"right\">1000001\n" +
-"<td align=\"right\">1.1\n" +
-"<td align=\"right\">1.0000000000001E12\n" +
-"<td nowrap>10\n" +
+"<td>1970-01-03\n" +
+"<td>1980-01-01T06Z\n" +
+"<td>1990-01-01T00:10Z\n" +
+"<td>2000-01-01T00:00:21Z\n" +
+"<td>2010-01-01T00:00:00.031Z\n" +
+"<td class=\"R\">41\n" +
+"<td class=\"R\">10001\n" +
+"<td class=\"R\">1000001\n" +
+"<td class=\"R\">1.1\n" +
+"<td class=\"R\">1.0000000000001E12\n" +
+"<td>10\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-04\n" +
-"<td nowrap>1980-01-01T07Z\n" +
-"<td nowrap>1990-01-01T00:11Z\n" +
-"<td nowrap>2000-01-01T00:00:22Z\n" +
-"<td nowrap>2010-01-01T00:00:00.032Z\n" +
-"<td align=\"right\">42\n" +
-"<td align=\"right\">10002\n" +
-"<td align=\"right\">1000002\n" +
-"<td align=\"right\">2.2\n" +
-"<td align=\"right\">1.0000000000002E12\n" +
-"<td nowrap>20\n" +
+"<td>1970-01-04\n" +
+"<td>1980-01-01T07Z\n" +
+"<td>1990-01-01T00:11Z\n" +
+"<td>2000-01-01T00:00:22Z\n" +
+"<td>2010-01-01T00:00:00.032Z\n" +
+"<td class=\"R\">42\n" +
+"<td class=\"R\">10002\n" +
+"<td class=\"R\">1000002\n" +
+"<td class=\"R\">2.2\n" +
+"<td class=\"R\">1.0000000000002E12\n" +
+"<td>20\n" +
 "</tr>\n" +
 "</table>\n";
-        po = results.indexOf("<table class");
+        po = results.indexOf("<table class=\"erd");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
         //.json  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".json"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"table\": {\n" +
@@ -13209,7 +13136,7 @@ So the changes seem good. */
         //.kml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".kml"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
@@ -13511,7 +13438,7 @@ expected =
         //.odvTxt
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 ////<Creator>???</Creator>
 ////<CreateTime>2014-10-22T21:33:31</CreateTime>
@@ -13531,7 +13458,7 @@ expected =
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
@@ -13540,11 +13467,12 @@ expected =
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>testSimpleTestNcTable</title>\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
-"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"<body>\n" +
 "\n" +
 "&nbsp;\n" +
-"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>time</th>\n" +
 "<th>hours</th>\n" +
@@ -13572,43 +13500,43 @@ expected =
 "<th></th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1970-01-02T00:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">1980-01-01T05:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">1990-01-01T00:09:00Z</td>\n" +
-"<td nowrap=\"nowrap\">2000-01-01T00:00:20Z</td>\n" +
-"<td nowrap=\"nowrap\">2010-01-01T00:00:00.030Z</td>\n" +
-"<td align=\"right\">40</td>\n" +
-"<td align=\"right\">10000</td>\n" +
-"<td align=\"right\">1000000</td>\n" +
-"<td align=\"right\">0.0</td>\n" +
-"<td align=\"right\">1.0E12</td>\n" +
-"<td nowrap=\"nowrap\">0</td>\n" +
+"<td>1970-01-02T00:00:00Z</td>\n" +
+"<td>1980-01-01T05:00:00Z</td>\n" +
+"<td>1990-01-01T00:09:00Z</td>\n" +
+"<td>2000-01-01T00:00:20Z</td>\n" +
+"<td>2010-01-01T00:00:00.030Z</td>\n" +
+"<td class=\"R\">40</td>\n" +
+"<td class=\"R\">10000</td>\n" +
+"<td class=\"R\">1000000</td>\n" +
+"<td class=\"R\">0.0</td>\n" +
+"<td class=\"R\">1.0E12</td>\n" +
+"<td>0</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1970-01-03T00:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">1980-01-01T06:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">1990-01-01T00:10:00Z</td>\n" +
-"<td nowrap=\"nowrap\">2000-01-01T00:00:21Z</td>\n" +
-"<td nowrap=\"nowrap\">2010-01-01T00:00:00.031Z</td>\n" +
-"<td align=\"right\">41</td>\n" +
-"<td align=\"right\">10001</td>\n" +
-"<td align=\"right\">1000001</td>\n" +
-"<td align=\"right\">1.1</td>\n" +
-"<td align=\"right\">1.0000000000001E12</td>\n" +
-"<td nowrap=\"nowrap\">10</td>\n" +
+"<td>1970-01-03T00:00:00Z</td>\n" +
+"<td>1980-01-01T06:00:00Z</td>\n" +
+"<td>1990-01-01T00:10:00Z</td>\n" +
+"<td>2000-01-01T00:00:21Z</td>\n" +
+"<td>2010-01-01T00:00:00.031Z</td>\n" +
+"<td class=\"R\">41</td>\n" +
+"<td class=\"R\">10001</td>\n" +
+"<td class=\"R\">1000001</td>\n" +
+"<td class=\"R\">1.1</td>\n" +
+"<td class=\"R\">1.0000000000001E12</td>\n" +
+"<td>10</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1970-01-04T00:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">1980-01-01T07:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">1990-01-01T00:11:00Z</td>\n" +
-"<td nowrap=\"nowrap\">2000-01-01T00:00:22Z</td>\n" +
-"<td nowrap=\"nowrap\">2010-01-01T00:00:00.032Z</td>\n" +
-"<td align=\"right\">42</td>\n" +
-"<td align=\"right\">10002</td>\n" +
-"<td align=\"right\">1000002</td>\n" +
-"<td align=\"right\">2.2</td>\n" +
-"<td align=\"right\">1.0000000000002E12</td>\n" +
-"<td nowrap=\"nowrap\">20</td>\n" +
+"<td>1970-01-04T00:00:00Z</td>\n" +
+"<td>1980-01-01T07:00:00Z</td>\n" +
+"<td>1990-01-01T00:11:00Z</td>\n" +
+"<td>2000-01-01T00:00:22Z</td>\n" +
+"<td>2010-01-01T00:00:00.032Z</td>\n" +
+"<td class=\"R\">42</td>\n" +
+"<td class=\"R\">10002</td>\n" +
+"<td class=\"R\">1000002</td>\n" +
+"<td class=\"R\">2.2</td>\n" +
+"<td class=\"R\">1.0000000000002E12</td>\n" +
+"<td>20</td>\n" +
 "</tr>\n" +
 "</table>\n" +
 "</body>\n" +
@@ -13624,7 +13552,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testSimpleTestNc2Table() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testSimpleTestNc2Table() *****************\n");
+        String2.log("\n*** EDDTableFromNcFiles.testSimpleTestNc2Table()\n");
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "testSimpleTestNcTable"); 
         String tDir = EDStatic.fullTestCacheDirectory;
         String userDapQuery = "time,millis,latitude,longitude,doubles,Strings" +
@@ -13639,7 +13567,7 @@ expected =
         //.asc  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".asc"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -13660,7 +13588,7 @@ expected =
         //.csv  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,millis,latitude,longitude,doubles,Strings\n" +
 "UTC,UTC,degrees_north,degrees_east,,\n" +
@@ -13673,7 +13601,7 @@ expected =
         //.geoJson  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".geoJson"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"type\": \"FeatureCollection\",\n" +
@@ -13708,9 +13636,9 @@ expected =
         //.htmlTable
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
-"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>time\n" +
 "<th>millis\n" +
@@ -13724,34 +13652,34 @@ expected =
 "<th>UTC\n" +
 "<th>degrees_north\n" +
 "<th>degrees_east\n" +
-"<th>&nbsp;\n" +
-"<th>&nbsp;\n" +
+"<th>\n" +
+"<th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-03\n" +
-"<td nowrap>2010-01-01T00:00:00.031Z\n" +
-"<td align=\"right\">41\n" +
-"<td align=\"right\">10001\n" +
-"<td align=\"right\">1.0000000000001E12\n" +
-"<td nowrap>10\n" +
+"<td>1970-01-03\n" +
+"<td>2010-01-01T00:00:00.031Z\n" +
+"<td class=\"R\">41\n" +
+"<td class=\"R\">10001\n" +
+"<td class=\"R\">1.0000000000001E12\n" +
+"<td>10\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-04\n" +
-"<td nowrap>2010-01-01T00:00:00.032Z\n" +
-"<td align=\"right\">42\n" +
-"<td align=\"right\">10002\n" +
-"<td align=\"right\">1.0000000000002E12\n" +
-"<td nowrap>20\n" +
+"<td>1970-01-04\n" +
+"<td>2010-01-01T00:00:00.032Z\n" +
+"<td class=\"R\">42\n" +
+"<td class=\"R\">10002\n" +
+"<td class=\"R\">1.0000000000002E12\n" +
+"<td>20\n" +
 "</tr>\n" +
 "</table>\n";
-        po = results.indexOf("<table class");
+        po = results.indexOf("<table class=\"erd");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
         //.json  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".json"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"table\": {\n" +
@@ -13769,7 +13697,7 @@ expected =
         //.kml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".kml"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
@@ -13989,7 +13917,7 @@ expected =
         //.odvTxt
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 //<Creator>???</Creator>
 //<CreateTime>2014-10-22T22:43:55</CreateTime>
@@ -14008,7 +13936,7 @@ expected =
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
@@ -14017,11 +13945,12 @@ expected =
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>testSimpleTestNc2Table</title>\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
-"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"<body>\n" +
 "\n" +
 "&nbsp;\n" +
-"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>time</th>\n" +
 "<th>millis</th>\n" +
@@ -14039,20 +13968,20 @@ expected =
 "<th></th>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1970-01-03T00:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">2010-01-01T00:00:00.031Z</td>\n" +
-"<td align=\"right\">41</td>\n" +
-"<td align=\"right\">10001</td>\n" +
-"<td align=\"right\">1.0000000000001E12</td>\n" +
-"<td nowrap=\"nowrap\">10</td>\n" +
+"<td>1970-01-03T00:00:00Z</td>\n" +
+"<td>2010-01-01T00:00:00.031Z</td>\n" +
+"<td class=\"R\">41</td>\n" +
+"<td class=\"R\">10001</td>\n" +
+"<td class=\"R\">1.0000000000001E12</td>\n" +
+"<td>10</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap=\"nowrap\">1970-01-04T00:00:00Z</td>\n" +
-"<td nowrap=\"nowrap\">2010-01-01T00:00:00.032Z</td>\n" +
-"<td align=\"right\">42</td>\n" +
-"<td align=\"right\">10002</td>\n" +
-"<td align=\"right\">1.0000000000002E12</td>\n" +
-"<td nowrap=\"nowrap\">20</td>\n" +
+"<td>1970-01-04T00:00:00Z</td>\n" +
+"<td>2010-01-01T00:00:00.032Z</td>\n" +
+"<td class=\"R\">42</td>\n" +
+"<td class=\"R\">10002</td>\n" +
+"<td class=\"R\">1.0000000000002E12</td>\n" +
+"<td>20</td>\n" +
 "</tr>\n" +
 "</table>\n" +
 "</body>\n" +
@@ -14068,7 +13997,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testUpdate() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testUpdate() *****************\n");
+        String2.log("\n*** EDDTableFromNcFiles.testUpdate()\n");
         EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "miniNdbc"); 
         EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
         EDV lonEdv  = eddTable.dataVariables()[eddTable.lonIndex];
@@ -14121,7 +14050,7 @@ expected =
         //subsetVariables
         tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
             eddTable.className() + "_update_0sub", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
         //time min/max
@@ -14152,7 +14081,7 @@ expected =
         String2.log("\n*** read original data\n");       
         tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
             eddTable.className() + "_update_0d", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
         //*** rename a data file so it doesn't match regex
@@ -14168,7 +14097,7 @@ expected =
             //subsetVariables should be different
             tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
                 eddTable.className() + "_update_1sub", ".csv"); 
-            results = new String((new ByteArray(tDir + tName)).toArray());
+            results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "station,longitude,latitude\n" +
 ",degrees_east,degrees_north\n" +
@@ -14211,7 +14140,7 @@ expected =
             //data will be different
             tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
                 eddTable.className() + "_update_1d", ".csv"); 
-            results = new String((new ByteArray(tDir + tName)).toArray());
+            results = String2.directReadFrom88591File(tDir + tName);
             expected = 
 "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp\n" +
 ",degrees_east,degrees_north,degrees_north,degrees_north,m,UTC,degree_C\n" +
@@ -14238,7 +14167,7 @@ expected =
         //should be original subsetVariables
         tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
             eddTable.className() + "_update_2sub", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
         //should be original min/max time
@@ -14268,7 +14197,7 @@ expected =
         //should be original data
         tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
             eddTable.className() + "_update_2d", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
         //*** rename a non-data file so it matches the regex
@@ -14284,7 +14213,7 @@ expected =
             //should be original subsetVariables
             tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
                 eddTable.className() + "_update_3sub", ".csv"); 
-            results = new String((new ByteArray(tDir + tName)).toArray());
+            results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
             //should be original min/max time
@@ -14314,7 +14243,7 @@ expected =
             //should be original data
             tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
                 eddTable.className() + "_update_3d", ".csv"); 
-            results = new String((new ByteArray(tDir + tName)).toArray());
+            results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
 
@@ -14331,7 +14260,7 @@ expected =
         //should be original subsetVariables
         tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
             eddTable.className() + "_update_4sub", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
         //should be original min/max time
@@ -14361,7 +14290,7 @@ expected =
         //should be original data
         tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
             eddTable.className() + "_update_4d", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
     }
@@ -14372,7 +14301,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testQuickRestart() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testQuickRestart() *****************\n");
+        String2.log("\n*** EDDTableFromNcFiles.testQuickRestart()\n");
         EDDTableFromNcFiles eddTable; 
         EDV timeEdv, lonEdv;
         String tDir = EDStatic.fullTestCacheDirectory;
@@ -14637,7 +14566,7 @@ expected =
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
-"    String creator_url \"http://coastwatch.pfeg.noaa.gov\";\n" +
+"    String creator_url \"https://coastwatch.pfeg.noaa.gov\";\n" +
 "    Float64 Easternmost_Easting -75.402;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 35.006;\n" +
@@ -14656,21 +14585,7 @@ expected =
 "http://localhost:8080/cwexperimental/tabledap/miniNdbc.das\";\n" +
 "    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
 "    String institution \"NOAA NDBC, CoastWatch WCN\";\n" +
-"    String keywords \"Atmosphere > Air Quality > Visibility,\n" +
-"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
-"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
-"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
-"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
-"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
-"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
-"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"Oceans > Ocean Waves > Significant Wave Height,\n" +
-"Oceans > Ocean Waves > Swells,\n" +
-"Oceans > Ocean Waves > Wave Period,\n" +
-"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+"    String keywords \"air, air_pressure_at_sea_level, air_temperature, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, Earth Science > Atmosphere > Air Quality > Visibility, Earth Science > Atmosphere > Altitude > Planetary Boundary Layer Height, Earth Science > Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements, Earth Science > Atmosphere > Atmospheric Pressure > Pressure Tendency, Earth Science > Atmosphere > Atmospheric Pressure > Sea Level Pressure, Earth Science > Atmosphere > Atmospheric Pressure > Static Pressure, Earth Science > Atmosphere > Atmospheric Temperature > Air Temperature, Earth Science > Atmosphere > Atmospheric Temperature > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Water Vapor > Dew Point Temperature, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Ocean Waves > Significant Wave Height, Earth Science > Oceans > Ocean Waves > Swells, Earth Science > Oceans > Ocean Waves > Wave Period, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -14754,7 +14669,7 @@ expected =
         //das
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             eddTable.className() + "_qr_0das", ".das"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
 
         po = results.indexOf(originalDas2.substring(0, 80));
@@ -14763,7 +14678,7 @@ expected =
         //subsetVariables
         tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
             eddTable.className() + "_qr_0sub", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalSubsetExpected, "\nresults=\n" + results);
 
         //original min/max time
@@ -14794,7 +14709,7 @@ expected =
         String2.log("\n*** read original data\n");       
         tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
             eddTable.className() + "_qr_0d", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
 
@@ -14812,7 +14727,7 @@ expected =
             //should be original das
             tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
                 eddTable.className() + "_qr_1das", ".das"); 
-            results = new String((new ByteArray(tDir + tName)).toArray());
+            results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
 
             po = results.indexOf(originalDas2.substring(0, 80));
@@ -14821,7 +14736,7 @@ expected =
             //should be original subsetVariables
             tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
                 eddTable.className() + "_qr_1sub", ".csv"); 
-            results = new String((new ByteArray(tDir + tName)).toArray());
+            results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalSubsetExpected, "\nresults=\n" + results);
 
             //should be original min/max time
@@ -14888,7 +14803,7 @@ expected =
         //das
         tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
             eddTable.className() + "_qr_2das", ".das"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
 
         po = results.indexOf(originalDas2.substring(0, 80));
@@ -14897,7 +14812,7 @@ expected =
         //should be original subsetVariables
         tName = eddTable.makeNewFileForDapQuery(null, null, subsetQuery, tDir, 
             eddTable.className() + "_qr_2sub", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalSubsetExpected, "\nresults=\n" + results);
 
         //should be original min/max time
@@ -14927,7 +14842,7 @@ expected =
         //should be original data
         tName = eddTable.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
             eddTable.className() + "_qr_2d", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
     }
@@ -14940,10 +14855,12 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testNewTime() throws Throwable {
-
+        try {
         String2.pressEnterToContinue(
-            "\n****************** EDDTableFromNcFiles.testNewTime() *****************\n" +
-            "Copy /u00/data/points/ndbcMet/NDBC_46088_met.nc from coastwatch to this computer."); 
+            "\n*** EDDTableFromNcFiles.testNewTime()\n" +
+            "Download NDBC_46088_met.nc from coastwatch\n" +
+            "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/ \n" +
+            "to /u00/data/points/ndbcMet/ .");
 
         EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
         EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -14969,16 +14886,20 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, 
             "station,time,atmp&time>=" + destMaxD, 
             tDir, eddTable.className() + "_newTime1", ".csv"); 
-        results = new String((new ByteArray(tDir + tName)).toArray());
+        results = String2.directReadFrom88591File(tDir + tName);
         expected = 
 "station,time,atmp\n" +
 ",UTC,degree_C\n" +
-"46088," + destMaxS + ",";
+"46088," + destMaxS + ",";  //or 41004 if same time
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nmaxTime=" + destMaxS + " results=\n" + results);
 
         String2.log("\nEDDTableFromNcFiles.testNewTime() finished successfully. maxTime=" + 
             destMaxS + "\n");
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t) + 
+                "\nOr 41004 if same max time for both."); 
+        }
 
     }
 
@@ -14988,7 +14909,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testIgor() throws Throwable {
-        String2.log("\n****************** EDDTableFromNcFiles.testIgor() *****************\n");
+        String2.log("\n*** EDDTableFromNcFiles.testIgor()\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -15002,7 +14923,7 @@ expected =
         userDapQuery = "station,longitude,latitude,time,wd,wspd,vis,wspu,wspv&station=%2246088%22&time>=2016-02-03T04:00:00&time<=2016-02-03T06:00:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             "Igor1", ".itx"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, '\r', '\n');
         //String2.log(results);
         expected = 
@@ -15095,7 +15016,7 @@ expected =
             "Now I'm waiting 10 seconds.");
         Math2.sleep(10000);
         //flush the log file
-        String tIndex = SSR.getUrlResponseString("http://localhost:8080/cwexperimental/status.html");
+        String tIndex = SSR.getUrlResponseStringUnchanged("http://localhost:8080/cwexperimental/status.html");
         Math2.sleep(5000);
         //read the log file
         String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
@@ -15135,11 +15056,41 @@ expected =
             "*** EDDTableFromFiles testTimeSince19000101 constructor finished. TIME=",
             po4);
         Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
-
-
-
     }
 
+    /**
+     * This tests connecting netcdf-java to localhost hosted .nc file
+     * to access via byte ranges.
+     *
+     */
+    public static void testByteRange() throws Throwable {
+        String2.log("\n*** EDDTableFromNcFiles.testByteRange()\n" +
+            "!!! THIS REQURIES cwwcNDBCMet IN THE LOCALHOST ERDDAP!!!\n");
+        
+        NetcdfFile ncFile = NcHelper.openFile(
+            "http://localhost:8080/cwexperimental/files/cwwcNDBCMet/NDBC_46088_met.nc");
+        try {
+
+            //get a list of variables
+            Group rootGroup = ncFile.getRootGroup();
+            List rootGroupVariables = rootGroup.getVariables(); 
+            String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
+
+/*this fails. It makes 2 requests
+1) for entire file (to just read header)
+  but it allows gzip. 
+  Erddap log: compression=gzip, fileSize=7319444, Range request=[null]
+
+2) second is 1s later and for a range
+  handled by doTransfer:
+  Erddap log: compression=identity, fileSize=7319444, Range request=bytes=0-1859775[end], set Content-Range=bytes 0-1859775/7319444
+  That throws exception: Exception in thread "main" java.io.IOException: java.io.IOException: 
+    File is truncated calculated size= 7319444 actual = 1859776
+*/
+        } catch (Exception e) {
+            String2.pressEnterToContinue(MustBe.throwableToString(e));
+        }
+    }
 
     /**
      * This tests the methods in this class.
@@ -15180,7 +15131,7 @@ expected =
         testErdGtsppBest("erdGtsppBestNc");
         testErdGtsppBest("erdGtsppBest");
         testTransparentPng();
-        testSpeed(-1);  //-1=all   =.odv =.xhtml =png
+        testSpeed(0, 1000);  
         testManyYears();
         testCAMarCat();
         testNcCFPoint();
@@ -15200,7 +15151,7 @@ expected =
         //testTableWithAltitude(); !!!2013-12-27 DATASET GONE! NO SUITABLE REPLACEMENT  
         testTableWithDepth();
         testMV();     
-//testBigRequest(); //very slow -- just run this occasionally
+        //testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
         testPmelTaoAirt();
         testNow();
         testMinMaxConstraints();
@@ -15213,10 +15164,12 @@ expected =
         testIgor();
         testTimeSince19000101();
         testHardFlag();
+
         /* */
 
         //not usually run
         //test24Hours();  //requires special set up
+        //testByteRange(); //as of 2017-10-13 this doesn't work. I think because of bug in netcdf-java.
 
         //NOT FINISHED
         //testReadPngInfo();  //needs work

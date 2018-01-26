@@ -460,8 +460,8 @@ public class GridScreen extends Screen {
                     "    " + oneOf.getBeginRowTag(Math2.odd(rowNumber.i++)) + "\n" +
                     "      <td>" + palette.getLabel() + "</td>\n" +
                     "      <td>\n" +
-                    "        <table cellspacing=\"0\" cellpadding=\"0\">\n" +
-                    "          <tr align=\"left\">\n" + 
+                    "        <table class=\"erd\">\n" + //padding=0
+                    "          <tr>\n" + 
                     "            <td>" + palette.getControl(paletteValue) + "</td>\n" + 
                     "            <td>" + paletteScale.getLabel() + "</td>\n" +
                     "            <td>" + paletteScale.getControl(paletteScaleValue) + "</td>\n" +
@@ -545,13 +545,13 @@ public class GridScreen extends Screen {
         if (plotData && !gridDataSet.isClimatology) {  //no time series for climatologies
             //timeSeriesLon and lat gui stuff
             timeSeriesLonD = String2.parseDouble(timeSeriesLon.getValue(session));
-            if (!Math2.isFinite(timeSeriesLonD) || timeSeriesLonD < currentMinX || timeSeriesLonD > currentMaxX)
+            if (!Double.isFinite(timeSeriesLonD) || timeSeriesLonD < currentMinX || timeSeriesLonD > currentMaxX)
                 timeSeriesLonD = Double.NaN;
             timeSeriesLonValue = Double.isNaN(timeSeriesLonD)? "" : String2.genEFormat10(timeSeriesLonD);
             timeSeriesLon.setValue(session, timeSeriesLonValue);
 
             timeSeriesLatD = String2.parseDouble(timeSeriesLat.getValue(session));
-            if (!Math2.isFinite(timeSeriesLatD) || timeSeriesLatD < currentMinY || timeSeriesLatD > currentMaxY)
+            if (!Double.isFinite(timeSeriesLatD) || timeSeriesLatD < currentMinY || timeSeriesLatD > currentMaxY)
                 timeSeriesLatD = Double.NaN;
             timeSeriesLatValue = Double.isNaN(timeSeriesLatD)? "" : String2.genEFormat10(timeSeriesLatD);
             timeSeriesLat.setValue(session, timeSeriesLatValue);
@@ -800,7 +800,7 @@ public class GridScreen extends Screen {
         }
 
         //file type help link
-        htmlSB.append("        <span style=\"white-space: nowrap;\">\n"); 
+        htmlSB.append("        <span style=\"white-space:nowrap;\">\n"); 
         htmlSB.append(oneOf.gridFileHelpLink());
 
         //GETQuery help link
@@ -871,7 +871,7 @@ public class GridScreen extends Screen {
 
             //file type help link
             hasNoBr = true;
-            htmlSB.append("        <span style=\"white-space: nowrap;\">\n"); 
+            htmlSB.append("        <span style=\"white-space:nowrap;\">\n"); 
             htmlSB.append(oneOf.gridFileHelpLink());
 
             //GETQuery help link
@@ -955,7 +955,7 @@ public class GridScreen extends Screen {
             "      <td>" + 
                 String2.substitute(getLabel, "" + (step.i++), null, null) + 
                 "</td>\n" +
-            "      <td width=\"90%\">\n"); //force this column to expand as much as possible
+            "      <td style=\"width:90%;\">\n"); //force this column to expand as much as possible
         boolean hasNoBr = false;
         if (!tableHasData) {
             htmlSB.append("        " + oneOf.noDataAvailable() + "\n");
@@ -989,7 +989,7 @@ public class GridScreen extends Screen {
 
             //file type help link
             hasNoBr = true;
-            htmlSB.append("        <span style=\"white-space: nowrap;\">\n"); 
+            htmlSB.append("        <span style=\"white-space:nowrap;\">\n"); 
             htmlSB.append(oneOf.pointFileHelpLink());
 
             //GETQuery help link

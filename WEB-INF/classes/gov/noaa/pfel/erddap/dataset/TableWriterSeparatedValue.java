@@ -223,7 +223,7 @@ public class TableWriterSeparatedValue extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterSeparatedValue done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
 
     }
 

@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -194,14 +195,32 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
         StringArray varNames = new StringArray(dataSourceTable.getColumnNames());
         Test.ensureTrue(varNames.size() > 0, 
             "The file has no variables with dimensions: " + useDimensionsCSV);
+        double maxTimeES = Double.NaN;
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            dataAddTable.addColumn(c, colName,
-                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
+            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
+            dataAddTable.addColumn(c, colName, pa,
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
+
+            //maxTimeES
+            String tUnits = sourceAtts.getString("units");
+            if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+                try {
+                    if (Calendar2.isNumericTimeUnits(tUnits)) {
+                        double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+                        maxTimeES = Calendar2.unitsSinceToEpochSeconds(
+                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                    } else { //string time units
+                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                    }
+                } catch (Throwable t) {
+                    String2.log("caught while trying to get maxTimeES: " + 
+                        MustBe.throwableToString(t));
+                }
+            }
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
         //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -243,6 +262,16 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             //no units or standard_name
             dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
+        }
+
+        //useMaxTimeES
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
         }
 
         //write the information
@@ -293,7 +322,9 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
 
 
     /**
-     * testGenerateDatasetsXml
+     * testGenerateDatasetsXml.
+     * This doesn't test suggestTestOutOfDate, except that for old data
+     * it doesn't suggest anything.
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
@@ -351,11 +382,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.argodatamgt.org/Documentation</att>\n" +
 "        <att name=\"infoUrl\">http://www.argodatamgt.org/Documentation</att>\n" +
-"        <att name=\"keywords\">adjusted, argo, array, assembly, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, equals, error, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, identifier, in-situ, instrument, investigator, its, its-90, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
-"Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
-"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n" +
+"        <att name=\"keywords\">adjusted, argo, array, assembly, centre, centres, charge, coded, CONFIG_MISSION_NUMBER, contains, coriolis, creation, currents, cycle, CYCLE_NUMBER, data, DATA_CENTRE, DATA_MODE, DATA_STATE_INDICATOR, DATA_TYPE, date, DATE_CREATION, DATE_UPDATE, day, days, DC_REFERENCE, degree, delayed, denoting, density, determined, direction, earth, Earth Science &gt; Oceans &gt; Ocean Pressure &gt; Water Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, equals, error, file, firmware, FIRMWARE_VERSION, flag, float, FLOAT_SERIAL_NO, format, FORMAT_VERSION, gdac, geostrophic, global, handbook, HANDBOOK_VERSION, identifier, in-situ, instrument, investigator, its, its-90, JULD_LOCATION, JULD_QC, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans, passed, performed, PI_NAME, PLATFORM_NUMBER, PLATFORM_TYPE, position, POSITION_QC, positioning, POSITIONING_SYSTEM, practical, pres, PRES_ADJUSTED, PRES_ADJUSTED_ERROR, PRES_ADJUSTED_QC, PRES_QC, pressure, principal, process, processing, profile, PROFILE_PRES_QC, PROFILE_PSAL_QC, PROFILE_TEMP_QC, profiles, project, PROJECT_NAME, psal, PSAL_ADJUSTED, PSAL_ADJUSTED_ERROR, PSAL_ADJUSTED_QC, PSAL_QC, quality, real, real time, real-time, realtime, reference, REFERENCE_DATE_TIME, relative, salinity, sampling, scale, scheme, science, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, TEMP, TEMP_ADJUSTED, TEMP_ADJUSTED_ERROR, TEMP_ADJUSTED_QC, TEMP_QC, temperature, through, time, type, unique, update, values, version, vertical, VERTICAL_SAMPLING_SCHEME, water, WMO_INST_TYPE</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
@@ -622,6 +649,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"resolution\">null</att>\n" +
 "            <att name=\"source_name\">JULD</att>\n" +
+"            <att name=\"units\">days since 1950-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -653,6 +681,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"resolution\">null</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">days since 1950-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -1066,6 +1095,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Statistics</att>\n" +
 "            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"units\">PSU</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -1134,7 +1164,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n****************** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1549,11 +1579,7 @@ directionsForGenerateDatasetsXml() +
 expected=
    "String infoUrl \"http://www.argo.net/\";\n" +
 "    String institution \"Argo\";\n" +
-"    String keywords \"adjusted, argo, array, assembly, best, centre, centres, charge, coded, config_mission_number, contains, coriolis, creation, currents, cycle, cycle_number, data, data_centre, data_mode, data_state_indicator, data_type, date, date_creation, date_update, day, days, dc_reference, degree, delayed, denoting, density, determined, direction, equals, error, estimate, file, firmware, firmware_version, flag, float, float_serial_no, format, format_version, gdac, geostrophic, global, handbook, handbook_version, have, identifier, in-situ, instrument, investigator, its, its-90, juld, juld_location, juld_qc, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans,\n" +
-"Oceans > Ocean Pressure > Water Pressure,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"passed, performed, pi_name, platform_number, platform_type, position, position_qc, positioning, positioning_system, practical, pres, pres_adjusted, pres_adjusted_error, pres_adjusted_qc, pres_qc, pressure, principal, process, processing, profile, profile_pres_qc, profile_psal_qc, profile_temp_qc, profiles, project, project_name, psal, psal_adjusted, psal_adjusted_error, psal_adjusted_qc, psal_qc, quality, rdac, real, real time, real-time, realtime, reference, reference_date_time, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, temp, temp_adjusted, temp_adjusted_error, temp_adjusted_qc, temp_qc, temperature, through, time, type, unique, update, values, version, vertical, vertical_sampling_scheme, water, wmo_inst_type\";\n" +
+"    String keywords \"adjusted, argo, array, assembly, best, centre, centres, charge, coded, config_mission_number, contains, coriolis, creation, currents, cycle, cycle_number, data, data_centre, data_mode, data_state_indicator, data_type, date, date_creation, date_update, day, days, dc_reference, degree, delayed, denoting, density, determined, direction, Earth Science > Oceans > Ocean Pressure > Water Pressure, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, equals, error, estimate, file, firmware, firmware_version, flag, float, float_serial_no, format, format_version, gdac, geostrophic, global, handbook, handbook_version, have, identifier, in-situ, instrument, investigator, its, its-90, juld, juld_location, juld_qc, julian, latitude, level, longitude, missions, mode, name, number, ocean, oceanography, oceans, passed, performed, pi_name, platform_number, platform_type, position, position_qc, positioning, positioning_system, practical, pres, pres_adjusted, pres_adjusted_error, pres_adjusted_qc, pres_qc, pressure, principal, process, processing, profile, profile_pres_qc, profile_psal_qc, profile_temp_qc, profiles, project, project_name, psal, psal_adjusted, psal_adjusted_error, psal_adjusted_qc, psal_qc, quality, rdac, real, real time, real-time, realtime, reference, reference_date_time, regional, relative, salinity, sampling, scale, scheme, sea, sea level, sea-level, sea_water_practical_salinity, sea_water_pressure, sea_water_temperature, seawater, serial, situ, station, statistics, system, temp, temp_adjusted, temp_adjusted_error, temp_adjusted_qc, temp_qc, temperature, through, time, type, unique, update, values, version, vertical, vertical_sampling_scheme, water, wmo_inst_type\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1603,7 +1629,7 @@ expected=
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1668,7 +1694,7 @@ expected=
             "&longitude=154.853&latitude=26.587";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1profile", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_adjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
@@ -1689,7 +1715,7 @@ expected=
             "&longitude>154.852&longitude<=154.854";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_adjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
@@ -1709,7 +1735,7 @@ expected=
         userDapQuery = "data_type&data_type=~\".*go.*\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_scalar", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "data_type\n" +
@@ -1721,7 +1747,7 @@ expected=
         userDapQuery = "pres&pres>10&pres<10.5&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_scalar", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "pres\n" +
@@ -1746,14 +1772,14 @@ expected=
         try {
             String results = generateDatasetsXml(
                 EDStatic.unitTestDataDir + "sdn/", 
-			    "netCDF_timeseries_tidegauge\\.nc", "", 
-			    "INSTANCE, MAXT", //dimensions
+                "netCDF_timeseries_tidegauge\\.nc", "", 
+                "INSTANCE, MAXT", //dimensions
                 1440,
                 "", "", "", "", //just for test purposes; station is already a column in the file
-				true, //removeMVRows
+                true, //removeMVRows
                 "", //sortFilesBy 
                 "", "", "", "", null);
-		    String2.setClipboardString(results);
+            String2.setClipboardString(results);
 
 String expected = 
 directionsForGenerateDatasetsXml() +
@@ -1790,17 +1816,10 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"cdm_timeseries_variables\">???</att>\n" +
 "        <att name=\"Conventions\">SeaDataNet_1.0, CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">SeaDataNet</att>\n" +
-"        <att name=\"creator_url\">http://www.seadatanet.org/</att>\n" +
-"        <att name=\"infoUrl\">http://www.seadatanet.org/</att>\n" +
+"        <att name=\"creator_url\">https://www.seadatanet.org/</att>\n" +
+"        <att name=\"infoUrl\">https://www.seadatanet.org/</att>\n" +
 "        <att name=\"institution\">SeaDataNet</att>\n" +
-"        <att name=\"keywords\">above, ASLVZZ01, ASLVZZ01_SEADATANET_QC, bathymetric, bathymetry, below, cdi, code, common, crs, data, depth, DEPTH_SEADATANET_QC, directory, earth, european, flag, floor, format, generated, geodetics, geoid, gravity, height, identifier, latitude, level, list, longitude, marine, measurement, nemo, network, numbers, ocean, oceans,\n" +
-"Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry,\n" +
-"Oceans &gt; Ocean Pressure &gt; Water Pressure,\n" +
-"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"Oceans &gt; Sea Surface Topography &gt; Sea Surface Height,\n" +
-"organisations, POSITION_SEADATANET_QC, PRESPR01, PRESPR01_SEADATANET_QC, pressure, properties, quality, SDN_BOT_DEPTH, SDN_CRUISE, SDN_EDMO_CODE, SDN_LOCAL_CDI_ID, SDN_STATION, sea, sea level, sea_floor_depth_below_sea_surface, sea_surface_height_above_geoid, sea_water_pressure, sea_water_temperature, seadatanet, seafloor, seawater, site, solid,\n" +
-"Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties,\n" +
-"station, statistics, supplier, surface, suva, temperature, TEMPPR01, TEMPPR01_SEADATANET_QC, time, TIME_SEADATANET_QC, timeseries, topography, version, water</att>\n" +
+"        <att name=\"keywords\">above, ASLVZZ01, ASLVZZ01_SEADATANET_QC, bathymetric, bathymetry, below, cdi, code, common, crs, data, depth, DEPTH_SEADATANET_QC, directory, earth, Earth Science &gt; Oceans &gt; Bathymetry/Seafloor Topography &gt; Bathymetry, Earth Science &gt; Oceans &gt; Ocean Pressure &gt; Water Pressure, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Water Temperature, Earth Science &gt; Oceans &gt; Sea Surface Topography &gt; Sea Surface Height, Earth Science &gt; Solid Earth &gt; Geodetics/Gravity &gt; Geoid Properties, european, flag, floor, format, generated, geodetics, geoid, gravity, height, identifier, latitude, level, list, longitude, marine, measurement, nemo, network, numbers, ocean, oceans, organisations, POSITION_SEADATANET_QC, PRESPR01, PRESPR01_SEADATANET_QC, pressure, properties, quality, science, SDN_BOT_DEPTH, SDN_CRUISE, SDN_EDMO_CODE, SDN_LOCAL_CDI_ID, SDN_STATION, sea, sea level, sea_floor_depth_below_sea_surface, sea_surface_height_above_geoid, sea_water_pressure, sea_water_temperature, seadatanet, seafloor, seawater, site, solid, station, statistics, supplier, surface, suva, temperature, TEMPPR01, TEMPPR01_SEADATANET_QC, time, TIME_SEADATANET_QC, timeseries, topography, version, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
@@ -2221,7 +2240,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_LongEntire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   //long flag masks appear a float64
 "Attributes {\n" +
@@ -2459,7 +2478,7 @@ expected=
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_LongEntire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -2489,7 +2508,7 @@ expected=
         userDapQuery = "&time<=2016-09-28T00:03";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Long1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "feature_type_instance,latitude,longitude,crs,platform,time,depth,battery_bank1_current,battery_bank1_temperature,dcl_date_time_string,error_flag1,error_flag2,error_flag3,deploy_id\n" +
@@ -2503,7 +2522,7 @@ expected=
         userDapQuery = "&error_flag2!=4202496";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Long2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "feature_type_instance,latitude,longitude,crs,platform,time,depth,battery_bank1_current,battery_bank1_temperature,dcl_date_time_string,error_flag1,error_flag2,error_flag3,deploy_id\n" +
@@ -2517,7 +2536,7 @@ expected=
         userDapQuery = "error_flag2&distinct()";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_Long1distinct", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "error_flag2\n" +
@@ -2687,8 +2706,8 @@ expected =
 
         //test the floats work as expected
         float f = String2.parseFloat("-3.4E38");
-        String2.log(">> parse -3.4E38 => " + f + " isFinite=" + Math2.isFinite(f) + " equal5? " + Math2.almostEqual(5, -3.4e38, f)); 
-        Test.ensureTrue(Math2.isFinite(f), "");
+        String2.log(">> parse -3.4E38 => " + f + " isFinite=" + Float.isFinite(f) + " equal5? " + Math2.almostEqual(5, -3.4e38, f)); 
+        Test.ensureTrue(Float.isFinite(f), "");
         Test.ensureTrue(Math2.almostEqual(5, -3.4e38, f), "");
 
         //dump the temp attributes form all files file
@@ -2731,7 +2750,7 @@ expected =
         userDapQuery = "time,depth,TEMP&time>=2011-01-03T00&time<=2011-01-03T03";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddTable.className() + "_1profile", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,depth,TEMP\n" +

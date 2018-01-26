@@ -78,8 +78,8 @@ public abstract class SDArray extends DArray implements ServerArrayMethods, RelO
     * @param print_semi a boolean value indicating whether to print a
     *    semicolon at the end of the declaration.
     * @param constrained a boolean value indicating whether to print
-    *    the declartion dependent on the projection information. <b>This
-    *    is only used by Server side code.</b>
+    *    the declartion dependent on the projection information. <strong>This
+    *    is only used by Server side code.</strong>
     *
     * @see BaseType#printDecl(PrintWriter, String, boolean, boolean)
     */
@@ -117,9 +117,9 @@ public abstract class SDArray extends DArray implements ServerArrayMethods, RelO
     * This method overrides the BaseType method of the same name and 
     * type signature and it significantly changes the behavior for all versions
     * of <code>printVal()</code> for this type: 
-    * <b><i> All the various versions of printVal() will only
+    * <strong><i> All the various versions of printVal() will only
     * print a value, or a value with declaration, if the variable is
-    * in the projection.</i></b>
+    * in the projection.</i></strong>
     * <br>
     * <br>In other words, if a call to 
     * <code>isProject()</code> for a particular variable returns 
@@ -448,7 +448,7 @@ public abstract class SDArray extends DArray implements ServerArrayMethods, RelO
         d.setProjection(start,stride,stop);
     }
 
-    /** Gets the <b>start</b> value for the array projection. The parameter
+    /** Gets the <strong>start</strong> value for the array projection. The parameter
       * <code>dimension</code> is checked against the instance of the
       * <code>SDArray</code> for bounds violation. */
     public int  getStart(int dimension) throws InvalidParameterException {
@@ -457,7 +457,7 @@ public abstract class SDArray extends DArray implements ServerArrayMethods, RelO
     }
 
 
-    /** Gets the <b>stride</b> value for the array projection. The parameter
+    /** Gets the <strong>stride</strong> value for the array projection. The parameter
       * <code>dimension</code> is checked against the instance of the
       * <code>SDArray</code> for bounds violation. */
     public int  getStride(int dimension) throws InvalidParameterException {
@@ -465,7 +465,7 @@ public abstract class SDArray extends DArray implements ServerArrayMethods, RelO
         return(d.getStride());
     }
 
-    /** Gets the <b>stop</b> value for the array projection. The parameter
+    /** Gets the <strong>stop</strong> value for the array projection. The parameter
       * <code>dimension</code> is checked against the instance of the
       * <code>SDArray</code> for bounds violation. */
     public int getStop(int dimension) throws InvalidParameterException {

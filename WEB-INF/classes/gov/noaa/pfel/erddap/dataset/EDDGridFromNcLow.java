@@ -110,7 +110,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     * @param sourceAxisNames If there is a special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
@@ -190,7 +190,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
-     *    If special axis0, this will not include axis0's name.
+     *    If there is a special axis0, this will not include axis0's name.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -250,9 +250,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param tDataVariables the desired data variables
-     * @param tConstraints  where the first axis variable's constraints
-     *   have been customized for this file.
-     *   !!! If special axis0, then will not include constraints for axis0.
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
      *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,
@@ -393,9 +393,6 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             tFileDir = tFileDir.substring(0, tFileDir.length() - 13);
         else tFileDir = File2.addSlash(tFileDir); //otherwise, assume tFileDir is missing final slash
 
-        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
-            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
-
         if (!String2.isSomething(sampleFileName)) 
             String2.log("Found/using sampleFileName=" +
                 (sampleFileName = FileVisitorDNLS.getSampleFileName(
@@ -412,6 +409,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         Table axisAddTable = new Table();
         Table dataAddTable = new Table();
         StringBuilder sb = new StringBuilder();
+        double maxTimeES = Double.NaN; //epoch seconds
 
         //get source global Attributes
         Attributes globalSourceAtts = axisSourceTable.globalAttributes();
@@ -428,7 +426,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 int slashPo = varName.lastIndexOf('/');
                 String groupName = slashPo < 0? "" : varName.substring(0, slashPo + 1);
                 List dimensions = var.getDimensions();
-                if (dimensions == null || dimensions.size() <= 1) 
+                if (dimensions == null || dimensions.size() < 1) 
                     continue;
                 nGridsAtSource++;
                 Class tClass = NcHelper.getElementClass(var.getDataType());
@@ -445,6 +443,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     axisAddTable.removeAllColumns();
                     dataAddTable.removeAllColumns();
                     maxDim = nDim;
+                    maxTimeES = Double.NaN;
 
                     //store the axis vars
                     for (int avi = 0; avi < maxDim; avi++) {
@@ -463,6 +462,20 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                                 NcHelper.getVariableAttributes(axisVar, sourceAtts);
                                 if (tUnpack)  
                                     NcHelper.unpackAttributes(axisVar, sourceAtts);
+
+                                //if time, try to get maxTimeES
+                                String tUnits = sourceAtts.getString("units");
+                                if (Calendar2.isNumericTimeUnits(tUnits)) {
+                                    try {
+                                        double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+                                        PrimitiveArray tpa = NcHelper.getPrimitiveArray(axisVar);
+                                        maxTimeES = Calendar2.unitsSinceToEpochSeconds(
+                                            tbf[0], tbf[1], tpa.getDouble(tpa.size() - 1));
+                                    } catch (Throwable t) {
+                                        String2.log("caught while trying to get maxTimeES: " + 
+                                            MustBe.throwableToString(t));
+                                    }
+                                }
                             }
                         }
                         axisSourceTable.addColumn(avi, axisName, new DoubleArray(), //type doesn't matter
@@ -471,7 +484,6 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
                                 globalSourceAtts,
                                 sourceAtts, null, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
-
                     }
 
                 } else { 
@@ -595,6 +607,18 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             //tryToFindLLAT 
             tryToFindLLAT(   axisSourceTable, axisAddTable); //just axisTables
             ensureValidNames(dataSourceTable, dataAddTable);
+
+            //use maxTimeES
+            if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+                tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
+
+            String tTestOutOfDate = EDD.getAddOrSourceAtt(
+                globalAddAtts, globalSourceAtts, "testOutOfDate", null);
+            if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+                tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+                if (String2.isSomething(tTestOutOfDate))
+                    globalAddAtts.set("testOutOfDate", tTestOutOfDate);
+            }
 
             //write results
             sb.append(

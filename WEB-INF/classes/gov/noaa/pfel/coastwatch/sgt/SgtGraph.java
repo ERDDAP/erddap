@@ -227,7 +227,7 @@ public class SgtGraph  {
             }
             
             //if minX maxX not specified, calculate x axis ranges
-            if (Math2.isFinite(minX) && Math2.isFinite(maxX)) {
+            if (Double.isFinite(minX) && Double.isFinite(maxX)) {
                 //ensure minX < maxX
                 if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
             } else {
@@ -249,33 +249,33 @@ public class SgtGraph  {
                 //ensure tMinX,tMaxX are finite
                 if (tMinX == Double.MAX_VALUE) {
                     //no data was found
-                    tMinX = Math2.isFinite(minX)? minX : Math2.isFinite(maxX)? maxX : 0; 
-                    tMaxX = Math2.isFinite(maxX)? maxX : Math2.isFinite(minX)? minX : 0;
+                    tMinX = Double.isFinite(minX)? minX : Double.isFinite(maxX)? maxX : 0; 
+                    tMaxX = Double.isFinite(maxX)? maxX : Double.isFinite(minX)? minX : 0;
                 }
 
                 //set minX and maxX
                 if (someUseGridData) {
                     //use exact minX maxX
-                    minX = Math2.isFinite(minX)? minX : tMinX;
-                    maxX = Math2.isFinite(maxX)? maxX : tMaxX;
+                    minX = Double.isFinite(minX)? minX : tMinX;
+                    maxX = Double.isFinite(maxX)? maxX : tMaxX;
                     if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
                 } else if (xIsTimeAxis) {
                     //add little buffer zone
-                    minX = Math2.isFinite(minX)? minX : tMinX;
-                    maxX = Math2.isFinite(maxX)? maxX : tMaxX;
+                    minX = Double.isFinite(minX)? minX : tMinX;
+                    maxX = Double.isFinite(maxX)? maxX : tMaxX;
                     if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
                     double r20 = (maxX - minX) / 20;
                     minX -= r20;
                     maxX += r20;                    
                 } else {
                     //get suggestedLowHigh for x
-                    tMinX = Math2.isFinite(minX)? minX : tMinX;  //work on t values first
-                    tMaxX = Math2.isFinite(maxX)? maxX : tMaxX;
+                    tMinX = Double.isFinite(minX)? minX : tMinX;  //work on t values first
+                    tMaxX = Double.isFinite(maxX)? maxX : tMaxX;
                     if (tMinX > tMaxX) {double d = tMinX; tMinX = tMaxX; tMaxX = d;}
                     double xLowHigh[] = Math2.suggestLowHigh(tMinX, tMaxX);
                     //then set minX, maxX
-                    minX = Math2.isFinite(minX)? minX : xLowHigh[0];
-                    maxX = Math2.isFinite(maxX)? maxX : xLowHigh[1];
+                    minX = Double.isFinite(minX)? minX : xLowHigh[0];
+                    maxX = Double.isFinite(maxX)? maxX : xLowHigh[1];
                     if (minX > maxX) {double d = minX; minX = maxX; maxX = d;}
                 }
             }
@@ -315,7 +315,7 @@ public class SgtGraph  {
             }
 
             //if minY maxY not specified, calculate y axis ranges
-            if (Math2.isFinite(minY) && Math2.isFinite(maxY)) {
+            if (Double.isFinite(minY) && Double.isFinite(maxY)) {
                 //ensure minY < maxY
                 if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
             } else {
@@ -336,33 +336,33 @@ public class SgtGraph  {
                 //ensure tMinY,tMaxY are finite
                 if (tMinY == Double.MAX_VALUE) {
                     //no data was found
-                    tMinY = Math2.isFinite(minY)? minY : Math2.isFinite(maxY)? maxY : 0; 
-                    tMaxY = Math2.isFinite(maxY)? maxY : Math2.isFinite(minY)? minY : 0;
+                    tMinY = Double.isFinite(minY)? minY : Double.isFinite(maxY)? maxY : 0; 
+                    tMaxY = Double.isFinite(maxY)? maxY : Double.isFinite(minY)? minY : 0;
                 }
 
                 //set minY and maxY
                 if (someUseGridData) {
                     //use exact minY maxY
-                    minY = Math2.isFinite(minY)? minY : tMinY;
-                    maxY = Math2.isFinite(maxY)? maxY : tMaxY;
+                    minY = Double.isFinite(minY)? minY : tMinY;
+                    maxY = Double.isFinite(maxY)? maxY : tMaxY;
                     if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
                 } else if (yIsTimeAxis) {
                     //add little buffer zone
-                    minY = Math2.isFinite(minY)? minY : tMinY;
-                    maxY = Math2.isFinite(maxY)? maxY : tMaxY;
+                    minY = Double.isFinite(minY)? minY : tMinY;
+                    maxY = Double.isFinite(maxY)? maxY : tMaxY;
                     if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
                     double r20 = (maxY - minY) / 20;
                     minY -= r20;
                     maxY += r20;                    
                 } else {
                     //get suggestedLowHigh for y
-                    tMinY = Math2.isFinite(minY)? minY : tMinY;  //work on t values first
-                    tMaxY = Math2.isFinite(maxY)? maxY : tMaxY;
+                    tMinY = Double.isFinite(minY)? minY : tMinY;  //work on t values first
+                    tMaxY = Double.isFinite(maxY)? maxY : tMaxY;
                     if (tMinY > tMaxY) {double d = tMinY; tMinY = tMaxY; tMaxY = d;}
                     double yLowHigh[] = Math2.suggestLowHigh(tMinY, tMaxY);
                     //then set minY, maxY
-                    minY = Math2.isFinite(minY)? minY : yLowHigh[0];
-                    maxY = Math2.isFinite(maxY)? maxY : yLowHigh[1];
+                    minY = Double.isFinite(minY)? minY : yLowHigh[0];
+                    maxY = Double.isFinite(maxY)? maxY : yLowHigh[1];
                     if (minY > maxY) {double d = minY; minY = maxY; maxY = d;}
                 }
 
@@ -586,8 +586,8 @@ public class SgtGraph  {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             0, fontFamily, labelHeightPixels * 3 / 2, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1 + " " + 
-                                legendTitle2) + "</color></b>");
+                            "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1 + " " + 
+                                legendTitle2) + "</color></strong>");
                         legendTextY += labelHeightPixels / 2;
                     } else {
                         //draw LEGEND_RIGHT
@@ -595,11 +595,11 @@ public class SgtGraph  {
                         if (legendTitle1.length() > 0)
                             legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
                                 0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
+                                "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></strong>");
                         if (legendTitle2.length() > 0)
                             legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
                                 0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
+                                "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></strong>");
                         legendTextY += labelHeightPixels * 3 / 2;
                     }
 
@@ -624,7 +624,7 @@ public class SgtGraph  {
                         }
                         g2.drawImage(bi2, ulx, uly, tSize, tSize, null); //null=ImageObserver 
                         //if (verbose) String2.log("  draw logo time=" + 
-                        //    (System.currentTimeMillis() - logoTime));
+                        //    (System.currentTimeMillis() - logoTime) + "ms");
                     }
                 }
             }
@@ -878,7 +878,7 @@ public class SgtGraph  {
                             returnPointScreen.add(gdl.sourceID);
 
                         }
-                        if (reallyVerbose) String2.log("  accum time=" + (System.currentTimeMillis() - accumTime));
+                        if (reallyVerbose) String2.log("  accum time=" + (System.currentTimeMillis() - accumTime) + "ms");
 
                         if (gpState == 1) { //gpState==1 only occurs if drawing lines
                             //just one point (moveTo left hanging)? draw a mini horizontal line to right and left
@@ -910,7 +910,7 @@ public class SgtGraph  {
                                 xarray[nMarkerXs1], yarray[nMarkerXs1],
                                 (Color)markerInteriorColors.get(nMarkerXs1), gdl.lineColor);
                             if (reallyVerbose) String2.log("  draw markers n=" + nMarkerXs + 
-                                " time=" + (System.currentTimeMillis() - markerTime));
+                                " time=" + (System.currentTimeMillis() - markerTime) + "ms");
                         }
 
                     }
@@ -1124,7 +1124,7 @@ public class SgtGraph  {
                     //point legend text
                     legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                         1, fontFamily, labelHeightPixels, false, 
-                        "<b>" + SgtUtil.encodeAsHtml(gdl.boldTitle) + "</b>");
+                        "<strong>" + SgtUtil.encodeAsHtml(gdl.boldTitle) + "</strong>");
                     legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                         1, fontFamily, labelHeightPixels, false, 
                         SgtUtil.encodeAsHtml(gdl.title2));
@@ -1137,11 +1137,11 @@ public class SgtGraph  {
                 }
                 if (reallyVerbose)
                     String2.log("  graphDataLayer" + gdli + " time=" +
-                        (System.currentTimeMillis() - gdlTime));
+                        (System.currentTimeMillis() - gdlTime) + "ms");
             }
 
             if (reallyVerbose) String2.log("  set up the graph time=" + 
-                (System.currentTimeMillis() - setupTime));
+                (System.currentTimeMillis() - setupTime) + "ms");
 
             //*** set up graph with the AXIS LINES 
             //Drawing once avoids anti-aliasing problems when axis labels drawn 2+ times.
@@ -1255,7 +1255,7 @@ public class SgtGraph  {
 
             if (reallyVerbose) {
                 String2.log("  draw the graph time=" + 
-                    (System.currentTimeMillis() - drawGraphTime));
+                    (System.currentTimeMillis() - drawGraphTime) + "ms");
                 //String2.log("SgtGraph.makeGraph after jPane.draw: " + Math2.memoryString());
                 //Math2.gcAndWait(); //a diagnostic in development.  outside of timing system.
                 //String2.log("SgtGraph.makeGraph after gc: " + Math2.memoryString());
@@ -1283,7 +1283,7 @@ public class SgtGraph  {
 
             //display time to makeGraph
             if (verbose) String2.log("}} SgtGraph.makeGraph done. TOTAL TIME=" + 
-                (System.currentTimeMillis() - startTime) + "\n");
+                (System.currentTimeMillis() - startTime) + "ms\n");
         } finally {
             g2.setClip(null);
         }
@@ -1500,8 +1500,8 @@ public class SgtGraph  {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             0, fontFamily, labelHeightPixels * 3 / 2, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1 + " " + 
-                                legendTitle2) + "</color></b>");
+                            "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1 + " " + 
+                                legendTitle2) + "</color></strong>");
                         legendTextY += labelHeightPixels / 2;
                     } else {
                         //draw LEGEND_RIGHT
@@ -1509,11 +1509,11 @@ public class SgtGraph  {
                         if (legendTitle1.length() > 0)
                             legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
                                 0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
+                                "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></strong>");
                         if (legendTitle2.length() > 0)
                             legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
                                 0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
+                                "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></strong>");
                         legendTextY += labelHeightPixels * 3 / 2;
                     }
 
@@ -1531,7 +1531,7 @@ public class SgtGraph  {
                         int tSize = (int)(fontScale * 20);
                         g2.drawImage(bi2, ulx, uly, tSize, tSize, null); //null=ImageObserver 
                         //if (verbose) String2.log("  draw logo time=" + 
-                        //    (System.currentTimeMillis() - logoTime));
+                        //    (System.currentTimeMillis() - logoTime) + "ms");
                     }
                 }
             }
@@ -1648,7 +1648,7 @@ public class SgtGraph  {
 
             //display time to makeGraph
             if (verbose) String2.log("}} SgtGraph.makeLegend done. TOTAL TIME=" + 
-                (System.currentTimeMillis() - startTime) + "\n");
+                (System.currentTimeMillis() - startTime) + "ms\n");
         } finally {
             g2.setClip(null);
         }
@@ -2045,7 +2045,7 @@ public class SgtGraph  {
 
         //done
         Math2.gcAndWait(); Math2.gcAndWait(); //part of a test.  Ensure all are garbage collected.
-        String2.log("time=" + (System.currentTimeMillis() - time) + " ms\n" +
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms\n" +
             Math2.memoryString());
     } 
 
@@ -2281,7 +2281,7 @@ public class SgtGraph  {
 
         //done
         Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
-        String2.log("time=" + (System.currentTimeMillis() - time) + " ms " +
+        String2.log("time=" + (System.currentTimeMillis() - time) + "ms " +
             "changeInMemoryInUse=" + (Math2.getMemoryInUse() - memoryInUse));
     } 
 

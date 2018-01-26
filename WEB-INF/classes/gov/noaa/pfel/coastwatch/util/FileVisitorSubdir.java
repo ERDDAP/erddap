@@ -133,7 +133,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
             Integer.MAX_VALUE,                        //maxDepth
             fv);
         if (verbose) String2.log("FileVisitorSubdir.oneStep finished successfully. n=" + 
-            fv.results.size() + " time=" + (System.currentTimeMillis() - time));
+            fv.results.size() + " time=" + (System.currentTimeMillis() - time) + "ms");
         return fv.results;
     }
 

@@ -267,7 +267,7 @@ public class JLineProfileLayout extends JGraphicLayout {
    * Add data to the layout.  Data will be added to X axis and Z_AXIS will be
    * assigned to Y axis. If this is not the first invocation of addData a new Layer
    * will be created. If overlayed, the transforms from the first layer will be
-   * attached and <B>no</B> axes will be created. If not overlayed, new transforms
+   * attached and <strong>no</strong> axes will be created. If not overlayed, new transforms
    * and axes will be created and adjusted so that the data is horizontally stacked.
    *
    * @param datum data to be added

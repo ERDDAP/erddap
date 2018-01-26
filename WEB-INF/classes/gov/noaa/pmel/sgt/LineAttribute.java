@@ -179,7 +179,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set mark height.
-   * <BR><B>Property Change:</B> <code>markHeightP</code>.
+   * <BR><strong>Property Change:</strong> <code>markHeightP</code>.
    *
    * @param markh mark height
    **/
@@ -202,7 +202,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the line style.
-   * <BR><B>Property Change:</B> <code>style</code>.
+   * <BR><strong>Property Change:</strong> <code>style</code>.
    *
    * @param st line style
    **/
@@ -217,7 +217,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the line <code>Color</code>.
-   * <BR><B>Property Change:</B> <code>color</code>.
+   * <BR><strong>Property Change:</strong> <code>color</code>.
    *
    * @param c line <code>Color</code>
    **/
@@ -232,7 +232,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the line width in physical units.
-   * <BR><B>Property Change:</B> <code>width</code>.
+   * <BR><strong>Property Change:</strong> <code>width</code>.
    *
    * @param t line width
    **/
@@ -247,7 +247,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the dash characteristics.  Lengths are in physical units.
-   * <BR><B>Property Change:</B> <code>dashArray</code>.
+   * <BR><strong>Property Change:</strong> <code>dashArray</code>.
    *
    **/
   public void setDashArray(float[] dashes) {
@@ -280,7 +280,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set line dash phase.
-   * <BR><B>Property Change:</B> <code>dashPhase</code>.
+   * <BR><strong>Property Change:</strong> <code>dashPhase</code>.
    * @since 2.0
    */
   public void setDashPhase(float phase) {
@@ -325,7 +325,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set plot mark
-   * <BR><B>Property Change:</B> <code>mark</code>.
+   * <BR><strong>Property Change:</strong> <code>mark</code>.
    *
    * @param mark the plot mark
    **/
@@ -352,7 +352,7 @@ public class LineAttribute implements Attribute, Cloneable {
    * Set the current line cap style.  Cap styles include
    * <code>CAP_BUTT</code>, <code>CAP_ROUND</code>, and
    * <code>CAP_SQUARE</code>.
-   * <BR><B>Property Change:</B> <code>capStyle</code>.
+   * <BR><strong>Property Change:</strong> <code>capStyle</code>.
    */
   public void setCapStyle(int style) {
     if(cap_style_ != style) {
@@ -373,7 +373,7 @@ public class LineAttribute implements Attribute, Cloneable {
    * Set the current miter style. Styles include
    * <code>JOIN_MITER</code>, <code>JOIN_ROUND</code>, and
    * <code>JOIN_BEVEL</code>.
-   * <BR><B>Property Change:</B> <code>miterStyle</code>.   */
+   * <BR><strong>Property Change:</strong> <code>miterStyle</code>.   */
   public void setMiterStyle(int style) {
     if(miter_style_ != style) {
       Integer tempOld = new Integer(miter_style_);
@@ -391,7 +391,7 @@ public class LineAttribute implements Attribute, Cloneable {
   }
   /**
    * Set the miter limit.
-   * <BR><B>Property Change:</B> <code>miterLimit</code>.
+   * <BR><strong>Property Change:</strong> <code>miterLimit</code>.
    */
   public void setMiterLimit(float limit) {
     if(miter_limit_ != limit) {

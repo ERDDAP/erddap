@@ -151,7 +151,7 @@ public class EmaColor extends EmaAttribute {
     public String getControl(String value) {
         StringBuilder sb = new StringBuilder(
             "\n" +
-            "        <table cellspacing=\"0\" cellpadding=\"1\">\n" +
+            "        <table class=\"erd\">\n" + //padding=1
             "          <tr>\n");
 
         sb.append("\n");
@@ -161,7 +161,7 @@ public class EmaColor extends EmaAttribute {
             //a radio button with the appropriate background color
             String checked = value.equals(palette[i])? " checked" : "";
             sb.append(
-                "          <td bgcolor=\"#" + palette[i] + "\">" +
+                "          <td style=\"background-color:#" + palette[i] + "\">" +
                     "<input type=\"radio\" name=\"" + name + 
                     "\" value=\"" + palette[i] + "\"" + checked + " " +
                     getOnClickSubmitsFormHTML() + "\n" + //onChange doesn't work
@@ -170,7 +170,7 @@ public class EmaColor extends EmaAttribute {
 
             //small gap between groups
             if (++inGroup % perGroup == 0 && i != palette.length - 1)
-                sb.append("          <td bgcolor=\"#FFFFFF\">&nbsp;</td>\n");
+                sb.append("          <td style=\"background-color:#FFFFFF\">&nbsp;</td>\n");
 
             //new row
             if (++inRow % perRow == 0 && i != palette.length - 1)

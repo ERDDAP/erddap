@@ -272,7 +272,7 @@ public abstract class XPath implements Serializable {
     * this XPath expression.
     * <p>
     * <strong>Note</strong>: In XPath, there is no such thing as a
-    * 'default namespace'.  The empty prefix <b>always</b> resolves
+    * 'default namespace'.  The empty prefix <strong>always</strong> resolves
     * to the empty namespace URI.</p>
     *
     * @param  namespace   the namespace.
@@ -284,7 +284,7 @@ public abstract class XPath implements Serializable {
     * namespaces known of this XPath expression.
     * <p>
     * <strong>Note</strong>: In XPath, there is no such thing as a
-    * 'default namespace'.  The empty prefix <b>always</b> resolves
+    * 'default namespace'.  The empty prefix <strong>always</strong> resolves
     * to the empty namespace URI.</p>
     *
     * @param  prefix   the namespace prefix.

@@ -226,7 +226,7 @@ final class ContentList extends AbstractList implements java.io.Serializable {
                 "The Element cannot be added to itself");
         }
 
-        // Detect if we have <a><b><c/></b></a> and c.add(a)
+        // Detect if we have <a><strong><c/></strong></a> and c.add(a)
         if ((parent instanceof Element && child instanceof Element) &&
                 ((Element) child).isAncestor((Element)parent)) {
             throw new IllegalAddException(

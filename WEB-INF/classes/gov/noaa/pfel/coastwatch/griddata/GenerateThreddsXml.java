@@ -762,7 +762,7 @@ String2.log("***end catalog.xml");
      * which is only useful while testing shortenBoldTitles.
      */
     public static void testShortenBoldTitles() {
-        String2.log("\n*** testing GenerateThreddsXml.testShortenBoldTitles");
+        String2.log("\n*** GenerateThreddsXml.testShortenBoldTitles");
         ResourceBundle2 dataSetRB2 = new ResourceBundle2("gov.noaa.pfel.coastwatch.DataSet");
         String validDataSets[] = String2.split(
             dataSetRB2.getString("validDataSets", null), '`');

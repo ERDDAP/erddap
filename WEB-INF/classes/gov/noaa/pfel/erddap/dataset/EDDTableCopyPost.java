@@ -297,7 +297,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static void testCopyPostSurg3(boolean checkSourceData) throws Throwable {
-        String2.log("\n*** testCopyPostSurg3");
+        String2.log("\n*** EDDTableCopyPost.testCopyPostSurg3");
         testVerboseOn();
         defaultCheckSourceData = checkSourceData;
         long eTime;
@@ -310,7 +310,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //das
             tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cps3_Data", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 //data changes so it is hard to test all
 "Attributes {\n" +
@@ -333,7 +333,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //.dds 
             tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cps3_Data", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -391,7 +391,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1role", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -400,18 +400,18 @@ public class EDDTableCopyPost extends EDDTableCopy {
 "1156_A69-1005-AE_9328D, DAVID WELCH, -121.96733, 49.08505, 2004-05-04T03:30:00Z, 2004-04-11T07:00:00Z, NaN, 70.0, 140.0, NaN, NaN, , A69-1005-AE, \"LOCATED IN TANK # 8, DORSAL FIN CLIPPED\", \"SOCKEYE, KOKANEE\", 2008-09-29T23:28:25Z, NaN, NaN, NaN, , 0, NaN, 171.0, NaN, INTERNAL, NaN, NaN, NaN, KINTAMA RESEARCH, Hatchery, WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE, ONCORHYNCHUS NERKA, 1.0, CULTUS LAKE, 278, ROSEWALL HATCHERY, -124.77528, 49.46028, 2004-04-28T07:00:00Z, MELINDA JACOBS, NOT ENTERED, 9.1, NaN\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, 3000));
-            String2.log("*** testPostSurg3 c1role FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testPostSurg3 c1role FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
             //test 1 role, public data   loggedIn for other data
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleLIOD", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //same expected
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, 3000));
-            String2.log("*** testCopyPostSurg3 c1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 c1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
             //test 1 role, private data, not loggedIn
@@ -420,7 +420,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             try {
                 tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleP", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 String2.log("\nUnexpected results:\n" + results);
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
@@ -431,7 +431,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                         "Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }
-            String2.log("*** testCopyPostSurg3 c1roleP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 c1roleP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
             //test 1 role, wrong log in
             eTime = System.currentTimeMillis();
@@ -439,21 +439,21 @@ public class EDDTableCopyPost extends EDDTableCopy {
             try {
                 tName = tedd.makeNewFileForDapQuery(null, "WELCH_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleWP", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
                 if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }
-            String2.log("*** testCopyPostSurg3 c1roleWP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 c1roleWP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
             //test 1 role, public data, logged in
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleL", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -462,14 +462,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
 "23671_A69-1303-AC_1058602, DAVID ROBICHAUD, -122.788286819502, 49.2229398886514, 2008-08-30T15:56:00Z, 2008-08-30T07:00:00Z, NaN, NaN, NaN, NaN, NaN, , A69-1303-AC, small scrape near incision, WHITE STURGEON, 2010-01-23T21:25:29Z, NaN, NaN, NaN, , 0, NaN, 715.0, NaN, INTERNAL, NaN, NaN, NaN, LGL LIMITED, Wild, ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER, ACIPENSER TRANSMONTANUS, NaN, Lower Fraser, 7994, FRASER RIVER JUST UPSTREAM OF PORT MANN BRIDGE, -122.788286819502, 49.2229398886514, 2008-08-30T07:00:00Z, Lucia Ferreira, SUMMER, NaN, NaN\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, 3000));
-            String2.log("*** testCopyPostSurg3 c1roleL FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 c1roleL FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
             //test public data + logged in
             eTime = System.currentTimeMillis();
             tQuery = "&orderBy(\"unique_tag_id\")"; //without this, data is ordered by pi, so different order
             tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1rolePDLI", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -478,7 +478,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 "1001_A69-1005-AE_1030202, DAVID WELCH, -121.0529, 49.8615, 2005-05-19T18:15:00Z, 2005-05-05T07:00:00Z, NaN, 70.0, 140.0, NaN, NaN, , A69-1005-AE, \"ADDED 10 ML MS222, ADIPOSE FIN CLIPPED\", COHO, 2008-09-29T23:28:33Z, NaN, NaN, NaN, , 0, NaN, 125.0, NaN, INTERNAL, NaN, NaN, NaN, KINTAMA RESEARCH, Hatchery, WELCH_DAVID_ONCORHYNCHUSKISUTCH_SPIUSCREEK, ONCORHYNCHUS KISUTCH, 1.0, SPIUS CREEK, 1149, SPIUS CREEK HATCHERY, -121.0253, 50.1415, 2005-05-17T07:00:00Z, MELINDA JACOBS, NOT ENTERED, 7.6, NaN\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, 3000));
-            String2.log("*** testCopyPostSurg3 c1rolePDLI FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 c1rolePDLI FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
             //test public data all have lat/lon/time?
@@ -486,19 +486,19 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "longitude,latitude,time&time>=2007-05-01&time<2007-09-01";
             tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_LLT", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log("results=\n" + results.substring(0, Math.min(results.length(), 10000)));
             po = results.indexOf("NaN");
             String2.log("\nresults.length()=" + results.length() + "  NaN po=" + po);
             Test.ensureEqual(po, -1, "\nresults=\n" + results.substring(0, Math.min(results.length(), 10000)));
-            String2.log("*** testCopyPostSurg3 cLLT FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 cLLT FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
             //distinct roles
             eTime = System.currentTimeMillis();
             tQuery = "role&distinct()";
             tName = tedd.makeNewFileForDapQuery(null, EDStatic.loggedInAsSuperuser, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_roles", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "role\n" +
 "\n" +
@@ -510,7 +510,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 "BEREJIKIAN_BARRY_ONCORHYNCHUSMYKISS_DUCKABUSH\n"; 
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, expected.length()));
-            String2.log("*** testCopyPostSurg3 roles FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 roles FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
 
@@ -519,14 +519,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "unique_tag_id,pi,longitude,latitude,time,tagger&tagger=\"\"";
             tName = tedd.makeNewFileForDapQuery(null, "noTagger", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_noTagger", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, tagger, date_public, role\n" +
 ", , degrees_east, degrees_north, UTC, , UTC, \n" +
 "3090_A69-1005-AE_, FRED GOETZ, NaN, NaN, 2005-08-24T00:00:00Z, , 2008-09-29T23:28:42Z, GOETZ_FRED_ONCORHYNCHUSTSHAWYTSCHA_LAKEWASHINGTON\n" +
 "3091_A69-1005-AE_, FRED GOETZ, NaN, NaN, 2005-08-24T00:00:00Z, , 2008-09-29T23:28:42Z, GOETZ_FRED_ONCORHYNCHUSTSHAWYTSCHA_LAKEWASHINGTON\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-            String2.log("*** testCopyPostSurg3 noTagger FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 noTagger FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
             //test tagger=%22ADRIAN%20LADOUCEUR%22   (was a problem since tagger has a missing value)
@@ -535,7 +535,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "unique_tag_id,pi,longitude,latitude,time,tagger&tagger=%22ADRIAN%20LADOUCEUR%22";
             tName = tedd.makeNewFileForDapQuery(null, "tagAL", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_tagAL", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, tagger, date_public, role\n" +
 ", , degrees_east, degrees_north, UTC, , UTC, \n" +
@@ -543,7 +543,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 "1875_A69-1005-AE_1032642, CHRIS WOOD, -123.9744, 49.69628, 2005-11-12T18:15:00Z, ADRIAN LADOUCEUR, 2008-09-29T23:28:37Z, WOOD_CHRIS_ONCORHYNCHUSNERKA_SAKINAWLAKE\n" +
 "1876_A69-1005-AE_1032643, CHRIS WOOD, -123.9744, 49.69628, 2005-11-12T18:15:00Z, ADRIAN LADOUCEUR, 2008-09-29T23:28:37Z, WOOD_CHRIS_ONCORHYNCHUSNERKA_SAKINAWLAKE\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-            String2.log("*** testCopyPostSurg3 noTagger FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+            String2.log("*** testCopyPostSurg3 noTagger FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
 
@@ -562,7 +562,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static void testCopyChunkPostDet3() throws Throwable {
-        String2.log("\n*** testCopyChunkPostDet3");
+        String2.log("\n*** EDDTableCopyPost.testCopyChunkPostDet3");
         testVerboseOn();
         long eTime;
         String tQuery, tName, results, expected;
@@ -581,7 +581,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static void testBreakUpDet3Chunks() throws Throwable {
-        String2.log("\n*** testBreakUpDet3Chunks");
+        String2.log("\n*** EDDTableCopyPost.testBreakUpDet3Chunks");
         String2.pressEnterToContinue(
             "\nMake sure that the datasets2.xml has the temporary version of cPostDet3\n" +
             "that gets data from chunkPostDet3 files."); 
@@ -608,7 +608,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static void testCopyPostDet3(boolean checkSourceData, boolean runOtherTests) throws Throwable {
-        String2.log("\n*** testCopyPostDet3");
+        String2.log("\n*** EDDTableCopyPost.testCopyPostDet3");
         defaultCheckSourceData = checkSourceData;
         long eTime;
         String tQuery, tName, results, expected;
@@ -619,7 +619,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //das
             tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cpd3_Data", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -638,7 +638,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //.dds 
             tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cpd3_Data", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -672,7 +672,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "&unique_tag_id=\"224_A69-1206-AF_4003\"";
                 tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1tag", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 expected =   
     "unique_tag_id, pi, longitude, latitude, time, bottom_depth, common_name, date_public, position_on_subarray, project, riser_height, role, scientific_name, stock, surgery_time, surgery_location, tagger\n" +
     ", , degrees_east, degrees_north, UTC, m, , UTC, , , m, , , , UTC, , \n" +
@@ -680,7 +680,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     "19835, DAVID WELCH, -122.59574, 49.20158, 2007-05-20T23:34:31Z, 1.3, \"SOCKEYE, KOKANEE\", 2008-09-29T23:29:37Z, , KINTAMA RESEARCH, NaN, WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE, ONCORHYNCHUS NERKA, CULTUS LAKE, 2007-05-13T07:00:00Z, INCH CREEK HATCHERY, ADRIAN LADOUCEUR\n" +
     "19835, DAVID WELCH, -122.59574, 49.20158, 2007-05-20T23:35:49Z, 1.3, \"SOCKEYE, KOKANEE\", 2008-09-29T23:29:37Z, , KINTAMA RESEARCH, NaN, WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE, ONCORHYNCHUS NERKA, CULTUS LAKE, 2007-05-13T07:00:00Z, INCH CREEK HATCHERY, ADRIAN LADOUCEUR\n";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
-                String2.log("*** testCopyPostDet3 c1tag FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCopyPostDet3 c1tag FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
                 //test 1 role, public data   not loggedIn
@@ -688,20 +688,20 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
                 tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1role", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 //same expected
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                String2.log("*** testCopyPostDet3 c1role FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCopyPostDet3 c1role FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
                 //test 1 role, public data   loggedIn for other data
                 eTime = System.currentTimeMillis();
                 tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
                 tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleLIOD", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 //same expected
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                String2.log("*** testCopyPostDet3 c1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCopyPostDet3 c1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
                 //test 1 role, private data, not loggedIn
@@ -710,14 +710,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 try {
                     tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
                         EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleP", ".csv"); 
-                    results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                     throw new Exception("Shouldn't get here.");
                 } catch (Throwable t) {
                     if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                         throw new Exception("Should have been THERE_IS_NO_DATA: " +
                             MustBe.throwableToString(t));
                 }
-                String2.log("*** testCopyPostDet3 c1roleP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCopyPostDet3 c1roleP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
                 //test 1 role, wrong log in
                 eTime = System.currentTimeMillis();
@@ -725,21 +725,21 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 try {
                     tName = tedd.makeNewFileForDapQuery(null, "WELCH_DAVID", tQuery, 
                         EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleWP", ".csv"); 
-                    results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                     throw new Exception("Shouldn't get here.");
                 } catch (Throwable t) {
                     if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                         throw new Exception("Should have been THERE_IS_NO_DATA: " +
                             MustBe.throwableToString(t));
                 }
-                String2.log("*** testCoypPostDet3 c1roleWP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCoypPostDet3 c1roleWP FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
                 //test 1 role, public data, logged in
                 eTime = System.currentTimeMillis();
                 tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
                 tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleL", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
     String2.log("\n" + results.substring(0, 4000) + "\n");
                 expected =   
     "unique_tag_id, pi, longitude, latitude, time, bottom_depth, common_name, date_public, position_on_subarray, project, riser_height, role, scientific_name, stock, surgery_time, surgery_location, tagger\n" +
@@ -748,7 +748,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     "23669, DAVID ROBICHAUD, -122.816287004559, 49.2235095396314, 2008-08-24T03:23:59Z, 3.5, WHITE STURGEON, 2010-01-23T21:25:29Z, 1, LGL LIMITED, NaN, ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER, ACIPENSER TRANSMONTANUS, Lower Fraser, 2008-08-23T07:00:00Z, FRASER RIVER JUST UPSTREAM OF PORT MANN BRIDGE, Lucia Ferreira\n" +
     "23669, DAVID ROBICHAUD, -122.816287004559, 49.2235095396314, 2008-08-24T03:29:33Z, 3.5, WHITE STURGEON, 2010-01-23T21:25:29Z, 1, LGL LIMITED, NaN, ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER, ACIPENSER TRANSMONTANUS, Lower Fraser, 2008-08-23T07:00:00Z, FRASER RIVER JUST UPSTREAM OF PORT MANN BRIDGE, Lucia Ferreira\n"; 
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results.substring(0, 4000));
-                String2.log("*** testCopyPostDet3 c1roleL FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCopyPostDet3 c1roleL FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
 
                 //distinct roles
@@ -756,7 +756,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "role&distinct()";
                 tName = tedd.makeNewFileForDapQuery(null, EDStatic.loggedInAsSuperuser, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_roles", ".csv"); 
-                results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 expected =   
     "role\n" +
     "\n" +
@@ -769,7 +769,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     "BLOCK_BARBARA_LAMNADITROPIS_N/A\n"; 
                 Test.ensureEqual(results.substring(0, expected.length()), expected, 
                     "\nresults=\n" + results);
-                String2.log("*** testCopyPostDet3 roles FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
+                String2.log("*** testCopyPostDet3 roles FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
             }
 
 /* */
@@ -787,7 +787,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * or &gt; longDegreesTraveled or &gt; longYearsTraveled. */
     public static String findFastSwimmers(String loggedInAs, double degreesPerDay,
         double longDegreesTraveled, double longYearsTraveled) throws Throwable {
-        String2.log("\n*** EDDTableCopyPost findFastSwimmers");
+        String2.log("\n*** EDDTableCopyPost.findFastSwimmers");
         //verbose = false;
         reallyVerbose = false;
         defaultCheckSourceData = false;
@@ -1331,7 +1331,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static String findSurgeryBeforeActivation(String loggedInAs) throws Throwable {
-        String2.log("\n*** findSurgeries");
+        String2.log("\n*** EDDTableCopyPost.findSurgeriesBeforeActivation");
         defaultCheckSourceData = false;
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3"); 
 
@@ -1412,7 +1412,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static StringArray findTags(String loggedInAs, boolean forceCreateNewFile) throws Throwable {
-        String2.log("\n*** findTags");
+        String2.log("\n*** EDDTableCopyPost.findTags");
         String dir = "c:/temp/temp/";
         String name = "postTagsFor" + String2.encodeFileNameSafe(loggedInAs);
 
@@ -1438,7 +1438,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** Test role. This gets the role for the tag. */
     public static void testRole(String unique_tag_id) throws Throwable {
-        String2.log("\n*************** EDDTableCopyPost.testRole(" + unique_tag_id + ") **************\n");
+        String2.log("\n*** EDDTableCopyPost.testRole(" + unique_tag_id + ")\n");
         EDDTable surg3 = (EDDTable)oneFromDatasetsXml(null, "testPostSurg3"); 
         Table surg3Table = surg3.getTwawmForDapQuery(EDStatic.loggedInAsSuperuser, "", 
             "role&unique_tag_id=%22" + SSR.minimalPercentEncode(unique_tag_id) + 
@@ -1455,7 +1455,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** Test one detection map */
     public static void testOneDetectionMap(String unique_tag_id) throws Throwable {
-        String2.log("\n****************** EDDTableCopyPost.testOneDetectionMap() *****************\n");
+        String2.log("\n*** EDDTableCopyPost.testOneDetectionMap()\n");
         defaultCheckSourceData = false;
         EDDTable postDetections = (EDDTable)oneFromDatasetsXml(null, "cPostDet3"); 
         testOneDetectionMap(postDetections, unique_tag_id, true);
@@ -1464,7 +1464,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     /** Test one detection map */
     public static void testOneDetectionMap(EDDTable postDetections, String unique_tag_id,
         boolean showHtmlTable) throws Throwable {
-        String2.log("\n****************** EDDTableCopyPost.testOneDetectionMap() *****************\n");
+        String2.log("\n*** EDDTableCopyPost.testOneDetectionMap()\n");
         defaultCheckSourceData = false;
         String tDir = EDStatic.fullTestCacheDirectory;
         String tName = postDetections.makeNewFileForDapQuery(null, EDStatic.loggedInAsSuperuser, 
@@ -1484,7 +1484,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** print one surgery */
     public static void printOneSurgery(String unique_tag_id) throws Throwable {
-        String2.log("\n****************** EDDTableCopyPost.printOneSurgery() *****************\n");
+        String2.log("\n*** EDDTableCopyPost.printOneSurgery()\n");
         defaultCheckSourceData = false;
         EDDTable postSurgery3 = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3"); 
         String tDir = EDStatic.fullTestCacheDirectory;
@@ -1496,7 +1496,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** Test if absolute times are correct */
     public static String testAbsoluteTime() throws Throwable {
-        String2.log("\n****************** EDDTableCopyPost.testAbsoluteTime() *****************\n");
+        String2.log("\n*** EDDTableCopyPost.testAbsoluteTime()\n");
         defaultCheckSourceData = false;
         String query, tDir, tName, results, expected, tag;
         Table table;
@@ -1621,7 +1621,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** Test for inconsistencies in data */
     public static String testForInconsistencies() throws Throwable { 
-        String2.log("\n****************** EDDTableCopyPost.testForInconsistencies() *****************\n");
+        String2.log("\n*** EDDTableCopyPost.testForInconsistencies()\n");
         StringBuilder resultsSB = new StringBuilder();
         EDDTable surg3 = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3All"); 
         EDDTable det3  = (EDDTable)oneFromDatasetsXml(null, "cPostDet3All"); 
@@ -1652,7 +1652,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         for (int i = 0; i < n; i++) {
             double tLon = lonPa.getDouble(i);
             double tLat = latPa.getDouble(i);
-            if (!Math2.isFinite(tLon) && !Math2.isFinite(tLat)) {
+            if (!Double.isFinite(tLon) && !Double.isFinite(tLat)) {
             } else if (Math2.almostEqual(5, tLon, tLat)) {
                 nLEL++;
                 resultsSB.append(
@@ -1768,7 +1768,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** Test if surgery (release)lon,lat,time is in detection3 as first row of data. */
     public static String testIfSurgeryDataIsDetectionFirstRow() throws Throwable { 
-        String2.log("\n************* EDDTableCopyPost.testIfSurgeryDataIsDetectionFirstRow() ***********\n");
+        String2.log("\n*** EDDTableCopyPost.testIfSurgeryDataIsDetectionFirstRow()\n");
         EDDTable surg3 = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3"); 
         EDDTable det3  = (EDDTable)oneFromDatasetsXml(null, "cPostDet3"); 
         Table surgTable = surg3.getTwawmForDapQuery(EDStatic.loggedInAsSuperuser, "",
@@ -1911,7 +1911,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
     /** Test if surgery items have lowercase letters. */
     public static String testLowerCase() throws Throwable { 
-        String2.log("\n************* EDDTableCopyPost.testLowerCase ***********\n");
+        String2.log("\n*** EDDTableCopyPost.testLowerCase\n");
         EDDTable surg3 = (EDDTable)oneFromDatasetsXml(null, "cPostSurg3"); 
         Table surgTable;
         PrimitiveArray pa;
@@ -1963,7 +1963,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public static void run(int which, boolean reallyVerbose) throws Throwable {
-        String2.log("\n****************** EDDTableCopyPost.run(" + which + ") *****************\n");
+        String2.log("\n*** EDDTableCopyPost.run(" + which + ")\n");
         testVerbose(reallyVerbose);
 
         String resultsFileName = EDStatic.fullTestCacheDirectory + "runPOST.log";

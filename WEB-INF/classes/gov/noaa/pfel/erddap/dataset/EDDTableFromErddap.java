@@ -163,7 +163,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -408,7 +408,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromErddap " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -495,7 +495,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     public static String generateDatasetsXml(String tLocalSourceUrl, boolean keepOriginalDatasetIDs) 
         throws Throwable {
 
-        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
+        tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("\n*** EDDTableFromErddap.generateDatasetsXml" +
             "\ntLocalSourceUrl=" + tLocalSourceUrl + 
             " keepOriginalDatasetIDs=" + keepOriginalDatasetIDs);
@@ -525,7 +525,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
         //get the tabledap datasets in a json table
         String jsonUrl = tLocalSourceUrl + "/tabledap/index.json";
-        String sourceInfo = SSR.getUrlResponseString(jsonUrl);
+        String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
         if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
         if (sourceInfo.indexOf("\"table\"") > 0) {
             Table table = new Table();
@@ -561,7 +561,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         jsonUrl = tLocalSourceUrl + "/search/index.json?searchFor=EDDTableFromErddap";
         sourceInfo = "";
         try {
-            sourceInfo = SSR.getUrlResponseString(jsonUrl);
+            sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
         } catch (Throwable t) {
             //error if remote erddap has no EDDTableFromErddap's
         }
@@ -679,8 +679,7 @@ try {
 
 
             //*** test getting das for entire dataset
-            results = SSR.getUncompressedUrlResponseString(url + ".nccsvMetadata", 
-                String2.ISO_8859_1); 
+            results = SSR.getUrlResponseStringUnchanged(url + ".nccsvMetadata"); 
             expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
@@ -699,7 +698,7 @@ try {
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
-"*GLOBAL*,keywords,\"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
+"*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
@@ -771,7 +770,7 @@ try {
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -779,8 +778,7 @@ try {
 
         //.nccsv all
         userDapQuery = "";
-        results = SSR.getUncompressedUrlResponseString(url + ".nccsv", 
-            String2.ISO_8859_1); 
+        results = SSR.getUrlResponseStringUnchanged(url + ".nccsv"); 
         //String2.log(results);
         expected = 
 "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.0\"\n" +
@@ -809,7 +807,7 @@ expected =
     ".nccsv\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
-"*GLOBAL*,keywords,\"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
+"*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
@@ -875,7 +873,7 @@ expected =
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,latitude,longitude,status,testLong,sst\n" +
@@ -909,7 +907,7 @@ expected =
      * This tests making a fromErddap from a fromErddap on coastwatch. 
      */
     public static void testFromErddapFromErddap() throws Throwable {
-        String2.log("\n*** testFromErddapFromErddap");
+        String2.log("\n*** EDDTableFromErddap.testFromErddapFromErddap");
         EDDTable edd = (EDDTableFromErddap)oneFromDatasetsXml(null, "testFromErddapFromErddap"); 
         String2.log(edd.toString());
     }
@@ -944,8 +942,7 @@ expected =
 
         try {
             //*** test getting csv
-            results = SSR.getUncompressedUrlResponseString(url + ".csv" + query, 
-                String2.ISO_8859_1); 
+            results = SSR.getUrlResponseStringUnchanged(url + ".csv" + query); 
             expected = 
 "trajectory,time,depth,latitude,longitude,temperature,conductivity,salinity,density,pressure\n" +
 ",UTC,m,degrees_north,degrees_east,Celsius,S m-1,1e-3,kg m-3,dbar\n" +
@@ -966,8 +963,7 @@ expected =
             Test.ensureEqual(results, expected, "");
 
             //*** test getting jsonlCSV when (until they update) they don't offer it
-            results = SSR.getUncompressedUrlResponseString(url + ".jsonlCSV" + query, 
-                String2.UTF_8); 
+            results = SSR.getUrlResponseStringUnchanged(url + ".jsonlCSV" + query); 
             expected = 
 "[\"sg114_3\", \"2008-12-10T19:41:02Z\", -7.02, 21.238798, -157.86617, 25.356133, 5.337507, 34.952133, 1023.1982, 7.065868]\n" +
 "[\"sg114_3\", \"2008-12-10T19:41:08Z\", -6.39, 21.238808, -157.86618, 25.353163, 5.337024, 34.951065, 1023.1983, 6.4317517]\n" +
@@ -1020,10 +1016,10 @@ expected =
             "ChukchiSea_454a_037a_fcf4"); //should work
 
         //*** test getting das for entire dataset
-        String2.log("\n****************** EDDTableFromErddap.testChukchiSea das dds for entire dataset\n");
+        String2.log("\n*** EDDTableFromErddap.testChukchiSea das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
@@ -1061,7 +1057,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1100,12 +1096,12 @@ expected =
 
 
         //*** test make data files
-        String2.log("\n****************** EDDTableFromErddap.testChukchiSea make DATA FILES\n");       
+        String2.log("\n*** EDDTableFromErddap.testChukchiSea make DATA FILES\n");       
 
         //.asc
         tName = eddTable.makeNewFileForDapQuery(null, null, "&id=\"ae1001c011\"", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Data", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "prof,id,cast,cruise,time,longitude,lon360,latitude,depth,ocean_temperature_1,ocean_temperature_2,ocean_dissolved_oxygen_concentration_1_mLperL,ocean_dissolved_oxygen_concentration_2_mLperL,photosynthetically_active_radiation,ocean_chlorophyll_a_concentration_factoryCal,ocean_chlorophyll_fluorescence_raw,ocean_practical_salinity_1,ocean_practical_salinity_2,ocean_sigma_t,sea_water_nutrient_bottle_number,sea_water_phosphate_concentration,sea_water_silicate_concentration,sea_water_nitrate_concentration,sea_water_nitrite_concentration,sea_water_ammonium_concentration,ocean_dissolved_oxygen_concentration_1_mMperkg,ocean_dissolved_oxygen_concentration_2_mMperkg,ocean_oxygen_saturation_1\n" +
@@ -1147,7 +1143,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-        String2.log("\n****************** EDDTableFromErddap.test() *****************\n");
+        String2.log("\n*** EDDTableFromErddap.test()\n");
         testVerboseOn();
         
 /* for releases, this line should have open/close comment */

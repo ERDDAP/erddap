@@ -56,7 +56,7 @@ public abstract class CartesianRenderer implements PropertyChangeListener {
    * <p>
    * A renderer is constucted based on the two arguements.
    * <p>
-   * <TABLE BORDER="1" CELLPADDING="2" BGCOLOR="white">
+   * <TABLE style=\"border:1px; padding:2px; background-color:white;">
    *	<TR>
    *		<TH WIDTH="25%" BGCOLOR="#FFFFCC">
    *			<P>SGTData

@@ -239,17 +239,17 @@ public class AttributedString2 {
                     if (verbose) String2.log("    tag=" + tag);
 
                     //bold
-                    if (tag.equals("b")) {
+                    if (tag.equals("b") || tag.equals("strong") ) {
                         if (boldStart < 0) 
                             boldStart = as2.size();
-                    } else if (tag.equals("/b")) {
+                    } else if (tag.equals("/b") || tag.equals("/strong")) {
                         if (boldStart == as2.size()) {
                             //do nothing
                         } else if (boldStart >= 0) {
                             as2.addAttribute(TextAttribute.WEIGHT, new Float(2), 
                                 boldStart, as2.size());
                             boldStart = -1;
-                        } else String2.log(errorInMethod + "unexpected /b at position " + po);
+                        } else String2.log(errorInMethod + "unexpected /b or /strong at position " + po);
 
                     //color
                     } else if (tag.startsWith("color=#")) {
@@ -269,16 +269,16 @@ public class AttributedString2 {
                         } else String2.log(errorInMethod + "unexpected /color at position " + po);
 
                     //italic
-                    } else if (tag.equals("i")) {
+                    } else if (tag.equals("i") || tag.equals("em")) {
                         if (italicStart < 0) italicStart = as2.size();
-                    } else if (tag.equals("/i")) {
+                    } else if (tag.equals("/i") || tag.equals("/em")) {
                         if (italicStart == as2.size()) {
                             //do nothing
                         } else if (italicStart >= 0) {
                             as2.addAttribute(TextAttribute.POSTURE, new Float(0.2f), 
                                 italicStart, as2.size());
                             italicStart = -1;
-                        } else String2.log(errorInMethod + "unexpected /i at position " + po);
+                        } else String2.log(errorInMethod + "unexpected /i or /em at position " + po);
 
                     //underline
                     } else if (tag.equals("u")) {

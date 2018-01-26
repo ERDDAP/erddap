@@ -30,9 +30,9 @@ public abstract class Screen  {
     protected boolean doTally;
     final static boolean displayErrorMessages = false;
     final static protected String expandingBlankRow = 
-        "    <tr bgcolor=\"#FFFFFF\" >\n" +  //was: height=\"80%\"
+        "    <tr style=\"background-color:#FFFFFF;\" >\n" +  //was: height:80%;
         "      <td>&nbsp;</td>\n" +
-        "      <td width=\"90%\">&nbsp;</td>\n" +
+        "      <td style=\"width:90%;\">&nbsp;</td>\n" +
         "    </tr>\n"; 
 
     /**

@@ -73,7 +73,7 @@ import org.jdom.*;
  * <p>
  * There are <code>{@link #output output(...)}</code> methods to print any of
  * the standard JDOM classes, including Document and Element, to either a Writer
- * or an OutputStream. <b>Warning</b>: When outputting to a Writer, make sure
+ * or an OutputStream. <strong>Warning</strong>: When outputting to a Writer, make sure
  * the writer's encoding matches the encoding setting in the Format object. This
  * ensures the encoding in which the content is written (controlled by the
  * Writer configuration) matches the encoding placed in the document's XML

@@ -246,7 +246,18 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         if (tType == null)
             tType = "";
-        if (tType.equals("EDDGridFromNcFiles")) 
+        if (tType.equals("EDDGridFromAudioFiles")) 
+            return new EDDGridFromAudioFiles(tDatasetID, 
+                tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
+                tOnChange, tFgdcFile, tIso19115File,
+                tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
+                ttAxisVariables,
+                ttDataVariables,
+                tReloadEveryNMinutes, tUpdateEveryNMillis,
+                tFileDir, tFileNameRegex, tRecursive, tPathRegex, tMetadataFrom,
+                tMatchAxisNDigits, tFileTableInMemory, 
+                tAccessibleViaFiles);
+        else if (tType.equals("EDDGridFromNcFiles")) 
             return new EDDGridFromNcFiles(tDatasetID, 
                 tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS,
                 tOnChange, tFgdcFile, tIso19115File,
@@ -295,7 +306,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -1117,7 +1128,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridFromFiles " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -1716,7 +1727,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames If special axis0, this will still be the full list.
+     * @param sourceAxisNames If there is a special axis0, this will still be the full list.
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
@@ -1764,7 +1775,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * This is the low-level request corresponding to what is actually in the file. 
      *
-     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     * @param sourceAxisNames If there is a special axis0, this list will be the instances list[1 ... n-1].
      */
     public abstract void lowGetSourceMetadata(String fileDir, String fileName, 
         StringArray sourceAxisNames,
@@ -1780,7 +1791,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
-     *   If special axis0, this will still be the full list.
+     *   If there is a special axis0, this will still be the full list.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -1840,7 +1851,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * This is the low-level request corresponding to what is actually in the file. 
      *
-     * @param sourceAxisNames If special axis0, this will not include axis0's name.
+     * @param sourceAxisNames If there is a special axis0, this will not include axis0's name.
      */
     public abstract PrimitiveArray[] lowGetSourceAxisValues(String fileDir, String fileName, 
         StringArray sourceAxisNames) throws Throwable;
@@ -1880,8 +1891,12 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         throw new RuntimeException("Invalid axis0Type=" + axis0Type);
     }
 
-    /** This is the low-level request corresponding to what is actually in the file. 
-     * @param tConstraints !!! If special axis0, then will not include constraints for axis0.
+    /** 
+     * This is the low-level request corresponding to what is actually in the file. 
+     *
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
      */
     public abstract PrimitiveArray[] lowGetSourceDataFromFile(String fileDir, String fileName, 
         EDV tDataVariables[], IntArray tConstraints) throws Throwable;
@@ -1979,6 +1994,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     " " + tFileDir + tFileName);
 
             //get the data
+            //FUTURE: I think file access could be parallelized for use on parallel file systems.
+            //It is likely "easy" with a CompletableFuture option. See
+            //http://www.nurkiewicz.com/2013/05/java-8-definitive-guide-to.html
+            //http://www.vogella.com/tutorials/JavaConcurrency/article.html#threads-pools-with-the-executor-framework
             PrimitiveArray[] tResults;
             try {
                 tResults = getSourceDataFromFile(tFileDir, tFileName, 

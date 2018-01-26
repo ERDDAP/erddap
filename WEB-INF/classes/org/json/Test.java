@@ -448,13 +448,13 @@ public class Test {
             }
             System.out.print("Exception: ");
             try {
-            	j = XML.toJSONObject("<a><b>    ");
+            	j = XML.toJSONObject("<a><strong>    ");
             } catch (Exception e) {
             	System.out.println(e);
             }            
             System.out.print("Exception: ");
             try {
-            	j = XML.toJSONObject("<a></b>    ");
+            	j = XML.toJSONObject("<a></strong>    ");
             } catch (Exception e) {
             	System.out.println(e);
             }            

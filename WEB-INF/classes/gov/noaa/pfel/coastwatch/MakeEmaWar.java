@@ -46,7 +46,7 @@ public class MakeEmaWar  {
         String coastWatchDir = baseDir + "WEB-INF/classes/gov/noaa/pfel/coastwatch/";
 
         //make the javadoc commands
-        String commandLine0 = "C:\\Progra~1\\Java\\jdk1.8.0_51\\bin\\javadoc" +
+        String commandLine0 = "C:\\Progra~1\\Java\\jdk1.8.0_144\\bin\\javadoc" +
             " -sourcepath " + classPath + //root directory of the classes
             " -d "; //directory to hold results
         String commandLine2 = " -subpackages com.cohort";   //the packages to be doc'd

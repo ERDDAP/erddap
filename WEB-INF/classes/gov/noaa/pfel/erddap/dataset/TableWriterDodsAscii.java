@@ -156,7 +156,7 @@ public class TableWriterDodsAscii extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterDodsAscii done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
 
     }
 

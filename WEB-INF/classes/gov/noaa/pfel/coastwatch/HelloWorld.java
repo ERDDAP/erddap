@@ -14,7 +14,7 @@ public class HelloWorld extends HttpServlet {
             "<html>\n" +
             "<head><title>Hello World</title></head>\n" +
             "<body>\n" +
-            "<big>Hello World</big>\n" +
+            "<h1>Hello World</h1>\n" +
             "</body>\n" +
             "</html>\n");
     }

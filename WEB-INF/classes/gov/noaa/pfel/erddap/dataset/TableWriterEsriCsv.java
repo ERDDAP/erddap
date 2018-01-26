@@ -226,7 +226,7 @@ public class TableWriterEsriCsv extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterEsriCsv done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
 
     }
 

@@ -254,7 +254,7 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the X coordinate.
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setX(double xloc) {
     double old = xloc_;
@@ -265,7 +265,7 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
   }
   /**
    * Set the Y coordinate.
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setY(double yloc) {
     double old = yloc_;
@@ -276,7 +276,7 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
   }
   /**
    * The the associated value and basic metadata.
-   * <BR><B>Property Change:</B> <code>associatedDataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>associatedDataModified</code>.
    *
    * @param value associated data
    * @param name values name

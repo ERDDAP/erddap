@@ -703,7 +703,7 @@ public class EDDTableFromCassandra extends EDDTable{
             String2.log(
                 (reallyVerbose? "\n" + toString() : "") +
                 "\n*** EDDTableFromCassandra " + datasetID + " constructor finished. TIME=" + 
-                (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+                (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
 
 
@@ -751,12 +751,12 @@ public class EDDTableFromCassandra extends EDDTable{
                         throw new RuntimeException(errMsg + s);
                     double epSecStart = Calendar2.safeIsoStringToEpochSeconds(parts[0]); 
                     double strideSec  = String2.parseDouble(parts[1]);
-                    double epSecStop  = parts[2].startsWith("now")?
+                    double epSecStop  = parts[2].toLowerCase().startsWith("now")?
                             Calendar2.safeNowStringToEpochSeconds(parts[2], Double.NaN) :
                             Calendar2.safeIsoStringToEpochSeconds(parts[2]); 
-                    if (!Math2.isFinite(epSecStart) ||
-                        !Math2.isFinite(epSecStop)  ||
-                        !Math2.isFinite(strideSec)     ||
+                    if (!Double.isFinite(epSecStart) ||
+                        !Double.isFinite(epSecStop)  ||
+                        !Double.isFinite(strideSec)     ||
                         epSecStart > epSecStop      ||
                         strideSec <= 0)
                         throw new RuntimeException(errMsg + s);
@@ -770,7 +770,7 @@ public class EDDTableFromCassandra extends EDDTable{
                 } else if (s.startsWith("time(") && s.endsWith(")")) {
                     double d = Calendar2.safeIsoStringToEpochSeconds(
                         s.substring(5, s.length() - 1)); 
-                    if (!Math2.isFinite(d))
+                    if (!Double.isFinite(d))
                         throw new RuntimeException(errMsg + s);
                     pa.addDouble(d);
                 } else {
@@ -976,7 +976,7 @@ public class EDDTableFromCassandra extends EDDTable{
         session = cluster.connect();
         sessionsMap.put(url, session);
         if (verbose) String2.log("  Success! time=" + 
-            (System.currentTimeMillis() - tTime)); 
+            (System.currentTimeMillis() - tTime) + "ms"); 
         return session;
     }
 
@@ -1072,10 +1072,10 @@ public class EDDTableFromCassandra extends EDDTable{
                 (clusterColumnSourceNames.contains(cVar) &&
                   !cOp.equals("!=") && 
                   !cOp.equals(PrimitiveArray.REGEX_OP) &&
-                  !(isNumericEDV && !Math2.isFinite(cValD))) || //don't constrain numeric cols with NaN 
+                  !(isNumericEDV && !Double.isFinite(cValD))) || //don't constrain numeric cols with NaN 
                 (indexColumnSourceNames.contains(cVar) &&
                   cOp.equals("=") && //secondary index column only allow '=' constraints
-                  !(isNumericEDV && !Math2.isFinite(cValD)))); //don't constrain numeric cols with NaN 
+                  !(isNumericEDV && !Double.isFinite(cValD)))); //don't constrain numeric cols with NaN 
 
             //Is this a constraint directly on a partitionKey?
             int pkin = String2.indexOf(partitionKeyNames, cVar); //Names!
@@ -1087,7 +1087,7 @@ public class EDDTableFromCassandra extends EDDTable{
             //  creation of partitionKeyDistinctTable)
             int pkif = String2.indexOf(partitionKeyFrom, cVar); //From!
             if (pkif >= 0 && !cOp.equals(PrimitiveArray.REGEX_OP) && 
-                Math2.isFinite(cValD)) {
+                Double.isFinite(cValD)) {
                 //cVal is epoch seconds
                 String origCon = cVar + cOp + cVal;
                 cVar = partitionKeyNames[pkif];
@@ -1206,7 +1206,7 @@ public class EDDTableFromCassandra extends EDDTable{
         //  Some documentation says this limits the number of rows.
         //  I think it is the number of columns in a column family (e.g., 1 partition key)
         //    which are like rows in a database.
-        //  http://stackoverflow.com/questions/25567518/cassandra-cql3-select-statement-without-limit
+        //  https://stackoverflow.com/questions/25567518/cassandra-cql3-select-statement-without-limit
         //  Asks ~ Do I have to use a huge LIMIT to get all the rows?
         //  Answers: This is a common misconception. There is only a default 10000
         //    row limit in cqlsh the interactive shell. The server and protocol 
@@ -1331,6 +1331,10 @@ public class EDDTableFromCassandra extends EDDTable{
                 String2.log(requestSB.toString());
 
             //get the data
+            //FUTURE: I think this could be parallelized.
+            //It is likely "easy" with a CompletableFuture option. See
+            //http://www.nurkiewicz.com/2013/05/java-8-definitive-guide-to.html
+            //http://www.vogella.com/tutorials/JavaConcurrency/article.html#threads-pools-with-the-executor-framework
             table = getDataForCassandraQuery(loggedInAs, requestUrl, userDapQuery,
                 resultsDVI, rvToResultsEDV, session, boundStatement, 
                 table, tableWriter, stats);
@@ -1747,7 +1751,7 @@ public class EDDTableFromCassandra extends EDDTable{
             }
             //time units already done above for all timestamp vars
 
-            //http://stackoverflow.com/questions/34160748/upgrading-calls-to-datastax-java-apis-that-are-gone-in-3
+            //https://stackoverflow.com/questions/34160748/upgrading-calls-to-datastax-java-apis-that-are-gone-in-3
             isList[col] = cassType.getName() == DataType.Name.LIST;
             //String2.log(sourceName + " isList=" + isList[col] + " javaClass=" + cassType.asJavaClass());
             if (isList[col])
@@ -1944,20 +1948,22 @@ expected =
 "    u list<float>,\n" +
 "    v list<float>,\n" +
 "    w list<float>,\n" +
-"    PRIMARY KEY ((deviceid, date), sampletime)\n" +
-") WITH read_repair_chance = 0.0\n" +
-"   AND dclocal_read_repair_chance = 0.1\n" +
-"   AND gc_grace_seconds = 864000\n" +
-"   AND bloom_filter_fp_chance = 0.01\n" +
-"   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
-"   AND comment = ''\n" +
-"   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
-"   AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
-"   AND default_time_to_live = 0\n" +
-"   AND speculative_retry = '99PERCENTILE'\n" +
-"   AND min_index_interval = 128\n" +
-"   AND max_index_interval = 2048\n" +
-"   AND crc_check_chance = 1.0;\n" +
+"    PRIMARY KEY ((deviceid, date), sampletime)\n" + 
+") WITH CLUSTERING ORDER BY (sampletime ASC)\n" +
+"    AND read_repair_chance = 0.0\n" +
+"    AND dclocal_read_repair_chance = 0.1\n" +
+"    AND gc_grace_seconds = 864000\n" + 
+"    AND bloom_filter_fp_chance = 0.01\n" +
+"    AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
+"    AND comment = ''\n" +
+"    AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
+"    AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
+"    AND default_time_to_live = 0\n" +
+"    AND speculative_retry = '99PERCENTILE'\n" +
+"    AND min_index_interval = 128\n" +
+"    AND max_index_interval = 2048\n" +
+"    AND crc_check_chance = 1.0;\n" +
+"\n" +
 "CREATE INDEX ctext_index ON bobkeyspace.bobtable (ctext);\n" +
 "\n" +
 "CREATE TABLE bobkeyspace.statictest (\n" +
@@ -1970,19 +1976,20 @@ expected =
 "    u list<float>,\n" +
 "    v list<float>,\n" +
 "    PRIMARY KEY ((deviceid, date), sampletime)\n" +
-") WITH read_repair_chance = 0.0\n" +
-"   AND dclocal_read_repair_chance = 0.1\n" +
-"   AND gc_grace_seconds = 864000\n" +
-"   AND bloom_filter_fp_chance = 0.01\n" +
-"   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
-"   AND comment = ''\n" +
-"   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
-"   AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
-"   AND default_time_to_live = 0\n" +
-"   AND speculative_retry = '99PERCENTILE'\n" +
-"   AND min_index_interval = 128\n" +
-"   AND max_index_interval = 2048\n" +
-"   AND crc_check_chance = 1.0;\n";
+") WITH CLUSTERING ORDER BY (sampletime ASC)\n" +
+"    AND read_repair_chance = 0.0\n" +
+"    AND dclocal_read_repair_chance = 0.1\n" +
+"    AND gc_grace_seconds = 864000\n" +
+"    AND bloom_filter_fp_chance = 0.01\n" +
+"    AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
+"    AND comment = ''\n" +
+"    AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
+"    AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
+"    AND default_time_to_live = 0\n" +
+"    AND speculative_retry = '99PERCENTILE'\n" +
+"    AND min_index_interval = 128\n" +
+"    AND max_index_interval = 2048\n" +
+"    AND crc_check_chance = 1.0;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //generate the datasets.xml for one table
@@ -2499,7 +2506,7 @@ expected =
 /* */
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -2532,7 +2539,7 @@ expected =
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -2671,7 +2678,7 @@ expected =
             query = "";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_all", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2709,7 +2716,7 @@ expected =
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(null, null, query, 
                 dir, tedd.className() + "_subset1", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -2727,7 +2734,7 @@ expected =
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -2745,7 +2752,7 @@ expected =
             query = "deviceid,sampletime,ctext&ctext=\"text1\"";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,ctext\n" +
 ",UTC,\n" +
@@ -2764,7 +2771,7 @@ expected =
             query = "deviceid,sampletime,ctext&ctext>=\"text3\"";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,ctext\n" +
 ",UTC,\n" +
@@ -2782,7 +2789,7 @@ expected =
             query = "deviceid,cascii&deviceid=1001&distinct()";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
@@ -2801,7 +2808,7 @@ expected =
             query = "deviceid,sampletime,cascii&deviceid=1001&orderBy(\"cascii\")";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
@@ -2821,7 +2828,7 @@ expected =
             query = "deviceid,date&deviceid=1001";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_justkeys", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date\n" +
 ",UTC\n" +
@@ -2839,7 +2846,7 @@ expected =
                 query = "deviceid,sampletime&sampletime<2013-01-01";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "_nodata1", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -2859,7 +2866,7 @@ expected =
             query = "&cint=NaN";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_intNaN", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2877,7 +2884,7 @@ expected =
             query = "&cfloat=NaN";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_floatNaN", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2895,7 +2902,7 @@ expected =
             query = "&cboolean=NaN";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_booleanNaN", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2910,7 +2917,7 @@ expected =
             query = "&cboolean=1";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_boolean1", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2927,7 +2934,7 @@ expected =
             query = "&cset=~\".*set73.*\"";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_set73", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2945,7 +2952,7 @@ expected =
                 query = "&deviceid=1001&sampletime<2014-01-01";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "_nodata2", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -2970,7 +2977,7 @@ expected =
             "&deviceid=1001&sampletime>=2014-11-01&sampletime<=2014-11-01T03";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_dup", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "sampletime,depth,u\n" +
 "UTC,m,\n" +
@@ -2992,7 +2999,7 @@ expected =
                 query = "&deviceid>1001&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "nodata3", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3011,7 +3018,7 @@ expected =
             //cum time ~313, impressive: ~30 subqueries and a lot of time spent
             //  logging to screen.
             String2.log("\n* EDDTableFromCassandra.testBasic finished successfully. time=" + 
-                (System.currentTimeMillis() - cumTime));
+                (System.currentTimeMillis() - cumTime) + "ms");
 
             /* */
         } catch (Throwable t) {
@@ -3048,7 +3055,7 @@ expected =
                 query = "&deviceid>1000&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "frac", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3070,7 +3077,7 @@ expected =
                 query = "&deviceid>1001&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "frac2", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3091,7 +3098,7 @@ expected =
             query = "deviceid,sampletime,cascii&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(null, null, query, 
                 dir, tedd.className() + "_frac3", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
@@ -3107,7 +3114,7 @@ expected =
 
             //finished 
             String2.log("\n* EDDTableFromCassandra.testMaxRequestFraction finished successfully. time=" + 
-                (System.currentTimeMillis() - cumTime));
+                (System.currentTimeMillis() - cumTime) + "ms");
 
             /* */
         } catch (Throwable t) {
@@ -3142,7 +3149,7 @@ expected =
 
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -3175,7 +3182,7 @@ expected =
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3314,7 +3321,7 @@ expected =
             query = "";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_all", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -3344,7 +3351,7 @@ expected =
             query = "deviceid,sampletime,cmap&sampletime>=2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(null, null, query, 
                 dir, tedd.className() + "_subset1", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -3362,7 +3369,7 @@ expected =
             query = "deviceid,sampletime,cmap&sampletime>2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -3379,7 +3386,7 @@ expected =
             query = "deviceid,cascii&distinct()";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
@@ -3398,7 +3405,7 @@ expected =
             query = "deviceid,sampletime,cascii&orderBy(\"cascii\")";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
@@ -3418,7 +3425,7 @@ expected =
             query = "deviceid,date";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_justkeys", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date\n" +
 ",UTC\n" +
@@ -3436,7 +3443,7 @@ expected =
                 query = "deviceid,sampletime&sampletime<2013-01-01";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "_nodata1", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3457,7 +3464,7 @@ expected =
                 query = "&sampletime<2014-01-01";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "_nodata2", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3477,7 +3484,7 @@ expected =
                 query = "&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(null, null, query,
                     dir, tedd.className() + "nodata3", ".csv"); 
-                results = new String((new ByteArray(dir + tName)).toArray());
+                results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3496,7 +3503,7 @@ expected =
             //cum time ~313, impressive: ~30 subqueries and a lot of time spent
             //  logging to screen.
             String2.log("\n* EDDTableFromCassandra.testCass1Device finished successfully. time=" + 
-                (System.currentTimeMillis() - cumTime));
+                (System.currentTimeMillis() - cumTime) + "ms");
 
             /* */
         } catch (Throwable t) {
@@ -3534,7 +3541,7 @@ expected =
             //.dds
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -3555,7 +3562,7 @@ expected =
             tName = tedd.makeNewFileForDapQuery(null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3674,7 +3681,7 @@ expected =
             query = "";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_staticAll", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 //This shows that lat and lon just have different values for each combination of the
 //partition key (deviceid+date).
@@ -3703,7 +3710,7 @@ expected =
             query = "deviceid,date,latitude,longitude&distinct()";
             tName = tedd.makeNewFileForDapQuery(null, null, query,
                 dir, tedd.className() + "_staticDistinct", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 //diagnostic messages show that ERDDAP got this data from the subset file.
 "deviceid,date,latitude,longitude\n" +
@@ -3722,7 +3729,7 @@ expected =
             query = "&latitude=34";
             tName = tedd.makeNewFileForDapQuery(null, null, query, 
                 dir, tedd.className() + "_staticCon1", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,time,depth,latitude,longitude,u,v\n" +
 ",UTC,UTC,m,degrees_north,degrees_east,,\n" +
@@ -3741,7 +3748,7 @@ expected =
             query = "&latitude>33.5";
             tName = tedd.makeNewFileForDapQuery(null, null, query, 
                 dir, tedd.className() + "_staticCon2", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,time,depth,latitude,longitude,u,v\n" +
 ",UTC,UTC,m,degrees_north,degrees_east,,\n" +
@@ -3758,7 +3765,7 @@ expected =
 
             //finished 
             String2.log("\n* EDDTableFromCassandra.testStatic finished successfully. time=" + 
-                (System.currentTimeMillis() - cumTime));
+                (System.currentTimeMillis() - cumTime) + "ms");
 
             /* */
         } catch (Throwable t) {

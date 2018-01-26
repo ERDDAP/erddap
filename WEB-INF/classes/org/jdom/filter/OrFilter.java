@@ -58,7 +58,7 @@ package org.jdom.filter;
 
 /**
  * Allow two filters to be chained together with a logical
- * <b>or</b> operation.
+ * <strong>or</strong> operation.
  *
  * @author Bradley S. Huffman
  * @version $Revision: 1.4 $, $Date: 2004/02/06 09:28:31 $
@@ -68,17 +68,17 @@ final class OrFilter extends AbstractFilter {
     private static final String CVS_ID = 
       "@(#) $RCSfile: OrFilter.java,v $ $Revision: 1.4 $ $Date: 2004/02/06 09:28:31 $";
 
-    /** Filter for left side of logical <b>or</b> */
+    /** Filter for left side of logical <strong>or</strong> */
     private Filter left;
 
-    /** Filter for right side of logical <b>or</b> */
+    /** Filter for right side of logical <strong>or</strong> */
     private Filter right;
 
     /**
      * Match if either of the supplied filters.
      *
-     * @param left left side of logical <b>or</b>
-     * @param right right side of logical <b>or</b>
+     * @param left left side of logical <strong>or</strong>
+     * @param right right side of logical <strong>or</strong>
      * @throws IllegalArgumentException if either supplied filter is null
      */
     public OrFilter(Filter left, Filter right) {

@@ -758,13 +758,13 @@ public class DataStream  {
         long time = System.currentTimeMillis(); 
         for (int i = 0; i < 4000000; i++) 
             dos.write(myByte);         
-        String2.log("4000000 byte writes, time=" + (System.currentTimeMillis() -  time));
+        String2.log("4000000 byte writes, time=" + (System.currentTimeMillis() -  time) + "ms");
 
         //write individual bytes   typical = 562ms 
         time = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++)
             dos.write(ba2);
-        String2.log("1000000 byte[4] writes, time=" + (System.currentTimeMillis() -  time));
+        String2.log("1000000 byte[4] writes, time=" + (System.currentTimeMillis() -  time) + "ms");
         dos.close();
 
         //delete the temp file

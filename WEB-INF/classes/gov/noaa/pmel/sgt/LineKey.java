@@ -345,7 +345,7 @@ public class LineKey implements Cloneable,
   }
   /**
    * Set location of key
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc key location
    */
@@ -645,7 +645,7 @@ public class LineKey implements Cloneable,
   }
   /**
    * Set the bounds of the <code>LineKey</code>.
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    */
   public void setBounds(int x, int y, int width, int height) {
     switch(halign_) {

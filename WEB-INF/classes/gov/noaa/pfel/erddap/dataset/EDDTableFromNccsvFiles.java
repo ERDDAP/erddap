@@ -186,20 +186,33 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         dataSourceTable.readNccsv(sampleFileName);
 
         Table dataAddTable = new Table();
+        double maxTimeES = Double.NaN;
         for (int c = 0; c < dataSourceTable.nColumns(); c++) {
             String colName = dataSourceTable.getColumnName(c);
             Attributes sourceAtts = dataSourceTable.columnAttributes(c);
-            dataAddTable.addColumn(c, colName,
-                makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts),
+            PrimitiveArray pa = makeDestPAForGDX(dataSourceTable.getColumn(c), sourceAtts);
+            dataAddTable.addColumn(c, colName, pa,
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
                     dataSourceTable.globalAttributes(), sourceAtts, null, colName, 
                     true, true)); //addColorBarMinMax, tryToFindLLAT
 
-            //if a variable has timeUnits, files are likely sorted by time
-            //and no harm if files aren't sorted that way
-            //if (tSortedColumnSourceName.length() == 0 && 
-            //    EDVTimeStamp.hasTimeUnits(sourceAtts, null))
-            //    tSortedColumnSourceName = colName;
+            //maxTimeES
+            String tUnits = sourceAtts.getString("units");
+            if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+                try {
+                    if (Calendar2.isNumericTimeUnits(tUnits)) {
+                        double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+                        maxTimeES = Calendar2.unitsSinceToEpochSeconds(
+                            tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                    } else { //string time units
+                        maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                    }
+                } catch (Throwable t) {
+                    String2.log("caught while trying to get maxTimeES: " + 
+                        MustBe.throwableToString(t));
+                }
+            }
+
         }
         //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
         //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
@@ -241,6 +254,16 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             //no units or standard_name
             dataSourceTable.addColumn(0, tColumnNameForExtract, new StringArray(), new Attributes());
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
+        }
+
+        //useMaxTimeES
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
         }
 
         //write the information
@@ -298,7 +321,9 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
 
 
     /**
-     * testGenerateDatasetsXml
+     * testGenerateDatasetsXml.
+     * This doesn't test suggestTestOutOfDate, except that for old data
+     * it doesn't suggest anything.
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
@@ -370,9 +395,7 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Trajectory</att>\n" +
-"        <att name=\"keywords\">center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\n" +
-"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n" +
+"        <att name=\"keywords\">center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "    </addAttributes>\n" +
@@ -473,7 +496,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
 "            <att name=\"testStrings\"> a&#9;~&#xfc;,\n" +
 "&#39;z&quot;&#x20ac;</att>\n" +  
-"            <att name=\"units\">degrees_C</att>\n" +
+"            <att name=\"units\">degree_C</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
@@ -618,7 +641,7 @@ directionsForGenerateDatasetsXml() +
 "    Int16 testShorts -32768, 0, 32767;\n" +
 "    String testStrings \" a\t~\u00fc,\n" + //important tests
 "'z\\\"?\";\n" + //important test of \\u20ac
-"    String units \"degrees_C\";\n" +
+"    String units \"degree_C\";\n" +
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
@@ -645,9 +668,7 @@ expected =
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das\";\n" +
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD, NOAA PMEL\";\n" +
-"    String keywords \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";\n" +
+"    String keywords \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\";\n" +
 "    Float64 Northernmost_Northing 28.0003;\n" +
@@ -699,7 +720,7 @@ expected =
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
-",UTC,degrees_north,degrees_east,,1,degrees_C\n" +
+",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
@@ -717,7 +738,7 @@ expected =
         //String2.log(results);
         expected = 
 "time,ship,sst\n" +
-"UTC,,degrees_C\n" +
+"UTC,,degree_C\n" +
 "2017-03-23T02:45:00Z,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",10.7\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -729,7 +750,7 @@ expected =
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
-",UTC,degrees_north,degrees_east,,1,degrees_C\n" +
+",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
@@ -746,7 +767,7 @@ expected =
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
-",UTC,degrees_north,degrees_east,,1,degrees_C\n" +
+",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -758,7 +779,7 @@ expected =
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
-",UTC,degrees_north,degrees_east,,1,degrees_C\n" +
+",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -770,7 +791,7 @@ expected =
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
-",UTC,degrees_north,degrees_east,,1,degrees_C\n" +
+",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -798,7 +819,7 @@ expected =
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
-"*GLOBAL*,keywords,\"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
+"*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
@@ -870,7 +891,7 @@ expected =
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -907,7 +928,7 @@ expected =
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nccsv\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
-"*GLOBAL*,keywords,\"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
+"*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
@@ -973,7 +994,7 @@ expected =
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,latitude,longitude,status,testLong,sst\n" +
@@ -1021,7 +1042,7 @@ expected =
 "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
-"*GLOBAL*,keywords,\"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
+"*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
 "*GLOBAL*,Northernmost_Northing,28.0003d\n" +
@@ -1061,7 +1082,7 @@ expected =
 "sst,testLongs,-9223372036854775808L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
 "sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
-"sst,units,degrees_C\n" +
+"sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n" +
 "time,ship,sst\n" +
@@ -1138,7 +1159,7 @@ expected =
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
-",UTC,degrees_north,degrees_east,,1,degrees_C\n" +
+",UTC,degrees_north,degrees_east,,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
@@ -1157,7 +1178,7 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"ship,time (UTC),latitude (degrees_north),longitude (degrees_east),status,testLong (1),sst (degrees_C)\n" +
+"ship,time (UTC),latitude (degrees_north),longitude (degrees_east),status,testLong (1),sst (degree_C)\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
@@ -1249,7 +1270,7 @@ expected =
 "{[10]\n" +
 "  \"type\": \"FeatureCollection\",[10]\n" +
 "  \"propertyNames\": [\"ship\", \"time\", \"status\", \"testLong\", \"sst\"],[10]\n" +
-"  \"propertyUnits\": [null, \"UTC\", null, \"1\", \"degrees_C\"],[10]\n" +
+"  \"propertyUnits\": [null, \"UTC\", null, \"1\", \"degree_C\"],[10]\n" +
 "  \"features\": [[10]\n" +
 "{\"type\": \"Feature\",[10]\n" +
 "  \"geometry\": {[10]\n" +
@@ -1329,7 +1350,7 @@ expected =
         results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
-"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
 "<th>ship\n" +
 "<th>time\n" +
@@ -1340,67 +1361,67 @@ expected =
 "<th>sst\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<th>&nbsp;\n" +
+"<th>\n" +
 "<th>UTC\n" +
 "<th>degrees_north\n" +
 "<th>degrees_east\n" +
-"<th>&nbsp;\n" +
+"<th>\n" +
 "<th>1\n" +
-"<th>degrees_C\n" +
+"<th>degree_C\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +  // 00A0 is nbsp
-"<td nowrap>2017-03-23T00:45:00Z\n" +
-"<td align=\"right\">28.0002\n" +
-"<td nowrap align=\"right\">-130.2576\n" +
-"<td nowrap>A\n" +
-"<td nowrap align=\"right\">-9223372036854775808\n" +
-"<td align=\"right\">10.9\n" +
+"<td>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +  // 00A0 is nbsp
+"<td>2017-03-23T00:45:00Z\n" +
+"<td class=\"R\">28.0002\n" +
+"<td class=\"R\">-130.2576\n" +
+"<td>A\n" +
+"<td class=\"R\">-9223372036854775808\n" +
+"<td class=\"R\">10.9\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
-"<td nowrap>2017-03-23T01:45:00Z\n" +
-"<td align=\"right\">28.0003\n" +
-"<td nowrap align=\"right\">-130.3472\n" +
-"<td nowrap>&#x20ac;\n" +
-"<td nowrap align=\"right\">-1234567890123456\n" +
-"<td>&nbsp;\n" +
+"<td>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>2017-03-23T01:45:00Z\n" +
+"<td class=\"R\">28.0003\n" +
+"<td class=\"R\">-130.3472\n" +
+"<td>&#x20ac;\n" +
+"<td class=\"R\">-1234567890123456\n" +
+"<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
-"<td nowrap>2017-03-23T02:45:00Z\n" +
-"<td align=\"right\">28.0001\n" +
-"<td nowrap align=\"right\">-130.4305\n" +
-"<td nowrap>\\t\n" +    //write tab as json \t
-"<td align=\"right\">0\n" +
-"<td align=\"right\">10.7\n" +
+"<td>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>2017-03-23T02:45:00Z\n" +
+"<td class=\"R\">28.0001\n" +
+"<td class=\"R\">-130.4305\n" +
+"<td>\\t\n" +    //write tab as json \t
+"<td class=\"R\">0\n" +
+"<td class=\"R\">10.7\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
-"<td nowrap>2017-03-23T12:45:00Z\n" +
-"<td align=\"right\">27.9998\n" +
-"<td nowrap align=\"right\">-131.5578\n" +
-"<td nowrap>\\&quot;\n" +
-"<td align=\"right\">1234567890123456\n" +
-"<td>&nbsp;\n" +
+"<td>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>2017-03-23T12:45:00Z\n" +
+"<td class=\"R\">27.9998\n" +
+"<td class=\"R\">-131.5578\n" +
+"<td>\\&quot;\n" +
+"<td class=\"R\">1234567890123456\n" +
+"<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
-"<td nowrap>2017-03-23T21:45:00Z\n" +
-"<td align=\"right\">28.0003\n" +
-"<td nowrap align=\"right\">-132.0014\n" +
-"<td nowrap>&uuml;\n" +
-"<td align=\"right\">9223372036854775806\n" +
-"<td align=\"right\">10.0\n" +
+"<td>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>2017-03-23T21:45:00Z\n" +
+"<td class=\"R\">28.0003\n" +
+"<td class=\"R\">-132.0014\n" +
+"<td>&uuml;\n" +
+"<td class=\"R\">9223372036854775806\n" +
+"<td class=\"R\">10.0\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
-"<td nowrap>2017-03-23T23:45:00Z\n" +
-"<td align=\"right\">28.0002\n" +
-"<td nowrap align=\"right\">-132.1591\n" +
-"<td nowrap>?\n" +
-"<td>&nbsp;\n" +
-"<td>&nbsp;\n" +
+"<td>\u00A0a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>2017-03-23T23:45:00Z\n" +
+"<td class=\"R\">28.0002\n" +
+"<td class=\"R\">-132.1591\n" +
+"<td>?\n" +
+"<td>\n" +
+"<td>\n" +
 "</tr>\n" +
 "</table>";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
@@ -1491,7 +1512,7 @@ expected =
 "10.0\n" +
 "NaN\n" +
 "END\n" +
-"X SetScale d 10.0,10.9, \"degrees_C\", sst\n" +
+"X SetScale d 10.0,10.9, \"degree_C\", sst\n" +
 "\n";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -1507,7 +1528,7 @@ expected =
 "  \"table\": {\n" +
 "    \"columnNames\": [\"ship\", \"time\", \"latitude\", \"longitude\", \"status\", \"testLong\", \"sst\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\", \"double\", \"double\", \"char\", \"long\", \"float\"],\n" +
-"    \"columnUnits\": [null, \"UTC\", \"degrees_north\", \"degrees_east\", null, \"1\", \"degrees_C\"],\n" +
+"    \"columnUnits\": [null, \"UTC\", \"degrees_north\", \"degrees_east\", null, \"1\", \"degree_C\"],\n" +
 "    \"rows\": [\n" +
 "      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T00:45:00Z\", 28.0002, -130.2576, \"A\", -9223372036854775808, 10.9],\n" +
 "      [\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"2017-03-23T01:45:00Z\", 28.0003, -130.3472, \"\\u20ac\", -1234567890123456, null],\n" +
@@ -1544,12 +1565,12 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"{\"ship\"=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\"=\"2017-03-23T00:45:00Z\", \"latitude\"=28.0002, \"longitude\"=-130.2576, \"status\"=\"A\", \"testLong\"=-9223372036854775808, \"sst\"=10.9}\n" +
-"{\"ship\"=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\"=\"2017-03-23T01:45:00Z\", \"latitude\"=28.0003, \"longitude\"=-130.3472, \"status\"=\"\\u20ac\", \"testLong\"=-1234567890123456, \"sst\"=null}\n" +
-"{\"ship\"=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\"=\"2017-03-23T02:45:00Z\", \"latitude\"=28.0001, \"longitude\"=-130.4305, \"status\"=\"\\t\", \"testLong\"=0, \"sst\"=10.7}\n" +
-"{\"ship\"=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\"=\"2017-03-23T12:45:00Z\", \"latitude\"=27.9998, \"longitude\"=-131.5578, \"status\"=\"\\\"\", \"testLong\"=1234567890123456, \"sst\"=null}\n" +
-"{\"ship\"=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\"=\"2017-03-23T21:45:00Z\", \"latitude\"=28.0003, \"longitude\"=-132.0014, \"status\"=\"\\u00fc\", \"testLong\"=9223372036854775806, \"sst\"=10.0}\n" +
-"{\"ship\"=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\"=\"2017-03-23T23:45:00Z\", \"latitude\"=28.0002, \"longitude\"=-132.1591, \"status\"=\"?\", \"testLong\"=null, \"sst\"=null}\n";
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T00:45:00Z\", \"latitude\":28.0002, \"longitude\":-130.2576, \"status\":\"A\", \"testLong\":-9223372036854775808, \"sst\":10.9}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T01:45:00Z\", \"latitude\":28.0003, \"longitude\":-130.3472, \"status\":\"\\u20ac\", \"testLong\":-1234567890123456, \"sst\":null}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T02:45:00Z\", \"latitude\":28.0001, \"longitude\":-130.4305, \"status\":\"\\t\", \"testLong\":0, \"sst\":10.7}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T12:45:00Z\", \"latitude\":27.9998, \"longitude\":-131.5578, \"status\":\"\\\"\", \"testLong\":1234567890123456, \"sst\":null}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T21:45:00Z\", \"latitude\":28.0003, \"longitude\":-132.0014, \"status\":\"\\u00fc\", \"testLong\":9223372036854775806, \"sst\":10.0}\n" +
+"{\"ship\":\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\", \"time\":\"2017-03-23T23:45:00Z\", \"latitude\":28.0002, \"longitude\":-132.1591, \"status\":\"?\", \"testLong\":null, \"sst\":null}\n";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
         Test.ensureEqual(results, expected, "results=\n" + results);        
@@ -1644,7 +1665,7 @@ expected =
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
 "'z\\\"[8364]\";[10]\n" +   //[8364], so unicode!
-"      :units = \"degrees_C\";[10]\n" +
+"      :units = \"degree_C\";[10]\n" +
 "[10]\n" +
 "  // global attributes:[10]\n" +
 "  :cdm_data_type = \"Trajectory\";[10]\n" +
@@ -1674,9 +1695,7 @@ expected =
 "  :id = \"EDDTableFromNccsvFiles_char\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
-"  :keywords = \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,[10]\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,[10]\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
+"  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n" +
 "  :license = \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\";[10]\n" +
 "  :Northernmost_Northing = 28.0003; // double[10]\n" +
@@ -1809,7 +1828,7 @@ expected =
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
 "'z\\\"[8364]\";[10]\n" +  //[8364], so unicode!
-"      :units = \"degrees_C\";[10]\n" +
+"      :units = \"degree_C\";[10]\n" +
 "[10]\n" +
 "  // global attributes:[10]\n" +
 "  :cdm_data_type = \"Trajectory\";[10]\n" +
@@ -1836,9 +1855,7 @@ expected =
 "  :id = \"EDDTableFromNccsvFiles_char\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
-"  :keywords = \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,[10]\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,[10]\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
+"  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n" +
 "  :license = \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\";[10]\n" +
 "  :Northernmost_Northing = 28.0003; // double[10]\n" +
@@ -1968,7 +1985,7 @@ expected =
 "      :testShorts = -32768S, 0S, 32767S; // short[10]\n" +
 "      :testStrings = \" a\\t~[252],[10]\n" +
 "'z\\\"[8364]\";[10]\n" + //[8364], so unicode!
-"      :units = \"degrees_C\";[10]\n" +
+"      :units = \"degree_C\";[10]\n" +
 "[10]\n" +
 "  // global attributes:[10]\n" +
 "  :cdm_data_type = \"Trajectory\";[10]\n" +
@@ -1995,9 +2012,7 @@ expected =
 "  :id = \"EDDTableFromNccsvFiles_char\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
-"  :keywords = \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,[10]\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,[10]\n" +
-"pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
+"  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";[10]\n" +
 "  :license = \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\";[10]\n" +
 "  :Northernmost_Northing = 28.0003; // double[10]\n" +
@@ -2079,7 +2094,7 @@ expected =
 expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson\"},[10]\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
-"    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
 "    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n" +
 "    \"license\": {\"type\": \"char\", \"data\": \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"},[10]\n" +
 "    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
@@ -2196,7 +2211,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806, null]},[10]\n" +
 "        \"testShorts\": {\"type\": \"short\", \"data\": [-32768, 0, null]},[10]\n" +
 "        \"testStrings\": {\"type\": \"char\", \"data\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"},[10]\n" +
-"        \"units\": {\"type\": \"char\", \"data\": \"degrees_C\"}[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degree_C\"}[10]\n" +
 "      },[10]\n" +
 "      \"data\": [10.9, null, 10.7, 99.0, 10.0, null][10]\n" +
 "    }[10]\n" +
@@ -2238,7 +2253,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
-"    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans,\\nOceans > Ocean Temperature > Sea Surface Temperature,\\npacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
+"    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
 "    \"keywords_vocabulary\": {\"type\": \"char\", \"data\": \"GCMD Science Keywords\"},[10]\n" +
 "    \"license\": {\"type\": \"char\", \"data\": \"\\\"NCCSV Demonstration\\\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"},[10]\n" +
 "    \"Northernmost_Northing\": {\"type\": \"double\", \"data\": 28.0003},[10]\n" +
@@ -2355,7 +2370,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "        \"testLongs\": {\"type\": \"int64\", \"data\": [-9223372036854775808, 9223372036854775806, null]},[10]\n" +
 "        \"testShorts\": {\"type\": \"short\", \"data\": [-32768, 0, null]},[10]\n" +
 "        \"testStrings\": {\"type\": \"char\", \"data\": \" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"},[10]\n" +
-"        \"units\": {\"type\": \"char\", \"data\": \"degrees_C\"}[10]\n" +
+"        \"units\": {\"type\": \"char\", \"data\": \"degree_C\"}[10]\n" +
 "      },[10]\n" +
 "      \"data\": [10.9, null, 10.7, 99.0, 10.0, null][10]\n" +
 "    }[10]\n" +
@@ -2375,12 +2390,12 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         expected = 
 //"//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/downloads/NCCSV.html</Creator>[10]\n" +
 //"//<CreateTime>2017-04-21T21:32:32</CreateTime>[10]\n" +
-"//<Software>ERDDAP - Version 1.79</Software>[10]\n" +
+"//<Software>ERDDAP - Version 1.81</Software>[10]\n" +
 "//<Source>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
-"Type:METAVAR:TEXT:2[9]Cruise:METAVAR:TEXT:2[9]Station:METAVAR:TEXT:2[9]ship:METAVAR:TEXT:12[9]yyyy-mm-ddThh:mm:ss.SSS[9]Latitude [degrees_north]:METAVAR:DOUBLE[9]Longitude [degrees_east]:METAVAR:DOUBLE[9]status:METAVAR:TEXT:2[9]testLong [1]:PRIMARYVAR:DOUBLE[9]sst [degrees_C]:FLOAT[10]\n" +
+"Type:METAVAR:TEXT:2[9]Cruise:METAVAR:TEXT:2[9]Station:METAVAR:TEXT:2[9]ship:METAVAR:TEXT:12[9]yyyy-mm-ddThh:mm:ss.SSS[9]Latitude [degrees_north]:METAVAR:DOUBLE[9]Longitude [degrees_east]:METAVAR:DOUBLE[9]status:METAVAR:TEXT:2[9]testLong [1]:PRIMARYVAR:DOUBLE[9]sst [degree_C]:FLOAT[10]\n" +
 "*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-9223372036854775808[9]10.9[10]\n" +
 "*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-1234567890123456[9][10]\n" +
 "*[9][9][9] a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]0[9]10.7[10]\n" +
@@ -2396,12 +2411,11 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         //*** getting tsv
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".tsv"); 
-        results = String2.annotatedString(
-            String2.directReadFrom88591File(dir + tName));
+        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "ship[9]time[9]latitude[9]longitude[9]status[9]testLong[9]sst[10]\n" +
-"[9]UTC[9]degrees_north[9]degrees_east[9][9]1[9]degrees_C[10]\n" +
+"[9]UTC[9]degrees_north[9]degrees_east[9][9]1[9]degree_C[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-9223372036854775808[9]10.9[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-1234567890123456[9]NaN[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]0[9]10.7[10]\n" +
@@ -2416,11 +2430,10 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         //*** getting tsvp
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             eddTable.className() + "_char", ".tsvp"); 
-        results = String2.annotatedString(
-            String2.directReadFrom88591File(dir + tName));
+        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
-"ship[9]time (UTC)[9]latitude (degrees_north)[9]longitude (degrees_east)[9]status[9]testLong (1)[9]sst (degrees_C)[10]\n" +
+"ship[9]time (UTC)[9]latitude (degrees_north)[9]longitude (degrees_east)[9]status[9]testLong (1)[9]sst (degree_C)[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-9223372036854775808[9]10.9[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]-1234567890123456[9]NaN[10]\n" +
 " a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]0[9]10.7[10]\n" +
@@ -2446,11 +2459,12 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<head>[10]\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />[10]\n" +
 "  <title>EDDTableFromNccsvFiles_char</title>[10]\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />[10]\n" +
 "</head>[10]\n" +
-"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">[10]\n" +
+"<body>[10]\n" +
 "[10]\n" +
 "&nbsp;[10]\n" +
-"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">[10]\n" +
+"<table class=\"erd commonBGColor nowrap\">[10]\n" +
 "<tr>[10]\n" +
 "<th>ship</th>[10]\n" +
 "<th>time</th>[10]\n" +
@@ -2467,66 +2481,66 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<th>degrees_east</th>[10]\n" +
 "<th></th>[10]\n" +
 "<th>1</th>[10]\n" +
-"<th>degrees_C</th>[10]\n" +
+"<th>degree_C</th>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
-"<td nowrap=\"nowrap\">[160]a&#9;~&#xfc;,[10]\n" + // [160] is nbsp
+"<td>[160]a&#9;~&#xfc;,[10]\n" + // [160] is nbsp
 "&#39;z&quot;&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\">2017-03-23T00:45:00Z</td>[10]\n" +
-"<td align=\"right\">28.0002</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-130.2576</td>[10]\n" +
-"<td nowrap=\"nowrap\">A</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-9223372036854775808</td>[10]\n" +
-"<td align=\"right\">10.9</td>[10]\n" +
+"<td>2017-03-23T00:45:00Z</td>[10]\n" +
+"<td class=\"R\">28.0002</td>[10]\n" +
+"<td class=\"R\">-130.2576</td>[10]\n" +
+"<td>A</td>[10]\n" +
+"<td class=\"R\">-9223372036854775808</td>[10]\n" +
+"<td class=\"R\">10.9</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td nowrap=\"nowrap\">[160]a&#9;~&#xfc;,[10]\n" +
+"<td>[160]a&#9;~&#xfc;,[10]\n" +
 "&#39;z&quot;&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\">2017-03-23T01:45:00Z</td>[10]\n" +
-"<td align=\"right\">28.0003</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-130.3472</td>[10]\n" +
-"<td nowrap=\"nowrap\">&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-1234567890123456</td>[10]\n" +
+"<td>2017-03-23T01:45:00Z</td>[10]\n" +
+"<td class=\"R\">28.0003</td>[10]\n" +
+"<td class=\"R\">-130.3472</td>[10]\n" +
+"<td>&#x20ac;</td>[10]\n" +
+"<td class=\"R\">-1234567890123456</td>[10]\n" +
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td nowrap=\"nowrap\">[160]a&#9;~&#xfc;,[10]\n" +
+"<td>[160]a&#9;~&#xfc;,[10]\n" +
 "&#39;z&quot;&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\">2017-03-23T02:45:00Z</td>[10]\n" +
-"<td align=\"right\">28.0001</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-130.4305</td>[10]\n" +
-"<td nowrap=\"nowrap\">&#9;</td>[10]\n" +
-"<td align=\"right\">0</td>[10]\n" +
-"<td align=\"right\">10.7</td>[10]\n" +
+"<td>2017-03-23T02:45:00Z</td>[10]\n" +
+"<td class=\"R\">28.0001</td>[10]\n" +
+"<td class=\"R\">-130.4305</td>[10]\n" +
+"<td>&#9;</td>[10]\n" +
+"<td class=\"R\">0</td>[10]\n" +
+"<td class=\"R\">10.7</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td nowrap=\"nowrap\">[160]a&#9;~&#xfc;,[10]\n" +
+"<td>[160]a&#9;~&#xfc;,[10]\n" +
 "&#39;z&quot;&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\">2017-03-23T12:45:00Z</td>[10]\n" +
-"<td align=\"right\">27.9998</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-131.5578</td>[10]\n" +
-"<td nowrap=\"nowrap\">&quot;</td>[10]\n" +
-"<td align=\"right\">1234567890123456</td>[10]\n" +
+"<td>2017-03-23T12:45:00Z</td>[10]\n" +
+"<td class=\"R\">27.9998</td>[10]\n" +
+"<td class=\"R\">-131.5578</td>[10]\n" +
+"<td>&quot;</td>[10]\n" +
+"<td class=\"R\">1234567890123456</td>[10]\n" +
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td nowrap=\"nowrap\">[160]a&#9;~&#xfc;,[10]\n" +
+"<td>[160]a&#9;~&#xfc;,[10]\n" +
 "&#39;z&quot;&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\">2017-03-23T21:45:00Z</td>[10]\n" +
-"<td align=\"right\">28.0003</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-132.0014</td>[10]\n" +
-"<td nowrap=\"nowrap\">&#xfc;</td>[10]\n" +
-"<td align=\"right\">9223372036854775806</td>[10]\n" +
-"<td align=\"right\">10.0</td>[10]\n" +
+"<td>2017-03-23T21:45:00Z</td>[10]\n" +
+"<td class=\"R\">28.0003</td>[10]\n" +
+"<td class=\"R\">-132.0014</td>[10]\n" +
+"<td>&#xfc;</td>[10]\n" +
+"<td class=\"R\">9223372036854775806</td>[10]\n" +
+"<td class=\"R\">10.0</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td nowrap=\"nowrap\">[160]a&#9;~&#xfc;,[10]\n" +
+"<td>[160]a&#9;~&#xfc;,[10]\n" +
 "&#39;z&quot;&#x20ac;</td>[10]\n" +
-"<td nowrap=\"nowrap\">2017-03-23T23:45:00Z</td>[10]\n" +
-"<td align=\"right\">28.0002</td>[10]\n" +
-"<td nowrap=\"nowrap\" align=\"right\">-132.1591</td>[10]\n" +
-"<td nowrap=\"nowrap\">?</td>[10]\n" +
+"<td>2017-03-23T23:45:00Z</td>[10]\n" +
+"<td class=\"R\">28.0002</td>[10]\n" +
+"<td class=\"R\">-132.1591</td>[10]\n" +
+"<td>?</td>[10]\n" +
 "<td></td>[10]\n" +
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
@@ -2581,10 +2595,10 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-    "2017-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+    "2018-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
-"*GLOBAL*,keywords,\"Oceans > Ocean Temperature > Sea Surface Temperature,\\nbuoys, centered, daily, depth, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
+"*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n" +
 "*GLOBAL*,Northernmost_Northing,21.0d\n" +
@@ -2595,7 +2609,8 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
-"*GLOBAL*,time_coverage_end,2017-08-01T12:00:00Z\n" + //changes
+"*GLOBAL*,testOutOfDate,now-3days\n" +
+"*GLOBAL*,time_coverage_end,2018-01-02T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2635,7 +2650,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2017-08-01T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2018-01-02T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -2696,10 +2711,10 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*END_METADATA*\n";
 
         //note that there is actual_range info
-        results = SSR.getUrlResponseString(baseUrl + tQuery);
+        results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-        results = SSR.getUrlResponseString(rbaseUrl + tQuery);
+        results = SSR.getUrlResponseStringUnchanged(rbaseUrl + tQuery);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
       
@@ -2729,14 +2744,14 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2017-08-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2018-01-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
 "http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
-"*GLOBAL*,keywords,\"Oceans > Ocean Temperature > Sea Surface Temperature,\\nbuoys, centered, daily, depth, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
+"*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
 "*GLOBAL*,license,\"Request for Acknowledgement: If you use these data in publications or presentations, please acknowledge the GTMBA Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: GTMBA Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\\n\\nThe data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties of merchantability and fitness for a\\nparticular purpose, or assumes any legal liability for the accuracy,\\ncompleteness, or usefulness, of this information.\"\n" +
 "*GLOBAL*,Northernmost_Northing,21.0d\n" +
@@ -2747,7 +2762,8 @@ expected2 =
 "*GLOBAL*,standard_name_vocabulary,CF Standard Name Table v29\n" +
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
-"*GLOBAL*,time_coverage_end,2017-08-01T12:00:00Z\n" + //changes
+"*GLOBAL*,testOutOfDate,now-3days\n" +
+"*GLOBAL*,time_coverage_end,2018-01-02T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -2846,12 +2862,12 @@ expected2 =
 "*END_DATA*\n";
 
         //note no actual_range info
-        results = SSR.getUrlResponseString(baseUrl + tQuery);
+        results = SSR.getUrlResponseStringUnchanged(baseUrl + tQuery);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         tPo = results.indexOf(expected2.substring(0, 100));
         Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
 
-        results = SSR.getUrlResponseString(rbaseUrl + tQuery);
+        results = SSR.getUrlResponseStringUnchanged(rbaseUrl + tQuery);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         tPo = results.indexOf(expected2.substring(0, 100));
         Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
@@ -2894,6 +2910,7 @@ expected2 =
         testChar();
         testDap();
         testActualRange();
+        /* */
     }
 }
 

@@ -226,9 +226,9 @@ public class FileNameUtility  {
         Test.ensureNotNull(infoUrl, internal7Name + "InfoUrl not in DataSet.properties file.");
         if (infoUrl.equals("")) {
             return;
-        } else if (infoUrl.startsWith("http://")) {
+        } else if (String2.isUrl(infoUrl)) {
             try {
-                SSR.getUrlResponse(infoUrl);  
+                SSR.getUrlResponseLines(infoUrl);  
                 return;
             } catch (Exception e) {
                 throw new Exception(String2.ERROR + " in FileNameUtility.ensureInfoUrlExists: error while reading InfoUrl for " + 

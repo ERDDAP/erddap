@@ -120,11 +120,10 @@ public class dodsHTML {
 	    jscriptCore jsc = new jscriptCore();
 
             pw.println(
-                "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"\n"
-                + "\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n"
+                "<!DOCTYPE HTML>\n"
                 + "<html><head><title>DODS Dataset Query Form</title>\n"
                 + "<base href=\"" + helpLocation + "\">\n"
-                + "<script type=\"text/javascript\">\n"
+                + "<script\">\n"
                 + "<!--\n"
                 );
             pw.flush();
@@ -138,11 +137,11 @@ public class dodsHTML {
                 + "</script>\n"
                 + "</head>\n"
                 + "<body>\n"
-                + "<p><h2 align='center'>DODS Dataset Access Form</h2>\n"
+                + "<p><h2 style=\"text-align:center;\">DODS Dataset Access Form</h2>\n"
                 + "<hr>\n"
-                + "<font size=-1>Tested on Netscape 4.61 and Internet Explorer 5.00.</font>\n"
+                + "<span style=\"font-size:small;\">Tested on Netscape 4.61 and Internet Explorer 5.00.</span>\n"
                 + "<hr>\n"
-                + "<form action=\"\">\n"
+                + "<form action=\"javascript:void(0);\">\n"  //no action
                 + "<table>\n"
                 );
             pw.flush();
@@ -190,7 +189,7 @@ public class dodsHTML {
 
     /***************************************************************************
     * Gets a DDS for the specified data set and builds it using the class
-    * factory in the package <b>dods.servers.www</b>.
+    * factory in the package <strong>dods.servers.www</strong>.
     * <p>
     * Currently this method uses a deprecated API to perform a translation
     * of DDS types. This is a known problem, and as soon as an alternate
