@@ -82,7 +82,7 @@ public class SgtMap  {
     public static Color landColor   = new Color(204, 204, 204);  //lynn uses 191
     public static Color landMaskStrokeColor = Color.DARK_GRAY;  //is 64,64,64
     public static Color nationsColor = Color.DARK_GRAY;
-    public static Color statesColor = new Color(96, 96, 96); //119, 0, 119); //192, 64, 192); //128, 32, 32);
+    public static Color statesColor = new Color(144, 144, 144); //119, 0, 119); //192, 64, 192); //128, 32, 32);
     public static Color riversColor = new Color(122, 170, 210);  //matches ocean.cpt and topography.cpt
     public static Color lakesColor  = riversColor; 
     public static boolean drawPoliticalBoundaries = true; //a kill switch for nation and state boundaries
@@ -465,10 +465,10 @@ public class SgtMap  {
 
             if (gridGrid != null && contourGrid != null && gridGrid == contourGrid)
                 Test.error(String2.ERROR + " in SgtMap.makeMap: gridGrid == contourGrid!");
-            if (!Math2.isFinite(minX)) throw new SimpleException(String2.ERROR + " when making map: minLon wasn't set.");
-            if (!Math2.isFinite(maxX)) throw new SimpleException(String2.ERROR + " when making map: maxLon wasn't set.");
-            if (!Math2.isFinite(minY)) throw new SimpleException(String2.ERROR + " when making map: minLat wasn't set.");
-            if (!Math2.isFinite(maxY)) throw new SimpleException(String2.ERROR + " when making map: maxLat wasn't set.");
+            if (!Double.isFinite(minX)) throw new SimpleException(String2.ERROR + " when making map: minLon wasn't set.");
+            if (!Double.isFinite(maxX)) throw new SimpleException(String2.ERROR + " when making map: maxLon wasn't set.");
+            if (!Double.isFinite(minY)) throw new SimpleException(String2.ERROR + " when making map: minLat wasn't set.");
+            if (!Double.isFinite(maxY)) throw new SimpleException(String2.ERROR + " when making map: maxLat wasn't set.");
             if (reallyVerbose) String2.log("  minX=" + minX + " maxX=" + maxX + " minY=" + minY + " maxY=" + maxY);
 
             double axisLabelHeight = fontScale * defaultAxisLabelHeight;
@@ -673,8 +673,8 @@ public class SgtMap  {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             0, fontFamily, labelHeightPixels * 3 / 2, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1 + " " + 
-                                legendTitle2) + "</color></b>");
+                            "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1 + " " + 
+                                legendTitle2) + "</color></strong>");
                         legendTextY += labelHeightPixels / 2;
                     } else {
                         //draw LEGEND_RIGHT
@@ -682,11 +682,11 @@ public class SgtMap  {
                         if (legendTitle1.length() > 0)
                             legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
                                 0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
+                                "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></strong>");
                         if (legendTitle2.length() > 0)
                             legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
                                 0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
+                                "<strong><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></strong>");
                         legendTextY += labelHeightPixels * 3 / 2;
                     }
 
@@ -711,7 +711,7 @@ public class SgtMap  {
                         }
                         g2.drawImage(bi2, ulx, uly, tSize, tSize, null); //null=ImageObserver 
                         if (reallyVerbose) 
-                            String2.log("  draw logo time=" + (System.currentTimeMillis() - time));
+                            String2.log("  draw logo time=" + (System.currentTimeMillis() - time) + "ms");
                     }
                 }
             }
@@ -909,14 +909,14 @@ public class SgtMap  {
                         int ty = baseULYPixel + imageHeightPixels - legendInsideBorder - labelHeightPixels;
                         ty = SgtUtil.drawHtmlText(g2, colorBarBoxLeftX + colorBarBoxWidth / 2, 
                             ty, 1, fontFamily, labelHeightPixels, false,
-                            "<b>" + SgtUtil.encodeAsHtml(gridBoldTitle) + "</b>");
+                            "<strong>" + SgtUtil.encodeAsHtml(gridBoldTitle) + "</strong>");
                         SgtUtil.drawHtmlText(g2, colorBarBoxLeftX + colorBarBoxWidth / 2, 
                             ty, 1, fontFamily, labelHeightPixels, false, SgtUtil.encodeAsHtml(gridUnits));
 
                         //add legend text
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             1, fontFamily, labelHeightPixels, false, 
-                            "<b>" + SgtUtil.encodeAsHtml(gridBoldTitle) + "</b>");
+                            "<strong>" + SgtUtil.encodeAsHtml(gridBoldTitle) + "</strong>");
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             1, fontFamily, labelHeightPixels, false, SgtUtil.encodeAsHtml(gridUnits));
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -1004,7 +1004,7 @@ public class SgtMap  {
                         legendTextY += labelHeightPixels/2; //for demo line
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             1, fontFamily, labelHeightPixels, false, 
-                                "<b>" + SgtUtil.encodeAsHtml(contourBoldTitle) + "</b>");
+                                "<strong>" + SgtUtil.encodeAsHtml(contourBoldTitle) + "</strong>");
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             1, fontFamily, labelHeightPixels, false, SgtUtil.encodeAsHtml(contourUnits));
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -1369,7 +1369,7 @@ public class SgtMap  {
                         //point legend text
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             1, fontFamily, labelHeightPixels, false, 
-                            "<b>" + SgtUtil.encodeAsHtml(gdl.boldTitle) + "</b>");
+                            "<strong>" + SgtUtil.encodeAsHtml(gdl.boldTitle) + "</strong>");
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
                             1, fontFamily, labelHeightPixels, false, 
                             SgtUtil.encodeAsHtml(gdl.title2));
@@ -1382,7 +1382,7 @@ public class SgtMap  {
                     }
                     if (reallyVerbose)
                         String2.log("  graphDataLayer" + i + " time=" +
-                            (System.currentTimeMillis() - tTime));
+                            (System.currentTimeMillis() - tTime) + "ms");
                 }
 
                 //*** draw a graph with the AXIS LINES and actually draw the background color
@@ -1470,7 +1470,7 @@ public class SgtMap  {
                 if (colorMap != null) 
                     colorMap.resetStats();
                 if (reallyVerbose) String2.log("  set up the graph time=" + 
-                    (System.currentTimeMillis() - time));
+                    (System.currentTimeMillis() - time) + "ms");
                 //String2.log("  before jPane.draw: " + Math2.memoryString());
                 time = System.currentTimeMillis();
                 jPane.draw(g2);  //comment out for memory leak tests
@@ -1531,7 +1531,7 @@ public class SgtMap  {
             if (reallyVerbose) {
                 if (reallyVerbose && colorMap != null) String2.log(colorMap.getStats());
                 if (reallyVerbose) String2.log("  SgtMap.makeMap draw the graph time=" + 
-                    (System.currentTimeMillis() - time));
+                    (System.currentTimeMillis() - time) + "ms");
                 //Math2.gcAndWait(); //Part of debug.  Before getMemoryString().  Outside of timing system.
                 //String2.log("  SgtMap.makeMap after jPane.draw: " + Math2.memoryString());
                 //String2.log("  SgtMap.makeMap after gc: " + Math2.memoryString());
@@ -1544,7 +1544,7 @@ public class SgtMap  {
 
             //display time to makeMap
             if (verbose) String2.log("}} SgtMap.makeMap done. TOTAL TIME=" + 
-                (System.currentTimeMillis() - startTime) + "\n");
+                (System.currentTimeMillis() - startTime) + "ms\n");
             g2.setClip(null); //clear the clip region
 
             //return the results
@@ -1793,10 +1793,14 @@ public class SgtMap  {
                 long readTime = System.currentTimeMillis();
                 //this doesn't change the +/-180 status (just checks for odd situations).
                 //this does subset the data if more dense or over a bigger range then nec.
-                grid.makeLonPM180AndSubset(minX, maxX, minY, maxY, 
-                    graphWidthPixels, graphHeightPixels);
+//2017-10-23 This isn't needed (at least for ERDDAP, not so sure about CWBrowsers)
+//  and has a serious bug (see erdVH3chla8day in leaflet)
+//  that sometimes erroneously tries to change the pm180 status by making a huge array,
+//  that leads to out-of-memory.
+//                grid.makeLonPM180AndSubset(minX, maxX, minY, maxY, 
+//                    graphWidthPixels, graphHeightPixels);
                 if (reallyVerbose) String2.log("  SgtMap.makeCleanMap grid readGrd time=" + 
-                    (System.currentTimeMillis() - readTime));
+                    (System.currentTimeMillis() - readTime) + "ms");
                 DataHelper.scale(grid.data, gridScaleFactor * gridAltScaleFactor, gridAltOffset);
                 SimpleGrid simpleGrid = new SimpleGrid(grid.data, grid.lon, grid.lat, ""); //title
 
@@ -1913,7 +1917,7 @@ public class SgtMap  {
             if (reallyVerbose) {
                 if (colorMap != null) String2.log(colorMap.getStats());
                 String2.log("  SgtMap.makeCleanMap draw graph time=" + 
-                    (System.currentTimeMillis() - time));
+                    (System.currentTimeMillis() - time) + "ms");
                 //Math2.gcAndWait(); //Part of debug.  Before getMemoryString().  Outside of timing system.
                 //String2.log("  SgtMap.makeCleanMap after jPane.draw: " + Math2.memoryString());
                 //String2.log("  SgtMap.makeCleanMap after gc: " + Math2.memoryString());
@@ -1922,7 +1926,7 @@ public class SgtMap  {
             //display time to makeCleanMap
             if (verbose) String2.log("  SgtMap.makeCleanMap done. res=" + 
                 boundaryResolution + " Total TIME=" + 
-                (System.currentTimeMillis() - startTime));
+                (System.currentTimeMillis() - startTime) + "ms");
             g2.setClip(null); //clear the clip region
 
         }
@@ -3319,7 +3323,7 @@ String2.log("err: " + errCatcher.getString());
             //Image2.saveAsJpeg(image, gridDir + imageName, 1f);
             //Image2.saveAsGif216(image, gridDir + imageName, false); //use dithering
             imageTime = System.currentTimeMillis() - imageTime;
-            String2.log("  imageTime=" + imageTime + "\n  imageName=" + gridDir + imageName);
+            String2.log("  imageTime=" + imageTime + "ms\n  imageName=" + gridDir + imageName);
 
             //make an html file with image and NcCDL info (if .nc or .grd)
             StringBuilder sb = new StringBuilder();
@@ -3328,7 +3332,7 @@ String2.log("err: " + errCatcher.getString());
                 "<head>\n" +
                 "  <title>" + gridDir + gridName + "</title>\n" +
                 "</head>\n" +
-                "<body bgcolor=\"white\" text=\"black\">\n" +
+                "<body style=\"background-color:white; color:black;\">\n" +
                 "  <img src=\"file://" + gridDir + imageName + "\">\n");
             if (gridExt.equals(".nc") || gridExt.equals(".grd"))
                 sb.append("<p><pre>\n" + NcHelper.readCDL(gridDir + gridName) + "\n</pre>\n");
@@ -3344,7 +3348,7 @@ String2.log("err: " + errCatcher.getString());
             if (!(gridDir + gridName).equals(args0))
                 File2.delete(gridDir + gridName);
 
-            String2.log("  SgtMap.main is finished. time=" + (System.currentTimeMillis() - time) + " ms\n" +
+            String2.log("  SgtMap.main is finished. time=" + (System.currentTimeMillis() - time) + "ms\n" +
                 Math2.memoryString());
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));

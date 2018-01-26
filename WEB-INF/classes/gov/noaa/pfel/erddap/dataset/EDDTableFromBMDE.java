@@ -162,7 +162,7 @@ public class EDDTableFromBMDE extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -406,7 +406,7 @@ public class EDDTableFromBMDE extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromBMDE " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -503,7 +503,7 @@ public class EDDTableFromBMDE extends EDDTable{
      */
     public static void testAllVariables(String sourceUrl, String sourceCode, 
           String startDate, String stopDate) throws Throwable {
-        String2.log("\n*** testAllVariables");
+        String2.log("\n*** EDDTableFromBMDE.testAllVariables");
         testVerboseOn();
 
 
@@ -545,7 +545,7 @@ public class EDDTableFromBMDE extends EDDTable{
      * @throws Throwable if trouble
      */
     public static void testPrbo() throws Throwable {
-        String2.log("\n*** test prbo");
+        String2.log("\n*** EDDTableFromBMDE.testPrbo");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
@@ -567,7 +567,7 @@ public class EDDTableFromBMDE extends EDDTable{
         //.das     das isn't affected by userDapQuery
         tName = prbo.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             prbo.className(), ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -707,7 +707,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&Family=\"Laridae\"&Genus=\"Uria\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className(), ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         expected = 
 "longitude, latitude, altitude, time, GlobalUniqueIdentifier, Genus, ScientificName, ObservationCount\n" +
@@ -731,7 +731,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&Family=\"Laridae\"&Genus>=\"Urh\"&Genus<\"Urj\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "Compare", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -740,7 +740,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&Family=\"Laridae\"&Genus=~\"(zztop|Uria)\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "Compare", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -751,7 +751,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude=-123.002737&latitude=37.698771&Family=\"Laridae\"&Genus=\"Uria\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "LonLat", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         expected = 
 "longitude, latitude, altitude, time, GlobalUniqueIdentifier, Genus, ScientificName, ObservationCount\n" +
@@ -786,7 +786,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
-        String2.log("\n****************** EDDTableFromBMDE.test() *****************\n");
+        String2.log("\n*** EDDTableFromBMDE.test()\n");
 
         //usually run
         testPrbo();

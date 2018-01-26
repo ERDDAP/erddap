@@ -176,7 +176,7 @@ public class EDDTableCopy extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -492,7 +492,7 @@ public class EDDTableCopy extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableCopy " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -590,7 +590,7 @@ public class EDDTableCopy extends EDDTable{
             String2.log("\n****************** EDDTableCopy.test das dds for entire dataset\n");
             tName = edd.makeNewFileForDapQuery(null, null, "", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_Entire", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
@@ -876,21 +876,7 @@ public class EDDTableCopy extends EDDTable{
     expected2 = 
 "    String infoUrl \"http://www.globec.org/\";\n" +
 "    String institution \"GLOBEC\";\n" +
-"    String keywords \"10um,\n" +
-"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
-"Oceans > Ocean Chemistry > Ammonia,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"Oceans > Ocean Chemistry > Nitrate,\n" +
-"Oceans > Ocean Chemistry > Nitrite,\n" +
-"Oceans > Ocean Chemistry > Nitrogen,\n" +
-"Oceans > Ocean Chemistry > Oxygen,\n" +
-"Oceans > Ocean Chemistry > Phosphate,\n" +
-"Oceans > Ocean Chemistry > Pigments,\n" +
-"Oceans > Ocean Chemistry > Silicate,\n" +
-"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"    String keywords \"10um, active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, Earth Science > Biosphere > Vegetation > Photosynthetically Active Radiation, Earth Science > Oceans > Ocean Chemistry > Ammonia, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, Earth Science > Oceans > Ocean Chemistry > Nitrate, Earth Science > Oceans > Ocean Chemistry > Nitrite, Earth Science > Oceans > Ocean Chemistry > Nitrogen, Earth Science > Oceans > Ocean Chemistry > Oxygen, Earth Science > Oceans > Ocean Chemistry > Phosphate, Earth Science > Oceans > Ocean Chemistry > Pigments, Earth Science > Oceans > Ocean Chemistry > Silicate, Earth Science > Oceans > Ocean Optics > Attenuation/Transmission, Earth Science > Oceans > Ocean Temperature > Water Temperature, Earth Science > Oceans > Salinity/Density > Salinity, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -946,7 +932,7 @@ public class EDDTableCopy extends EDDTable{
             //*** test getting dds for entire dataset
             tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Entire", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "Dataset {\n" +
@@ -984,7 +970,7 @@ public class EDDTableCopy extends EDDTable{
             //*** test DAP data access form
             tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Entire", ".html"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             expected = "<option>.png - View a standard, medium-sized .png image file with a graph or map.";
             expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
             Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
@@ -998,7 +984,7 @@ public class EDDTableCopy extends EDDTable{
             //.asc
             tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Data", ".asc"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -1022,7 +1008,7 @@ public class EDDTableCopy extends EDDTable{
             //.csv
             tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Data", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -1040,7 +1026,7 @@ public class EDDTableCopy extends EDDTable{
             //.dds 
             tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Data", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -1063,10 +1049,10 @@ public class EDDTableCopy extends EDDTable{
                 String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
                     "/tabledap/" + edd.datasetID();
                 //for diagnosing during development:
-                //String2.log(String2.annotatedString(SSR.getUrlResponseString(
+                //String2.log(String2.annotatedString(SSR.getUrlResponseStringUnchanged(
                 //    "https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt.dods?stn_id&unique()")));
-                //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseString(tUrl + ".das?" + userDapQuery));
-                //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseString(tUrl + ".dods?" + userDapQuery)));
+                //String2.log("\nDAS RESPONSE=" + SSR.getUrlResponseStringUnchanged(tUrl + ".das?" + userDapQuery));
+                //String2.log("\nDODS RESPONSE=" + String2.annotatedString(SSR.getUrlResponseStringUnchanged(tUrl + ".dods?" + userDapQuery)));
 
                 //test if table.readOpendapSequence works with Erddap opendap server
                 //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
@@ -1139,7 +1125,7 @@ reallyVerbose=false;
             eTime = System.currentTimeMillis();
             tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_postDet", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "Dataset {\n" +
@@ -1161,7 +1147,7 @@ reallyVerbose=false;
             eTime = System.currentTimeMillis();
             tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_postDet", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "Attributes {\n" +
@@ -1182,7 +1168,7 @@ reallyVerbose=false;
             tName = edd.makeNewFileForDapQuery(null, null, 
                 "pi&distinct()", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet1Var", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             String2.log(results);
             expected = 
 "pi\n" +
@@ -1191,14 +1177,14 @@ reallyVerbose=false;
 "CEDAR CHITTENDEN\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** 1var elapsed time=" + (System.currentTimeMillis() - eTime) + 
-                " ms (vs 148,000 or 286,000 ms for POST).");
+                "ms (vs 148,000 or 286,000 ms for POST).");
 
             //2var
             eTime = System.currentTimeMillis();
             tName = edd.makeNewFileForDapQuery(null, null, 
                 "pi,common_name&distinct()", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet2var", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //this will change
 "pi,common_name\n" +
 ",\n" +
@@ -1226,14 +1212,14 @@ reallyVerbose=false;
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log(results);
             String2.log("*** 2var elapsed time=" + (System.currentTimeMillis() - eTime) + 
-                " ms (vs 192,000 ms for POST).");
+                "ms (vs 192,000 ms for POST).");
 
             //3var
             eTime = System.currentTimeMillis();
             tName = edd.makeNewFileForDapQuery(null, null, 
                 "pi,common_name,surgery_id&distinct()", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet3var", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "pi,common_name,surgery_id\n" +
@@ -1246,14 +1232,14 @@ reallyVerbose=false;
             Test.ensureEqual(lines.length, 4317 + 3, "\nresults=\n" + results);
             lines = null;
             String2.log("*** 3var elapsed time=" + (System.currentTimeMillis() - eTime) + 
-                " ms (vs 152,000 ms for POST).");
+                "ms (vs 152,000ms for POST).");
 
             //1tag
             eTime = System.currentTimeMillis();
             tName = edd.makeNewFileForDapQuery(null, null, 
                 "&pi=\"BARRY BEREJIKIAN\"&common_name=\"STEELHEAD\"&surgery_id=2846", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet1tag", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
@@ -1261,7 +1247,7 @@ reallyVerbose=false;
 "-127.34393,50.67973,2004-05-30T06:08:40Z,STEELHEAD,BARRY BEREJIKIAN,NOAA|NOAA FISHERIES,2846,3985,1031916\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** 1tag elapsed time=" + (System.currentTimeMillis() - eTime) + 
-                " ms (vs 5,700 ms for POST).");
+                "ms (vs 5,700ms for POST).");
 
             //constraint
             eTime = System.currentTimeMillis();
@@ -1269,7 +1255,7 @@ reallyVerbose=false;
                 "&surgery_id>=1201&surgery_id<1202&time>=2007-05-01T08&time<2007-05-01T09";
             tName = edd.makeNewFileForDapQuery(null, null, tQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_peb_constrained", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =  
 "longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
 "degrees_east,degrees_north,UTC,,,,,,\n" +
@@ -1282,7 +1268,7 @@ reallyVerbose=false;
             Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
                 expected, "\nresults=\n" + results);
             String2.log("*** constraint elapsed time=" + (System.currentTimeMillis() - eTime) +
-                " ms (usually 31)."); 
+                "ms (usually 31)."); 
 
 
             //done

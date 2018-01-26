@@ -261,7 +261,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                 //open the file
                 //tTime = System.currentTimeMillis();
                 NetcdfFile ncFile = NcHelper.openFile(stationFileNames[station]);
-                //time ~150ms first time; 0 if in cache  if (reallyVerbose) String2.log("    get dGrid time=" + (System.currentTimeMillis() - tTime));  
+                //time ~150ms first time; 0 if in cache  if (reallyVerbose) String2.log("    get dGrid time=" + (System.currentTimeMillis() - tTime) + "ms");  
 
                 try {
 
@@ -386,11 +386,11 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                         timeBaseSeconds[station], timeFactorToGetSeconds[station], t1);
                     maxT[station] = Calendar2.unitsSinceToEpochSeconds(
                         timeBaseSeconds[station], timeFactorToGetSeconds[station], maxT[station]);
-                    Test.ensureTrue(Math2.isFinite(minT[station]) && minT[station] < 1e10, //secondsSinceEpoch  year ~2040
+                    Test.ensureTrue(Double.isFinite(minT[station]) && minT[station] < 1e10, //secondsSinceEpoch  year ~2040
                         //errorInMethod added below
                         "minT=" + minT[station] + " for station=" + station + 
                         " is >= 1e10!");
-                    Test.ensureTrue(Math2.isFinite(maxT[station]) && maxT[station] < 1e10,
+                    Test.ensureTrue(Double.isFinite(maxT[station]) && maxT[station] < 1e10,
                         //errorInMethod added below
                         "maxT=" + maxT[station] + " for station=" + station + 
                         " is >= 1e10!");
@@ -667,7 +667,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
 
         if (verbose) String2.log("  finished successfully  nPointDataSets=" + 
             (activePointDataSets.size() - originalListSize) + 
-            " time=" + (System.currentTimeMillis() - time));  
+            " time=" + (System.currentTimeMillis() - time) + "ms");  
     }
     
     /**
@@ -917,7 +917,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
 
         //return the results
         String2.log("PointDataSetFromStationVariables.makeSubset done. nRows=" + 
-            table.nRows() + " TIME=" + (System.currentTimeMillis() - time));
+            table.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
         return table;
     }
 
@@ -1463,7 +1463,7 @@ not very polished.
      * @throws Exception if trouble or no data
      */
     public static void testMbariSqStations() throws Exception {
-        String2.log("\n*** test PointDataSetFromStationVariables.testMbariSqStations");
+        String2.log("\n*** PointDataSetFromStationVariables.testMbariSqStations");
         CacheOpendapStation.verbose = true;
         CacheOpendapStation.reallyVerbose = true;
         DataHelper.verbose = true;
@@ -1636,7 +1636,7 @@ not very polished.
      * @throws Exception if trouble or no data
      */
     public static void testNc4DMakeSubset() throws Exception {
-        String2.log("\n*** test PointDataSetFromStationVariables.testNc4DMakeSubset");
+        String2.log("\n*** PointDataSetFromStationVariables.testNc4DMakeSubset");
         DataHelper.verbose = true;
         PointDataSet.verbose = true;
         GroupVariable.verbose = false;
@@ -1794,7 +1794,7 @@ not very polished.
      * @throws Exception if trouble or no data
      */
     public static void testNc4DMakeAveragedTimeSeries() throws Exception {
-        String2.log("\n*** test PointDataSetFromStationVariables.testNc4DmakeAveragedTimeSeries");
+        String2.log("\n*** PointDataSetFromStationVariables.testNc4DmakeAveragedTimeSeries");
         DataHelper.verbose = true;
         PointDataSet.verbose = true;
         GroupVariable.verbose = false;

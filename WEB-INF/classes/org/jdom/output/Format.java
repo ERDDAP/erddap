@@ -506,7 +506,7 @@ public class Format implements Cloneable {
      *
      * <table>
      *   <tr>
-     *     <th align="left">
+     *     <th style="text-align:left;">
      *       Text Mode
      *     </th>
      *     <th>
@@ -514,7 +514,7 @@ public class Format implements Cloneable {
      *     </th>
      *   </tr>
      *
-     *   <tr valign="top">
+     *   <tr style="vertical-align:top;">
      *     <td>
      *       <i>PRESERVE (Default)</i>
      *     </td>
@@ -524,7 +524,7 @@ public class Format implements Cloneable {
      *     </td>
      *   </tr>
      *
-     *   <tr valign="top">
+     *   <tr style="vertical-align:top;">
      *     <td>
      *       TRIM_FULL_WHITE
      *     </td>
@@ -535,7 +535,7 @@ public class Format implements Cloneable {
      *     </td>
      *   </tr>
      *
-     *   <tr valign="top">
+     *   <tr style="vertical-align:top;">
      *     <td>
      *       TRIM
      *     </td>
@@ -545,7 +545,7 @@ public class Format implements Cloneable {
      *     </td>
      *   </tr>
      *
-     *   <tr valign="top">
+     *   <tr style="vertical-align:top;">
      *     <td>
      *       NORMALIZE
      *     </td>

@@ -192,7 +192,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public int hashCode() {
         //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
-        //and http://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         int code = 0;
         for (int i = 0; i < size; i++)
             code = 31*code + array[i];
@@ -965,6 +965,21 @@ public class ByteArray extends PrimitiveArray {
         return sb.toString();
     }
 
+    /**
+     * For integer types, this fixes unsigned bytes that were incorrectly read as signed
+     * so that they have the correct ordering of values (0 to 255 becomes -128 to 127).
+     * <br>What were read as signed:    0  127 -128  -1
+     * <br>should become   unsigned: -128   -1    0 255
+     * <br>This also does the reverse.
+     * <br>For non-integer types, this does nothing.
+     */
+    public void changeSignedToFromUnsigned() {
+        for (int i = 0; i < size; i++) {
+            int b = array[i];
+            array[i] = (byte)(b < 0? b + 128 : b - 128);
+        }
+    }
+
     /** 
      * This sorts the elements in ascending order.
      * To get the elements in reverse order, just read from the end of the list
@@ -1022,6 +1037,14 @@ public class ByteArray extends PrimitiveArray {
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
+    }
+
+    /**
+     * This reverses the order of the bytes in each value,
+     * e.g., if the data was read from a little-endian source.
+     */
+    public void reverseBytes() {
+        //ByteArray does nothing
     }
 
     /**

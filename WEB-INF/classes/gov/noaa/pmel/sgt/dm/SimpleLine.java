@@ -263,7 +263,7 @@ public class SimpleLine implements SGTLine, Cartesian,
   }
   /**
    * Set the data that will be associated with <code>SGTLine</code>
-   * <BR><B>Property Change:</B> <code>associatedDataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>associatedDataModified</code>.
    *
    * @since 2.0
    */
@@ -312,7 +312,7 @@ public class SimpleLine implements SGTLine, Cartesian,
   }
   /**
    * Set the X coordinate array.
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setXArray(double[] xloc) {
     xloc_ = xloc;
@@ -324,7 +324,7 @@ public class SimpleLine implements SGTLine, Cartesian,
   }
   /**
    * Set the Y coordinate array
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setYArray(double[] yloc) {
     yloc_ = yloc;
@@ -336,7 +336,7 @@ public class SimpleLine implements SGTLine, Cartesian,
   }
   /**
    * Set the Time coordinate array
-   * <BR><B>Property Change:</B> <code>dataModified</code>.
+   * <BR><strong>Property Change:</strong> <code>dataModified</code>.
    */
   public void setTimeArray(GeoDate[] tloc) {
     setTimeArray(new GeoDateArray(tloc));

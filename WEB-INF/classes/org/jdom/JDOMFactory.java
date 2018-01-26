@@ -103,7 +103,7 @@ public interface JDOMFactory {
      * specified (local) name and value, and does not place
      * the attribute in a <code>{@link org.jdom.Namespace}</code>.
      * <p>
-     * <b>Note</b>: This actually explicitly puts the
+     * <strong>Note</strong>: This actually explicitly puts the
      * <code>Attribute</code> in the "empty" <code>Namespace</code>
      * (<code>{@link org.jdom.Namespace#NO_NAMESPACE}</code>).
      * </p>
@@ -118,7 +118,7 @@ public interface JDOMFactory {
      * specified (local) name, value and type, and does not place
      * the attribute in a <code>{@link org.jdom.Namespace}</code>.
      * <p>
-     * <b>Note</b>: This actually explicitly puts the
+     * <strong>Note</strong>: This actually explicitly puts the
      * <code>Attribute</code> in the "empty" <code>Namespace</code>
      * (<code>{@link org.jdom.Namespace#NO_NAMESPACE}</code>).
      * </p>

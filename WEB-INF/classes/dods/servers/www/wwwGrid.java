@@ -50,7 +50,7 @@ public class wwwGrid extends DGrid implements BrowserForm {
         /*-----------------------------------------------------------------
         // C++ implementation looks like this...
 
-        os << "<script type=\"text/javascript\">\n"
+        os << "<script>\n"
            << "<!--\n"
            << name_for_js_code(name())
            << " = new dods_var(\""
@@ -64,7 +64,7 @@ public class wwwGrid extends DGrid implements BrowserForm {
            << "// -->\n"
            << "</script>\n";
 
-        os << "<b>"
+        os << "<strong>"
            << "<input type=\"checkbox\" name=\"get_"
            << name_for_js_code(name())
            << "\"\n"
@@ -73,12 +73,12 @@ public class wwwGrid extends DGrid implements BrowserForm {
            << ".handle_projection_change(get_"
            << name_for_js_code(name())
            << ")\">\n"
-           << "<font size=\"+1\">"
+           << "<span style=\"font-size:large;\">"
            << name()
-           << "</font>"
+           << "</span>"
            << ": "
            << fancy_typename(this)
-           << "</b><br>\n\n";
+           << "</strong><br>\n\n";
 
         Array *a = dynamic_cast<Array *>(array_var());
 
@@ -96,7 +96,7 @@ public class wwwGrid extends DGrid implements BrowserForm {
                << i
                << "\" size=8 onfocus=\"describe_index()\""
                << "onChange=\"DODS_URL.update_url()\">\n";
-            os << "<script type=\"text/javascript\">\n"
+            os << "<script>\n"
                << "<!--\n"
                << name_for_js_code(name())
                << ".add_dim("
@@ -111,7 +111,7 @@ public class wwwGrid extends DGrid implements BrowserForm {
         -----------------------------------------------------------------*/
 
         pw.print(
-            "<script type=\"text/javascript\">\n"
+            "<script>\n"
             + "<!--\n"
             + wwwOutPut.nameForJsCode(getName())
             + " = new dods_var(\""
@@ -127,7 +127,7 @@ public class wwwGrid extends DGrid implements BrowserForm {
             );
 
         pw.print(
-            "<b>"
+            "<strong>"
             + "<input type=\"checkbox\" name=\"get_"
             + wwwOutPut.nameForJsCode(getName())
             + "\"\n"
@@ -136,12 +136,12 @@ public class wwwGrid extends DGrid implements BrowserForm {
             + ".handle_projection_change(get_"
             + wwwOutPut.nameForJsCode(getName())
             + ")\">\n"
-            + "<font size=\"+1\">"
+            + "<span style=\"font-size:large;\">"
             + getName()
-            + "</font>"
+            + "</span>"
             + ": "
             + dasTools.fancyTypeName(this)
-            + "</b><br>\n\n"
+            + "</strong><br>\n\n"
             );
 
         int i = 0;
@@ -166,7 +166,7 @@ public class wwwGrid extends DGrid implements BrowserForm {
                 );
 
             pw.print(
-                "<script type=\"text/javascript\">\n"
+                "<script>\n"
                 + "<!--\n"
                 + wwwOutPut.nameForJsCode(getName())
                 + ".add_dim("

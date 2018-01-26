@@ -27,7 +27,7 @@ import gov.noaa.pmel.util.Dimension2D;
  * Support class used to draw a PlotMark. Plot mark codes are defined
  * in the following table. <br>
  *
- * <P ALIGN="CENTER"><IMG SRC="plotmarkcodes.gif" ALIGN="BOTTOM" BORDER="0">
+ * <p style="text-align:center;"><img src="plotmarkcodes.gif" style="vertical-align:bottom; border:0;">
  *
  * @author Donald Denbo
  * @version $Revision: 1.7 $, $Date: 2003/09/17 21:37:18 $

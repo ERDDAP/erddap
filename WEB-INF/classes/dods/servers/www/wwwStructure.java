@@ -46,7 +46,7 @@ public class wwwStructure extends DStructure implements BrowserForm {
         /*-----------------------------------------------
 	// C++ Implementation looks like this....
     
-        os << "<b>Structure " << name() << "</b><br>\n";
+        os << "<strong>Structure " << name() << "</strong><br>\n";
         os << "<dl><dd>\n";
 
         for (Pix p = first_var(); p; next_var(p)) {
@@ -60,7 +60,7 @@ public class wwwStructure extends DStructure implements BrowserForm {
 	
 	wwwOutPut wOut = new wwwOutPut(pw);
     
-        pw.println("<b>Structure " + getName() + "</b><br>");
+        pw.println("<strong>Structure " + getName() + "</strong><br>");
         pw.println("<dl><dd>");
 
         Enumeration e = getVariables();

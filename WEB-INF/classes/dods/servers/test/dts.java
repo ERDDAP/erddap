@@ -40,7 +40,7 @@ import dods.servlet.ReqState;
 
 
 /**
- * <b>Purpose:</b><br>
+ * <strong>Purpose:</strong><br>
  * This is the DODS Test servlet (dts). It allows the owner of the server
  * to deliver data in ANY valid DDS to a client. This DDS will be
  * filled with invented data if the client requests a DataDDS.
@@ -48,11 +48,11 @@ import dods.servlet.ReqState;
  * ability to handle the various complexities of the DODS data
  * types.
  * <p/>
- * <b>Configuration:</b><br>
+ * <strong>Configuration:</strong><br>
  * The DODSServlet relies on the javax.servlet.ServletConfig
  * interface (in particular the getInitParameter() method)
  * to retrieve configuration information used by the servlet.
- * <b>InitParameters:</b>
+ * <strong>InitParameters:</strong>
  * <p/>
  * <ul>
  * <li>

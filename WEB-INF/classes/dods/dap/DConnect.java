@@ -218,7 +218,7 @@ public class DConnect {
    * Open a connection to the DODS server.
    * @param url the URL to open.
    * @param readTimeOutMillis if greater than 0, this calls connection.setReadTimeout(readTimeOutMillis).
-   *    If &lt=0, it uses the default (currently 10 minutes). (in ms)
+   *    If &lt;=0, it uses the default (currently 10 minutes). (in ms)
    * @return the opened <code>InputStream</code>.
    * @exception IOException if an IO exception occurred.
    * @exception DODSException if the DODS server returned an error.
@@ -227,11 +227,11 @@ public class DConnect {
 
     InputStream is = null;
     try {
-          //this always asks for and accepts compression
-          //this only tries once
-          Object[] object = SSR.getUrlConnInputStream(url.toString(), readTimeOutMillis);
-          connection = (URLConnection)object[0];
-          is = (InputStream)object[1];
+        //this always asks for and accepts compression
+        //this only tries once
+        Object[] object = SSR.getUrlConnInputStream(url.toString(), readTimeOutMillis);
+        connection = (URLConnection)object[0];
+        is = (InputStream)object[1];
     } catch (Exception e) {
         String2.log(MustBe.throwableToString(e));
         throw new DODSException("Connection cannot be opened");
@@ -715,7 +715,7 @@ public class DConnect {
    * <code>URLConnection</code> MIME header parsing performed in
    * <code>openConnection</code> for HTTP URL's.
    * <p>
-   * <b><i>NOTE:</b></i> Because BufferedReader seeks ahead, and therefore
+   * <strong><i>NOTE:</strong></i> Because BufferedReader seeks ahead, and therefore
    * removescharacters from the InputStream which are needed later, and
    * because there is no way to construct an InputStream from a
    * BufferedReader, we have to use DataInputStream to read the header

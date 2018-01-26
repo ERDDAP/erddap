@@ -248,7 +248,7 @@ class JaxenXPath extends    XPath {             // package protected
     * this XPath expression.
     * <p>
     * <strong>Note</strong>: In XPath, there is no such thing as a
-    * 'default namespace'.  The empty prefix <b>always</b> resolves
+    * 'default namespace'.  The empty prefix <strong>always</strong> resolves
     * to the empty namespace URI.</p>
     *
     * @param  namespace   the namespace.

@@ -46,15 +46,17 @@ public class DDSParser implements DDSParserConstants {
     }
 
     /** A helper function to throw a common exception */
-    private void throwBad(String s1) throws BadSemanticsException {
+    private void throwBad(String s1, Exception e) throws BadSemanticsException {
         throw new BadSemanticsException("In the dataset descriptor object:\n"
-                               + "`" + s1 + "' is not a valid declaration.");
+                               + "`" + s1 + "' is not a valid declaration. (" + 
+                                   e.toString() + ")"); //bob added
     }
 
     /** A helper function to throw a common exception */
-    private void throwBad(String s1, String s2) throws BadSemanticsException {
+    private void throwBad(String s1, String s2, Exception e) throws BadSemanticsException {
         throw new BadSemanticsException("In the dataset descriptor object:\n"
-                      + "`" + s1 + " " + s2 + "' is not a valid declaration");
+                      + "`" + s1 + " " + s2 + "' is not a valid declaration. (" + 
+                                   e.toString() + ")"); //bob added 
     }
 
     /** A helper function to check semantics and add a DDS entry */
@@ -64,7 +66,7 @@ public class DDSParser implements DDSParserConstants {
             addEntry();
         }
         catch (BadSemanticsException e) {
-            throwBad(s1);
+            throwBad(s1, e);
         }
     }
 
@@ -75,7 +77,7 @@ public class DDSParser implements DDSParserConstants {
             addEntry();
         }
         catch (BadSemanticsException e) {
-            throwBad(s1, s2);
+            throwBad(s1, s2, e);
         }
     }
 
@@ -101,7 +103,7 @@ public class DDSParser implements DDSParserConstants {
       break;
     default:
       jj_la1[0] = jj_gen;
-      error(noDDSMsg);
+      error(noDDSMsg + " (" + jj_ntk + ", " + ((jj_ntk==-1)?jj_ntk():jj_ntk) + ")");
     }
   }
 
@@ -240,7 +242,8 @@ public class DDSParser implements DDSParserConstants {
     } catch (ParseException e) {
         error("\nParse Error on token: " + s1 + "\n"
               + "In the dataset descriptor object:\n"
-              + "Expected a variable declaration (e.g., Int32 i;).");
+              + "Expected a variable declaration (e.g., Int32 i;). (" + 
+                                   e.toString() + ")"); //bob added 
     }
     throw new Error("Missing return statement in function");
   }
@@ -626,7 +629,7 @@ public class DDSParser implements DDSParserConstants {
       }
     } catch (NumberFormatException e) {
         error("\nThe index: " + t.image + " is not an integer value.\n"
-              + "Index values must be integers.");
+              + "Index values must be integers. (" + e.toString() + ")"); //bob added 
     } catch (ParseException e) {
         error("\nThere was a problem parsing the DDS:\n"+
               "Expected an array subscript, but didn't find it\n\n" +
@@ -702,7 +705,8 @@ public class DDSParser implements DDSParserConstants {
       }
     } catch (ParseException e) {
         error("Error parsing the dataset name.\n" +
-              "The name may be missing or may contain an illegal character.");
+              "The name may be missing or may contain an illegal character. (" + 
+                                   e.toString() + ")"); //bob added 
     }
   }
 

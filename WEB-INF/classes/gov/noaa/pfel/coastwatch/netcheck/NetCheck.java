@@ -275,11 +275,11 @@ public class NetCheck  {
             "\nemailChangeHeadlinesTo=" + emailChangeHeadlinesTo);
 
         //set optional items to default
-        if (!Math2.isFinite(minutesBetweenTests))
+        if (!Double.isFinite(minutesBetweenTests))
             minutesBetweenTests = 5; //the default
         if (minutesBetweenStatusReports == Integer.MAX_VALUE)
             minutesBetweenStatusReports = 240; //the default
-        if (!Math2.isFinite(mustRespondWithinSeconds) || mustRespondWithinSeconds <= 0)
+        if (!Double.isFinite(mustRespondWithinSeconds) || mustRespondWithinSeconds <= 0)
             mustRespondWithinSeconds = 30; //the default
         if (smtpPort == Integer.MAX_VALUE)
             smtpPort = 25; //the default
@@ -348,7 +348,7 @@ public class NetCheck  {
                     continue;
                 }
                 double tMustRespondWithinSeconds = netCheckTest.getMustRespondWithinSeconds();
-                if (!Math2.isFinite(tMustRespondWithinSeconds) || tMustRespondWithinSeconds <= 0) 
+                if (!Double.isFinite(tMustRespondWithinSeconds) || tMustRespondWithinSeconds <= 0) 
                     tMustRespondWithinSeconds = mustRespondWithinSeconds;
                 //if (verbose) String2.log("mustRespondWithinSeconds=" + tMustRespondWithinSeconds");
                 TestThread testThread = new TestThread(netCheckTest);

@@ -86,6 +86,12 @@ public class DoubleArray extends PrimitiveArray {
         return array.length;
     }
 
+    /** This indicates if this class' type is float.class or double.class. 
+     */
+    public boolean isFloatingPointType() {
+        return true;
+    }
+
     /**
      * This returns the hashcode for this byteArray (dependent only on values,
      * not capacity).
@@ -96,7 +102,7 @@ public class DoubleArray extends PrimitiveArray {
      */
     public int hashCode() {
         //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
-        //and http://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         //and java docs for Double.hashCode
         int code = 0;
         for (int i = 0; i < size; i++) {
@@ -515,7 +521,7 @@ public class DoubleArray extends PrimitiveArray {
         String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
             double d = array[i];
-            sar[i] = Math2.isFinite(d)? String.valueOf(d) : "";
+            sar[i] = Double.isFinite(d)? String.valueOf(d) : "";
         }
         return sar;
     }
@@ -645,7 +651,7 @@ public class DoubleArray extends PrimitiveArray {
      */
     public String getString(int index) {
         double b = get(index);
-        return Math2.isFinite(b)? String.valueOf(b) : "";
+        return Double.isFinite(b)? String.valueOf(b) : "";
     }
 
     /**
@@ -860,6 +866,33 @@ public class DoubleArray extends PrimitiveArray {
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
+    }
+
+    /**
+     * This reverses the order of the bytes in each value,
+     * e.g., if the data was read from a little-endian source.
+     */
+    public void reverseBytes() {
+        for (int i = 0; i < size; i++)
+            //this probably fails for some values since not all bit combos are valid doubles
+            array[i] = Double.longBitsToDouble(Long.reverseBytes(
+                Double.doubleToLongBits(array[i])));
+    }
+
+    /**
+     * This writes 'size' elements to a DataOutputStream.
+     *
+     * @param dos the DataOutputStream
+     * @return the number of bytes used per element (for Strings, this is
+     *    the size of one of the strings, not others, and so is useless;
+     *    for other types the value is consistent).
+     *    But if size=0, this returns 0.
+     * @throws Exception if trouble
+     */
+    public int writeDos(DataOutputStream dos) throws Exception {
+        for (int i = 0; i < size; i++)
+            dos.writeDouble(array[i]);
+        return size == 0? 0 : 8;
     }
 
     /**
@@ -1137,11 +1170,11 @@ public class DoubleArray extends PrimitiveArray {
     public String isAscending() {
         if (size == 0)
             return "";
-        if (!Math2.isFinite(array[0]))
+        if (!Double.isFinite(array[0]))
             return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                 "[0]=" + array[0]);
         for (int i = 1; i < size; i++) {
-            if (!Math2.isFinite(array[i]))
+            if (!Double.isFinite(array[i]))
                 return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
                     "[" + i + "]=" + array[i]);
             if (array[i - 1] > array[i]) {
@@ -1163,11 +1196,11 @@ public class DoubleArray extends PrimitiveArray {
     public String isDescending() {
         if (size == 0)
             return "";
-        if (!Math2.isFinite(array[0]))
+        if (!Double.isFinite(array[0]))
             return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                 "[0]=" + array[0]);
         for (int i = 1; i < size; i++) {
-            if (!Math2.isFinite(array[i]))
+            if (!Double.isFinite(array[i]))
                 return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
                     "[" + i + "]=" + array[i]);
             if (array[i - 1] < array[i]) {
@@ -1251,7 +1284,7 @@ public class DoubleArray extends PrimitiveArray {
         double tmax = -Double.MAX_VALUE;
         for (int i = 0; i < size; i++) {
             double v = array[i];
-            if (Math2.isFinite(v)) {
+            if (Double.isFinite(v)) {
                 n++;
                 if (v <= tmin) {tmini = i; tmin = v; }
                 if (v >= tmax) {tmaxi = i; tmax = v; }
@@ -1261,6 +1294,55 @@ public class DoubleArray extends PrimitiveArray {
     }
 
 
+    /**
+     * Assuming this is an ascending sorted array of "seconds since 1970-01-01T00:00:00Z" values,
+     * this returns a String with a list of gaps larger than the median or gap=NaN (one per line).
+     * The values of this array won't be changed.
+     *
+     * @return a descriptive String with a list of gaps larger than the median 
+     *    (one per line, with info at the top and with a trailing newline),
+     *  There will be a results line for any gaps that are NaN.
+     *  If the median is NaN, this will return a list of gaps that are NaN.
+     */
+    public String findTimeGaps() {
+
+        if (size <= 2)
+            return "Time gaps: (none, because nTimeValues=" + size + ")\n" +
+                   "nGaps=0\n";
+
+        //find median 
+        DoubleArray gaps = new DoubleArray(size - 1, false);
+        for (int i = 1; i < size; i++)  //1 because looking back
+            gaps.add(array[i] - array[i-1]);
+        gaps.sort();
+        int size1o2 = (size - 1) / 2;
+        double median = (size-1) % 2 == 0?  //even number of gaps?
+            (gaps.get(size1o2) + gaps.get(size1o2 + 1)) / 2.0 : //average of 2 values
+            gaps.get(size1o2);
+        gaps = null; //allow gc
+
+        //look for gaps that are NaN or > median
+        StringBuilder sb = new StringBuilder("Time gaps greater than the median (" + 
+            Calendar2.elapsedTimeString(median * 1000)+ "):");
+        int count = 0;
+        for (int i = 1; i < size; i++) { //1 because looking back
+            double gap = array[i] - array[i-1];
+            if (!Double.isFinite(gap) || gap > median) {
+                if (count++ == 0) 
+                    sb.append('\n');
+                sb.append("[" + (i-1) + "]=" + 
+                    Calendar2.safeEpochSecondsToIsoStringTZ(array[i-1], "(NaN)") +
+                    " -> [" + i + "]=" + 
+                    Calendar2.safeEpochSecondsToIsoStringTZ(array[i  ], "(NaN)") +
+                    ", gap=" + Calendar2.elapsedTimeString(gap * 1000) + "\n");
+            }
+        }
+        if (count == 0)
+            sb.append(" (none)\n");
+        sb.append("nGaps=" + count + "\n");
+        return sb.toString();
+    }
+       
 
     /**
      * This tests the methods of this class.

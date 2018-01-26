@@ -210,7 +210,7 @@ public class PointSubsetScaled {
                 }
                 double d = pa.getDouble(row);
                 short t;
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     lastFiniteRow = row;
                     t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
                         Math2.roundToShort(Short.MIN_VALUE + 
@@ -228,7 +228,7 @@ public class PointSubsetScaled {
                     po = 0;
                 }
                 double d = pa.getDouble(row);
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     lastFiniteRow = row;
                     buffer[po++] = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
                         Math2.roundToByte(Byte.MIN_VALUE + 
@@ -246,7 +246,7 @@ public class PointSubsetScaled {
 
         //close in and out and rename
         out.close();
-        if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time));
+        if (verbose) String2.log("PointSubsetFull.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 
     /**
@@ -313,7 +313,7 @@ public class PointSubsetScaled {
             double d = pa.getDouble(row);
             if (axis == T) {
                 short t;
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     lastFiniteRow = row;
                     t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
                         Math2.roundToShort(Short.MIN_VALUE + 
@@ -324,7 +324,7 @@ public class PointSubsetScaled {
                 writeShort(buffer, bufferOffset + offset[T], t); 
             } else {
                 byte b; 
-                if (Math2.isFinite(d)) {
+                if (Double.isFinite(d)) {
                     lastFiniteRow = row;
                     b = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
                         Math2.roundToByte(Byte.MIN_VALUE + 
@@ -357,7 +357,7 @@ public class PointSubsetScaled {
         out.close();
         File2.delete(fullIndexName);
         File2.rename(altFullIndexName, fullIndexName);
-        if (verbose) String2.log("PointSubsetScaled.store time=" + (System.currentTimeMillis() - time));
+        if (verbose) String2.log("PointSubsetScaled.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 */
     /*
@@ -398,7 +398,7 @@ public class PointSubsetScaled {
                     //set the new values
                     double d = pa.getDouble(row);
                     short t;
-                    if (Math2.isFinite(d)) {
+                    if (Double.isFinite(d)) {
                         tNFiniteRows = row + 1;
                         t = isConstant[axis]? Short.MIN_VALUE : //but irrelevant for subset()
                             Math2.roundToShort(Short.MIN_VALUE + 
@@ -415,7 +415,7 @@ public class PointSubsetScaled {
                 for (int row = 0; row < size; row++) {
                     double d = pa.getDouble(row);
                     byte b; 
-                    if (Math2.isFinite(d)) {
+                    if (Double.isFinite(d)) {
                         tNFiniteRows = row + 1;
                         b = isConstant[axis]? Byte.MIN_VALUE : //but irrelevant for subset()
                             Math2.roundToByte(Byte.MIN_VALUE + 
@@ -453,7 +453,7 @@ public class PointSubsetScaled {
         }
 
         //close the file
-        if (verbose) String2.log("PointSubsetScaled.store time=" + (System.currentTimeMillis() - time));
+        if (verbose) String2.log("PointSubsetScaled.store time=" + (System.currentTimeMillis() - time) + "ms");
     }
 */
 
@@ -708,7 +708,7 @@ public class PointSubsetScaled {
         inZ.close();
         inT.close();
 
-        String2.log("PointSubsetScaled time=" + (System.currentTimeMillis() - time));
+        String2.log("PointSubsetScaled time=" + (System.currentTimeMillis() - time) + "ms");
             //+ " cumReadTime=" + cumulativeReadTime);
         return bitSet;
     }

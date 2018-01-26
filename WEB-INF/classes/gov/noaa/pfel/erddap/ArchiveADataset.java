@@ -802,11 +802,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         String results = ra[1];
         String expected = 
-"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         147..\n" +
+"cwwcNDBCMet.das                                                  " + today + "T.{8}Z         149..\n" +
 "cwwcNDBCMet.dds                                                  " + today + "T.{8}Z           3..\n" +
 "READ_ME.txt                                                      " + today + "T.{8}Z           3..\n" +
 "data/\n" +
-"  cwwcNDBCMet.nc                                                 " + today + "T.{8}Z      14......\n" +
+"  cwwcNDBCMet.nc                                                 " + today + "T.{8}Z      1.......\n" +
 "  cwwcNDBCMet.nc.md5                                             " + today + "T.{8}Z            49\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
@@ -859,7 +859,7 @@ public class ArchiveADataset {
 "bagit.txt,55\n" +
 "manifest-md5.txt,54\n" +
 "tagmanifest-md5.txt,142\n" +
-"data/cwwcNDBCMet.nc,12351...\n";  //will change periodically
+"data/cwwcNDBCMet.nc,1.......\n";  //will change periodically
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
@@ -932,7 +932,7 @@ public class ArchiveADataset {
             "cwwcNDBCMet", 
             "default", //all data vars
             "&station=~\"3.*\"", // &station=~"3.*"
-            "station", //should be station, but use "nothing" as test of ncCFMA
+            "", //should be station, but use "nothing" as test of ncCFMA
             ".ncCFMA", 
             "SHA-256"});   
         Test.ensureTrue(targzName.endsWith(".tar.gz"), "targzName=" + targzName);
@@ -955,14 +955,9 @@ public class ArchiveADataset {
 "url,size\n" +
 "bag-info.txt,4..\n" +
 "bagit.txt,55\n" +
-"manifest-sha256.txt,4..\n" +
+"manifest-sha256.txt,86\n" +
 "tagmanifest-sha256.txt,2..\n" +
-"data/31201.nc,21....\n" +
-"data/32012.nc,461....\n" +
-"data/32301.nc,95....\n" +
-"data/32302.nc,548....\n" +
-"data/32487.nc,64....\n" +
-"data/32488.nc,50....\n";  //will change periodically
+"data/cwwcNDBCMet.nc,4.......\n";  //will change periodically
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
         //look at manifest
@@ -970,12 +965,7 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"[0-9a-f]{64}  data/31201.nc\n" + 
-"[0-9a-f]{64}  data/32012.nc\n" + 
-"[0-9a-f]{64}  data/32301.nc\n" + 
-"[0-9a-f]{64}  data/32302.nc\n" + 
-"[0-9a-f]{64}  data/32487.nc\n" + 
-"[0-9a-f]{64}  data/32488.nc\n";
+"[0-9a-f]{64}  data/cwwcNDBCMet.nc\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);
 
         //look at bagit.txt
@@ -1000,7 +990,7 @@ public class ArchiveADataset {
 "ArchiveADataset_ERDDAP_datasetID: cwwcNDBCMet\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_extra_constraints: &station=~\"3.*\"\n" +
-"ArchiveADataset_subset_by: station\n" +
+"ArchiveADataset_subset_by: \n" +
 "ArchiveADataset_data_file_type: .ncCFMA\n" +
 "ArchiveADataset_digest_type: SHA-256\n";
         Test.ensureLinesMatch(results, expected, "results=\n" + results);

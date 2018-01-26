@@ -144,7 +144,7 @@ public class PathCartesianRenderer extends CartesianRenderer {
         //restore the original clip
         g2.setClip(originalClip);
         if (reallyVerbose) 
-            String2.log("  PathCartesianRenderer time=" + (System.currentTimeMillis() - time)); //usually 1 - 6 ms
+            String2.log("  PathCartesianRenderer time=" + (System.currentTimeMillis() - time) + "ms"); //usually 1 - 6 ms
     }
 
     /**

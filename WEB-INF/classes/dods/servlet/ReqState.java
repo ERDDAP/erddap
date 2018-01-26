@@ -230,23 +230,23 @@ public class ReqState {
      * the <code>HttpServletRequest</code>to create a <code>RequestState</code>
      * object in that caches the values for:
      * <ul>
-     * <li> <b>dataSet</b> The data set name.(Accessible using
+     * <li> <strong>dataSet</strong> The data set name.(Accessible using
      * <code> setDataSet() </code>
      * and <code>getDataSet()</code>)</li>
-     * <li> <b>CE</b> The constraint expression.(Accessible using
+     * <li> <strong>CE</strong> The constraint expression.(Accessible using
      * <code> setCE() </code>
      * and <code>getCE()</code>)</li>
-     * <li> <b>requestSuffix</b> The request suffix, used by DODS to indicate
+     * <li> <strong>requestSuffix</strong> The request suffix, used by DODS to indicate
      * the type of response desired by the client.
      * (Accessible using
      * <code> setRequestSuffix() </code>
      * and <code>getRequestSuffix()</code>)</li>
-     * <li> <b>isClientCompressed</b> Does the requesting client
+     * <li> <strong>isClientCompressed</strong> Does the requesting client
      * accept a compressed response?</li>
-     * <li> <b>ServletConfig</b> The <code>ServletConfig</code> object
+     * <li> <strong>ServletConfig</strong> The <code>ServletConfig</code> object
      * for this servlet.</li>
-     * <li> <b>ServerName</b> The class name of this server.</li>
-     * <li> <b>RequestURL</b> THe URL that that was used to call thye servlet.</li>
+     * <li> <strong>ServerName</strong> The class name of this server.</li>
+     * <li> <strong>RequestURL</strong> THe URL that that was used to call thye servlet.</li>
      * </ul>
      *
      * @see ReqState

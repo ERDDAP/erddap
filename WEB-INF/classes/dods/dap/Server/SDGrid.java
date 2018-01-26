@@ -246,9 +246,9 @@ public abstract class SDGrid extends DGrid implements ServerArrayMethods, RelOps
     * This method overrides the BaseType method of the same name and 
     * type signature and it significantly changes the behavior for all versions
     * of <code>printVal()</code> for this type: 
-    * <b><i> All the various versions of printVal() will only
+    * <strong><i> All the various versions of printVal() will only
     * print a value, or a value with declaration, if the variable is
-    * in the projection.</i></b>
+    * in the projection.</i></strong>
     * <br>
     * <br>In other words, if a call to 
     * <code>isProject()</code> for a particular variable returns 
@@ -538,7 +538,7 @@ public abstract class SDGrid extends DGrid implements ServerArrayMethods, RelOps
     }
 
         
-    /** Gets the <b>start</b> value for the projection of the
+    /** Gets the <strong>start</strong> value for the projection of the
       * <code>dimension</code> indicated. The parameter
       * <code>dimension</code> is checked against the instance of the
       * <code>SDArray</code> for bounds violation.
@@ -557,7 +557,7 @@ public abstract class SDGrid extends DGrid implements ServerArrayMethods, RelOps
     }
 
 
-    /** Gets the <b>stride</b> value for the projection of the
+    /** Gets the <strong>stride</strong> value for the projection of the
       * <code>dimension</code> indicated. The parameter
       * <code>dimension</code> is checked against the instance of the
       * <code>SDArray</code> for bounds violation.
@@ -576,7 +576,7 @@ public abstract class SDGrid extends DGrid implements ServerArrayMethods, RelOps
     }
 
 
-    /** Gets the <b>stop</b> value for the projection of the
+    /** Gets the <strong>stop</strong> value for the projection of the
       * <code>dimension</code> indicated. The parameter
       * <code>dimension</code> is checked against the instance of the
       * <code>SDArray</code> for bounds violation.

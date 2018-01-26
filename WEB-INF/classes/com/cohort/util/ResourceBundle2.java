@@ -276,6 +276,22 @@ public class ResourceBundle2 {
     }
 
     /**
+     * This returns the initialValue (if something) or the value for the key 
+     * from the resourceBundle(s) (which must be something).
+     *
+     * @param key
+     * @param initialValue
+     * @throws RuntimeException if there is no value for key
+     */
+    public String getIfNotAlreadyString(String key, String initialValue, String errorInMethod) {
+        if (initialValue != null && initialValue.length() > 0)
+            return initialValue;
+        String value = getString(key, null);
+        Test.ensureNotNothing(value, errorInMethod + key + " is null or ''!"); 
+        return value;
+    }
+
+    /**
      * This gets all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and secondaryRB.
      *
      * @return all the keys (sorted, ignoreCase) from concurrentHashMap, or primaryRB and secondaryRB.

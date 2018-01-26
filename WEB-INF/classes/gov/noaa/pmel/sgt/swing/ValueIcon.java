@@ -252,7 +252,7 @@ public class ValueIcon extends ImageIcon implements LayerChild, Draggable {
   }
   /**
    * Set the icon location in physical units.
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    */
   public void setLocationP(Point2D.Double loc) {
     SoTPoint pt;
@@ -294,7 +294,7 @@ public class ValueIcon extends ImageIcon implements LayerChild, Draggable {
   /**
    * Set the icon location in user units.  Location change can be
    * vetoed.
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    * @since 3.0
    */
   public void setLocationU(SoTPoint loc) throws PropertyVetoException {
@@ -343,7 +343,7 @@ public class ValueIcon extends ImageIcon implements LayerChild, Draggable {
   }
   /**
    * Set icon bounds.
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    */
   public void setBounds(int x, int y, int width, int height) {
     setBounds(x, y, width, height, true);

@@ -29,7 +29,7 @@ public class GraphicsTest extends JPanel {
     // /* ***********************************************************
     //My test of AttributedString2
    AttributedString2.drawHtmlText(g2, 
-       "test <color=#ff0000>red</color> and <b>bold</b> tadah!", 
+       "test <color=#ff0000>red</color> and <strong>bold</strong> tadah!", 
        5, 40, "Serif", 20, Color.blue, 0);
     // */ 
 

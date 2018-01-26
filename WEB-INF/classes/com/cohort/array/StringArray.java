@@ -100,6 +100,18 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
+     * A constructor which gets values from anArray[i].toString().
+     *
+     * @param anArray 
+     */
+    public StringArray(Object[] anArray) {
+        size = anArray.length;
+        array = new String[size];
+        for (int i = 0; i < size; i++)
+            array[i] = String2.canonical(anArray[i] == null? "" : anArray[i].toString());
+    }
+
+    /**
      * A constructor which gets the toString values from the objects from an iterator.
      *
      * @param iterator  which needs to be thread-safe if the backing data store may be
@@ -333,7 +345,7 @@ public class StringArray extends PrimitiveArray {
      */
     public int hashCode() {
         //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
-        //and http://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
+        //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         int code = 0;
         for (int i = 0; i < size; i++)
             code = 31*code + array[i].hashCode();
@@ -537,7 +549,7 @@ public class StringArray extends PrimitiveArray {
      * @param value the float value
      */
     public void addFloat(float value) {
-        add(Math2.isFinite(value)? String.valueOf(value) : "");
+        add(Float.isFinite(value)? String.valueOf(value) : "");
     }
 
     /**
@@ -546,7 +558,7 @@ public class StringArray extends PrimitiveArray {
      * @param value the value, as a double.
      */
     public void addDouble(double value) {
-        add(Math2.isFinite(value)? String.valueOf(value) : "");
+        add(Double.isFinite(value)? String.valueOf(value) : "");
     }
 
     /**
@@ -556,7 +568,7 @@ public class StringArray extends PrimitiveArray {
      * @param value the value, as a double.
      */
     public void addNDoubles(int n, double value) {
-        addN(n, Math2.isFinite(value)? String.valueOf(value) : "");
+        addN(n, Double.isFinite(value)? String.valueOf(value) : "");
     }
 
     /**
@@ -906,7 +918,7 @@ public class StringArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToString(d).
      */
     public void setFloat(int index, float d) {
-        set(index, Math2.isFinite(d)? String.valueOf(d) : "");
+        set(index, Float.isFinite(d)? String.valueOf(d) : "");
     }
 
     /**
@@ -928,7 +940,7 @@ public class StringArray extends PrimitiveArray {
      *   if needed by methods like Math2.roundToString(d).
      */
     public void setDouble(int index, double d) {
-        set(index, Math2.isFinite(d)? String.valueOf(d) : "");
+        set(index, Double.isFinite(d)? String.valueOf(d) : "");
     }
 
     /**
@@ -1253,6 +1265,30 @@ public class StringArray extends PrimitiveArray {
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
+    }
+
+    /**
+     * This reverses the order of the bytes in each value,
+     * e.g., if the data was read from a little-endian source.
+     */
+    public void reverseBytes() {
+        //StringArray does nothing because insensitive to big/little-endian
+    }
+
+    /**
+     * This writes 'size' elements to a DataOutputStream.
+     *
+     * @param dos the DataOutputStream
+     * @return the number of bytes used per element (for Strings, this is
+     *    the size of one of the strings, not others, and so is useless;
+     *    for other types the value is consistent).
+     *    But if size=0, this returns 0.
+     * @throws Exception if trouble
+     */
+    public int writeDos(DataOutputStream dos) throws Exception {
+        for (int i = 0; i < size; i++)
+            dos.writeUTF(array[i]);
+        return size == 0? 0 : 10; //generic answer
     }
 
     /**
@@ -1616,7 +1652,10 @@ public class StringArray extends PrimitiveArray {
      *    The items are trim'd.
      */
     public static StringArray fromCSV(String searchFor) {
-        return new StringArray(arrayFromCSV(searchFor));
+        return new StringArray(arrayFromCSV(searchFor, ","));
+    }
+    public static StringArray fromCSV(String searchFor, String separatorChars) {
+        return new StringArray(arrayFromCSV(searchFor, separatorChars));
     }
 
     /**
@@ -1655,6 +1694,14 @@ public class StringArray extends PrimitiveArray {
      *   <br>backslashed characters are converted to the special character (e.g., double quotes or newline).
      */
     public static String[] arrayFromCSV(String searchFor) {
+        return arrayFromCSV(searchFor, ",");
+    }    
+
+    /**
+     * This variant of arrayFromCSV lets you specify the separator chars (e.g., "," or
+     * ",;".
+     */
+    public static String[] arrayFromCSV(String searchFor, String separatorChars) {
         if (searchFor == null)
             return new String[0];
         ArrayList<String> al = new ArrayList();
@@ -1710,7 +1757,7 @@ public class StringArray extends PrimitiveArray {
                 }
 
             //end of word?
-            } else if (ch == ',') {
+            } else if (separatorChars.indexOf(ch) >= 0) { //e.g., comma or semicolon
                 al.add(word.toString().trim());
                 word.setLength(0);
                 word.append(' '); //indicate there is something
@@ -1797,7 +1844,7 @@ public class StringArray extends PrimitiveArray {
     } */
 
     /**
-     * This is a purposely <b>simple</b>, 2-double-quotes-aware, backslash-aware, splitter
+     * This is a purposely <strong>simple</strong>, 2-double-quotes-aware, backslash-aware, splitter
      * that makes an ArrayString from the items in an NCCSV-style string.
      *
      * <br>This avoids String2.canonical(to), so will be faster if just parsing 
@@ -2060,7 +2107,6 @@ public class StringArray extends PrimitiveArray {
             add(o.toString());
         return this;
     }
-
 
     /**
      * This returns the index of the first value that doesn't match the regex.

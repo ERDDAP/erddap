@@ -55,7 +55,7 @@ public class sqlI32 extends SDInt32 {
      a JDBC connection to a relational database. It is important to note
      that their are several layers of type translation happening in this:
 
-     <p><b>Database -> JDBC -> Java -> DODS</b></p>
+     <p><strong>Database -> JDBC -> Java -> DODS</strong></p>
 
      The Database types are the native types for the particular database
      that is being read from. The translation from Database->JDBC is handled
@@ -63,7 +63,7 @@ public class sqlI32 extends SDInt32 {
      of JDBC type to DODS types (the intermediate Java types happen in
      the process) looks like this:
 
-     <p><b>Mapping from JDBC Types to DODS Types:</p></b>
+     <p><strong>Mapping from JDBC Types to DODS Types:</p></strong>
      <pre>
 
      TINYINT        DByte

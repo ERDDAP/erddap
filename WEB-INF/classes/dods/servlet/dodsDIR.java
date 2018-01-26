@@ -100,7 +100,7 @@ public class dodsDIR {
                     pw.println("<meta http-equiv=\"Content-Type\" content=\"text/html\">");
                     pw.println("</head>");
 
-                    pw.println("<body bgcolor=\"#FFFFFF\">");
+                    pw.println("<body style=\"background-color:#FFFFFF\">");
 
 
                     pw.println("<h1>DODS Directory for:</h1>");
@@ -110,7 +110,7 @@ public class dodsDIR {
 
                     File fList[] = ddsDir.listFiles();
 
-                    pw.println("<table border=\"0\">");
+                    pw.println("<table style=\"border:0px;\">");
 
                     for(int i=0; i<fList.length ;i++){
                         if(fList[i].isFile()){
@@ -118,16 +118,16 @@ public class dodsDIR {
                             pw.println("<tr>");
 
                             pw.print("    <td>");
-                            pw.print("<div align='right'>");
-                            pw.print("<b>" +
+                            pw.print("<div style=\"text-align:right;\">");
+                            pw.print("<strong>" +
                                      fList[i].getName() +
-                                     ":</b> ");
+                                     ":</strong> ");
                             pw.print("</div>");
                             pw.println("</td>");
 
 
                             pw.print("    <td>");
-                            pw.print("<div align='center'>");
+                            pw.print("<div style=\"text-align:center;\">");
                             pw.print("<a href='" +
                                      thisServer +
                                      fList[i].getName() +
@@ -136,7 +136,7 @@ public class dodsDIR {
                             pw.println("</td>");
 
                             pw.print("    <td>");
-                            pw.print("<div align='center'>");
+                            pw.print("<div style=\"text-align:center;\">");
                             pw.print("<a href='" +
                                      thisServer +
                                      fList[i].getName() +
@@ -145,7 +145,7 @@ public class dodsDIR {
                             pw.println("</td>");
 
                             pw.print("    <td>");
-                            pw.print("<div align='center'>");
+                            pw.print("<div style=\"text-align:center;\">");
                             pw.print("<a href='" +
                                      thisServer +
                                      fList[i].getName() +
@@ -154,7 +154,7 @@ public class dodsDIR {
                             pw.println("</td>");
 
                             pw.print("    <td>");
-                            pw.print("<div align='center'>");
+                            pw.print("<div style=\"text-align:center;\">");
                             pw.print("<a href='" +
                                      thisServer +
                                      fList[i].getName() +

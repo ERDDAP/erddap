@@ -148,7 +148,7 @@ public class CLIndexedColorMap extends ColorMap
   }
   /**
    * Change the <code>Color</code>.
-   * <BR><B>Property Change:</B> <code>color</code>.
+   * <BR><strong>Property Change:</strong> <code>color</code>.
    *
    * @param red red component
    * @param green green component
@@ -176,7 +176,7 @@ public class CLIndexedColorMap extends ColorMap
   }
   /**
    * Set <code>ContourLevels</code>.
-   * <BR><B>Property Change:</B> <code>color</code>.
+   * <BR><strong>Property Change:</strong> <code>color</code>.
    *
    * @param cl <code>ContourLevels</code>
    */

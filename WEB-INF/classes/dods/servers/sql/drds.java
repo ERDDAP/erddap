@@ -50,11 +50,11 @@ import dods.dap.parser.ParseException;
  * dods.dap.Server.sql package to do so. Have Fun :)
  *
  * <p>
- * <b>Configuration:</b><br>
+ * <strong>Configuration:</strong><br>
  * The DODSServlet relies on the javax.servlet.ServletConfig
  * interface (in particular the getInitParameter() method)
  * to retrieve configuration information used by the servlet.
- * <b>InitParameters:</b>
+ * <strong>InitParameters:</strong>
  *
  *<ul>
  *   <li>

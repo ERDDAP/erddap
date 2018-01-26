@@ -289,7 +289,7 @@ public class Logo implements Cloneable, LayerChild, Moveable {
   }
   /**
    * Set location of logo
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc logo location
    */
@@ -389,7 +389,7 @@ public class Logo implements Cloneable, LayerChild, Moveable {
   }
   /**
    * Set the bounds of the <code>Logo</code>
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    */
   public void setBounds(int x, int y, int width, int height) {
     switch(halign_) {

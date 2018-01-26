@@ -112,7 +112,7 @@ public class CWDataBrowser extends EmaClass  {
     String getExtensions[];
     String hereIs;
     String hereIsAlt;
-    protected String beginRowArray[] = {"<tr bgcolor=\"#FFCC99\">", "<tr bgcolor=\"#FFFFCC\">"};
+    protected String beginRowArray[] = {"<tr style=\"background-color:#FFCC99\">", "<tr style=\"background-color:#FFFFCC\">"};
 
     
     /**
@@ -409,11 +409,11 @@ public class CWDataBrowser extends EmaClass  {
         sb.append(
             "    <tr>\n" + 
             "      <td colspan=\"2\">" + title + "</td>\n" +
-            "      <td rowspan=\"6\"><img border=\"0\" src=\"" + regionsImage + "\"\n" +
-            "        width=\"228\" height=\"208\"\n" + 
+            "      <td rowspan=\"6\"><img style=\"border:0px; width:228px; height:208px;\" \n" +
+            "        src=\"" + regionsImage + "\"\n" +
             "        alt=\"" + regionsImageAlt + "\" title=\"" + regionsImageTitle + "\"\n" +
             "        usemap=#regionCoordinates>\n" +
-            "        <br><center><small>" + regionsImageTitle + "</small></center></td>\n" +
+            "        <br><div style=\"text-align:center;\"><small>" + regionsImageTitle + "</small></div></td>\n" +
             "    </tr>\n");
 
         //dataset
@@ -522,7 +522,7 @@ public class CWDataBrowser extends EmaClass  {
 
         //submitForm  
         //may or may not be visible; so always a unique color (light red)
-        setBeginRow("<tr bgcolor=\"#FFCCCC\">"); 
+        setBeginRow("<tr style=\"background-color:#FFCCCC\">"); 
         sb.append("    <noscript>\n" + 
             submitForm.getTableEntry(submitForm.getValue(session), displayErrorMessages));
         sb.append("    </noscript>\n");
@@ -561,8 +561,8 @@ public class CWDataBrowser extends EmaClass  {
 //            "    <tr><td>&nbsp;</td></tr>\n" +  //row 6
 //            "    <tr><td colspan=\"2\">" + hereIs + "</td></tr>\n" + //row 7
             "    <tr>\n" + //standard
-            "      <td colspan=\"3\"><img border=\"0\" src=\"" + currentGifName + "\"\n" + //row 8
-            "        width=\"650\" height=\"502\"\n" + 
+            "      <td colspan=\"3\"><img style=\"border:0px; width:650px; height:502px;\" \n" +
+            "        src=\"" + currentGifName + "\"\n" + //row 8
             "        title=\"" + hereIs + " " + currentGifName + "\"\n" +
             "        alt=\"" + hereIsAlt + " " + currentGifName + "\">\n" +
             "      </td>\n" +
@@ -603,9 +603,8 @@ public class CWDataBrowser extends EmaClass  {
             "or assumes any legal liability for the accuracy, completeness, or usefulness,\n" +
             "of any information at this site.\n" +
             "\n" +
-            "<p><font size=\"-1\">Please email questions, comments, or\n" +
-            "suggestions regarding this web page to\n" +
-            "<A HREF=\"mailto:bob.simons@noaa.gov\">bob.simons@noaa.gov</A>.</font>");
+            "<p><small>Please email questions, comments, or\n" +
+            "suggestions regarding this web page to bob.simons at noaa.gov .</small>");
 
         return sb.toString();
     }

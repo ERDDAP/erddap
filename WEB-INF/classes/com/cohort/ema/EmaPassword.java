@@ -98,7 +98,7 @@ public class EmaPassword extends EmaAttribute {
         //this fixes: 'enter' acted like next 'submit' button
         String submit = enterSubmitsForm? "if (enter(event)) submitForm(this.form); " : "";
 
-        sb.append("<input type=\"password\" name=\"" + name + "\" value=\"" + 
+        sb.append("<input type=\"password\" autocomplete=\"off\" name=\"" + name + "\" value=\"" + 
             XML.encodeAsHTML(value) + "\"\n");
         sb.append("        onkeypress=\"" + submit + "return !enter(event);\"\n"); //supress Enter->submit
         if (title.length() > 0 || enterSubmitsForm)

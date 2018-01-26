@@ -310,8 +310,8 @@ public class PointScreen extends Screen {
                     "    " + oneOf.getBeginRowTag(Math2.odd(rowNumber.i++)) + "\n" +
                     "      <td>" + palette.getLabel() + "</td>\n" +
                     "      <td>\n" +
-                    "        <table cellspacing=\"0\" cellpadding=\"0\">\n" +
-                    "          <tr align=\"left\">\n" +
+                    "        <table class=\"erd\">\n" + //padding=0
+                    "          <tr>\n" +
                     "            <td>" + palette.getControl(paletteValue) + "</td>\n" + 
                     "            <td>" + paletteScale.getLabel() + "</td>\n" +
                     "            <td>" + paletteScale.getControl(paletteScaleValue) + "</td>\n" +
@@ -698,7 +698,7 @@ public class PointScreen extends Screen {
             "      <td>" + 
                 String2.substitute(getLabel, "" + (step.i++), null, null) + 
                 "</td>\n" +
-            "      <td width=\"90%\">\n"); //force this column to expand as much as possible
+            "      <td style=\"width:90%;\">\n"); //force this column to expand as much as possible
         boolean hasNoBr = false;
         if (!tableHasData) {
             htmlSB.append("        " + oneOf.noDataAvailable() + "\n");
@@ -734,7 +734,7 @@ public class PointScreen extends Screen {
 
             //file type help link
             hasNoBr = true;
-            htmlSB.append("        <span style=\"white-space: nowrap;\">\n"); 
+            htmlSB.append("        <span style=\"white-space:nowrap;\">\n"); 
             htmlSB.append(oneOf.pointFileHelpLink());
 
             //GETQuery help link

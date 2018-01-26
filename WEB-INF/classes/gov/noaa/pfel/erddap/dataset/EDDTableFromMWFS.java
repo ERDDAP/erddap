@@ -179,7 +179,7 @@ public class EDDTableFromMWFS extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -339,7 +339,7 @@ public class EDDTableFromMWFS extends EDDTable{
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromMWFS " + datasetID + 
             " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -503,7 +503,7 @@ public class EDDTableFromMWFS extends EDDTable{
         //do the final writeToTableWriter
         writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, true);
         if (verbose) String2.log("  getDataForDapQuery done. TIME=" +
-            (System.currentTimeMillis() - getTime)); 
+            (System.currentTimeMillis() - getTime) + "ms"); 
     }
 
     /** 
@@ -660,7 +660,7 @@ time series data.</att>
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromMWFS.test das dds for entire dataset\n");
         tName = mwfs.makeNewFileForDapQuery(null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = //see OpendapHelper.EOL for comments
 "Attributes {[10]\n" +
@@ -768,7 +768,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         
         //*** test getting dds for entire dataset
         tName = mwfs.makeNewFileForDapQuery(null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".dds"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -797,7 +797,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //2007-05-01 -> 1.1779776E9
         //2007-05-08 -> 1.1785824E9
         tName = mwfs.makeNewFileForDapQuery(null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -822,7 +822,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             userDapQuery = "longitude,latitude,station_id,time,sea_water_temperature" +
                 "&longitude=" + tLon + "&latitude=" + tLat; 
             tName = mwfs.makeNewFileForDapQuery(null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
-            results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+            results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
             //String2.log(results);
             expected = 
 "Dataset {[10]\n" +
@@ -849,7 +849,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //2007-05-01 -> 1.1779776E9
         //2007-05-01T00:59:00 -> 1.17798114E9
         tName = mwfs.makeNewFileForDapQuery(null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_stations", ".asc"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
@@ -875,7 +875,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
         //data for mapExample
         tName = mwfs.makeNewFileForDapQuery(null, "longitude,latitude&time>=2007-12-01&time<=2007-12-01T00:01:00", EDStatic.fullTestCacheDirectory, className + "Map", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 "longitude, latitude\n" +

@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.FloatArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
@@ -73,7 +74,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         iso19115File = null;
         sosOfferingPrefix = null;
         defaultDataQuery = null;
-        defaultGraphQuery = null;
+        defaultGraphQuery = "maxLongitude,maxLatitude";
         publicSourceUrl = EDStatic.erddapUrl(null); //the public, not-logged-in URL 
         setReloadEveryNMinutes(1000000000);  //i.e. never
         localSourceUrl = null;
@@ -121,7 +122,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
             String2.log(
                 (reallyVerbose? "\n" + toString() : "") +
                 "\n*** EDDTableFromAllDatasets constructor finished. TIME=" + 
-                (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+                (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
 
     /** 
@@ -198,6 +199,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String roles[] = EDStatic.getRoles(loggedInAs);
         boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
+        double nowES = System.currentTimeMillis() / 1000.0;
 
         //create the table and the global attributes
         Table table = new Table();
@@ -252,6 +254,8 @@ public class EDDTableFromAllDatasets extends EDDTable{
         StringArray rssCol = new StringArray();
         StringArray emailCol = new StringArray();
         StringArray summaryCol = new StringArray();
+        StringArray testOutOfDateCol = new StringArray();
+        FloatArray  outOfDateCol = new FloatArray();
 
         //Create the table -- column order in final table is determined here.
         // !!! DON'T TRANSLATE COLUMN NAMES, SO CONSISTENT FOR ALL ERDDAPs 
@@ -261,6 +265,8 @@ public class EDDTableFromAllDatasets extends EDDTable{
         col = table.addColumn("datasetID", idCol); //Dataset ID in /info
         int idColNumber = col;
         table.columnAttributes(col)
+            .add("fileAccessBaseUrl", tErddapUrl + "/info/") //can't be griddap|tabledap because not same for all datasets
+            .add("fileAccessSuffix",  "/index.html")
             .add("ioos_category", "Other")
             .add("long_name", EDStatic.advl_datasetID);
         col = table.addColumn("accessible", accessCol);
@@ -421,7 +427,17 @@ public class EDDTableFromAllDatasets extends EDDTable{
             .add("comment", EDStatic.advc_email)
             .add("ioos_category", "Other")
             .add("long_name", EDStatic.advl_email);
-        col = table.addColumn("summary", summaryCol);  //Summary
+        col = table.addColumn("testOutOfDate", testOutOfDateCol);  
+        table.columnAttributes(col)
+            .add("comment", EDStatic.advc_testOutOfDate)
+            .add("ioos_category", "Other")
+            .add("long_name", EDStatic.advl_testOutOfDate);
+        col = table.addColumn("outOfDate", outOfDateCol);  
+        table.columnAttributes(col)
+            .add("comment", EDStatic.advc_outOfDate)
+            .add("ioos_category", "Other")
+            .add("long_name", EDStatic.advl_outOfDate);
+        col = table.addColumn("summary", summaryCol); 
         table.columnAttributes(col)
             .add("ioos_category", "Other")
             .add("long_name", EDStatic.advl_summary);
@@ -494,8 +510,27 @@ public class EDDTableFromAllDatasets extends EDDTable{
             tedv = isGrid &&  eddGrid.timeIndex() >= 0 ?  eddGrid.axisVariables[ eddGrid.timeIndex()] :
                   !isGrid && eddTable.timeIndex() >= 0 ? eddTable.dataVariables[eddTable.timeIndex()] : null;
             minTime.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMin());
-            maxTime.add(!graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax());
+            double tMaxTime = !graphsAccessible || tedv == null? Double.NaN : tedv.destinationMax();
+            maxTime.add(tMaxTime);
             timeSpacing.add(graphsAccessible && isGrid && tedv != null ? ((EDVGridAxis)tedv).averageSpacing() : Double.NaN);
+
+            //outOfDate
+            double ood = Double.NaN;
+            String oods = edd.combinedGlobalAttributes().getString("testOutOfDate");
+            testOutOfDateCol.add(String2.isSomething(oods)? oods : "");
+            if (!Double.isNaN(tMaxTime) && String2.isSomething(oods)) {
+                double nmes = Calendar2.safeNowStringToEpochSeconds(oods, Double.NaN);
+                if (!Double.isNaN(nmes)) {
+                    if (nmes < nowES) //now-   For near-real-time    //! specifically not <=
+                        //          howLate      / scaleFactor
+                        ood = (nowES - tMaxTime) / Math.abs(nowES - nmes);
+                    else //now+    for a forecast, assume updates roughly every day
+                        //         e.g., 8day forecast: now+6days
+                        //         howLate      / scaleFactor
+                        ood = (nmes + 2*Calendar2.SECONDS_PER_DAY - tMaxTime) / (2*Calendar2.SECONDS_PER_DAY); 
+                }
+            }
+            outOfDateCol.add(Math2.doubleToFloatNaN(ood)); //all errors -> NaN
 
             //other
             String daps = tErddapUrl + "/" + edd.dapProtocol() + "/" + tId; //without an extension, so easy to add

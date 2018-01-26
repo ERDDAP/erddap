@@ -97,7 +97,7 @@ import org.jdom.*;
  *     "<i><code>classname</code></i>")</code></li>
  *   <li>The value specified at the command line using the
  *      <tt>-Djavax.xml.transform.TransformerFactory=<i><code>classname</code></i></tt>
- *      option to the <b>java</b> interpreter</li>
+ *      option to the <strong>java</strong> interpreter</li>
  *    <li>The class named in the  <code>lib/jaxp.properties</code> properties file
  *         in the JRE directory, in a line like this one:
  *      <pre>javax.xml.parsers.DocumentBuilderFactory=<i><code>classname</code></i></pre></li>

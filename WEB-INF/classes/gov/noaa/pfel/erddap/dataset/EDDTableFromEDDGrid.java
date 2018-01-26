@@ -261,7 +261,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromEDDGrid " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -460,8 +460,10 @@ public class EDDTableFromEDDGrid extends EDDTable{
             int cumNRows = 0;
             while (gda.increment()) {
                 for (int av = 0; av < eddGridNAV; av++) 
+                    //FUTURE: switch to pa.addFromPA(otherPA, otherIndex, nValues);
                     paAr[av].addDouble(gda.getAxisValueAsDouble(av));  
                 for (int dv = 0; dv < nQueryDV; dv++) 
+                    //FUTURE: switch to pa.addFromPA(otherPA, otherIndex, nValues);
                     paAr[eddGridNAV + dv].addDouble(gda.getDataValueAsDouble(dv));  
                 if (++cumNRows >= chunkNRows) {
                     if (debugMode) String2.log(tTable.dataToString(5));
@@ -603,7 +605,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "1", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -678,8 +680,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String creator_type \"institution\";\n" +
 "    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
-"    String date_created \"20.{8}Z\";\n" + //changes
-"    String date_issued \"20.{8}Z\";\n" +  //changes
+"    String date_created \"20.{8}\";\n" + //changes
+"    String date_issued \"20.{8}\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 75.0;\n" +
@@ -706,9 +708,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
 expected2 = 
    "String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
-"    String keywords \"5-day,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
+"    String keywords \"5-day, blended, coastwatch, day, degrees, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -717,48 +717,37 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 75.0;\n" +
 "    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
 "    String processing_level \"3\";\n" +
-"    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
+"    String project \"CoastWatch \\(https://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
 "    String publisher_email \"erd.data@noaa.gov\";\n" +
 "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String publisher_type \"institution\";\n" +
 "    String publisher_url \"https://www.pfeg.noaa.gov\";\n" +
-"    String references \"Blended SST from satellites information: This is an " + 
-    "experimental product which blends satellite-derived SST data from multiple " + 
-    "platforms using a weighted mean.  Weights are based on the inverse square " + 
-    "of the nominal accuracy of each satellite. AMSR_E Processing information: " + 
-    "http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing " + 
-    "reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT " + 
-    "CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing " + 
-    "Systems Internal Report. AVHRR Processing Information: " + 
-    "http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing " + 
-    "Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The " + 
-    "development and operational application of nonlinear algorithms for the " + 
-    "measurement of sea surface temperatures with the NOAA polar-orbiting " + 
-    "environmental satellites. J.G.R., 103: \\(C12\\) 27999-28012, 1998. " + 
-    "Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  " + 
-    "Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud " + 
-    "classification algorithm for the advanced very high resolution radiometer. " + 
-    "J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: " + 
-    "Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving " + 
-    "the operational nonlinear multi-channel sea surface temperature algorithm " + 
-    "coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, " + 
-    "Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: " + 
-    "Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. " + 
-    "Validation of coastal sea and lake surface temperature measurements derived " + 
-    "from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, " + 
-    "No. 7, 1285-1303, 2001b. GOES Imager Processing Information: " + 
-    "http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager " + 
-    "Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. " + 
-    "Estimation of sea surface temperatures using GOES-8/9 radiance measurements, " + 
-    "Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: " + 
-    "http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing " + 
-    "reference: Not Available.\";\n" +
+"    String references \"Blended SST from satellites information: This is an experimental product whi" +
+"ch blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the i" +
+"nverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.eorc.jaxa.jp" +
+"/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gent" +
+"emann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensin" +
+"g Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html ." +
+"  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operatio" +
+"nal application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orb" +
+"iting environmental satellites. J.G.R., 103: \\(C12\\) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. " +
+"Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classifica" +
+"tion algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999." +
+" Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the opera" +
+"tional nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. Internationa" +
+"l Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pi" +
+"chel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature" +
+" measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303," +
+" 2001b. GOES Imager Processing Information: https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager P" +
+"rocessing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using G" +
+"OES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: htt" +
+"ps://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.\";\n" +
 "    String satellite \"Aqua, GOES, POES\";\n" +
 "    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
@@ -791,7 +780,7 @@ expected2 =
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -810,7 +799,7 @@ expected2 =
             "&longitude=0"; //longitude constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "1axis", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude\n" +
 "degrees_north\n" +
@@ -824,7 +813,7 @@ expected2 =
         //query 1 axis =min
         tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude=0", 
             dir, tedd.className() + "1axisMin", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -834,7 +823,7 @@ expected2 =
         //query 1 axis <=min 
         tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<=0", 
             dir, tedd.className() + "1axisLEMin", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -868,7 +857,7 @@ expected2 =
         //query 1 axis =max
         tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude=360", 
             dir, tedd.className() + "1axisMax", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -878,7 +867,7 @@ expected2 =
         //query 1 axis >=max 
         tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>=360", 
             dir, tedd.className() + "1axisGEMax", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -913,7 +902,7 @@ expected2 =
         String timeMin = "2002-07-06T12:00:00Z";
         tName = tedd.makeNewFileForDapQuery(null, null, "time&time=" + timeMin, 
             dir, tedd.className() + "timeAxisMin", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time\n" +
 "UTC\n" +
@@ -923,7 +912,7 @@ expected2 =
         //query time axis <=min 
         tName = tedd.makeNewFileForDapQuery(null, null, "time&time<=" + timeMin, 
             dir, tedd.className() + "timeAxisLEMin", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "time\n" +
 "UTC\n" +
@@ -1008,7 +997,7 @@ expected2 =
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; //time constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "2axes", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude\n" +
 "degrees_east,degrees_north\n" +
@@ -1029,7 +1018,7 @@ expected2 =
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1048,7 +1037,7 @@ expected2 =
         query = "latitude,longitude,altitude,time,sst&sst>35&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time,sst\n" +
 "degrees_north,degrees_east,m,UTC,degree_C\n" +
@@ -1061,7 +1050,7 @@ expected2 =
         query = "latitude,longitude,altitude,time&sst>35&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1074,7 +1063,7 @@ expected2 =
         query = "sst&sst>35&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav3", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "sst\n" +
 "degree_C\n" +
@@ -1101,7 +1090,7 @@ debugMode = false; //normally false.  Set it to true if need help.
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "1", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -1176,8 +1165,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String creator_type \"institution\";\n" +
 "    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
-"    String date_created \"20.{8}Z\";\n" + //changes
-"    String date_issued \"20.{8}Z\";\n" +  //changes
+"    String date_created \"20.{8}\";\n" + //changes
+"    String date_issued \"20.{8}\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 75.0;\n" +
@@ -1204,9 +1193,7 @@ debugMode = false; //normally false.  Set it to true if need help.
 expected2 = 
    "String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
-"    String keywords \"5-day,\n" +
-"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
-"blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
+"    String keywords \"5-day, blended, coastwatch, day, degrees, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1215,11 +1202,11 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 75.0;\n" +
 "    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
 "    String processing_level \"3\";\n" +
-"    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
+"    String project \"CoastWatch \\(https://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
 "    String publisher_email \"erd.data@noaa.gov\";\n" +
@@ -1227,36 +1214,35 @@ expected2 =
 "    String publisher_type \"institution\";\n" +
 "    String publisher_url \"https://www.pfeg.noaa.gov\";\n" +
 "    String references \"Blended SST from satellites information: This is an " +
-    "experimental product which blends satellite-derived SST data from multiple " +
-    "platforms using a weighted mean.  Weights are based on the inverse square " +
-    "of the nominal accuracy of each satellite. AMSR_E Processing information: " +
-    "http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing " +
-    "reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT " +
-    "CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing " +
-    "Systems Internal Report. AVHRR Processing Information: " +
-    "http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing " +
-    "Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The " +
-    "development and operational application of nonlinear algorithms for the " +
-    "measurement of sea surface temperatures with the NOAA polar-orbiting " +
-    "environmental satellites. J.G.R., 103: \\(C12\\) 27999-28012, 1998. " +
-    "Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  " +
-    "Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud " +
-    "classification algorithm for the advanced very high resolution radiometer. " +
-    "J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: " +
-    "Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the " +
-    "operational nonlinear multi-channel sea surface temperature algorithm " +
-    "coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, " +
-    "Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, " +
-    "X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation " +
-    "of coastal sea and lake surface temperature measurements derived from " +
-    "NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, " +
-    "1285-1303, 2001b. GOES Imager Processing Information: " +
-    "http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager " +
-    "Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. " +
-    "Estimation of sea surface temperatures using GOES-8/9 radiance measurements, " +
-    "Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: " +
-    "http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing " +
-    "reference: Not Available.\";\n" +
+"experimental product which blends satellite-derived SST data from multiple " +
+"platforms using a weighted mean.  Weights are based on the inverse square of " +
+"the nominal accuracy of each satellite. AMSR_E Processing information: " +
+"http://www.eorc.jaxa.jp/en/distribution/standard_dataset/pdf/amsr-e_handbook_e.pdf . " +
+"AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. " +
+"ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote " +
+"Sensing Systems Internal Report. AVHRR Processing Information: " +
+"http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: " +
+"Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and " +
+"operational application of nonlinear algorithms for the measurement of sea " +
+"surface temperatures with the NOAA polar-orbiting environmental satellites. " +
+"J.G.R., 103: \\(C12\\) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. " +
+"Davis, and E. P. McClain.  Scientific basis and initial evaluation of the " +
+"CLAVR-1 global clear/cloud classification algorithm for the advanced very high " +
+"resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration " +
+"and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. " +
+"Deriving the operational nonlinear multi-channel sea surface temperature " +
+"algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote " +
+"Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: " +
+"Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation " +
+"of coastal sea and lake surface temperature measurements derived from " +
+"NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, " +
+"1285-1303, 2001b. GOES Imager Processing Information: " +
+"https://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing " +
+"Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface " +
+"temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., " +
+"80, 1127-1138.  MODIS Aqua Processing Information: " +
+"https://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . " +
+"MODIS Aqua Processing reference: Not Available.\";\n" +
 "    String satellite \"Aqua, GOES, POES\";\n" +
 "    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
@@ -1290,7 +1276,7 @@ expected2 =
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1309,7 +1295,7 @@ expected2 =
             "&longitude=0"; //longitude constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "1axis", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude\n" +
 "degrees_north\n" +
@@ -1340,7 +1326,7 @@ expected2 =
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; //time constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "2axes", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude\n" +
 "degrees_east,degrees_north\n" +
@@ -1361,7 +1347,7 @@ expected2 =
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1380,7 +1366,7 @@ expected2 =
         query = "latitude,longitude,altitude,time,sst&sst>35&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav1", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time,sst\n" +
 "degrees_north,degrees_east,m,UTC,degree_C\n" +
@@ -1393,7 +1379,7 @@ expected2 =
         query = "latitude,longitude,altitude,time&sst>35&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav2", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1406,7 +1392,7 @@ expected2 =
         query = "sst&sst>35&time=\"2012-01-01T12\""; 
         tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav3", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "sst\n" +
 "degree_C\n" +

@@ -913,8 +913,7 @@ directionsForGenerateDatasetsXml() +
         //*** .das
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             "kgsBoreTempWVTRUE", ".das"); 
-        results = new String((new ByteArray(
-            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected =   
 "Attributes {\n" +
@@ -1131,7 +1130,7 @@ expected =
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             "kgsBoreTempWVTRUE", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1171,7 +1170,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(null, null, 
             "&APINo=\"4700102422\"", 
             EDStatic.fullTestCacheDirectory, "kgsBoreTempWVTRUE", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "ObservationURI,WellName,APINo,HeaderURI,Label,Operator,time,EndedDrillingDate,WellType,Field,County,State,latitude,longitude,DrillerTotalDepth,DepthReferencePoint,WellBoreShape,TrueVerticalDepth,ElevationGL,FormationTD,MeasuredTemperature,DepthOfMeasurement,MeasurementFormation,RelatedResource,TimeSinceCirculation,OtherName,LeaseName,Notes\n" +

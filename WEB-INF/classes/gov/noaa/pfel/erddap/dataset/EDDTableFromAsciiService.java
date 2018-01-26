@@ -184,7 +184,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -391,7 +391,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** " + tDatasetType + " " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -419,24 +419,12 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      * @return a table where some of the PrimitiveArrays have data, some don't
      */
     public Table getTable(String encodedSourceUrl) throws Throwable {
-        BufferedReader in = getBufferedReader(encodedSourceUrl);
+        BufferedReader in = SSR.getBufferedUrlReader(encodedSourceUrl);
         String s = in.readLine();
         s = findBeforeData(in, s);
         Table table = getTable(in, s);
         in.close();
         return table;
-    }
-
-    /** 
-     * getDataForDapQuery may use this to get the BufferedReader for the encodedSourceUrl.
-     *
-     * @throws Throwable if trouble, e.g., unable to connect to encodedSourceUrl
-     */
-    protected BufferedReader getBufferedReader(String encodedSourceUrl) throws Throwable {
-
-        if (verbose) String2.log(encodedSourceUrl);
-        InputStream is = SSR.getUrlInputStream(encodedSourceUrl); 
-        return new BufferedReader(new InputStreamReader(is));
     }
 
 

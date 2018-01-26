@@ -818,7 +818,7 @@ public abstract class TableDataSet implements Comparable {
         //for timePeriodNHours == 0, just return the raw data  (no averaging)
         if (timePeriodNHours == 0) {
             if (verbose) String2.log("\\\\**** TableDataSet.makeAveragedTimeSeries done. nRows=" + 
-                rawTable.nRows() + " TIME=" + (System.currentTimeMillis() - time));
+                rawTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
             return rawTable;
         }
 
@@ -883,7 +883,7 @@ public abstract class TableDataSet implements Comparable {
         double timePeriodCenteredTime[] = tCenteredTime.toArray(); tCenteredTime = null;
         if (nTimePeriods == 0) {
             if (verbose) String2.log("\\\\**** TableDataSet.makeAveragedTimeSeries done. nRows=" + 
-                resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time));
+                resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");
             return resultTable;
         }
 
@@ -1006,7 +1006,7 @@ public abstract class TableDataSet implements Comparable {
         //String2.log("TableDataSet.makeAveragedTS resultsTable=" + resultsTable);
         //String2.log("TableDataSet.makeAveragedTS resultsTable data stats=" + resultsTable.getColumn(5).statsString());
         if (verbose) String2.log("\\\\**** TableDataSet.makeAveragedTimeSeries done. nRows=" + 
-            resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "\n");
+            resultTable.nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms\n");
         return resultTable;
 
     }

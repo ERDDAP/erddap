@@ -120,7 +120,7 @@ public class TransformColorMap extends ColorMap
   }
   /**
    * Set the color <code>Transform</code>s.
-   * <BR><B>Property Change:</B> <code>redColorTransform</code>,
+   * <BR><strong>Property Change:</strong> <code>redColorTransform</code>,
    * <code>greenColorTransform</code>, and
    * <code>blueColorTransform</code>.
    *

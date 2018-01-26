@@ -95,7 +95,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     * @param sourceAxisNames If there is a special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns
      * (e.g., "String" or "float")
@@ -207,7 +207,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
-     *   If special axis0, this will not include axis0's name.
+     *   If there is a special axis0, this will not include axis0's name.
      * @return a PrimitiveArray[] with the results (with the requested
      *   sourceDataTypes). It needn't set sourceGlobalAttributes or
      *   sourceDataAttributes (but see getSourceMetadata).
@@ -302,9 +302,9 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param tDataVariables the desired data variables
-     * @param tConstraints where the first axis variable's constraints have been
-     *   customized for this file.
-     *   !!! If special axis0, then will not include constraints for axis0.
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with
      *   the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
@@ -725,7 +725,8 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-        Test.ensureEqual(results, expected, results.length() + " " + expected.length() + 
+        Test.ensureEqual(results, expected, 
+            "results.length=" + results.length() + " expected.length=" + expected.length() + 
             "\nresults=\n" + results);
 
         //ensure it is ready-to-use by making a dataset from it
@@ -742,7 +743,7 @@ directionsForGenerateDatasetsXml() +
     /** This tests this class. */
     public static void testMergeIR() throws Throwable {
 
-        String2.log("\n*** testMergeIRgz\n");
+        String2.log("\n*** EDDGridFromMergeIRFiles.testMergeIRgz\n");
         testVerboseOn();
         //String2.log(NcHelper.dumpString("/erddapTest/mergeIR/merg_20150101_4km-pixel", false));
         EDDGrid edd   = (EDDGrid)oneFromDatasetsXml(null, "mergeIR");   //from uncompressed files
@@ -778,21 +779,21 @@ directionsForGenerateDatasetsXml() +
         //uncompressed
         tName = edd.makeNewFileForDapQuery(null, null, "", 
             dir, edd.className() + "_", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //Z
         expected = String2.replaceAll(expected, "mergeIR;", "mergeIRZ;");
         tName = eddZ.makeNewFileForDapQuery(null, null, "", 
             dir, eddZ.className() + "_Z", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "Z results=\n" + results);
 
         //gz
         expected = String2.replaceAll(expected, "mergeIRZ;", "mergeIRgz;");
         tName = eddgz.makeNewFileForDapQuery(null, null, "", 
             dir, eddgz.className() + "_gz", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "gz results=\n" + results);
 
 
@@ -898,7 +899,7 @@ String expected2 =
         //uncompressed
         tName = edd.makeNewFileForDapQuery(null, null, "", 
             dir, edd.className() + "_", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         po = results.indexOf(expected2.substring(0, 20));
@@ -908,7 +909,7 @@ String expected2 =
         expected2 = String2.replaceAll(expected2, "mergeIR.das", "mergeIRZ.das");
         tName = eddZ.makeNewFileForDapQuery(null, null, "", 
             dir, eddZ.className() + "_Z", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "Z results=\n" + results);
 
         po = results.indexOf(expected2.substring(0, 20));
@@ -918,7 +919,7 @@ String expected2 =
         expected2 = String2.replaceAll(expected2, "mergeIRZ.das", "mergeIRgz.das");
         tName = eddgz.makeNewFileForDapQuery(null, null, "", 
             dir, eddgz.className() + "_gz", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "gz results=\n" + results);
 
         po = results.indexOf(expected2.substring(0, 20));
@@ -973,22 +974,22 @@ String expected2 =
         //uncompressed
         tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
             dir, edd.className() + "_", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //Z
         tName = eddZ.makeNewFileForDapQuery(null, null, dapQuery, 
             dir, eddZ.className() + "_Z", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "Z results=\n" + results);
 
         //gz
         tName = eddgz.makeNewFileForDapQuery(null, null, dapQuery, 
             dir, eddgz.className() + "_gz", ".csv"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "gz results=\n" + results);
 
-        String2.log("\n*** testMergeIR() finished successfully");
+        String2.log("\n*** EDDGridFromMergeIRFiles.testMergeIR() finished successfully");
     }
 
     /** This tests this class. */

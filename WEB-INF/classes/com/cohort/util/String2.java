@@ -24,6 +24,7 @@ import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
 import java.io.Writer;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -44,6 +45,8 @@ import java.util.regex.Pattern;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * A class with static String methods that add to native String methods.
@@ -569,8 +572,9 @@ public class String2 {
     /**
      * This returns the first section of s (starting at fromIndex) 
      * which matches regex.
+     * !!! Note that . in the regex doesn't match line terminators in s !!!
      *
-     * @param s the source String
+     * @param s the source String.
      * @param regex the regular expression, see java.util.regex.Pattern.
      * @param fromIndex the starting index in s
      * @return the section of s which matches regex, or null if not found
@@ -587,6 +591,7 @@ public class String2 {
     /**
      * This returns all the sections of s that match regex.
      * It assumes that the extracted parts don't overlap.
+     * !!! Note that . in the regex doesn't match line terminators in s !!!
      *
      * @param s the source String
      * @param regex the regular expression, see java.util.regex.Pattern.
@@ -621,8 +626,22 @@ public class String2 {
      * @throws RuntimeException if trouble, e.g., invalid regex syntax
      */
     public static String extractCaptureGroup(String s, String regex, int captureGroupNumber) {
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(s);
+        return extractCaptureGroup(s, Pattern.compile(regex), captureGroupNumber);
+    }
+
+    /**
+     * This returns the specified capture group from s. 
+     *
+     * @param s the source String
+     * @param regexPattern 
+     * @param captureGroupNumber the number of the capture group (0 for entire regex,
+     *    1 for first capture group, 2 for second, etc.)
+     * @return the value of the specified capture group,
+          or null if the s doesn't match the regex
+     * @throws RuntimeException if trouble, e.g., invalid regex syntax
+     */
+    public static String extractCaptureGroup(String s, Pattern regexPattern, int captureGroupNumber) {
+        Matcher m = regexPattern.matcher(s);
         if (m.matches()) 
             return m.group(captureGroupNumber);
         else return null; 
@@ -937,7 +956,7 @@ public class String2 {
 
         //return results
         //log("  String2.readFromFile " + fileName + " time=" + 
-        //    (System.currentTimeMillis() - time));
+        //    (System.currentTimeMillis() - time) + "ms");
         return results;
     }
 
@@ -1325,7 +1344,7 @@ public class String2 {
      * <UL>
      * <LI> This is used, for example, to limit characters entering CoText.
      * <LI> Currently, this accepts the ch if
-     *   <TT>(ch&gt;=32 &amp;&amp; ch&lt;127) || (ch&gt;=161 &amp;&amp; ch&lt;=255)</TT>.
+     *   <tt>(ch&gt;=32 &amp;&amp; ch&lt;127) || (ch&gt;=161 &amp;&amp; ch&lt;=255)</tt>.
      * <LI> tab(#9) is not included.  It should be caught separately
      *   and dealt with (expand to spaces?).  The problem is that
      *   tabs are printed with a wide box (non-character symbol)
@@ -1708,7 +1727,7 @@ public class String2 {
 
 
     /**
-     * This counts all occurrences of <TT>findS</TT> in sb.
+     * This counts all occurrences of <tt>findS</tt> in sb.
      * if (sb == null || findS == null || findS.length() == 0) return 0;
      * 
      * @param sb the source StringBuilder
@@ -1727,7 +1746,7 @@ public class String2 {
     }
 
     /**
-     * This counts all occurrences of <TT>findS</TT> in s.
+     * This counts all occurrences of <tt>findS</tt> in s.
      * if (s == null || findS == null || findS.length() == 0) return 0;
      * 
      * @param s the source string
@@ -1746,8 +1765,8 @@ public class String2 {
     }
 
     /**
-     * Replaces all occurences of <TT>oldS</TT> in sb with <TT>newS</TT>.
-     * If <TT>oldS</TT> occurs inside <TT>newS</TT>, it won't be replaced
+     * Replaces all occurences of <tt>oldS</tt> in sb with <tt>newS</tt>.
+     * If <tt>oldS</tt> occurs inside <tt>newS</tt>, it won't be replaced
      *   recursively (obviously).
      * 
      * @param sb the source StringBuilder
@@ -1759,8 +1778,8 @@ public class String2 {
     }
 
     /**
-     * Replaces all occurences of <TT>oldS</TT> in sb with <TT>newS</TT>.
-     * If <TT>oldS</TT> occurs inside <TT>newS</TT>, it won't be replaced
+     * Replaces all occurences of <tt>oldS</tt> in sb with <tt>newS</tt>.
+     * If <tt>oldS</tt> occurs inside <tt>newS</tt>, it won't be replaced
      *   recursively (obviously).
      * When searching sb for oldS, this ignores the case of sb and oldS.
      * 
@@ -1773,8 +1792,8 @@ public class String2 {
     }
 
     /**
-     * Replaces all occurences of <TT>oldS</TT> in sb with <TT>newS</TT>.
-     * If <TT>oldS</TT> occurs inside <TT>newS</TT>, it won't be replaced
+     * Replaces all occurences of <tt>oldS</tt> in sb with <tt>newS</tt>.
+     * If <tt>oldS</tt> occurs inside <tt>newS</tt>, it won't be replaced
      *   recursively (obviously).
      * 
      * @param sb the StringBuilder
@@ -1843,9 +1862,9 @@ public class String2 {
 
 
     /**
-     * Returns a string where all occurences of <TT>oldS</TT> have
-     *   been replaced with <TT>newS</TT>.
-     * If <TT>oldS</TT> occurs inside <TT>newS</TT>, it won't be replaced
+     * Returns a string where all occurences of <tt>oldS</tt> have
+     *   been replaced with <tt>newS</tt>.
+     * If <tt>oldS</tt> occurs inside <tt>newS</tt>, it won't be replaced
      *   recursively (obviously).
      *
      * @param s the main string
@@ -1861,9 +1880,9 @@ public class String2 {
     }
 
     /**
-     * Returns a string where all occurences of <TT>oldS</TT> have
-     *   been replaced with <TT>newS</TT>.
-     * If <TT>oldS</TT> occurs inside <TT>newS</TT>, it won't be replaced
+     * Returns a string where all occurences of <tt>oldS</tt> have
+     *   been replaced with <tt>newS</tt>.
+     * If <tt>oldS</tt> occurs inside <tt>newS</tt>, it won't be replaced
      *   recursively (obviously).
      * When finding oldS in s, their case is irrelevant.
      *
@@ -1918,18 +1937,16 @@ public class String2 {
      * leading and trailing whitespace.
      * Also, spaces after { or ( and before ) or } will be removed.
      *
-     * @param s 
-     * @return s, but with the spaces combined
-     *    (or null if s is null)
+     * @param sb 
      */
-    public static String whitespacesToSpace(String s) {
-        if (s == null)
-            return null;
-        s = s.trim(); //this removes whitespace, not just ' '
+    public static void whitespacesToSpace(StringBuilder sb) {
+        if (sb == null)
+            return;
+        String s = sb.toString().trim(); //this removes whitespace, not just ' '
         int sLength = s.length();
-        if (sLength <= 2) //first and last chars must be non-space
-            return s; 
-        StringBuilder sb = new StringBuilder(sLength);
+        sb.setLength(0);
+        if (sLength == 0)
+            return;
         sb.append(s.charAt(0));
         for (int po = 1; po < sLength; po++) {
             char ch = s.charAt(po);
@@ -1944,12 +1961,20 @@ public class String2 {
                 sb.append(ch);
             }
         }
+    }
+
+    /* A variant that takes and returns a string */
+    public static String whitespacesToSpace(String s) {
+        if (s == null)
+            return null;
+        StringBuilder sb = new StringBuilder(s);
+        whitespacesToSpace(sb);
         return sb.toString();
     }
 
     /**
-     * Returns a string where all occurences of <TT>oldCh</TT> have
-     *   been replaced with <TT>newCh</TT>.
+     * Returns a string where all occurences of <tt>oldCh</tt> have
+     *   been replaced with <tt>newCh</tt>.
      * This doesn't throw exceptions if bad values.
      */
     public static String replaceAll(String s, char oldCh, char newCh) {
@@ -1966,8 +1991,8 @@ public class String2 {
     }
 
     /**
-     * Returns the same StringBuilder, where all occurences of <TT>oldCh</TT> have
-     *   been replaced with <TT>newCh</TT>.
+     * Returns the same StringBuilder, where all occurences of <tt>oldCh</tt> have
+     *   been replaced with <tt>newCh</tt>.
      *
      * @return the same StringBuilder, for convenience.
      */
@@ -2006,7 +2031,7 @@ public class String2 {
     }
 
     /**
-     * This adds 0's to the left of the string until there are <TT>nDigits</TT>
+     * This adds 0's to the left of the string until there are <tt>nDigits</tt>
      *   to the left of the decimal point (or nDigits total if there isn't
      *   a decimal point).
      * If the number is too big, nothing is added or taken away.
@@ -2053,6 +2078,20 @@ public class String2 {
 
 
     /**
+     * This makes a JSON version of a number. 
+     *
+     * @param d
+     * @return "null" if not finite. Return an integer if it ends with ".0".
+     *    Else returns the number as a string.
+     */
+    public static String toJson(double d) {
+        if (!Double.isFinite(d))
+            return "null";
+        String s = "" + d;
+        return s.endsWith(".0")? s.substring(0, s.length() - 2) : s;
+    }
+
+    /**
      * This makes a JSON version of a string 
      * (\\, \f, \n, \r, \t and \" are escaped with a backslash character
      * and double quotes are added before and after).
@@ -2064,6 +2103,16 @@ public class String2 {
      */
     public static String toJson(String s) {
         return toJson(s, 127, true);
+    }
+
+    /**
+     * This variant doesn't encode high characters.
+     *
+     * @param s
+     * @return the JSON-encoded string surrounded by "'s.
+     */
+    public static String toJson65536(String s) {
+        return toJson(s, 65536, true);
     }
 
     /**
@@ -3940,7 +3989,7 @@ and zoom and pan with controls in
         int nFinite = 0;
         double da[] = new double[n];
         for (int i = 0; i < n; i++)
-            if (Math2.isFinite(dar[i]))
+            if (Double.isFinite(dar[i]))
                 da[nFinite++] = dar[i];
 
         //copy to a new array
@@ -4693,7 +4742,7 @@ and zoom and pan with controls in
     public static String genEFormat6(double d) {
 
         //!finite
-        if (!Math2.isFinite(d))
+        if (!Double.isFinite(d))
             return "" + d;
 
         //almost 0
@@ -4742,7 +4791,7 @@ and zoom and pan with controls in
     public static String genEFormat10(double d) {
 
         //!finite
-        if (!Math2.isFinite(d))
+        if (!Double.isFinite(d))
             return "" + d;
 
         //almost 0
@@ -5432,7 +5481,7 @@ and zoom and pan with controls in
      * 
      * @param algorithm one of the FILE_DIGEST_OPTIONS
      * @param password  the text to be digested
-     * @return the SHA256 hash digest of the password (256 lowercase hex digits, as a String),
+     * @return the algorithm's hash digest of the password (many lowercase hex digits, as a String),
      *   or null if password is null or there is trouble.
      */
     public static String passwordDigest(String algorithm, String password) {
@@ -5453,8 +5502,9 @@ and zoom and pan with controls in
         }
     }
 
-    public static final String FILE_DIGEST_OPTIONS[]    = {"MD5",  "SHA-1", "SHA-256"};
-    public static final String FILE_DIGEST_EXTENSIONS[] = {".md5", ".sha1", ".sha256"}; //Bagit likes these (after the '.')
+    /** Java only guarantees that the first 3 of these will be supported. */
+    public static final String FILE_DIGEST_OPTIONS[]    = {"MD5",  "SHA-1", "SHA-256", "SHA-384", "SHA-512" };
+    public static final String FILE_DIGEST_EXTENSIONS[] = {".md5", ".sha1", ".sha256", ".sha384", ".sha512"}; //Bagit likes these (after the '.')
 
     /**
      * This returns a hash digest of fullFileName (read as bytes)
@@ -5462,28 +5512,39 @@ and zoom and pan with controls in
      * Lowercase because the digest authentication standard uses lower case; so mimic them.
      * And lowercase is easier to type.
      * 
-     * @param algorithm one of the FILE_DIGEST_OPTIONS ("MD5", "SHA-1", "SHA-256").
+     * @param useBase64 If true, this returns the digest as a base64 string.
+     *   If false, this returns the digest as a hex string.
+     * @param algorithm one of the FILE_DIGEST_OPTIONS ("MD5", "SHA-1", "SHA-256", ...).
      * @param fullFileName  the name of the file to be digested
      * @return the hash digest of the file
      *   (for MD5, 32 lowercase hex digits as a String),
      *   or null if fullFileName is null or there is trouble.
      */
-    public static String fileDigest(String algorithm, String fullFileName) 
+    public static String fileDigest(boolean useBase64, String algorithm, String fullFileName) 
         throws Exception {
         MessageDigest md = MessageDigest.getInstance(algorithm);
         FileInputStream fis = new FileInputStream(fullFileName);
         byte buffer[] = new byte[8192];
         int nBytes;
-        while ((nBytes = fis.read(buffer)) > 0) 
+        while ((nBytes = fis.read(buffer)) >= 0) 
             md.update(buffer, 0, nBytes);
         fis.close();
         byte bytes[] = md.digest();
-        nBytes = bytes.length;
-        StringBuilder sb = new StringBuilder(nBytes * 2);
-        for (int i = 0; i < nBytes; i++)
-            sb.append(zeroPad(Integer.toHexString(
-                (int)bytes[i] & 0xFF), 2));   //safe, (int) and 0xFF make it unsigned byte
-        return sb.toString();
+        if (useBase64) {
+            return new String(Base64.encodeBase64(bytes));
+        } else {
+            nBytes = bytes.length;
+            StringBuilder sb = new StringBuilder(nBytes * 2);
+            for (int i = 0; i < nBytes; i++)
+                sb.append(zeroPad(Integer.toHexString(
+                    (int)bytes[i] & 0xFF), 2));   //safe, (int) and 0xFF make it unsigned byte
+            return sb.toString();
+        }
+    }
+
+    /* This variant returns the digest as a hex string. */
+    public static String fileDigest(String algorithm, String fullFileName) throws Exception {
+        return fileDigest(false, algorithm, fullFileName);
     }
 
     /** 
@@ -5546,7 +5607,7 @@ and zoom and pan with controls in
         if (d == 0)
             return new int[]{0, 0};
 
-        if (!Math2.isFinite(d))
+        if (!Double.isFinite(d))
             return new int[]{1, Integer.MAX_VALUE};
 
         String s = "" + d; //-12.0 or 6.6260755E-24
@@ -5930,7 +5991,7 @@ and zoom and pan with controls in
     } */
 
     /** This changes the characters case to title case (only letters after non-letters are
-     * capitalized).  This is simplistic.
+     * capitalized).  This is simplistic (it doesn't know about acronyms or pH or ...).
      */
     public static String toTitleCase(String s) {
         if (s == null)
@@ -6236,6 +6297,16 @@ and zoom and pan with controls in
          return sb.toString();
      }
 
+     /**
+      * This lists the methods for a given object's class.
+      */
+     public static void listMethods(Object v) {
+        Class tClass = v.getClass();
+        Method[] methods = tClass.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            String2.log("public method #" + i + ": " + methods[i]);
+        }
+     }
 
 
 } //End of String2 class.

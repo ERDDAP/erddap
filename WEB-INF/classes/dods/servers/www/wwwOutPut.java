@@ -57,15 +57,15 @@ public class wwwOutPut  {
         // 4/8/99 jhrg
 
         pWrt.print( "<tr>"
-            + "<td align=\"right\">\n"
-            + "<h3><a href=\"dods_form_help.html#disposition\" valign=\"bottom\">Action:</a></h3>\n"
+            + "<td style=\"text-align:right\">\n"
+            + "<h3><a href=\"dods_form_help.html#disposition\" >Action:</a></h3>\n" //vertical-align:bottom;
             + "<td><input type=\"button\" value=\"Get ASCII\" onclick=\"ascii_button()\">\n"
             + "<input type=\"button\" value=\"Get Binary\" onclick=\"binary_button()\">\n"
 //            + "<input type=\"button\" value=\"Send to Program\" onclick=\"program_button()\">\n" // removed 9/17/01 ndp
             + "<input type=\"button\" value=\"Show Help\" onclick=\"help_button()\">\n"
             + "<tr>\n"
-            + "<td align=\"right\">\n"
-	    + "<h3><a href=\"dods_form_help.html#data_url\" valign=\"bottom\">Data URL:</a></h3>"
+            + "<td style=\"text-align:right\">\n"
+	    + "<h3><a href=\"dods_form_help.html#data_url\" >Data URL:</a></h3>" //vertical-align:bottom;
 	    + "<td><input name=\"url\" type=\"text\" size="
 	    + _attrCols
 	    + " value=\""
@@ -77,7 +77,7 @@ public class wwwOutPut  {
     public void writeGlobalAttributes(DAS das, DDS dds){
 
         pWrt.print( "<tr>\n"
-            + "<td align=\"right\" valign=\"top\">\n"
+            + "<td style=\"text-align:right\" >\n" //vertical-align:top;
             + "<h3><a href=\"dods_form_help.html#global_attr\">Global Attributes:</a></h3>\n"
             + "<td><textarea name=\"global_attr\" rows="
             + _attrRows
@@ -161,7 +161,7 @@ public class wwwOutPut  {
         _os << \
     "
     <tr>
-    <td align=\"right\" valign=\"top\">
+    <td style=\"text-align:right\" >  //vertical-align:top;
     <h3><a href=\"dods_form_help.html#dataset_variables\">Variables:</a></h3>
     <td>";
 
@@ -178,7 +178,7 @@ public class wwwOutPut  {
         // so that the first variable's section is written into column two.
 
         pWrt.print("<tr>\n"
-            + "<td align=\"right\" valign=\"top\">\n"
+            + "<td style=\"text-align:right\" >\n" //vertical-align:top;
             + "<h3><a href=\"dods_form_help.html#dataset_variables\">Variables:</a></h3>\n"
             + "<br><td>\n"
 	    );  
@@ -248,7 +248,7 @@ public class wwwOutPut  {
 	String type = dasTools.fancyTypeName(bt);
 
         pWrt.print(
-            "<script type=\"text/javascript\">\n"
+            "<script>\n"
             + "<!--\n"
             + nameForJsCode(name) + " = new dods_var(\""  
 	    + bt.getLongName() + "\", \""  // This name goes into the URL that's built by the form.
@@ -260,15 +260,15 @@ public class wwwOutPut  {
             );
 
         pWrt.print(
-            "<b>"
+            "<strong>"
             + "<input type=\"checkbox\" name=\"get_"
 	    + nameForJsCode(name) + "\"\n"
             + "onclick=\""
 	    + nameForJsCode(name) + ".handle_projection_change(get_"
             + nameForJsCode(name) + ")\">\n"
-            + "<font size=\"+1\">" 
-	    + bt.getName() + "</font>" // this is the Bold faced name of the variable in the form
-            + ": " + type + "</b><br>\n\n"
+            + "<span style=\"font-size:large;\">" 
+	    + bt.getName() + "</span>" // this is the Bold faced name of the variable in the form
+            + ": " + type + "</strong><br>\n\n"
 	    );
 
 

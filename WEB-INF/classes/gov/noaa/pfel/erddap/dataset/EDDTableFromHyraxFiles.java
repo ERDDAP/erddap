@@ -295,7 +295,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
             if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks finished." +
                 " nTasksCreated=" + nTasksCreated + 
-                " time=" + (System.currentTimeMillis() - startTime));
+                " time=" + (System.currentTimeMillis() - startTime) + "ms");
 
         } catch (Throwable t) {
             if (verbose)
@@ -406,6 +406,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
         //variables
         Enumeration en = dds.getVariables();
+        double maxTimeES = Double.NaN;
         while (en.hasMoreElements()) {
             BaseType baseType = (BaseType)en.nextElement();
             String varName = baseType.getName();
@@ -427,17 +428,33 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                     PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false);
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, 
                     pa, sourceAtts);
-                dataAddTable.addColumn(dataAddTable.nColumns(), varName, 
-                    makeDestPAForGDX(pa, sourceAtts), 
+                pa = makeDestPAForGDX(pa, sourceAtts);
+                dataAddTable.addColumn(dataAddTable.nColumns(), varName, pa,                    
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
                         dataSourceTable.globalAttributes(),
                         sourceAtts, null, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
                 //if a variable has timeUnits, files are likely sorted by time
                 //and no harm if files aren't sorted that way
+                String tUnits = sourceAtts.getString("units");
                 if (tSortedColumnSourceName.length() == 0 && 
-                    EDVTimeStamp.hasTimeUnits(sourceAtts, null))
+                    Calendar2.isTimeUnits(tUnits)) 
                     tSortedColumnSourceName = varName;
+
+                if (!Double.isFinite(maxTimeES) && Calendar2.isTimeUnits(tUnits)) {
+                    try {
+                        if (Calendar2.isNumericTimeUnits(tUnits)) {
+                            double tbf[] = Calendar2.getTimeBaseAndFactor(tUnits); //throws exception
+                            maxTimeES = Calendar2.unitsSinceToEpochSeconds(
+                                tbf[0], tbf[1], pa.getDouble(pa.size() - 1));
+                        } else { //string time units
+                            maxTimeES = Calendar2.tryToEpochSeconds(pa.getString(pa.size() - 1)); //NaN if trouble
+                        }
+                    } catch (Throwable t) {
+                        String2.log("caught while trying to get maxTimeES: " + 
+                            MustBe.throwableToString(t));
+                    }
+                }
             }
         }
 
@@ -474,6 +491,16 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                dataAddTable.globalAttributes().getString("subsetVariables") == null) 
             dataAddTable.globalAttributes().add("subsetVariables",
                 suggestSubsetVariables(dataSourceTable, dataAddTable, false));
+
+        //use maxTimeES
+        String tTestOutOfDate = EDD.getAddOrSourceAtt(
+            dataSourceTable.globalAttributes(), 
+            dataAddTable.globalAttributes(), "testOutOfDate", null);
+        if (Double.isFinite(maxTimeES) && !String2.isSomething(tTestOutOfDate)) {
+            tTestOutOfDate = suggestTestOutOfDate(maxTimeES);
+            if (String2.isSomething(tTestOutOfDate))
+                dataAddTable.globalAttributes().set("testOutOfDate", tTestOutOfDate);
+        }
 
         //write the information
         StringBuilder sb = new StringBuilder();
@@ -525,7 +552,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     }
 
     /**
-     * testGenerateDatasetsXml
+     * testGenerateDatasetsXml.
+     * This doesn't test suggestTestOutOfDate, except that for old data
+     * it doesn't suggest anything.
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
@@ -576,13 +605,10 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
-"        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
+"        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
 "        <att name=\"infoUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/.html</att>\n" +
 "        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
-"        <att name=\"keywords\">atlas, atmosphere,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atmospheric, center, component, data, derived, downward, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
+"        <att name=\"keywords\">atlas, atmosphere, atmospheric, center, component, data, derived, downward, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Wind Stress, eastward, eastward_wind, flight, flk, goddard, gsfc, latitude, level, longitude, meters, nasa, noaa, nobs, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, science, space, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, upstr, uwnd, v-component, v-wind, v1.1, vpstr, vwnd, wind, wind_speed, winds, wspd</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
@@ -637,6 +663,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMinimum\" type=\"double\">4200.0</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">hours since 1987-01-01T00:00:00Z</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -887,7 +914,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n****************** EDDTableFromHyraxFiles das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1017,9 +1044,7 @@ expected =
 "tabledap/testEDDTableFromHyraxFiles.das\";\n" +
 "    String infoUrl \"https://opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/09/.html\";\n" +
 "    String institution \"NASA JPL\";\n" +
-"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Atmosphere > Atmospheric Winds > Wind Stress,\n" +
-"atlas, atmosphere, atmospheric, component, derived, downward, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds\";\n" +
+"    String keywords \"atlas, atmosphere, atmospheric, component, derived, downward, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Atmosphere > Atmospheric Winds > Wind Stress, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1054,7 +1079,7 @@ expected =
         try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1084,7 +1109,7 @@ expected =
         userDapQuery = "longitude,latitude,time,uwnd,vwnd,wspd,upstr,vpstr,nobs&longitude>=220&longitude<=220.5&latitude>=40&latitude<=40.5&time>=1987-09-03&time<=1987-09-28";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_stationList", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,uwnd,vwnd,wspd,upstr,vpstr,nobs\n" +
@@ -1124,7 +1149,7 @@ expected =
         userDapQuery = "longitude,latitude,time,upstr,vpstr&longitude>=220&longitude<=221&latitude>=40&latitude<=41&time>=1987-09-28&time<=1987-09-28";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "longitude,latitude,time,upstr,vpstr\n" +
 "degrees_east,degrees_north,UTC,m2/s2,m2/s2\n" +
@@ -1168,6 +1193,7 @@ expected =
         testGenerateDatasetsXml();
         testJpl(true);   //deleteCachedInfoAndOneFile
         testJpl(false);  
+        /* */
     }
 }
 

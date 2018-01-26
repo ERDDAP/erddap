@@ -97,7 +97,7 @@ public class EmaDateTimeSelect extends GDateTime {
         //make a table with the Select controls in one row
         StringBuilder sb = new StringBuilder();
         //use hard-coded <table>, not the properties version, which may change
-        sb.append("\n        <table cellspacing=\"0\" cellpadding=\"0\">\n");
+        sb.append("\n        <table class=\"erd\">\n"); //padding=0
         sb.append("          <tr>\n");
         
         GregorianCalendar dateTime = getValidGC(value);

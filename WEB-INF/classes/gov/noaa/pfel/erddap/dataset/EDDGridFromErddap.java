@@ -166,7 +166,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -422,7 +422,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridFromErddap " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
 
     /**
@@ -606,8 +606,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         if (reallyVerbose)
             String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocalTZ() +
                 " nValuesAdded=" + newValues.size() + 
-                " time=" + thisTime + " updateCount=" + updateCount +
-                " avgTime=" + (cumulativeUpdateTime / updateCount));
+                " time=" + thisTime + "ms updateCount=" + updateCount +
+                " avgTime=" + (cumulativeUpdateTime / updateCount) + "ms");
         return true;
     }
 
@@ -801,7 +801,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     public static String generateDatasetsXml(String url, boolean keepOriginalID) 
         throws Throwable {
 
-        url = updateUrls(url); //http: to https:
+        url = EDStatic.updateUrls(url); //http: to https:
         String2.log("\n*** EDDGridFromErddap.generateDatasetsXml" +
             "\nurl=" + url + " keepOriginalID=" + keepOriginalID);
 
@@ -830,7 +830,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
         //get the griddap datasets in a json table
         String jsonUrl = url + "/griddap/index.json";
-        String sourceInfo = SSR.getUrlResponseString(jsonUrl);
+        String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
         if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
         if (sourceInfo.indexOf("\"table\"") > 0) {
             Table table = new Table();
@@ -867,7 +867,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         jsonUrl = url + "/search/index.json?searchFor=EDDGridFromErddap";
         sourceInfo = "";
         try {
-            sourceInfo = SSR.getUrlResponseString(jsonUrl);
+            sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
         } catch (Throwable t) {
             //error if remote erddap has no EDDGridFromErddap's
         }
@@ -942,13 +942,13 @@ expected =
                 String2.log(
                     "\n!!! The first dataset will vary, depending on which are currently active!!!\n" +
                     "title=" + edd.title() + "\n" +
-                    "datasetID=" + edd.datasetID() +
+                    "datasetID=" + edd.datasetID() + "\n" +
                     "vars=" + String2.toCSSVString(edd.dataVariableDestinationNames()));
                 Test.ensureEqual(edd.title(), 
-                    "Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (Monthly Composite)", "");
-                Test.ensureEqual(edd.datasetID(), "localhost_bcc8_5919_5e47", "");
+                    "Audio data from a local source.", "");
+                Test.ensureEqual(edd.datasetID(), "localhost_b73a_a4a6_4f4a", "");
                 Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                    "chlorophyll", "");
+                    "channel_1", "");
             } catch (Exception e) {
                 String2.pressEnterToContinue(MustBe.throwableToString(e));
             }
@@ -983,7 +983,7 @@ expected =
             String2.log("\n****************** EDDGridFromErddap test entire dataset\n");
             tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Entire", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "Attributes \\{\n" +
@@ -1058,8 +1058,8 @@ expected =
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String creator_type \"institution\";\n" +
 "    String creator_url \"https://www.pfeg.noaa.gov\";\n" +
-"    String date_created \"20.{8}Z\";\n" +  //changes
-"    String date_issued \"20.{8}Z\";\n" +  //changes
+"    String date_created \"201.-..-..\";\n" +  //changes
+"    String date_issued \"201.-..-..\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -1082,9 +1082,7 @@ expected =
 expected2 =
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
-"    String keywords \"8-day,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
+"    String keywords \"8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" + 
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" + 
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1093,18 +1091,18 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String origin \"NASA GSFC \\(OBPG\\)\";\n" +
 "    String processing_level \"3\";\n" +
-"    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
+"    String project \"CoastWatch \\(https://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
 "    String publisher_email \"erd.data@noaa.gov\";\n" +
 "    String publisher_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String publisher_type \"institution\";\n" +
 "    String publisher_url \"https://www.pfeg.noaa.gov\";\n" +
-"    String references \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
+"    String references \"Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: https://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
 "    String satellite \"Aqua\";\n" +
 "    String sensor \"MODIS\";\n" +
 "    String source \"satellite observation: Aqua, MODIS\";\n" +
@@ -1133,7 +1131,7 @@ expected2 =
 
             try {
                 if (testLocalErddapToo) {
-                    results = SSR.getUrlResponseString(localUrl + ".das");
+                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".das");
                     tPo = results.indexOf("history \"NASA GSFC (OBPG)");
                     Test.ensureTrue(tPo >= 0, "tPo=-1 results=" + results);
                     Test.ensureLinesMatch(results.substring(0, tPo + 25), expected, 
@@ -1151,7 +1149,7 @@ expected2 =
             //*** test getting dds for entire dataset
             tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Entire", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset \\{\n" +
@@ -1172,7 +1170,7 @@ expected2 =
             Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".dds");
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".dds");
                 Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
             }
 
@@ -1183,7 +1181,7 @@ expected2 =
             query = "time[0:100:200],longitude[last]";
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".asc"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -1200,7 +1198,7 @@ expected2 =
             Test.ensureEqual(results, expected + "r" + expected2, "RESULTS=\n" + results);
      
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".asc?" + query);
+                results = SSR.getUrlResponseStringUnchanged(localUrl + ".asc?" + query);
                 Test.ensureEqual(results, expected + "erd" + expected2, "\nresults=\n" + results);
             }
 
@@ -1209,7 +1207,7 @@ expected2 =
             query = "time[0:100:200],longitude[last]";
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1222,7 +1220,7 @@ expected2 =
 
             if (testLocalErddapToo) {
                 try {
-                    results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
+                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
                     Test.ensureEqual(results, expected, "\nresults=\n" + results);
                 } catch (Throwable t) {
                     String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1235,7 +1233,7 @@ expected2 =
             query = "chlorophyll.time[0:100:200],chlorophyll.longitude[last]";
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_AxisG.A", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1248,7 +1246,7 @@ expected2 =
 
             if (testLocalErddapToo) {
                 try {
-                    results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
+                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + query);
                     Test.ensureEqual(results, expected, "\nresults=\n" + results);
                 } catch (Throwable t) {
                     String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -1261,7 +1259,7 @@ expected2 =
             query = "time[0:100:200],longitude[last]";
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".dods"); 
-            results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+            results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
             //String2.log(results);
             expected = 
     "Dataset {[10]\n" +
@@ -1271,11 +1269,11 @@ expected2 =
             expected2 = "MHchla8day;[10]\n" +
     "[10]\n" +
     "Data:[10]\n" +
-    "[0][0][0][3][0][0][0][3]A[206][8221]k[0][0][0][0]A[208]U-@[0][0][0]A[209]`y`[0][0][0][0][0][0][1][0][0][0][1]@v[8364][0][0][0][0][0][end]";
+    "[0][0][0][3][0][0][0][3]A[206][148]k[0][0][0][0]A[208]U-@[0][0][0]A[209]`y`[0][0][0][0][0][0][1][0][0][0][1]@v[128][0][0][0][0][0][end]";
             Test.ensureEqual(results, expected + "r" + expected2, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                results = String2.annotatedString(SSR.getUrlResponseString(localUrl + ".dods?" + query));
+                results = String2.annotatedString(SSR.getUrlResponseStringUnchanged(localUrl + ".dods?" + query));
                 Test.ensureEqual(results, expected + "erd" + expected2, "\nresults=\n" + results);
             }
 
@@ -1325,7 +1323,7 @@ expected2 =
             query = "time[0:100:200],longitude[last]";
             tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".ncHeader"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 //"netcdf EDDGridFromErddap_Axis.nc {\n" +
@@ -1370,7 +1368,7 @@ expected2 =
 
             try {
                 if (testLocalErddapToo) {
-                    results = SSR.getUrlResponseString(localUrl + ".ncHeader?" + query);
+                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".ncHeader?" + query);
                     tPo = results.indexOf("  variables:\n");
                     Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
                     Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, 
@@ -1387,7 +1385,7 @@ expected2 =
             String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
             tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Data", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =  //missing values are "NaN"
 /* pre 2010-10-26 was 
 "time, altitude, latitude, longitude, chlorophyll\n" +
@@ -1418,7 +1416,7 @@ expected2 =
 
             if (testLocalErddapToo) {
                 try {
-                    results = SSR.getUrlResponseString(localUrl + ".csv?" + userDapQuery);
+                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv?" + userDapQuery);
                     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
                     Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
                 } catch (Throwable t) {
@@ -1431,7 +1429,7 @@ expected2 =
             String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
             tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll." + userDapQuery, 
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 /* pre 2010-10-26 was 
 "time, altitude, latitude, longitude, chlorophyll\n" +
@@ -1462,7 +1460,7 @@ expected2 =
 
             if (testLocalErddapToo) {
                 try {
-                    results = SSR.getUrlResponseString(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
+                    results = SSR.getUrlResponseStringUnchanged(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
                     Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
                     Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
                 } catch (Throwable t) {
@@ -1555,8 +1553,8 @@ expected2 =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"20.{8}Z\";\n" + //changes periodically
-"  :date_issued = \"20.{8}Z\";\n" +  //changes periodically
+"  :date_created = \"201.-..-..\";\n" + //changes periodically
+"  :date_issued = \"201.-..-..\";\n" +  //changes periodically
 "  :Easternmost_Easting = 246.65354786433613; // double\n" +
 "  :geospatial_lat_max = 49.82403334105115; // double\n" +
 "  :geospatial_lat_min = 28.985876360268577; // double\n" +
@@ -1578,9 +1576,7 @@ expected2 =
         expected = //note original missing values
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
-"  :keywords = \"8-day,\n" +
-"Oceans > Ocean Chemistry > Chlorophyll,\n" +
-"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
+"  :keywords = \"8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1589,18 +1585,18 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 49.82403334105115; // double\n" +
 "  :origin = \"NASA GSFC \\(OBPG\\)\";\n" +
 "  :processing_level = \"3\";\n" +
-"  :project = \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
+"  :project = \"CoastWatch \\(https://coastwatch.noaa.gov/\\)\";\n" +
 "  :projection = \"geographic\";\n" +
 "  :projection_type = \"mapped\";\n" +
 "  :publisher_email = \"erd.data@noaa.gov\";\n" +
 "  :publisher_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :publisher_type = \"institution\";\n" +
 "  :publisher_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
+"  :references = \"Aqua/MODIS information: https://oceancolor.gsfc.nasa.gov/ . MODIS information: https://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
 "  :satellite = \"Aqua\";\n" +
 "  :sensor = \"MODIS\";\n" +
 "  :source = \"satellite observation: Aqua, MODIS\";\n" +

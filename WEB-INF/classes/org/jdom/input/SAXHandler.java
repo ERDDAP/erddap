@@ -142,7 +142,7 @@ public class SAXHandler extends DefaultHandler implements LexicalHandler,
      * Class initializer: Populate a table to translate SAX attribute
      * type names into JDOM attribute type value (integer).
      * <p>
-     * <b>Note that all the mappings defined below are compliant with
+     * <strong>Note that all the mappings defined below are compliant with
      * the SAX 2.0 specification exception for "ENUMERATION" with is
      * specific to Crimson 1.1.X and Xerces 2.0.0-betaX which report
      * attributes of enumerated types with a type "ENUMERATION"

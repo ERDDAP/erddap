@@ -326,7 +326,7 @@ public interface AbstractPane {
   /**
    * Turn on/off batching of updates to the pane.  While
    * batching is <code>true</code> property change events will
-   * <b>not</b> cause pane to redraw.  When batching is
+   * <strong>not</strong> cause pane to redraw.  When batching is
    * turned back on if the pane has been modified it
    * will then redraw.
    */
@@ -334,7 +334,7 @@ public interface AbstractPane {
   /**
    * Turn on/off batching of updates to the pane.  While
    * batching is <code>true</code> property change events will
-   * <b>not</b> cause pane to redraw.  When batching is
+   * <strong>not</strong> cause pane to redraw.  When batching is
    * turned back on if the pane has been modified it
    * will then redraw.
    */

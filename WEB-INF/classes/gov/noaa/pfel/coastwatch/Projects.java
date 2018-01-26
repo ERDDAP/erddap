@@ -2549,7 +2549,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
      */
     public static void oneSsc(Writer writer, String baseUrl, String url) throws Exception { 
         String2.log("oneSsc entering " + url);
-        String sar[] = SSR.getUrlResponse(baseUrl + url);
+        String sar[] = SSR.getUrlResponseLines(baseUrl + url);
         int line = 0;
         //read to "parent directory" line
         while (line < sar.length && sar[line].indexOf("parent directory") < 0)
@@ -2585,7 +2585,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                 /*
                 //get nTimes
                 //isn't there a better way to get nTimes?
-                String dds = SSR.getUrlResponseString(s + ".dds");
+                String dds = SSR.getURLResponseStringUnchanged(s + ".dds");
                 po = dds.indexOf("Time = ");
                 po2 = dds.indexOf("]", po);
                 int nTimes = String2.parseInt(dds.substring(po + 7, po2));
@@ -3214,7 +3214,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:442)
      */
     public static void testLongInNc3() throws Exception {
-        String2.log("\n*** testLongInNc3");
+        String2.log("\n*** Projects.testLongInNc3");
 
         //get a list of files
         NetcdfFileWriter newFile = null;
@@ -3260,7 +3260,7 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
 
             String2.log("newFile=" + NcHelper.dumpString(dirFileName, true));
 
-            String2.log("\n*** testLongInNc3 finished successfully.");
+            String2.log("\n*** Projects.testLongInNc3 finished successfully.");
 
         } catch (Exception e) {
             try {newFile.close();} catch (Exception e2) {}
@@ -3408,7 +3408,7 @@ public static void testJanino() throws Exception {
         //String2.log(" -5%4=" + (-5%4) + " 5%-4=" + (5%-4) + " -5%-4=" + (-5%-4));
         if (false) {
             //ucar.nc2.util.DebugFlags.set("DODS/serverCall", true);
-            //NetcdfFile nc = NetcdfDataset.openFile("http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp", null);
+            //NetcdfFile nc = NetcdfDataset.openFile("http://apdrc.soest.hawaii.edu/dapper/godae/argo_all.cdp", null);
             //NetcdfFile nc = NetcdfDataset.openFile("http://coastwatch.pfeg.noaa.gov/erddap2/tabledap/cwwcNDBCMet", null);
             NetcdfFile nc = NetcdfDataset.openFile("http://localhost/cwexperimental/tabledap/cwwcNDBCMet", null);
             //NetcdfFile nc = NetcdfDataset.openFile("http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
@@ -3474,27 +3474,27 @@ public static void testJanino() throws Exception {
                 tTime1=-1, tTime2=-1, tTime3=-1, tTime4=-1, tTime5=-1, tTime6=-1;
             try {
                 tTime1 = System.currentTimeMillis();
-                response1 = SSR.getUrlResponseString(opendapBaseUrl + ".das");
+                response1 = SSR.getUrlResponseStringUnchanged(opendapBaseUrl + ".das");
                 tTime1 = System.currentTimeMillis() - tTime1;
 
                 tTime2 = System.currentTimeMillis();
-                response2 = SSR.getUrlResponseString(opendapBaseUrl + ".dds");
+                response2 = SSR.getUrlResponseStringUnchanged(opendapBaseUrl + ".dds");
                 tTime2 = System.currentTimeMillis() - tTime2;
 
                 tTime3 = System.currentTimeMillis();
-                response3 = SSR.getUrlResponseString(opendapBaseUrl + ".asc?time");      
+                response3 = SSR.getUrlResponseStringUnchanged(opendapBaseUrl + ".asc?time");      
                 tTime3 = System.currentTimeMillis() - tTime3;
 
                 tTime4 = System.currentTimeMillis();
-                response4 = SSR.getUrlResponseString(opendapBaseUrl + ".asc?lat" + (thredds? "" : "itude"));      
+                response4 = SSR.getUrlResponseStringUnchanged(opendapBaseUrl + ".asc?lat" + (thredds? "" : "itude"));      
                 tTime4 = System.currentTimeMillis() - tTime4;
 
                 tTime5 = System.currentTimeMillis();
-                response5 = SSR.getUrlResponseString(opendapBaseUrl + ".asc?lon" + (thredds? "" : "gitude"));      
+                response5 = SSR.getUrlResponseStringUnchanged(opendapBaseUrl + ".asc?lon" + (thredds? "" : "gitude"));      
                 tTime5 = System.currentTimeMillis() - tTime5;
 
                 tTime6 = System.currentTimeMillis();
-                response6 = SSR.getUrlResponseString(opendapBaseUrl + ".asc?" + varName + 
+                response6 = SSR.getUrlResponseStringUnchanged(opendapBaseUrl + ".asc?" + varName + 
                     "[" + Math2.random(100) + "][0]" +
                     "[" + Math2.random(20) + "]" +
                     "[" + Math2.random(20) + "]");      
@@ -4223,7 +4223,7 @@ String2.log(marCatTable.toString());
         Test.ensureEqual(md5(quote), String2.md5Hex(quote), "md5's aren't the same.");
 
         for (int method = 3; method <= 3; method++) {
-            String2.log("\n*** testHashFunctions " +
+            String2.log("\n*** Projects.testHashFunctions " +
                 (method == 0? "hashCode" :
                  method == 1? "md5" :     
                  method == 2? "crc32"    :
@@ -4946,7 +4946,7 @@ String2.log("Projects.touchUrls is finished.");
             }
         }   
         String2.log("test regular hashMap finished longest=" + max + " time=" + 
-            (System.currentTimeMillis() - time));      //282     
+            (System.currentTimeMillis() - time) + "ms");      //282     
 
         //***
         String2.log("test synchronized HashMap");
@@ -4964,7 +4964,7 @@ String2.log("Projects.touchUrls is finished.");
             }
         }   
         String2.log("test synchronized hashMap finished longest=" + max + " time=" + 
-            (System.currentTimeMillis() - time));      //343     
+            (System.currentTimeMillis() - time) + "ms");      //343     
 
         //***
         String2.log("testConcurrentHashMap");
@@ -4982,7 +4982,7 @@ String2.log("Projects.touchUrls is finished.");
             }
         }   
         String2.log("testConcurrentHashMap finished longest=" + max + " time=" + 
-            (System.currentTimeMillis() - time));   //282
+            (System.currentTimeMillis() - time) + "ms");   //282
     }
 
 
@@ -6167,21 +6167,21 @@ project)
             table.readFlatNc(inDir + fileName, null, 1); 
             int nRows = table.nRows();
 
-            //*** ext: some degrees_Celsius, some Kelvin (convert to degrees_Celsius)
+            //*** ext: some degree_Celsius, some Kelvin (convert to degree_C)
             col = table.findColumnNumber("ext");
             atts = table.columnAttributes(col);
             units = atts.getString("units");
             pa = table.getColumn(col);
             pa.switchFromTo("9.96921E36", ""); 
-            if (!"degrees_Celsius".equals(units)) {               
-                if ("degree_Celsius".equals(units)) {
+            if (!"degree_Celsius".equals(units)) {               
+                if ("degrees_Celsius".equals(units)) {
                 } else if ("Kelvin".equals(units)) {
                     pa = table.getColumn(col);
                     pa.scaleAddOffset(1, Math2.kelvinToC); 
                 } else {
                     throw new Exception("Unexpected units for ext: " + units);
                 }
-                atts.set("units", "degrees_Celsius");
+                atts.set("units", "degree_C");
             }
             pa.switchFromTo("" + Math2.kelvinToC, ""); 
             //count n<-100 degrees
@@ -6193,12 +6193,12 @@ project)
                 throw new RuntimeException("count of ext values <-100 = " + count + "\n" +
                     atts.toString());
 
-            //*** intp: some degrees_Celsius, some Kelvin (convert to degrees_Celsius)
+            //*** intp: some degree_Celsius, some Kelvin (convert to degree_C)
             col = table.findColumnNumber("intp");
             atts = table.columnAttributes(col);
             units = atts.getString("units");
-            if (!"degrees_Celsius".equals(units)) {               
-                if ("degree_Celsius".equals(units)) {
+            if (!"degree_Celsius".equals(units)) {               
+                if ("degrees_Celsius".equals(units)) {
                 } else if ("Kelvin".equals(units)) {
                     pa = table.getColumn(col);
                     pa.scaleAddOffset(1, Math2.kelvinToC); 
@@ -6206,7 +6206,7 @@ project)
                 } else {
                     throw new Exception("Unexpected units for intp: " + units);
                 }
-                atts.set("units", "degrees_Celsius");
+                atts.set("units", "degree_Celsius");
             }
             //count n>100 degrees
             pa = table.getColumn(col);
@@ -6223,21 +6223,21 @@ project)
             units = atts.getString("units");
             Test.ensureEqual(units, "1e-3", "Unexpected units for sal");
 
-            //*** sst: some degrees_Celsius, some Kelvin (convert to degrees_Celsius)
+            //*** sst: some degrees_Celsius, some Kelvin (convert to degree_C)
             col = table.findColumnNumber("sst");
             atts = table.columnAttributes(col);
             units = atts.getString("units");
             pa = table.getColumn(col);
             pa.switchFromTo("9.96921E36", ""); 
-            if (!"degrees_Celsius".equals(units)) {               
-                if ("degree_Celsius".equals(units)) {
+            if (!"degree_Celsius".equals(units)) {               
+                if ("degrees_Celsius".equals(units)) {
                 } else if ("Kelvin".equals(units)) {
                     pa = table.getColumn(col);
                     pa.scaleAddOffset(1, Math2.kelvinToC); 
                 } else {
                     throw new Exception("Unexpected units for sst: " + units);
                 }
-                atts.set("units", "degrees_Celsius");
+                atts.set("units", "degree_C");
             }
 
             //*** time
@@ -6882,19 +6882,29 @@ project)
         String2.returnLoggingToSystemOut();
     }
 
-    /** This makes the NetCheck tests for all of an ERDDAP's datasets. 
+    /** 
+     * This makes the NetCheck tests for all of an ERDDAP's datasets. 
+     * 
      * @param erddapUrl the erddap URL, ending in a slash
+     * @return a string with the tests. The results are also printed and
+     *   put on the clipboard.
      */
-    public static void makeNetcheckErddapTests(String erddapUrl) throws Throwable {
+    public static String makeNetcheckErddapTests(String erddapUrl) throws Throwable {
         Table table = new Table();
-        erddapUrl += "info/index.json?page=1&itemsPerPage=100000000"; //all possible datasets
-        String json = SSR.getUncompressedUrlResponseString(erddapUrl, String2.UTF_8);
-        table.readJson(erddapUrl, json);
-        int nRows = table.nRows();
-        PrimitiveArray pa = table.getColumn("Dataset ID");
-        pa.sortIgnoreCase();
+        erddapUrl += "tabledap/allDatasets.csv0?datasetID";
+        StringArray rows = new StringArray(SSR.getUrlResponseLines(erddapUrl)); //default is String2.ISO_8859_1
+        int nRows = rows.size();
+        rows.sortIgnoreCase();
+        StringBuilder sb = new StringBuilder();
         for (int row = 0; row < nRows; row++) 
-            String2.log("    <responseMustInclude>" + pa.getString(row) + "</responseMustInclude>");
+            sb.append("    <responseMustInclude>" + rows.getString(row) + "</responseMustInclude>\n");
+        String s = sb.toString();
+        sb = null;
+        String2.setClipboardString(s);
+        String2.log(s);
+        String2.log("nDatasets=" + nRows);
+        String2.log("The results are on the clipboard.");
+        return s;
     }
 
 
@@ -8464,7 +8474,7 @@ towTypesDescription);
             String result = "";
             try {
                 //request time[last] and get the date from the 3rd line   2007-04-12T14:00:00Z
-                String response[] = SSR.getUrlResponse(
+                String response[] = SSR.getUrlResponseLines(
                     griddapUrl + datasetIDs.get(i) + ".csv?time[last]");
                 if (response.length >= 3)
                     result = response[2];
@@ -9190,6 +9200,151 @@ towTypesDescription);
             }
         }
     }
+
+    /** Make VH2018 1day .ncml files. */
+    public static void makeVH20181dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int jDate = 1; jDate <= nDays; jDate++) {
+                String yj = year + String2.zeroPad("" + jDate, 3);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
+                String2.log(yj + " " + daysSince);      
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH2018ncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH2018ncml/chla/ncml1day/V2014365.ncml is
+<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj + ".L3m_DAY_SNPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH2018 8day .ncml files. 
+     * coordValue is firstDay. First 3 of 2012 are 15340, 15348, 15356. 
+     * Every year, start again Jan 1-8, 9-16, ...
+     * End of year, 
+     */
+    public static void makeVH20188dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int day1 = 1; day1 <= nDays; day1 += 8) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, day1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, 
+                    Math.min(nDays, day1+7));
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                if (day1+7 > nDays)
+                    daysSince--; //imperfect
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH2018ncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH2018ncml/chla/ncml8day/V20120012012008.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_8D_SNPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+    
+    /** Make VH2018 mday .ncml files. 
+     * coordValue is firstDay of the month. First 3 of 2012 are 15340, 15371, 15400. 
+     */
+    public static void makeVH2018mdayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            for (int month = 1; month <= 12; month++) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, month, 1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, month+1, 0);
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH2018ncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH2018ncml/chla/ncmlmon/V20120012012031.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012031.L3m_MO_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf>
+ */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_MO_SNPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
 
     /** Extract sonar initial lat,lon values.
      * 1) original csv file (from xls)

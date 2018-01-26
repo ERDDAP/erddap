@@ -108,11 +108,11 @@ import java.beans.PropertyChangeEvent;
  * @since 1.0
  */
 public class CartesianGraph extends Graph {
-  /**@associates <b>Axis</b>
+  /**@associates <strong>Axis</strong>
    * @supplierCardinality 0..*
    * @clientRole xAxis_ */
   public Vector xAxis_;
-  /** @associates <b>Axis</b>
+  /** @associates <strong>Axis</strong>
    * @clientRole yAxis_
    * @supplierCardinality 0..* */
   public Vector yAxis_;
@@ -226,7 +226,7 @@ public class CartesianGraph extends Graph {
    * <code>CartesianGraph</code>.
    * A renderer is constucted based on the two arguements.
    * <p>
-   * <TABLE BORDER="1" CELLPADDING="2" BGCOLOR="white">
+   * <TABLE style=\"border:1px; padding:2px; background-color:white;">
    *    <TR>
    *            <TH WIDTH="25%" BGCOLOR="#FFFFCC">
    *                    <P>SGTData
@@ -313,22 +313,22 @@ public class CartesianGraph extends Graph {
   public void draw(Graphics g) {
 //long time = System.currentTimeMillis();
     if(renderer_ != null) renderer_.draw(g);
-//com.cohort.util.String2.log("CartesianGraph.draw renderer time=" + (System.currentTimeMillis() - time));
+//com.cohort.util.String2.log("CartesianGraph.draw renderer time=" + (System.currentTimeMillis() - time) + "ms");
     if(!xAxis_.isEmpty()) {
       for(Enumeration it = xAxis_.elements(); it.hasMoreElements();) {
 //time = System.currentTimeMillis();
         ((Axis)it.nextElement()).draw(g);
-//com.cohort.util.String2.log("CartesianGraph.draw xaxis time=" + (System.currentTimeMillis() - time));
+//com.cohort.util.String2.log("CartesianGraph.draw xaxis time=" + (System.currentTimeMillis() - time) + "ms");
       }
     }
     if(!yAxis_.isEmpty()) {
       for(Enumeration it = yAxis_.elements(); it.hasMoreElements();) {
 //time = System.currentTimeMillis();
         ((Axis)it.nextElement()).draw(g);
-//com.cohort.util.String2.log("CartesianGraph.draw yaxis time=" + (System.currentTimeMillis() - time));
+//com.cohort.util.String2.log("CartesianGraph.draw yaxis time=" + (System.currentTimeMillis() - time) + "ms");
       }
     }
-//com.cohort.util.String2.log("CartesianGraph.draw time=" + (System.currentTimeMillis() - time));
+//com.cohort.util.String2.log("CartesianGraph.draw time=" + (System.currentTimeMillis() - time) + "ms");
   }
   /**
    * Set the clipping rectangle in user coordinates.

@@ -152,13 +152,13 @@ public class EmaClass extends HttpServlet {
     protected String  pressEnterToSubmit;
     protected boolean spacerAfterDoubleWide;
 
-    protected String beginRow = "<tr align=\"left\">";
+    protected String beginRow = "<tr style=\"text-align:left\">";
     protected String endRow = "</tr>";
 
     /** This is the JavaScript the needs to be in the Head section of the HTML page 
      * for just the 'enter' function. */
     public static String includeJavaScriptForEnter =
-        "<script type=\"text/javascript\">\n" +
+        "<script>\n" +
         "<!--\n" + //hide from browsers without javascript
         //was the keypress event's keycode 'Enter'?
         //see http://www.mredkj.com/tutorials/validate.html
@@ -172,7 +172,7 @@ public class EmaClass extends HttpServlet {
     /** This standard JavaScript needs to be in the Head section of the HTML page. */
     public static String includeJavaScript =
         //EnterSubmitsForm
-        "<script type=\"text/javascript\">\n" +
+        "<script>\n" +
         "<!--\n" + //hide from browsers without javascript
         //was the keypress event's keycode 'Enter'?
         //see http://www.mredkj.com/tutorials/validate.html
@@ -231,7 +231,7 @@ public class EmaClass extends HttpServlet {
         "}\n" +
         /*
         //DigitsOnly
-        "<script language=\"JavaScript\">\n" +
+        "<script>\n" +
         "function digitsOnly(textfield) {\n" +
         "  var s1 = textfield.value;\n" +
         "  var s2 = \"\";\n" +
@@ -268,8 +268,8 @@ public class EmaClass extends HttpServlet {
     /** This will display a message to the user if JavaScript is not supported
      * or disabled. Last verified 2007-10-11. */
     public static String javaScriptDisabled =
-        "  <noscript><font color=\"red\"><b>This web page works much better when\n" +
-        "    JavaScript is enabled.</b> Please:</font>\n" +
+        "  <noscript><span style=\"color:red\"><strong>This web page works much better when\n" +
+        "    JavaScript is enabled.</strong> Please:</span>\n" +
         "    <ol>\n" +
         "    <li>Enable JavaScript in your browser:\n" +
         "      <ul>\n" + 
@@ -576,7 +576,7 @@ public class EmaClass extends HttpServlet {
 
     /** 
      * This lets you change the HTML code for beginning a row of 
-     * the table (normally &lt;tr align="left"&gt;). 
+     * the table (normally &lt;tr style="align:left;"&gt;). 
      */
     public void setBeginRow(String code) {
         beginRow = code;

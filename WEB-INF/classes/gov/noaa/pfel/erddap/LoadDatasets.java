@@ -227,7 +227,7 @@ public class LoadDatasets extends Thread {
                     //just load minimal datasets?
                     nDatasets++;
                     String tId = xmlReader.attributeValue("datasetID"); 
-                    if (tId == null)
+                    if (!String2.isSomething(tId))  //"" is trouble. It leads to flagDir being deleted below.
                         throw new RuntimeException(startError + xmlReader.lineNumber() + ": " +
                             "This <dataset> doesn't have a datasetID!");
                     if (majorLoad)
@@ -492,10 +492,14 @@ public class LoadDatasets extends Thread {
                                     if (verbose) 
                                         String2.log("doing action[" + a + "]=" + tAction);
                                     try {
-                                        if (tAction.startsWith("http://")) {
+                                        if (tAction.startsWith("http://") ||
+                                            tAction.startsWith("https://")) {
                                             if (tAction.indexOf("/" + EDStatic.warName + "/setDatasetFlag.txt?") > 0 &&
                                                 (tAction.startsWith(EDStatic.baseUrl) ||  
-                                                 tAction.startsWith("http://localhost") ||
+                                                 tAction.startsWith(EDStatic.baseHttpsUrl) ||  
+                                                 tAction.startsWith("https://localhost") ||
+                                                 tAction.startsWith("http://localhost")  ||
+                                                 tAction.startsWith("https://127.0.0.1") ||
                                                  tAction.startsWith("http://127.0.0.1"))) { 
                                                 //a dataset on this ERDDAP! just set the flag
                                                 //e.g., http://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
@@ -660,7 +664,8 @@ public class LoadDatasets extends Thread {
             long loadDatasetsTime = System.currentTimeMillis() - startTime;
             String cDateTimeLocal = Calendar2.getCurrentISODateTimeStringLocalTZ();
             String2.log("\n" + String2.makeString('*', 80) + "\n" + 
-                "LoadDatasets.run finished at " + cDateTimeLocal + "  TOTAL TIME=" + loadDatasetsTime + "ms\n" +
+                "LoadDatasets.run finished at " + cDateTimeLocal + 
+                "  TOTAL TIME=" + loadDatasetsTime + "ms\n" +
                 "  nGridDatasets active=" + EDStatic.nGridDatasets + 
                     " change=" + (EDStatic.nGridDatasets - oldNGrid) + "\n" +
                 "  nTableDatasets active=" + EDStatic.nTableDatasets + 
@@ -817,6 +822,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Search File Type (since last daily report)");
                     EDStatic.tally.remove("Search For (since last daily report)");
                     EDStatic.tally.remove("SetDatasetFlag (since last daily report)");
+                    EDStatic.tally.remove("SetDatasetFlag Failed, IP Address (since last daily report)");
+                    EDStatic.tally.remove("SetDatasetFlag Succeeded, IP Address (since last daily report)");
                     EDStatic.tally.remove("SOS index.html (since last daily report)");
                     EDStatic.tally.remove("Subscriptions (since last daily report)");
                     EDStatic.tally.remove("tabledap DatasetID (since last daily report)");
@@ -826,7 +833,7 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("WCS index.html (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsGetMap (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsGetCapabilities (since last daily report)");
-                    EDStatic.tally.remove("WMS doWmsOpenLayers (since last daily report)");
+                    EDStatic.tally.remove("WMS doWmsDemo (since last daily report)");
                     EDStatic.tally.remove("WMS index.html (since last daily report)");
 
                     EDStatic.failureTimesDistribution24      = new int[String2.DistributionSize];
@@ -991,7 +998,7 @@ public class LoadDatasets extends Thread {
                 String2.log("updateLucene() finished." + 
                     " nDocs=" + EDStatic.luceneIndexWriter.numDocs() + 
                     " nChanged=" + nDatasetIDs + 
-                    " time=" + (System.currentTimeMillis() - tTime));
+                    " time=" + (System.currentTimeMillis() - tTime) + "ms");
             } catch (Throwable t) {
 
                 //any exception is pretty horrible
@@ -1047,7 +1054,7 @@ public class LoadDatasets extends Thread {
      * because of race conditions. 
      *
      * @param tId a datasetID
-     * @param changedDatasetIDs is a list of <b>other</b> changedDatasetIDs that need
+     * @param changedDatasetIDs is a list of <strong>other</strong> changedDatasetIDs that need
      *   to be updated by Lucene if updateLucene is actually called
      * @param needToUpdateLucene if true and if a dataset is actually unloaded, 
      *   this calls updateLucene (i.e., commits the changes).

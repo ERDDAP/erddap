@@ -21,7 +21,7 @@ import java.io.OutputStreamWriter;
 
 /**
  * TableWriterJson provides a way to write a table to JSON
- * (http://www.json.org/)
+ * (https://www.json.org/)
  * outputStream in chunks so that the whole table doesn't have to be in memory 
  * at one time.
  * This is used by EDDTable.
@@ -227,7 +227,7 @@ public class TableWriterJson extends TableWriter {
         //diagnostic
         if (verbose)
             String2.log("TableWriterJson done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
+                (System.currentTimeMillis() - time) + "ms\n");
 
     }
 

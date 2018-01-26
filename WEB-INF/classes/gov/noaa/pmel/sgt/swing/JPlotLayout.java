@@ -663,7 +663,7 @@ public class JPlotLayout extends JGraphicLayout
    * not the first invocation of <code>addData</code> a new
    * <code>Layer</code> will be created. If overlayed, the
    * <code>Transform</code>s from the first <code>Layer</code>
-   * will be attached and <B>no</B> axes will be created. If not
+   * will be attached and <strong>no</strong> axes will be created. If not
    * overlayed, new transforms and axes will be created and
    * adjusted so that the data is horizontally stacked.
    *
@@ -1470,7 +1470,7 @@ public class JPlotLayout extends JGraphicLayout
 
   /**
    * Set the x and y range of the domain.
-   * <BR><B>Property Change:</B> <code>domainRange</code>.
+   * <BR><strong>Property Change:</strong> <code>domainRange</code>.
    *
    * @param reversed y axis data is reversed
    */

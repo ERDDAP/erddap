@@ -115,7 +115,7 @@ public class ContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the text to be used for labelling the contour line.
-   * <BR><B>Property Change:</B> <code>labelText</code>.
+   * <BR><strong>Property Change:</strong> <code>labelText</code>.
    */
   public void setLabelText(String label) {
     if(labelText_ == null || !labelText_.equals(label)) {
@@ -135,7 +135,7 @@ public class ContourLineAttribute extends LineAttribute {
   }
   /**
    * Enable/disable the contour label.
-   * <BR><B>Property Change:</B> <code>labelEnabled</code>.
+   * <BR><strong>Property Change:</strong> <code>labelEnabled</code>.
    */
   public void setLabelEnabled(boolean sle) {
     if(labelEnabled_ != sle) {
@@ -155,7 +155,7 @@ public class ContourLineAttribute extends LineAttribute {
   }
   /**
    * Change the color of the contour label
-   * <BR><B>Property Change:</B> <code>labelColor</code>.
+   * <BR><strong>Property Change:</strong> <code>labelColor</code>.
    */
   public void setLabelColor(Color color) {
     if(!labelColor_.equals(color)) {
@@ -175,7 +175,7 @@ public class ContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the label height in physical units
-   * <BR><B>Property Change:</B> <code>labelHeightP</code>.
+   * <BR><strong>Property Change:</strong> <code>labelHeightP</code>.
    */
   public void setLabelHeightP(double height) {
     if(labelHeightP_ != height) {
@@ -195,7 +195,7 @@ public class ContourLineAttribute extends LineAttribute {
   }
   /**
    * Set the contour label font.
-   * <BR><B>Property Change:</B> <code>labelFont</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFont</code>.
    */
   public void setLabelFont(Font font) {
     if(labelFont_ == null || !labelFont_.equals(font)) {
@@ -216,7 +216,7 @@ public class ContourLineAttribute extends LineAttribute {
   /**
    * Set the format for the contour label.  The format is used with
    * <code>Format</code>.
-   * <BR><B>Property Change:</B> <code>labelFormat</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFormat</code>.
    * @see Format
    */
   public void setLabelFormat(String format) {
@@ -237,7 +237,7 @@ public class ContourLineAttribute extends LineAttribute {
   }
   /**
    * Create contour label from value and format.
-   * <BR><B>Property Change:</B> <code>autoLabel</code>.
+   * <BR><strong>Property Change:</strong> <code>autoLabel</code>.
    */
   public void setAutoLabel(boolean auto) {
     if(autoLabel_ != auto) {
@@ -265,7 +265,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * labelEnabled.
-   * <BR><B>Property Change:</B> <code>labelEnabledOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>labelEnabledOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -289,7 +289,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * labelColor.
-   * <BR><B>Property Change:</B> <code>labelColorOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>labelColorOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -313,7 +313,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * labelHeightP.
-   * <BR><B>Property Change:</B> <code>labelHeightPOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>labelHeightPOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -337,7 +337,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * labelFont.
-   * <BR><B>Property Change:</B> <code>labelFontOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFontOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -361,7 +361,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * labelFormat.
-   * <BR><B>Property Change:</B> <code>labelFormatOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>labelFormatOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -389,7 +389,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * dashArray.
-   * <BR><B>Property Change:</B> <code>dashArrayOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>dashArrayOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -417,7 +417,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * dashPhase.
-   * <BR><B>Property Change:</B> <code>dashPhaseOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>dashPhaseOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -446,7 +446,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * style.
-   * <BR><B>Property Change:</B> <code>styleOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>styleOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -474,7 +474,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * color.
-   * <BR><B>Property Change:</B> <code>colorOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>colorOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -502,7 +502,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * width.
-   * <BR><B>Property Change:</B> <code>widthOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>widthOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -530,7 +530,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * cap style.
-   * <BR><B>Property Change:</B> <code>capStyleOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>capStyleOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -558,7 +558,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * miter style.
-   * <BR><B>Property Change:</B> <code>miterStyleOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>miterStyleOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */
@@ -586,7 +586,7 @@ public class ContourLineAttribute extends LineAttribute {
    * Enable/disable having <code>DefaultContourLineAttribute</code>
    * override <code>ContourLineAttribute</code> behavior of
    * miter limit.
-   * <BR><B>Property Change:</B> <code>miterLimitOverridden</code>.
+   * <BR><strong>Property Change:</strong> <code>miterLimitOverridden</code>.
    *
    * @see DefaultContourLineAttribute
    */

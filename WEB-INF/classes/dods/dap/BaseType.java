@@ -165,8 +165,8 @@ public abstract class BaseType implements Cloneable {
    * @param print_semi a boolean value indicating whether to print a
    *    semicolon at the end of the declaration.
    * @param constrained a boolean value indicating whether to print
-   *    the declartion dependent on the projection information. <b>This
-   *    is only used by Server side code.</b>
+   *    the declartion dependent on the projection information. <strong>This
+   *    is only used by Server side code.</strong>
    * @see DDS
    */
   public void printDecl(PrintWriter os, String space,

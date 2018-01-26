@@ -122,7 +122,7 @@ public interface Parent extends Cloneable, Serializable {
     /**
      * Returns the full content of this parent as a {@link java.util.List}
      * which contains objects of type {@link Content}. The returned list is
-     * <b>"live"</b> and in document order. Any modifications
+     * <strong>"live"</strong> and in document order. Any modifications
      * to it affect the element's actual contents. Modifications are checked
      * for conformance to XML 1.0 rules.
      * <p>
@@ -140,7 +140,7 @@ public interface Parent extends Cloneable, Serializable {
     /**
      * Returns as a {@link java.util.List} the content of
      * this parent that matches the supplied filter. The returned list is
-     * <b>"live"</b> and in document order. Any modifications to it affect
+     * <strong>"live"</strong> and in document order. Any modifications to it affect
      * the element's actual contents. Modifications are checked for
      * conformance to XML 1.0 rules.
      * <p>

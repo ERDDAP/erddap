@@ -56,7 +56,7 @@ public class TimeAxis extends Axis implements Cloneable{
   protected int vertalign_;
   //
   /**@shapeType AggregationLink
-     @associates <b>TimeAxisStyle</b>
+     @associates <strong>TimeAxisStyle</strong>
      * @supplierCardinality 1
      * @byValue */
   public TimeAxisStyle txt_;  //bob changed; was protected

@@ -330,7 +330,7 @@ public class CacheOpendapStation {
                             for (int row = 1; row < nRows; row++) {
                                 double dOld = dNew;
                                 dNew = timeDA.getDouble(row);
-                                if (!Math2.isFinite(dNew) || dNew <= dOld)
+                                if (!Double.isFinite(dNew) || dNew <= dOld)
                                     Test.error(errorInMethod + "time(row=" + row + ")=" + dNew + 
                                         " is less than or equal to time(row-1)=" + dOld + 
                                         "\ntimes=" + timeDA);
@@ -609,7 +609,7 @@ public class CacheOpendapStation {
                             for (int row = 1; row < nRows; row++) {
                                 double dOld = dNew;
                                 dNew = timeDA.getDouble(row);
-                                if (!Math2.isFinite(dNew) || dNew <= dOld)
+                                if (!Double.isFinite(dNew) || dNew <= dOld)
                                     Test.error(errorInMethod + "time(row=" + row + ")=" + dNew + 
                                         " is less than or equal to time(row-1)=" + dOld + 
                                         "\ntimes=" + timeDA);
@@ -824,7 +824,7 @@ public class CacheOpendapStation {
                     //don't use Test.ensure since it would generate lots of strings needlessly
                     double oldTime = newTime;
                     newTime = newTimes.getDouble(i);
-                    if (!Math2.isFinite(newTime) || newTime > 1e15 || newTime <= oldTime)
+                    if (!Double.isFinite(newTime) || newTime > 1e15 || newTime <= oldTime)
                         Test.error(errorInMethod + "newTime(" + newTime + 
                             ") is less than or equal to previous time(" + oldTime + 
                             ") when i=" + i);
@@ -941,7 +941,7 @@ public class CacheOpendapStation {
                 "v_component_uncorrected[" + randomInt + ":1:" + randomInt + "][0:1:1][0:1:0][0:1:0]";
             String2.log("url=" + url);
             try { 
-                response = SSR.getUrlResponseString(url);
+                response = SSR.getUrlResponseStringUnchanged(url);
                 String2.log("response=" + response);
                 match = "u_component_uncorrected, [1][2][1][1]\n" +
                     "[0][0][0], ";
@@ -976,7 +976,7 @@ public class CacheOpendapStation {
                 "v_component_uncorrected[" + randomInt + ":1:" + randomInt + "][0:1:1][0:1:0][0:1:0]";
             String2.log("url=" + url);
             try {
-                response = SSR.getUrlResponseString(url);
+                response = SSR.getUrlResponseStringUnchanged(url);
                 String2.log("response=" + response);
                 match = "u_component_uncorrected, [1][2][1][1]\n" +
                     "[0][0][0], ";
@@ -1012,7 +1012,7 @@ public class CacheOpendapStation {
                 "v_component_uncorrected[" + randomInt + ":1:" + randomInt + "][0:1:1][0:1:0][0:1:0]";
             String2.log("url=" + url);
             try {
-                response = SSR.getUrlResponseString(url);
+                response = SSR.getUrlResponseStringUnchanged(url);
                 String2.log("response=" + response);
                 match = "u_component_uncorrected, [1][2][1][1]\n" +
                     "[0][0][0], ";
@@ -1063,7 +1063,7 @@ public class CacheOpendapStation {
         //***************
         //M0: get ascii response
         try {
-            response = SSR.getUrlResponseString(
+            response = SSR.getUrlResponseStringUnchanged(
                 "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m0/200607/m0_adcp1267_20060731.nc.ascii?" + 
                 "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]");
             Test.ensureEqual(response,
@@ -1147,9 +1147,9 @@ public class CacheOpendapStation {
         //****************
         //M1: get ascii response
         //***THE TEST WILL CHANGE IF THEY THROW OUT OLD NRT DATA.
-        response = String2.toNewlineString(SSR.getUrlResponse(
+        response = SSR.getUrlResponseStringUnchanged(
             "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200510/m1_adcp1417_20051020.nc.ascii?" + 
-            "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]"));
+            "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]");
         Test.ensureEqual(response,
             "u_component_uncorrected, [1][2][1][1]\n" +
             "[0][0][0], -20.1\n" +
@@ -1212,9 +1212,9 @@ public class CacheOpendapStation {
         //****************
         //M2: get ascii response
         //***THE TEST WILL CHANGE IF THEY THROW OUT OLD NRT DATA.
-        response = String2.toNewlineString(SSR.getUrlResponse(
+        response = SSR.getUrlResponseStringUnchanged(
             "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m2/200603/m2_adcp1352_20060330.nc.ascii?" + 
-            "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]"));
+            "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]");
         Test.ensureEqual(response,
             "u_component_uncorrected, [1][2][1][1]\n" +
             "[0][0][0], -10.8\n" +

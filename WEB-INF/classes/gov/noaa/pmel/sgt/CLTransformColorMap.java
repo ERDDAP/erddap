@@ -113,7 +113,7 @@ public class CLTransformColorMap extends ColorMap
   }
   /**
    * Set the color <code>Transform</code>s.
-   * <BR><B>Property Change:</B> <code>redColorTransform</code>,
+   * <BR><strong>Property Change:</strong> <code>redColorTransform</code>,
    * <code>greenColorTransform</code>, and
    * <code>blueColorTransform</code>.
    *
@@ -199,7 +199,7 @@ public class CLTransformColorMap extends ColorMap
   }
   /**
    * Set <code>ContourLevels</code>.
-   * <BR><B>Property Change:</B> <code>contourLevels</code>.
+   * <BR><strong>Property Change:</strong> <code>contourLevels</code>.
    *
    * @param cl <code>ContourLevels</code>
    */

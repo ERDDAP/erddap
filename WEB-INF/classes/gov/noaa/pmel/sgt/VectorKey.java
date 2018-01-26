@@ -369,7 +369,7 @@ public class VectorKey implements Cloneable,
   }
   /**
    * Set location of key
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    *
    * @param loc key location
    */
@@ -803,7 +803,7 @@ public class VectorKey implements Cloneable,
   }
   /**
    * Set the bounds, in pixels, of the <code>VectorKey</code>
-   * <BR><B>Property Change:</B> <code>location</code>.
+   * <BR><strong>Property Change:</strong> <code>location</code>.
    */
   public void setBounds(int x, int y, int width, int height) {
     switch(halign_) {

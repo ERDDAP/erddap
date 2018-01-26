@@ -581,7 +581,7 @@ public class GridDataAccessor {
             if (reallyVerbose) 
                 String2.log("      getSourceData done. nDV=" + dataVariables.length +
                     " nElements/dv=" + partialResults[partialResults.length - 1].size() +
-                    " time=" + (System.currentTimeMillis() - time));
+                    " time=" + (System.currentTimeMillis() - time) + "ms");
             //for (int i = 0; i < partialResults.length; i++)
             //    String2.log("!pa[" + i + "]=" + partialResults[i]);
 
@@ -644,6 +644,15 @@ public class GridDataAccessor {
             }
         }
     }
+
+    /** 
+     * The partialDataValues array.
+     *
+     * @return the PrimitiveArray with the chunk of data for this dv
+     */
+     public PrimitiveArray[] getPartialDataValues() {
+         return partialDataValues; 
+     }
 
     /** 
      * Call this after incrementChunk() to get a chunk of data in a PrimitiveArray.

@@ -81,7 +81,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      *
      * @param fileDir
      * @param fileName
-     * @param sourceAxisNames If special axis0, this list will be the instances list[1 ... n-1].
+     * @param sourceAxisNames If there is a special axis0, this list will be the instances list[1 ... n-1].
      * @param sourceDataNames the names of the desired source data columns.
      * @param sourceDataTypes the data types of the desired source columns 
      *    (e.g., "String" or "float") 
@@ -150,7 +150,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param sourceAxisNames the names of the desired source axis variables.
-     *    If special axis0, this will not include axis0's name.
+     *    If there is a special axis0, this will not include axis0's name.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
@@ -207,9 +207,9 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
      * @param fileDir
      * @param fileName
      * @param tDataVariables the desired data variables
-     * @param tConstraints  where the first axis variable's constraints
-     *   have been customized for this file.
-     *   !!! If special axis0, then will not include constraints for axis0.
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
      *   <br>The dataValues are straight from the source, not modified.
      *   <br>The primitiveArray dataTypes are usually the sourceDataTypeClass,
@@ -727,7 +727,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** .nc test das dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -823,7 +823,7 @@ directionsForGenerateDatasetsXml() +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
-"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String creator_url \"https://coastwatch.pfeg.noaa.gov\";\n" +
 "    String date_created \"2008-08-29Z\";\n" +
 "    String date_issued \"2008-08-29Z\";\n" +
 "    Float64 Easternmost_Easting 359.875;\n" +
@@ -849,7 +849,7 @@ today;
 //today + 
 
 expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
-"    String infoUrl \"http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -884,7 +884,7 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -929,7 +929,7 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 //verified with 
@@ -958,7 +958,7 @@ String csvExpected =
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csvp"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 //verified with 
@@ -972,7 +972,7 @@ csvExpected;
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv0"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = csvExpected;
 //verified with 
@@ -985,7 +985,7 @@ csvExpected;
         userDapQuery = "y_wind[(1.1991888e9):3:(1.1999664e9)][0][(36.5)][(230)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 //verified with 
@@ -1004,7 +1004,7 @@ csvExpected;
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 //verified with 
@@ -1033,7 +1033,7 @@ String tsvExpected =
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsvp"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
 //verified with 
@@ -1047,7 +1047,7 @@ tsvExpected;
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsv0"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = tsvExpected;
 //verified with 

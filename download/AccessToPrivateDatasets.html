@@ -1,46 +1,46 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
-  "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en-US">
 <head>
 <title>Google Login Via Script</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="shortcut icon" href="https://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
-<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+<link href="../images/erddap2.css" rel="stylesheet" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body> 
-<table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
+<table class="compact nowrap" style="width:100%; background-color:#128CB5;"> 
   <tr> 
-    <td align="center" style="width:100px;"> &nbsp;
-      <img src="https://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
+    <td style="text-align:center; width:80px;"><a rel="bookmark"
+      href="http://www.noaa.gov/"><img 
+      title="National Oceanic and Atmospheric Administration" 
+      src="../images/noaab.png" alt="NOAA"
+      style="vertical-align:middle;"></a></td> 
+    <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
+      <strong>ERDDAP</strong>
+      <br><small><small><small>Easier access to scientific data</small></small></small>
       </td> 
-    <td align="left">
-      <font color="#FFFFFF">
-      <font size="+2"><b>ERDDAP</b></font>
-      <br>Easier access to scientific data</font>
-      </td> 
-    <td align="right"><font size="-1"> 
-      <br>Brought to you by 
-      <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
-      <a title="National Marine Fisheries Service"               rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
-      <a title="Southwest Fisheries Science Center"              rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>  
-      <a title="Environmental Research Division" rel="bookmark" href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+    <td style="text-align:right; font-size:small;"> 
       &nbsp; &nbsp;
-      </font></td> 
+      <br>Brought to you by 
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
+      href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service" rel="bookmark"
+      href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark"
+      href="https://swfsc.noaa.gov">SWFSC</a> 
+      <a title="Environmental Research Division" rel="bookmark"
+      href="https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      &nbsp; &nbsp;
+      </td> 
   </tr> 
 </table>
 
-<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
-  cellspacing="0"> 
-<tr>
-<td>
+<div class="standard_width"> 
 
 &nbsp;
-<form action="">
-<input type="button" value="Back" onClick="history.go(-1);return true;">
-</form>
 
-<center><h1>Access to Private Datasets in ERDDAP</h1></center>
+<h1 style="text-align:center;">Access to Private Datasets in ERDDAP</h1>
 
 <p>Many ERDDAP installations don't have authentication enabled and thus 
 don't provide any way for users to login, nor do they have any private datasets. 
@@ -60,16 +60,16 @@ to private datasets that they are authorized to access.
 
 <p>To log in:
 <ol>
-<li>Click on the <tt>log in</tt> link in the upper left of any ERDDAP web page.
-  <br>If there is no <tt>log in</tt> link, the ERDDAP installation
+<li>Click on the <kbd>log in</kbd> link in the upper left of any ERDDAP web page.
+  <br>If there is no <kbd>log in</kbd> link, the ERDDAP installation
     doesn't have authentication enabled and there are no private datasets. 
   <br>&nbsp;
-<li>Click on the <tt>Sign in</tt> button to sign into your Google account.
+<li>Click on the <kbd>Sign in</kbd> button to sign into your Google account.
   <br>The text of the button should change to "Signed in".
   <br>&nbsp;
-<li>Click on the <tt>Log into ERDDAP</tt> button.
-  <br>The web page should change to say <tt>You are logged in as <i>yourEmailAddress</i></tt> .
-  <br>If it doesn't, wait 5 seconds and click on the <tt>Log into ERDDAP</tt> button again.
+<li>Click on the <kbd>Log into ERDDAP</kbd> button.
+  <br>The web page should change to say <kbd>You are logged in as <i>yourEmailAddress</i></kbd> .
+  <br>If it doesn't, wait 5 seconds and click on the <kbd>Log into ERDDAP</kbd> button again.
   <br>In extreme cases, you may have to wait and then try again a few times.
   <br>&nbsp;
 <li>Don't use your browser's Back button. 
@@ -115,7 +115,7 @@ these urls and paste them into a plain text editor
   <br>&nbsp;
 
 <li> Click on the "Log into ERDDAP" button and "copy as cURL" the link that looks like:
-<br>  <tt>login.html</tt>
+<br>  <kbd>login.html</kbd>
 <br>and paste this third curl command into the text file.
   <br>&nbsp;
 
@@ -186,21 +186,19 @@ exec($curlstuff,$output3,$status);
 </ol>
 
 <!-- ******* -->
-<h2><a name="contact">Contact</a></h2>
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
 Questions, comments, suggestions?  Please send an email to 
-  <tt>bob dot simons at noaa dot gov</tt>
+  <kbd>bob dot simons at noaa dot gov</kbd>
 and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.80
+<p>ERDDAP, Version 1.82
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 <p>&nbsp;
 <p>&nbsp;
 
-</tr>
-</table> 
-
+</div>
 </body>
 </html>

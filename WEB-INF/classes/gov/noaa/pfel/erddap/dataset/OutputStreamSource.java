@@ -20,8 +20,12 @@ public interface OutputStreamSource {
      */
     public OutputStream outputStream(String characterEncoding) throws Throwable;
 
-        
     /**
+     * This returns the outputStream if it has already been created (else null).
+     */
+    public OutputStream existingOutputStream();
+
+        
     /**
      * This returns an OutputStream.
      * If called repeatedly, this returns the same outputStream.
@@ -36,6 +40,13 @@ public interface OutputStreamSource {
      */
     public OutputStream outputStream(String characterEncoding, long contentLength) 
         throws Throwable;
+
+    /** 
+     * After ouputStream() has been called, this indicates the encoding (compression)
+     * being used for an OutputStreamFromHttpResponse (gzip, deflate)
+     * or "identity" if no compression.
+     */
+    public String usingCompression();
 
 }
 

@@ -392,6 +392,34 @@ public class Attributes {
     }
 
     /** 
+     * A convenience method which stores the object then stores the attribute.
+     * 
+     * @param name the name of the attribute
+     * @param value a Byte, Short, ... String.
+     *    If value is null or "", name is removed from attributes.
+     * @return the previous value stored for attributeName, or null if none
+     */
+    public PrimitiveArray set(String name, Object value) {
+        if (value == null) 
+            return remove(name);
+        return set(name, PrimitiveArray.factory(value));
+    }
+
+    /**
+     * This is like the similar set() method, but returns 'this'.
+     * add() lets you string several set commands together,
+     * e.g., (new Attributes()).add("name", "Bob").add("height", 197);
+     *
+     * @param name the name of the attribute
+     * @param value a String which is the value associate with the 'name'
+     * @return 'this'
+     */
+    public Attributes add(String name, Object value) {
+        set(name, value);
+        return this;
+    }
+
+    /** 
      * A convenience method which stores the String in a StringArray then stores the attribute.
      * 
      * @param name the name of the attribute
@@ -564,7 +592,7 @@ public class Attributes {
     public PrimitiveArray set(String name, char value) {
         return set(name, new CharArray(new char[]{value}));
     }
-
+    
     /**
      * This is like the similar set() method, but returns 'this'.
      * add() lets you string several set commands together,
@@ -868,7 +896,7 @@ public class Attributes {
      * This doesn't write *SCALAR* or dataType attributes.
      * This doesn't change any of the attributes.
      * 
-     * @param varName 
+     * @param varName The name of the variable to which these attributes are associated.
      * @return a string with all of the attributes for a variable (or *GLOBAL*) 
      *   formatted for NCCSV.
      */
@@ -956,7 +984,7 @@ public class Attributes {
             if (isString) {
                 tType = "char";
             } else if (tType.equals("long")) {
-                tType = "int64"; //see http://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
+                tType = "int64"; //see https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_utilities_guide.html#cdl_data_types and NCO JSON examples
             }
             sb.append(
                 (somethingWritten? ",\n" : "") +
@@ -989,7 +1017,7 @@ public class Attributes {
      * @throws Exception if trouble
      */
     public static void test() throws Exception {
-        String2.log("\n*** test Attributes...");
+        String2.log("\n*** Attributes.test()");
 /* for releases, this line should have open/close comment */
 
         //set  and size

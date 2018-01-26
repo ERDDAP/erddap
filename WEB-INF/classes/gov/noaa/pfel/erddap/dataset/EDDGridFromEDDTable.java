@@ -194,7 +194,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -425,7 +425,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridFromEDDTable " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -1058,7 +1058,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\nget .dds\n");
         tName = edd.makeNewFileForDapQuery(null, null, "", testDir, 
             edd.className() + "_Entire", ".dds"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1181,7 +1181,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\nget .das\n");
         tName = edd.makeNewFileForDapQuery(null, null, "", testDir, 
             edd.className() + "_Entire", ".das"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1337,10 +1337,9 @@ directionsForGenerateDatasetsXml() +
 //"2015-01-30T17:06:49Z https://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
 //"2015-01-30T17:06:49Z http://localhost:8080/cwexperimental/griddap/testGridFromTable.das\";\n" +
 expected=
-    "String infoUrl \"https://www.ncddc.noaa.gov/activities/wcos\";\n" +
+    "String infoUrl \"ftp://ftp.nodc.noaa.gov/nodc/archive/arc0006/0002039/1.1/about/WCOS_project_document_phaseI_20060317.pdf\";\n" +
 "    String institution \"NOAA NMSP\";\n" +
-"    String keywords \"Oceans > Ocean Circulation > Ocean Currents,\n" +
-"adcp, atmosphere, circulation, coast, current, currents, data, depth, eastward, eastward_sea_water_velocity, eastward_sea_water_velocity status_flag, error, flag, height, identifier, intensity, nmsp, noaa, northward, northward_sea_water_velocity, northward_sea_water_velocity status_flag, observing, ocean, oceans, quality, sea, seawater, station, status, system, time, upward, upward_sea_water_velocity, upwards, velocity, water, wcos, west, west coast\";\n" +
+"    String keywords \"adcp, atmosphere, circulation, coast, current, currents, data, depth, Earth Science > Oceans > Ocean Circulation > Ocean Currents, eastward, eastward_sea_water_velocity, eastward_sea_water_velocity status_flag, error, flag, height, identifier, intensity, nmsp, noaa, northward, northward_sea_water_velocity, northward_sea_water_velocity status_flag, observing, ocean, oceans, quality, sea, seawater, station, status, system, time, upward, upward_sea_water_velocity, upwards, velocity, water, wcos, west, west coast\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1378,7 +1377,7 @@ expected=
             "Eastward[10:10:20][][][],Eastward_flag[10:10:20][][][]," +
             "Northward[10:10:20][][][],Northward_flag[10:10:20][][][]", 
             testDir, edd.className() + "_gap0", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
 /* from source eddTable
 station,longitude,latitude,time,depth,Eastward,Eastward_flag,Northward,Northward_flag
 ,degrees_east,degrees_north,UTC,m,m s-1,,m s-1,
@@ -1480,7 +1479,7 @@ BAYXXX,-120.31121,34.04017,2004-11-30T20:32:40Z,-1.8,NaN,9,NaN,9
             "Eastward[10:10:20][][][0:17:17],Eastward_flag[10:10:20][][][0:17:17]," +
             "Northward[10:10:20][][][0:17:17],Northward_flag[10:10:20][][][0:17:17]", 
             testDir, edd.className() + "_gap3", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
 expected=
 "time,latitude,longitude,depth,Eastward,Eastward_flag,Northward,Northward_flag\n" +
 "UTC,degrees_north,degrees_east,m,m s-1,,m s-1,\n" +
@@ -1502,7 +1501,7 @@ expected=
             "Eastward[10][][][2:9],Eastward_flag[10][][][2:9]," +
             "Northward[10][][][2:9],Northward_flag[10][][][2:9]", 
             testDir, edd.className() + "_nogap", ".csv"); 
-        results = new String((new ByteArray(testDir + tName)).toArray());
+        results = String2.directReadFrom88591File(testDir + tName);
 expected=
 "time,latitude,longitude,depth,Eastward,Eastward_flag,Northward,Northward_flag\n" +
 "UTC,degrees_north,degrees_east,m,m s-1,,m s-1,\n" +

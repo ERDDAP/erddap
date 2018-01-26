@@ -67,11 +67,14 @@ import java.util.HashSet;
  *      with a list of stations and the observedProperties that they have data for.
  *      e.g., 
  *   <li>An observedProperty is a formal URI reference to a property
- *      e.g., urn:ogc:phenomenon:longitude:wgs84 or http://marinemetadata.org/cf#sea_water_temperature
+ *      e.g., urn:ogc:phenomenon:longitude:wgs84 or
+ *      (was http://marinemetadata.org/cf#sea_water_temperature - http://marinemetadata.org is GONE!)
+ *      http://mmisw.org/ont/cf/parameter/sea_water_temperature
  *   <li>An observedProperty isn't a variable.
  *   <li>More than one variable may have the same observedProperty 
- *     (e.g., insideTemp and outsideTemp might both have 
- *     observedProperty http://marinemetadata.org/cf#air_temperature)
+ *     (e.g., insideTemp and outsideTemp might both have observedProperty 
+ *       (was http://marinemetadata.org/cf#air_temperature - http://marinemetadata.org is GONE!)
+ *       http://mmisw.org/ont/cf/parameter/air_temperature
  *     See the observedProperty schema to find the variables associated
  *     with each observedProperty.
  *   <li>If you send a getObservation xml request to a SOS server, you get an xml result
@@ -327,7 +330,7 @@ public class EDDTableFromSOS extends EDDTable{
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     * @param tOnChange 0 or more actions (starting with http://, https://, or mailto: )
      *    to be done whenever the dataset changes significantly
      * @param tFgdcFile This should be the fullname of a file with the FGDC
      *    that should be used for this dataset, or "" (to cause ERDDAP not
@@ -397,7 +400,9 @@ public class EDDTableFromSOS extends EDDTable{
      *       "observedProperty" defines the observedProperty SOS clients request in order
      *       to get data for that variable.
      *       For non-composite observedProperty, this is the observedProperty's 
-     *         xlink:href attribute value, e.g., "http://marinemetadata.org/cf#sea_water_temperature".
+     *         xlink:href attribute value, e.g., 
+     *         (was "http://marinemetadata.org/cf#sea_water_temperature" - http://marinemetadata.org is GONE!)
+     *         http://mmisw.org/ont/cf/parameter/sea_water_temperature
      *       For composite observedProperty,  this is the CompositePhenomenon's
      *         gml:id attribute value, e.g., "WEATHER_OBSERVABLES".
      *    <br>!!!You can get station information by visiting the tLocalSourceUrl
@@ -574,8 +579,8 @@ public class EDDTableFromSOS extends EDDTable{
         if (reallyVerbose) String2.log("  GetCapUrl=" + tUrl);
                
         //if (debugMode)
-        //    String2.log(SSR.getUrlResponseString(tUrl));
-        //String2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseString(tUrl));
+        //    String2.log(SSR.getUrlResponseStringUnchanged(tUrl));
+        //String2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseStringUnchanged(tUrl));
 
         //get getCapabilities   (perhaps reuse quickRestartFile)
         String quickRestartFileName = File2.forceExtension(quickRestartFullFileName(), ".xml");
@@ -828,6 +833,8 @@ public class EDDTableFromSOS extends EDDTable{
                 } else if (endOfTag.equals("<" + sosPrefix + "observedProperty>")) {
                     //handle non-composite observedProperty
                     //<sos:observedProperty xlink:href="http://marinemetadata.org/cf#sea_water_temperature"/>
+                    //                      http://marinemetadata.org is GONE!
+                    //now                   xlink:href="http://mmisw.org/ont/cf/parameter/sea_water_temperature"
                     String tXlink = xmlReader.attributeValue("xlink:href"); //without quotes
                     if (tXlink != null) {
                         int opPo = uniqueSourceObservedProperties.indexOf(tXlink);   
@@ -1043,7 +1050,7 @@ public class EDDTableFromSOS extends EDDTable{
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDTableFromSOS " + datasetID + 
             " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
 
     }
 
@@ -1165,7 +1172,7 @@ public class EDDTableFromSOS extends EDDTable{
             //do the final writeToTableWriter (it will 
             writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, true);
             if (reallyVerbose) String2.log("  getDataForDapQuery done. TIME=" +
-                (System.currentTimeMillis() - getTime)); 
+                (System.currentTimeMillis() - getTime) + "ms"); 
             return;
         }
 
@@ -1277,8 +1284,8 @@ public class EDDTableFromSOS extends EDDTable{
                         double rMax = requestedDestinationMax[i];
                         double sMin = stationTable.getDoubleData(stationMinCol, station);
                         double sMax = stationTable.getDoubleData(stationMaxCol, station);
-                        if ((Math2.isFinite(rMax) && Math2.isFinite(sMin) && !Math2.greaterThanAE(precision, rMax, sMin)) || 
-                            (Math2.isFinite(rMin) && Math2.isFinite(sMax) && !Math2.lessThanAE(   precision, rMin, sMax))) {
+                        if ((Double.isFinite(rMax) && Double.isFinite(sMin) && !Math2.greaterThanAE(precision, rMax, sMin)) || 
+                            (Double.isFinite(rMin) && Double.isFinite(sMax) && !Math2.lessThanAE(   precision, rMin, sMax))) {
                             if (reallyVerbose) String2.log("  reject station=" + station + 
                                 ": no overlap between station " + tName + " (min=" + sMin + ", max=" + sMax +
                                 ") and requested range (min=" + rMin + ", max=" + rMax + ").");
@@ -1434,7 +1441,7 @@ public class EDDTableFromSOS extends EDDTable{
                     }
                     if (false) { //debugMode) { 
                         String2.log("*** Begin response");
-                        String2.log(SSR.getUrlResponseString(localSourceUrl + getSB.toString()));
+                        String2.log(SSR.getUrlResponseStringUnchanged(localSourceUrl + getSB.toString()));
                         String2.log("*** End response");
                     }
 
@@ -1472,7 +1479,7 @@ public class EDDTableFromSOS extends EDDTable{
         //do the final writeToTableWriter
         writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, true);
         if (reallyVerbose) String2.log("  getDataForDapQuery done. TIME=" +
-            (System.currentTimeMillis() - getTime)); 
+            (System.currentTimeMillis() - getTime) + "ms"); 
 
     }
 
@@ -1710,7 +1717,7 @@ public class EDDTableFromSOS extends EDDTable{
             if (verbose) 
                 String2.log("EDDTableFromSos nRows=" + table.nRows() + 
                     " downloadTime=" + downloadTime + 
-                    " processTime=" + processTime);
+                    "ms processTime=" + processTime + "ms");
 
         } catch (Throwable t) {
             String2.log("  " + String2.ERROR + " while processing response from requestUrl=" + localSourceUrl + kvp);
@@ -2554,7 +2561,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
             tName = eddTable.makeNewFileForDapQuery(null, null,
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8419317\"&time>=2006-01-01T00&time<=2006-01-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATemp", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C,\n" +
@@ -2580,7 +2587,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
             tName = eddTable.makeNewFileForDapQuery(null, null,  //1612340, NaN, 2008-10-26
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:1612340\"&time>=2008-10-26T00&time<2008-10-26T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATemp", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C,\n" +
@@ -2605,7 +2612,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosATemp", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -2730,7 +2737,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&time>=2008-10-26T00&time<=2008-10-26T01&orderBy(\"station_id,time\")", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATempAllStations", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C,\n" +
@@ -2775,7 +2782,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "longitude,latitude,station_id&orderBy(\"station_id\")", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATempStationList", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id\n" +
 "degrees_east,degrees_north,\n" +
@@ -2812,7 +2819,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8419317\"&time>=2006-01-01T00&time<=2006-01-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosPressure", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_pressure,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,millibars,\n" +
@@ -2838,7 +2845,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9491094\"&time>=2008-09-01T00&time<=2008-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosPressure", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_pressure,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,millibars,\n" +
@@ -2864,7 +2871,7 @@ expected =
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosPressure", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -2979,7 +2986,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8452660\"&time>=2013-09-01T00&time<=2013-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCond", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,conductivity,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,mS cm-1,\n" +
@@ -3005,7 +3012,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosCond", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3101,9 +3108,10 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         "8447386", "8452660", "8454049", "8537121", "8574680", "8635750",
         "8637689", "8638610", "8638863", "8639348", "8737048", "8770613",
         "8771013", "9454050"};
+
     public static void testFindValidStation(EDDTable eddTable, String stations[],
             String preQuery, String postQuery) throws Exception {
-        String2.log("\n*** testFindValidStation");
+        String2.log("\n*** EDDTableFromSOS.testFindValidStation");
         int i = -1; 
         while (++i < stations.length) {
             try {
@@ -3142,7 +3150,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
             //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T00:03");
 
-            String2.log("\n*** EDDTableFromSOS nos Currents test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosCurrents test get one station .CSV data\n");
 
             
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -3150,7 +3158,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
                 "&time>=2013-09-01T00:03&time<=2013-09-01T00:03", //It was hard to find a request that had data
                  EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCurrents", ".csv"); 
                 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,sensor_depth,direction_of_sea_water_velocity,sea_water_speed,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,orientation,sampling_rate,reporting_interval,processing_level,bin_size,first_bin_center,number_of_bins,bin\n" +
 "degrees_east,degrees_north,,m,UTC,,m,degrees_true,cm s-1,degrees_true,degrees,degrees,degree_C,,Hz,s,,m,m,,count\n" +
@@ -3209,11 +3217,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         }
             
         try {
-            String2.log("\n*** EDDTableFromSOS nos Currents .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosCurrents .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosCurrents", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3480,10 +3488,10 @@ rature, winds, harmonic_constituents, datums, relative_humidity, rain_fall, visi
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS nos Salinity .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosSalinity .das\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosSalinity", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3541,11 +3549,11 @@ rature, winds, harmonic_constituents, datums, relative_humidity, rain_fall, visi
             //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
             //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T01");
 
-            String2.log("\n*** EDDTableFromSOS nos Salinity test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosSalinity test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8452660\"&time>=2013-09-01T00&time<=2013-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosSalinity", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //station 8419317: salinity is low because this is in estuary/river, not in ocean
 //"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
@@ -3686,11 +3694,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             //stopped working ~2009-03-26, and no recent data
             //    "&station_id=\"urn:x-noaa:def:station:NOAA.NOS.CO-OPS::9461380\"&time>=2008-09-01T00&time<=2008-09-01T01", 
 
-            String2.log("\n*** EDDTableFromSOS nos Wind test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWind test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9468756\"&time>=2009-04-06T00&time<=2009-04-06T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWind", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,wind_from_direction,wind_speed,wind_speed_of_gust\n" +
 "degrees_east,degrees_north,,m,UTC,,degrees_true,m s-1,m s-1\n" +
@@ -3712,11 +3720,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         }
 
         try {
-            String2.log("\n*** EDDTableFromSOS nos Wind .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWind .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosWind", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3834,11 +3842,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
             //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T01");
 
-            String2.log("\n*** EDDTableFromSOS nos wLevel .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWLevel .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosWLevel", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3942,11 +3950,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
 
         try {            
-            String2.log("\n*** EDDTableFromSOS nos WLevel test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWLevel test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9454050\"&time>=2013-09-01T00&time<=2013-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWLevel", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 /*//pre 2009-11-15 and post 2009-12-13
 "longitude,latitude,station_id,altitude,time,WaterLevel\n" +
@@ -4023,11 +4031,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS nos wtemp .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWTemp .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosWTemp", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -4116,11 +4124,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         }
 
         try {
-            String2.log("\n*** EDDTableFromSOS nos WTemp test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWTemp test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8311062\"&time>=2008-08-01T14:00&time<2008-08-01T15:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWTemp", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 /*
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
@@ -4155,11 +4163,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         }
             
         try {
-            String2.log("\n*** EDDTableFromSOS nos WTemp test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWTemp test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9432780\"&time>=2008-09-01T14:00&time<2008-09-01T15:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWTemp", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C,\n" +
@@ -4181,11 +4189,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
 
         try {
-            String2.log("\n*** EDDTableFromSOS nos WTemp test .geoJson lat, lon, alt\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWTemp test .geoJson lat, lon, alt\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "altitude,longitude,latitude&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9432780\"&time>=2008-09-01T14:00&time<2008-09-01T15:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWTemp1", ".geoJson"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "{\n" +
 "  \"type\": \"MultiPoint\",\n" +
@@ -4210,11 +4218,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         }
     
         try {
-            String2.log("\n*** EDDTableFromSOS nos WTemp test .geoJson all vars\n");
+            String2.log("\n*** EDDTableFromSOS.testNosSosWTemp test .geoJson all vars\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9432780\"&time>=2008-09-01T14:00&time<2008-09-01T15:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWTemp2", ".geoJson"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "{\n" +
 "  \"type\": \"FeatureCollection\",\n" +
@@ -4348,7 +4356,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
      * @throws Throwable if trouble
      */
     public static void testNdbcSosCurrents(String datasetIdPrefix) throws Throwable {
-        String2.log("\n*** testNdbcSosCurrents");
+        String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents");
         testVerboseOn();
         //see 6/12/08 email from Roy
         //   see web page:  http://sdf.ndbc.noaa.gov/sos/
@@ -4364,11 +4372,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS ndbc currents .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbc_test1", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -4638,9 +4646,7 @@ expected =
 datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
-"    String keywords \"Oceans > Ocean Circulation > Ocean Currents,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"angle, atmosphere, bad, beam, bin, circulation, correlation, currents, depth, direction, direction_of_sea_water_velocity, echo, error, flags, good, height, identifier, intensity, magnitude, ndbc, noaa, ocean, oceans, orientation, percent, pitch, platform, quality, rejected, roll, sea, sea_water_speed, sea_water_temperature, seawater, sensor, sos, speed, station, temperature, time, upward, upward_sea_water_velocity, velocity, water\";\n" +
+"    String keywords \"angle, atmosphere, bad, beam, bin, circulation, correlation, currents, depth, direction, direction_of_sea_water_velocity, Earth Science > Oceans > Ocean Circulation > Ocean Currents, Earth Science > Oceans > Ocean Temperature > Water Temperature, echo, error, flags, good, height, identifier, intensity, magnitude, ndbc, noaa, ocean, oceans, orientation, percent, pitch, platform, quality, rejected, roll, sea, sea_water_speed, sea_water_temperature, seawater, sensor, sos, speed, station, temperature, time, upward, upward_sea_water_velocity, velocity, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4676,11 +4682,11 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
         try {
             //test lon lat (numeric) = > <, and time > <
-            String2.log("\n*** EDDTableFromSOS currents test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, "" +
                 "&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test1", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
@@ -4703,12 +4709,12 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
         try {
             //test quality_flags regex (just GOOD data): &quality_flags=~"3;.*"
-            String2.log("\n*** EDDTableFromSOS currents test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNcbcSosCurrents test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, "" +
                 "&longitude=-87.94&latitude>=29.1&latitude<29.2&time>=2008-06-01T14:00&time<=2008-06-01T14:30" +
                 "&quality_flags=~\"3;.*\"", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test1", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
@@ -4730,12 +4736,12 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
         try {
             //test station regex
-            String2.log("\n*** EDDTableFromSOS Currents test get 2 stations from regex, 1 time, .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNcbcSosCurrents test get 2 stations from regex, 1 time, .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=~\"(urn:ioos:station:wmo:41035|urn:ioos:station:wmo:42376)\"" +
                 "&time>=2008-06-01T14:00&time<=2008-06-01T14:15", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test1b", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //Before revamping 2008-10, test returned values below.   NOW DIFFERENT!
 //    "urn:ioos:station:wmo:41035,-77.28,34.48,-1.6,2008-06-01T14:00:00Z,223,3.3\n" +    now 74,15.2
@@ -4783,11 +4789,11 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
         try {
             //test station =   
-            String2.log("\n*** EDDTableFromSOS Currents test get by station name, multi depths, .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents test get by station name, multi depths, .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:41012\"&time>=2008-06-01T00&time<=2008-06-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test2", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
@@ -4829,11 +4835,11 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
         try {
             //many stations   (this was "long hard test", now with text/csv it is quick and easy)
-            String2.log("\n*** EDDTableFromSOS Currents test get data from many stations\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents test get data from many stations\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&time>=2008-06-14T00&time<=2008-06-14T02&altitude=-25", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test3", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
 "degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
@@ -4851,7 +4857,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
 
         try {
-            String2.log("\n*** EDDTableFromSOS Currents test display error in .png\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosCurrents test display error in .png\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, "station_id,longitude,latitude,altitude,time,zztop" +
                 "&station_id=\"urn:ioos:network:noaa.nws.ndbc:all\"&time=2008-06-14T00",
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_testError", ".png"); 
@@ -4876,11 +4882,11 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS ndbc salinity .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosSalinity .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosSalinity", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -4973,9 +4979,7 @@ expected =
 datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
-"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
-"Oceans > Salinity/Density > Salinity,\n" +
-"altitude, atmosphere, density, height, identifier, ndbc, noaa, oceans, salinity, sea, sea_water_practical_salinity, seawater, sensor, sos, station, time, water\";\n" +
+"    String keywords \"altitude, atmosphere, density, Earth Science > Atmosphere > Altitude > Station Height, Earth Science > Oceans > Salinity/Density > Salinity, height, identifier, ndbc, noaa, oceans, salinity, sea, sea_water_practical_salinity, seawater, sensor, sos, station, time, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -5008,11 +5012,11 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
         }
 
         try {
-            String2.log("\n*** EDDTableFromSOS Salinity test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosSalinity test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01&time<2008-08-02", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosSalinity", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
 "degrees_east,degrees_north,,m,UTC,,PSU\n" +
@@ -5025,11 +5029,11 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
         }
 
         try {            
-            String2.log("\n*** EDDTableFromSOS Salinity test get all stations .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosSalinity test get all stations .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&time>=2010-05-27T00:00:00Z&time<=2010-05-27T01:00:00Z", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosSalinityAll", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //46081 appeared 2010-07-20, anrn6 and apqf1 disappeared 2010-10-10
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
 "degrees_east,degrees_north,,m,UTC,,PSU\n" +
@@ -5064,11 +5068,11 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS NDBC lon time, one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosLongTime, one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null,   
                 "&station_id=\"urn:ioos:station:wmo:41012\"&time>=2002-06-01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_LongTime", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
 
             int nb = Math.min(results.length(), 500);
             String2.log(
@@ -5134,11 +5138,11 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS ndbc wLevel .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWLevel .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWLevel", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -5232,8 +5236,7 @@ expected =
 datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
-"    String keywords \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
-"altitude, atmosphere, averaging, below, depth, floor, height, identifier, interval, level, ndbc, noaa, sea, sea level, sensor, sos, station, surface, time\";\n" +
+"    String keywords \"altitude, atmosphere, averaging, below, depth, Earth Science > Oceans > Bathymetry/Seafloor Topography > Bathymetry, floor, height, identifier, interval, level, ndbc, noaa, sea, sea level, sensor, sos, station, surface, time\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -5266,11 +5269,11 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
         }
 
         try {
-            String2.log("\n*** EDDTableFromSOS nos WLevel test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWLevel test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:55015\"&time>=2008-08-01T14:00&time<=2008-08-01T15:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWLevel", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,averaging_interval\n" +
 "degrees_east,degrees_north,,m,UTC,,s\n" +
@@ -5298,11 +5301,11 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS ndbc wtemp .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWTemp .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWTemp", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -5395,9 +5398,7 @@ expected =
 datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
-"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
-"Oceans > Ocean Temperature > Water Temperature,\n" +
-"altitude, atmosphere, height, identifier, ndbc, noaa, ocean, oceans, sea, sea_water_temperature, seawater, sensor, sos, station, temperature, time, water\";\n" +
+"    String keywords \"altitude, atmosphere, Earth Science > Atmosphere > Altitude > Station Height, Earth Science > Oceans > Ocean Temperature > Water Temperature, height, identifier, ndbc, noaa, ocean, oceans, sea, sea_water_temperature, seawater, sensor, sos, station, temperature, time, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -5430,11 +5431,11 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
         }
 
         try {
-            String2.log("\n*** EDDTableFromSOS ndbc WTemp test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWTemp test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01T14:00&time<2008-08-01T20:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWTemp", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C\n" +
@@ -5463,7 +5464,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
         String name, tName, results, expected, query;
 
         try { 
-            String2.log("\n*** EDDTableFromSOS ndbc WTemp BIG test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosBig test get one station .CSV data\n");
             query = "&station_id=\"urn:ioos:station:wmo:46013\""; //for all time
             name = eddTable.className() + "_ndbcSosWTemp";
 
@@ -5502,11 +5503,11 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS ndbc waves .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWaves .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWaves", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -5785,12 +5786,12 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 
         try {
             //test  station=    and superfluous string data > < constraints
-            String2.log("\n*** EDDTableFromSOS Waves test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWaves test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01T14&time<=2008-08-01T17" +
                 "&calculation_method>=\"A\"&calculation_method<=\"Lonh\"", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWaves", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 // was
 //"longitude,latitude,station_id,altitude,time,SignificantWaveHeight,DominantWavePeriod,AverageWavePeriod,SwellHeight,SwellPeriod,WindWaveHeight,WindWavePeriod,WaterTemperature,WaveDuration,CalculationMethod,SamplingRate,NumberOfFrequencies,CenterFrequencies,Bandwidths,SpectralEnergy,MeanWaveDirectionPeakPeriod,SwellWaveDirection,WindWaveDirection,MeanWaveDirection,PrincipalWaveDirection,PolarCoordinateR1,PolarCoordinateR2,DirectionalWaveParameter,FourierCoefficientA1,FourierCoefficientA2,FourierCoefficientB1,FourierCoefficientB2\n" +
@@ -5828,14 +5829,14 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 
         try {
             //same test, but with  superfluous string data regex test
-            String2.log("\n*** EDDTableFromSOS Waves test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWaves test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01T14&time<=2008-08-01T17" +
 //!!!!!! Starting with switch to text/csv 2010-06-07, calculation_method became UNKNOWN!
 //but fixed 2010-06-22
                 "&calculation_method=~\"(zztop|Long.*)\"", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWaves", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -5844,11 +5845,11 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 
         try {
             //test error
-            String2.log("\n*** EDDTableFromSOS Waves test >30 days\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWaves test >30 days\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01&time<=2008-09-05", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWaves30", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = "shouldn't get here";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         
@@ -5877,11 +5878,11 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 
         try { 
 
-            String2.log("\n*** EDDTableFromSOS ndbc wind .das\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWind .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWind", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -6000,10 +6001,7 @@ expected =
 datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
-"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
-"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
-"Atmosphere > Atmospheric Winds > Vertical Wind Motion,\n" +
-"air, altitude, atmosphere, atmospheric, direction, from, gust, height, identifier, ndbc, noaa, sensor, sos, speed, station, surface, time, upward, velocity, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds\";\n" +
+"    String keywords \"air, altitude, atmosphere, atmospheric, direction, Earth Science > Atmosphere > Altitude > Station Height, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Atmosphere > Atmospheric Winds > Vertical Wind Motion, from, gust, height, identifier, ndbc, noaa, sensor, sos, speed, station, surface, time, upward, velocity, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6037,11 +6035,11 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 
         try {
 
-            String2.log("\n*** EDDTableFromSOS Wind test get one station .CSV data\n");
+            String2.log("\n*** EDDTableFromSOS.testNdbcSosWind test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
                 "&station_id=\"urn:ioos:station:wmo:41004\"&time>=2008-08-01T00:00&time<=2008-08-01T04", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWind", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,wind_from_direction,wind_speed,wind_speed_of_gust,upward_air_velocity\n" +
 "degrees_east,degrees_north,,m,UTC,,degrees_true,m s-1,m s-1,m s-1\n" +
@@ -6093,7 +6091,7 @@ So I will make ERDDAP able to read
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "gomoosBuoy"); //should work
 
-        String2.log("\n*** testOostethys");
+        String2.log("\n*** EDDTableFromSOS.testOostethys");
         testVerboseOn();
 
         try {
@@ -6136,8 +6134,9 @@ So I will make ERDDAP able to read
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
 //        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
-//            "http://marinemetadata.org/cf#sea_water_salinity, " +
+//            "http://marinemetadata.org/cf#sea_water_salinity, " + //http://marinemetadata.org is GONE!
 //            "http://marinemetadata.org/cf#sea_water_temperature", 
+//            NOW http://mmisw.org/ont/cf/parameter/sea_water_salinity
 //            "");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -6151,7 +6150,7 @@ So I will make ERDDAP able to read
             "&time>=2007-07-04T00:00&time<=2007-07-04T01:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.datasetID() + "_Data", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =
 // before 2010-02-11 was
 //"longitude,latitude,altitude,time,station_id,sea_water_temperature,sea_water_salinity\n" +
@@ -6229,7 +6228,7 @@ So I will make ERDDAP able to read
         //data for mapExample  (no time)  just uses station table data
         tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&longitude>-70", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "MapNT", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = //this changes a little periodically (NOT GOOD, stations have 1 point (which applies to historic data and changes!)
 //before 2009-01-12 this was
@@ -6378,7 +6377,7 @@ So I will make ERDDAP able to read
         //data for mapExample (with time
         tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&time=2007-12-11", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWT", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12   -70.5658->-70.5655 42.5226->42.5232
@@ -6424,7 +6423,7 @@ So I will make ERDDAP able to read
         //data for all variables 
         tName = eddTable.makeNewFileForDapQuery(null, null, "&station_id=\"A01\"&time=2007-12-11", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWTAV", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = //changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12   -70.5658->-70.5655 42.5226->42.5232
            //change a little on 2009-03-26, 2009-09-18
@@ -6468,7 +6467,7 @@ So I will make ERDDAP able to read
      * @throws Throwable if trouble
      */
     public static void testNeracoos() throws Throwable {
-        String2.log("\n*** testNeracoos");
+        String2.log("\n*** EDDTableFromSOS.testNeracoos");
         testVerboseOn();
         boolean oSosActive = EDStatic.sosActive;
         EDStatic.sosActive = true;
@@ -6520,8 +6519,9 @@ So I will make ERDDAP able to read
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
 //        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
-//            "http://marinemetadata.org/cf#sea_water_salinity, " +
+//            "http://marinemetadata.org/cf#sea_water_salinity, " + //http://marinemetadata.org is GONE!
 //            "http://marinemetadata.org/cf#sea_water_temperature", 
+//            NOW http://mmisw.org/ont/cf/parameter/sea_water_salinity
 //            "");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -6536,7 +6536,7 @@ So I will make ERDDAP able to read
             "&time>=2007-07-04T00:00&time<=2007-07-04T01:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.datasetID() + "_Data", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =
 //before 2010-07-08 when I started using ALL_PLATFORMS and BBOX,
 //  there was no data for D01 in the response
@@ -6572,7 +6572,7 @@ So I will make ERDDAP able to read
         //data for mapExample  (no time)  just uses station table data
         tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude,station_id&longitude>-70", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "NeraNT", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //"longitude,latitude,station_id\n" +
@@ -6641,7 +6641,7 @@ So I will make ERDDAP able to read
         try {
         tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&time=2007-12-11", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "NeraWT", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //before 2010-07-08 when I started using ALL_PLATFORMS and BBOX,
@@ -6667,7 +6667,7 @@ So I will make ERDDAP able to read
         try{
         tName = eddTable.makeNewFileForDapQuery(null, null, "&station_id=\"A01\"&time=2007-12-11", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "neraAV", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,station_id,altitude,time,air_temperature,chlorophyll,direction_of_sea_water_velocity,dominant_wave_period,sea_level_pressure,sea_water_density,sea_water_electrical_conductivity,sea_water_salinity,sea_water_speed,sea_water_temperature,wave_height,visibility_in_air,wind_from_direction,wind_gust,wind_speed\n" +
@@ -6713,7 +6713,7 @@ So I will make ERDDAP able to read
      * @throws Throwable if trouble
      */
     public static void testTamu() throws Throwable {
-        String2.log("\n*** testTamu");
+        String2.log("\n*** EDDTableFromSOS.testTamu");
         testVerboseOn();
         boolean oSosActive = EDStatic.sosActive;
         EDStatic.sosActive = true;
@@ -6728,7 +6728,7 @@ So I will make ERDDAP able to read
         //data for all variables 
         tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2009-07-11", //&station_id=\"A01\"", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "tamu", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "zztop\n";
@@ -6760,7 +6760,7 @@ So I will make ERDDAP able to read
         String tLocalSourceUrl, String sosVersion, 
         String sosServerType) throws Throwable {
 
-        tLocalSourceUrl = updateUrls(tLocalSourceUrl); //http: to https:
+        tLocalSourceUrl = EDStatic.updateUrls(tLocalSourceUrl); //http: to https:
         String2.log("\n*** EDDTableFromSos.generateDatasetsXml" +
             "\nuseCachedInfo=" + useCachedInfo + " localSourceUrl=" + tLocalSourceUrl +
             "\nsosVersion=" + sosVersion + " sosServerType=" + sosServerType);
@@ -6782,7 +6782,7 @@ So I will make ERDDAP able to read
             if (ioos52NServer) //AcceptVersions needed. This class only supports 1.0.0 currently.
                 tUrl += "&AcceptVersions=" + sosVersion;
         }
-        //if (reallyVerbose) String2.log(SSR.getUrlResponseString(tUrl));
+        //if (reallyVerbose) String2.log(SSR.getUrlResponseStringUnchanged(tUrl));
         File2.makeDirectory(sosCopyDir);
         String safeFileName = sosCopyDir + String2.md5Hex12(tUrl);
         if (!useCachedInfo || !File2.isFile(safeFileName)) {
@@ -6808,7 +6808,7 @@ So I will make ERDDAP able to read
             sosPrefix = "sos:"; //oostethys, ioos52N
         } else {
             xmlReader.close();
-            String2.log(SSR.getUrlResponseString(tUrl));
+            String2.log(SSR.getUrlResponseStringUnchanged(tUrl));
             throw new RuntimeException("The first SOS capabilities tag=\"" + 
                 tags + "\" should have been <Capabilities> or <sos:Capabilities>.");
         }
@@ -6935,6 +6935,9 @@ So I will make ERDDAP able to read
                 } else if (endOfTag.equals("<" + sosPrefix + "observedProperty>")) {
                     //handle non-composite observedProperty
                     //<sos:observedProperty xlink:href="http://marinemetadata.org/cf#sea_water_temperature"/>
+                    //                      http://marinemetadata.org is GONE!
+                    //NOW                   xlink:href="http://mmisw.org/ont/cf/parameter/sea_water_temperature"
+
                     String tXlink = xmlReader.attributeValue("xlink:href"); //without quotes
                     if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
                         if (reallyVerbose) String2.log("  observedProperty=" + tXlink);
@@ -7398,7 +7401,7 @@ String expected2 =
             if (isIoos52N) //AcceptVersions needed. This class only supports 1.0.0 currently.
                 tUrl += "&AcceptVersions=" + sosVersion;
         }
-        //if (reallyVerbose) String2.log(SSR.getUrlResponseString(tUrl));
+        //if (reallyVerbose) String2.log(SSR.getUrlResponseStringUnchanged(tUrl));
         File2.makeDirectory(sosCopyDir);
         String safeFileName = sosCopyDir + String2.md5Hex12(tUrl);
         if (!useCachedInfo || !File2.isFile(safeFileName)) {
@@ -7555,8 +7558,8 @@ String expected2 =
                 } else if (endOfTag.equals("<" + sosPrefix + "observedProperty>")) {
                     //handle non-composite observedProperty
                     //<sos:observedProperty xlink:href="http://marinemetadata.org/cf#sea_water_temperature"/>
-                    //more recently http://mmisw.org/ont/cf/parameter/sea_water_salinity
-                    //
+                    //NOW http://mmisw.org/ont/cf/parameter/sea_water_salinity
+                    //    http://marinemetadata.org is GONE!
                     String tXlink = xmlReader.attributeValue("xlink:href"); //without quotes
                     if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
                         if (!isIoos52N) {
@@ -8213,7 +8216,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         String2.log("testGetPhenomena");
         testVerboseOn();
         HashMap hashMap = new HashMap();
-        getPhenomena("http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/IOOS/0.6.1/dictionaries/phenomenaDictionary.xml", 
+        getPhenomena("https://ioos.github.io/sos-dif/gml/IOOS/0.6.1/dictionaries/phenomenaDictionary.xml", 
             hashMap);
         String sar[] = String2.toStringArray(hashMap.keySet().toArray());
         for (int i = 0; i < sar.length; i++) 
@@ -8225,7 +8228,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * This runs all of the tests for the ndbc test server.
      */
     public static void testNdbcTestServer() throws Throwable {
-        String2.log("\n****************** EDDTableFromSos.testTestServer() *****************\n");
+        String2.log("\n*** EDDTableFromSos.testNdbcTestServer()\n");
         testVerboseOn();
 
         testNdbcSosCurrents("test");    //TimeSeriesProfile
@@ -8241,7 +8244,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * This runs all of the tests for the nos test server.
      */
     public static void testNosTestServer() throws Throwable {
-        String2.log("\n****************** EDDTableFromSos.testTestServer() *****************\n");
+        String2.log("\n*** EDDTableFromSos.testNosTestServer()\n");
         testVerboseOn();
 
         testNosSosATemp("test");
@@ -8262,7 +8265,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * @throws Throwable if trouble
      */
     public static void testErddapSos() throws Throwable {
-        String2.log("\n****************** EDDTableFromSOS.testErddapSos() *****************\n");
+        String2.log("\n*** EDDTableFromSOS.testErddapSos()\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -8274,10 +8277,10 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         try {
 
             //*** test getting das for entire dataset
-            String2.log("\n****************** EDDTableFromSOS.testErddapSos() das dds for entire dataset\n");
+            String2.log("\n*** EDDTableFromSOS.testErddapSos() das dds for entire dataset\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Entire", ".das"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "  wspv {\n" +
@@ -8298,7 +8301,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             //*** test getting dds for entire dataset
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Entire", ".dds"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "Dataset {\n" +
@@ -8330,7 +8333,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 
 
             //*** test make data files
-            String2.log("\n****************** EDDTableFromSOS.testErddapSos() make DATA FILES\n");       
+            String2.log("\n*** EDDTableFromSOS.testErddapSos() make DATA FILES\n");       
 
             //.csv
             //from NdbcMetStation.test31201
@@ -8346,7 +8349,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
                 "&longitude=-48.13&latitude=-27.7&time=2005-04-19T00";
             tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Data1", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "longitude, latitude, altitude, time, station_id, wvht, dpd, wtmp, dewp\n" +
@@ -8360,7 +8363,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
                 "&longitude=-48.13&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
             tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Data2", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = "longitude,latitude,altitude,time,station_id,wvht,dpd,wtmp,dewp\n";
             Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -8378,7 +8381,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Data3", ".csv"); 
             String2.log("queryTime=" + (System.currentTimeMillis() - time));
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "longitude,latitude,altitude,time,station_id,wvht,dpd,wtmp,dewp\n" +
@@ -8408,7 +8411,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Data4", ".csv"); 
             String2.log("queryTime=" + (System.currentTimeMillis() - time));
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "longitude,latitude,altitude,station_id,wvht,dpd,wtmp,dewp\n" +
@@ -8439,7 +8442,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_Data5", ".csv"); 
             String2.log("queryTime=" + (System.currentTimeMillis() - time));
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "longitude,latitude,wtmp\n" +
@@ -8615,7 +8618,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         boolean oTestQuickRestart = testQuickRestart;
         testQuickRestart = false; 
 
-        String2.log("\n*** testWhoiSos");
+        String2.log("\n*** EDDTableFromSOS.testWhoiSos");
         testVerboseOn();
         double tLon, tLat;
         String name, tName, results, expected, userDapQuery;
@@ -8646,7 +8649,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         userDapQuery = "&time<=2008-04-09T01:00:00";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.datasetID() + "_Data", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =
 "longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
 "degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
@@ -8667,7 +8670,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         userDapQuery = "&time>2009-09-01&time<2009-10";
         tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.datasetID() + "_Data2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =
 "longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
 "degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
@@ -8685,7 +8688,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         //data for mapExample  (no time)  just uses station table data
         tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&distinct()", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "MapNT", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude\n" +
@@ -8702,7 +8705,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         //data for mapExample (with time
         tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&time=2010-12-11", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWT", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude\n" +
@@ -8719,7 +8722,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         //data for all variables 
         tName = eddTable.makeNewFileForDapQuery(null, null, "&longitude=-70.5564&time=2010-12-11", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWTAV", ".csv");
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
@@ -8746,17 +8749,20 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * @throws Throwable if trouble
      */
     public static void test2DVSameSource() throws Throwable {
-        String2.log("\n****************** EDDTableFromSOS.test2DVSameSource() *****************\n");
+        String2.log("\n*** EDDTableFromSOS.test2DVSameSource()\n");
         String error = "shouldn't happen";
         try {
             EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "tabletest2DVSameSource"); 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
-            error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
+            error = String2.split(MustBe.throwableToString(t), '\n')[0]; 
+            int errorPo = error.indexOf("ERROR");  //the line number in datasets.xml varies
+            if (errorPo > 0)
+                error = error.substring(errorPo);
         }
 
         Test.ensureEqual(error, 
-            "Two dataVariables have the same sourceName=sensor_id.", 
+            "ERROR: Duplicate dataVariableSourceNames: [5] and [7] are both \"sensor_id\".", 
             "Unexpected error message:\n" + error);
     }
 
@@ -8768,17 +8774,20 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
      * @throws Throwable if trouble
      */
     public static void test2DVSameDestination() throws Throwable {
-        String2.log("\n****************** EDDTableFromSOS.test2DVSameDestination() *****************\n");
+        String2.log("\n*** EDDTableFromSOS.test2DVSameDestination()\n");
         String error = "shouldn't happen";
         try {
             EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "tabletest2DVSameDestination"); 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
-            error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
+            error = String2.split(MustBe.throwableToString(t), '\n')[0]; 
+            int errorPo = error.indexOf("ERROR");  //the line number in datasets.xml varies
+            if (errorPo > 0)
+                error = error.substring(errorPo);
         }
 
         Test.ensureEqual(error, 
-            "Two dataVariables have the same destinationName=sensor_id.", 
+            "ERROR: Duplicate dataVariableDestinationNames: [5] and [7] are both \"sensor_id\".", 
             "Unexpected error message:\n" + error);
     }
 
@@ -8862,7 +8871,7 @@ testQuickRestart = true;
 
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             "gcoosSosAirPressure_Entire", ".das"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -8972,7 +8981,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
             "gcoosSosAirPressure_Entire", ".dds"); 
-        results = new String((new ByteArray(dir + tName)).toArray());
+        results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -8991,7 +9000,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null,
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8419317\"&time>=2006-01-01T00&time<=2006-01-01T01", 
                 dir, eddTable.className() + "_nosSosATemp", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C\n" +
@@ -9013,7 +9022,7 @@ expected =
             tName = eddTable.makeNewFileForDapQuery(null, null,  //1612340, NaN, 2008-10-26
                 "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:1612340\"&time>=2008-10-26T00&time<2008-10-26T01", 
                 dir, eddTable.className() + "_nosSosATemp", ".csv"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C\n" +
@@ -9033,7 +9042,7 @@ expected =
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
                 eddTable.className() + "_nosSosATemp", ".das"); 
-            results = new String((new ByteArray(dir + tName)).toArray());
+            results = String2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -9142,7 +9151,7 @@ expected =
      * This runs all of the tests for this class.
      */
     public static void test(boolean useCachedInfo) throws Throwable {
-        String2.log("\n****************** EDDTableFromSos.test() *****************\n");
+        String2.log("\n*** EDDTableFromSos.test()\n");
         testVerboseOn();
         testQuickRestart = false;  //normally false. Only true when actively testing quickRestart.
  

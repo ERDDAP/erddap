@@ -116,9 +116,9 @@ public class HdfVGroup extends HdfTag {
         for (int i = 0; i < nelt; i++)
             ref_n[i] = stream.readShort(); //Reference number of the nth member of the Vgroup 
         int len   = stream.readShort(); //Length of the name field 
-        name      = new String(File2.read(stream, len)); //Non-null terminated ASCII string 
+        name      = new String(File2.readFully(stream, len)); //Non-null terminated ASCII string 
         len       = stream.readShort(); //Length of the class field 
-        className = new String(File2.read(stream, len)); //Non-null terminated ASCII string
+        className = new String(File2.readFully(stream, len)); //Non-null terminated ASCII string
         extag     = stream.readShort(); //Extension tag 
         exref     = stream.readShort(); //Extension reference number 
         version   = stream.readShort(); //Version number of DFTAG_VG information 

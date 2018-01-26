@@ -148,7 +148,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         sourceGlobalAttributes.add("keywords", "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
         sourceGlobalAttributes.add("keywords_vocabulary", "GCMD Science Keywords");
         sourceGlobalAttributes.add("license", EDStatic.standardLicense);
-        sourceGlobalAttributes.add("naming_authority", "gov.noaa.pfel.coastwatch");
+        sourceGlobalAttributes.add("naming_authority", "gov.noaa.pfeg.coastwatch");
         sourceGlobalAttributes.add("project", "NOAA NGDC ETOPO");
         sourceGlobalAttributes.add("projection", "geographic");
         sourceGlobalAttributes.add("projection_type", "mapped");
@@ -182,7 +182,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         //dAtt.set("_CoordinateZisPositive", "up");
         //dAtt.set("axis", "Z");
         dAtt.set("_FillValue", -9999999);
-        dAtt.set("actual_range", new IntArray(new int[]{-10898, 8271})); //from etopo1_ice_g_i2.hdr
+        dAtt.set("actual_range", new ShortArray(new short[]{-10898, 8271})); //from etopo1_ice_g_i2.hdr
         dAtt.set("coordsys", "geographic");
         dAtt.set("ioos_category", "Location");
         dAtt.set("long_name", "Altitude");
@@ -204,7 +204,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridFromEtopo " + datasetID + " constructor finished. TIME=" + 
-            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+            (System.currentTimeMillis() - constructionStartMillis) + "ms\n"); 
     }
 
     /**
@@ -293,7 +293,7 @@ public class EDDGridFromEtopo extends EDDGrid {
                         dis.close();
                         nReadFromCache++;
                         if (verbose) String2.log(datasetID + " readFromCache.  time=" + 
-                            (System.currentTimeMillis() - eTime));
+                            (System.currentTimeMillis() - eTime) + "ms");
                         return results;
                     } catch (Throwable t) {
                         if (dis != null) {
@@ -526,7 +526,7 @@ expected =
 "  :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
 "  :infoUrl = \"https://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
-"  :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry\";\n" +
+"  :keywords = \"Earth Science > Oceans > Bathymetry/Seafloor Topography > Bathymetry\";\n" +
 "  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 "  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -535,7 +535,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 "  :Northernmost_Northing = 85.0; // double\n" +
 "  :project = \"NOAA NGDC ETOPO\";\n" +
 "  :projection = \"geographic\";\n" +
@@ -587,7 +587,7 @@ expected =
 
         tName = data360.makeNewFileForDapQuery(null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
             EDStatic.fullTestCacheDirectory, data360.className() + "_Entire", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "latitude,longitude,altitude\n" +
 "degrees_north,degrees_east,m\n" +
@@ -657,6 +657,14 @@ expected =
 "76.66666666666666,266.6666666666667,132\n" +
 "76.66666666666666,300.0,1468\n" +
 "76.66666666666666,333.3333333333333,1886\n";
+        Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+
+        tName = data360.makeNewFileForDapQuery(null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
+            EDStatic.fullTestCacheDirectory, data360.className() + "_timeGaps", ".timeGaps"); 
+        results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Time gaps: (none, because there is no time axis variable)\n" +
+"nGaps=0\n";
         Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
 

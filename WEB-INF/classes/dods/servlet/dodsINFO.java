@@ -80,7 +80,7 @@ public class dodsINFO {
     * NB: An HTML* file contains HTML without the <html>, <head> or <body> tags
     * (my own notation).
     *
-    * <b>TODO Look for the user supplied Server- and dataset-specific HTML* documents.</b>
+    * <strong>TODO Look for the user supplied Server- and dataset-specific HTML* documents.</strong>
     *
     * @param pw The PrintStream to which the output should be written.
     * @param gds The datset.
@@ -304,9 +304,9 @@ public class dodsINFO {
 
 			found = true;
 
-			ga += "\n<tr><td align=right valign=top><b>";
-			ga += aName + "</b>:</td>\n";
-			ga += "<td align=left>";
+			ga += "\n<tr><td style=\"text-align:right: vertical-align:top;\"><strong>";
+			ga += aName + "</strong>:</td>\n";
+			ga += "<td style=\"text-align:left\">";
 
                         Enumeration es = a.getValues();
 		        while(es.hasMoreElements()){
@@ -370,14 +370,14 @@ public class dodsINFO {
 
                 if(a.isContainer()){
 
-                    vOut += "<li> <b> "+name + ": </b> </li>\n";
+                    vOut += "<li> <strong> "+name + ": </strong> </li>\n";
                     vOut += "<ul>\n";
                     vOut += summarizeAttributes(a.getContainer(),"");
                     vOut += "</ul>\n";
 
                 }
                 else {
-                   vOut += "<li> <b> " + name + ": </b> ";
+                   vOut += "<li> <strong> " + name + ": </strong> ";
                    Enumeration es = a.getValues();
                     while(es.hasMoreElements()){
                         String val = (String)es.nextElement();
@@ -401,9 +401,9 @@ public class dodsINFO {
 
         String vOut;
 
-        vOut  = "<td align=right valign=top><b>" + bt.getName();
-        vOut += "</b>:</td>\n";
-        vOut += "<td align=left valign=top>" + dasTools.fancyTypeName(bt);
+        vOut  = "<td style=\"text-align:right; vertical-align:top;\"><strong>" + bt.getName();
+        vOut += "</strong>:</td>\n";
+        vOut += "<td style=\"text-align:left; vertical-align:top;\">" + dasTools.fancyTypeName(bt);
 
 
         AttributeTable attr = das.getAttributeTable(bt.getName());
